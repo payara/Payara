@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,16 +45,23 @@ package com.sun.enterprise.admin.cli.optional;
  */
 public enum DBType {
 
-    DERBY("derby"), H2("h2");
+    DERBY("derby", "1527"), H2("h2", "9092");
 
     private final String value;
 
-    private DBType(String value) {
+    private final String port;
+
+    private DBType(String value, String port) {
         this.value = value;
+        this.port = port;
     }
 
     public String getValue() {
         return value;
+    }
+
+    public String getPort() {
+        return port;
     }
 
     public boolean equals(String value) {
