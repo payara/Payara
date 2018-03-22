@@ -46,6 +46,7 @@ import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 
 import java.util.List;
@@ -177,11 +178,11 @@ public class MonitoringHandlers {
                             unit = (String) monAttrs.get("unit");
                             desc = (String) monAttrs.get("description");
 
-                            Long lastTime = (Long) monAttrs.get("lastsampletime");
+                            Long lastTime = ((BigDecimal) monAttrs.get("lastsampletime")).longValue();
                             if (lastTime != -1) {
                                 last = df.format(new Date(lastTime));
                             }
-                            Long startTime = (Long) monAttrs.get("starttime");
+                            Long startTime = ((BigDecimal) monAttrs.get("starttime")).longValue();
                             if (startTime != -1) {
                                 start = df.format(new Date(startTime));
                             }
@@ -203,7 +204,7 @@ public class MonitoringHandlers {
                                             val = formatStr;
                                         }
                                     } else {
-                                        Long currentVal = (Long) monAttrs.get("current");
+                                        Long currentVal = ((BigDecimal) monAttrs.get("current")).longValue();
                                         val = currentVal + unit;
                                     }
                                 }
@@ -302,7 +303,7 @@ public class MonitoringHandlers {
                 }
             }
             handlerCtx.setOutputValue("result", result);
-            handlerCtx.setOutputValue("hasStats", (result.size() == 0) ? false : true);
+            handlerCtx.setOutputValue("hasStats", (!result.isEmpty()));
         } catch (Exception ex) {
             GuiUtil.handleException(handlerCtx, ex);
         }
