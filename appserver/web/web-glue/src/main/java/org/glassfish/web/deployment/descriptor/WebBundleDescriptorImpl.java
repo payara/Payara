@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.descriptor;
 
@@ -1455,9 +1455,15 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 if (next.isInjectable()) {
                     for (InjectionTarget target : next.getInjectionTargets()) {
                         Iterator<WebServiceEndpoint> epIter = getWebServices().getEndpoints().iterator();
-                        while (epIter.hasNext()) {
+                        outer: while (epIter.hasNext()) {
                             String servletImplClass = epIter.next().getServletImplClass();
                             if (target.getClassName().equals(servletImplClass)) {
+                                for (InjectionCapable it : injectables) {
+                                    if (it == next) {
+                                        // do not add duplicates
+                                        break outer;
+                                    }
+                                }
                                 injectables.add(next);
                             }
                         }

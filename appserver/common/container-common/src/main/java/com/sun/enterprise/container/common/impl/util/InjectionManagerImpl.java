@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.container.common.impl.util;
 
@@ -632,11 +633,8 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
                 if( !lookupName.startsWith("java:") ) {
                     lookupName = "java:comp/env/" + lookupName;
                 }
-                
-                final Object value =  (componentId != null) ?
-                        glassfishNamingManager.lookup(componentId, lookupName) :
-                        glassfishNamingManager.getInitialContext().lookup(lookupName);
 
+                Object injectedValue = null;
                 // there still could be 2 injection on the same class, better
                 // do a loop here
                 for (InjectionTarget target : next.getInjectionTargets()) {
@@ -645,7 +643,15 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
                     // we can just jump to the next target
                     if (!clazz.getName().equals(target.getClassName()))
                         continue;
-                    
+
+                    // lazy-initialize the value after we know we are dealing with the correct class,
+                    // otherwise we might get called for the wrong module in the EAR file
+                    if (injectedValue == null) {
+                        injectedValue = (componentId != null) ?
+                        glassfishNamingManager.lookup(componentId, lookupName) :
+                        glassfishNamingManager.getInitialContext().lookup(lookupName);
+                    }
+
                     if( target.isFieldInjectable() ) {
                         
                         final Field f = getField(target, clazz);
@@ -673,7 +679,8 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
                                 "Injecting dependency with logical name: {0} into field: {1} on class: {2}", 
                                 next.getComponentEnvName(), f, clazz));
                         }
-                        
+
+                        final Object value = injectedValue;
                         // Wrap actual value insertion in doPrivileged to
                         // allow for private/protected field access.
                         if( System.getSecurityManager() != null ) {
@@ -714,6 +721,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
                                 next.getComponentEnvName(), m, clazz));
                         }
 
+                        final Object value = injectedValue;
                         if( System.getSecurityManager() != null ) {
                           // Wrap actual value insertion in doPrivileged to
                           // allow for private/protected field access.
