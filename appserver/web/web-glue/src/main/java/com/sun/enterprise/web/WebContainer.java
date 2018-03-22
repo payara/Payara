@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -145,6 +145,7 @@ import com.sun.enterprise.container.common.spi.JCDIService;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
+import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.security.integration.RealmInitializer;
@@ -162,6 +163,7 @@ import com.sun.enterprise.web.reconfig.WebConfigListener;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.naming.NamingException;
 import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.web.loader.WebappClassLoader;
 
 /**
  * Web container service
@@ -1727,6 +1729,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
         List<String> nonProcessedVSList = new ArrayList<String>(vsList);
         Container[] vsArray = getEngine().findChildren();
+        List<VirtualServer> vsToDeploy = new ArrayList<>(vsArray.length);
         for (Container aVsArray : vsArray) {
             if (aVsArray instanceof VirtualServer) {
                 VirtualServer vs = (VirtualServer) aVsArray;
@@ -1735,22 +1738,38 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                     nonProcessedVSList.remove(vs.getID());
                 }
                 Set<String> matchedAliases = matchAlias(vsList, vs);
-                boolean hasMatchedAlias = (matchedAliases.size() > 0);
+                final boolean hasMatchedAlias = (matchedAliases.size() > 0);
                 if (hasMatchedAlias) {
                     nonProcessedVSList.removeAll(matchedAliases);
                 }
                 if (eqVS || hasMatchedAlias) {
-                    WebModule ctx = null;
-                    try {
-                        ctx = loadWebModule(vs, wmInfo, j2eeApplication,
-                                deploymentProperties);
-                        results.add(new Result<WebModule>(ctx));
-                    } catch (Throwable t) {
-                        if (ctx != null) {
-                            ctx.setAvailable(false);
-                        }
-                        results.add(new Result<WebModule>(t));
-                    }
+                    vsToDeploy.add(vs);
+                }
+            }
+        }
+
+        final boolean moreThanOneVS = vsToDeploy.size() > 1;
+        for (VirtualServer vs : vsToDeploy) {
+            WebModule ctx = null;
+            ClassLoader appClassLoader = wmInfo.getAppClassLoader();
+            try {
+                if (moreThanOneVS) {
+                    WebappClassLoader virtualServerClassLoader = new WebappClassLoader(appClassLoader,
+                            wmInfo.getDeploymentContext().getModuleMetaData(Application.class));
+                    virtualServerClassLoader.start();
+                    // for every virtual server, JSF and other extensions expect a separata class loader
+                    wmInfo.setAppClassLoader(virtualServerClassLoader);
+                }
+                ctx = loadWebModule(vs, wmInfo, j2eeApplication, deploymentProperties);
+                results.add(new Result<>(ctx));
+            } catch (Throwable t) {
+                if (ctx != null) {
+                    ctx.setAvailable(false);
+                }
+                results.add(new Result<WebModule>(t));
+            } finally {
+                if (moreThanOneVS) {
+                    wmInfo.setAppClassLoader(appClassLoader);
                 }
             }
         }
