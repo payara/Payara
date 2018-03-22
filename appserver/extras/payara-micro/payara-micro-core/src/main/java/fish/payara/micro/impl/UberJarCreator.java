@@ -216,6 +216,10 @@ public class UberJarCreator {
                         is = new FileInputStream(postDeployCommands);
                     }else if (entry.toString().contains("MICRO-INF/domain/domain.xml") && (domainXML != null)) {
                         is = new FileInputStream(domainXML);
+                    }else if (entry.toString().contains("MICRO-INF/domain/keystore.jks") && (System.getProperty("javax.net.ssl.keyStore") != null)) {
+                        is = new FileInputStream(System.getProperty("javax.net.ssl.keyStore"));
+                    }else if (entry.toString().contains("MICRO-INF/domain/cacerts.jks") && (System.getProperty("javax.net.ssl.trustStore") != null)) {
+                        is = new FileInputStream(System.getProperty("javax.net.ssl.trustStore"));
                     }
 
                     byte[] buffer = new byte[4096];

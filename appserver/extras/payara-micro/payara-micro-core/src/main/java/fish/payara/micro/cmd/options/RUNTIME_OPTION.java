@@ -40,8 +40,8 @@
 package fish.payara.micro.cmd.options;
 
 /**
- *
- * @author steve
+ * ENUM used for command line switches for Payara Micro
+ * @author Steve Millidge (Payara Services Limited)
  */
 public enum RUNTIME_OPTION {
     nocluster(false),
@@ -92,6 +92,7 @@ public enum RUNTIME_OPTION {
     postdeploycommandfile(true, new FileValidator(true,true,false)),
     nested(false),
     unpackdir(true, new DirectoryValidator(true, true, true)),
+    sslcert(true),
     help(false);
 
     private RUNTIME_OPTION(boolean hasValue) {
