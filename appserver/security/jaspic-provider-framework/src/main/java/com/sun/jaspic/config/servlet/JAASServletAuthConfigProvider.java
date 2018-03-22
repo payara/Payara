@@ -37,20 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.servlet;
 
-import com.sun.jaspic.config.delegate.MessagePolicyDelegate;
-import com.sun.jaspic.config.helper.AuthContextHelper;
-import com.sun.jaspic.config.jaas.JAASAuthConfigProvider;
+import static javax.security.auth.message.MessagePolicy.ProtectionPolicy.AUTHENTICATE_SENDER;
+
 import java.util.Map;
+
 import javax.security.auth.message.AuthException;
 import javax.security.auth.message.MessageInfo;
 import javax.security.auth.message.MessagePolicy;
+import javax.security.auth.message.MessagePolicy.TargetPolicy;
 import javax.security.auth.message.config.AuthConfigFactory;
 import javax.security.auth.message.module.ServerAuthModule;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.sun.jaspic.config.delegate.MessagePolicyDelegate;
+import com.sun.jaspic.config.helper.BaseAuthContextImpl;
+import com.sun.jaspic.config.jaas.JAASAuthConfigProvider;
 
 /**
  *
@@ -62,63 +67,56 @@ public class JAASServletAuthConfigProvider extends JAASAuthConfigProvider {
     private static final String MANDATORY_KEY = "javax.security.auth.message.MessagePolicy.isMandatory";
     private static final String MANDATORY_AUTH_CONTEXT_ID = "mandatory";
     private static final String OPTIONAL_AUTH_CONTEXT_ID = "optional";
-    private static final Class[] moduleTypes = new Class[] {ServerAuthModule.class};
-    private static final Class[] messageTypes = new Class[] {HttpServletRequest.class, HttpServletResponse.class};
-    final static MessagePolicy mandatoryPolicy =
-            new MessagePolicy(new MessagePolicy.TargetPolicy[]{
-                new MessagePolicy.TargetPolicy((MessagePolicy.Target[]) null,
-                new MessagePolicy.ProtectionPolicy() {
 
-                    public String getID() {
-                        return MessagePolicy.ProtectionPolicy.AUTHENTICATE_SENDER;
-                    }
-                })}, true);
-    final static MessagePolicy optionalPolicy =
-            new MessagePolicy(new MessagePolicy.TargetPolicy[]{
-                new MessagePolicy.TargetPolicy((MessagePolicy.Target[]) null,
-                new MessagePolicy.ProtectionPolicy() {
+    private static final Class<?>[] moduleTypes = new Class[] { ServerAuthModule.class };
+    private static final Class<?>[] messageTypes = new Class[] { HttpServletRequest.class, HttpServletResponse.class };
 
-                    public String getID() {
-                        return MessagePolicy.ProtectionPolicy.AUTHENTICATE_SENDER;
-                    }
-                })}, false);
+    private static final MessagePolicy mandatoryPolicy = new MessagePolicy(
+            new TargetPolicy[] {
+                    new TargetPolicy(
+                            null,
+                            () -> AUTHENTICATE_SENDER)
+            },
+            true);
 
-    public JAASServletAuthConfigProvider(Map properties, AuthConfigFactory factory) {
+    private static final MessagePolicy optionalPolicy = new MessagePolicy(
+            new TargetPolicy[] {
+                    new TargetPolicy(
+                            null,
+                            () -> AUTHENTICATE_SENDER)
+            },
+            false);
+
+    public JAASServletAuthConfigProvider(Map<String, String> properties, AuthConfigFactory factory) {
         super(properties, factory);
     }
 
+    @Override
     public MessagePolicyDelegate getMessagePolicyDelegate(String appContext) throws AuthException {
 
         return new MessagePolicyDelegate() {
 
+            @Override
             public MessagePolicy getRequestPolicy(String authContextID, Map properties) {
-                MessagePolicy rvalue;
-                if (MANDATORY_AUTH_CONTEXT_ID.equals(authContextID)) {
-                    rvalue = mandatoryPolicy;
-                } else {
-                    rvalue = optionalPolicy;
-                }
-                return rvalue;
+                return MANDATORY_AUTH_CONTEXT_ID.equals(authContextID) ? mandatoryPolicy : optionalPolicy;
             }
 
+            @Override
             public MessagePolicy getResponsePolicy(String authContextID, Map properties) {
                 return null;
             }
 
-            public Class[] getMessageTypes() {
+            @Override
+            public Class<?>[] getMessageTypes() {
                 return messageTypes;
             }
 
+            @Override
             public String getAuthContextID(MessageInfo messageInfo) {
-                String rvalue;
-                if (messageInfo.getMap().containsKey(MANDATORY_KEY)) {
-                    rvalue = MANDATORY_AUTH_CONTEXT_ID;
-                } else {
-                    rvalue = OPTIONAL_AUTH_CONTEXT_ID;
-                }
-                return rvalue;
+                return messageInfo.getMap().containsKey(MANDATORY_KEY) ? MANDATORY_AUTH_CONTEXT_ID : OPTIONAL_AUTH_CONTEXT_ID;
             }
 
+            @Override
             public boolean isProtected() {
                 return true;
             }
@@ -127,7 +125,7 @@ public class JAASServletAuthConfigProvider extends JAASAuthConfigProvider {
     }
 
     @Override
-    protected Class[] getModuleTypes() {
+    protected Class<?>[] getModuleTypes() {
         return moduleTypes;
     }
 
@@ -137,9 +135,8 @@ public class JAASServletAuthConfigProvider extends JAASAuthConfigProvider {
     }
 
     @Override
-    public AuthContextHelper getAuthContextHelper(String appContext, boolean returnNullContexts)
-            throws AuthException {
+    public BaseAuthContextImpl getAuthContextHelper(String appContext, boolean returnNullContexts) throws AuthException {
         // overrides returnNullContexts to false (as required by Servlet Profile)
-        return super.getAuthContextHelper(appContext,false);
+        return super.getAuthContextHelper(appContext, false);
     }
 }

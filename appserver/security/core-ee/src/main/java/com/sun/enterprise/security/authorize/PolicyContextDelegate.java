@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.authorize;
 
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -47,14 +47,13 @@ import java.lang.reflect.Method;
 
 @Contract
 public interface PolicyContextDelegate {
-
     Object getEnterpriseBean(ComponentInvocation inv);
 
-    public Object getEJbArguments(ComponentInvocation inv);
+    Object getEJbArguments(ComponentInvocation inv);
 
-    public Object getSOAPMessage(ComponentInvocation inv);
+    Object getSOAPMessage(ComponentInvocation inv);
 
-    public void setSOAPMessage(Object message, ComponentInvocation inv);
+    void setSOAPMessage(Object message, ComponentInvocation inv);
 
-    public boolean authorize(ComponentInvocation inv, Method m) throws Exception;
+    boolean authorize(ComponentInvocation inv, Method m) throws Exception;
 }

@@ -47,20 +47,22 @@ import javax.security.auth.message.AuthException;
 import javax.security.auth.message.AuthStatus;
 
 /**
+ * 
  *
  * @author Ron Monzillo
  */
-public abstract class AuthContextHelper {
+public abstract class BaseAuthContextImpl {
 
-    String loggerName;
-    private boolean returnNullContexts = false;
+    private String loggerName;
+    private boolean returnNullContexts;
 
-    // include this to force subclasses to call constructor with LoggerName
-    private AuthContextHelper() {
+    // Include this to force subclasses to call constructor with LoggerName
+    @SuppressWarnings("unused")
+    private BaseAuthContextImpl() {
 
     }
 
-    protected AuthContextHelper(String loggerName, boolean returnNullContexts) {
+    protected BaseAuthContextImpl(String loggerName, boolean returnNullContexts) {
         this.loggerName = loggerName;
         this.returnNullContexts = returnNullContexts;
     }
@@ -78,7 +80,7 @@ public abstract class AuthContextHelper {
                 msgB.append(m);
             }
             String msg = msgB.toString();
-            if ( !msg.isEmpty() && t != null) {
+            if (!msg.isEmpty() && t != null) {
                 logger.log(level, msg, t);
             } else if (!msg.isEmpty()) {
                 logger.log(level, msg);
@@ -125,7 +127,7 @@ public abstract class AuthContextHelper {
      * @return
      * @throws AuthException
      */
-    public abstract <M> boolean hasModules(M[] template,String authContextID) throws AuthException;
+    public abstract <M> boolean hasModules(M[] template, String authContextID) throws AuthException;
 
     /**
      *
@@ -135,7 +137,7 @@ public abstract class AuthContextHelper {
      * @return
      * @throws AuthException
      */
-    public abstract <M> M[] getModules(M[] template,String authContextID) throws AuthException;
+    public abstract <M> M[] getModules(M[] template, String authContextID) throws AuthException;
 
     /**
      *
@@ -152,8 +154,7 @@ public abstract class AuthContextHelper {
      * @param moduleStatus
      * @return
      */
-    public abstract boolean exitContext(AuthStatus[] successValue,
-            int i, AuthStatus moduleStatus);
+    public abstract boolean exitContext(AuthStatus[] successValue, int i, AuthStatus moduleStatus);
 
     /**
      *
@@ -163,6 +164,5 @@ public abstract class AuthContextHelper {
      * @param position
      * @return
      */
-    public abstract AuthStatus getReturnStatus(AuthStatus[] successValue,
-            AuthStatus defaultFailStatus, AuthStatus[] status, int position);
+    public abstract AuthStatus getReturnStatus(AuthStatus[] successValue, AuthStatus defaultFailStatus, AuthStatus[] status, int position);
 }

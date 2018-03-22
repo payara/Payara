@@ -37,19 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.iiop.security;
 
-public class InvalidIdentityTokenException extends java.lang.Exception{
+public class InvalidIdentityTokenException extends java.lang.Exception {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     /**
      * Constructs the exception with the specified detail message.
+     * 
      * @param the detail message.
      */
     public InvalidIdentityTokenException(String msg) {
-	super(msg);
+        super(msg);
     }
 
-    
 }
-
-

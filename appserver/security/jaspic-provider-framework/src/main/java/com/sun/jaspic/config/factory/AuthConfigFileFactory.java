@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.factory;
 
 /**
@@ -48,54 +47,43 @@ package com.sun.jaspic.config.factory;
 public class AuthConfigFileFactory extends BaseAuthConfigFactory {
 
     // MUST "hide" regStore in derived class.
-    static volatile RegStoreFileParser regStore = null;
+    private static volatile RegStoreFileParser regStore;
 
     /**
-     * to specialize the defaultEntries passed to the RegStoreFileParser
-     * constructor, create another subclass of BaseAuthconfigFactory, that is
-     * basically a copy of this class, with a change to the third argument
-     * of the call to new ResSToreFileParser. 
-     * to ensure runtime use of the the associated regStore, make sure that
-     * the new subclass also contains an implementation of the getRegStore method.
-     * As done within this class, use the locks defined in
-     * BaseAuthConfigFactory to serialize access to the regStore (both within
-     * the class constructor, and within getRegStore)
+     * To specialize the defaultEntries passed to the {@link RegStoreFileParser} constructor, create another subclass of
+     * BaseAuthconfigFactory, that is basically a copy of this class, with a change to the third argument of the call to new
+     * ResSToreFileParser. To ensure runtime use of the the associated regStore, make sure that the new subclass also
+     * contains an implementation of the getRegStore method.
+     * 
+     * <p>
+     * As done within this class, use the locks defined in BaseAuthConfigFactory to serialize access to the regStore (both
+     * within the class constructor, and within getRegStore)
+     * </p>
      *
-     * All EentyInfo OBJECTS PASSED as deualtEntries MUST HAVE BEEN
-     * CONSTRCTED USING THE FOLLOWING CONSTRUCTOR:
-     *
+     * <p>
+     * All EentyInfo OBJECTS PASSED as default Entries MUST HAVE BEEN CONSTRUCTED USING THE FOLLOWING CONSTRUCTOR: <code>
      * EntryInfo(String className, Map<String, String> properties);
+     * </code>
+     * </p>
      *
      */
     public AuthConfigFileFactory() {
-        rLock.lock();
-        try {
-            if (regStore != null) {
-                return;
-            }
-        } finally {
-            rLock.unlock();
+        if (doReadLocked(() -> regStore != null)) {
+            return;
         }
+
         String userDir = System.getProperty("user.dir");
-        wLock.lock();
-        try {
+
+        doWriteLocked(() -> {
             if (regStore == null) {
-                regStore = new RegStoreFileParser(userDir,
-                        BaseAuthConfigFactory.CONF_FILE_NAME, null);
+                regStore = new RegStoreFileParser(userDir, CONF_FILE_NAME, null);
                 _loadFactory();
             }
-        } finally {
-            wLock.unlock();
-        }
+        });
     }
 
     @Override
     protected RegStoreFileParser getRegStore() {
-        rLock.lock();
-        try {
-            return regStore;
-        } finally {
-            rLock.unlock();
-        }
+        return doReadLocked(() -> regStore);
     }
 }

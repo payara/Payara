@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -176,11 +176,17 @@ public class PropertiesBagResource extends AbstractResource {
 
             for (Map<String, String> property : properties) {
                 Property existingProp = existing.get(property.get("name"));
-                String unescapredpropname = ((Object)property.get("name")).toString();
-                String escapedName = getEscapedPropertyName(unescapredpropname);
-                String value = ((Object)property.get("value")).toString();
-                String description = ((Object)property.get("description")).toString();
-                final String unescapedValue = value.replaceAll("\\\\", "");
+
+                String unescapedName = Object.class.cast(property.get("name")).toString();
+                String escapedName = getEscapedPropertyName(unescapedName);
+
+                String value = Object.class.cast(property.get("value")).toString();
+                String unescapedValue = value.replaceAll("\\\\", "");
+                
+                String description = null;
+                if (property.get(description) != null) {
+                    description = Object.class.cast(property.get("description")).toString();
+                }
 
                 // the prop name can not contain .
                 // need to remove the . test when http://java.net/jira/browse/GLASSFISH-15418  is fixed
@@ -232,7 +238,11 @@ public class PropertiesBagResource extends AbstractResource {
     protected Map<String, Property> getExistingProperties() {
         Map<String, Property> properties = new HashMap<>();
         if (parent != null) {
-            for (Dom child : parent.nodeElements(tagName)) {
+            List<Dom> children;
+            synchronized (parent) {
+                children = parent.nodeElements(tagName);
+            }
+            for (Dom child : children) {
                 Property property = child.createProxy();
                 properties.put(property.getName(), property);
             }
@@ -272,7 +282,9 @@ public class PropertiesBagResource extends AbstractResource {
         this.parent = parent;
         this.tagName = tagName;
         if (parent != null) {
-            entity = parent.nodeElements(tagName);
+            synchronized (parent) {
+                entity = parent.nodeElements(tagName);
+            }
         }
     }
 }

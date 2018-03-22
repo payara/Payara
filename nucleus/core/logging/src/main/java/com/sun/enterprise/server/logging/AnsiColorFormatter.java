@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,6 @@ import java.util.HashMap;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
-import org.fusesource.jansi.AnsiConsole;
 
 /**
  * @since 4.1.1.173
@@ -60,7 +59,6 @@ public abstract class AnsiColorFormatter extends Formatter {
         String color = manager.getProperty(this.getClass().getCanonicalName() + ".ansiColor");
         if ("true".equals(color)) {
             ansiColor = true;
-            AnsiConsole.systemInstall();
         }
         colors = new HashMap<>();
         colors.put(Level.INFO, AnsiColor.BOLD_INTENSE_GREEN);
@@ -115,7 +113,6 @@ public abstract class AnsiColorFormatter extends Formatter {
     
     public void noAnsi(){
         ansiColor = false;
-        AnsiConsole.systemUninstall();
     }
     
     protected AnsiColor getColor(Level level) {

@@ -37,14 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.iiop.security;
 
 import java.io.*;
 import java.net.Socket;
 
-
 public final class ServerConnectionContext implements Serializable {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     private transient Socket socket = null;
 
     /**
@@ -57,27 +60,26 @@ public final class ServerConnectionContext implements Serializable {
      * Create the security mechanism context. This is stored in TLS.
      */
     public ServerConnectionContext(Socket sock) {
-	this.socket = sock;
+        this.socket = sock;
     }
 
     /**
      * Return the socket for this connection.
      */
     public Socket getSocket() {
-	return socket;
+        return socket;
     }
 
     /**
      * Set the socket for this connection.
      */
     public void setSocket(Socket s) {
-	socket = s;
+        socket = s;
     }
 
+    @Override
     public String toString() {
-	String s = "Socket=" + socket;
-	return s;
+        String s = "Socket=" + socket;
+        return s;
     }
 }
-
-

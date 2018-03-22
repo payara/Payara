@@ -1,7 +1,7 @@
 /* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -147,12 +147,16 @@ public class GetProtocol implements AdminCommand {
         report.appendMessage("\nHTTP/2:\n");
         report.appendMessage(String.format("Enabled: %s\n", protocol.getHttp().isHttp2Enabled()));
         if (protocol.getHttp().isHttp2Enabled()) {
+            report.appendMessage(String.format("Push Enabled: %s\n", protocol.getHttp().isHttp2PushEnabled()));
             report.appendMessage(String.format("Cipher Check: %s\n", !protocol.getHttp().isHttp2DisableCipherCheck()));
             if (verbose) {
                 report.appendMessage(String.format("Max Concurrent Streams: %s\n", protocol.getHttp().getHttp2MaxConcurrentStreams()));
                 report.appendMessage(String.format("Initial Window Size: %s bytes\n", protocol.getHttp().getHttp2InitialWindowSizeInBytes()));
                 report.appendMessage(String.format("Max Frame Payload Size: %s bytes\n", protocol.getHttp().getHttp2MaxFramePayloadSizeInBytes()));
                 report.appendMessage(String.format("Max Header List Size: %s bytes\n", protocol.getHttp().getHttp2MaxHeaderListSizeInBytes()));
+                report.appendMessage(String.format("Streams High Water Mark: %s\n", protocol.getHttp().getHttp2StreamsHighWaterMark()));
+                report.appendMessage(String.format("Clean Percentage: %s\n", protocol.getHttp().getHttp2CleanPercentage()));
+                report.appendMessage(String.format("Clean Frequency Check: %s\n", protocol.getHttp().getHttp2CleanFrequencyCheck()));
             }
         }
 
@@ -169,11 +173,15 @@ public class GetProtocol implements AdminCommand {
         properties.put("dnsLookupEnabled", protocol.getHttp().getDnsLookupEnabled());
         properties.put("xFrameOptions", protocol.getHttp().getXframeOptions());
         properties.put("http2Enabled", protocol.getHttp().isHttp2Enabled());
-        properties.put("http2DisableCipherCheck", protocol.getHttp().isHttp2DisableCipherCheck());
-        properties.put("http2MaxConcurrentStreamsStreams", protocol.getHttp().getHttp2MaxConcurrentStreams());
+        properties.put("http2MaxConcurrentStreams", protocol.getHttp().getHttp2MaxConcurrentStreams());
         properties.put("http2InitialWindowSizeInBytes", protocol.getHttp().getHttp2InitialWindowSizeInBytes());
         properties.put("http2MaxFramePayloadSizeInBytes", protocol.getHttp().getHttp2MaxFramePayloadSizeInBytes());
         properties.put("http2MaxHeaderListSizeInBytes", protocol.getHttp().getHttp2MaxHeaderListSizeInBytes());
+        properties.put("http2StreamsHighWaterMark", protocol.getHttp().getHttp2StreamsHighWaterMark());
+        properties.put("http2CleanPercentage", protocol.getHttp().getHttp2CleanPercentage());
+        properties.put("http2CleanFrequencyCheck", protocol.getHttp().getHttp2CleanFrequencyCheck());
+        properties.put("http2DisableCipherCheck", protocol.getHttp().isHttp2DisableCipherCheck());
+        properties.put("http2PushEnabled", protocol.getHttp().isHttp2PushEnabled());
         report.setExtraProperties(properties);
     }
 

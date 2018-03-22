@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -920,7 +920,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
             // only add non-clustered servers as the cluster 
             // targets will be separately added
             for (Server server : d.getServers().getServer()) {
-                if (server.getCluster() == null) {
+                if (server.getCluster() == null && server.getDeploymentGroup().isEmpty()) {
                     targets.add(server.getName());
                 }
             }

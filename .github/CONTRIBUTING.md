@@ -150,6 +150,10 @@ git push origin <YourBranchName>
 
 A large portion of our work is prompted by the actions of the community. If you have an issue which you have found with Payara, or a feature which you would like to be implemented we welcome the raising of github issues.
 
+## Reporting Security Issues
+
+If you feel there is a security vulnerability in Payara Server or Payara Micro please in the first instance use the email address `security@payara.fish` rather than creating a public issue on GitHub. We will then work with you to fix the security issue.
+
 ## Reporting bugs
 
 If you find a bug within Payara, please post it as a github issue. Github is our main repository for community found issues with Payara and our support team frequently monitor it for new issues. As with submitting issues, a concise title which clearly explains the issue combined with a comment explaining what the found issue is and either how it arose and a stacktrace of the issue, or a test case which is able to reproduce the issue will help us deliver a patch.

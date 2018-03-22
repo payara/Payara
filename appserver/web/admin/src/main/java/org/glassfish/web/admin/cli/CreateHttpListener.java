@@ -36,10 +36,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates] 
  */
-
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates] 
-
 package org.glassfish.web.admin.cli;
 
 import java.beans.PropertyVetoException;
@@ -123,16 +122,24 @@ public class CreateHttpListener implements AdminCommand {
     
     @Param(name = "http2Enabled", alias = "http2enabled", optional = true, defaultValue = "true")
     Boolean http2Enabled;
-    @Param(name = "http2DisableCipherCheck", alias = "http2disableCipherCheck", optional = true)
-    Boolean http2DisableCipherCheck;
-    @Param(name = "http2MaxConcurrentStreams", alias = "http2maxConcurrentStreams", optional = true)
+    @Param(name = "http2MaxConcurrentStreams", alias = "http2maxconcurrentstreams", optional = true)
     Integer http2MaxConcurrentStreams;
-    @Param(name = "http2InitialWindowSizeInBytes", alias = "http2initialWindowSizeInBytes", optional = true)
+    @Param(name = "http2InitialWindowSizeInBytes", alias = "http2initialwindowsizeinbytes", optional = true)
     Integer http2InitialWindowSizeInBytes;
-    @Param(name = "http2MaxFramePayloadSizeInBytes", alias = "http2maxFramePayloadSizeInBytes", optional = true)
+    @Param(name = "http2MaxFramePayloadSizeInBytes", alias = "http2maxframepayloadsizeinbytes", optional = true)
     Integer http2MaxFramePayloadSizeInBytes;
-    @Param(name = "http2MaxHeaderListSizeInBytes", alias = "http2maxHeaderListSizeInBytes", optional = true)
+    @Param(name = "http2MaxHeaderListSizeInBytes", alias = "http2maxheaderlistsizeinbytes", optional = true)
     Integer http2MaxHeaderListSizeInBytes;
+    @Param(name = "http2StreamsHighWaterMark", alias = "http2streamshighwatermark", optional = true)
+    Float http2StreamsHighWaterMark;
+    @Param(name = "http2CleanPercentage", alias = "http2cleanpercentage", optional = true)
+    Float http2CleanPercentage;
+    @Param(name = "http2CleanFrequencyCheck", alias = "http2cleanfrequencycheck", optional = true)
+    Integer http2CleanFrequencyCheck;
+    @Param(name = "http2DisableCipherCheck", alias = "http2disableciphercheck", optional = true)
+    Boolean http2DisableCipherCheck;
+    @Param(name = "http2PushEnabled", alias = "http2pushenabled", optional = true)
+    Boolean http2PushEnabled;
     
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     String target;
@@ -373,11 +380,15 @@ public class CreateHttpListener implements AdminCommand {
         command.serverName = serverName;
         command.target = target;
         command.http2Enabled = http2Enabled;
-        command.http2DisableCipherCheck = http2DisableCipherCheck;
         command.http2MaxConcurrentStreams = http2MaxConcurrentStreams;
         command.http2InitialWindowSizeInBytes = http2InitialWindowSizeInBytes;
         command.http2MaxFramePayloadSizeInBytes = http2MaxFramePayloadSizeInBytes;
         command.http2MaxHeaderListSizeInBytes = http2MaxHeaderListSizeInBytes;
+        command.http2StreamsHighWaterMark = http2StreamsHighWaterMark;
+        command.http2CleanPercentage = http2CleanPercentage;
+        command.http2CleanFrequencyCheck = http2CleanFrequencyCheck;
+        command.http2DisableCipherCheck = http2DisableCipherCheck;
+        command.http2PushEnabled = http2PushEnabled;
         command.execute(context);
         checkProgress(context);
         return true;

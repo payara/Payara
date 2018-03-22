@@ -40,6 +40,9 @@
 
 package com.sun.enterprise.security.jmac.config;
 
+import static com.sun.enterprise.security.jmac.config.GFServerConfigProvider.HTTPSERVLET;
+import static com.sun.enterprise.security.jmac.config.HttpServletConstants.WEB_BUNDLE;
+
 import java.util.HashMap;
 import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
@@ -51,25 +54,22 @@ import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import com.sun.enterprise.security.web.integration.WebSecurityManager;
 
-
 public class HttpServletHelper extends ConfigHelper {
-    private String realmName = null;
-
+    
     public static final String AUTH_TYPE = "javax.servlet.http.authType";
+    
+    private String realmName;
 
-    public HttpServletHelper(String appContext, Map map,
-            CallbackHandler cbh, String realmName,
-            boolean isSystemApp, String defaultSystemProviderID) {
+    public HttpServletHelper(String appContext, Map map, CallbackHandler cbh, String realmName, boolean isSystemApp, String defaultSystemProviderID) {
 
         WebBundleDescriptor webBundle = null;
+        
         if (map != null) {
-            webBundle =
-                (WebBundleDescriptor)map.get(HttpServletConstants.WEB_BUNDLE);
+            webBundle = (WebBundleDescriptor) map.get(WEB_BUNDLE);
             if (webBundle != null) {
                 LoginConfiguration loginConfig = webBundle.getLoginConfiguration();
-                if (loginConfig != null && 
-                        LoginConfiguration.CLIENT_CERTIFICATION_AUTHENTICATION.equals(
-                        loginConfig.getAuthenticationMethod())) {
+                if (loginConfig != null
+                        && LoginConfiguration.CLIENT_CERTIFICATION_AUTHENTICATION.equals(loginConfig.getAuthenticationMethod())) {
                     this.realmName = CertificateRealm.AUTH_TYPE;
                 } else {
                     this.realmName = realmName;
@@ -78,16 +78,14 @@ public class HttpServletHelper extends ConfigHelper {
         }
 
         // set realmName before init
-        init(GFServerConfigProvider.HTTPSERVLET, appContext,
-                map, cbh);
+        init(HTTPSERVLET, appContext, map, cbh);
 
         if (webBundle != null) {
             String policyContextId = WebSecurityManager.getContextID(webBundle);
             map.put(HttpServletConstants.POLICY_CONTEXT, policyContextId);
 
-	    SunWebApp sunWebApp = webBundle.getSunDescriptor();
-	    String pid = (sunWebApp != null ? sunWebApp.getAttributeValue
-		    (sunWebApp.HTTPSERVLET_SECURITY_PROVIDER) : null);
+            SunWebApp sunWebApp = webBundle.getSunDescriptor();
+            String pid = (sunWebApp != null ? sunWebApp.getAttributeValue(sunWebApp.HTTPSERVLET_SECURITY_PROVIDER) : null);
             boolean nullConfigProvider = false;
 
             if (isSystemApp && (pid == null || pid.length() == 0)) {
@@ -97,25 +95,19 @@ public class HttpServletHelper extends ConfigHelper {
                 }
             }
 
-            if (((pid != null && pid.length() > 0) || nullConfigProvider) &&
-                    (!hasExactMatchAuthProvider())) {
-                AuthConfigProvider configProvider =
-                        ((nullConfigProvider)? null :
-                        new GFServerConfigProvider(new HashMap(), null));
-                String jmacProviderRegisID = factory.registerConfigProvider(
-                        configProvider,
-                        GFServerConfigProvider.HTTPSERVLET, appContext,
-                        "GlassFish provider: " +
-                        GFServerConfigProvider.HTTPSERVLET +
-                        ":" + appContext);
-                this.setJmacProviderRegisID(jmacProviderRegisID);
+            if (((pid != null && pid.length() > 0) || nullConfigProvider) && (!hasExactMatchAuthProvider())) {
+                AuthConfigProvider configProvider = ((nullConfigProvider) ? null : new GFServerConfigProvider(new HashMap(), null));
                 
+                String jmacProviderRegisID = factory.registerConfigProvider(configProvider, HTTPSERVLET, appContext,
+                        "GlassFish provider: " + GFServerConfigProvider.HTTPSERVLET + ":" + appContext);
+                this.setJmacProviderRegisID(jmacProviderRegisID);
+
             }
         }
 
     }
 
-    //realmName must be set first and this is invoked inside the init()
+    // realmName must be set first and this is invoked inside the init()
     protected HandlerContext getHandlerContext(Map map) {
         final String fRealmName = realmName;
         return new HandlerContext() {

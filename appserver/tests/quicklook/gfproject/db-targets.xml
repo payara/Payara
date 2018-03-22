@@ -53,12 +53,16 @@
         <arg value="/c"/>
         <arg value="${glassfish.home}\bin\asadmin.bat"/>
         <arg value="start-database"/>
+        <arg value="--dbtype"/>
+        <arg value="derby"/>
     </exec>
 </target>
 
 <target name="start-derby-unix" if="isUnix">
     <exec executable="${glassfish.home}/bin/asadmin" spawn="true">
         <arg value="start-database"/>
+        <arg value="--dbtype"/>
+        <arg value="derby"/>
     </exec>
 </target>
 
@@ -72,12 +76,16 @@
         <arg value="/c"/>
         <arg value="${glassfish.home}\bin\asadmin.bat"/>
         <arg value="stop-database"/>
+        <arg value="--dbtype"/>
+        <arg value="derby"/>
     </exec>
 </target>
 
 <target name="stop-derby-unix" if="isUnix">
     <exec executable="${glassfish.home}/bin/asadmin">
         <arg value="stop-database"/>
+        <arg value="--dbtype"/>
+        <arg value="derby"/>
     </exec>
 </target>
 
