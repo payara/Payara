@@ -1,0 +1,10 @@
+main:
+    image: ubuntu:latest
+        # `maven:slim` and `maven:3-jdk-8` cause test failure due to `java.lang.Exception: Method testConstructorsLocation should have no parameters`, see https://github.com/payara/Payara/issues/2895 for details
+    script:
+        - apt-get update && apt-get install --yes openjdk-8-jdk
+        - apt-get install --yes maven
+            # separate installation of `maven` necessary in order to avoid installation of unsupported OpenJDK 11 JRE, see https://askubuntu.com/questions/1058271/why-is-openjdk-11-jre-installed-together-with-maven-when-openjdk-8-jdk-is-specif an explanation
+        - mvn --batch-mode install &> /tmp/build.log || (tail -n 1000 /tmp/build.log; exit 1)
+        - tail -n 1000 /tmp/build.log
+            # this duplication is necessary in order to be able to display the tail of `build.log` both after failure and success because `||` has be used rather than `;` in order to avoid the script being terminated immediately after a failure in the build command
