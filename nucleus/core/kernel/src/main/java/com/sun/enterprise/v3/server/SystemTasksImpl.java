@@ -37,8 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-
 package com.sun.enterprise.v3.server;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
@@ -61,7 +59,6 @@ import com.sun.enterprise.util.net.NetUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.universal.io.SmartFile;
-import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 
 import org.jvnet.hk2.annotations.Optional;
 import org.glassfish.hk2.api.PostConstruct;
@@ -231,8 +228,8 @@ public class SystemTasksImpl implements SystemTasks, PostConstruct {
         if (javaConfig != null) {
             Pattern p = Pattern.compile("-D([^=]*)=(.*)");
 
-            for (JvmOption jvmOption : javaConfig.getJvmOptions()) {
-                Matcher m = p.matcher(jvmOption.option);
+            for (String jvmOption : javaConfig.getJvmOptions()) {
+                Matcher m = p.matcher(jvmOption);
 
                 if (m.matches()) {
                     setSystemProperty(m.group(1), TranslatedConfigView.getTranslatedValue(m.group(2)).toString());

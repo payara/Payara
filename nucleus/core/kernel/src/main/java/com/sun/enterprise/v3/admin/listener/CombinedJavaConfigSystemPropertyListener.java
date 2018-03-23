@@ -57,7 +57,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.TranslatedConfigView;
@@ -156,7 +155,7 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
             ((ObservableBean)ConfigSupport.getImpl(jc)).addListener(this);            
         }
         if (jc != null && jc.getJvmOptions() != null) {
-            oldProps = new ArrayList<>(jc.getJvmOptions().stream().map(jvmopt -> jvmopt.option).collect(Collectors.toList())); //defensive copy
+            oldProps = new ArrayList<String>(jc.getJvmOptions()); //defensive copy
             oldAttrs = collectAttrs(jc);
         }
         transactions.addListenerForType(SystemProperty.class, this);
@@ -210,7 +209,7 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
                     
                     // we must *always* check the jvm options, no way to know except by comparing,
                     // plus we should send an appropriate message back for each removed/added item
-                    final List<String> curProps = new ArrayList<>( njc.getJvmOptions().stream().map(jvmopt -> jvmopt.option).collect(Collectors.toList()));
+                    final List<String> curProps = new ArrayList<String>( njc.getJvmOptions() );
                     final boolean jvmOptionsWereChanged = ! oldProps.equals(curProps);
                     final List<String> reasons = handle(oldProps, curProps);
                     oldProps = curProps;

@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.config.support;
 
@@ -56,7 +55,6 @@ import com.sun.enterprise.config.serverbeans.ThreadPools;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
-import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
 import org.glassfish.grizzly.config.dom.FileCache;
@@ -318,10 +316,10 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
         ConfigSupport.apply(new SingleConfigCode<JavaConfig>() {
             @Override
             public Object run(JavaConfig param) throws PropertyVetoException, TransactionFailure {
-                final List<JvmOption> props = new ArrayList<>(param.getJvmOptions());
-                final Iterator<JvmOption> iterator = props.iterator();
+                final List<String> props = new ArrayList<String>(param.getJvmOptions());
+                final Iterator<String> iterator = props.iterator();
                 while (iterator.hasNext()) {
-                    String prop = iterator.next().option;
+                    String prop = iterator.next();
                     if (prop.startsWith("-D")) {
                         final String[] parts = prop.split("=");
                         String name = parts[0].substring(2);

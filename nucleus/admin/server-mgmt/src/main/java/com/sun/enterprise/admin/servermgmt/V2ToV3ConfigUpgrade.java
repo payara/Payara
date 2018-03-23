@@ -37,8 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-
 package com.sun.enterprise.admin.servermgmt;
 
 import com.sun.enterprise.config.serverbeans.Config;
@@ -57,8 +55,6 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import static com.sun.enterprise.admin.servermgmt.SLogger.*;
-import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
-import java.util.stream.Collectors;
 
 /**
  * Change the jvm-options from v2 to v3
@@ -122,8 +118,8 @@ public class V2ToV3ConfigUpgrade implements ConfigurationUpgrade, PostConstruct 
         // copy options from old to new.  Don't add items on the removal list
         // note that the remove list also has all the items we just added with
         // doAdditions() so that we don't get duplicate messes.
-        for (JvmOption s : oldJvmOptions) {
-            if (!shouldRemove(s.option))
+        for (String s : oldJvmOptions) {
+            if (!shouldRemove(s))
                 newJvmOptions.add(s);
         }
     }
@@ -140,7 +136,7 @@ public class V2ToV3ConfigUpgrade implements ConfigurationUpgrade, PostConstruct 
     }
 
     private void doAdditionsFrom(String[] strings) {
-        newJvmOptions.addAll(Arrays.asList(strings).stream().map(JvmOption::new).collect(Collectors.toList()));
+        newJvmOptions.addAll(Arrays.asList(strings));
     }
 
     private boolean shouldRemove(String option) {
@@ -157,8 +153,8 @@ public class V2ToV3ConfigUpgrade implements ConfigurationUpgrade, PostConstruct 
     private boolean ok(String s) {
         return s != null && s.length() > 0;
     }
-    private List<JvmOption> oldJvmOptions = null;
-    private final List<JvmOption> newJvmOptions = new ArrayList<>();
+    private List<String> oldJvmOptions = null;
+    private final List<String> newJvmOptions = new ArrayList<String>();
     private static final String[] BASE_REMOVAL_LIST = new String[]{
         "-Djavax.management.builder.initial",
         "-Dsun.rmi.dgc.server.gcInterval",

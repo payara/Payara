@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web.reconfig;
 
@@ -47,7 +46,6 @@ import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
-import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 import com.sun.enterprise.v3.services.impl.MapperUpdateListener;
 import com.sun.enterprise.web.WebContainer;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -176,10 +174,10 @@ public class WebConfigListener implements ConfigListener, MapperUpdateListener {
                         }
                     } else if (tClass == JavaConfig.class) {
                         JavaConfig jc = (JavaConfig) t;
-                        final List<JvmOption> jvmOptions = new ArrayList<>(jc.getJvmOptions());
-                        for (JvmOption jvmOption : jvmOptions) {
-                            if (jvmOption.option.startsWith("-DjvmRoute=")) {
-                                container.updateJvmRoute(httpService, jvmOption.option);
+                        final List<String> jvmOptions = new ArrayList<String>(jc.getJvmOptions());
+                        for (String jvmOption : jvmOptions) {
+                            if (jvmOption.startsWith("-DjvmRoute=")) {
+                                container.updateJvmRoute(httpService, jvmOption);
                             }
                         }
                     } else {

@@ -37,14 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.commands;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.config.serverbeans.JvmOptionBag;
-import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import java.beans.PropertyVetoException;
@@ -52,7 +50,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.glassfish.api.ActionReport;
@@ -135,7 +132,7 @@ public final class CreateJvmOptions implements AdminCommand, AdminCommandSecurit
             List<String> validOptions = new ArrayList<String>(jvmOptions);
             validate(bag, validOptions, report); //Note: method mutates the given list
             validateSoft(bag, validOptions, report); //Note: method does not mutate the given list
-            addX(bag, new ArrayList<>(validOptions.stream().map(JvmOption::new).collect(Collectors.toList())), part);
+            addX(bag, validOptions, part);
         } catch (IllegalArgumentException iae) {
             report.setMessage(iae.getMessage());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -226,7 +223,7 @@ public final class CreateJvmOptions implements AdminCommand, AdminCommandSecurit
         }
     }
 
-    private void validate(JvmOptionBag bag, List<String> opts, ActionReport report)
+    private void validate(JvmOptionBag bag, List<String> opts, ActionReport report) 
             throws IllegalArgumentException {
         Iterator<String> siter = opts.iterator();
         while (siter.hasNext()) {
@@ -260,11 +257,11 @@ public final class CreateJvmOptions implements AdminCommand, AdminCommandSecurit
     }
     */
     //@ForTimeBeing :)
-    private void addX(final JvmOptionBag bag, final List<JvmOption> newOpts, final ActionReport.MessagePart part) throws Exception {
+    private void addX(final JvmOptionBag bag, final List<String> newOpts, final ActionReport.MessagePart part) throws Exception {
         SingleConfigCode<JvmOptionBag> scc = new SingleConfigCode<JvmOptionBag> () {
             public Object run(JvmOptionBag bag) throws PropertyVetoException, TransactionFailure {
                 newOpts.removeAll(bag.getJvmOptions());  //"prune" the given list first to avoid duplicates
-                List<JvmOption> jvmopts = new ArrayList<>(bag.getJvmOptions());
+                List<String> jvmopts = new ArrayList<String>(bag.getJvmOptions());
                 int orig = jvmopts.size();
                 boolean added = jvmopts.addAll(newOpts);
                 bag.setJvmOptions(jvmopts);
