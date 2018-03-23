@@ -173,6 +173,11 @@ public final class JDK {
         public boolean olderOrEquals(Version version) {
             return !newerThan(version);
         }
+
+        @Override
+        public String toString() {
+            return String.format("%d.%d.%d.%d", major, minor, subminor, update);
+        }
     }
 
     public static Version getVersion(String string) {

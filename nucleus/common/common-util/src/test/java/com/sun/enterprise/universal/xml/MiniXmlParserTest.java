@@ -146,7 +146,7 @@ public class MiniXmlParserTest {
         try {
             MiniXmlParser instance = new MiniXmlParser(wrongOrder, "server");
             Map<String, String> javaConfig = instance.getJavaConfig();
-            List<MiniXmlParser.JvmOption> jvmOptions = instance.getJvmOptions();
+            List<JvmOption> jvmOptions = instance.getJvmOptions();
             assertEquals("JVMOPTION1", jvmOptions.get(0).option);
             assertEquals("JVMOPTION2", jvmOptions.get(1).option);
             assertEquals("test", javaConfig.get("test"));

@@ -49,7 +49,6 @@ import com.sun.enterprise.universal.glassfish.GFLauncherUtils;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.HostAndPort;
 import com.sun.enterprise.util.JDK;
-import com.sun.enterprise.util.JDK.Version;
 import com.sun.enterprise.util.StringUtils;
 
 import javax.xml.stream.XMLInputFactory;
@@ -235,17 +234,47 @@ public class MiniXmlParser {
     }
 
     public static class JvmOption {
-        public final String option;
-        public final Optional<Version> minVersion;
-        public final Optional<Version> maxVersion;
 
-        public JvmOption(String option, Optional<Version> minVersion, Optional<Version> maxVersion) {
+        public final String option;
+        public final Optional<JDK.Version> minVersion;
+        public final Optional<JDK.Version> maxVersion;
+
+        public JvmOption(String option) {
+            // +++ TODO parse the JVM versions
+            this.option = option;
+            this.minVersion = Optional.empty();
+            this.maxVersion = Optional.empty();
+        }
+
+        public JvmOption(String option, Optional<JDK.Version> minVersion, Optional<JDK.Version> maxVersion) {
             this.option = option;
             this.minVersion = minVersion;
             this.maxVersion = maxVersion;
         }
+
+        public JvmOption(String option, String minVersion, String maxVersion) {
+            this(option, Optional.ofNullable(JDK.getVersion(minVersion)), Optional.ofNullable(JDK.getVersion(maxVersion)));
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof JvmOption) {
+                return option.equals(obj);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return option.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return String.format("[[%s|%s]]%s", minVersion, maxVersion, option);
+        }
     }
-    
+
     private static String replaceOld(
             final String aInput,
             final String aOldPattern,
@@ -539,10 +568,10 @@ public class MiniXmlParser {
     private void parseJvmAndProfilerOptions() throws XMLStreamException, EndDocumentException {
         while (skipToButNotPast("java-config", "jvm-options", "profiler")) {
             if ("jvm-options".equals(parser.getLocalName())) {
-                Map<String, String> attributes = parseAttributes();
-                jvmOptions.add(new JvmOption(parser.getElementText(),
-                        Optional.ofNullable(JDK.getVersion(attributes.get("min-version"))),
-                        Optional.ofNullable(JDK.getVersion(attributes.get("max-version")))));
+//                Map<String, String> attributes = parseAttributes();
+//                jvmOptions.add(new JvmOption(parser.getElementText(),
+//                        Optional.ofNullable(JDK.getVersion(attributes.get("min-version"))),
+//                        Optional.ofNullable(JDK.getVersion(attributes.get("max-version")))));
             } else {// profiler
                 parseProfiler();
             }

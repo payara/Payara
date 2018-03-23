@@ -37,24 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
+import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.types.PropertyBag; //used only for Javadoc purpose {@link}
 import java.util.List;
 import java.beans.PropertyVetoException;
+import java.util.stream.Collectors;
 
 /** Factored out the list of jvm-options from at least two other interfaces that have them: java-config and profiler.
  *  Similar to {@link PropertyBag}
  */
 public interface JvmOptionBag extends ConfigBeanProxy {
-    @Element
-    public List<String> getJvmOptions();
-
-    void setJvmOptions(List<String> options) throws PropertyVetoException;
+    @DuckTyped
+    public List<JvmOption> getJvmOptions();
+    @DuckTyped
+    void setJvmOptions(List<JvmOption> options);
 
     /** It's observed that many a time we need the value of max heap size. This is useful when deciding if a
      *  user is misconfiguring the JVM by specifying -Xmx that is smaller than -Xms. Sun's JVM for example,
@@ -78,6 +81,13 @@ public interface JvmOptionBag extends ConfigBeanProxy {
     String getStartingWith(String start);
 
     class Duck {
+        public static List<JvmOption> getJvmOptions(JvmOptionBag me) {
+            return me.getJvmOptionsInternal().stream().map(JvmOption::new).collect(Collectors.toList());
+        }
+
+        public static void setJvmOptions(JvmOptionBag me, List<JvmOption> options) throws PropertyVetoException {
+            me.setJvmOptionsInternal(options.stream().map(JvmOption::toString).collect(Collectors.toList()));
+        }
      /* Note: It does not take defaults into account. Also,
      * I have tested that server does not start with a heap that is less than 1m, so I think I don't have to worry about
      * -Xmx that is specified to be less than 1 MB. Again, there is lots and lots of platform dependent code here,
@@ -93,10 +103,10 @@ public interface JvmOptionBag extends ConfigBeanProxy {
          }
 
         private static int getMemory(JvmOptionBag me, String which) {
-            List<String> options = me.getJvmOptions();
-            for (String opt : options) {
-                if(opt.indexOf(which) >= 0) {
-                    return toMeg(opt, which);
+            List<JvmOption> options = me.getJvmOptions();
+            for (JvmOption opt : options) {
+                if(opt.option.indexOf(which) >= 0) {
+                    return toMeg(opt.option, which);
                 }
             }
             return -1;
@@ -127,16 +137,21 @@ public interface JvmOptionBag extends ConfigBeanProxy {
         }
 
         public static boolean contains(JvmOptionBag me, String opt) {
-            return me.getJvmOptions().contains(opt);
+            return me.getJvmOptions().stream().anyMatch(option -> option.option.equals(opt));
         }
 
         public static String getStartingWith(JvmOptionBag me, String start) {
-            List<String> opts = me.getJvmOptions();
-            for (String opt : opts) {
-                if (opt.startsWith(start))
-                    return opt;
+            List<JvmOption> opts = me.getJvmOptions();
+            for (JvmOption opt : opts) {
+                if (opt.option.startsWith(start))
+                    return opt.option;
             }
             return null;
         }
     }
+
+    @Element("jvm-options")
+    List<String> getJvmOptionsInternal();
+    @Element("jvm-options")
+    void setJvmOptionsInternal(List<String> options) throws PropertyVetoException;
 }

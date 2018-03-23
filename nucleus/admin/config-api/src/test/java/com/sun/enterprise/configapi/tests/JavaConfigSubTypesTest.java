@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.configapi.tests;
 
@@ -49,6 +50,7 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
+import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -111,8 +113,8 @@ public class JavaConfigSubTypesTest extends ConfigPersistence {
 
         ConfigSupport.apply(new SingleConfigCode<JavaConfig>() {
             public Object run(JavaConfig param) throws PropertyVetoException, TransactionFailure {
-                List<String> jvmOptions = param.getJvmOptions();
-                jvmOptions.add("-XFooBar=true");
+                List<JvmOption> jvmOptions = param.getJvmOptions();
+                jvmOptions.add(new JvmOption("-XFooBar=true"));
                 return jvmOptions;
             }
         }, javaConfig);

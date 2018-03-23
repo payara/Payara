@@ -37,12 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.commands;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
+import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import java.util.List;
@@ -104,7 +106,7 @@ public final class ListJvmOptions implements AdminCommand, AdminCommandSecurity.
     
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-        List<String> opts;
+        List<JvmOption> opts;
         if (profiler) {
                 if (jc.getProfiler() == null) {
                     report.setMessage(lsm.getString("create.profiler.first"));
@@ -116,9 +118,27 @@ public final class ListJvmOptions implements AdminCommand, AdminCommandSecurity.
             opts = jc.getJvmOptions();
         //Collections.sort(opts); //sorting is garbled by Reporter anyway, so let's move sorting to the client side
         try {
-            for (String option : opts) {
+            for (JvmOption option : opts) {
                 ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-                part.setMessage(option);
+                StringBuilder sb = new StringBuilder();
+                sb.append(option.option);
+                if(option.minVersion.isPresent() || option.maxVersion.isPresent()) {
+                    sb.append("   --- JDK versions: ");
+                }
+                option.minVersion.ifPresent(minVersion -> {
+                    sb.append("min( ");
+                    sb.append(minVersion);
+                    sb.append(")");
+                });
+                option.maxVersion.ifPresent(maxVersion -> {
+                    if(option.minVersion.isPresent()) {
+                        sb.append(", ");
+                    }
+                    sb.append("max( ");
+                    sb.append(maxVersion);
+                    sb.append(")");
+                });
+                part.setMessage(sb.toString());
             }
         } catch (Exception e) {
             report.setMessage(lsm.getStringWithDefault("list.jvm.options.failed",

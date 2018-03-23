@@ -37,17 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.commands;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.config.serverbeans.JvmOptionBag;
+import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.glassfish.api.ActionReport;
@@ -127,7 +130,7 @@ public final class DeleteJvmOptions implements AdminCommand, AdminCommandSecurit
             } else
                 bag = jc;
             ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-            deleteX(bag, jvmOptions, part);
+            deleteX(bag, jvmOptions.stream().map(JvmOption::new).collect(Collectors.toList()), part);
         } catch (Exception e) {
             String msg = e.getMessage() != null ? e.getMessage() : 
                 lsm.getStringWithDefault("delete.jvm.options.failed",
@@ -158,10 +161,10 @@ public final class DeleteJvmOptions implements AdminCommand, AdminCommandSecurit
     }
     */
     //@ForTimeBeing :)
-    private void deleteX(final JvmOptionBag bag, final List<String> toRemove, final ActionReport.MessagePart part) throws Exception {
+    private void deleteX(final JvmOptionBag bag, final List<JvmOption> toRemove, final ActionReport.MessagePart part) throws Exception {
         SingleConfigCode<JvmOptionBag> scc = new SingleConfigCode<JvmOptionBag> () {
             public Object run(JvmOptionBag bag) throws PropertyVetoException, TransactionFailure {
-                List<String> jvmopts = new ArrayList<String>(bag.getJvmOptions());
+                List<JvmOption> jvmopts = new ArrayList<>(bag.getJvmOptions());
                 int orig = jvmopts.size();
                 boolean removed = jvmopts.removeAll(toRemove);
                 bag.setJvmOptions(jvmopts);

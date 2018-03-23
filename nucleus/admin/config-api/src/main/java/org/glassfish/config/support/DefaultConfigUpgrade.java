@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.config.support;
 
@@ -53,7 +54,6 @@ import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 
@@ -68,10 +68,10 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
  import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.*;
+import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 /**
@@ -1026,7 +1026,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 int eventType = parser.next();
                 if (eventType == START_ELEMENT) {
                     if (parser.getLocalName().equals("jvm-options") && jc != null) {
-                        jc.getJvmOptions().add(parser.getElementText());
+                        jc.getJvmOptions().add(new JvmOption(parser.getElementText()));
                     }
                 }
             } catch (XMLStreamException ex) {
