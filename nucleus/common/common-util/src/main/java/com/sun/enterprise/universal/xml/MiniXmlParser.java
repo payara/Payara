@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.universal.xml;
 
@@ -49,6 +48,8 @@ import com.sun.common.util.logging.LoggingPropertyNames;
 import com.sun.enterprise.universal.glassfish.GFLauncherUtils;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.HostAndPort;
+import com.sun.enterprise.util.JDK;
+import com.sun.enterprise.util.JDK.Version;
 import com.sun.enterprise.util.StringUtils;
 
 import javax.xml.stream.XMLInputFactory;
@@ -526,11 +527,35 @@ public class MiniXmlParser {
     private void parseJvmAndProfilerOptions() throws XMLStreamException, EndDocumentException {
         while (skipToButNotPast("java-config", "jvm-options", "profiler")) {
             if ("jvm-options".equals(parser.getLocalName())) {
-                jvmOptions.add(parser.getElementText());
+                Map<String, String> attributes = parseAttributes();
+                String minVersion = attributes.get("min-version");
+                String maxVersion = attributes.get("max-version");
+                if (isCorrectJDK(minVersion, maxVersion)) {
+                    jvmOptions.add(parser.getElementText());
+                }
             } else {// profiler
                 parseProfiler();
             }
         }
+    }
+
+    private boolean isCorrectJDK(String minVersionString, String maxVersionString) {
+        boolean correctJDK = true;
+        if (StringUtils.ok(minVersionString)) {
+            Version minVersion = JDK.getVersion(minVersionString);
+            if(minVersion == null) {
+                throw new IllegalArgumentException(String.format("Can't get JDK version for %s", minVersionString));
+            }
+            correctJDK = JDK_VERSION.newerOrEquals(minVersion);
+        }
+        if (correctJDK == true && StringUtils.ok(maxVersionString)) {
+            Version maxVersion = JDK.getVersion(maxVersionString);
+            if(maxVersion == null) {
+                throw new IllegalArgumentException(String.format("Can't get JDK version for %s", maxVersionString));
+            }
+            correctJDK = JDK_VERSION.olderOrEquals(maxVersion);
+        }
+        return correctJDK;
     }
 
     private void parseProfiler() throws XMLStreamException, EndDocumentException {
@@ -1043,6 +1068,5 @@ public class MiniXmlParser {
     private SysPropsHandler sysProps = new SysPropsHandler();
     private List<ParsedCluster> clusters = null;
     private boolean secureAdminEnabled = false;
-
-
+    private static final JDK.Version JDK_VERSION = JDK.getVersion();
 }

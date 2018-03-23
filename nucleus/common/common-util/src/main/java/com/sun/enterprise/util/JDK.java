@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.util;
 
@@ -49,32 +50,6 @@ package com.sun.enterprise.util;
  * @author bnevins
  */
 public final class JDK {
-
-    private JDK(String string) {
-        String[] split = string.split("[\\._\\-]+");
-
-        if (split.length > 0) {
-            major = Integer.parseInt(split[0]);
-        }
-        if (split.length > 1) {
-            minor = Integer.parseInt(split[1]);
-        }
-        if (split.length > 2) {
-            subminor = Integer.parseInt(split[2]);
-        }
-        if (split.length > 3) {
-            update = Integer.parseInt(split[3]);
-        }
-    }
-
-
-    public static JDK getVersion(String string) {
-        if (string.matches("([0-9]+[\\._\\-]+)*[0-9]+")) {
-            return new JDK(string);
-        } else {
-            return null;
-        }
-    }
     /**
      * See if the current JDK is legal for running GlassFish
      * @return true if the JDK is >= 1.6.0
@@ -98,36 +73,116 @@ public final class JDK {
         return update;
     }
 
-    public boolean newerThan(JDK version) {
-        if (major > version.getMajor()) {
-            return true;
-        } else if (major == version.getMajor()) {
-            if (minor > version.getMinor()) {
-                return true;
-            } else if (minor == version.getMinor()) {
-                if (subminor > version.getSubMinor()) {
-                    return true;
-                } else if (subminor == version.getSubMinor()) {
-                    if (update > version.getUpdate()) {
-                        return true;
-                    }
-                }
+    public static class Version {
+        private int major;
+        private int minor;
+        private int subminor;
+        private int update;
+
+        private Version(String string) {
+            String[] split = string.split("[\\._\\-]+");
+
+            if (split.length > 0) {
+                major = Integer.parseInt(split[0]);
+            }
+            if (split.length > 1) {
+                minor = Integer.parseInt(split[1]);
+            }
+            if (split.length > 2) {
+                subminor = Integer.parseInt(split[2]);
+            }
+            if (split.length > 3) {
+                update = Integer.parseInt(split[3]);
             }
         }
 
-        return false;
+        private Version() {
+            major = JDK.major;
+            minor = JDK.minor;
+            subminor = JDK.subminor;
+            update = JDK.update;
+        }
+
+        public boolean newerThan(Version version) {
+            if (major > version.major) {
+                return true;
+            } else if (major == version.major) {
+                if (minor > version.minor) {
+                    return true;
+                } else if (minor == version.minor) {
+                    if (subminor > version.subminor) {
+                        return true;
+                    } else if (subminor == version.subminor) {
+                        if (update > version.update) {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 61 * hash + this.major;
+            hash = 61 * hash + this.minor;
+            hash = 61 * hash + this.subminor;
+            hash = 61 * hash + this.update;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Version other = (Version) obj;
+            if (this.major != other.major) {
+                return false;
+            }
+            if (this.minor != other.minor) {
+                return false;
+            }
+            if (this.subminor != other.subminor) {
+                return false;
+            }
+            if (this.update != other.update) {
+                return false;
+            }
+            return true;
+        }
+
+        public boolean newerOrEquals(Version version) {
+            return newerThan(version) || equals(version);
+        }
+
+        public boolean olderThan(Version version) {
+            return !newerOrEquals(version);
+        }
+
+        public boolean olderOrEquals(Version version) {
+            return !newerThan(version);
+        }
     }
 
-    public boolean newerOrEquals(JDK version) {
-        return newerThan(version) || equals(version);
+    public static Version getVersion(String string) {
+        if (string.matches("([0-9]+[\\._\\-]+)*[0-9]+")) {
+            return new Version(string);
+        } else {
+            return null;
+        }
     }
 
-    public boolean olderThan(JDK version) {
-        return !newerOrEquals(version);
-    }
-
-    public boolean olderOrEquals(JDK version) {
-        return !newerThan(version);
+    public static Version getVersion() {
+        return new Version();
     }
 
     /**
