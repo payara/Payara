@@ -63,6 +63,7 @@ import static org.eclipse.microprofile.metrics.MetricFilter.ALL;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricType;
 import static org.eclipse.microprofile.metrics.MetricType.COUNTER;
+import static org.eclipse.microprofile.metrics.MetricType.GAUGE;
 import static org.eclipse.microprofile.metrics.MetricType.HISTOGRAM;
 import static org.eclipse.microprofile.metrics.MetricType.METERED;
 import static org.eclipse.microprofile.metrics.MetricType.TIMER;
@@ -210,10 +211,46 @@ public class MetricRegistryImpl extends MetricRegistry {
         return register(name, metric, new Metadata(name, MetricType.from(metric.getClass())));
     }
 
+    @Deprecated
     @Override
     public <T extends Metric> T register(String name, T metric, Metadata metadata) throws IllegalArgumentException {
-        if (metricMap.containsKey(name)) {
-            throw new IllegalArgumentException("Metric [" + name + "] already exists");
+        metadata.setName(name);
+        return register(metadata, metric);
+        
+    }
+    
+    @Override
+    public <T extends Metric> T register(Metadata metadata, T metric) throws IllegalArgumentException {
+           
+        String name = metadata.getName();
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Metric name must not be null or empty");
+        }
+        
+        Metadata existingMetadata = metadataMap.get(name);
+        
+        if (existingMetadata != null) {
+            //if existing metric declared not reusable
+            if (!existingMetadata.isReusable()) {
+                throw new IllegalArgumentException(String.format(
+                        "Metric ['%s'] already exists and declared not reusable", name
+                ));
+            }
+
+            //Only metrics of the same type can be reused under the same name
+            if (!existingMetadata.getTypeRaw().equals(metadata.getTypeRaw())) {
+                throw new IllegalArgumentException(String.format(
+                        "Metric ['%s'] type['%s'] does not match with existing type['%s']",
+                        name, metadata.getType(), existingMetadata.getType()
+                ));
+            }
+            
+            //reusable does not apply to gauges
+            if(GAUGE.equals(metadata.getTypeRaw())) {
+                throw new IllegalArgumentException(String.format(
+                        "Gauge type metric['%s'] is not reusable", name
+                ));
+            }
         }
 
         metricMap.put(name, metric);
@@ -224,14 +261,17 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     private <T extends Metric> T getOrAdd(Metadata metadata, MetricType metricType) {
         String name = metadata.getName();
-        if (!metadataMap.containsKey(name)) {
+        Metadata existingMetadata = metadataMap.get(name);
+        if (existingMetadata == null) {
             Metric metric;
             switch (metricType) {
                 case COUNTER:
                     metric = new CounterImpl();
                     break;
                 case GAUGE:
-                    throw new IllegalArgumentException("Unsupported operation for Gauge [" + name + "]");
+                    throw new IllegalArgumentException(String.format(
+                            "Unsupported operation for Gauge ['%s']", name
+                    ));
                 case METERED:
                     metric = new MeterImpl();
                     break;
@@ -245,7 +285,12 @@ public class MetricRegistryImpl extends MetricRegistry {
                 default:
                     throw new IllegalStateException("Invalid metric type : " + metricType);
             }
-            register(name, metric, metadata);
+            register(metadata, metric);
+        }  else if (!existingMetadata.getTypeRaw().equals(metadata.getTypeRaw())) {
+            throw new IllegalArgumentException(String.format(
+                        "Metric ['%s'] type['%s'] does not match with existing type['%s']",
+                        name, metadata.getType(), existingMetadata.getType()
+                ));
         }
         return (T) metricMap.get(name);
     }
