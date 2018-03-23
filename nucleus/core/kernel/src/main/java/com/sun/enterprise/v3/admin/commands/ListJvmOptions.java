@@ -45,9 +45,11 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
+import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.glassfish.api.ActionReport;
@@ -113,17 +115,17 @@ public final class ListJvmOptions implements AdminCommand, AdminCommandSecurity.
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
                 }
-            opts = jc.getProfiler().getJvmOptions();
+            opts = jc.getProfiler().getJvmRawOptions().stream().map(JvmOption::new).collect(Collectors.toList());
         } else
-            opts = jc.getJvmOptions();
+            opts = jc.getJvmRawOptions().stream().map(JvmOption::new).collect(Collectors.toList());
         //Collections.sort(opts); //sorting is garbled by Reporter anyway, so let's move sorting to the client side
         try {
             for (JvmOption option : opts) {
                 ActionReport.MessagePart part = report.getTopMessagePart().addChild();
                 StringBuilder sb = new StringBuilder();
                 sb.append(option.option);
-                if(option.minVersion.isPresent() || option.maxVersion.isPresent()) {
-                    sb.append("   --- JDK versions: ");
+                if (option.minVersion.isPresent() || option.maxVersion.isPresent()) {
+                    sb.append("   --> JDK versions: ");
                 }
                 option.minVersion.ifPresent(minVersion -> {
                     sb.append("min( ");
@@ -131,13 +133,17 @@ public final class ListJvmOptions implements AdminCommand, AdminCommandSecurity.
                     sb.append(")");
                 });
                 option.maxVersion.ifPresent(maxVersion -> {
-                    if(option.minVersion.isPresent()) {
+                    if (option.minVersion.isPresent()) {
                         sb.append(", ");
                     }
                     sb.append("max( ");
                     sb.append(maxVersion);
                     sb.append(")");
                 });
+                if (!JDK.isCorrectJDK(option.minVersion, option.maxVersion)) {
+                    sb.append(" (Inactive on this JDK)");
+                }
+                /// +++ TODO print out if the option is inactive
                 part.setMessage(sb.toString());
             }
         } catch (Exception e) {

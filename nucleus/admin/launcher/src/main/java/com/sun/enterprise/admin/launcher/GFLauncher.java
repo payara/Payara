@@ -821,7 +821,6 @@ public abstract class GFLauncher {
 
         List<String> rawJvmOptions = parser.getJvmOptions().stream().filter(fullOption -> JDK.isCorrectJDK(fullOption.minVersion, fullOption.maxVersion))
                 .map(option -> option.option).collect(Collectors.toList());
-        System.out.println(rawJvmOptions);
         rawJvmOptions.addAll(getSpecialSystemProperties());
         if (profiler.isEnabled()) {
             rawJvmOptions.addAll(profiler.getJvmOptions());

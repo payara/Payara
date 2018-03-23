@@ -55,9 +55,9 @@ import java.util.stream.Collectors;
  */
 public interface JvmOptionBag extends ConfigBeanProxy {
     @DuckTyped
-    public List<JvmOption> getJvmOptions();
-    @DuckTyped
-    void setJvmOptions(List<JvmOption> options);
+    public List<String> getJvmOptions();
+    @Element("jvm-options")
+    void setJvmOptions(List<String> options) throws PropertyVetoException;
 
     /** It's observed that many a time we need the value of max heap size. This is useful when deciding if a
      *  user is misconfiguring the JVM by specifying -Xmx that is smaller than -Xms. Sun's JVM for example,
@@ -81,12 +81,8 @@ public interface JvmOptionBag extends ConfigBeanProxy {
     String getStartingWith(String start);
 
     class Duck {
-        public static List<JvmOption> getJvmOptions(JvmOptionBag me) {
-            return me.getJvmOptionsInternal().stream().map(JvmOption::new).collect(Collectors.toList());
-        }
-
-        public static void setJvmOptions(JvmOptionBag me, List<JvmOption> options) throws PropertyVetoException {
-            me.setJvmOptionsInternal(options.stream().map(JvmOption::toString).collect(Collectors.toList()));
+        public static List<String> getJvmOptions(JvmOptionBag me) {
+            return me.getJvmRawOptions().stream().map(JvmOption::new).map(option -> option.option).collect(Collectors.toList());
         }
      /* Note: It does not take defaults into account. Also,
      * I have tested that server does not start with a heap that is less than 1m, so I think I don't have to worry about
@@ -103,10 +99,10 @@ public interface JvmOptionBag extends ConfigBeanProxy {
          }
 
         private static int getMemory(JvmOptionBag me, String which) {
-            List<JvmOption> options = me.getJvmOptions();
-            for (JvmOption opt : options) {
-                if(opt.option.indexOf(which) >= 0) {
-                    return toMeg(opt.option, which);
+            List<String> options = me.getJvmOptions();
+            for (String opt : options) {
+                if(opt.indexOf(which) >= 0) {
+                    return toMeg(opt, which);
                 }
             }
             return -1;
@@ -137,21 +133,19 @@ public interface JvmOptionBag extends ConfigBeanProxy {
         }
 
         public static boolean contains(JvmOptionBag me, String opt) {
-            return me.getJvmOptions().stream().anyMatch(option -> option.option.equals(opt));
+            return me.getJvmOptions().contains(opt);
         }
 
         public static String getStartingWith(JvmOptionBag me, String start) {
-            List<JvmOption> opts = me.getJvmOptions();
-            for (JvmOption opt : opts) {
-                if (opt.option.startsWith(start))
-                    return opt.option;
+            List<String> opts = me.getJvmOptions();
+            for (String opt : opts) {
+                if (opt.startsWith(start))
+                    return opt;
             }
             return null;
         }
     }
 
     @Element("jvm-options")
-    List<String> getJvmOptionsInternal();
-    @Element("jvm-options")
-    void setJvmOptionsInternal(List<String> options) throws PropertyVetoException;
+    List<String> getJvmRawOptions();
 }

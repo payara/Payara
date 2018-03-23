@@ -66,6 +66,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static javax.xml.stream.XMLStreamConstants.*;
 
@@ -234,44 +236,32 @@ public class MiniXmlParser {
     }
 
     public static class JvmOption {
-
         public final String option;
         public final Optional<JDK.Version> minVersion;
         public final Optional<JDK.Version> maxVersion;
 
+        private static final Pattern PATTERN = Pattern.compile("^\\[\\[(.*)\\|(.*)\\]\\](.*)");
+
         public JvmOption(String option) {
-            // +++ TODO parse the JVM versions
-            this.option = option;
-            this.minVersion = Optional.empty();
-            this.maxVersion = Optional.empty();
-        }
-
-        public JvmOption(String option, Optional<JDK.Version> minVersion, Optional<JDK.Version> maxVersion) {
-            this.option = option;
-            this.minVersion = minVersion;
-            this.maxVersion = maxVersion;
-        }
-
-        public JvmOption(String option, String minVersion, String maxVersion) {
-            this(option, Optional.ofNullable(JDK.getVersion(minVersion)), Optional.ofNullable(JDK.getVersion(maxVersion)));
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof JvmOption) {
-                return option.equals(obj);
+            Matcher matcher = PATTERN.matcher(option);
+            if(matcher.matches()) {
+                this.minVersion = Optional.ofNullable(JDK.getVersion(matcher.group(1)));
+                this.maxVersion = Optional.ofNullable(JDK.getVersion(matcher.group(2)));
+                this.option = matcher.group(3);
             }
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            return option.hashCode();
+            else {
+                this.option = option;
+                this.minVersion = Optional.empty();
+                this.maxVersion = Optional.empty();
+            }
         }
 
         @Override
         public String toString() {
-            return String.format("[[%s|%s]]%s", minVersion, maxVersion, option);
+            if(!minVersion.isPresent() && !maxVersion.isPresent()) {
+                return option;
+            }
+            return String.format("[[%s|%s]]%s", minVersion.isPresent()? minVersion: "", maxVersion.isPresent()? maxVersion: "", option);
         }
     }
 
@@ -568,10 +558,7 @@ public class MiniXmlParser {
     private void parseJvmAndProfilerOptions() throws XMLStreamException, EndDocumentException {
         while (skipToButNotPast("java-config", "jvm-options", "profiler")) {
             if ("jvm-options".equals(parser.getLocalName())) {
-//                Map<String, String> attributes = parseAttributes();
-//                jvmOptions.add(new JvmOption(parser.getElementText(),
-//                        Optional.ofNullable(JDK.getVersion(attributes.get("min-version"))),
-//                        Optional.ofNullable(JDK.getVersion(attributes.get("max-version")))));
+                jvmOptions.add(new JvmOption(parser.getElementText()));
             } else {// profiler
                 parseProfiler();
             }

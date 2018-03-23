@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.commands;
 
@@ -260,8 +261,8 @@ public final class CreateJvmOptions implements AdminCommand, AdminCommandSecurit
     private void addX(final JvmOptionBag bag, final List<String> newOpts, final ActionReport.MessagePart part) throws Exception {
         SingleConfigCode<JvmOptionBag> scc = new SingleConfigCode<JvmOptionBag> () {
             public Object run(JvmOptionBag bag) throws PropertyVetoException, TransactionFailure {
-                newOpts.removeAll(bag.getJvmOptions());  //"prune" the given list first to avoid duplicates
-                List<String> jvmopts = new ArrayList<String>(bag.getJvmOptions());
+                newOpts.removeAll(bag.getJvmRawOptions());  //"prune" the given list first to avoid duplicates
+                List<String> jvmopts = new ArrayList<String>(bag.getJvmRawOptions());
                 int orig = jvmopts.size();
                 boolean added = jvmopts.addAll(newOpts);
                 bag.setJvmOptions(jvmopts);
