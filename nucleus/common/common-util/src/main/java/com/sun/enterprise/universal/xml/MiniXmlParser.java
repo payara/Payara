@@ -127,7 +127,7 @@ public class MiniXmlParser {
 
 
 
-    public List<String> getJvmOptions() throws MiniXmlParserException {
+    public List<JvmOption> getJvmOptions() throws MiniXmlParserException {
         if (!valid) {
             throw new MiniXmlParserException(strings.get("invalid"));
         }
@@ -232,6 +232,18 @@ public class MiniXmlParser {
             // just return null
         }
         return logFilename;
+    }
+
+    public static class JvmOption {
+        public final String option;
+        public final Optional<Version> minVersion;
+        public final Optional<Version> maxVersion;
+
+        public JvmOption(String option, Optional<Version> minVersion, Optional<Version> maxVersion) {
+            this.option = option;
+            this.minVersion = minVersion;
+            this.maxVersion = maxVersion;
+        }
     }
     
     private static String replaceOld(
@@ -528,34 +540,13 @@ public class MiniXmlParser {
         while (skipToButNotPast("java-config", "jvm-options", "profiler")) {
             if ("jvm-options".equals(parser.getLocalName())) {
                 Map<String, String> attributes = parseAttributes();
-                String minVersion = attributes.get("min-version");
-                String maxVersion = attributes.get("max-version");
-                if (isCorrectJDK(minVersion, maxVersion)) {
-                    jvmOptions.add(parser.getElementText());
-                }
+                jvmOptions.add(new JvmOption(parser.getElementText(),
+                        Optional.ofNullable(JDK.getVersion(attributes.get("min-version"))),
+                        Optional.ofNullable(JDK.getVersion(attributes.get("max-version")))));
             } else {// profiler
                 parseProfiler();
             }
         }
-    }
-
-    private boolean isCorrectJDK(String minVersionString, String maxVersionString) {
-        boolean correctJDK = true;
-        if (StringUtils.ok(minVersionString)) {
-            Version minVersion = JDK.getVersion(minVersionString);
-            if(minVersion == null) {
-                throw new IllegalArgumentException(String.format("Can't get JDK version for %s", minVersionString));
-            }
-            correctJDK = JDK_VERSION.newerOrEquals(minVersion);
-        }
-        if (correctJDK == true && StringUtils.ok(maxVersionString)) {
-            Version maxVersion = JDK.getVersion(maxVersionString);
-            if(maxVersion == null) {
-                throw new IllegalArgumentException(String.format("Can't get JDK version for %s", maxVersionString));
-            }
-            correctJDK = JDK_VERSION.olderOrEquals(maxVersion);
-        }
-        return correctJDK;
     }
 
     private void parseProfiler() throws XMLStreamException, EndDocumentException {
@@ -1047,7 +1038,7 @@ public class MiniXmlParser {
     private InputStreamReader reader;
     private String serverName;
     private String configRef;
-    private List<String> jvmOptions = new ArrayList<String>();
+    private List<JvmOption> jvmOptions = new ArrayList<>();
     private List<String> profilerJvmOptions = new ArrayList<String>();
     private Map<String, String> javaConfig;
     private Map<String, String> profilerConfig = Collections.emptyMap();

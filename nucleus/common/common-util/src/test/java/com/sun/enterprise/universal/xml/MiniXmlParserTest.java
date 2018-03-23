@@ -37,10 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.universal.xml;
 
+import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 import java.io.File;
-import java.net.*;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -144,9 +146,9 @@ public class MiniXmlParserTest {
         try {
             MiniXmlParser instance = new MiniXmlParser(wrongOrder, "server");
             Map<String, String> javaConfig = instance.getJavaConfig();
-            List<String> jvmOptions = instance.getJvmOptions();
-            assertEquals("JVMOPTION1", jvmOptions.get(0));
-            assertEquals("JVMOPTION2", jvmOptions.get(1));
+            List<MiniXmlParser.JvmOption> jvmOptions = instance.getJvmOptions();
+            assertEquals("JVMOPTION1", jvmOptions.get(0).option);
+            assertEquals("JVMOPTION2", jvmOptions.get(1).option);
             assertEquals("test", javaConfig.get("test"));
         }
         catch (MiniXmlParserException ex) {
@@ -197,9 +199,9 @@ public class MiniXmlParserTest {
         try {
             MiniXmlParser instance = new MiniXmlParser(rightOrder, "server");
             Map<String, String> javaConfig = instance.getJavaConfig();
-            List<String> jvmOptions = instance.getJvmOptions();
-            assertEquals("JVMOPTION1", jvmOptions.get(0));
-            assertEquals("JVMOPTION2", jvmOptions.get(1));
+            List<JvmOption> jvmOptions = instance.getJvmOptions();
+            assertEquals("JVMOPTION1", jvmOptions.get(0).option);
+            assertEquals("JVMOPTION2", jvmOptions.get(1).option);
             assertEquals("test", javaConfig.get("test"));
         }
         catch (MiniXmlParserException ex) {
@@ -235,10 +237,10 @@ public class MiniXmlParserTest {
         try {
             MiniXmlParser instance = new MiniXmlParser(rightOrder, "server");
             Map<String, String> javaConfig = instance.getJavaConfig();
-            List<String> jvmOptions = instance.getJvmOptions();
+            List<JvmOption> jvmOptions = instance.getJvmOptions();
             Map<String, String> sysProps = instance.getSystemProperties();
-            assertEquals("JVMOPTION1", jvmOptions.get(0));
-            assertEquals("JVMOPTION2", jvmOptions.get(1));
+            assertEquals("JVMOPTION1", jvmOptions.get(0).option);
+            assertEquals("JVMOPTION2", jvmOptions.get(1).option);
             assertEquals("test", javaConfig.get("test"));
             assertEquals("true", sysProps.get("beforeJavaConfig"));
             assertEquals("true", sysProps.get("afterJavaConfig"));

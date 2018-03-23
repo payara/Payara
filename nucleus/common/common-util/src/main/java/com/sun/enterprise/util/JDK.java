@@ -41,6 +41,8 @@
 
 package com.sun.enterprise.util;
 
+import java.util.Optional;
+
 /**
  * A simple class that fills a hole in the JDK.  It parses out the version numbers
  *  of the JDK we are running.
@@ -174,7 +176,7 @@ public final class JDK {
     }
 
     public static Version getVersion(String string) {
-        if (string.matches("([0-9]+[\\._\\-]+)*[0-9]+")) {
+        if (string != null && string.matches("([0-9]+[\\._\\-]+)*[0-9]+")) {
             return new Version(string);
         } else {
             return null;
@@ -183,6 +185,17 @@ public final class JDK {
 
     public static Version getVersion() {
         return new Version();
+    }
+
+    public static boolean isCorrectJDK(Optional<Version> minVersion, Optional<Version> maxVersion) {
+        boolean correctJDK = true;
+        if (minVersion.isPresent()) {
+            correctJDK = JDK_VERSION.newerOrEquals(minVersion.get());
+        }
+        if (correctJDK == true && maxVersion.isPresent()) {
+            correctJDK = JDK_VERSION.olderOrEquals(maxVersion.get());
+        }
+        return correctJDK;
     }
 
     /**
@@ -206,6 +219,7 @@ public final class JDK {
     private static int minor;
     private static int subminor;
     private static int update;
+    private static Version JDK_VERSION;
 
     // silently fall back to ridiculous defaults if something is crazily wrong...
     private static void initialize() {
@@ -269,5 +283,7 @@ public final class JDK {
         catch(Exception e) {
             // ignore -- use defaults
         }
+
+        JDK_VERSION = new Version();
     }
 }
