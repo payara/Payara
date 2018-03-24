@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.iiop.security;
 
 import com.sun.enterprise.common.iiop.security.GSSUtilsContract;
@@ -55,26 +55,31 @@ import sun.security.util.ObjectIdentifier;
 @Singleton
 public class GSSUtilsService implements GSSUtilsContract {
 
+    @Override
     public String dumpHex(byte[] octets) {
         return GSSUtils.dumpHex(octets);
     }
 
+    @Override
     public byte[] importName(ObjectIdentifier oid, byte[] externalName) throws IOException {
         return GSSUtils.importName(oid, externalName);
     }
 
+    @Override
     public byte[] createExportedName(ObjectIdentifier oid, byte[] extName) throws IOException {
         return GSSUtils.createExportedName(oid, extName);
     }
 
+    @Override
     public ObjectIdentifier GSSUP_MECH_OID() {
         return GSSUtils.GSSUP_MECH_OID;
     }
     /**
      * TODO:V3 temporarily putting it inside this contract
-     * @return the ORB
-    public Object getORB() {
-        
-    }*/
+     * 
+     * @return the ORB public Object getORB() {
+     * 
+     * }
+     */
 
 }

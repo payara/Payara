@@ -36,8 +36,10 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * 
+ * Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] 
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.grizzly.config;
 
 import static java.util.logging.Level.WARNING;
@@ -751,24 +753,30 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                                         final boolean secure) {
         isHttp2Enabled = false;
         if (!skipHttp2 && httpElement != null && httpElement.isHttp2Enabled()) {
-
-            Http2AddOn http2Addon = new Http2AddOn(Http2Configuration.builder()
-                    .disableCipherCheck(httpElement.isHttp2DisableCipherCheck())
-                    .executorService(transport.getWorkerThreadPool())
-                    .initialWindowSize(httpElement.getHttp2InitialWindowSizeInBytes())
-                    .maxConcurrentStreams(httpElement.getHttp2MaxConcurrentStreams())
-                    .maxFramePayloadSize(httpElement.getHttp2MaxFramePayloadSizeInBytes())
-                    .maxHeaderListSize(httpElement.getHttp2MaxHeaderListSizeInBytes())
-                    .build());
-
-            // The Http2AddOn requires access to more information compared to the other addons
-            // that are currently leveraged.  As such, we'll need to mock out a
-            // Grizzly NetworkListener to pass to the AddOn.  This mock object will
-            // only provide the information necessary for the AddOn to operate.
-            // It will be important to keep this mock in sync with the details the
-            // AddOn requires.
-            http2Addon.setup(createMockListener(secure), builder);
-            isHttp2Enabled = true;
+            try {
+                Http2AddOn http2Addon = new Http2AddOn(Http2Configuration.builder()
+                        .maxConcurrentStreams(httpElement.getHttp2MaxConcurrentStreams())
+                        .initialWindowSize(httpElement.getHttp2InitialWindowSizeInBytes())
+                        .maxFramePayloadSize(httpElement.getHttp2MaxFramePayloadSizeInBytes())
+                        .maxHeaderListSize(httpElement.getHttp2MaxHeaderListSizeInBytes())
+                        .streamsHighWaterMark(Float.parseFloat(httpElement.getHttp2StreamsHighWaterMark()))
+                        .cleanPercentage(Float.parseFloat(httpElement.getHttp2CleanPercentage()))
+                        .cleanFrequencyCheck(httpElement.getHttp2CleanFrequencyCheck())
+                        .disableCipherCheck(httpElement.isHttp2DisableCipherCheck())
+                        .enablePush(httpElement.isHttp2PushEnabled())
+                        .executorService(transport.getWorkerThreadPool())
+                        .build());
+                // The Http2AddOn requires access to more information compared to the other addons
+                // that are currently leveraged.  As such, we'll need to mock out a
+                // Grizzly NetworkListener to pass to the AddOn.  This mock object will
+                // only provide the information necessary for the AddOn to operate.
+                // It will be important to keep this mock in sync with the details the
+                // AddOn requires.
+                http2Addon.setup(createMockListener(secure), builder);
+                isHttp2Enabled = true;
+            } catch (NoClassDefFoundError ex) {
+                LOGGER.log(Level.WARNING, "Unable to construct HTTP/2 Addon", ex);
+            }
         }
     }
     

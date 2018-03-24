@@ -91,9 +91,9 @@ import com.sun.enterprise.common.iiop.security.AnonCredential;
 import com.sun.enterprise.common.iiop.security.GSSUPName;
 
 /**
- * This class is a server side request interceptor for CSIV2. 
- * It is used to send and receive the service context in a 
- * a service context element in the service context list in  
+ * This class is a server side request interceptor for CSIV2.
+ * It is used to send and receive the service context in a
+ * a service context element in the service context list in
  * an IIOP header.
  *
  * @author: Nithya Subramanian
@@ -111,12 +111,12 @@ import sun.security.x509.X500Name;
 import sun.security.x509.X509CertImpl;
 
 /**
- * Security server request interceptor 
+ * Security server request interceptor
  */
 public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject implements ServerRequestInterceptor {
 
     private static final long serialVersionUID = 1L;
-    
+
     private static Logger logger = LogDomains.getLogger(SecServerRequestInterceptor.class, LogDomains.SECURITY_LOGGER);
     private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SecServerRequestInterceptor.class);
 
@@ -131,11 +131,11 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
     };
 
     /**
-     * Hard code the value of 15 for SecurityAttributeService until it is defined in IOP.idl. sc.context_id =
-     * SecurityAttributeService.value;
+     * Hard code the value of 15 for SecurityAttributeService until it is defined in IOP.idl.
+     * sc.context_id = SecurityAttributeService.value;
      */
     protected static final int SECURITY_ATTRIBUTE_SERVICE_ID = 15;
-    
+
     // The major and minor codes for a invalid mechanism
     private static final int INVALID_MECHANISM_MAJOR = 2;
     private static final int INVALID_MECHANISM_MINOR = 1;
@@ -162,6 +162,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
         smSelector = Lookups.getSecurityMechanismSelector();
     }
 
+    @Override
     public String name() {
         return name;
     }
@@ -170,7 +171,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
      * Create a ContextError message. This is currently designed to work only for the GSSUP mechanism.
      */
     private SASContextBody createContextError(int status) {
-        
+
         /**
          * CSIV2 SPEC NOTE:
          * 
@@ -187,17 +188,16 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
         if (logger.isLoggable(FINE)) {
             logger.log(FINE, "Creating ContextError message: major code = " + major + "minor code= " + minor);
         }
-        
+
         byte error_token[] = {};
-        ContextError ce = new ContextError(
-                0, /* stateless client id */
+        ContextError ce = new ContextError(0, /* stateless client id */
                 major, // major
                 minor, // minor
                 error_token);
-        
+
         SASContextBody sasctxtbody = new SASContextBody();
         sasctxtbody.error_msg(ce);
-        
+
         return sasctxtbody;
     }
 
@@ -205,7 +205,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
      * Create a CompleteEstablishContext Message. This currently works only for the GSSUP mechanism.
      */
     private SASContextBody createCompleteEstablishContext(int status) {
-        
+
         /**
          * CSIV2 SPEC NOTE:
          * 
@@ -214,16 +214,15 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
         if (logger.isLoggable(FINE)) {
             logger.log(FINE, "Creating CompleteEstablishContext message");
         }
-        
+
         byte[] final_context_token = {};
-        CompleteEstablishContext completeEstablishContext = new CompleteEstablishContext(
-                0, // stateless client id
+        CompleteEstablishContext completeEstablishContext = new CompleteEstablishContext(0, // stateless client id
                 false, // for stateless
                 final_context_token);
-        
+
         SASContextBody sasctxtbody = new SASContextBody();
         sasctxtbody.complete_msg(completeEstablishContext);
-        
+
         return sasctxtbody;
     }
 
@@ -243,17 +242,17 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
         } catch (Exception e) {
             logger.log(Level.SEVERE, "iiop.encode_exception", e);
         }
-        
+
         serviceContext = new ServiceContext();
         serviceContext.context_id = SECURITY_ATTRIBUTE_SERVICE_ID;
         serviceContext.context_data = cdr_encoded_saselm;
-        
+
         return serviceContext;
     }
 
     /**
-     * Create an identity from an Identity Token and stores it as a public credential in the JAAS subject in a security
-     * context.
+     * Create an identity from an Identity Token and stores it as a public credential in the JAAS
+     * subject in a security context.
      * 
      * Set the identcls field in the security context.
      * 
@@ -269,7 +268,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, "Identity token type is Absent");
             }
-            
+
             securityContext.identcls = null;
             break;
 
@@ -278,7 +277,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
                 logger.log(FINE, "Identity token type is Anonymous");
                 logger.log(FINE, "Adding AnonyCredential to subject's PublicCredentials");
             }
-            
+
             securityContext.subject.getPublicCredentials().add(new AnonCredential());
             securityContext.identcls = AnonCredential.class;
             break;
@@ -287,7 +286,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
             // Construct a X500Name
 
             derEncoding = identityToken.dn();
-            
+
             // Issue 5766: Decode CDR encoding if necessary
             if (isCDR(derEncoding)) {
                 any = codec.decode_value(derEncoding, X501DistinguishedNameHelper.type());
@@ -295,18 +294,18 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
                 // Extract CDR encoding
                 derEncoding = X501DistinguishedNameHelper.extract(any);
             }
-            
+
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, "Create an X500Name object from identity token");
             }
-            
+
             X500Name xname = new X500Name(derEncoding);
-            
+
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, "Identity to be asserted is " + xname.toString());
                 logger.log(FINE, "Adding X500Name to subject's PublicCredentials");
             }
-            
+
             securityContext.subject.getPublicCredentials().add(xname);
             securityContext.identcls = X500Name.class;
             break;
@@ -316,9 +315,9 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, "Identity token type is a X509 Certificate Chain");
             }
-            
+
             derEncoding = identityToken.certificate_chain();
-            
+
             // Issue 5766: Decode CDR encoding if necessary
             if (isCDR(derEncoding)) {
                 // Decode CDR encoding
@@ -336,8 +335,8 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
             DerValue[] derval = din.getSequence(1);
             X509Certificate[] certchain = new X509CertImpl[derval.length];
             /**
-             * X509Certificate does not have a constructor which can be used to instantiate objects from DER encodings. So use
-             * X509CertImpl extends X509Cerificate and also implements DerEncoder interface.
+             * X509Certificate does not have a constructor which can be used to instantiate objects from DER
+             * encodings. So use X509CertImpl extends X509Cerificate and also implements DerEncoder interface.
              */
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, "Contents of X509 Certificate chain:");
@@ -352,10 +351,12 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
                 logger.log(FINE, "Creating a X509CertificateCredential object from certchain");
             }
             /**
-             * The alias field in the X509CertificateCredential is currently ignored by the RI. So it is set to "dummy".
+             * The alias field in the X509CertificateCredential is currently ignored by the RI. So it is set to
+             * "dummy".
              * 
              */
-            X509CertificateCredential cred = new X509CertificateCredential(certchain, certchain[0].getSubjectDN().getName(), "default");
+            X509CertificateCredential cred = new X509CertificateCredential(certchain, certchain[0].getSubjectDN().getName(),
+                    "default");
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, "Adding X509CertificateCredential to subject's PublicCredentials");
             }
@@ -367,9 +368,9 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, "Identity token type is GSS Exported Name");
             }
-            
+
             byte[] expname = identityToken.principal_name();
-            
+
             // Issue 5766: Decode CDR encoding if necessary
             if (isCDR(expname)) {
                 // Decode CDR encoding
@@ -377,7 +378,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
 
                 expname = GSS_NT_ExportedNameHelper.extract(any);
             }
-            
+
             if (!verifyMechOID(GSSUP_MECH_OID, expname)) {
                 throw new SecurityException(localStrings.getLocalString("secserverreqinterceptor.err_unknown_idassert_type",
                         "Unknown identity assertion type."));
@@ -387,22 +388,21 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
 
             securityContext.subject.getPublicCredentials().add(gssname);
             securityContext.identcls = GSSUPName.class;
-            
+
             logger.log(FINE, "Adding GSSUPName credential to subject");
             break;
 
         default:
             logger.log(SEVERE, "iiop.unknown_identity");
-            throw new SecurityException(
-                    localStrings.getLocalString("secserverreqinterceptor.err_unknown_idassert_type", "Unknown identity assertion type."));
+            throw new SecurityException(localStrings.getLocalString("secserverreqinterceptor.err_unknown_idassert_type",
+                    "Unknown identity assertion type."));
         }
     }
 
     /**
      * Check if given byte is CDR encapsulated.
      * 
-     * @param bytes
-     *            an input array of byte
+     * @param bytes an input array of byte
      * @return boolean indicates whether input is CDR
      */
     private boolean isCDR(byte[] bytes) {
@@ -410,8 +410,8 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
     }
 
     /**
-     * Create an auth credential from authentication token and store it as a private credential in the JAAS subject in the
-     * security context.
+     * Create an auth credential from authentication token and store it as a private credential in the
+     * JAAS subject in the security context.
      *
      * Set the authcls field in the security context.
      *
@@ -419,47 +419,50 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
      */
     private void createAuthCredential(SecurityContext securityContext, byte[] authToken, ORB orb) throws Exception {
         logger.log(FINE, "Constructing a PasswordCredential from client authentication token");
-        
+
         // Create a GSSUPToken from the authentication token
-        PasswordCredential passwordCredential = GSSUPToken.getServerSideInstance(orb, codec, authToken)
-                                                          .getPwdcred();
+        PasswordCredential passwordCredential = GSSUPToken.getServerSideInstance(orb, codec, authToken).getPwdcred();
 
         if (logger.isLoggable(FINE)) {
             logger.log(FINE, "Password credential = " + passwordCredential.toString());
             logger.log(FINE, "Adding PasswordCredential to subject's PrivateCredentials");
         }
-        
+
         doPrivileged(new PrivilegedAction<java.lang.Object>() {
+            @Override
             public java.lang.Object run() {
                 securityContext.subject.getPrivateCredentials().add(passwordCredential);
                 return null;
             }
         });
-        
+
         securityContext.authcls = PasswordCredential.class;
     }
 
     private void handle_null_service_context(ServerRequestInfo serverRequestInfo, ORB orb) {
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "No SAS context element found in service context list for operation: " + serverRequestInfo.operation());
+            logger.log(Level.FINE,
+                    "No SAS context element found in service context list for operation: " + serverRequestInfo.operation());
         }
-        
+
         ServiceContext serviceContext = null;
-        int secStatus = secContextUtil.setSecurityContext(null, serverRequestInfo.object_id(), serverRequestInfo.operation(), getServerSocket());
+        int secStatus = secContextUtil.setSecurityContext(null, serverRequestInfo.object_id(), serverRequestInfo.operation(),
+                getServerSocket());
 
         if (secStatus == STATUS_FAILED) {
             SASContextBody sasctxbody = createContextError(INVALID_MECHANISM_MAJOR, INVALID_MECHANISM_MINOR);
             serviceContext = createSvcContext(sasctxbody, orb);
             serverRequestInfo.add_reply_service_context(serviceContext, NO_REPLACE);
-            
+
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, "SecServerRequestInterceptor.receive_request: NO_PERMISSION");
             }
-            
+
             throw new NO_PERMISSION();
         }
     }
 
+    @Override
     public void receive_request(ServerRequestInfo serverRequestInfo) throws ForwardRequest {
         SecurityContext securityContext = null; // SecurityContext to be sent
         ServiceContext serviceContext = null; // service context
@@ -485,36 +488,37 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
         if (logger.isLoggable(FINE)) {
             logger.log(FINE, "Received a non null SAS context element");
         }
-        
+
         // Decode the service context field
         Any SasAny;
         try {
             SasAny = codec.decode_value(serviceContext.context_data, SASContextBodyHelper.type());
         } catch (Exception e) {
             logger.log(SEVERE, "iiop.decode_exception", e);
-            throw new SecurityException(
-                    localStrings.getLocalString("secserverreqinterceptor.err_cdr_decode", "CDR Decoding error for SAS context element."));
+            throw new SecurityException(localStrings.getLocalString("secserverreqinterceptor.err_cdr_decode",
+                    "CDR Decoding error for SAS context element."));
         }
 
         if (logger.isLoggable(FINE)) {
             logger.log(FINE, "Successfully decoded CDR encoded SAS context element.");
         }
-        
+
         SASContextBody sasctxbody = SASContextBodyHelper.extract(SasAny);
 
         short sasdiscr = sasctxbody.discriminator();
         if (logger.isLoggable(FINE)) {
             logger.log(FINE, "SAS context element is a/an " + SvcContextUtils.getMsgname(sasdiscr) + " message");
         }
-        
+
         // Check message type received
 
         /**
          * CSIV2 SPEC NOTE:
          *
-         * Section 4.3 "TSS State Machine" , table 4-4 "TSS State Table" shows that a MessageInContext can be received. In this
-         * case the table is somewhat unclear. But in this case a ContextError with the status code "No Context" ( specified in
-         * section 4.5 "ContextError Values and Exceptions" must be sent back. A NO_PERMISSION exception must also be raised.
+         * Section 4.3 "TSS State Machine" , table 4-4 "TSS State Table" shows that a MessageInContext can
+         * be received. In this case the table is somewhat unclear. But in this case a ContextError with the
+         * status code "No Context" ( specified in section 4.5 "ContextError Values and Exceptions" must be
+         * sent back. A NO_PERMISSION exception must also be raised.
          *
          * ISSUE: should setSecurityContext(null) be called ?
          */
@@ -522,12 +526,12 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
         if (sasdiscr == MTMessageInContext.value) {
             sasctxbody = createContextError(SvcContextUtils.MessageInContextMinor);
             serviceContext = createSvcContext(sasctxbody, orb);
-            
+
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, "Adding ContextError message to service context list");
                 logger.log(FINE, "SecurityContext set to null");
             }
-            
+
             serverRequestInfo.add_reply_service_context(serviceContext, NO_REPLACE);
 
             throw new NO_PERMISSION();
@@ -536,16 +540,16 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
         /**
          * CSIV2 SPEC NOTE:
          * 
-         * CSIV2 spec does not specify the actions for any message other than a MessageInContext and EstablishContext message.So
-         * for such messages, this implementation simply drops the message on the floor. No other message is sent back. Neither
-         * is an exception raised.
+         * CSIV2 spec does not specify the actions for any message other than a MessageInContext and
+         * EstablishContext message.So for such messages, this implementation simply drops the message on
+         * the floor. No other message is sent back. Neither is an exception raised.
          * 
          * ISSUE: Should there be some other action ?
          */
 
         if (sasdiscr != MTEstablishContext.value) {
             logger.log(SEVERE, "iiop.not_establishcontext_msg");
-            
+
             throw new SecurityException(localStrings.getLocalString("secserverreqinterceptor.err_not_ec_msg",
                     "Received message not an EstablishContext message."));
         }
@@ -560,12 +564,12 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
                 if (logger.isLoggable(FINE)) {
                     logger.log(FINE, "Message contains Client Authentication Token");
                 }
-                
+
                 createAuthCredential(securityContext, establishContext.client_authentication_token, orb);
             }
         } catch (Exception e) {
             logger.log(SEVERE, "iiop.authentication_exception", e);
-            
+
             throw new SecurityException(localStrings.getLocalString("secsercverreqinterceptor.err_cred_create",
                     "Error while creating a JAAS subject credential."));
         }
@@ -582,7 +586,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
             sasctxbody = createContextError(INVALID_MECHANISM_MAJOR, INVALID_MECHANISM_MINOR);
             serviceContext = createSvcContext(sasctxbody, orb);
             serverRequestInfo.add_reply_service_context(serviceContext, NO_REPLACE);
-            
+
             throw new NO_PERMISSION();
         } catch (Exception e) {
             logger.log(SEVERE, "iiop.generic_exception", e);
@@ -594,52 +598,56 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Invoking setSecurityContext() to set security context");
         }
-        
-        status = secContextUtil.setSecurityContext(securityContext, serverRequestInfo.object_id(), serverRequestInfo.operation(), getServerSocket());
+
+        status = secContextUtil.setSecurityContext(securityContext, serverRequestInfo.object_id(), serverRequestInfo.operation(),
+                getServerSocket());
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "setSecurityContext() returned status code " + status);
         }
-        
+
         /**
          * CSIV2 SPEC NOTE:
          *
-         * If ec.client_context_id is non zero, then this is a stateful request. As specified in section 4.2.1, a stateless
-         * server must attempt to validate the security tokens in the security context field. If validation succeeds then
-         * CompleteEstablishContext message is sent back. If validation fails, a ContextError must be sent back.
+         * If ec.client_context_id is non zero, then this is a stateful request. As specified in section
+         * 4.2.1, a stateless server must attempt to validate the security tokens in the security context
+         * field. If validation succeeds then CompleteEstablishContext message is sent back. If validation
+         * fails, a ContextError must be sent back.
          */
         if (status == STATUS_FAILED) {
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, "setSecurityContext() returned STATUS_FAILED");
             }
-            
+
             sasctxbody = createContextError(status);
             serviceContext = createSvcContext(sasctxbody, orb);
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, "Adding ContextError message to service context list");
             }
             serverRequestInfo.add_reply_service_context(serviceContext, NO_REPLACE);
-            
+
             throw new NO_PERMISSION();
         }
 
         if (logger.isLoggable(FINE)) {
             logger.log(FINE, "setSecurityContext() returned SUCCESS");
         }
-        
+
         sasctxbody = createCompleteEstablishContext(status);
         serviceContext = createSvcContext(sasctxbody, orb);
-        
+
         if (logger.isLoggable(FINE)) {
             logger.log(FINE, "Adding CompleteEstablisContext message to service context list");
         }
-        
+
         serverRequestInfo.add_reply_service_context(serviceContext, NO_REPLACE);
     }
 
     /**
-     * This method is keeping a track of when to unset the security context Currently with the re-use of the threads made by
-     * the orb the security context does not get unset. This method determines when to unset the security context
+     * This method is keeping a track of when to unset the security context Currently with the re-use of
+     * the threads made by the orb the security context does not get unset. This method determines when
+     * to unset the security context
      */
+    @Override
     public void receive_request_service_contexts(ServerRequestInfo serverRequestInfo) throws ForwardRequest {
         // cannot set this in receive_request due to the PI flow control
         // semantics. e.g. if receive_req for some other PI throws an
@@ -656,7 +664,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
         if (serverRequestInfo instanceof RequestInfoExt) {
             connection = ((RequestInfoExt) serverRequestInfo).connection();
         }
-        
+
         ServerConnectionContext serverConnectionContext = null;
         if (connection != null) {
             socket = connection.getSocket();
@@ -668,22 +676,26 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
         } else {
             serverConnectionContext = new ServerConnectionContext();
         }
-        
+
         setServerConnectionContext(serverConnectionContext);
     }
 
+    @Override
     public void send_reply(ServerRequestInfo ri) {
         unsetSecurityContext();
     }
 
+    @Override
     public void send_exception(ServerRequestInfo ri) throws ForwardRequest {
         unsetSecurityContext();
     }
 
+    @Override
     public void send_other(ServerRequestInfo ri) throws ForwardRequest {
         unsetSecurityContext();
     }
 
+    @Override
     public void destroy() {
     }
 

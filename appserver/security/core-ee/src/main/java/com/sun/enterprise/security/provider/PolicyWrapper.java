@@ -51,28 +51,25 @@
 package com.sun.enterprise.security.provider;
 
 /**
- * This class is a wrapper around the default jdk policy file 
- * implementation. PolicyWrapper is installed as the JRE policy object
- * It multiplexes policy decisions to the context specific instance of
- * com.sun.enterprise.security.provider.PolicyFile.
- * Although this Policy provider is implemented using another Policy class,
- * this class is not a "delegating Policy provider" as defined by JACC, and
- * as such it SHOULD not be configured using the JACC system property
- * javax.security.jacc.policy.provider.
- * @author Harpreet Singh (harpreet.singh@sun.com)  
+ * This class is a wrapper around the default jdk policy file implementation. PolicyWrapper is installed as the JRE
+ * policy object It multiplexes policy decisions to the context specific instance of
+ * com.sun.enterprise.security.provider.PolicyFile. Although this Policy provider is implemented using another Policy
+ * class, this class is not a "delegating Policy provider" as defined by JACC, and as such it SHOULD not be configured
+ * using the JACC system property javax.security.jacc.policy.provider.
+ * 
+ * @author Harpreet Singh (harpreet.singh@sun.com)
  * @author Jean-Francois Arcand
  * @author Ron Monzillo
  *
  */
 public class PolicyWrapper extends BasePolicyWrapper {
-    
+
     // override to change the implementation of PolicyFile
-    /** gets the underlying PolicyFile implementation
-     * can be overridden by Subclass
+    /**
+     * gets the underlying PolicyFile implementation can be overridden by Subclass
      */
     @Override
     protected java.security.Policy getNewPolicy() {
-	return (java.security.Policy) new sun.security.provider.PolicyFile();
+        return new sun.security.provider.PolicyFile();
     }
 }
-

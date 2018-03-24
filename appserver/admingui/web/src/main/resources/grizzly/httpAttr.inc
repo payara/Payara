@@ -40,7 +40,7 @@
 
 -->
 
-<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates.] -->
+<!-- Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates.] -->
 
 <!-- grizzly/httpAttr.inc -->
 
@@ -114,17 +114,13 @@
             <sun:staticText id="byte" style="padding: 8pt" text="$resource{i18n.common.Bytes}"/>
         </sun:property>
 
-
         <sun:property id="UriEncoding"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.UriEncoding}" helpText="$resource{i18n_web.http.UriEncodingHelp}" >
             <sun:textField id="UriEncoding"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.UriEncoding']}" text="#{pageSession.httpMap['uriEncoding']}" />
         </sun:property>
 
+
         <sun:property id="Http2Enabled"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.http2.enabled}" helpText="$resource{i18n_web.http.http2.enabled.help}" >
             <sun:checkbox label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['http2Enabled']}" selectedValue="true" />
-        </sun:property>
-
-        <sun:property id="Http2DisableCipherCheck"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.http2.disableCipherCheck}" helpText="$resource{i18n_web.http.http2.disableCipherCheck.help}" >
-            <sun:checkbox label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['http2DisableCipherCheck']}" selectedValue="true" />
         </sun:property>
 
         <sun:property id="Http2MaxConcurrentStreams"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.http2.maxConcurrentStreams}" helpText="$resource{i18n_web.http.http2.maxConcurrentStreams.help}" >
@@ -146,10 +142,30 @@
             <sun:staticText id="byte" style="padding: 8pt" text="$resource{i18n.common.Bytes}"/>
         </sun:property>
 
-       <sun:property id="Compression"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.Compression}" helpText="$resource{i18n_web.http.CompressionHelp}">
-            <sun:dropDown id="Compression" selected="#{pageSession.httpMap['compression']}" labels={"on","off","force"} />
+        <sun:property id="Http2StreamsHighWaterMark"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.http2.streamsHighWaterMark}" helpText="$resource{i18n_web.http.http2.streamsHighWaterMark.help}" >
+            <sun:textField id="Http2StreamsHighWaterMark" columns="$int{15}" maxLength="#{sessionScope.fieldLengths['maxLength.http.http2.streamsHighWaterMark']}" text="#{pageSession.httpMap['http2StreamsHighWaterMark']}" />
         </sun:property>
 
+        <sun:property id="Http2CleanPercentage"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.http2.cleanPercentage}" helpText="$resource{i18n_web.http.http2.cleanPercentage.help}" >
+            <sun:textField id="Http2CleanPercentage" columns="$int{15}" maxLength="#{sessionScope.fieldLengths['maxLength.http.http2.cleanPercentage']}" text="#{pageSession.httpMap['http2CleanPercentage']}" />
+        </sun:property>
+
+        <sun:property id="Http2CleanFrequencyCheck"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.http2.cleanFrequencyCheck}" helpText="$resource{i18n_web.http.http2.cleanFrequencyCheck.help}" >
+            <sun:textField id="Http2CleanFrequencyCheck" styleClass="integer" columns="$int{15}" maxLength="#{sessionScope.fieldLengths['maxLength.http.http2.cleanFrequencyCheck']}" text="#{pageSession.httpMap['http2CleanFrequencyCheck']}" />
+        </sun:property>
+
+        <sun:property id="Http2DisableCipherCheck"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.http2.disableCipherCheck}" helpText="$resource{i18n_web.http.http2.disableCipherCheck.help}" >
+            <sun:checkbox label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['http2DisableCipherCheck']}" selectedValue="true" />
+        </sun:property>
+
+        <sun:property id="Http2PushEnabled"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.http2.pushEnabled}" helpText="$resource{i18n_web.http.http2.pushEnabled.help}" >
+            <sun:checkbox label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['http2PushEnabled']}" selectedValue="true" />
+        </sun:property>
+
+
+        <sun:property id="Compression"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.Compression}" helpText="$resource{i18n_web.http.CompressionHelp}">
+            <sun:dropDown id="Compression" selected="#{pageSession.httpMap['compression']}" labels={"on","off","force"} />
+        </sun:property>
 
         <sun:property id="CompressableMimeType"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.CompressableMimeType}" helpText="$resource{i18n_web.http.CompressableMimeTypeHelp}" >
             <sun:textField id="CompressableMimeType"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.CompressableMimeType']}" text="#{pageSession.httpMap['compressableMimeType']}" />

@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jauth;
 
 /**
  * Authentication is pending.
  *
- * <p> This exception can be thrown by an AuthModule
- * issuing a challenge, for example.
+ * <p>
+ * This exception can be thrown by an AuthModule issuing a challenge, for example.
  *
  * @version %I%, %G%
  */
@@ -53,24 +53,22 @@ public class PendingException extends AuthException {
     private static final long serialVersionUID = 1735672964915327465L;
 
     /**
-     * Constructs a PendingException with no detail message. A detail
-     * message is a String that describes this particular exception.
+     * Constructs a PendingException with no detail message. A detail message is a String that describes this particular
+     * exception.
      */
     public PendingException() {
-	super();
+        super();
     }
 
     /**
-     * Constructs a PendingException with the specified detail message.
-     * A detail message is a String that describes this particular
-     * exception.
+     * Constructs a PendingException with the specified detail message. A detail message is a String that describes this
+     * particular exception.
      *
      * <p>
      *
      * @param msg the detail message.
      */
     public PendingException(String msg) {
-	super(msg);
+        super(msg);
     }
 }
-

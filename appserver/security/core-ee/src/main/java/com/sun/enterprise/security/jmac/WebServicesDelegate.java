@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jmac;
 
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
@@ -50,12 +50,13 @@ import org.glassfish.api.invocation.ComponentInvocation;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * A Delegate Interface for handling WebServices Specific Security and  JSR 196 Providers
- * This insulates the GF Web-Bundle from any WebServices Dependencies.
+ * A Delegate Interface for handling WebServices Specific Security and JSR 196 Providers This insulates the GF
+ * Web-Bundle from any WebServices Dependencies.
+ * 
  * @author kumar.jayanti
  */
 @Contract
-public interface  WebServicesDelegate {
+public interface WebServicesDelegate {
     /**
      * 
      * @param svcRef The ServiceReferenceDescriptor
@@ -63,30 +64,34 @@ public interface  WebServicesDelegate {
      * @return The MessageSecurityBindingDescriptor
      */
     public MessageSecurityBindingDescriptor getBinding(ServiceReferenceDescriptor svcRef, Map properties);
+
     /**
      * remove the registration of the argument listener from the Pipe
+     * 
      * @param listener
      */
     public void removeListener(ConfigHelper.AuthConfigRegistrationWrapper listener);
-    /** 
+
+    /**
      * @return the classname of the Default JSR 196 WebServices Security Provider (A.k.a Metro Security Provider)
      */
-    public String  getDefaultWebServicesProvider();
-    
+    public String getDefaultWebServicesProvider();
+
     /**
-     * @param messageInfo  The MessageInfo
+     * @param messageInfo The MessageInfo
      * @return the AuthContextID computed from the argument MessageInfo
      */
     public String getAuthContextID(MessageInfo messageInfo);
-    
+
     /**
      * @param messageInfo TheMessageInfo
      * @return a new instance of SOAPAuthParam
      */
     public AuthParam newSOAPAuthParam(MessageInfo messageInfo);
-    
+
     /**
      * return the SOAP Message from the invocation, to be used by JACC PolicyContextHandler
+     * 
      * @param inv the invocation
      * @return the SOAP Message
      */

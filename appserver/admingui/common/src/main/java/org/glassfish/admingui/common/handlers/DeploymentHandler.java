@@ -229,10 +229,11 @@ public class DeploymentHandler {
             Map<String,String> deployMap = (Map) handlerCtx.getInputValue("deployMap");
             Map<String,String> valueMap = (Map) handlerCtx.getInputValue("valueMap");
             List<String> convertToFalsList = (List<String>) handlerCtx.getInputValue("convertToFalse");
-            if (convertToFalsList != null)
-            for (String one : convertToFalsList) {
-                if (deployMap.get(one) == null) {
-                    deployMap.put(one, "false");
+            if (convertToFalsList != null) {
+                for (String one : convertToFalsList) {
+                    if (deployMap.get(one) == null) {
+                        deployMap.put(one, "false");
+                    }
                 }
             }
             String appName = deployMap.get("appName");

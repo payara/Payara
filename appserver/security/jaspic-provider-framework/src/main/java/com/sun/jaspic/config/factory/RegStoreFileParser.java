@@ -37,10 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.factory;
 
-import com.sun.jaspic.config.helper.JASPICLogManager;
+import static com.sun.jaspic.config.helper.JASPICLogManager.JASPIC_LOGGER;
+import static com.sun.jaspic.config.helper.JASPICLogManager.RES_BUNDLE;
+import static java.util.logging.Level.FINER;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.WARNING;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -52,24 +57,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.security.auth.message.config.AuthConfigFactory.RegistrationContext;
 
-
 /**
- * Used by GFServerConfigProvider to parse the configuration file. If
- * a file does not exist originally, the default providers are not used.
- * A file is only created if needed, which happens if providers are
- * registered or unregistered through the store() or delete() methods.
+ * Used by ServerConfigProvider to parse the configuration file. If a file does not exist originally, the default
+ * providers are not used. A file is only created if needed, which happens if providers are registered or unregistered
+ * through the store() or delete() methods.
  *
  * @author Bobby Bissett
  */
 public final class RegStoreFileParser {
 
-    private static final Logger logger =
-            Logger.getLogger(JASPICLogManager.JASPIC_LOGGER, JASPICLogManager.RES_BUNDLE);
+    private static final Logger logger = Logger.getLogger(JASPIC_LOGGER, RES_BUNDLE);
 
     private static final String SEP = ":";
     private static final String CON_ENTRY = "con-entry";
@@ -78,21 +79,21 @@ public final class RegStoreFileParser {
     private static final String LAYER = "layer";
     private static final String APP_CTX = "app-ctx";
     private static final String DESCRIPTION = "description";
-    private static final String [] INDENT = { "", "  ", "    " };
+    private static final String[] INDENT = { "", "  ", "    " };
 
-    private final File confFile;
+    private final File configurationFile;
     private List<EntryInfo> entries;
     private List<EntryInfo> defaultEntries;
 
-    /*
-     * Loads the configuration file from the given filename.
-     * If a file is not found, then the default entries
-     * are used. Otherwise the file is parsed to load the entries.
+    /**
+     * Loads the configuration file from the given filename. If a file is not found, then the default entries are used.
+     * Otherwise the file is parsed to load the entries.
      *
      */
-    public RegStoreFileParser(String pathParent, String pathChild,List<EntryInfo> defaultEntries) {
-        confFile = new File(pathParent, pathChild);
+    public RegStoreFileParser(String pathParent, String pathChild, List<EntryInfo> defaultEntries) {
+        configurationFile = new File(pathParent, pathChild);
         this.defaultEntries = defaultEntries == null ? new ArrayList<EntryInfo>() : defaultEntries;
+
         try {
             loadEntries();
         } catch (IOException ioe) {
@@ -102,36 +103,20 @@ public final class RegStoreFileParser {
         }
     }
 
-    private void logWarningUpdated(Exception exception) {
-        if (logger.isLoggable(Level.WARNING)) {
-            logger.log(Level.WARNING,
-                "jmac.factory_could_not_persist", exception.toString());
-        }
-    }
-
-    private void logWarningDefault(Exception exception) {
-        if (logger.isLoggable(Level.WARNING)) {
-            logger.log(Level.WARNING,
-                "jmac.factory_could_not_read", exception.toString());
-        }
-    }
-
-    /*
-     * Returns the in-memory list of entries.
-     * MUST Hold exclusive lock on calling factory while processing entries
+    /**
+     * Returns the in-memory list of entries. MUST Hold exclusive lock on calling factory while processing entries
      */
     List<EntryInfo> getPersistedEntries() {
         return entries;
     }
 
-    /*
-     * Adds the provider to the entry list if it is not already
-     * present, creates the configuration file if necessary, and
+    /**
+     * Adds the provider to the entry list if it is not already present, creates the configuration file if necessary, and
      * writes the entries to the file.
      */
-    void store(String className, RegistrationContext ctx, Map properties) {
-        synchronized (confFile) {
-            if (checkAndAddToList(className, ctx, properties)) {
+    void store(String className, RegistrationContext registrationContext, Map<String, String> properties) {
+        synchronized (configurationFile) {
+            if (checkAndAddToList(className, registrationContext, properties)) {
                 try {
                     writeEntries();
                 } catch (IOException ioe) {
@@ -141,14 +126,13 @@ public final class RegStoreFileParser {
         }
     }
 
-    /*
-     * Removes the provider from the entry list if it is already
-     * present, creates the configuration file if necessary, and
+    /**
+     * Removes the provider from the entry list if it is already present, creates the configuration file if necessary, and
      * writes the entries to the file.
      */
-    void delete(RegistrationContext ctx) {
-        synchronized (confFile) {
-            if (checkAndRemoveFromList(ctx)) {
+    void delete(RegistrationContext registrationContext) {
+        synchronized (configurationFile) {
+            if (checkAndRemoveFromList(registrationContext)) {
                 try {
                     writeEntries();
                 } catch (IOException ioe) {
@@ -158,40 +142,39 @@ public final class RegStoreFileParser {
         }
     }
 
-    /*
-     * If this entry does not exist, this method stores it in
-     * the entries list and returns true to indicate that the
+    /**
+     * If this entry does not exist, this method stores it in the entries list and returns true to indicate that the
      * configuration file should be written.
      */
-    private boolean checkAndAddToList(String className,
-        RegistrationContext ctx, Map props) {
+    private boolean checkAndAddToList(String className, RegistrationContext registrationContext, Map<String, String> properties) {
 
-        // convention is to use null for empty properties
-        if (props != null && props.isEmpty()) {
-            props = null;
+        // Convention is to use null for empty properties
+        if (properties != null && properties.isEmpty()) {
+            properties = null;
         }
-        EntryInfo newEntry = new EntryInfo(className, props, ctx);
-        EntryInfo entry = getMatchingRegEntry(newEntry);
 
-        // there is no matching entry, so add to list
+        EntryInfo newEntry = new EntryInfo(className, properties, registrationContext);
+        EntryInfo entry = getMatchingRegistrationEntry(newEntry);
+
+        // There is no matching entry, so add to list
         if (entry == null) {
             entries.add(newEntry);
             return true;
         }
 
-        // otherwise, check reg contexts to see if there is a match
-        if (entry.getRegContexts().contains(ctx)) {
+        // Otherwise, check reg contexts to see if there is a match
+        if (entry.getRegistrationContexts().contains(registrationContext)) {
             return false;
         }
 
-        // no matching context in existing entry, so add to existing entry
-        entry.getRegContexts().add(new RegistrationContextImpl(ctx));
+        // No matching context in existing entry, so add to existing entry
+        entry.getRegistrationContexts().add(new RegistrationContextImpl(registrationContext));
+
         return true;
     }
 
-    /*
-     * If this registration context does not exist, this method
-     * returns false. Otherwise it removes the entry and returns
+    /**
+     * If this registration context does not exist, this method returns false. Otherwise it removes the entry and returns
      * true to indicate that the configuration file should be written.
      *
      * This only makes sense for registry entries.
@@ -207,13 +190,12 @@ public final class RegStoreFileParser {
                     continue;
                 }
 
-                Iterator<RegistrationContext> iter =
-                        info.getRegContexts().iterator();
+                Iterator<RegistrationContext> iter = info.getRegistrationContexts().iterator();
                 while (iter.hasNext()) {
                     RegistrationContext ctx = iter.next();
                     if (ctx.equals(target)) {
                         iter.remove();
-                        if (info.getRegContexts().isEmpty()) {
+                        if (info.getRegistrationContexts().isEmpty()) {
                             lit.remove();
                         }
                         retValue = true;
@@ -223,35 +205,35 @@ public final class RegStoreFileParser {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
         return retValue;
     }
 
-    /*
-     * Used to find a matching registration entry in the 'entries'
-     * list without including registration contexts. If there is not
-     * a matching entry, return null.
+    /**
+     * Used to find a matching registration entry in the 'entries' list without including registration contexts. If there is
+     * not a matching entry, return null.
      */
-    private EntryInfo getMatchingRegEntry(EntryInfo target) {
+    private EntryInfo getMatchingRegistrationEntry(EntryInfo target) {
         for (EntryInfo info : entries) {
             if (!info.isConstructorEntry() && info.matchConstructors(target)) {
                 return info;
             }
         }
+
         return null;
     }
 
-    /*
-     * This method overwrites the existing file with the
-     * current entries.
+    /**
+     * This method overwrites the existing file with the current entries.
      */
     private void writeEntries() throws IOException {
-        if (confFile.exists() && !confFile.canWrite()
-                && logger.isLoggable(Level.WARNING)) {
-            logger.log(Level.WARNING, "jmac.factory_cannot_write_file",
-                    confFile.getPath());
+        if (configurationFile.exists() && !configurationFile.canWrite() && logger.isLoggable(WARNING)) {
+            logger.log(WARNING, "jmac.factory_cannot_write_file", configurationFile.getPath());
         }
+
         clearExistingFile();
-        PrintWriter out = new PrintWriter(confFile);
+
+        PrintWriter out = new PrintWriter(configurationFile);
         int indent = 0;
         for (EntryInfo info : entries) {
             if (info.isConstructorEntry()) {
@@ -263,93 +245,87 @@ public final class RegStoreFileParser {
         out.close();
     }
 
-    /*
+    /**
      * Writes constructor entry output of the form:
+     * 
      * <pre>
-     * con-entry {
-     *   className
-     *   key:value
-     *   key:value
-     * }
+     *  con-entry { className key:value key:value }
      * </pre>
-     * The first appearance of a colon ":" separates
-     * the key and value of the property (so a value may
-     * contain a colon as part of the string). For instance:
-     * "mydir:c:foo" would have key "mydir" and value "c:foo".
+     * 
+     * The first appearance of a colon ":" separates the key and value of the property (so a value may contain a colon as
+     * part of the string). For instance: "mydir:c:foo" would have key "mydir" and value "c:foo".
      */
     private void writeConEntry(EntryInfo info, PrintWriter out, int i) {
         out.println(INDENT[i++] + CON_ENTRY + " {");
         out.println(INDENT[i] + info.getClassName());
-        Map<String, String> props = info.getProperties();
-        if (props != null) {
-            for (Map.Entry<String,String> val : props.entrySet()) {
+
+        Map<String, String> properties = info.getProperties();
+        if (properties != null) {
+            for (Map.Entry<String, String> val : properties.entrySet()) {
                 out.println(INDENT[i] + val.getKey() + SEP + val.getValue());
             }
         }
+
         out.println(INDENT[--i] + "}");
     }
 
     /*
-     * Write registration entry output of the form:
-     * <pre>
-     * reg-entry {
-     *   con-entry { see writeConEntry() for detail }
-     *   reg-ctx {
-     *     layer:HttpServlet
-     *     app-ctx:security-jmac-https
-     *     description:My provider
-     *   }
-     * }
-     * </pre>
+     * Write registration entry output of the form: <pre> reg-entry { con-entry { see writeConEntry() for detail } reg-ctx {
+     * layer:HttpServlet app-ctx:security-jmac-https description:My provider } } </pre>
      */
     private void writeRegEntry(EntryInfo info, PrintWriter out, int i) {
         out.println(INDENT[i++] + REG_ENTRY + " {");
         if (info.getClassName() != null) {
             writeConEntry(info, out, i);
         }
-        for (RegistrationContext ctx : info.getRegContexts()) {
+
+        for (RegistrationContext registrationContext : info.getRegistrationContexts()) {
             out.println(INDENT[i++] + REG_CTX + " {");
-            if (ctx.getMessageLayer() != null) {
-                out.println(INDENT[i] + LAYER + SEP + ctx.getMessageLayer());
+            if (registrationContext.getMessageLayer() != null) {
+                out.println(INDENT[i] + LAYER + SEP + registrationContext.getMessageLayer());
             }
-            if (ctx.getAppContext() != null) {
-                out.println(INDENT[i] + APP_CTX + SEP + ctx.getAppContext());
+
+            if (registrationContext.getAppContext() != null) {
+                out.println(INDENT[i] + APP_CTX + SEP + registrationContext.getAppContext());
             }
-            if (ctx.getDescription() != null) {
-                out.println(INDENT[i] + DESCRIPTION +
-                    SEP + ctx.getDescription());
+
+            if (registrationContext.getDescription() != null) {
+                out.println(INDENT[i] + DESCRIPTION + SEP + registrationContext.getDescription());
             }
+
             out.println(INDENT[--i] + "}");
         }
+
         out.println(INDENT[--i] + "}");
     }
 
     private void clearExistingFile() throws IOException {
-        boolean newCreation = !confFile.exists();
+        boolean newCreation = !configurationFile.exists();
+
         if (!newCreation) {
-            if(!confFile.delete()) {
+            if (!configurationFile.delete()) {
                 throw new IOException();
             }
-        } 
-        if (newCreation) {
-            logger.log(Level.INFO, "jmac.factory_creating_conf_file",
-                    confFile.getPath());
         }
-        if (!confFile.createNewFile()) {
+
+        if (newCreation) {
+            logger.log(INFO, "jmac.factory_creating_conf_file", configurationFile.getPath());
+        }
+
+        if (!configurationFile.createNewFile()) {
             throw new IOException();
         }
     }
 
-    /*
-     * Called from the constructor. This is the only time
-     * the file is read, though it is written when new
-     * entries are stored or deleted.
+    /**
+     * Called from the constructor. This is the only time the file is read, though it is written when new entries are stored
+     * or deleted.
      */
     private void loadEntries() throws IOException {
-        synchronized (confFile) {
+        synchronized (configurationFile) {
             entries = new ArrayList<EntryInfo>();
-            if (confFile.exists()) {
-                try (BufferedReader reader = new BufferedReader(new FileReader(confFile))) {
+            if (configurationFile.exists()) {
+                try (BufferedReader reader = new BufferedReader(new FileReader(configurationFile))) {
                     String line = reader.readLine();
                     while (line != null) {
                         String trimLine = line.trim(); // can't trim readLine() result
@@ -362,65 +338,60 @@ public final class RegStoreFileParser {
                     }
                 }
             } else {
-                if (logger.isLoggable(Level.FINER)) {
-                    logger.log(Level.FINER, "jmac.factory_file_not_found",
-                            confFile.getParent() + File.pathSeparator
-                            + confFile.getPath());
-                    
+                if (logger.isLoggable(FINER)) {
+                    logger.log(FINER, "jmac.factory_file_not_found",
+                            configurationFile.getParent() + File.pathSeparator + configurationFile.getPath());
                 }
-                for (EntryInfo e : defaultEntries) {
-                    entries.add(new EntryInfo(e));
+
+                for (EntryInfo entry : defaultEntries) {
+                    entries.add(new EntryInfo(entry));
                 }
             }
         }
     }
 
     private EntryInfo readConEntry(BufferedReader reader) throws IOException {
-        // entry must contain class name as next line
+        // Entry must contain class name as next line
         String className = reader.readLine();
-        if(className != null) {
+        if (className != null) {
             className = className.trim();
         }
-        Map<String, String> properties = readProperties(reader);
-        return new EntryInfo(className, properties);
+
+        return new EntryInfo(className, readProperties(reader));
     }
 
-    /*
-     * Properties must be of the form "key:value." While the key
-     * String cannot contain a ":" character, the value can. The
-     * line will be broken into key and value based on the first
-     * appearance of the ":" character.
+    /**
+     * Properties must be of the form "key:value." While the key String cannot contain a ":" character, the value can. The
+     * line will be broken into key and value based on the first appearance of the ":" character.
      */
-    private Map<String, String> readProperties(BufferedReader reader)
-        throws IOException {
-
+    private Map<String, String> readProperties(BufferedReader reader) throws IOException {
         String line = reader.readLine();
-        if(line != null) {
+        if (line != null) {
             line = line.trim();
         }
 
         if ("}".equals(line)) {
             return null;
         }
+
         Map<String, String> properties = new HashMap<String, String>();
         while (!"}".equals(line)) {
-            properties.put(line.substring(0, line.indexOf(SEP)),
-                line.substring(line.indexOf(SEP) + 1, line.length()));
+            properties.put(line.substring(0, line.indexOf(SEP)), line.substring(line.indexOf(SEP) + 1, line.length()));
             line = reader.readLine();
             if (line != null) {
                 line = line.trim();
             }
         }
+
         return properties;
     }
 
     private EntryInfo readRegEntry(BufferedReader reader) throws IOException {
         String className = null;
         Map<String, String> properties = null;
-        List<RegistrationContext> ctxs =
-            new ArrayList<RegistrationContext>();
+        List<RegistrationContext> ctxs = new ArrayList<RegistrationContext>();
         String line = reader.readLine();
-        if(line != null) {
+        if (line != null) {
             line = line.trim();
         }
         while (!"}".equals(line)) {
@@ -432,7 +403,7 @@ public final class RegStoreFileParser {
                 ctxs.add(readRegContext(reader));
             }
             line = reader.readLine();
-            if(line != null) {
+            if (line != null) {
                 line = line.trim();
             }
 
@@ -440,19 +411,17 @@ public final class RegStoreFileParser {
         return new EntryInfo(className, properties, ctxs);
     }
 
-    private RegistrationContext readRegContext(BufferedReader reader)
-        throws IOException {
-
+    private RegistrationContext readRegContext(BufferedReader reader) throws IOException {
         String layer = null;
         String appCtx = null;
         String description = null;
         String line = reader.readLine();
-        if(line != null) {
+        if (line != null) {
             line = line.trim();
         }
+
         while (!"}".equals(line)) {
-            String value = line.substring(line.indexOf(SEP) + 1,
-                line.length());
+            String value = line.substring(line.indexOf(SEP) + 1, line.length());
             if (line.startsWith(LAYER)) {
                 layer = value;
             } else if (line.startsWith(APP_CTX)) {
@@ -460,12 +429,26 @@ public final class RegStoreFileParser {
             } else if (line.startsWith(DESCRIPTION)) {
                 description = value;
             }
-           line = reader.readLine();
-            if(line != null) {
+
+            line = reader.readLine();
+            if (line != null) {
                 line = line.trim();
             }
         }
+
         return new RegistrationContextImpl(layer, appCtx, description, true);
+    }
+
+    private void logWarningUpdated(Exception exception) {
+        if (logger.isLoggable(WARNING)) {
+            logger.log(WARNING, "jmac.factory_could_not_persist", exception.toString());
+        }
+    }
+
+    private void logWarningDefault(Exception exception) {
+        if (logger.isLoggable(WARNING)) {
+            logger.log(WARNING, "jmac.factory_could_not_read", exception.toString());
+        }
     }
 
 }
