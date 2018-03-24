@@ -39,8 +39,14 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Priority;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigSource;
@@ -53,14 +59,14 @@ import org.eclipse.microprofile.config.spi.Converter;
 public class PayaraConfigBuilder implements ConfigBuilder {
 
     LinkedList<ConfigSource> sources;
-    LinkedList<Converter> converters;
+    Map<Type, Converter> converters;
     ConfigProviderResolverImpl resolver;
     ClassLoader loader;
 
     public PayaraConfigBuilder(ConfigProviderResolverImpl resolver, ClassLoader loader) {
         this.resolver = resolver;
         sources = new LinkedList<>();
-        converters = new LinkedList<>();
+        converters = new HashMap<>();
         this.loader = loader;
     }
     
@@ -82,7 +88,8 @@ public class PayaraConfigBuilder implements ConfigBuilder {
 
     @Override
     public ConfigBuilder addDiscoveredConverters() {
-        converters.addAll(resolver.getDiscoveredConverters(resolver.getAppInfo(loader)));
+        Map<Type, Converter> discoveredConverters = resolver.getDiscoveredConverters(resolver.getAppInfo(loader));
+        converters.putAll(discoveredConverters);
         return this;
     }
 
@@ -100,7 +107,7 @@ public class PayaraConfigBuilder implements ConfigBuilder {
 
     @Override
     public ConfigBuilder withConverters(Converter<?>... converters) {
-        this.converters.addAll(Arrays.asList(converters));
+        addConvertersToMap(Arrays.asList(converters));
         return this;
     }
 
@@ -108,6 +115,58 @@ public class PayaraConfigBuilder implements ConfigBuilder {
     public Config build() {
         this.converters.addAll(resolver.getDefaultConverters());
         return new PayaraConfig(sources, converters);
+    }
+
+    @Override
+    public <T> ConfigBuilder withConverter(Class<T> type, int i, Converter<T> cnvrtr) {
+        Converter old = converters.get(type);
+        if (old != null) {
+            if (i > getPriority(old)) {
+                this.converters.put(type, cnvrtr);
+            }
+        }
+        return this;
+    }
+    
+    private void addConvertersToMap(List<Converter> convertersList) {
+        for (Converter converter : convertersList) {
+            Type cType = getTypeForConverter(converter);
+            if (cType != null) { 
+                Converter old = converters.get(cType);
+                if (old != null) {
+                    if (getPriority(converter) > getPriority(old)) {
+                        this.converters.put(cType, converter);
+                    }
+                }else {
+                    this.converters.put(cType, converter);
+                } 
+            }
+        }
+    }
+
+    public static Type getTypeForConverter(Converter converter) {
+        // add each converter to the map for later lookup
+        Type types[] = converter.getClass().getGenericInterfaces();
+        for (Type type : types) {
+            if (type instanceof ParameterizedType) {
+                Type args[] = ((ParameterizedType) type).getActualTypeArguments();
+                if (args.length >= 1) {
+                    // check if there is one there already
+                    return args[0];
+                }
+            }
+        }
+        return null;
+    }
+    
+        
+    private int getPriority(Converter converter) {
+        int result = 100;
+        Priority annotation = converter.getClass().getAnnotation(Priority.class);
+        if (annotation != null) {
+            result = annotation.value();
+        }
+        return result;
     }
 
 }

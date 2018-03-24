@@ -106,16 +106,10 @@ holder.
             <artifactId>resources-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
-<!--        <dependency>
-            <groupId>org.glassfish.main.resources</groupId>
-            <artifactId>resources-connector</artifactId>
-            <version>4.1.1.171-SNAPSHOT</version>
-            <type>jar</type>
-        </dependency>-->
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
-            <version>1.1</version>
+            <version>1.2.1</version>
             <type>jar</type>
         </dependency>
     </dependencies>
