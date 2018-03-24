@@ -69,11 +69,23 @@ import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
 import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
+import java.net.InetAddress;
 import java.net.URL;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -213,9 +225,9 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             result = serverLevelConfig;
             if (result == null) {
                 LinkedList<ConfigSource> sources = new LinkedList<>();
-                LinkedList<Converter> converters = new LinkedList<>();
+                Map<Type, Converter> converters = new HashMap<>();
                 sources.addAll(getDefaultSources());
-                converters.addAll(getDefaultConverters());
+                converters.putAll(getDefaultConverters());
                 serverLevelConfig = new PayaraConfig(sources, converters);
                 result = serverLevelConfig;
             }
@@ -225,11 +237,11 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                 // build an application specific configuration
                 initialiseApplicationConfig(appInfo);
                 LinkedList<ConfigSource> sources = new LinkedList<>();
-                LinkedList<Converter> converters = new LinkedList<>();
+                Map<Type, Converter> converters = new HashMap<>();
                 sources.addAll(getDefaultSources());
                 sources.addAll(getDiscoveredSources(appInfo));
-                converters.addAll(getDefaultConverters());
-                converters.addAll(getDiscoveredConverters(appInfo));
+                converters.putAll(getDefaultConverters());
+                converters.putAll(getDiscoveredConverters(appInfo));
                 result = new PayaraConfig(sources, converters);
                 appInfo.addTransientAppMetaData(METADATA_KEY, result);
             }
@@ -363,35 +375,38 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         return sources;
     }
 
-    List<Converter> getDefaultConverters() {
-        LinkedList<Converter> result = new LinkedList<>();
-        result.add(new BooleanConverter());
-        result.add(new IntegerConverter());
-        result.add(new LongConverter());
-        result.add(new FloatConverter());
-        result.add(new DoubleConverter());
-        result.add(new DurationConverter());
-        result.add(new LocalTimeConverter());
-        result.add(new LocalDateConverter());
-        result.add(new LocalDateTimeConverter());
-        result.add(new OffsetDateTimeConverter());
-        result.add(new OffsetTimeConverter());
-        result.add(new InstantConverter());
-        result.add(new URLConverter());
-        result.add(new InetAddressConverter());
-        result.add(new ChronoUnitConverter());
+    Map<Type,Converter> getDefaultConverters() {
+        Map<Type,Converter> result = new HashMap<>();
+        result.put(Boolean.class, new BooleanConverter());
+        result.put(Integer.class, new IntegerConverter());
+        result.put(Long.class, new LongConverter());
+        result.put(Float.class, new FloatConverter());
+        result.put(Double.class, new DoubleConverter());
+        result.put(Duration.class, new DurationConverter());
+        result.put(LocalTime.class, new LocalTimeConverter());
+        result.put(LocalDate.class, new LocalDateConverter());
+        result.put(LocalDateTime.class, new LocalDateTimeConverter());
+        result.put(OffsetDateTime.class, new OffsetDateTimeConverter());
+        result.put(OffsetTime.class, new OffsetTimeConverter());
+        result.put(Instant.class, new InstantConverter());
+        result.put(URL.class, new URLConverter());
+        result.put(InetAddress.class, new InetAddressConverter());
+        result.put(ChronoUnit.class, new ChronoUnitConverter());
         return result;
 
     }
 
-    List<Converter> getDiscoveredConverters(ApplicationInfo appInfo) {
-        LinkedList<Converter> converters = appInfo.getTransientAppMetaData(CUSTOM_CONVERTERS_KEY, LinkedList.class);
+    Map<Type, Converter> getDiscoveredConverters(ApplicationInfo appInfo) {
+        Map<Type, Converter> converters = appInfo.getTransientAppMetaData(CUSTOM_CONVERTERS_KEY, Map.class);
         if (converters == null) {
-            converters = new LinkedList<>();
+            converters = new HashMap<>();
             // resolve custom config sources
             ServiceLoader<Converter> serviceLoader = ServiceLoader.load(Converter.class, appInfo.getAppClassLoader());
             for (Converter converter : serviceLoader) {
-                converters.add(converter);
+                Type type = PayaraConfigBuilder.getTypeForConverter(converter);
+                if (type != null) {
+                    converters.put(type,converter);
+                }
             }
             appInfo.addTransientAppMetaData(CUSTOM_CONVERTERS_KEY, converters);
         }
