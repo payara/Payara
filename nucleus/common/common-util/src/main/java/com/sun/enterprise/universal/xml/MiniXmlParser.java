@@ -59,8 +59,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.util.*;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -240,7 +238,7 @@ public class MiniXmlParser {
         public final Optional<JDK.Version> minVersion;
         public final Optional<JDK.Version> maxVersion;
 
-        private static final Pattern PATTERN = Pattern.compile("^\\[\\[(.*)\\|(.*)\\]\\](.*)");
+        private static final Pattern PATTERN = Pattern.compile("^\\[(.*)\\|(.*)\\](.*)");
 
         public JvmOption(String option) {
             Matcher matcher = PATTERN.matcher(option);
@@ -256,12 +254,18 @@ public class MiniXmlParser {
             }
         }
 
+        public JvmOption(String option, String minVersion, String maxVersion) {
+            this.option = option;
+            this.minVersion = Optional.ofNullable(JDK.getVersion(minVersion));
+            this.maxVersion = Optional.ofNullable(JDK.getVersion(maxVersion));
+        }
+
         @Override
         public String toString() {
             if(!minVersion.isPresent() && !maxVersion.isPresent()) {
                 return option;
             }
-            return String.format("[[%s|%s]]%s", minVersion.isPresent()? minVersion: "", maxVersion.isPresent()? maxVersion: "", option);
+            return String.format("[%s|%s]%s", minVersion.isPresent()? minVersion.get(): "", maxVersion.isPresent()? maxVersion.get(): "", option);
         }
     }
 

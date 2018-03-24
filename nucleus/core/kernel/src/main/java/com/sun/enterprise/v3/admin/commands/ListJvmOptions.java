@@ -128,7 +128,7 @@ public final class ListJvmOptions implements AdminCommand, AdminCommandSecurity.
                     sb.append("   --> JDK versions: ");
                 }
                 option.minVersion.ifPresent(minVersion -> {
-                    sb.append("min( ");
+                    sb.append("min(");
                     sb.append(minVersion);
                     sb.append(")");
                 });
@@ -136,7 +136,7 @@ public final class ListJvmOptions implements AdminCommand, AdminCommandSecurity.
                     if (option.minVersion.isPresent()) {
                         sb.append(", ");
                     }
-                    sb.append("max( ");
+                    sb.append("max(");
                     sb.append(maxVersion);
                     sb.append(")");
                 });

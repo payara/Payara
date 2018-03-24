@@ -44,6 +44,7 @@ package com.sun.enterprise.v3.admin.commands;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.config.serverbeans.JvmOptionBag;
+import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import java.beans.PropertyVetoException;
@@ -51,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.glassfish.api.ActionReport;
@@ -96,6 +98,11 @@ public final class CreateJvmOptions implements AdminCommand, AdminCommandSecurit
     
     @Param(name="jvm_option_name", primary=true, separator=':')
     List<String> jvmOptions;
+
+    @Param(name="min-jvm", optional = true)
+    String minJVM;
+    @Param(name="max-jvm", optional = true)
+    String maxJVM;
     
     @Inject
     Target targetService;
@@ -130,7 +137,7 @@ public final class CreateJvmOptions implements AdminCommand, AdminCommandSecurit
             } else
                 bag = jc;
             ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-            List<String> validOptions = new ArrayList<String>(jvmOptions);
+            List<String> validOptions = new ArrayList<>(jvmOptions);
             validate(bag, validOptions, report); //Note: method mutates the given list
             validateSoft(bag, validOptions, report); //Note: method does not mutate the given list
             addX(bag, validOptions, part);
@@ -261,10 +268,11 @@ public final class CreateJvmOptions implements AdminCommand, AdminCommandSecurit
     private void addX(final JvmOptionBag bag, final List<String> newOpts, final ActionReport.MessagePart part) throws Exception {
         SingleConfigCode<JvmOptionBag> scc = new SingleConfigCode<JvmOptionBag> () {
             public Object run(JvmOptionBag bag) throws PropertyVetoException, TransactionFailure {
-                newOpts.removeAll(bag.getJvmRawOptions());  //"prune" the given list first to avoid duplicates
-                List<String> jvmopts = new ArrayList<String>(bag.getJvmRawOptions());
+                newOpts.removeAll(bag.getJvmOptions());  //"prune" the given list first to avoid duplicates
+                List<String> jvmopts = new ArrayList<>(bag.getJvmRawOptions());
                 int orig = jvmopts.size();
-                boolean added = jvmopts.addAll(newOpts);
+                boolean added = jvmopts.addAll(newOpts.stream().map(option -> new JvmOption(option, minJVM, maxJVM))
+                        .map(JvmOption::toString).collect(Collectors.toList()));
                 bag.setJvmOptions(jvmopts);
                 int now = jvmopts.size();
                 if (added) {
