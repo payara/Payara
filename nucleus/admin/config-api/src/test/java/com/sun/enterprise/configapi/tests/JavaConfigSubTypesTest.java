@@ -111,7 +111,7 @@ public class JavaConfigSubTypesTest extends ConfigPersistence {
 
         ConfigSupport.apply(new SingleConfigCode<JavaConfig>() {
             public Object run(JavaConfig param) throws PropertyVetoException, TransactionFailure {
-                List<String> jvmOptions = param.getJvmOptions();
+                List<String> jvmOptions = param.getJvmRawOptions();
                 jvmOptions.add("-XFooBar=true");
                 return jvmOptions;
             }
