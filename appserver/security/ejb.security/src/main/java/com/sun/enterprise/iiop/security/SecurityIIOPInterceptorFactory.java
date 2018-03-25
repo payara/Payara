@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.iiop.security;
 
@@ -64,13 +64,12 @@ import org.glassfish.internal.api.ClassLoaderHierarchy;
  *
  * @author Kumar
  */
-@Service(name="ServerSecurityInterceptorFactory")
+@Service(name = "ServerSecurityInterceptorFactory")
 @Singleton
-public class SecurityIIOPInterceptorFactory implements IIOPInterceptorFactory{
+public class SecurityIIOPInterceptorFactory implements IIOPInterceptorFactory {
 
     private static Logger _logger = null;
-    final String interceptorFactory =
-            System.getProperty(AlternateSecurityInterceptorFactory.SEC_INTEROP_INTFACTORY_PROP);
+    final String interceptorFactory = System.getProperty(AlternateSecurityInterceptorFactory.SEC_INTEROP_INTFACTORY_PROP);
 
     static {
         _logger = LogDomains.getLogger(SecurityIIOPInterceptorFactory.class, LogDomains.SECURITY_LOGGER);
@@ -78,45 +77,45 @@ public class SecurityIIOPInterceptorFactory implements IIOPInterceptorFactory{
     private ClientRequestInterceptor creq;
     private ServerRequestInterceptor sreq;
     private SecIORInterceptor sior;
-    
+
     @Inject
     private ProcessEnvironment penv;
 
     private AlternateSecurityInterceptorFactory altSecFactory;
     private @Inject ClassLoaderHierarchy clh;
-    
+
     // are we supposed to add the interceptor and then return or just return an instance ?.
+    @Override
     public ClientRequestInterceptor createClientRequestInterceptor(ORBInitInfo info, Codec codec) {
         if (!penv.getProcessType().isServer()) {
             return null;
         }
-        if (altSecFactory != null ||
-                (interceptorFactory != null && createAlternateSecurityInterceptorFactory())) {
+        if (altSecFactory != null || (interceptorFactory != null && createAlternateSecurityInterceptorFactory())) {
             return altSecFactory.getClientRequestInterceptor(codec);
         }
         ClientRequestInterceptor ret = getClientInterceptorInstance(codec);
         return ret;
     }
 
+    @Override
     public ServerRequestInterceptor createServerRequestInterceptor(ORBInitInfo info, Codec codec) {
         ServerRequestInterceptor ret = null;
         try {
             if (!penv.getProcessType().isServer()) {
                 return null;
             }
-            if (altSecFactory != null ||
-                (interceptorFactory != null && createAlternateSecurityInterceptorFactory())) {
+            if (altSecFactory != null || (interceptorFactory != null && createAlternateSecurityInterceptorFactory())) {
                 ret = altSecFactory.getServerRequestInterceptor(codec);
             } else {
                 ret = getServerInterceptorInstance(codec);
             }
-            //also register the IOR Interceptor here
-	    if (info instanceof com.sun.corba.ee.spi.legacy.interceptor.ORBInitInfoExt) {
-                com.sun.corba.ee.spi.legacy.interceptor.ORBInitInfoExt infoExt = (com.sun.corba.ee.spi.legacy.interceptor.ORBInitInfoExt)info;
+            // also register the IOR Interceptor here
+            if (info instanceof com.sun.corba.ee.spi.legacy.interceptor.ORBInitInfoExt) {
+                com.sun.corba.ee.spi.legacy.interceptor.ORBInitInfoExt infoExt = (com.sun.corba.ee.spi.legacy.interceptor.ORBInitInfoExt) info;
                 IORInterceptor secIOR = getSecIORInterceptorInstance(codec, infoExt.getORB());
                 info.add_ior_interceptor(secIOR);
-	    }
-            
+            }
+
         } catch (DuplicateName ex) {
             _logger.log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
@@ -129,18 +128,16 @@ public class SecurityIIOPInterceptorFactory implements IIOPInterceptorFactory{
             Class<?> clazz;
             try {
                 clazz = Thread.currentThread().getContextClassLoader().loadClass(interceptorFactory);
-            }
-            catch(ClassNotFoundException cnfe) {
+            } catch (ClassNotFoundException cnfe) {
                 // if not found in the thread context, try the Common class loader
                 clazz = clh.getCommonClassLoader().loadClass(interceptorFactory);
             }
-            if (AlternateSecurityInterceptorFactory.class.isAssignableFrom(clazz) &&
-                    !clazz.isInterface()) {
+            if (AlternateSecurityInterceptorFactory.class.isAssignableFrom(clazz) && !clazz.isInterface()) {
                 altSecFactory = (AlternateSecurityInterceptorFactory) clazz.newInstance();
                 return true;
             } else {
-                _logger.log(Level.INFO, "Not a valid factory class: " + interceptorFactory +
-                        ". Must implement " + AlternateSecurityInterceptorFactory.class.getName());
+                _logger.log(Level.INFO, "Not a valid factory class: " + interceptorFactory + ". Must implement "
+                        + AlternateSecurityInterceptorFactory.class.getName());
             }
         } catch (ClassNotFoundException ex) {
             _logger.log(Level.INFO, "Interceptor Factory class " + interceptorFactory + " not loaded: ", ex);
@@ -154,16 +151,14 @@ public class SecurityIIOPInterceptorFactory implements IIOPInterceptorFactory{
 
     private synchronized ClientRequestInterceptor getClientInterceptorInstance(Codec codec) {
         if (creq == null) {
-            creq = new SecClientRequestInterceptor(
-                "SecClientRequestInterceptor", codec);
+            creq = new SecClientRequestInterceptor("SecClientRequestInterceptor", codec);
         }
         return creq;
     }
-    
-     private synchronized ServerRequestInterceptor getServerInterceptorInstance(Codec codec) {
+
+    private synchronized ServerRequestInterceptor getServerInterceptorInstance(Codec codec) {
         if (sreq == null) {
-            sreq = new SecServerRequestInterceptor(
-                    "SecServerRequestInterceptor", codec);
+            sreq = new SecServerRequestInterceptor("SecServerRequestInterceptor", codec);
         }
         return sreq;
     }

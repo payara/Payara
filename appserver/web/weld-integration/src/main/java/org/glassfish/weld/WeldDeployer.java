@@ -288,7 +288,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
         DeploymentImpl deploymentImpl = context.getTransientAppMetaData(WELD_DEPLOYMENT, DeploymentImpl.class);
         if (deploymentImpl == null) {
-            deploymentImpl = new DeploymentImpl(archive, ejbs, context, archiveFactory, archiveName);
+            deploymentImpl = new DeploymentImpl(archive, ejbs, context, archiveFactory, archiveName, services.getService(InjectionManager.class));
 
             // Add services
             TransactionServices transactionServices = new TransactionServicesImpl(services);
@@ -371,13 +371,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     // We use the generic InjectionService service to handle all EE-style
                     // injection instead of the per-dependency-type InjectionPoint approach.
                     // Each InjectionServicesImpl instance knows its associated GlassFish bundle.
-
-                    InjectionManager injectionMgr = services.getService(InjectionManager.class);
-                    InjectionServices injectionServices = new InjectionServicesImpl(injectionMgr, bundle, deploymentImpl);
-
-                    // Add service
-                    deploymentImpl.getServices().add(InjectionServices.class, injectionServices);
-
+                    InjectionServices injectionServices = new InjectionServicesImpl(deploymentImpl.injectionManager, bundle, deploymentImpl);
                     if (logger.isLoggable(FINE)) {
                         logger.log(FINE, ADDING_INJECTION_SERVICES, new Object[] { injectionServices, beanDeploymentArchive.getId() });
                     }

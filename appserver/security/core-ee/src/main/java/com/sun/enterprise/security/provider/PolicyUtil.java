@@ -40,19 +40,26 @@
 
 package com.sun.enterprise.security.provider;
 
-import java.io.*;
-import java.net.*;
-import java.security.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.Arrays;
 
 import sun.net.www.ParseUtil;
 import sun.security.util.Debug;
 import sun.security.util.Password;
 
-
 /**
- * A utility class for getting a KeyStore instance from policy information.
- * In addition, a supporting getInputStream method.
+ * A utility class for getting a KeyStore instance from policy information. In addition, a supporting getInputStream
+ * method.
  *
  * @version 1.2
  */
@@ -65,39 +72,34 @@ public class PolicyUtil {
     private static final String NONE = "NONE";
 
     /*
-     * Fast path reading from file urls in order to avoid calling
-     * FileURLConnection.connect() which can be quite slow the first time
-     * it is called. We really should clean up FileURLConnection so that
-     * this is not a problem but in the meantime this fix helps reduce
-     * start up time noticeably for the new launcher. -- DAC
+     * Fast path reading from file urls in order to avoid calling FileURLConnection.connect() which can be quite slow the
+     * first time it is called. We really should clean up FileURLConnection so that this is not a problem but in the
+     * meantime this fix helps reduce start up time noticeably for the new launcher. -- DAC
      */
     public static InputStream getInputStream(URL url) throws IOException {
-	if ("file".equals(url.getProtocol())) {
-	    String path = url.getFile().replace('/', File.separatorChar);
-	    path = ParseUtil.decode(path);
-	    return new FileInputStream(path);
-	} else {
-	    return url.openStream();
-	}
+        if ("file".equals(url.getProtocol())) {
+            String path = url.getFile().replace('/', File.separatorChar);
+            path = ParseUtil.decode(path);
+            return new FileInputStream(path);
+        } else {
+            return url.openStream();
+        }
     }
 
     /**
-     * this is intended for use by policytool and the policy parser to
-     * instantiate a KeyStore from the information in the GUI/policy file
+     * this is intended for use by policytool and the policy parser to instantiate a KeyStore from the information in the
+     * GUI/policy file
      */
-    public static KeyStore getKeyStore
-		(URL policyUrl,			// URL of policy file
-		String keyStoreName,		// input: keyStore URL
-		String keyStoreType,		// input: keyStore type
-		String keyStoreProvider,	// input: keyStore provider
-		String storePassURL,		// input: keyStore password
-		Debug debug)
-	throws KeyStoreException, MalformedURLException, IOException,
-		NoSuchProviderException, NoSuchAlgorithmException,
-		java.security.cert.CertificateException {
+    public static KeyStore getKeyStore(URL policyUrl, // URL of policy file
+            String keyStoreName, // input: keyStore URL
+            String keyStoreType, // input: keyStore type
+            String keyStoreProvider, // input: keyStore provider
+            String storePassURL, // input: keyStore password
+            Debug debug) throws KeyStoreException, MalformedURLException, IOException, NoSuchProviderException, NoSuchAlgorithmException,
+            java.security.cert.CertificateException {
 
         if (keyStoreName == null) {
-	    throw new IllegalArgumentException("null KeyStore name");
+            throw new IllegalArgumentException("null KeyStore name");
         }
 
         char[] keyStorePassword = null;
@@ -107,16 +109,9 @@ public class PolicyUtil {
                 keyStoreType = KeyStore.getDefaultType();
             }
 
-            if (P11KEYSTORE.equalsIgnoreCase(keyStoreType) &&
-                !NONE.equals(keyStoreName)) {
-                throw new IllegalArgumentException
-                        ("Invalid value (" +
-                        keyStoreName +
-                        ") for keystore URL.  If the keystore type is \"" +
-                        P11KEYSTORE +
-                        "\", the keystore url must be \"" +
-                        NONE +
-                        "\"");
+            if (P11KEYSTORE.equalsIgnoreCase(keyStoreType) && !NONE.equals(keyStoreName)) {
+                throw new IllegalArgumentException("Invalid value (" + keyStoreName + ") for keystore URL.  If the keystore type is \""
+                        + P11KEYSTORE + "\", the keystore url must be \"" + NONE + "\"");
             }
 
             if (keyStoreProvider != null) {
@@ -132,14 +127,14 @@ public class PolicyUtil {
                     // absolute URL
                 } catch (MalformedURLException e) {
                     // relative URL
-		    if (policyUrl == null) {
-			throw e;
-		    }
+                    if (policyUrl == null) {
+                        throw e;
+                    }
                     passURL = new URL(policyUrl, storePassURL);
                 }
 
                 if (debug != null) {
-                    debug.println("reading password"+passURL);
+                    debug.println("reading password" + passURL);
                 }
 
                 InputStream in = passURL.openStream();
@@ -152,8 +147,7 @@ public class PolicyUtil {
                 return ks;
             } else {
                 /*
-                 * location of keystore is specified as absolute URL in policy
-                 * file, or is relative to URL of policy file
+                 * location of keystore is specified as absolute URL in policy file, or is relative to URL of policy file
                  */
                 URL keyStoreUrl = null;
                 try {
@@ -161,14 +155,14 @@ public class PolicyUtil {
                     // absolute URL
                 } catch (MalformedURLException e) {
                     // relative URL
-		    if (policyUrl == null) {
-			throw e;
-		    }
+                    if (policyUrl == null) {
+                        throw e;
+                    }
                     keyStoreUrl = new URL(policyUrl, keyStoreName);
                 }
 
                 if (debug != null) {
-                    debug.println("reading keystore"+keyStoreUrl);
+                    debug.println("reading keystore" + keyStoreUrl);
                 }
 
                 InputStream inStream = null;
@@ -187,4 +181,4 @@ public class PolicyUtil {
             }
         }
     }
-} 
+}

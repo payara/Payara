@@ -60,6 +60,7 @@ import java.util.logging.Logger;
 
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.glassfish.enterprise.iiop.impl.CSIv2Policy;
+import org.glassfish.internal.api.ORBLocator;
 import org.glassfish.pfl.basic.func.UnaryFunction;
 import org.glassfish.security.common.Role;
 import org.omg.CORBA.INV_POLICY;
@@ -94,12 +95,12 @@ import com.sun.corba.ee.spi.ior.iiop.IIOPProfile;
 import com.sun.corba.ee.spi.ior.iiop.IIOPProfileTemplate;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
-import com.sun.enterprise.util.Utility;
 import com.sun.logging.LogDomains;
 
 /**
- * This is the class that manages the CSIV2 tagged component information in the IORs. Note: For supporting FLOB in a
- * cluster/EE mode we need to register the CSIV2TaggedComponentHandlerImpl with the GlassFishORBManager.
+ * This is the class that manages the CSIV2 tagged component information in the IORs. Note: For
+ * supporting FLOB in a cluster/EE mode we need to register the CSIV2TaggedComponentHandlerImpl with
+ * the GlassFishORBManager.
  * 
  * @author Vivek Nagar
  * @author Harpreet Singh
@@ -119,9 +120,10 @@ public final class CSIV2TaggedComponentInfo {
     }
 
     // Realm name is first picked up from the application object.
-    // If the realm is unpopulated here, then we query it from the IORDescriptor(as in for a standalone ejb case).
+    // If the realm is unpopulated here, then we query it from the IORDescriptor(as in for a standalone
+    // ejb case).
     // The fallback is "default"
-    
+
     private ORB orb;
     private int sslMutualAuthPort;
     private GlassFishORBHelper orbHelper;
@@ -158,8 +160,8 @@ public final class CSIV2TaggedComponentInfo {
     }
 
     /**
-     * Create the security mechanism list tagged component based on the deployer specified configuration information. This
-     * method is on the server side for all ejbs in the non-cluster app server case.
+     * Create the security mechanism list tagged component based on the deployer specified configuration
+     * information. This method is on the server side for all ejbs in the non-cluster app server case.
      */
     public org.omg.IOP.TaggedComponent createSecurityTaggedComponent(int sslPort, EjbDescriptor ejbDescriptor) {
 
@@ -169,8 +171,7 @@ public final class CSIV2TaggedComponentInfo {
                 logger.log(FINE, "IIOP: Creating a Security Tagged Component");
             }
 
-            securityTaggedComponent = createCompoundSecMechListComponent(
-                                        createCompoundSecMechs(sslPort, ejbDescriptor));
+            securityTaggedComponent = createCompoundSecMechListComponent(createCompoundSecMechs(sslPort, ejbDescriptor));
         } catch (Exception e) {
             logger.log(SEVERE, "iiop.createcompund_exception", e);
         }
@@ -183,15 +184,14 @@ public final class CSIV2TaggedComponentInfo {
      */
     public org.omg.IOP.TaggedComponent createSecurityTaggedComponent(List<SocketInfo> socketInfos, EjbDescriptor ejbDescriptor) {
         org.omg.IOP.TaggedComponent securityTaggedComponent = null;
-        
+
         if (ejbDescriptor != null) {
             try {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.log(FINE, "IIOP: Creating a Security Tagged Component");
                 }
 
-                securityTaggedComponent = createCompoundSecMechListComponent(
-                                            createCompoundSecMechs(socketInfos, ejbDescriptor));
+                securityTaggedComponent = createCompoundSecMechListComponent(createCompoundSecMechs(socketInfos, ejbDescriptor));
             } catch (Exception e) {
                 logger.log(SEVERE, "iiop.createcompund_exception", e);
             }
@@ -201,8 +201,7 @@ public final class CSIV2TaggedComponentInfo {
     }
 
     private boolean getBooleanValue(Properties props, String name) {
-        return props.getProperty(name, "false")
-                    .equals("true");
+        return props.getProperty(name, "false").equals("true");
     }
 
     /**
@@ -214,8 +213,8 @@ public final class CSIV2TaggedComponentInfo {
 
         try {
             Properties props = orbHelper.getCSIv2Props();
-            boolean sslRequired = getBooleanValue(props, GlassFishORBHelper.ORB_SSL_SERVER_REQUIRED);
-            boolean clientAuthRequired = getBooleanValue(props, GlassFishORBHelper.ORB_CLIENT_AUTH_REQUIRED);
+            boolean sslRequired = getBooleanValue(props, ORBLocator.ORB_SSL_SERVER_REQUIRED);
+            boolean clientAuthRequired = getBooleanValue(props, ORBLocator.ORB_CLIENT_AUTH_REQUIRED);
 
             CompoundSecMech[] mechList = new CompoundSecMech[1];
 
@@ -236,7 +235,7 @@ public final class CSIV2TaggedComponentInfo {
         } catch (Exception e) {
             logger.log(SEVERE, "iiop.createcompund_exception", e);
         }
-        
+
         return securityTaggedComponent;
     }
 
@@ -246,7 +245,7 @@ public final class CSIV2TaggedComponentInfo {
 
         boolean stateful = false;
         CompoundSecMechListHelper.write(out, new CompoundSecMechList(stateful, mechList));
-        
+
         return new org.omg.IOP.TaggedComponent(TAG_CSI_SEC_MECH_LIST.value, out.toByteArray());
     }
 
@@ -258,9 +257,9 @@ public final class CSIV2TaggedComponentInfo {
 
         Set<EjbIORConfigurationDescriptor> iorDescriptors = ejbDescriptor.getIORConfigurationDescriptors();
         int size = iorDescriptors.size();
-        
+
         if (size == 0) {
-            
+
             // No IOR config descriptors:
             // Either none were configured or 1.2.x app.
 
@@ -290,7 +289,7 @@ public final class CSIV2TaggedComponentInfo {
                 if (realmName == null) {
                     realmName = DEFAULT_REALM;
                 }
-                
+
                 iorDescriptor.setRealmName(realmName);
             }
         }
@@ -303,9 +302,10 @@ public final class CSIV2TaggedComponentInfo {
     }
 
     /**
-     * Create the security mechanisms. Only 1 such mechanism is created although the spec allows multiple mechanisms (in
-     * decreasing order of preference). Note that creating more than one CompoundSecMech here will cause
-     * getSecurityMechanisms to fail, as it supports only one CompoundSecMech.
+     * Create the security mechanisms. Only 1 such mechanism is created although the spec allows
+     * multiple mechanisms (in decreasing order of preference). Note that creating more than one
+     * CompoundSecMech here will cause getSecurityMechanisms to fail, as it supports only one
+     * CompoundSecMech.
      */
     private CompoundSecMech[] createCompoundSecMechs(DescriptorMaker maker, EjbDescriptor ejbDescriptor) throws IOException {
 
@@ -321,16 +321,16 @@ public final class CSIV2TaggedComponentInfo {
 
         CompoundSecMech[] mechList = new CompoundSecMech[iorDescriptors.size()];
         Iterator<EjbIORConfigurationDescriptor> itr = iorDescriptors.iterator();
-        
+
         if (logger.isLoggable(FINE)) {
             logger.log(FINE, "IORDescSet SIZE:" + iorDescriptors.size());
         }
-        
+
         String realmName = DEFAULT_REALM;
 
         for (int i = 0; i < iorDescriptors.size(); i++) {
             EjbIORConfigurationDescriptor iorDescriptor = itr.next();
-            
+
             int targetRequires = getTargetRequires(iorDescriptor);
             org.omg.IOP.TaggedComponent comp = maker.evaluate(iorDescriptor);
 
@@ -345,7 +345,7 @@ public final class CSIV2TaggedComponentInfo {
             if (realmName == null) {
                 realmName = DEFAULT_REALM;
             }
-            
+
             // Create AS_Context
             AS_ContextSec asContext = createASContextSec(iorDescriptor, realmName);
 
@@ -358,13 +358,15 @@ public final class CSIV2TaggedComponentInfo {
             // Convert Profile.TaggedComponent to org.omg.IOP.TaggedComponent
             mechList[i] = new CompoundSecMech((short) targ_req, comp, asContext, sasContext);
         }
-        
+
         return mechList;
     }
 
-    private CompoundSecMech[] createCompoundSecMechs(List<SocketInfo> socketInfos, EjbDescriptor ejbDescriptor) throws IOException {
+    private CompoundSecMech[] createCompoundSecMechs(List<SocketInfo> socketInfos, EjbDescriptor ejbDescriptor)
+            throws IOException {
 
         DescriptorMaker maker = new DescriptorMaker() {
+            @Override
             public org.omg.IOP.TaggedComponent evaluate(EjbIORConfigurationDescriptor iorDescriptor) {
                 return createSSLInfo(socketInfos, iorDescriptor, false);
             }
@@ -376,6 +378,7 @@ public final class CSIV2TaggedComponentInfo {
     private CompoundSecMech[] createCompoundSecMechs(int sslPort, EjbDescriptor ejbDescriptor) throws IOException {
 
         DescriptorMaker maker = new DescriptorMaker() {
+            @Override
             public org.omg.IOP.TaggedComponent evaluate(EjbIORConfigurationDescriptor iorDescriptor) {
                 return createSSLInfo(sslPort, iorDescriptor, false);
             }
@@ -423,7 +426,7 @@ public final class CSIV2TaggedComponentInfo {
         if (realmName == null) {
             realmName = iorDescriptor.getRealmName();
         }
-        
+
         if (realmName == null) {
             realmName = DEFAULT_REALM;
         }
@@ -463,7 +466,8 @@ public final class CSIV2TaggedComponentInfo {
         }
 
         if (callerPropagation != null && callerPropagation.equalsIgnoreCase(NONE)) {
-            return new SAS_ContextSec((short) targetSupports, (short) targetRequires, privilegeAuthorities, mechanisms, supportedIdentityTokenType);
+            return new SAS_ContextSec((short) targetSupports, (short) targetRequires, privilegeAuthorities, mechanisms,
+                    supportedIdentityTokenType);
         }
 
         targetSupports = IdentityAssertion.value;
@@ -481,7 +485,8 @@ public final class CSIV2TaggedComponentInfo {
             supportedIdentityTokenType = SUPPORTED_IDENTITY_TOKEN_TYPES;
         }
 
-        return new SAS_ContextSec((short) targetSupports, (short) targetRequires, privilegeAuthorities, mechanisms, supportedIdentityTokenType);
+        return new SAS_ContextSec((short) targetSupports, (short) targetRequires, privilegeAuthorities, mechanisms,
+                supportedIdentityTokenType);
     }
 
     /**
@@ -522,7 +527,7 @@ public final class CSIV2TaggedComponentInfo {
         }
 
         int requires = 0;
-        
+
         if (iorDescriptor.getIntegrity().equalsIgnoreCase(REQUIRED)) {
             requires = requires | Integrity.value;
         }
@@ -545,8 +550,8 @@ public final class CSIV2TaggedComponentInfo {
     private int getTargetSupportsDefault(EjbIORConfigurationDescriptor iorDescriptor) {
         if (iorDescriptor == null) {
             return Integrity.value | Confidentiality.value | EstablishTrustInClient.value | EstablishTrustInTarget.value;
-        } 
-            
+        }
+
         return getTargetSupports(iorDescriptor);
     }
 
@@ -563,13 +568,14 @@ public final class CSIV2TaggedComponentInfo {
         return targetRequires;
     }
 
-    private org.omg.IOP.TaggedComponent createTlsSecTransComponent(int targetSupports, int targetRequires, TransportAddress[] transportAddresses) {
+    private org.omg.IOP.TaggedComponent createTlsSecTransComponent(int targetSupports, int targetRequires,
+            TransportAddress[] transportAddresses) {
 
         TLS_SEC_TRANS tls_sec = new TLS_SEC_TRANS((short) targetSupports, (short) targetRequires, transportAddresses);
 
         CDROutputObject out = (CDROutputObject) orb.create_output_stream();
         out.putEndian();
-        TLS_SEC_TRANSHelper.write((org.omg.CORBA.portable.OutputStream) out, tls_sec);
+        TLS_SEC_TRANSHelper.write(out, tls_sec);
 
         // create new Tagged Component for SSL
         return new org.omg.IOP.TaggedComponent(TAG_TLS_SEC_TRANS.value, out.toByteArray());
@@ -582,23 +588,25 @@ public final class CSIV2TaggedComponentInfo {
     private TransportAddress[] generateTransportAddresses(List<SocketInfo> socketInfos) {
 
         TransportAddress[] transportAddresses = new TransportAddress[socketInfos.size()];
-        
+
         for (int i = 0; i < socketInfos.size(); i++) {
             SocketInfo socketInfo = socketInfos.get(i);
             transportAddresses[i] = new TransportAddress(socketInfo.host(), intToShort(socketInfo.port()));
         }
-        
+
         return transportAddresses;
     }
 
     /**
      * Create the SSL tagged component within a compound mechanism definition.
      */
-    private org.omg.IOP.TaggedComponent createSSLInfo(int initialSslPort, EjbIORConfigurationDescriptor iorDescriptor, boolean sslRequired) {
+    private org.omg.IOP.TaggedComponent createSSLInfo(int initialSslPort, EjbIORConfigurationDescriptor iorDescriptor,
+            boolean sslRequired) {
 
         int targetSupports = getTargetSupportsDefault(iorDescriptor);
         int targetRequires = getTargetRequiresDefault(iorDescriptor, sslRequired);
-        boolean mutualAuthRequired = (iorDescriptor != null) && ((targetRequires & EstablishTrustInClient.value) == EstablishTrustInClient.value);
+        boolean mutualAuthRequired = (iorDescriptor != null)
+                && ((targetRequires & EstablishTrustInClient.value) == EstablishTrustInClient.value);
         int sslPort = mutualAuthRequired ? sslMutualAuthPort : initialSslPort;
 
         if (logger.isLoggable(FINE)) {
@@ -606,8 +614,8 @@ public final class CSIV2TaggedComponentInfo {
         }
 
         /*
-         * if both targetSupports and targetRequires are zero, then the mechanism does not support a transport_mechanism and
-         * hence a TAG_NULL_TAG must be generated.
+         * if both targetSupports and targetRequires are zero, then the mechanism does not support a
+         * transport_mechanism and hence a TAG_NULL_TAG must be generated.
          */
 
         if ((targetSupports | targetRequires) == 0 || sslPort == -1) {
@@ -617,7 +625,8 @@ public final class CSIV2TaggedComponentInfo {
         return createTlsSecTransComponent(targetSupports, targetRequires, generateTransportAddresses(sslPort));
     }
 
-    private org.omg.IOP.TaggedComponent createSSLInfo(List<SocketInfo> socketInfos, EjbIORConfigurationDescriptor iorDescriptor, boolean sslRequired) {
+    private org.omg.IOP.TaggedComponent createSSLInfo(List<SocketInfo> socketInfos, EjbIORConfigurationDescriptor iorDescriptor,
+            boolean sslRequired) {
 
         int targetSupports = getTargetSupportsDefault(iorDescriptor);
         int targetRequires = getTargetRequiresDefault(iorDescriptor, sslRequired);
@@ -627,8 +636,8 @@ public final class CSIV2TaggedComponentInfo {
         }
 
         /*
-         * if both targetSupports and targetRequires are zero, then the mechanism does not support a transport_mechanism and
-         * hence a TAG_NULL_TAG must be generated.
+         * if both targetSupports and targetRequires are zero, then the mechanism does not support a
+         * transport_mechanism and hence a TAG_NULL_TAG must be generated.
          */
 
         if ((targetSupports | targetRequires) == 0) {
@@ -639,8 +648,8 @@ public final class CSIV2TaggedComponentInfo {
     }
 
     /**
-     * This method determines if all the mechanisms defined in the CSIV2 CompoundSecMechList structure require protected
-     * invocations.
+     * This method determines if all the mechanisms defined in the CSIV2 CompoundSecMechList structure
+     * require protected invocations.
      */
     public boolean allMechanismsRequireSSL(Set iorDescSet) {
         int size = iorDescSet.size();
@@ -664,8 +673,7 @@ public final class CSIV2TaggedComponentInfo {
     /**
      * Get the Compound security mechanism list from the given IOR.
      * 
-     * @param the
-     *            IOR.
+     * @param the IOR.
      * @return the array of compound security mechanisms.
      */
     public CompoundSecMech[] getSecurityMechanisms(IOR ior) {
@@ -677,7 +685,7 @@ public final class CSIV2TaggedComponentInfo {
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, "IIOP:TAG_CSI_SEC_MECH_LIST tagged component not found");
             }
-            
+
             return null;
         }
 
@@ -694,7 +702,7 @@ public final class CSIV2TaggedComponentInfo {
 
         org.omg.IOP.TaggedComponent comp = tcomp.getIOPComponent(orb);
         byte[] b = comp.component_data;
-        CDRInputObject in = (CDRInputObject) new EncapsInputStream(orb, b, b.length);
+        CDRInputObject in = new EncapsInputStream(orb, b, b.length);
         in.consumeEndian();
         CompoundSecMechList l = CompoundSecMechListHelper.read(in);
         CompoundSecMech[] list = l.mechanism_list;
@@ -720,7 +728,7 @@ public final class CSIV2TaggedComponentInfo {
             ssl = null;
         } else {
             byte[] b = comp.component_data;
-            CDRInputObject in = (CDRInputObject) new EncapsInputStream(orb, b, b.length);
+            CDRInputObject in = new EncapsInputStream(orb, b, b.length);
             in.consumeEndian();
             ssl = TLS_SEC_TRANSHelper.read(in);
         }

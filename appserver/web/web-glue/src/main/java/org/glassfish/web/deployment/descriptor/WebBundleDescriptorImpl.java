@@ -1548,9 +1548,15 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 if (next.isInjectable()) {
                     for (InjectionTarget target : next.getInjectionTargets()) {
                         Iterator<WebServiceEndpoint> epIter = getWebServices().getEndpoints().iterator();
-                        while (epIter.hasNext()) {
+                        outer: while (epIter.hasNext()) {
                             String servletImplClass = epIter.next().getServletImplClass();
                             if (target.getClassName().equals(servletImplClass)) {
+                                for (InjectionCapable it : injectables) {
+                                    if (it == next) {
+                                        // do not add duplicates
+                                        break outer;
+                                    }
+                                }
                                 injectables.add(next);
                             }
                         }

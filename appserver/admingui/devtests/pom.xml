@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!--"Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]" -->
+<!--"Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]" -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -49,7 +49,7 @@
     <parent>
         <groupId>fish.payara.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>5.181-SNAPSHOT</version>
+        <version>5.182-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -203,10 +203,10 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>${maven.compiler.plugin.version}</version>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>${javase.version}</source>
+                    <target>${javase.version}</target>
                 </configuration>
             </plugin>
             <plugin>

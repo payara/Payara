@@ -176,7 +176,17 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     private static final String EJB_JAR_XML = "META-INF/ejb-jar.xml";
     private static final String SUN_EJB_JAR_XML = "META-INF/sun-ejb-jar.xml";
     private static final String GF_EJB_JAR_XML = "META-INF/glassfish-ejb-jar.xml";
-
+   
+    private static final String APPLICATION_XML = "META-INF/application.xml";
+    private static final String SUN_APPLICATION_XML = "META-INF/sun-application.xml";
+    private static final String GF_APPLICATION_XML  = "META-INF/glassfish-application.xml";
+    
+    private static final String RA_XML  = "META-INF/ra.xml";
+    
+    private static final String APPLICATION_CLIENT_XML = "META-INF/application-client.xml";
+    private static final String SUN_APPLICATION_CLIENT_XML = "META-INF/sun-application-client.xml";
+    private static final String GF_APPLICATION_CLIENT_XML = "META-INF/glassfish-application-client.xml";
+    
     public DeployCommand() {
         origin = Origin.deploy;
     }
@@ -269,11 +279,29 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             events.send(new Event<DeploymentContext>(Deployment.INITIAL_CONTEXT_CREATED, initialContext), false);
 
             if (!forceName) {
+                boolean isModuleDescriptorAvailable = false;
                 if (archiveHandler.getArchiveType().equals("ejb")
                         && (archive.exists(EJB_JAR_XML)
                         || archive.exists(SUN_EJB_JAR_XML)
                         || archive.exists(GF_EJB_JAR_XML))) {
+                    isModuleDescriptorAvailable = true;
+                } else if (archiveHandler.getArchiveType().equals("ear")
+                        && (archive.exists(APPLICATION_XML)
+                        || archive.exists(SUN_APPLICATION_XML)
+                        || archive.exists(GF_APPLICATION_XML))) {
+                    isModuleDescriptorAvailable = true;
 
+                } else if (archiveHandler.getArchiveType().equals("car")
+                        && (archive.exists(APPLICATION_CLIENT_XML)
+                        || archive.exists(SUN_APPLICATION_CLIENT_XML)
+                        || archive.exists(GF_APPLICATION_CLIENT_XML))) {
+                    isModuleDescriptorAvailable = true;
+                } else if (archiveHandler.getArchiveType().equals("rar")
+                        && (archive.exists(RA_XML))) {
+                    isModuleDescriptorAvailable = true;
+                }
+
+                if (isModuleDescriptorAvailable) {
                     name = archiveHandler.getDefaultApplicationName(initialContext.getSource(), initialContext);
                 }
             }

@@ -36,10 +36,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates] 
  */
-
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates] 
-
 package org.glassfish.web.admin.cli;
 
 import org.glassfish.internal.api.Target;
@@ -122,16 +121,24 @@ public class CreateHttp implements AdminCommand {
     
     @Param(name = "http2Enabled", alias = "http2enabled", optional = true, defaultValue = "true")
     Boolean http2Enabled;
-    @Param(name = "http2DisableCipherCheck", alias = "http2disableCipherCheck", optional = true)
-    Boolean http2DisableCipherCheck;
-    @Param(name = "http2MaxConcurrentStreams", alias = "http2maxConcurrentStreams", optional = true)
+    @Param(name = "http2MaxConcurrentStreams", alias = "http2maxconcurrentstreams", optional = true)
     Integer http2MaxConcurrentStreams;
-    @Param(name = "http2InitialWindowSizeInBytes", alias = "http2initialWindowSizeInBytes", optional = true)
+    @Param(name = "http2InitialWindowSizeInBytes", alias = "http2initialwindowsizeinbytes", optional = true)
     Integer http2InitialWindowSizeInBytes;
-    @Param(name = "http2MaxFramePayloadSizeInBytes", alias = "http2maxFramePayloadSizeInBytes", optional = true)
+    @Param(name = "http2MaxFramePayloadSizeInBytes", alias = "http2maxframepayloadsizeinbytes", optional = true)
     Integer http2MaxFramePayloadSizeInBytes;
-    @Param(name = "http2MaxHeaderListSizeInBytes", alias = "http2maxHeaderListSizeInBytes", optional = true)
+    @Param(name = "http2MaxHeaderListSizeInBytes", alias = "http2maxheaderlistsizeinbytes", optional = true)
     Integer http2MaxHeaderListSizeInBytes;
+    @Param(name = "http2StreamsHighWaterMark", alias = "http2streamshighwatermark", optional = true)
+    Float http2StreamsHighWaterMark;
+    @Param(name = "http2CleanPercentage", alias = "http2cleanpercentage", optional = true)
+    Float http2CleanPercentage;
+    @Param(name = "http2CleanFrequencyCheck", alias = "http2cleanfrequencycheck", optional = true)
+    Integer http2CleanFrequencyCheck;
+    @Param(name = "http2DisableCipherCheck", alias = "http2disableciphercheck", optional = true)
+    Boolean http2DisableCipherCheck;
+    @Param(name = "http2PushEnabled", alias = "http2pushenabled", optional = true)
+    Boolean http2PushEnabled;
     
     
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
@@ -197,20 +204,32 @@ public class CreateHttp implements AdminCommand {
                     
                     // HTTP2 options
                     http.setHttp2Enabled(http2Enabled);
-                    if (http2DisableCipherCheck != null) {
-                        http.setHttp2DisableCipherCheck(http2DisableCipherCheck);
+                    if (http2MaxConcurrentStreams != null) {
+                        http.setHttp2MaxConcurrentStreams(http2MaxConcurrentStreams);
                     }
                     if (http2InitialWindowSizeInBytes != null) {
                         http.setHttp2InitialWindowSizeInBytes(http2InitialWindowSizeInBytes);
-                    }
-                    if (http2MaxConcurrentStreams != null) {
-                        http.setHttp2MaxConcurrentStreams(http2MaxConcurrentStreams);
                     }
                     if (http2MaxFramePayloadSizeInBytes != null) {
                         http.setHttp2MaxFramePayloadSizeInBytes(http2MaxFramePayloadSizeInBytes);
                     }
                     if (http2MaxHeaderListSizeInBytes != null) {
                         http.setHttp2MaxHeaderListSizeInBytes(http2MaxHeaderListSizeInBytes);
+                    }
+                    if (http2StreamsHighWaterMark != null) {
+                        http.setHttp2StreamsHighWaterMark(http2StreamsHighWaterMark.toString());
+                    }
+                    if (http2CleanPercentage != null) {
+                        http.setHttp2CleanPercentage(http2CleanPercentage.toString());
+                    }
+                    if (http2CleanFrequencyCheck != null) {
+                        http.setHttp2CleanFrequencyCheck(http2CleanFrequencyCheck);
+                    }
+                    if (http2DisableCipherCheck != null) {
+                        http.setHttp2DisableCipherCheck(http2DisableCipherCheck);
+                    }
+                    if (http2PushEnabled != null) {
+                        http.setHttp2PushEnabled(http2PushEnabled);
                     }
                     param.setHttp(http);
                     return http;
