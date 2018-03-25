@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admingui.common.handlers;
 
@@ -781,12 +782,12 @@ public class SecurityHandler {
 
             ArrayList<Map<String, String>> newOptions = new ArrayList<>();
             if (userValue){
-                for(Map<String, String> origOption : list){
+                for (Map<String, String> origOption : list){
                     newOptions.add(origOption);
                 }
                 newOptions.add(ImmutableMap.of("jvmOption", JVM_OPTION_SECURITY_MANAGER));
-            } else{
-                for(Map<String, String> origOption : list){
+            } else {
+                for (Map<String, String> origOption : list){
                     String str = origOption.get("jvmOption");
                     if (! (str.trim().equals(JVM_OPTION_SECURITY_MANAGER) ||
                             str.trim().startsWith(JVM_OPTION_SECURITY_MANAGER_WITH_EQUAL))){
@@ -822,7 +823,7 @@ public class SecurityHandler {
     }
 
     private static Boolean isSecurityManagerEnabled(List<Map<String, String>> jvmOptions){
-        for(Map<String, String> jvmOptionMap : jvmOptions){
+        for (Map<String, String> jvmOptionMap : jvmOptions){
             String jvmOption = jvmOptionMap.get("jvmOption");
             if (jvmOption.trim().equals(JVM_OPTION_SECURITY_MANAGER) ||
                     jvmOption.trim().startsWith(JVM_OPTION_SECURITY_MANAGER_WITH_EQUAL)){

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * InstanceHandler.java
@@ -80,7 +81,7 @@ public class InstanceHandler {
         output={
             @HandlerOutput(name="result", type=java.util.List.class)})
     public static void getJvmOptionsValues(HandlerContext handlerCtx) {
-        try{
+        try {
             List<Map<String, String>> list = getJvmOptions(handlerCtx);
             List<Map<String, Object>> optionValues = new ArrayList<>();
             for (Map<String, String> item : list) {
@@ -89,7 +90,7 @@ public class InstanceHandler {
                 optionValues.add(valueMap);
             }
             handlerCtx.setOutputValue("result", optionValues);
-        }catch (Exception ex){
+        } catch (Exception ex){
             handlerCtx.setOutputValue("result", new HashMap());
             GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.getJvmOptionsValues") + ex.getLocalizedMessage());
             if (GuiUtil.getLogger().isLoggable(Level.FINE)){

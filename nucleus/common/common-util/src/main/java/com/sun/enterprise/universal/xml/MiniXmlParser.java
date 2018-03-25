@@ -242,7 +242,7 @@ public class MiniXmlParser {
 
         public JvmOption(String option) {
             Matcher matcher = PATTERN.matcher(option);
-            if(matcher.matches()) {
+            if (matcher.matches()) {
                 this.minVersion = Optional.ofNullable(JDK.getVersion(matcher.group(1)));
                 this.maxVersion = Optional.ofNullable(JDK.getVersion(matcher.group(2)));
                 this.option = matcher.group(3);
@@ -266,7 +266,7 @@ public class MiniXmlParser {
 
         @Override
         public String toString() {
-            if(!minVersion.isPresent() && !maxVersion.isPresent()) {
+            if (!minVersion.isPresent() && !maxVersion.isPresent()) {
                 return option;
             }
             return String.format("[%s|%s]%s", minVersion.isPresent()? minVersion.get(): "", maxVersion.isPresent()? maxVersion.get(): "", option);
