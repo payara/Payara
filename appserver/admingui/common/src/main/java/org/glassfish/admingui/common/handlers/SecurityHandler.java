@@ -41,6 +41,7 @@
 package org.glassfish.admingui.common.handlers;
 
 import com.google.common.collect.ImmutableMap;
+import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 import com.sun.jsftemplating.annotation.Handler;  
 import com.sun.jsftemplating.annotation.HandlerInput; 
 import com.sun.jsftemplating.annotation.HandlerOutput;
@@ -791,14 +792,15 @@ public class SecurityHandler {
                             str.trim().startsWith(JVM_OPTION_SECURITY_MANAGER_WITH_EQUAL))){
                        newOptions.add(ImmutableMap.of("jvmOption", str,
                                "minVersion", origOption.get("minVersion"),
-                               "minVersion", origOption.get("minVersion")));
+                               "maxVersion", origOption.get("maxVersion")));
                     }
                 }
             }
             Map<String, Object> payload = new HashMap<String, Object>();
             payload.put("target", configName);
             for (Map<String, String> option : newOptions) {
-                ArrayList kv = InstanceHandler.getKeyValuePair(UtilHandlers.escapePropertyValue(option.get("jvmOption")));
+                ArrayList kv = InstanceHandler.getKeyValuePair(new JvmOption(UtilHandlers.escapePropertyValue(option.get("jvmOption")),
+                        option.get("minVersion"), option.get("maxVersion")).toString());
                 payload.put((String)kv.get(0), kv.get(1));
             }
             RestUtil.restRequest(endpoint, payload, "POST", handlerCtx, false);
