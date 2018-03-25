@@ -260,6 +260,10 @@ public class MiniXmlParser {
             this.maxVersion = Optional.ofNullable(JDK.getVersion(maxVersion));
         }
 
+        public static boolean hasVersionPattern(String option) {
+            return PATTERN.matcher(option).matches();
+        }
+
         @Override
         public String toString() {
             if(!minVersion.isPresent() && !maxVersion.isPresent()) {

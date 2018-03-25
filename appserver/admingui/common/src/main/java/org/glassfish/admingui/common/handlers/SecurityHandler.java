@@ -40,6 +40,7 @@
 
 package org.glassfish.admingui.common.handlers;
 
+import com.google.common.collect.ImmutableMap;
 import com.sun.jsftemplating.annotation.Handler;  
 import com.sun.jsftemplating.annotation.HandlerInput; 
 import com.sun.jsftemplating.annotation.HandlerOutput;
@@ -764,39 +765,40 @@ public class SecurityHandler {
                 configName = "server-config";
             String endpoint = GuiUtil.getSessionValue("REST_URL") +
                     "/configs/config/" + configName + "/java-config/jvm-options.json";
-            ArrayList<String> list;
+            ArrayList<Map<String, String>> list;
             Map result = (HashMap) RestUtil.restRequest(endpoint, null, "GET", null, false).get("data");
-            list = (ArrayList<String>) ((Map<String, Object>) result.get("extraProperties")).get("leafList");
+            list = (ArrayList<Map<String,String>>) ((Map<String, Object>) result.get("extraProperties")).get("leafList");
             if (list == null)
-                list = new ArrayList<String>();
+                list = new ArrayList<>();
             Boolean status = isSecurityManagerEnabled(list);
-            String value= (String) handlerCtx.getInputValue("value");
+            String value = (String) handlerCtx.getInputValue("value");
             Boolean userValue = Boolean.valueOf(value);
             if (status.equals(userValue)){
                 //no need to change
                 return;
             }
 
-            ArrayList<String> newOptions = new ArrayList();
-            Object [] origOptions = list.toArray();
+            ArrayList<Map<String, String>> newOptions = new ArrayList<>();
             if (userValue){
-                for(int i=0; i<origOptions.length; i++){
-                    newOptions.add((String)origOptions[i]);
+                for(Map<String, String> origOption : list){
+                    newOptions.add(origOption);
                 }
-                newOptions.add(JVM_OPTION_SECURITY_MANAGER);
+                newOptions.add(ImmutableMap.of("jvmOption", JVM_OPTION_SECURITY_MANAGER));
             } else{
-                for(int i=0; i<origOptions.length; i++){
-                    String str = (String) origOptions[i];
+                for(Map<String, String> origOption : list){
+                    String str = origOption.get("jvmOption");
                     if (! (str.trim().equals(JVM_OPTION_SECURITY_MANAGER) ||
                             str.trim().startsWith(JVM_OPTION_SECURITY_MANAGER_WITH_EQUAL))){
-                       newOptions.add((String)origOptions[i]);
+                       newOptions.add(ImmutableMap.of("jvmOption", str,
+                               "minVersion", origOption.get("minVersion"),
+                               "minVersion", origOption.get("minVersion")));
                     }
                 }
             }
             Map<String, Object> payload = new HashMap<String, Object>();
             payload.put("target", configName);
-            for (String option : newOptions) {
-                ArrayList kv = InstanceHandler.getKeyValuePair(option);
+            for (Map<String, String> option : newOptions) {
+                ArrayList kv = InstanceHandler.getKeyValuePair(UtilHandlers.escapePropertyValue(option.get("jvmOption")));
                 payload.put((String)kv.get(0), kv.get(1));
             }
             RestUtil.restRequest(endpoint, payload, "POST", handlerCtx, false);
@@ -813,12 +815,13 @@ public class SecurityHandler {
            @HandlerOutput(name="value", type=String.class)}
     )
     public static void getSecurityManagerValue(HandlerContext handlerCtx){
-        ArrayList<String> list = InstanceHandler.getJvmOptions(handlerCtx);
+        List<Map<String, String>> list = InstanceHandler.getJvmOptions(handlerCtx);
         handlerCtx.setOutputValue("value",  isSecurityManagerEnabled(list).toString());
     }
 
-    private static Boolean isSecurityManagerEnabled(List<String> jvmOptions){
-        for(String jvmOption : jvmOptions){
+    private static Boolean isSecurityManagerEnabled(List<Map<String, String>> jvmOptions){
+        for(Map<String, String> jvmOptionMap : jvmOptions){
+            String jvmOption = jvmOptionMap.get("jvmOption");
             if (jvmOption.trim().equals(JVM_OPTION_SECURITY_MANAGER) ||
                     jvmOption.trim().startsWith(JVM_OPTION_SECURITY_MANAGER_WITH_EQUAL)){
                 return Boolean.TRUE;

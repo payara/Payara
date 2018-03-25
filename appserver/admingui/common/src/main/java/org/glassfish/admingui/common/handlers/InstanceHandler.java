@@ -52,6 +52,7 @@
  */
 package org.glassfish.admingui.common.handlers;
 
+import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
@@ -80,8 +81,14 @@ public class InstanceHandler {
             @HandlerOutput(name="result", type=java.util.List.class)})
     public static void getJvmOptionsValues(HandlerContext handlerCtx) {
         try{
-            ArrayList<String> list = getJvmOptions(handlerCtx);
-            handlerCtx.setOutputValue("result", GuiUtil.convertArrayToListOfMap(list.toArray(), "value"));
+            List<Map<String, String>> list = getJvmOptions(handlerCtx);
+            List<Map<String, Object>> optionValues = new ArrayList<>();
+            for (Map<String, String> item : list) {
+                Map<String, Object> valueMap = new HashMap<>(item);
+                valueMap.put("selected", false);
+                optionValues.add(valueMap);
+            }
+            handlerCtx.setOutputValue("result", optionValues);
         }catch (Exception ex){
             handlerCtx.setOutputValue("result", new HashMap());
             GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.getJvmOptionsValues") + ex.getLocalizedMessage());
@@ -91,16 +98,16 @@ public class InstanceHandler {
         }
     }
     
-     public static ArrayList getJvmOptions(HandlerContext handlerCtx) {
-        ArrayList<String> list;
+     public static List<Map<String, String>> getJvmOptions(HandlerContext handlerCtx) {
+        ArrayList<Map<String, String>> list;
         String endpoint = (String) handlerCtx.getInputValue("endpoint");
         if (!endpoint.endsWith(".json"))
             endpoint = endpoint + ".json";
         Map<String, Object> attrs = (Map<String, Object>) handlerCtx.getInputValue("attrs");
-        Map result = (HashMap) RestUtil.restRequest(endpoint, attrs, "get", handlerCtx, false).get("data");
-        list = (ArrayList<String>) ((Map<String, Object>) result.get("extraProperties")).get("leafList");
+        Map<String, Map> result = (Map<String, Map>) RestUtil.restRequest(endpoint, attrs, "get", handlerCtx, false).get("data");
+        list = (ArrayList<Map<String, String>>) result.get("extraProperties").get("leafList");
         if (list == null)
-            list = new ArrayList<String>();
+            list = new ArrayList<>();
         return list;
     }
  
@@ -118,17 +125,19 @@ public class InstanceHandler {
         String endpoint = (String) handlerCtx.getInputValue("endpoint");
         String target = (String) handlerCtx.getInputValue("target");
         try {
-            List<Map> options = (List<Map>) handlerCtx.getInputValue("options");
-            ArrayList<String> newList = new ArrayList();
-            for (Map oneRow : options) {
-                newList.add((String) oneRow.get(PROPERTY_VALUE));
+            @SuppressWarnings("unchecked")
+            List<Map<String, String>> options = (List<Map<String, String>>) handlerCtx.getInputValue("options");
+            ArrayList<Map<String, String>> newList = new ArrayList<>();
+            for (Map<String, String> oneRow : options) {
+                oneRow.remove("selected");
+                newList.add(oneRow);
             }
-            ArrayList<String> oldList = getJvmOptions(handlerCtx);
+            List<Map<String,String>> oldList = getJvmOptions(handlerCtx);
             if (newList.equals(oldList)) {
                 // if old list is same as new list, return without saving anything
                 return;
             }
-            Map<String, Object> payload = new HashMap<String, Object>();
+            Map<String, Object> payload = new HashMap<>();
             payload.put("profiler", (String)handlerCtx.getInputValue("profiler"));
             prepareJvmOptionPayload(payload, target, options);
             RestUtil.restRequest(endpoint, payload, "POST", handlerCtx, false, true);
@@ -144,7 +153,7 @@ public class InstanceHandler {
 
             //If the origList is not empty,  we want to restore it. Since POST remove all options first and then add it back. As a
             //result, all previous existing option is gone.
-            List<Map> origList = (List<Map>) handlerCtx.getInputValue("origList");
+            List<Map<String, String>> origList = (List<Map<String, String>>) handlerCtx.getInputValue("origList");
             Map<String, Object> payload1 = new HashMap<String, Object>();
             if (endpoint.contains("profiler")) {
                 payload1.put("profiler", "true");
@@ -157,12 +166,12 @@ public class InstanceHandler {
         }
     }
 
-    private static void prepareJvmOptionPayload(Map payload, String target, List<Map> options){
+    private static void prepareJvmOptionPayload(Map<String, Object> payload, String target, List<Map<String, String>> options) {
         payload.put("target", target);
-        for (Map oneRow : options) {
-            String str = (String) oneRow.get(PROPERTY_VALUE);
-            String str1 = UtilHandlers.escapePropertyValue(str);         //refer to GLASSFISH-19069
-            ArrayList kv = getKeyValuePair(str1);
+        for (Map<String, String> oneRow : options) {
+            String jvmOptionUnescaped = new JvmOption(oneRow.get("jvmOption"), oneRow.get("minVersion"), oneRow.get("maxVersion")).toString();
+            String jvmOptionEscape = UtilHandlers.escapePropertyValue(jvmOptionUnescaped);         //refer to GLASSFISH-19069
+            ArrayList kv = getKeyValuePair(jvmOptionEscape);
             payload.put((String)kv.get(0), kv.get(1));
         }
     }
@@ -184,8 +193,4 @@ public class InstanceHandler {
         list.add(1, value);
         return list;
     }
-
-    private static final String PROPERTY_VALUE = "value";
 }
-        
- 
