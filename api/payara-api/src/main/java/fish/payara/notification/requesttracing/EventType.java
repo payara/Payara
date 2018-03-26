@@ -37,43 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.healthcheck;
-
-import fish.payara.notification.healthcheck.HealthCheckResultEntry;
-import fish.payara.notification.healthcheck.HealthCheckResultStatus;
-
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+package fish.payara.notification.requesttracing;
 
 /**
  * @author mertcaliskan
+ *
+ * Enumeration that depicts event types from start and 'till the end of request tracing.
  */
-public class HealthCheckResult implements Iterable<HealthCheckResultEntry> {
-
-    private List<HealthCheckResultEntry> entries = new LinkedList<>();
-    private HealthCheckResultStatus cumulativeStatus;
-
-    @Override
-    public Iterator<HealthCheckResultEntry> iterator() {
-        return this.entries.iterator();
-    }
-
-    public void add(HealthCheckResultEntry e) {
-        if (entries.isEmpty()) {
-            cumulativeStatus = HealthCheckResultStatus.GOOD;
-        }
-        entries.add(e);
-        if (e.getStatus().getLevel() < cumulativeStatus.getLevel()) {
-            cumulativeStatus = e.getStatus();
-        }
-    }
-
-    public HealthCheckResultStatus getCumulativeStatus() {
-        return cumulativeStatus;
-    }
-
-    public List<HealthCheckResultEntry> getEntries() {
-        return entries;
-    }
+public enum EventType {
+    TRACE_START,
+    PROPAGATED_TRACE,
+    REQUEST_EVENT
 }

@@ -37,16 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.ejb.mdb;
 
 import com.sun.appserv.connectors.internal.api.ResourceHandle;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
-import fish.payara.nucleus.requesttracing.domain.EventType;
+import fish.payara.notification.requesttracing.EventType;
 import java.lang.reflect.Method;
 import java.util.UUID;
 import javax.jms.Destination;

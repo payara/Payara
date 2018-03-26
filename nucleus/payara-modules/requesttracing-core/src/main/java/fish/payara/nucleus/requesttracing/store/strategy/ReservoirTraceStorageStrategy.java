@@ -39,7 +39,7 @@
  */
 package fish.payara.nucleus.requesttracing.store.strategy;
 
-import fish.payara.nucleus.requesttracing.RequestTrace;
+import fish.payara.notification.requesttracing.RequestTrace;
 import java.util.Collection;
 import java.util.Random;
 

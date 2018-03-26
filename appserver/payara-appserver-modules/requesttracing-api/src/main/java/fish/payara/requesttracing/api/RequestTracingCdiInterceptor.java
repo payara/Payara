@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,7 @@ package fish.payara.requesttracing.api;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.api.Traced;
-import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
 import org.glassfish.internal.api.Globals;
 
 import javax.annotation.Priority;

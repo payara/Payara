@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,7 @@
  */
 package fish.payara.nucleus.requesttracing.store.strategy;
 
-import fish.payara.nucleus.requesttracing.RequestTrace;
+import fish.payara.notification.requesttracing.RequestTrace;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -48,7 +48,7 @@ import java.util.List;
 /**
  * Strategy for finding traces that need removing from a list. Will remove the
  * trace at the end of the
- * {@link fish.payara.nucleus.requesttracing.RequestTrace RequestTrace} object's
+ * {@link RequestTrace RequestTrace} object's
  * natural ordering.
  */
 public class LongestTraceStorageStrategy implements TraceStorageStrategy {

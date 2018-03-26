@@ -76,9 +76,9 @@ import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 import org.glassfish.server.ServerEnvironmentImpl;
 import com.sun.ejb.PersistentTimerService;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
-import fish.payara.nucleus.requesttracing.domain.EventType;
+import fish.payara.notification.requesttracing.EventType;
 import org.glassfish.internal.api.Globals;
 
 /*

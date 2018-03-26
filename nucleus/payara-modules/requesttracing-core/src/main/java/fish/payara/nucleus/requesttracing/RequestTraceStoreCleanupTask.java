@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -38,6 +39,7 @@
  */
 package fish.payara.nucleus.requesttracing;
 
+import fish.payara.notification.requesttracing.RequestTrace;
 import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -39,7 +40,7 @@
 package fish.payara.nucleus.requesttracing.admin;
 
 import com.sun.enterprise.util.ColumnFormatter;
-import fish.payara.nucleus.requesttracing.RequestTrace;
+import fish.payara.notification.requesttracing.RequestTrace;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
 import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;

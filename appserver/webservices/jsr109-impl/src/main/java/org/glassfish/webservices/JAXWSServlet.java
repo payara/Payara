@@ -37,17 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
-package org.glassfish.webservices;
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
-//import com.sun.enterprise.Switch;
+package org.glassfish.webservices;
 
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.*;
 import com.sun.xml.ws.api.server.Adapter;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
 import org.glassfish.webservices.monitoring.Endpoint;
 import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
 import org.glassfish.webservices.monitoring.WebServiceTesterServlet;
