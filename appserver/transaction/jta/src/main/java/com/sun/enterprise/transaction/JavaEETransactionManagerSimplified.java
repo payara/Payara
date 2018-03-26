@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.transaction;
 
@@ -58,7 +58,7 @@ import com.sun.enterprise.transaction.spi.TransactionalResource;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestTraceSpanLog;
+import fish.payara.notification.requesttracing.RequestTraceSpanLog;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;

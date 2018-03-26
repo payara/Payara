@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,43 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.healthcheck;
-
-import fish.payara.notification.healthcheck.HealthCheckResultEntry;
-import fish.payara.notification.healthcheck.HealthCheckResultStatus;
-
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+package fish.payara.notification;
 
 /**
  * @author mertcaliskan
  */
-public class HealthCheckResult implements Iterable<HealthCheckResultEntry> {
-
-    private List<HealthCheckResultEntry> entries = new LinkedList<>();
-    private HealthCheckResultStatus cumulativeStatus;
-
-    @Override
-    public Iterator<HealthCheckResultEntry> iterator() {
-        return this.entries.iterator();
-    }
-
-    public void add(HealthCheckResultEntry e) {
-        if (entries.isEmpty()) {
-            cumulativeStatus = HealthCheckResultStatus.GOOD;
-        }
-        entries.add(e);
-        if (e.getStatus().getLevel() < cumulativeStatus.getLevel()) {
-            cumulativeStatus = e.getStatus();
-        }
-    }
-
-    public HealthCheckResultStatus getCumulativeStatus() {
-        return cumulativeStatus;
-    }
-
-    public List<HealthCheckResultEntry> getEntries() {
-        return entries;
-    }
+public interface Notification {
+    String getDomain();
+    String getSubject();
+    String getMessage();
+    NotificationData getData();
 }

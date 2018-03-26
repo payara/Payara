@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,7 @@
  */
 package fish.payara.notification.eventbus.core;
 
+import fish.payara.notification.NotificationData;
 import fish.payara.notification.eventbus.EventbusMessage;
 import fish.payara.nucleus.notification.service.Message;
 
@@ -51,6 +52,7 @@ public class CDIEventbusMessageImpl extends Message implements EventbusMessage {
     private String serverName;
     private String domain;
     private String instance;
+    private NotificationData data;
 
     public CDIEventbusMessageImpl(CDIEventbusNotificationEvent event, String subject, String message) {
         this.subject = subject;
@@ -59,6 +61,7 @@ public class CDIEventbusMessageImpl extends Message implements EventbusMessage {
         this.serverName = event.getServerName();
         this.domain = event.getDomainName();
         this.instance = event.getInstanceName();
+        this.data = event.getNotificationData();
     }
 
     @Override
@@ -79,5 +82,9 @@ public class CDIEventbusMessageImpl extends Message implements EventbusMessage {
     @Override
     public String getInstance() {
         return instance;
+    }
+
+    public NotificationData getData() {
+        return data;
     }
 }

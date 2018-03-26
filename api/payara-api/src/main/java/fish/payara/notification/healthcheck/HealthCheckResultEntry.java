@@ -37,43 +37,51 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.healthcheck;
+package fish.payara.notification.healthcheck;
 
-import fish.payara.notification.healthcheck.HealthCheckResultEntry;
-import fish.payara.notification.healthcheck.HealthCheckResultStatus;
-
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.io.Serializable;
 
 /**
+ * A class for the result of an individual health check
  * @author mertcaliskan
+ * @since 4.1.1.161
  */
-public class HealthCheckResult implements Iterable<HealthCheckResultEntry> {
+public class HealthCheckResultEntry implements Serializable {
+    private HealthCheckResultStatus status;
+    private String message;
+    private Exception exception;
 
-    private List<HealthCheckResultEntry> entries = new LinkedList<>();
-    private HealthCheckResultStatus cumulativeStatus;
+    private static final long serialVersionUID = 1L;
+
+    public HealthCheckResultEntry(HealthCheckResultStatus status, String msg) {
+        this.status = status;
+        this.message = msg;
+    }
+
+    public HealthCheckResultEntry(HealthCheckResultStatus status, String msg, Exception ex) {
+        this.status = status;
+        this.message = msg;
+        this.exception = ex;
+    }
+
+    /**
+     * Gets the severity level of the result of the health check
+     * @return 
+     */
+    public HealthCheckResultStatus getStatus() {
+        return status;
+    }
 
     @Override
-    public Iterator<HealthCheckResultEntry> iterator() {
-        return this.entries.iterator();
-    }
-
-    public void add(HealthCheckResultEntry e) {
-        if (entries.isEmpty()) {
-            cumulativeStatus = HealthCheckResultStatus.GOOD;
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[status=" + status);
+        sb.append(", message='" + message + '\'');
+        if (exception != null) {
+            sb.append(", exception=" + exception);
         }
-        entries.add(e);
-        if (e.getStatus().getLevel() < cumulativeStatus.getLevel()) {
-            cumulativeStatus = e.getStatus();
-        }
-    }
+        sb.append("']'");
 
-    public HealthCheckResultStatus getCumulativeStatus() {
-        return cumulativeStatus;
-    }
-
-    public List<HealthCheckResultEntry> getEntries() {
-        return entries;
+        return sb.toString();
     }
 }

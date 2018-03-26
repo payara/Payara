@@ -40,7 +40,7 @@
 package fish.payara.nucleus.requesttracing.store;
 
 import com.hazelcast.core.MultiMap;
-import fish.payara.nucleus.requesttracing.RequestTrace;
+import fish.payara.notification.requesttracing.RequestTrace;
 import fish.payara.nucleus.requesttracing.store.strategy.TraceStorageStrategy;
 import java.io.Serializable;
 import java.util.Collection;
@@ -49,7 +49,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * A store of {@link fish.payara.nucleus.requesttracing.RequestTrace} objects.
+ * A store of {@link RequestTrace} objects.
  * Stores the list across a cluster.
  */
 public class ClusteredRequestTraceStore implements RequestTraceStoreInterface, Serializable {

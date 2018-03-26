@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.requesttracing.domain;
+package fish.payara.notification.requesttracing;
 
 import java.io.Serializable;
 import java.time.Instant;

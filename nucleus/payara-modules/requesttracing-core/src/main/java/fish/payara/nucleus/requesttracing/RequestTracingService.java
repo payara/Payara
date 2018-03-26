@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@ package fish.payara.nucleus.requesttracing;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
+import fish.payara.notification.requesttracing.RequestTrace;
 import fish.payara.nucleus.eventbus.ClusterMessage;
 import fish.payara.nucleus.eventbus.EventBus;
 import fish.payara.nucleus.events.HazelcastEvents;
@@ -58,9 +59,9 @@ import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
 import fish.payara.nucleus.requesttracing.store.RequestTraceStoreFactory;
 import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
-import fish.payara.nucleus.requesttracing.domain.EventType;
-import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
-import fish.payara.nucleus.requesttracing.domain.RequestTraceSpanLog;
+import fish.payara.notification.requesttracing.EventType;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
+import fish.payara.notification.requesttracing.RequestTraceSpanLog;
 import fish.payara.nucleus.requesttracing.domain.execoptions.RequestTracingExecutionOptions;
 import fish.payara.nucleus.requesttracing.events.RequestTracingEvents;
 import fish.payara.nucleus.requesttracing.sampling.AdaptiveSampleFilter;
@@ -427,7 +428,6 @@ public class RequestTracingService implements EventListener, ConfigListener {
                     return;
                 }
             }
-            String traceAsString = requestEventStore.getTraceAsString();
             RequestTrace requestTrace = requestEventStore.getTrace();
             
             Runnable addTask = () -> {
@@ -454,7 +454,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
                 if (notifierExecutionOptions.isEnabled()) {
                     NotificationEventFactory notificationEventFactory = eventFactoryStore.get(notifierExecutionOptions.getNotifierType());
                     String subject = "Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold";
-                    NotificationEvent notificationEvent = notificationEventFactory.buildNotificationEvent(subject, traceAsString);
+                    NotificationEvent notificationEvent = notificationEventFactory.buildNotificationEvent(subject, requestTrace);
                     notificationService.notify(EventSource.REQUESTTRACING, notificationEvent);
                 }
             }

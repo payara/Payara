@@ -168,7 +168,8 @@ import com.sun.enterprise.util.net.NetUtils;
 import com.sun.logging.LogDomains;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestTraceSpan;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
+import sun.security.x509.X500Name;
 
 /**
  * This is the realm adapter used to authenticate users and authorize access to web resources. The authenticate method
