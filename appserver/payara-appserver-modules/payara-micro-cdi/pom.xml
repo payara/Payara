@@ -93,7 +93,7 @@
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
-            <version>8.0</version>
+            <version>${javaee.api.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.api</groupId>

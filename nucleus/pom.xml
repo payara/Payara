@@ -219,6 +219,7 @@
         <deploy.skip>true</deploy.skip>
 
         <!-- Java EE -->
+        <javaee.api.version>8.0</javaee.api.version>
 
         <!-- Servlet -->
         <servlet-api.version>4.0.0</servlet-api.version>

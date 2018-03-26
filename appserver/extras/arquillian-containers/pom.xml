@@ -78,6 +78,7 @@
     <properties>
         <version.arquillian_core>1.1.13.Final</version.arquillian_core>
         <version.jersey>2.26</version.jersey>
+        <version.javaee.api>8.0</version.javaee.api>
 
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -232,7 +233,7 @@
             <dependency>
                 <groupId>javax</groupId>
                 <artifactId>javaee-api</artifactId>
-                <version>7.0</version>
+                <version>${javaee.api.version}</version>
                 <scope>test</scope>
             </dependency>
             
