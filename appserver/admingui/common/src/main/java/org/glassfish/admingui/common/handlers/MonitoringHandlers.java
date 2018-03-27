@@ -48,7 +48,6 @@ import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
-import java.math.BigDecimal;
 import java.net.URLEncoder;
 
 import java.util.List;
@@ -295,7 +294,7 @@ public class MonitoringHandlers {
                                                 val = formatStr;
                                             }   break;
                                         default:
-                                            Long currentVal = ((BigDecimal) monAttrs.get("current")).longValue();
+                                            Long currentVal = ((Long) monAttrs.get("current"));
                                             val = currentVal + " " + unit;
                                             break;
                                     }
