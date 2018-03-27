@@ -48,6 +48,7 @@ import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 
 import java.util.List;
@@ -55,14 +56,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
 import java.text.DateFormat;
-import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Date;
 import java.util.ListIterator;
 import java.util.logging.Level;
 
-import org.glassfish.admingui.common.util.RestResponse;
 import org.glassfish.admingui.common.util.RestUtil;
 
 /**
@@ -396,7 +395,7 @@ public class MonitoringHandlers {
                 }
             }
             handlerCtx.setOutputValue("result", result);
-            handlerCtx.setOutputValue("hasStats", (result.size() == 0) ? false : true);
+            handlerCtx.setOutputValue("hasStats", !(result.isEmpty()));
         } catch (Exception ex) {
             GuiUtil.handleException(handlerCtx, ex);
         }
@@ -418,7 +417,6 @@ public class MonitoringHandlers {
         }catch (Exception ex){
             GuiUtil.getLogger().severe(GuiUtil.getCommonMessage("msg.error.save.monitor.modules" ,  new Object[]{endpoint, payload}));
             GuiUtil.handleError(handlerCtx, GuiUtil.getMessage("msg.error.checkLog"));
-            return;
         }
     }
 
@@ -463,7 +461,7 @@ public class MonitoringHandlers {
     public static void getFirstValueFromList(HandlerContext handlerCtx) {
         List values = (List) handlerCtx.getInputValue("values");
         String firstval = "";
-        if ((values != null) && (values.size() != 0)) {
+        if ((values != null) && !values.isEmpty()) {
             firstval = (String) values.get(0);
 
         }
