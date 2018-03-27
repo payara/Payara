@@ -107,7 +107,7 @@
 
         <!-- JPA -->
         <javax-persistence-api.version>2.2.0</javax-persistence-api.version>
-        <eclipselink.version>2.7.0</eclipselink.version>
+        <eclipselink.version>2.7.1.payara-p1</eclipselink.version>
 
         <!-- JTA -->
         <javax.transaction-api.version>1.2.1</javax.transaction-api.version>
