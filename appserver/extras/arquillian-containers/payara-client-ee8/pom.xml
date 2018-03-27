@@ -45,7 +45,7 @@
 
 	<groupId>fish.payara.arquillian</groupId>
 	<artifactId>payara-client-ee8</artifactId>
-	<version>1.0.Beta3-m3</version>
+	<version>1.0.Beta3</version>
 	<name>Payara EE 8 client libs</name>
 
 	<dependencies>
