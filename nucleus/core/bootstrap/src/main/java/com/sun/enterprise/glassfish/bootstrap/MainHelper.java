@@ -83,17 +83,17 @@ public class MainHelper {
 
         if (major == 1) {
             int security = getSecurityJdkVersion();
-            if (minor == 8 && security < 162) {
+            if (minor == 8 && security < 161) {
                 String jdkVersion = System.getProperty("java.version");
-                logger.log(Level.SEVERE, LogFacade.BOOTSTRAP_MINIMUM_JDKVERSION_REQUIRED, new Object[]{"1.8.0_162", jdkVersion});
+                logger.log(Level.SEVERE, LogFacade.BOOTSTRAP_MINIMUM_JDKVERSION_REQUIRED, new Object[]{"1.8.0_161", jdkVersion});
                 System.exit(1);
             }
         }
     }
 
     private static int getMajorJdkVersion() {
-      String jv = System.getProperty("java.version");
-      String[] split = jv.split("[\\._\\-]+");
+      String javaVersion = System.getProperty("java.version");
+      String[] split = javaVersion.split("[\\._\\-]+");
       if (split.length > 0) {
         return Integer.parseInt(split[0]);
       }
@@ -105,8 +105,8 @@ public class MainHelper {
         // this module has no dependencies on util code so it was dragged in here.
 
         try {
-            String jv = System.getProperty("java.version");
-            String[] ss = jv.split("\\.");
+            String javaVersion = System.getProperty("java.version");
+            String[] ss = javaVersion.split("\\.");
 
             if (ss == null || ss.length < 3 || !ss[0].equals("1"))
                 return 1;
@@ -119,8 +119,8 @@ public class MainHelper {
     }
 
     private static int getSecurityJdkVersion() {
-        String jv = System.getProperty("java.version");
-        String[] split = jv.split("\\.");
+        String javaVersion = System.getProperty("java.version");
+        String[] split = javaVersion.split("\\.");
         if (split.length > 0) {
             String replaceNonNumericCharacters = split[2].replaceAll("[^\\d.]", "");
             return Integer.parseInt(replaceNonNumericCharacters);
