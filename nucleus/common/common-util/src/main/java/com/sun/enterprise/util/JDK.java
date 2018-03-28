@@ -82,7 +82,7 @@ public final class JDK {
         private int update;
 
         private Version(String string) {
-            String[] split = string.split("[\\._\\-]+");
+            String[] split = string.split("[\\._u\\-]+");
 
             if (split.length > 0) {
                 major = Integer.parseInt(split[0]);
@@ -181,7 +181,7 @@ public final class JDK {
     }
 
     public static Version getVersion(String string) {
-        if (string != null && string.matches("([0-9]+[\\._\\-]+)*[0-9]+")) {
+        if (string != null && string.matches("([0-9]+[\\._u\\-]+)*[0-9]+")) {
             return new Version(string);
         } else {
             return null;

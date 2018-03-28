@@ -37,11 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.util;
 
+import com.sun.enterprise.util.JDK.Version;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import static org.junit.Assert.assertTrue;
+import org.junit.Ignore;
 
 /**
  * Tests for JavaVersion class's methods.
@@ -110,5 +114,20 @@ public class JavaVersionTest {
         JavaVersion jv2 = JavaVersion.getVersion("1.7.0");
         assertTrue(jv1.olderOrEquals(jv2));
     }
-}
 
+    @Test
+    public void testJDKUpdateWithU() {
+        assertEquals(JDK.getVersion("1.8.0.29"), JDK.getVersion("1.8.0u29"));
+    }
+
+    @Test
+    @Ignore("not ready yet")
+    public void testOptionalVersionCompare() {
+        Version v1_7 = JDK.getVersion("1.7");
+        assertEquals("1.7", v1_7.toString());
+        assertTrue("Newer than complete version", v1_7.newerThan(JDK.getVersion("1.6.0.1")));
+        assertTrue("Newer than incomplete version", v1_7.newerThan(JDK.getVersion("1.6.1")));
+        assertTrue("Newer than incomplete version", v1_7.newerThan(JDK.getVersion("1.6")));
+        assertEquals(JDK.getVersion("1.7.0.0"), v1_7);
+    }
+}
