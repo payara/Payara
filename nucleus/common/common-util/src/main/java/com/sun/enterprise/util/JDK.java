@@ -76,46 +76,38 @@ public final class JDK {
     }
 
     public static class Version {
-        private int major;
-        private int minor;
-        private int subminor;
-        private int update;
+        private final int major;
+        private final Optional<Integer> minor;
+        private final Optional<Integer> subminor;
+        private final Optional<Integer> update;
 
         private Version(String string) {
             String[] split = string.split("[\\._u\\-]+");
 
-            if (split.length > 0) {
-                major = Integer.parseInt(split[0]);
-            }
-            if (split.length > 1) {
-                minor = Integer.parseInt(split[1]);
-            }
-            if (split.length > 2) {
-                subminor = Integer.parseInt(split[2]);
-            }
-            if (split.length > 3) {
-                update = Integer.parseInt(split[3]);
-            }
+            major = split.length > 0? Integer.parseInt(split[0]) : 0;
+            minor = split.length > 1? Optional.of(Integer.parseInt(split[1])) : Optional.empty();
+            subminor = split.length > 2? Optional.of(Integer.parseInt(split[2])) : Optional.empty();
+            update = split.length > 3? Optional.of(Integer.parseInt(split[3])) : Optional.empty();
         }
 
         private Version() {
             major = JDK.major;
-            minor = JDK.minor;
-            subminor = JDK.subminor;
-            update = JDK.update;
+            minor = Optional.of(JDK.minor);
+            subminor = Optional.of(JDK.subminor);
+            update = Optional.of(JDK.update);
         }
 
         public boolean newerThan(Version version) {
             if (major > version.major) {
                 return true;
             } else if (major == version.major) {
-                if (minor > version.minor) {
+                if (greaterThan(minor, version.minor)) {
                     return true;
-                } else if (minor == version.minor) {
-                    if (subminor > version.subminor) {
+                } else if (equals(minor, version.minor)) {
+                    if (greaterThan(subminor, version.subminor)) {
                         return true;
                     } else if (subminor == version.subminor) {
-                        if (update > version.update) {
+                        if (greaterThan(update, version.update)) {
                             return true;
                         }
                     }
@@ -125,13 +117,55 @@ public final class JDK {
             return false;
         }
 
+        public boolean olderThan(Version version) {
+            if (major < version.major) {
+                return true;
+            } else if (major == version.major) {
+                if (lessThan(minor, version.minor)) {
+                    return true;
+                } else if (equals(minor, version.minor)) {
+                    if (lessThan(subminor, version.subminor)) {
+                        return true;
+                    } else if (subminor == version.subminor) {
+                        if (lessThan(update, version.update)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static boolean greaterThan(Optional<Integer> leftHandSide, Optional<Integer> rightHandSide) {
+            return leftHandSide.orElse(0) > rightHandSide.orElse(0);
+        }
+
+        private static boolean lessThan(Optional<Integer> leftHandSide, Optional<Integer> rightHandSide) {
+            return leftHandSide.orElse(0) < rightHandSide.orElse(0);
+        }
+
+        /**
+         * if either left-hand-side or right-hand-side is empty, it is equals
+         *
+         * @param leftHandSide
+         * @param rightHandSide
+         * @return true if equals, otherwise false
+         */
+        private static boolean equals(Optional<Integer> leftHandSide, Optional<Integer> rightHandSide) {
+            if(!leftHandSide.isPresent() || !rightHandSide.isPresent()) {
+                return true;
+            }
+            return leftHandSide.orElse(0).equals(rightHandSide.orElse(0));
+        }
+
         @Override
         public int hashCode() {
             int hash = 3;
             hash = 61 * hash + this.major;
-            hash = 61 * hash + this.minor;
-            hash = 61 * hash + this.subminor;
-            hash = 61 * hash + this.update;
+            hash = 61 * hash + this.minor.orElse(0);
+            hash = 61 * hash + this.subminor.orElse(0);
+            hash = 61 * hash + this.update.orElse(0);
             return hash;
         }
 
@@ -150,13 +184,13 @@ public final class JDK {
             if (this.major != other.major) {
                 return false;
             }
-            if (this.minor != other.minor) {
+            if (!equals(this.minor, other.minor)) {
                 return false;
             }
-            if (this.subminor != other.subminor) {
+            if (!equals(this.subminor, other.subminor)) {
                 return false;
             }
-            if (this.update != other.update) {
+            if (!equals(this.update, other.update)) {
                 return false;
             }
             return true;
@@ -166,17 +200,24 @@ public final class JDK {
             return newerThan(version) || equals(version);
         }
 
-        public boolean olderThan(Version version) {
-            return !newerOrEquals(version);
-        }
-
         public boolean olderOrEquals(Version version) {
-            return !newerThan(version);
+            return olderThan(version) || equals(version);
         }
 
         @Override
         public String toString() {
-            return String.format("%d.%d.%d.%d", major, minor, subminor, update);
+            StringBuilder sb = new StringBuilder(10);
+            sb.append(major);
+            if (minor.isPresent()) {
+                sb.append('.').append(minor.get());
+            }
+            if (subminor.isPresent()) {
+                sb.append('.').append(subminor.get());
+            }
+            if (update.isPresent()) {
+                sb.append('.').append(update.get());
+            }
+            return sb.toString();
         }
     }
 
