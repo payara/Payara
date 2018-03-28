@@ -43,13 +43,11 @@ package fish.payara.appserver.cdi.auth.roles;
 import static fish.payara.cdi.auth.roles.LogicalOperator.AND;
 import static fish.payara.cdi.auth.roles.LogicalOperator.OR;
 import static java.util.Arrays.asList;
-import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 
@@ -68,10 +66,11 @@ import fish.payara.cdi.auth.roles.CallerAccessException;
 import fish.payara.cdi.auth.roles.RolesPermitted;
 
 /**
- * The Roles CDI Interceptor authenticates requests to methods and classes annotated with the @Roles annotation. If the
- * security context cannot find a role within the requestor which matches either all (if using the AND semantic within
- * the Roles annotation) or one of (if using the OR semantic within the Roles annotation), then a NotAuthorizedException
- * is thrown.
+ * The Roles CDI Interceptor authenticates requests to methods and classes
+ * annotated with the @Roles annotation. If the security context cannot find a
+ * role within the requestor which matches either all (if using the AND semantic
+ * within the Roles annotation) or one of (if using the OR semantic within the
+ * Roles annotation), then a NotAuthorizedException is thrown.
  *
  * @author Michael Ranaldo <michael@ranaldo.co.uk>
  * @author Arjan Tijms
@@ -95,8 +94,8 @@ public class RolesCDIInterceptor {
     }
 
     /**
-     * Method invoked whenever a method annotated with @Roles, or a method within a class annotated with @Roles is
-     * called.
+     * Method invoked whenever a method annotated with @Roles, or a method
+     * within a class annotated with @Roles is called.
      *
      * @param invocationContext Context provided by Weld.
      * @return Proceed to next interceptor in chain.
@@ -115,7 +114,8 @@ public class RolesCDIInterceptor {
     }
 
     /**
-     * Check that the roles allowed by the class or method match the roles currently granted to the caller.
+     * Check that the roles allowed by the class or method match the roles
+     * currently granted to the caller.
      *
      * @param roles The roles declared within the @Roles annotation.
      * @return True if access is allowed, false otherwise
@@ -142,33 +142,32 @@ public class RolesCDIInterceptor {
     }
 
     private RolesPermitted getRolesPermitted(InvocationContext invocationContext) {
-        Optional<RolesPermitted> optionalRolesPermitted = Optional.empty();
 
-        // Try the Weld bindings first. This gives us the *exact* binding which caused this interceptor being called
+        RolesPermitted rolesPermitted = null;
         @SuppressWarnings("unchecked")
         Set<Annotation> bindings = (Set<Annotation>) invocationContext.getContextData().get("org.jboss.weld.interceptor.bindings");
         if (bindings != null) {
             for (Annotation annotation : bindings) {
                 if (annotation.annotationType().equals(RolesPermitted.class)) {
-                    optionalRolesPermitted = Optional.of(RolesPermitted.class.cast(annotation));
+                    rolesPermitted = RolesPermitted.class.cast(annotation);
                 }
             }
 
-            if (optionalRolesPermitted.isPresent()) {
-                return optionalRolesPermitted.get();
+            if (rolesPermitted != null) {
+                return rolesPermitted;
             }
         }
 
         // Failing the Weld binding, check the method first
-        optionalRolesPermitted = getAnnotationFromMethod(beanManager, invocationContext.getMethod(), RolesPermitted.class);
-        if (optionalRolesPermitted.isPresent()) {
-            return optionalRolesPermitted.get();
+        rolesPermitted = getAnnotationFromMethod(beanManager, invocationContext.getMethod(), RolesPermitted.class);
+        if (rolesPermitted != null) {
+            return rolesPermitted;
         }
 
         // If nothing found on the method, check the the bean class
-        optionalRolesPermitted = getAnnotation(beanManager, interceptedBean.getBeanClass(), RolesPermitted.class);
-        if (optionalRolesPermitted.isPresent()) {
-            return optionalRolesPermitted.get();
+        rolesPermitted = getAnnotationFromClass(beanManager, interceptedBean.getBeanClass(), RolesPermitted.class);
+        if (rolesPermitted != null) {
+            return rolesPermitted;
         }
 
         // If still not found; throw. Since we're being called the annotation has to be there. Failing to
@@ -176,10 +175,12 @@ public class RolesCDIInterceptor {
         throw new IllegalStateException("@RolesPermitted not found on " + interceptedBean.getBeanClass());
     }
 
-    public static <A extends Annotation> Optional<A> getAnnotationFromMethod(BeanManager beanManager, Method annotatedMethod, Class<A> annotationType) {
+    public static <A extends Annotation> A getAnnotationFromMethod(BeanManager beanManager, Method annotatedMethod, Class<A> annotationType) {
 
         if (annotatedMethod.isAnnotationPresent(annotationType)) {
-            return Optional.of(annotatedMethod.getAnnotation(annotationType));
+            if (annotatedMethod.getAnnotation(annotationType) != null) {
+                return annotatedMethod.getAnnotation(annotationType);
+            }
         }
 
         Queue<Annotation> annotations = new LinkedList<>(asList(annotatedMethod.getAnnotations()));
@@ -188,18 +189,51 @@ public class RolesCDIInterceptor {
             Annotation annotation = annotations.remove();
 
             if (annotation.annotationType().equals(annotationType)) {
-                return Optional.of(annotationType.cast(annotation));
+                if (annotationType.cast(annotation) != null) {
+                    return annotationType.cast(annotation);
+                }
             }
 
             if (beanManager.isStereotype(annotation.annotationType())) {
                 annotations.addAll(
-                    beanManager.getStereotypeDefinition(
-                        annotation.annotationType()
-                    )
+                        beanManager.getStereotypeDefinition(
+                                annotation.annotationType()
+                        )
                 );
             }
         }
 
-        return Optional.empty();
+        return null;
+    }
+
+    public static <A extends Annotation> A getAnnotationFromClass(BeanManager beanManager, Class<?> annotatedClass, Class<A> annotationType) {
+
+        if (annotatedClass.isAnnotationPresent(annotationType)) {
+            if (annotatedClass.getAnnotation(annotationType) != null) {
+                return annotatedClass.getAnnotation(annotationType);
+            }
+        }
+
+        Queue<Annotation> annotations = new LinkedList<>(asList(annotatedClass.getAnnotations()));
+
+        while (!annotations.isEmpty()) {
+            Annotation annotation = annotations.remove();
+
+            if (annotation.annotationType().equals(annotationType)) {
+                if (annotationType.cast(annotation) != null) {
+                    return annotationType.cast(annotation);
+                }
+            }
+
+            if (beanManager.isStereotype(annotation.annotationType())) {
+                annotations.addAll(
+                        beanManager.getStereotypeDefinition(
+                                annotation.annotationType()
+                        )
+                );
+            }
+        }
+
+        return null;
     }
 }
