@@ -50,6 +50,10 @@ import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.logging.Level;
+import static org.glassfish.admingui.common.handlers.InstanceHandler.JVM_OPTION;
+import static org.glassfish.admingui.common.handlers.InstanceHandler.MAX_VERSION;
+import static org.glassfish.admingui.common.handlers.InstanceHandler.MIN_VERSION;
+import static org.glassfish.admingui.common.handlers.InstanceHandler.TARGET;
 
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestResponse;
@@ -309,7 +313,7 @@ public class SecurityHandler {
             sb.append(value).append(":");
         }
         endpoint = endpoint + "/auth-realm";
-        cMap.put("target", attrMap.get("target"));
+        cMap.put(TARGET, attrMap.get(TARGET));
         cMap.put("property", sb.toString());
         RestUtil.restRequest(endpoint, cMap, "post", handlerCtx, false);
       }catch(Exception ex){
@@ -785,23 +789,23 @@ public class SecurityHandler {
                 for (Map<String, String> origOption : list){
                     newOptions.add(origOption);
                 }
-                newOptions.add(ImmutableMap.of("jvmOption", JVM_OPTION_SECURITY_MANAGER));
+                newOptions.add(ImmutableMap.of(JVM_OPTION, JVM_OPTION_SECURITY_MANAGER));
             } else {
                 for (Map<String, String> origOption : list){
-                    String str = origOption.get("jvmOption");
+                    String str = origOption.get(JVM_OPTION);
                     if (! (str.trim().equals(JVM_OPTION_SECURITY_MANAGER) ||
                             str.trim().startsWith(JVM_OPTION_SECURITY_MANAGER_WITH_EQUAL))){
-                       newOptions.add(ImmutableMap.of("jvmOption", str,
-                               "minVersion", origOption.get("minVersion"),
-                               "maxVersion", origOption.get("maxVersion")));
+                       newOptions.add(ImmutableMap.of(JVM_OPTION, str,
+                               MIN_VERSION, origOption.get(MIN_VERSION),
+                               MAX_VERSION, origOption.get(MAX_VERSION)));
                     }
                 }
             }
             Map<String, Object> payload = new HashMap<String, Object>();
             payload.put("target", configName);
             for (Map<String, String> option : newOptions) {
-                ArrayList kv = InstanceHandler.getKeyValuePair(new JvmOption(UtilHandlers.escapePropertyValue(option.get("jvmOption")),
-                        option.get("minVersion"), option.get("maxVersion")).toString());
+                ArrayList kv = InstanceHandler.getKeyValuePair(new JvmOption(UtilHandlers.escapePropertyValue(option.get(JVM_OPTION)),
+                        option.get(MIN_VERSION), option.get(MAX_VERSION)).toString());
                 payload.put((String)kv.get(0), kv.get(1));
             }
             RestUtil.restRequest(endpoint, payload, "POST", handlerCtx, false);
@@ -824,7 +828,7 @@ public class SecurityHandler {
 
     private static Boolean isSecurityManagerEnabled(List<Map<String, String>> jvmOptions){
         for (Map<String, String> jvmOptionMap : jvmOptions){
-            String jvmOption = jvmOptionMap.get("jvmOption");
+            String jvmOption = jvmOptionMap.get(JVM_OPTION);
             if (jvmOption.trim().equals(JVM_OPTION_SECURITY_MANAGER) ||
                     jvmOption.trim().startsWith(JVM_OPTION_SECURITY_MANAGER_WITH_EQUAL)){
                 return Boolean.TRUE;

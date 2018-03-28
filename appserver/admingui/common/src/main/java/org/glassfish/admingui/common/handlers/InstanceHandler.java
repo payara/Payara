@@ -68,6 +68,12 @@ import java.util.Map;
 import java.util.logging.Level;
 
 public class InstanceHandler {
+    private static final String SELECTED = "selected";
+    private static final String PROFILER = "profiler";
+    static final String TARGET = "target";
+    static final String MAX_VERSION = "maxVersion";
+    static final String MIN_VERSION = "minVersion";
+    static final String JVM_OPTION = "jvmOption";
 
     /** Creates a new instance of InstanceHandler */
     public InstanceHandler() {
@@ -86,7 +92,7 @@ public class InstanceHandler {
             List<Map<String, Object>> optionValues = new ArrayList<>();
             for (Map<String, String> item : list) {
                 Map<String, Object> valueMap = new HashMap<>(item);
-                valueMap.put("selected", false);
+                valueMap.put(SELECTED, false);
                 optionValues.add(valueMap);
             }
             handlerCtx.setOutputValue("result", optionValues);
@@ -99,7 +105,7 @@ public class InstanceHandler {
         }
     }
     
-     public static List<Map<String, String>> getJvmOptions(HandlerContext handlerCtx) {
+    public static List<Map<String, String>> getJvmOptions(HandlerContext handlerCtx) {
         ArrayList<Map<String, String>> list;
         String endpoint = (String) handlerCtx.getInputValue("endpoint");
         if (!endpoint.endsWith(".json"))
@@ -115,16 +121,16 @@ public class InstanceHandler {
    @Handler(id="saveJvmOptionValues",
         input={
             @HandlerInput(name="endpoint",   type=String.class, required=true),
-            @HandlerInput(name="target",   type=String.class, required=true),
+            @HandlerInput(name=TARGET,   type=String.class, required=true),
             @HandlerInput(name="attrs", type=Map.class, required=false),
-            @HandlerInput(name="profiler", type=String.class, required=true),
+            @HandlerInput(name=PROFILER, type=String.class, required=true),
             @HandlerInput(name="options",   type=List.class),
             @HandlerInput(name="deleteProfileEndpoint",   type=String.class),
             @HandlerInput(name="origList",   type=List.class)
             } )
    public static void saveJvmOptionValues(HandlerContext handlerCtx) {
         String endpoint = (String) handlerCtx.getInputValue("endpoint");
-        String target = (String) handlerCtx.getInputValue("target");
+        String target = (String) handlerCtx.getInputValue(TARGET);
         try {
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> options = (List<Map<String, Object>>) handlerCtx.getInputValue("options");
@@ -132,7 +138,7 @@ public class InstanceHandler {
             for (Map<String, Object> oneRow : options) {
                 Map<String, Object> newRow = new HashMap<>();
                 oneRow.forEach((key, value) -> {
-                    if (!"selected".equalsIgnoreCase(key)) {
+                    if (!SELECTED.equalsIgnoreCase(key)) {
                         newRow.put(key, value);
                     }
                 });
@@ -144,7 +150,7 @@ public class InstanceHandler {
                 return;
             }
             Map<String, Object> payload = new HashMap<>();
-            payload.put("profiler", (String)handlerCtx.getInputValue("profiler"));
+            payload.put(PROFILER, (String)handlerCtx.getInputValue(PROFILER));
             prepareJvmOptionPayload(payload, target, newList);
             RestUtil.restRequest(endpoint, payload, "POST", handlerCtx, false, true);
         } catch (Exception ex) {
@@ -153,7 +159,7 @@ public class InstanceHandler {
             String deleteProfileEndpoint = (String) handlerCtx.getInputValue("deleteProfileEndpoint");
             if (!GuiUtil.isEmpty(deleteProfileEndpoint)){
                 Map attrMap = new HashMap();
-                attrMap.put("target", (String) handlerCtx.getInputValue("target"));
+                attrMap.put(TARGET, (String) handlerCtx.getInputValue(TARGET));
                 RestUtil.restRequest(deleteProfileEndpoint, attrMap, "DELETE", handlerCtx, false, false);
             }
 
@@ -161,8 +167,8 @@ public class InstanceHandler {
             //result, all previous existing option is gone.
             List<Map<String, Object>> origList = (List<Map<String, Object>>) handlerCtx.getInputValue("origList");
             Map<String, Object> payload1 = new HashMap<String, Object>();
-            if (endpoint.contains("profiler")) {
-                payload1.put("profiler", "true");
+            if (endpoint.contains(PROFILER)) {
+                payload1.put(PROFILER, "true");
             }
             if ( (origList != null) && origList.size()>0){
                 prepareJvmOptionPayload(payload1, target, origList);
@@ -173,9 +179,10 @@ public class InstanceHandler {
     }
 
     private static void prepareJvmOptionPayload(Map<String, Object> payload, String target, List<Map<String, Object>> options) {
-        payload.put("target", target);
+        payload.put(TARGET, target);
         for (Map<String, Object> oneRow : options) {
-            String jvmOptionUnescaped = new JvmOption((String)oneRow.get("jvmOption"), (String)oneRow.get("minVersion"), (String)oneRow.get("maxVersion")).toString();
+            String jvmOptionUnescaped = new JvmOption((String)oneRow.get(JVM_OPTION),
+                    (String)oneRow.get(MIN_VERSION), (String)oneRow.get(MAX_VERSION)).toString();
             String jvmOptionEscape = UtilHandlers.escapePropertyValue(jvmOptionUnescaped);         //refer to GLASSFISH-19069
             ArrayList kv = getKeyValuePair(jvmOptionEscape);
             payload.put((String)kv.get(0), kv.get(1));

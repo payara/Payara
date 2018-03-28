@@ -265,6 +265,31 @@ public class MiniXmlParser {
         }
 
         @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 79 * hash + Objects.hashCode(this.option);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final JvmOption other = (JvmOption) obj;
+            if (!Objects.equals(this.option, other.option)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
         public String toString() {
             if (!minVersion.isPresent() && !maxVersion.isPresent()) {
                 return option;
