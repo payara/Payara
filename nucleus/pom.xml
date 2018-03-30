@@ -195,7 +195,7 @@
         <jax-rs-api.impl.version>2.0.1</jax-rs-api.impl.version>
         <mimepull.version>1.9.6</mimepull.version>
         <jbi.version>1.0</jbi.version>
-        <glassfish-management-api.version>3.2.1-b002</glassfish-management-api.version>
+        <glassfish-management-api.version>3.2.1-b002.payara-p1</glassfish-management-api.version>
         <btrace.version>1.2.3</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <v3-docs.version>4.1</v3-docs.version>
