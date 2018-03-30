@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -281,7 +281,7 @@ public class UberJarCreator {
                 List<File> filesToCopy = fillFiles(copyDirectory);
                 for (File file : filesToCopy) {
 
-                        JarEntry deploymentEntry = new JarEntry(copyDirectory + file.getCanonicalPath().replace(basePath, ""));
+                        JarEntry deploymentEntry = new JarEntry(file.getCanonicalPath().replace(basePath, ""));
                         jos.putNextEntry(deploymentEntry);
                         Files.copy(file, jos);
                         jos.flush();
