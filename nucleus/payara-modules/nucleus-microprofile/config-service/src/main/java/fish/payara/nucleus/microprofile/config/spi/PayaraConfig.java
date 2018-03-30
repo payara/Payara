@@ -72,7 +72,50 @@ public class PayaraConfig implements Config {
         this.converters.putAll(convertersMap);
         Collections.sort(configSources, new ConfigSourceComparator());
     }
+
+    @Override
+    public <T> T getValue(String propertyName, Class<T> propertyType) {
+        String result = getValue(propertyName);
+        
+        if (result == null) {
+            throw new NoSuchElementException("Unable to find property with name " + propertyName);
+        }
+        return convertString(result, propertyType);
+    }
+
+    @Override
+    public <T> Optional<T> getOptionalValue(String propertyName, Class<T> propertyType) {
+        String strValue = getValue(propertyName);
+        
+        if(String.class.equals(propertyType)) {
+            return (Optional<T>) Optional.ofNullable(strValue);
+        }
+        
+        Converter<T> converter = getConverter(propertyType);
+        if (converter == null) {
+            throw new IllegalArgumentException("No converter for class " + propertyType);
+        }
+        return Optional.ofNullable(converter.convert(strValue));
+    }
+
+    @Override
+    public Iterable<String> getPropertyNames() {
+        LinkedList<String> result = new LinkedList<>();
+        for (ConfigSource configSource : configSources) {
+            result.addAll(configSource.getProperties().keySet());
+        }
+        return result;
+    }
+
+    @Override
+    public Iterable<ConfigSource> getConfigSources() {
+        return configSources;
+    }
     
+    public Set<Type> getConverterTypes() {
+        return converters.keySet();
+    }  
+        
     public <T> List<T> getListValues(String propertyName, String defaultValue, Class<T> elementType) {
         String value = getValue(propertyName);
         if (value == null) {
@@ -117,50 +160,6 @@ public class PayaraConfig implements Config {
         return convertString(result, propertyType);
     }
 
-    @Override
-    public <T> T getValue(String propertyName, Class<T> propertyType) {
-        String result = getValue(propertyName);
-        
-        if (result == null) {
-            throw new NoSuchElementException("Unable to find property with name " + propertyName);
-        }
-        return convertString(result, propertyType);
-    }
-
-    @Override
-    public <T> Optional<T> getOptionalValue(String propertyName, Class<T> propertyType) {
-        String strValue = getValue(propertyName);
-        
-        if(String.class.equals(propertyType)) {
-            return (Optional<T>) Optional.ofNullable(strValue);
-        }
-        
-        Converter<T> converter = getConverter(propertyType);
-        if (converter == null) {
-            throw new IllegalArgumentException("No converter for class " + propertyType);
-        }
-        return Optional.ofNullable(converter.convert(strValue));
-    }
-
-    @Override
-    public Iterable<String> getPropertyNames() {
-        LinkedList<String> result = new LinkedList<>();
-        for (ConfigSource configSource : configSources) {
-            result.addAll(configSource.getProperties().keySet());
-        }
-        return result;
-    }
-
-    @Override
-    public Iterable<ConfigSource> getConfigSources() {
-        return configSources;
-    }
-    
-    public Set<Type> getConverterTypes() {
-        return converters.keySet();
-    }
-    
-    
     private String getValue(String propertyName) {
         String result = null;
         for (ConfigSource configSource : configSources) {

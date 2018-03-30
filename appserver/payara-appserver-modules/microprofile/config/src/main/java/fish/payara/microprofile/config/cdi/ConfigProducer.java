@@ -82,6 +82,12 @@ public class ConfigProducer {
         return new InjectedPayaraConfig(ConfigProvider.getConfig(), im.getCurrentInvocation().getAppName());
     }
     
+    /**
+     * Producer method for Sets
+     * @param <T> Type
+     * @param ip Injection Point
+     * @return 
+     */
     @Produces
     @ConfigProperty
     public <T> Set<T> getSetProperty(InjectionPoint ip) {
@@ -98,6 +104,12 @@ public class ConfigProducer {
         return result;        
     }
     
+    /**
+     * Producer method for Lists 
+     * @param <T> Type
+     * @param ip Injection Point
+     * @return 
+     */
     @Produces
     @ConfigProperty
     public <T> List<T> getListProperty(InjectionPoint ip) {
