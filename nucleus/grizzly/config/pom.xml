@@ -90,6 +90,11 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
+            <artifactId>tls-sni</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-http</artifactId>
         </dependency>
         <dependency>
