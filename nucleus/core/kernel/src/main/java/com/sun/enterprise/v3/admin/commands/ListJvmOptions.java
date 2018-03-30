@@ -120,7 +120,7 @@ public final class ListJvmOptions implements AdminCommand, AdminCommandSecurity.
             opts = jc.getJvmRawOptions().stream().map(JvmOption::new).collect(Collectors.toList());
         //Collections.sort(opts); //sorting is garbled by Reporter anyway, so let's move sorting to the client side
         try {
-            for (JvmOption option : opts) {
+            opts.forEach(option -> {
                 ActionReport.MessagePart part = report.getTopMessagePart().addChild();
                 StringBuilder sb = new StringBuilder();
                 sb.append(option.option);
@@ -143,9 +143,8 @@ public final class ListJvmOptions implements AdminCommand, AdminCommandSecurity.
                 if (!JDK.isCorrectJDK(option.minVersion, option.maxVersion)) {
                     sb.append(" (Inactive on this JDK)");
                 }
-                /// +++ TODO print out if the option is inactive
                 part.setMessage(sb.toString());
-            }
+            });
         } catch (Exception e) {
             report.setMessage(lsm.getStringWithDefault("list.jvm.options.failed",
                     "Command: list-jvm-options failed"));
