@@ -41,19 +41,39 @@
 
 package org.glassfish.weld;
 
-import java.util.*;
+import static java.util.logging.Level.FINE;
+import static org.glassfish.cdi.CDILoggerInfo.ADDING_INJECTION_SERVICES;
+import static org.glassfish.weld.connector.WeldUtils.BDAType.JAR;
+import static org.glassfish.weld.connector.WeldUtils.BDAType.RAR;
+import static org.glassfish.weld.connector.WeldUtils.BDAType.WAR;
+import static org.jboss.weld.bootstrap.spi.EEModuleDescriptor.ModuleType.CONNECTOR;
+import static org.jboss.weld.bootstrap.spi.EEModuleDescriptor.ModuleType.EJB_JAR;
+import static org.jboss.weld.bootstrap.spi.EEModuleDescriptor.ModuleType.WEB;
+
+import java.security.AccessController;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InjectionTarget;
+import javax.inject.Inject;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRequestListener;
 import javax.servlet.http.HttpSessionListener;
+import javax.servlet.jsp.tagext.JspTag;
 
-import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.MetaData;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -61,34 +81,51 @@ import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.ApplicationEnvironment;
 import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.cdi.CDILoggerInfo;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.deployment.common.SimpleDeployer;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 import org.glassfish.web.deployment.descriptor.AppListenerDescriptorImpl;
-import org.glassfish.weld.services.*;
+import org.glassfish.web.deployment.descriptor.ServletFilterDescriptor;
+import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
+import org.glassfish.weld.connector.WeldUtils;
+import org.glassfish.weld.connector.WeldUtils.BDAType;
+import org.glassfish.weld.services.BootstrapConfigurationImpl;
+import org.glassfish.weld.services.EjbServicesImpl;
+import org.glassfish.weld.services.ExternalConfigurationImpl;
+import org.glassfish.weld.services.InjectionServicesImpl;
+import org.glassfish.weld.services.NonModuleInjectionServices;
+import org.glassfish.weld.services.ProxyServicesImpl;
+import org.glassfish.weld.services.SecurityServicesImpl;
+import org.glassfish.weld.services.TransactionServicesImpl;
 import org.glassfish.weld.util.Util;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.Environments;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.bootstrap.spi.BeanDiscoveryMode;
 import org.jboss.weld.bootstrap.spi.BootstrapConfiguration;
+import org.jboss.weld.bootstrap.spi.EEModuleDescriptor;
+import org.jboss.weld.bootstrap.spi.Metadata;
+import org.jboss.weld.bootstrap.spi.helpers.EEModuleDescriptorImpl;
+import org.jboss.weld.bootstrap.spi.helpers.MetadataImpl;
+import org.jboss.weld.configuration.spi.ExternalConfiguration;
 import org.jboss.weld.ejb.spi.EjbServices;
+import org.jboss.weld.exceptions.WeldException;
 import org.jboss.weld.injection.spi.InjectionServices;
+import org.jboss.weld.probe.ProbeExtension;
+import org.jboss.weld.resources.spi.ResourceLoader;
+import org.jboss.weld.security.NewInstanceAction;
 import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.serialization.spi.ProxyServices;
 import org.jboss.weld.transaction.spi.TransactionServices;
-import javax.inject.Inject;
-import javax.servlet.jsp.tagext.JspTag;
-
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.api.PostConstruct;
 
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
+import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
@@ -96,18 +133,6 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
-import java.security.AccessController;
-import javax.enterprise.inject.spi.Extension;
-import org.glassfish.web.deployment.descriptor.ServletFilterDescriptor;
-import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
-import org.glassfish.weld.connector.WeldUtils;
-import org.jboss.weld.bootstrap.spi.Metadata;
-import org.jboss.weld.bootstrap.spi.helpers.MetadataImpl;
-import org.jboss.weld.configuration.spi.ExternalConfiguration;
-import org.jboss.weld.exceptions.WeldException;
-import org.jboss.weld.probe.ProbeExtension;
-import org.jboss.weld.resources.spi.ResourceLoader;
-import org.jboss.weld.security.NewInstanceAction;
 
 @Service
 public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationContainer>
@@ -630,21 +655,29 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     // injection instead of the per-dependency-type InjectionPoint approach.
                     // Each InjectionServicesImpl instance knows its associated GlassFish bundle.
                     InjectionServices injectionServices = new InjectionServicesImpl(deploymentImpl.injectionManager, bundle, deploymentImpl);
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.log(Level.FINE,
-                                   CDILoggerInfo.ADDING_INJECTION_SERVICES,
-                                   new Object [] {injectionServices, bda.getId()});
+                    if (logger.isLoggable(FINE)) {
+                        logger.log(FINE,
+                                ADDING_INJECTION_SERVICES,
+                                new Object[] { injectionServices, bda.getId() });
                     }
                     bda.getServices().add(InjectionServices.class, injectionServices);
+                    EEModuleDescriptor eeModuleDescriptor = getEEModuleDescriptor(bda);
+                    if (eeModuleDescriptor != null) {
+                        bda.getServices().add(EEModuleDescriptor.class, eeModuleDescriptor);
+                    }
 
-                    //Relevant in WAR BDA - WEB-INF/lib BDA scenarios
-                    for(BeanDeploymentArchive subBda: bda.getBeanDeploymentArchives()){
-                        if (logger.isLoggable(Level.FINE)) {
-                            logger.log(Level.FINE,
-                                       CDILoggerInfo.ADDING_INJECTION_SERVICES,
-                                       new Object [] {injectionServices, subBda.getId()});
+                    // Relevant in WAR BDA - WEB-INF/lib BDA scenarios
+                    for (BeanDeploymentArchive subBda : bda.getBeanDeploymentArchives()) {
+                        if (logger.isLoggable(FINE)) {
+                            logger.log(FINE,
+                                    ADDING_INJECTION_SERVICES,
+                                    new Object[] { injectionServices, subBda.getId() });
                         }
                         subBda.getServices().add(InjectionServices.class, injectionServices);
+                        eeModuleDescriptor = getEEModuleDescriptor(bda); // Should not be subBda?
+                        if (eeModuleDescriptor != null) {
+                            bda.getServices().add(EEModuleDescriptor.class, eeModuleDescriptor);
+                        }
                     }
                 }
 
@@ -661,6 +694,25 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         appInfo.addTransientAppMetaData(WELD_DEPLOYMENT, deploymentImpl);
 
         return wbApp;
+    }
+
+    private EEModuleDescriptor getEEModuleDescriptor(BeanDeploymentArchive beanDeploymentArchive) {
+        EEModuleDescriptor eeModuleDescriptor = null;
+
+        if (beanDeploymentArchive instanceof BeanDeploymentArchiveImpl) {
+
+            BDAType bdaType = ((BeanDeploymentArchiveImpl) beanDeploymentArchive).getBDAType();
+
+            if (bdaType.equals(JAR)) {
+                eeModuleDescriptor = new EEModuleDescriptorImpl(beanDeploymentArchive.getId(), EJB_JAR);
+            } else if (bdaType.equals(WAR)) {
+                eeModuleDescriptor = new EEModuleDescriptorImpl(beanDeploymentArchive.getId(), WEB);
+            } else if (bdaType.equals(RAR)) {
+                eeModuleDescriptor = new EEModuleDescriptorImpl(beanDeploymentArchive.getId(), CONNECTOR);
+            }
+        }
+
+        return eeModuleDescriptor;
     }
 
     private boolean isDevelopmentMode(DeploymentContext context) {
