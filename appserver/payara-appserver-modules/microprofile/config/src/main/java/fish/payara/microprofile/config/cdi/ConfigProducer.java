@@ -43,7 +43,11 @@ import fish.payara.nucleus.microprofile.config.spi.InjectedPayaraConfig;
 import fish.payara.nucleus.microprofile.config.spi.PayaraConfig;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
@@ -76,6 +80,38 @@ public class ConfigProducer {
     @Produces
     public Config getConfig() {
         return new InjectedPayaraConfig(ConfigProvider.getConfig(), im.getCurrentInvocation().getAppName());
+    }
+    
+    @Produces
+    @ConfigProperty
+    public <T> Set<T> getSetProperty(InjectionPoint ip) {
+        ConfigProperty property = ip.getAnnotated().getAnnotation(ConfigProperty.class);
+        PayaraConfig config = (PayaraConfig) ConfigProvider.getConfig();
+        Set<T> result = new HashSet<>();
+        Type type = ip.getType();
+        if (type instanceof ParameterizedType) {
+            // it is an Optional
+            // get the class of the generic parameterized Optional
+            Class clazzValue = (Class) ((ParameterizedType) type).getActualTypeArguments()[0];
+            result = config.getSetValues(property.name(),property.defaultValue(), clazzValue);
+        }        
+        return result;        
+    }
+    
+    @Produces
+    @ConfigProperty
+    public <T> List<T> getListProperty(InjectionPoint ip) {
+        ConfigProperty property = ip.getAnnotated().getAnnotation(ConfigProperty.class);
+        PayaraConfig config = (PayaraConfig) ConfigProvider.getConfig();
+        List<T> result = new ArrayList<>();
+        Type type = ip.getType();
+        if (type instanceof ParameterizedType) {
+            // it is an Optional
+            // get the class of the generic parameterized Optional
+            Class clazzValue = (Class) ((ParameterizedType) type).getActualTypeArguments()[0];
+            result = config.getListValues(property.name(),property.defaultValue(), clazzValue);
+        }        
+        return result;
     }
 
     /**
