@@ -376,6 +376,11 @@ public class PayaraMicro {
         wrappee.setUserLogFile(fileName);
         return this;
     }
+    
+    public PayaraMicro setSniEnabled(boolean value) {
+        wrappee.setSniEnabled(value);
+        return this;
+    }
 
     public void shutdown() throws BootstrapException {
         wrappee.shutdown();
@@ -421,10 +426,12 @@ public class PayaraMicro {
      * Adds the library to the classloader and loads it
      * 
      * @param lib The URL or filepath of the library to add
+     * @return 
      * @since 4.1.2.173
      */
-    public void addLibrary(File lib){  
+    public PayaraMicro addLibrary(File lib){  
         wrappee.addLibrary(lib);
+        return this;
     }
     
 }

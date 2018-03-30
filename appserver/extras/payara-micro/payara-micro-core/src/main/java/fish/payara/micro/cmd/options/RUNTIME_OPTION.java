@@ -93,7 +93,8 @@ public enum RUNTIME_OPTION {
     nested(false),
     unpackdir(true, new DirectoryValidator(true, true, true)),
     sslcert(true),
-    help(false);
+    help(false),
+    enablesni(false);
 
     private RUNTIME_OPTION(boolean hasValue) {
         this(hasValue, new Validator());
