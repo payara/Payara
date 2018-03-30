@@ -245,6 +245,7 @@
         <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
         <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
         <jvm-options>-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER=org.glassfish.grizzly.memory.HeapMemoryManager</jvm-options>
+        <jvm-options>-Dorg.glassfish.grizzly.nio.DefaultSelectorHandler.force-selector-spin-detection=true</jvm-options>
       </java-config>
       <network-config>
         <protocols>
@@ -440,6 +441,7 @@
              <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
              <!-- PAYARA-1033 Maintain backwards compatibility to old Grizzly Memeory Manager -->
              <jvm-options>-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER=org.glassfish.grizzly.memory.HeapMemoryManager</jvm-options>
+             <jvm-options>-Dorg.glassfish.grizzly.nio.DefaultSelectorHandler.force-selector-spin-detection=true</jvm-options>
              
         </java-config>
          <availability-service>
