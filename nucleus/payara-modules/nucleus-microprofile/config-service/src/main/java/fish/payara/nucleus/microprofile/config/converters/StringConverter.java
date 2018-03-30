@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.microprofile.config.converters;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.config.spi.Converter;
 
 /**
@@ -48,8 +49,9 @@ import org.eclipse.microprofile.config.spi.Converter;
 public class StringConverter implements Converter<String>{
 
     @Override
-    public String convert(String string) {
-        return string;
+    public String convert(String value) {
+        if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
+        return value;
     }
     
 }

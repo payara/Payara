@@ -129,22 +129,6 @@ public class PayaraConfigBuilder implements ConfigBuilder {
         }
         return this;
     }
-    
-    private void addConvertersToMap(List<Converter> convertersList) {
-        for (Converter converter : convertersList) {
-            Type cType = getTypeForConverter(converter);
-            if (cType != null) { 
-                Converter old = converters.get(cType);
-                if (old != null) {
-                    if (getPriority(converter) > getPriority(old)) {
-                        this.converters.put(cType, converter);
-                    }
-                }else {
-                    this.converters.put(cType, converter);
-                } 
-            }
-        }
-    }
 
     public static Type getTypeForConverter(Converter converter) {
         // add each converter to the map for later lookup
@@ -169,6 +153,23 @@ public class PayaraConfigBuilder implements ConfigBuilder {
             result = annotation.value();
         }
         return result;
+    }
+    
+        
+    private void addConvertersToMap(List<Converter> convertersList) {
+        for (Converter converter : convertersList) {
+            Type cType = getTypeForConverter(converter);
+            if (cType != null) { 
+                Converter old = converters.get(cType);
+                if (old != null) {
+                    if (getPriority(converter) > getPriority(old)) {
+                        this.converters.put(cType, converter);
+                    }
+                }else {
+                    this.converters.put(cType, converter);
+                } 
+            }
+        }
     }
 
 }

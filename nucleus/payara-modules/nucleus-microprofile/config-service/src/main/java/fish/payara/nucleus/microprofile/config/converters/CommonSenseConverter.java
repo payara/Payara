@@ -42,6 +42,7 @@ package fish.payara.nucleus.microprofile.config.converters;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.config.spi.Converter;
 
 /**
@@ -57,14 +58,15 @@ public class CommonSenseConverter implements Converter<Object> {
     }
 
     @Override
-    public Object convert(String string) {
+    public Object convert(String value) {
+        if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
         Object result = null;
-        result = convertViaConstructor(string);
+        result = convertViaConstructor(value);
         if (result == null) {
-            result = convertViaValueOf(string);
+            result = convertViaValueOf(value);
         }
         if (result == null) {
-            result = convertViaCharSequence(string);
+            result = convertViaCharSequence(value);
         }
         return result;
     }

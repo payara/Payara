@@ -41,7 +41,6 @@ package fish.payara.microprofile.config.cdi;
 
 import fish.payara.nucleus.microprofile.config.spi.PayaraConfig;
 import java.lang.reflect.Array;
-import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -51,7 +50,6 @@ import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.*;
 import java.lang.reflect.Type;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import javax.inject.Provider;
@@ -137,29 +135,35 @@ public class CDIExtension implements Extension {
                 }
             }
             
+            // we have the method
             if (beanAttr != null) {
                 HashSet<Type> types = new HashSet<>();
                 types.addAll(((PayaraConfig) config).getConverterTypes());
-                // add primitives explictly
+                // add String explictly
                 types.add(String.class);
                 
+                // go through each type which has a converter either custom or built in
+                // create a bean with a Producer method using the bean factory and with custom bean attributes
+                // also override the set of types depending on the type of the converter
                 for (final Type converterType : types) {
-                    // go through each type which has a converter
-                    // create a bean with a Producer method using the bean factory and with custom bean attributes
                     Bean<?> bean = bm.createBean(new TypesBeanAttributes<Object>(beanAttr) {
                         
-                        // overrides the bean types to return the type registered for a Converter
+                        // overrides the bean types to return the types registered for a Converter
                         @Override
                         public Set<Type> getTypes() {
                             HashSet<Type> result = new HashSet<>();
+                            // add the type that the converter converts
                             result.add(converterType);
                             
+                            // also indicate support array of the type.
                             if (converterType instanceof Class) {
                                 Object array = Array.newInstance((Class)converterType, 0);
                                 result.add(array.getClass());
                             }
                             
-                            // ok we will have to do specific code for the primitive converters
+                            // ok we will have to do specific code for wrappers
+                            // for each wrapper indicate we can also convert the primitive
+                            // and we can convert the primitive array
                             if (converterType == Long.class) {
                                 result.add(long.class);
                                 result.add((new long[0]).getClass());
