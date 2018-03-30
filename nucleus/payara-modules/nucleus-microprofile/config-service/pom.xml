@@ -109,7 +109,7 @@ holder.
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
-            <version>1.2.1</version>
+            <version>${microprofile-config.version}</version>
             <type>jar</type>
         </dependency>
     </dependencies>

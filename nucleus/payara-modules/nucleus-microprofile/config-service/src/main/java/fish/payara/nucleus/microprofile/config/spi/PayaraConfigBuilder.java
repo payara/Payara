@@ -124,6 +124,8 @@ public class PayaraConfigBuilder implements ConfigBuilder {
             if (i > getPriority(old)) {
                 this.converters.put(type, cnvrtr);
             }
+        } else {
+            this.converters.put(type, cnvrtr);
         }
         return this;
     }

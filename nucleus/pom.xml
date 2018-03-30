@@ -252,6 +252,9 @@
         <grizzly.version>2.4.3.payara-p2</grizzly.version>
         <!-- Requires JDK8u161 or above-->
         <grizzly.npn.version>1.8</grizzly.npn.version>
+        
+        <!-- Microprofile -->
+        <microprofile-config.version>1.2.1</microprofile-config.version>
 
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>

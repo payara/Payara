@@ -41,6 +41,7 @@ package fish.payara.nucleus.microprofile.config.spi;
 
 import fish.payara.nucleus.microprofile.config.converters.BooleanConverter;
 import fish.payara.nucleus.microprofile.config.converters.ChronoUnitConverter;
+import fish.payara.nucleus.microprofile.config.converters.ClassConverter;
 import fish.payara.nucleus.microprofile.config.converters.DoubleConverter;
 import fish.payara.nucleus.microprofile.config.converters.DurationConverter;
 import fish.payara.nucleus.microprofile.config.converters.FloatConverter;
@@ -53,6 +54,7 @@ import fish.payara.nucleus.microprofile.config.converters.LocalTimeConverter;
 import fish.payara.nucleus.microprofile.config.converters.LongConverter;
 import fish.payara.nucleus.microprofile.config.converters.OffsetDateTimeConverter;
 import fish.payara.nucleus.microprofile.config.converters.OffsetTimeConverter;
+import fish.payara.nucleus.microprofile.config.converters.StringConverter;
 import fish.payara.nucleus.microprofile.config.converters.URLConverter;
 import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
@@ -392,6 +394,8 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         result.put(URL.class, new URLConverter());
         result.put(InetAddress.class, new InetAddressConverter());
         result.put(ChronoUnit.class, new ChronoUnitConverter());
+        result.put(Class.class, new ClassConverter());
+        result.put(String.class, new StringConverter());
         return result;
 
     }

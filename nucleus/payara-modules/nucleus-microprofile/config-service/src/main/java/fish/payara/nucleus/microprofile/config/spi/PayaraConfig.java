@@ -40,10 +40,13 @@
 package fish.payara.nucleus.microprofile.config.spi;
 
 import fish.payara.nucleus.microprofile.config.converters.CommonSenseConverter;
+import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +72,39 @@ public class PayaraConfig implements Config {
         this.converters.putAll(convertersMap);
         Collections.sort(configSources, new ConfigSourceComparator());
     }
+    
+    public <T> List<T> getListValues(String propertyName, String defaultValue, Class<T> elementType) {
+        String value = getValue(propertyName);
+        if (value == null) {
+            value = defaultValue;
+        }
+        if (value == null) {
+            throw new NoSuchElementException("Unable to find property with name " + propertyName);
+        }
+        String keys[] = splitValue(value);
+        List<T> result = new ArrayList<>(keys.length);
+        for (String key : keys) {
+            result.add(convertString(key, elementType));
+        }
+        return result;
+    }
+    
+    public <T> Set<T> getSetValues(String propertyName, String defaultValue, Class<T> elementType) {
+        String value = getValue(propertyName);
+        if (value == null) {
+            value = defaultValue;
+        }
+        if (value == null) {
+            throw new NoSuchElementException("Unable to find property with name " + propertyName);
+        }
+        String keys[] = splitValue(value);
+        Set<T> result = new HashSet<>(keys.length);
+        for (String key : keys) {
+            result.add(convertString(key, elementType));
+        }
+        return result;
+    }
+
     
     public <T> T getValue(String propertyName, String defaultValue, Class<T>  propertyType) {
         String result = getValue(propertyName);
@@ -177,6 +213,21 @@ public class PayaraConfig implements Config {
         Converter<T> converter = getConverter(propertyType);
         if (converter == null) {
             // OK try common sense convertor
+            if (propertyType.isArray()) {
+                // find converter for the array type
+                Class componentClazz = propertyType.getComponentType();
+                converter = getConverter(componentClazz);
+                if (converter != null) {
+                    // array convert
+                    String keys[] = splitValue(value);
+                    Object arrayResult = Array.newInstance(componentClazz, keys.length);
+                    for (int i=0; i < keys.length; i++) {
+                        Array.set(arrayResult, i, converter.convert(keys[i]));
+                    }
+                    return (T) arrayResult;
+                }
+            }
+            
             CommonSenseConverter conv = new CommonSenseConverter(propertyType);
             Object result = conv.convert(value);
             if (result != null) {
@@ -187,6 +238,14 @@ public class PayaraConfig implements Config {
         }
         
         return converter.convert(value);       
+    }
+    
+    private String[] splitValue(String value) {
+        String keys[] = value.split("(?<!\\\\),");
+        for (int i=0; i < keys.length; i++) {
+            keys[i] = keys[i].replaceAll("\\\\,", ",");
+        }
+        return keys;
     }
     
 }
