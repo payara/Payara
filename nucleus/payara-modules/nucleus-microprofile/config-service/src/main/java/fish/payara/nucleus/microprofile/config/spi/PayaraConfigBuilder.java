@@ -106,7 +106,7 @@ public class PayaraConfigBuilder implements ConfigBuilder {
     }
 
     @Override
-    public ConfigBuilder withConverters(Converter<?>... converters) {
+    public ConfigBuilder withConverters(Converter... converters) {
         addConvertersToMap(Arrays.asList(converters));
         return this;
     }
