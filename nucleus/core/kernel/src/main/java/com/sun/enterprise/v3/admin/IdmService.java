@@ -99,11 +99,11 @@ public class IdmService implements PostConstruct, IdentityManagement {
         }
         
         if (System.getProperty("javax.net.ssl.keyStorePassword") == null) {
-            System.setProperty("javax.net.ssl.keyStorePassword",new String(masterPassword));
+            System.setProperty("javax.net.ssl.keyStorePassword", new String(masterPassword));
         }
         
         if (System.getProperty("javax.net.ssl.trustStorePassword") == null) {
-            System.setProperty("javax.net.ssl.trustStorePassword",new String(masterPassword));
+            System.setProperty("javax.net.ssl.trustStorePassword", new String(masterPassword));
         }
     }
     
