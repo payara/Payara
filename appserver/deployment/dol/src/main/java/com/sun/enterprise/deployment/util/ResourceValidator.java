@@ -125,9 +125,9 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
     @Override
     public void event(Event event) {
         if (event.is(Deployment.AFTER_APPLICATION_CLASSLOADER_CREATION)) {
-            DeploymentContext dc = (DeploymentContext) event.hook();
-            Application application = dc.getModuleMetaData(Application.class);
-            DeployCommandParameters commandParams = dc.getCommandParameters(DeployCommandParameters.class);
+            DeploymentContext deploymentContext = (DeploymentContext) event.hook();
+            Application application = deploymentContext.getModuleMetaData(Application.class);
+            DeployCommandParameters commandParams = deploymentContext.getCommandParameters(DeployCommandParameters.class);
             target = commandParams.target;
             if (System.getProperty("deployment.resource.validation", "true").equals("false")) {
                 deplLogger.log(Level.INFO, SKIP_RESOURCE_VALIDATION);
@@ -138,7 +138,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             }
             AppResources appResources = new AppResources();
             // Puts all resources found in the application via annotation or xml into appResources
-            parseResources(dc, application, appResources);
+            parseResources(deploymentContext, application, appResources);
             
             // Ensure we have a valid component invocation before triggering lookups
             String componentId = null;
@@ -152,7 +152,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             }
             contextUtil.setInstanceComponentId(componentId);
             try (Context ctx = contextUtil.pushContext()) {
-                validateResources(dc, application, appResources);
+                validateResources(deploymentContext, application, appResources);
             }
         }
     }
@@ -160,7 +160,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
     /**
      * Store all the resources before starting the validation.
      */
-    private void parseResources(DeploymentContext dc, Application application, AppResources appResources) {
+    private void parseResources(DeploymentContext deploymentContext, Application application, AppResources appResources) {
         parseResourcesBd(application, appResources);
         for (BundleDescriptor bd : application.getBundleDescriptors()) {
             if (bd instanceof WebBundleDescriptor || bd instanceof ApplicationClientDescriptor) {
@@ -184,7 +184,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
         // Parse AppScoped resources
         String appName = DOLUtils.getApplicationName(application);
         Map<String, List<String>> resourcesList
-                = (Map<String, List<String>>) dc.getTransientAppMetadata().get(ResourceConstants.APP_SCOPED_RESOURCES_JNDI_NAMES);
+                = (Map<String, List<String>>) deploymentContext.getTransientAppMetadata().get(ResourceConstants.APP_SCOPED_RESOURCES_JNDI_NAMES);
         appResources.storeAppScopedResources(resourcesList, appName);
     }
 
@@ -740,7 +740,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
     /**
      * Start of validation logic.
      */
-    private void validateResources(DeploymentContext dc, Application application, AppResources appResources) {
+    private void validateResources(DeploymentContext deploymentContext, Application application, AppResources appResources) {
         for (AppResource resource : appResources.myResources) {
             if (!resource.validate) {
                 continue;
@@ -748,13 +748,13 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             if (resource.getType().equals("CFD") || resource.getType().equals("AODD")) {
                 validateRAName(application, resource);
             } else {
-                validateJNDIRefs(dc, application, resource, appResources.myNamespace);
+                validateJNDIRefs(deploymentContext, application, resource, appResources.myNamespace);
             }
         }
         // Validate the ra-names of app scoped resources
         // RA-name and the type of this resource are stored
         List<Map.Entry<String, String>> raNames = 
-                (List<Map.Entry<String, String>>) dc.getTransientAppMetadata().get(ResourceConstants.APP_SCOPED_RESOURCES_RA_NAMES);
+                (List<Map.Entry<String, String>>) deploymentContext.getTransientAppMetadata().get(ResourceConstants.APP_SCOPED_RESOURCES_RA_NAMES);
         if (raNames == null) {
             return;
         }
@@ -840,7 +840,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
      *
      * @param resource the resource to be validated.
      */
-    private void validateJNDIRefs(DeploymentContext dc, Application application, AppResource resource, JNDINamespace namespace) {
+    private void validateJNDIRefs(DeploymentContext deploymentContext, Application application, AppResource resource, JNDINamespace namespace) {
         // In case lookup is not present, check if another resource with the same name exists
         if (!resource.hasLookup() && !namespace.find(resource.getName(), resource.getEnv())) {
             deplLogger.log(Level.SEVERE, RESOURCE_REF_JNDI_LOOKUP_FAILED,
@@ -895,7 +895,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
         }
 
         try {
-            if (loadOnCurrentInstance(dc)) {
+            if (loadOnCurrentInstance(deploymentContext)) {
                 InitialContext ctx = new InitialContext();
                 ctx.lookup(jndiName);
             }
@@ -958,13 +958,13 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
     /**
      * Copy from ApplicationLifeCycle.java
      */
-    private boolean loadOnCurrentInstance(DeploymentContext dc) {
-        final DeployCommandParameters commandParams = dc.getCommandParameters(DeployCommandParameters.class);
-        final Properties appProps = dc.getAppProps();
+    private boolean loadOnCurrentInstance(DeploymentContext deploymentContext) {
+        final DeployCommandParameters commandParams = deploymentContext.getCommandParameters(DeployCommandParameters.class);
+        final Properties appProps = deploymentContext.getAppProps();
         if (commandParams.enabled) {
             // if the current instance match with the target
             if (domain.isCurrentInstanceMatchingTarget(commandParams.target, commandParams.name(), server.getName(),
-                    dc.getTransientAppMetaData(DeploymentProperties.PREVIOUS_TARGETS, List.class))) {
+                    deploymentContext.getTransientAppMetaData(DeploymentProperties.PREVIOUS_TARGETS, List.class))) {
                 return true;
             }
             if (server.isDas()) {
