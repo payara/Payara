@@ -138,7 +138,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             }
             AppResources appResources = new AppResources();
             // Puts all resources found in the application via annotation or xml into appResources
-            parseResources(application, appResources, dc);
+            parseResources(dc, application, appResources);
             
             // Ensure we have a valid component invocation before triggering lookups
             String componentId = null;
@@ -152,7 +152,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             }
             contextUtil.setInstanceComponentId(componentId);
             try (Context ctx = contextUtil.pushContext()) {
-                validateResources(application, appResources, dc);
+                validateResources(dc, application, appResources);
             }
         }
     }
@@ -160,7 +160,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
     /**
      * Store all the resources before starting the validation.
      */
-    private void parseResources(Application application, AppResources appResources, DeploymentContext dc) {
+    private void parseResources(DeploymentContext dc, Application application, AppResources appResources) {
         parseResourcesBd(application, appResources);
         for (BundleDescriptor bd : application.getBundleDescriptors()) {
             if (bd instanceof WebBundleDescriptor || bd instanceof ApplicationClientDescriptor) {
@@ -740,7 +740,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
     /**
      * Start of validation logic.
      */
-    private void validateResources(Application application, AppResources appResources, DeploymentContext dc) {
+    private void validateResources(DeploymentContext dc, Application application, AppResources appResources) {
         for (AppResource resource : appResources.myResources) {
             if (!resource.validate) {
                 continue;
@@ -748,7 +748,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             if (resource.getType().equals("CFD") || resource.getType().equals("AODD")) {
                 validateRAName(application, resource);
             } else {
-                validateJNDIRefs(application, resource, dc, appResources.myNamespace);
+                validateJNDIRefs(dc, application, resource, appResources.myNamespace);
             }
         }
         // Validate the ra-names of app scoped resources
@@ -838,9 +838,9 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
      *
      * In case a null jndi name is passed, we fail the deployment.
      *
-     * @param resource to be validated.
+     * @param resource the resource to be validated.
      */
-    private void validateJNDIRefs(Application application, AppResource resource, DeploymentContext dc, JNDINamespace namespace) {
+    private void validateJNDIRefs(DeploymentContext dc, Application application, AppResource resource, JNDINamespace namespace) {
         // In case lookup is not present, check if another resource with the same name exists
         if (!resource.hasLookup() && !namespace.find(resource.getName(), resource.getEnv())) {
             deplLogger.log(Level.SEVERE, RESOURCE_REF_JNDI_LOOKUP_FAILED,
