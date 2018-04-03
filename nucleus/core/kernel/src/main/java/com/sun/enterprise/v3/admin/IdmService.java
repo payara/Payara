@@ -37,26 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016 Payara Foundation
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.glassfish.bootstrap.StartupContextUtil;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.security.store.IdentityManagement;
-import com.sun.enterprise.security.store.PasswordAdapter;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.glassfish.internal.api.InitRunLevel;
-import org.glassfish.security.common.MasterPassword;
 import org.glassfish.server.ServerEnvironmentImpl;
 import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.jvnet.hk2.annotations.Optional;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
-import javax.inject.Singleton;
 
 import java.io.*;
 import java.util.Arrays;
@@ -105,8 +97,14 @@ public class IdmService implements PostConstruct, IdentityManagement {
         if (!success) {
             masterPassword = "changeit".toCharArray(); //the default;
         }
-        System.setProperty("javax.net.ssl.keyStorePassword",new String(masterPassword));
-        System.setProperty("javax.net.ssl.trustStorePassword",new String(masterPassword));
+        
+        if (System.getProperty("javax.net.ssl.keyStorePassword") == null) {
+            System.setProperty("javax.net.ssl.keyStorePassword", new String(masterPassword));
+        }
+        
+        if (System.getProperty("javax.net.ssl.trustStorePassword") == null) {
+            System.setProperty("javax.net.ssl.trustStorePassword", new String(masterPassword));
+        }
     }
     
     @Override
