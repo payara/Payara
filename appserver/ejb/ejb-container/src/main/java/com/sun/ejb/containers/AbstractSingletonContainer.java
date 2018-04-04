@@ -452,11 +452,11 @@ public abstract class AbstractSingletonContainer
 
     @Override
     protected EJBContextImpl _constructEJBContextImpl(Object instance) {
-	    EJBContextImpl rv = new SingletonContextImpl(instance, this);
-        if(rv.getJCDIInjectionContext() == null && isJCDIEnabled()) {
-            rv.setJCDIInjectionContext(_createJCDIInjectionContext());
+        EJBContextImpl context = new SingletonContextImpl(instance, this);
+        if (context.getJCDIInjectionContext() == null && isJCDIEnabled()) {
+            context.setJCDIInjectionContext(_createJCDIInjectionContext());
         }
-        return rv;
+        return context;
     }
 
     private EjbInvocation createInvocationAndPreInvoke(EjbInvocation ejbInv, Object ejb, SingletonContextImpl context) {
