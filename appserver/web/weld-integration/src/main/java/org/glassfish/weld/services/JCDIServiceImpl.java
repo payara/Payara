@@ -208,22 +208,8 @@ public class JCDIServiceImpl implements JCDIService {
         WeldManager weldManager = bootstrap.getManager(bda);
 
         org.jboss.weld.ejb.spi.EjbDescriptor ejbDesc = weldManager.getEjbDescriptor(ejb.getName());
-
-        // get or create the ejb's creational context
-        if ( null != ejbInfo ) {
-            jcdiCtx = ( JCDIInjectionContextImpl ) ejbInfo.get( JCDIService.JCDIInjectionContext.class );
-        }
-        if ( null != jcdiCtx ) {
-            creationalContext = jcdiCtx.getCreationalContext();
-        }
-        if ( null != jcdiCtx && creationalContext == null ) {
-            // The creational context may have been created by interceptors because they are created first
-            // (see createInterceptorInstance below.)
-            // And we only want to create the ejb's creational context once or we will have a memory
-            // leak there too.
-            Bean<?> bean = weldManager.getBean(ejbDesc);
-            creationalContext = weldManager.createCreationalContext(bean);
-            jcdiCtx.setCreationalContext( creationalContext );
+        if(ejbDesc == null) {
+            return null;
         }
 
         // Get an the Bean object
