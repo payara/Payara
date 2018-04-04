@@ -17,6 +17,7 @@ package fish.payara.admin.servermgmt.cli;
 import com.sun.enterprise.admin.servermgmt.DomainException;
 import com.sun.enterprise.admin.servermgmt.KeystoreManager;
 import com.sun.enterprise.admin.servermgmt.cli.LocalDomainCommand;
+import com.sun.enterprise.admin.servermgmt.domain.DomainConstants;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -45,7 +46,6 @@ import org.glassfish.api.admin.CommandValidationException;
 @PerLookup // this means one instance is created every time the command is run
 public class AddKeypairCommand extends LocalDomainCommand {
 	//private static final String DEFAULT_SSL_LISTENER = "http-listener-2";
-	public static final String DEFAULT_PASSWORD = "changeit";
 
 	@Param(name = "domain_name", optional = true)
 	String userArgDomainName;
@@ -68,7 +68,7 @@ public class AddKeypairCommand extends LocalDomainCommand {
 			return null;
 		}
 
-		File mp = new File(getServerDirs().getConfigDir(), "keystore.jks");
+		File mp = new File(getServerDirs().getConfigDir(), DomainConstants.KEYSTORE_FILE);
 		Logger.getLogger(AddKeypairCommand.class.getName()).log(Level.SEVERE, mp.getAbsolutePath());
 		if (!mp.canRead()) {
 			return null;
@@ -86,16 +86,15 @@ public class AddKeypairCommand extends LocalDomainCommand {
 	@Override
 	protected int executeCommand() throws CommandException, CommandValidationException {
 
-		// TODO get the correct pasword from the master password file
-		// using the default, for now
 		File privKeyFile = new File(pkcs8PrivateKeyPath);
 		try {
 			File destKeyStore = getKeyStoreFile();
 			try (InputStream privIn = new FileInputStream(privKeyFile)) {
 				PrivateKey privKey = keyManager.readPlainPKCS8PrivateKey(privIn, "RSA");
 				Collection<? extends Certificate> certChain = keyManager.readPemCertificateChain(new File(certPath));
+				String mp = getMasterPassword();
 				keyManager.addKeyPair(destKeyStore, "JKS",
-						DEFAULT_PASSWORD.toCharArray(), privKey, certChain.toArray(new Certificate[1]), destAlias);
+						mp.toCharArray(), privKey, certChain.toArray(new Certificate[1]), destAlias);
 				logger.fine(() -> MessageFormat.format("Private key with alias [{0}] added to keystore {1}.",
 						new Object[] {destAlias, destKeyStore.getAbsolutePath()}));
 			} catch (IOException | NoSuchAlgorithmException | KeyStoreException ex) {
