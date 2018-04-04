@@ -1,24 +1,8 @@
 ![#badassfish](payara-logo-blue.png)
 
-# Payara 5
-This is an experimental branch which includes the changes and upcoming modules due to debut with GlassFish 5. The main Payara project continues to exist on the _master_ branch.
-
-## Included upcoming JSR modules
-
-- Servlet 4.0 (JSR 369) - Servlet 4.0
-- JSF 2.3 (JSR 372) - Mojarra 2.3
-- CDI 2.0 (JSR 365) - Weld 3.0
-- Java EE Security  1.0 (JSR 375) - Soteria 1.0
-- Bean Validation 2.0 (JSR 380) - Hibernate Validation 6.0
-- And others
-
-For specific versions of the implementations included, look into [appserver/pom.xml](appserver/pom.xml).
-
-Note that while many modules have been integrated, testing that everything works is a work in progress at this moment.
-
 # Payara Server 5
 
-Payara Server 5 is a patched, enhanced, and supported application server derived from GlassFish Server Open Source Edition 4.x.
+Payara Server 5 is a patched, enhanced, and supported application server derived from GlassFish Server Open Source Edition 5.x.
 
 Payara Server 5 development is coordinated by the Payara Foundation, a UK not-for-profit organisation.
 
@@ -38,8 +22,10 @@ java -jar payara-micro.jar --deploy test.war
 
 In summary Payara Server provides:
 
-* Fully Supported Server derived from GlassFish 4.x Open Source Edition
+* Fully Supported Server derived from GlassFish 5.x Open Source Edition
 * Drop in Replacement for GlassFish Open Source Edition
+* Microprofile 1.2 api support
+* Supports deployment of JavaEE 8 applications
 * Production Enhancements including JCache, JBatch, and Hazelcast session clustering.
 * Payara Micro for cloud and microservice deployments
 * Always Open Source dual licensed CDDL/GPL
@@ -54,9 +40,6 @@ We take GlassFish, support it, add fixes, add enhancements and we release it as 
 
 Payara Server 5 currently supports the following JDKs:
 
-* Azul Zulu 9 [Testing]
-* OpenJDK 9 [Testing]
-* Oracle JDK 9 [Testing]
 * Azul Zulu 8
 * IBM J9 8 [Payara Blue Only]
 * OpenJDK 8
