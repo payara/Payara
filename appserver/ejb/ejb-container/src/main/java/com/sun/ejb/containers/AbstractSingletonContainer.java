@@ -452,11 +452,7 @@ public abstract class AbstractSingletonContainer
 
     @Override
     protected EJBContextImpl _constructEJBContextImpl(Object instance) {
-        EJBContextImpl context = new SingletonContextImpl(instance, this);
-        if (context.getJCDIInjectionContext() == null && isJCDIEnabled()) {
-            context.setJCDIInjectionContext(_createJCDIInjectionContext());
-        }
-        return context;
+        return new SingletonContextImpl(instance, this);
     }
 
     private EjbInvocation createInvocationAndPreInvoke(EjbInvocation ejbInv, Object ejb, SingletonContextImpl context) {
@@ -497,9 +493,8 @@ public abstract class AbstractSingletonContainer
                     context = (SingletonContextImpl)_constructEJBContextImpl(singletonMap.get(sessionKey));
                     ejb = context.getEJB();
                     ejbInv = createInvocationAndPreInvoke(ejbInv, ejb, context);
-                    createEmptyContextAndInterceptors(context);
                     if (isJCDIEnabled()) {
-                        _createJCDIInjectionContext(context, ejb, context.getJCDIInjectionContext());
+                        _createJCDIInjectionContext(context, ejb);
                     }
                     if (sessDesc.dontCallPostConstructOnAttach()) {
                         doPostConstruct = false;
