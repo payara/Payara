@@ -173,6 +173,7 @@ public class MetricsResolver {
         if (Counted.class.isInstance(annotation)) {
             Counted counted = (Counted) annotation;
             metadata = new Metadata(name, counted.displayName(), counted.description(), COUNTER, counted.unit());
+            metadata.setReusable(counted.reusable());
             tags = counted.tags();
         } else if (Gauge.class.isInstance(annotation)) {
             Gauge gauge = (Gauge) annotation;
@@ -181,10 +182,12 @@ public class MetricsResolver {
         } else if (Metered.class.isInstance(annotation)) {
             Metered metered = (Metered) annotation;
             metadata = new Metadata(name, metered.displayName(), metered.description(), METERED, metered.unit());
+            metadata.setReusable(metered.reusable());
             tags = metered.tags();
         } else if (Timed.class.isInstance(annotation)) {
             Timed timed = (Timed) annotation;
             metadata = new Metadata(name, timed.displayName(), timed.description(), TIMER, timed.unit());
+            metadata.setReusable(timed.reusable());
             tags = timed.tags();
         } else {
             throw new IllegalArgumentException("Unsupported Metrics [" + annotation.getClass().getName() + "]");
