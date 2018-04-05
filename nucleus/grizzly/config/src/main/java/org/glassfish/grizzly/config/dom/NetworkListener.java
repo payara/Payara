@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.grizzly.config.dom;
 
@@ -226,9 +227,16 @@ public interface NetworkListener extends ConfigBeanProxy, PropertyBag {
             List<ThreadPool> list = listeners.getThreadPool();
             if (list == null || list.isEmpty()) {
                 final ConfigBeanProxy parent = listener.getParent().getParent().getParent();
-                final Dom proxy = Dom.unwrap(parent).element("thread-pools");
-                final List<Dom> domList = proxy.nodeElements("thread-pool");
-                list = new ArrayList<ThreadPool>(domList.size());
+                Dom proxy;
+                Dom unwrapperParent = Dom.unwrap(parent);
+                synchronized (unwrapperParent) {
+                    proxy = unwrapperParent.element("thread-pools");
+                }
+                List<Dom> domList;
+                synchronized (proxy) {
+                    domList = proxy.nodeElements("thread-pool");
+                }
+                list = new ArrayList<>(domList.size());
                 for (Dom dom : domList) {
                     list.add(dom.<ThreadPool>createProxy());
                 }
