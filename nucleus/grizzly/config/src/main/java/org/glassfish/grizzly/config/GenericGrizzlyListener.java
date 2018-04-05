@@ -90,7 +90,7 @@ import org.glassfish.grizzly.http.LZMAContentEncoding;
 import org.glassfish.grizzly.http.server.AddOn;
 import org.glassfish.grizzly.http.server.BackendConfiguration;
 import org.glassfish.grizzly.http.server.CompressionEncodingFilter;
-import org.glassfish.grizzly.http.server.CompressionLevel;
+import org.glassfish.grizzly.http.CompressionConfig.CompressionMode;
 import org.glassfish.grizzly.http.server.FileCacheFilter;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServerFilter;
@@ -1058,17 +1058,17 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     protected Set<ContentEncoding> configureCompressionEncodings(Http http) {
         final String mode = http.getCompression();
         int compressionMinSize = Integer.parseInt(http.getCompressionMinSizeBytes());
-        CompressionLevel compressionLevel;
+        CompressionMode compressionMode;
         try {
-            compressionLevel = CompressionLevel.getCompressionLevel(mode);
+            compressionMode = CompressionMode.fromString(mode);
         } catch (IllegalArgumentException e) {
             try {
                 // Try to parse compression as an int, which would give the
                 // minimum compression size
-                compressionLevel = CompressionLevel.ON;
+                compressionMode = CompressionMode.ON;
                 compressionMinSize = Integer.parseInt(mode);
             } catch (Exception ignore) {
-                compressionLevel = CompressionLevel.OFF;
+                compressionMode = CompressionMode.OFF;
             }
         }
         final String compressableMimeTypesString = http.getCompressableMimeType();
@@ -1084,17 +1084,17 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         final ContentEncoding gzipContentEncoding = new GZipContentEncoding(
             GZipContentEncoding.DEFAULT_IN_BUFFER_SIZE,
             GZipContentEncoding.DEFAULT_OUT_BUFFER_SIZE,
-            new CompressionEncodingFilter(compressionLevel, compressionMinSize,
+            new CompressionEncodingFilter(compressionMode, compressionMinSize,
                 compressableMimeTypes,
                 noCompressionUserAgents,
                 GZipContentEncoding.getGzipAliases(),
-                compressionLevel != CompressionLevel.OFF
+                compressionMode != CompressionMode.OFF
             ));
-        final ContentEncoding lzmaEncoding = new LZMAContentEncoding(new CompressionEncodingFilter(compressionLevel, compressionMinSize,
+        final ContentEncoding lzmaEncoding = new LZMAContentEncoding(new CompressionEncodingFilter(compressionMode, compressionMinSize,
                 compressableMimeTypes,
                 noCompressionUserAgents,
                 LZMAContentEncoding.getLzmaAliases(),
-                compressionLevel != CompressionLevel.OFF
+                compressionMode != CompressionMode.OFF
         ));
         final Set<ContentEncoding> set = new HashSet<ContentEncoding>(2);
         set.add(gzipContentEncoding);
