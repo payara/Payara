@@ -55,8 +55,8 @@
         gf.getChildrenNamesList(endpoint="#{pageSession.httpListenerUrl}" result="#{pageSession.httpList}");
         createList(size="0" result="#{pageSession.httpPortsList}");
         foreach (var="row" list="#{pageSession.httpList}") {
-            gf.restRequest(endpoint="#{pageSession.httpListenerUrl}/#{row}.json", method="get", result="#{pageSession.httpListenerAttrs}");
-            listAdd(value="#{pageSession.httpListenerAttrs.data.extraProperties.entity['port']}" list="#{pageSession.httpPortsList}");
+            py.resolveDynamicPort(listenerName="#{row}" result="#{pageSession.tmpPort}");
+            listAdd(value="#{pageSession.tmpPort}" list="#{pageSession.httpPortsList}");
         }
         gf.resolveTokens(tokens="#{pageSession.httpPortsList}" endPoint="#{sessionScope.REST_URL}/servers/server/#{pageSession.instanceName}" resolvedTokens="#{pageSession.httpResolvedPortsList}");
         convertListToCommaString(list="#{pageSession.httpResolvedPortsList}" commaString="#{pageSession.httpPorts}");

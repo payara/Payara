@@ -126,8 +126,9 @@ public class GrizzlyProxy implements NetworkProxy {
         }
 
         grizzlyListener = createGrizzlyListener(networkListener);
-
         grizzlyListener.configure(grizzlyService.getHabitat(), networkListener);
+        
+        portNumber = grizzlyListener.getPort();
     }
 
     protected GrizzlyListener createGrizzlyListener(

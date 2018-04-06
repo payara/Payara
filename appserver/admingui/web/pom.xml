@@ -91,6 +91,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>hk2-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.admingui</groupId>
             <artifactId>console-plugin-service</artifactId>
             <version>${project.version}</version>

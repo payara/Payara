@@ -40,22 +40,6 @@
 
 package fish.payara.appserver.micro.services;
 
-import fish.payara.micro.PayaraInstance;
-import fish.payara.micro.event.PayaraClusterListener;
-import fish.payara.micro.event.CDIEventListener;
-import fish.payara.appserver.micro.services.command.AsAdminCallable;
-import fish.payara.appserver.micro.services.command.ClusterCommandResultImpl;
-import fish.payara.micro.data.ApplicationDescriptor;
-import fish.payara.appserver.micro.services.data.ApplicationDescriptorImpl;
-import fish.payara.appserver.micro.services.data.InstanceDescriptorImpl;
-import fish.payara.micro.ClusterCommandResult;
-import fish.payara.micro.data.InstanceDescriptor;
-import fish.payara.micro.event.PayaraClusteredCDIEvent;
-import fish.payara.nucleus.cluster.PayaraCluster;
-import fish.payara.nucleus.eventbus.ClusterMessage;
-import fish.payara.nucleus.eventbus.MessageReceiver;
-import fish.payara.nucleus.events.HazelcastEvents;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -69,15 +53,21 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+
+import com.sun.enterprise.v3.services.impl.GrizzlyService;
+
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.embeddable.CommandRunner;
+import org.glassfish.grizzly.config.GrizzlyListener;
 import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -85,6 +75,23 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.appserver.micro.services.command.AsAdminCallable;
+import fish.payara.appserver.micro.services.command.ClusterCommandResultImpl;
+import fish.payara.appserver.micro.services.data.ApplicationDescriptorImpl;
+import fish.payara.appserver.micro.services.data.InstanceDescriptorImpl;
+import fish.payara.micro.ClusterCommandResult;
+import fish.payara.micro.PayaraInstance;
+import fish.payara.micro.data.ApplicationDescriptor;
+import fish.payara.micro.data.InstanceDescriptor;
+import fish.payara.micro.event.CDIEventListener;
+import fish.payara.micro.event.PayaraClusterListener;
+import fish.payara.micro.event.PayaraClusteredCDIEvent;
+import fish.payara.nucleus.cluster.PayaraCluster;
+import fish.payara.nucleus.eventbus.ClusterMessage;
+import fish.payara.nucleus.eventbus.MessageReceiver;
+import fish.payara.nucleus.events.HazelcastEvents;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
 
 /**
  * Internal Payara Service for describing instances
@@ -105,6 +112,9 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
     public static final String APPLICATIONS_STORE_NAME = "payara.micro.applications.store";
     
     private static final Logger logger = Logger.getLogger(PayaraInstanceImpl.class.getName());
+
+    @Inject
+    private ServiceLocator habitat;
     
     @Inject
     private PayaraCluster cluster;
@@ -360,7 +370,16 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
         List<Integer> sslPorts = new ArrayList<>();
         int adminPort = 0;
         for (NetworkListener networkListener : 
-                context.getConfigBean().getConfig().getNetworkConfig().getNetworkListeners().getNetworkListener()) {  
+                context.getConfigBean().getConfig().getNetworkConfig().getNetworkListeners().getNetworkListener()) {
+
+            // Try and get the port. First get the port in the domain xml, then attempt to get the dynamic config port.
+            int port = Integer.parseInt(networkListener.getPort());
+            try {
+                port = habitat.getService(GrizzlyService.class).getRealPort(networkListener);
+            } catch (Exception ex) {
+                logger.log(Level.WARNING, "Failed to get running Grizzly listener.", ex);
+            }
+
             // Skip the network listener if it isn't enabled
             if (Boolean.parseBoolean(networkListener.getEnabled())) {
                 // Check if this listener is using HTTP or HTTPS
@@ -370,24 +389,24 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
                             context.getConfigBean().getConfig().getAdminListener().getName())) {
                         // Micro instances can use the admin listener as both an admin and HTTP port
                         if (instanceType.equals("MICRO")) {
-                            ports.add(Integer.parseInt(networkListener.getPort()));
+                            ports.add(port);
                         }
-                        adminPort = Integer.parseInt(networkListener.getPort());
+                        adminPort = port;
                     } else {
                         // If this listener isn't the admin listener, it must be an HTTP listener
-                        ports.add(Integer.parseInt(networkListener.getPort()));
+                        ports.add(port);
                     }
                 } else if (networkListener.findProtocol().getSecurityEnabled().equals("true")) {
                     if (networkListener.getName().equals(
                             context.getConfigBean().getConfig().getAdminListener().getName())) {
                         // Micro instances can use the admin listener as both an admin and HTTPS port
                         if (instanceType.equals("MICRO")) {
-                            ports.add(Integer.parseInt(networkListener.getPort()));
+                            ports.add(port);
                         }
-                        adminPort = Integer.parseInt(networkListener.getPort());
+                        adminPort = port;
                     } else {
                         // If this listener isn't the admin listener, it must be an HTTPS listener
-                        sslPorts.add(Integer.parseInt(networkListener.getPort()));
+                        sslPorts.add(port);
                     }
                 }
             }
