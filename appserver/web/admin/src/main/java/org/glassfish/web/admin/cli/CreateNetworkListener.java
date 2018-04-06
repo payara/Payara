@@ -95,6 +95,8 @@ public class CreateNetworkListener implements AdminCommand {
     String address;
     @Param(name = "listenerport", optional = false, alias="Port")
     String port;
+    @Param(name = "listenerPortRange", alias = "listenerportrange", optional = true)
+    String portRange;
     @Param(name = "threadpool", optional = true, defaultValue = "http-thread-pool", alias="threadPool")
     String threadPool;
     @Param(name = "protocol", optional = false)
@@ -165,6 +167,9 @@ public class CreateNetworkListener implements AdminCommand {
                     newNetworkListener.setEnabled(enabled.toString());
                     newNetworkListener.setJkEnabled(jkEnabled.toString());
                     newNetworkListener.setPort(port);
+                    if (portRange != null) {
+                        newNetworkListener.setPortRange(portRange);
+                    }
                     newNetworkListener.setThreadPool(threadPool);
                     newNetworkListener.setName(listenerName);
                     newNetworkListener.setAddress(address);

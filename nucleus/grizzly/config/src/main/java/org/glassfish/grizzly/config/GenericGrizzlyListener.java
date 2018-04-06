@@ -65,6 +65,7 @@ import org.glassfish.grizzly.Connection;
 
 import org.glassfish.grizzly.Grizzly;
 import org.glassfish.grizzly.IOStrategy;
+import org.glassfish.grizzly.PortRange;
 import org.glassfish.grizzly.SocketBinder;
 import org.glassfish.grizzly.config.dom.Http;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -142,6 +143,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     protected volatile String name;
     protected volatile InetAddress address;
     protected volatile int port;
+    protected volatile PortRange portRange;
+
     protected NIOTransport transport;
     protected FilterChain rootFilterChain;
     private volatile ExecutorService workerExecutorService;
@@ -189,9 +192,26 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     }
 
     @Override
+    public PortRange getPortRange() {
+        return portRange;
+    }
+
+    protected void setPortRange(PortRange portRange) {
+        this.portRange = portRange;
+    }
+
+    @Override
     public void start() throws IOException {
         startDelayedExecutor();
-        ((SocketBinder) transport).bind(new InetSocketAddress(address, port));
+        if (portRange != null && transport instanceof TCPNIOTransport) {
+            Connection<?> connection = ((SocketBinder) transport)
+                    .bind(address.getHostAddress(), portRange, false,
+                            TCPNIOTransport.class.cast(transport).getServerConnectionBackLog());
+            // Set the dynamic port value equal to the result of the autobind
+            port = InetSocketAddress.class.cast(connection.getLocalAddress()).getPort();
+        } else {
+            ((SocketBinder) transport).bind(new InetSocketAddress(address, port));
+        }
         transport.start();
     }
 
@@ -304,6 +324,9 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         setName(networkListener.getName());
         setAddress(InetAddress.getByName(networkListener.getAddress()));
         setPort(Integer.parseInt(networkListener.getPort()));
+        if (networkListener.getPortRange() != null) {
+            setPortRange(PortRange.valueOf(networkListener.getPortRange()));
+        }
 
         final FilterChainBuilder filterChainBuilder = FilterChainBuilder.stateless();
         

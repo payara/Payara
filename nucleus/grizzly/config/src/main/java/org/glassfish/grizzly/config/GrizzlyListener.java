@@ -44,6 +44,7 @@ import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.net.InetAddress;
 
+import org.glassfish.grizzly.PortRange;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.hk2.api.ServiceLocator;
 
@@ -59,7 +60,6 @@ import org.glassfish.hk2.api.ServiceLocator;
  * @author Jeanfrancois Arcand
  * @author Justin Lee
  */
-@SuppressWarnings("UnusedDeclaration")
 public interface GrizzlyListener {
     
     void start() throws IOException;
@@ -73,6 +73,8 @@ public interface GrizzlyListener {
     InetAddress getAddress();
 
     int getPort();
+
+    PortRange getPortRange();
 
     /*
      * Configures the given grizzlyListener.
