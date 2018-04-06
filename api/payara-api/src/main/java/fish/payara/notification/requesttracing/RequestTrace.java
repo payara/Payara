@@ -52,8 +52,8 @@ import java.util.concurrent.TimeUnit;
 import static fish.payara.notification.requesttracing.EventType.*;
 
 /**
- * Class representing a full Request Trace. Stored in a ThreadLocal in the
- * Request Event Store
+ * Class representing a full Request Trace. Stored in a ThreadLocal in the Request Event Store
+ *
  * @author steve
  */
 public class RequestTrace implements Serializable, Comparable<RequestTrace> {
@@ -62,7 +62,7 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
         trace = new LinkedList<>();
         spanLogs = new LinkedList<>();
     }
-    
+
     private boolean started;
     private boolean completed;
     private Instant startTime;
@@ -70,44 +70,30 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
     private long elapsedTime;
     private final LinkedList<RequestTraceSpan> trace;
     private final List<RequestTraceSpanLog> spanLogs;
-    
+
     /**
      * Add a new event to the series being traced
-     * @param span 
+     *
+     * @param span
      */
     public void addEvent(RequestTraceSpan span) {
         // Do not add trace events if completed
-        if (completed 
+        if (completed
                 && span.getEventType() != TRACE_START
                 && span.getEventType() != PROPAGATED_TRACE) {
             return;
         }
-        
+
         if (null != span.getEventType()) {
             switch (span.getEventType()) {
                 case TRACE_START:
-                    trace.clear();
-                    startTime = span.getStartInstant();
-                    trace.add(span);
-                    started = true;
-                    completed = false;
+                    handleTraceStart(span);
                     break;
                 case PROPAGATED_TRACE:
-                    trace.clear();
-                    startTime = span.getStartInstant();
-                    trace.add(span);
-                    started = true;
-                    completed = false;
+                    handlePropagatedTrace(span);
                     break;
                 case REQUEST_EVENT: {
-                    if (!started) {
-                        return;
-                    }
-                    RequestTraceSpan rootSpan = trace.getFirst();
-                    span.setTraceId(rootSpan.getTraceId());
-                    span.setSpanDuration(span.getStartInstant().until(Instant.now(), ChronoUnit.NANOS));
-                    span.setTraceEndTime(Instant.now());
-                    trace.add(span);
+                    handleRequestEvent(span);
                     break;
                 }
                 default:
@@ -115,14 +101,80 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
             }
         }
     }
-    
-     public void endTrace() {
+
+    public void addEvent(RequestTraceSpan span, long timestampMillis) {
+        // Do not add trace events if completed
+        if (completed
+                && span.getEventType() != TRACE_START
+                && span.getEventType() != PROPAGATED_TRACE) {
+            return;
+        }
+
+        if (null != span.getEventType()) {
+            switch (span.getEventType()) {
+                case TRACE_START:
+                    handleTraceStart(span);
+                    break;
+                case PROPAGATED_TRACE:
+                    handlePropagatedTrace(span);
+                    break;
+                case REQUEST_EVENT: {
+                    handleRequestEvent(span, timestampMillis);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+    }
+
+    private void handleTraceStart(RequestTraceSpan span) {
+        trace.clear();
+        startTime = span.getStartInstant();
+        trace.add(span);
+        started = true;
+        completed = false;
+    }
+
+    private void handlePropagatedTrace(RequestTraceSpan span) {
+        trace.clear();
+        startTime = span.getStartInstant();
+        trace.add(span);
+        started = true;
+        completed = false;
+    }
+
+    private void handleRequestEvent(RequestTraceSpan span) {
         if (!started) {
             return;
         }
         
-        Collections.sort(trace);
+        RequestTraceSpan rootSpan = trace.getFirst();
+        span.setTraceId(rootSpan.getTraceId());
+        span.setSpanDuration(span.getStartInstant().until(Instant.now(), ChronoUnit.NANOS));
+        span.setTraceEndTime(Instant.now());
+        trace.add(span);
+    }
+
+    private void handleRequestEvent(RequestTraceSpan span, long timestampMillis) {
+        if (!started) {
+            return;
+        }
         
+        RequestTraceSpan rootSpan = trace.getFirst();
+        span.setTraceId(rootSpan.getTraceId());
+        span.setSpanDuration(span.getStartInstant().until(Instant.ofEpochMilli(timestampMillis), ChronoUnit.NANOS));
+        span.setTraceEndTime(Instant.ofEpochMilli(timestampMillis));
+        trace.add(span);
+    }
+
+    public void endTrace() {
+        if (!started) {
+            return;
+        }
+
+        Collections.sort(trace);
+
         RequestTraceSpan startSpan = trace.getFirst();
         endTime = Instant.now();
         startSpan.setSpanDuration(startTime.until(endTime, ChronoUnit.NANOS));
@@ -132,10 +184,10 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
         assignLogs();
         assignReferences();
     }
-    
+
     /**
-     * Gets how long the trace took.
-     * If the trace has not finished then this will be 0.
+     * Gets how long the trace took. If the trace has not finished then this will be 0.
+     *
      * @return Time for trace in milliseconds
      */
     public long getElapsedTime() {
@@ -145,61 +197,62 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("{\"traceSpans\":[");
-        
+
         for (RequestTraceSpan span : trace) {
             sb.append(span.toString());
-            
+
             if (trace.indexOf(span) != trace.size() - 1) {
                 sb.append(",");
             }
         }
 
         sb.append("\n]}");
-        
+
         return sb.toString();
     }
-    
+
     // methods for testing
     /**
-     * Returns true if a trace has started.
-     * This will return true even if the trace has completed.
-     * @return 
+     * Returns true if a trace has started. This will return true even if the trace has completed.
+     *
+     * @return
      */
     public boolean isStarted() {
         return started;
     }
-    
+
     /**
      * Returns a list of all the events that make up the trace.
-     * @return 
+     *
+     * @return
      */
     public LinkedList<RequestTraceSpan> getTraceSpans() {
         return trace;
     }
 
     /**
-     * Gets the Instant  when the span was started
-     * See {@link java.time.Instant#now()} for how this time is generated.
-     * @return 
+     * Gets the Instant when the span was started See {@link java.time.Instant#now()} for how this time is generated.
+     *
+     * @return
      */
     public Instant getStartTime() {
         return startTime;
     }
-    
+
     /**
-     * Gets the end time of the request trace in milliseconds since the epoch
-     * (midnight, January 1st 1970).
+     * Gets the end time of the request trace in milliseconds since the epoch (midnight, January 1st 1970).
      * <p>
      * This value is 0 until the request trace in finished.
-     * @return 
+     *
+     * @return
      */
     public Instant getEndTime() {
         return endTime;
     }
 
     /**
-     * Returns a unique identifier for the trace,
-     * which comes from the first event.
+     * Returns a unique identifier for the trace, which comes from the first event.
+     *
      * @return {@code null} if no trace started
      */
     public UUID getTraceId() {
@@ -210,7 +263,7 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
         }
         return result;
     }
-    
+
     public void setTraceId(UUID newID) {
         for (RequestTraceSpan span : trace) {
             span.setTraceId(newID);
@@ -219,7 +272,8 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
 
     /**
      * Returns true if a complete trace has finished
-     * @return 
+     *
+     * @return
      */
     public boolean isCompleted() {
         return completed;
@@ -228,15 +282,15 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
     public void addSpanLog(RequestTraceSpanLog spanLog) {
         spanLogs.add(spanLog);
     }
-    
+
     private void assignLogs() {
         for (RequestTraceSpanLog spanLog : spanLogs) {
-            
+
             ListIterator<RequestTraceSpan> iterator = trace.listIterator(trace.size());
-            
+
             while (iterator.hasPrevious()) {
                 RequestTraceSpan span = iterator.previous();
-                if (spanLog.getTimeMillis() > span.getTimeOccured() 
+                if (spanLog.getTimeMillis() > span.getTimeOccured()
                         && spanLog.getTimeMillis() < span.getTraceEndTime().toEpochMilli()) {
                     span.addSpanLog(spanLog);
                     break;
@@ -244,14 +298,14 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
             }
         }
     }
-    
+
     private void assignReferences() {
         for (RequestTraceSpan span : trace) {
             if (trace.indexOf(span) != 0) {
                 RequestTraceSpan bestMatchingParent = null;
                 for (RequestTraceSpan comparisonSpan : trace) {
-                    if (span.getTimeOccured() > comparisonSpan.getTimeOccured() &&
-                            span.getTraceEndTime().compareTo(comparisonSpan.getTraceEndTime()) < 0) {
+                    if (span.getTimeOccured() > comparisonSpan.getTimeOccured()
+                            && span.getTraceEndTime().compareTo(comparisonSpan.getTraceEndTime()) < 0) {
                         if (bestMatchingParent == null) {
                             bestMatchingParent = comparisonSpan;
                         } else {
@@ -259,17 +313,17 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
                                 bestMatchingParent = comparisonSpan;
                             }
                         }
-                    } 
+                    }
                 }
-                
+
                 if (bestMatchingParent != null) {
-                    span.addSpanReference(bestMatchingParent.getSpanContext(), 
+                    span.addSpanReference(bestMatchingParent.getSpanContext(),
                             RequestTraceSpan.SpanContextRelationshipType.ChildOf);
                 }
             }
         }
     }
-    
+
     @Override
     public int compareTo(RequestTrace requestTrace) {
         int compareElapsedTime = Long.compare(requestTrace.elapsedTime, elapsedTime);
@@ -278,23 +332,23 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
         }
         return requestTrace.startTime.compareTo(startTime);
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        
+
         if (o == null || this.getClass() != o.getClass()) {
             return false;
         }
 
         RequestTrace that = (RequestTrace) o;
 
-        return elapsedTime == that.elapsedTime && (this.toString() != null ? 
-                this.toString().equals(that.toString()) : that.toString() == null);
+        return elapsedTime == that.elapsedTime && (this.toString() != null
+                ? this.toString().equals(that.toString()) : that.toString() == null);
     }
-    
+
     @Override
     public int hashCode() {
         int result = (int) (elapsedTime ^ (elapsedTime >>> 32));

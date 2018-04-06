@@ -72,6 +72,9 @@
         <module>payara-rest-endpoints</module>
         <module>rest-monitoring</module>
         <module>cdi-auth-roles</module>
+        <module>opentracing-cdi</module>
+        <module>jaxrs-client-tracing</module>
+        <module>jaxrs-container-tracing</module>
     </modules>
 
     <profiles>

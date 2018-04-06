@@ -1623,6 +1623,8 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                     }
                     finally {
                         if (requestTracing.isRequestTracingEnabled() && span != null) {
+                            span.addSpanTag("ResponseStatus", Integer.toString(
+                                    ((HttpServletResponse) response).getStatus()));
                             requestTracing.traceSpan(span);
                         }
                         
@@ -1683,10 +1685,10 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         }
         span.addSpanTag("Method", httpServletRequest.getMethod());
 
-        return span;
+        return span;     
     }
 
-    private RequestTraceSpan constructServletRequestSpan(HttpServletRequest httpServletRequest, Servlet serv) {
+    private RequestTraceSpan constructServletRequestSpan(HttpServletRequest httpServletRequest, Servlet servlet) {
         RequestTraceSpan span  = new RequestTraceSpan("processServletRequest");
         span.addSpanTag("URL", httpServletRequest.getRequestURL().toString());
 
@@ -1696,9 +1698,9 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             span.addSpanTag(headerName, list(httpServletRequest.getHeaders(headerName)).toString());
         }
 
-        span.addSpanTag("Method",httpServletRequest.getMethod());
+        span.addSpanTag("Method", httpServletRequest.getMethod());
         span.addSpanTag("QueryString", httpServletRequest.getQueryString());
-        span.addSpanTag("Class",serv.getClass().getCanonicalName());
+        span.addSpanTag("Class", servlet.getClass().getCanonicalName());
 
         return span;
     }
