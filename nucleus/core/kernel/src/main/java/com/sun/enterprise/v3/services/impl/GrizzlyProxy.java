@@ -43,7 +43,6 @@
 package com.sun.enterprise.v3.services.impl;
 
 import org.glassfish.grizzly.config.dom.NetworkListener;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.api.deployment.ApplicationContainer;
 
@@ -67,8 +66,6 @@ import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.impl.FutureImpl;
 import org.glassfish.grizzly.utils.Futures;
 import org.glassfish.kernel.KernelLoggerInfo;
-
-import fish.payara.kernel.services.impl.MicroNetworkListener;
 
 /**
  * This class is responsible for configuring Grizzly.
@@ -133,18 +130,10 @@ public class GrizzlyProxy implements NetworkProxy {
 
     protected GrizzlyListener createGrizzlyListener(
             final NetworkListener networkListener) {
-        ServerEnvironment env = grizzlyService.getHabitat().getService(ServerEnvironment.class);
-        if (env != null && env.isMicro()) {
-            return createMicroListener(networkListener);
-        }
         if (GrizzlyService.isLightWeightListener(networkListener)) {
             return createServiceInitializerListener(networkListener);
         }
         return createGlassfishListener(networkListener);
-    }
-
-    protected GrizzlyListener createMicroListener(final NetworkListener networkListener) {
-        return new MicroNetworkListener(grizzlyService, networkListener, logger);
     }
 
     protected GrizzlyListener createGlassfishListener(
