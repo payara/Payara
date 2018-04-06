@@ -82,13 +82,12 @@ import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 /**
- * Reinitialzie the log manager using our logging.properties file.
+ * Reinitialise the log manager using our logging.properties file.
  *
  * @author Jerome Dochez
  * @author Carla Mott
  * @author Naman Mehta
  */
-
 @Service
 @RunLevel(InitRunLevel.VAL)
 @Rank(Constants.IMPORTANT_RUN_LEVEL_SERVICE)
@@ -152,6 +151,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     String payaraNotificationLogRotationInTimeLimitInBytesDetail = "";
     String payaraNotificationLogmaxHistoryFilesDetail = "";
     String payaraNotificationLogCompressOnRotationDetail = "";
+    
+    String payaraJsonUnderscorePrefix = "";
 
     private static final String SERVER_LOG_FILE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.file";
     private static final String HANDLER_PROPERTY = "handlers";
@@ -184,6 +185,12 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private static final String PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.maxHistoryFiles";
     private static final String PAYARA_NOTIFICATION_LOG_COMPRESS_ON_ROTATION_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation";
     
+    /**
+     * @deprecated for backwards compatibility pre-5.182
+     */
+    @Deprecated
+    private static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE="fish.payara.deprecated.jsonlogformatter.underscoreprefix";
+    
     final static String EXCLUDE_FIELDS_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.excludeFields";
     final static String MULTI_LINE_MODE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode";
 
@@ -207,10 +214,10 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
     private LoggingOutputStream stderrOutputStream=null;
 
-    /*
-        Returns properties based on the DAS/Cluster/Instance
-      */
-
+    /**
+     * Returns properties based on the DAS/Cluster/Instance
+     */
+    @Override
     public Map<String, String> getLoggingProperties() throws IOException {
 
         Server targetServer = domain.getServerNamed(env.getInstanceName());
@@ -234,10 +241,10 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         return props;
     }
 
-    /*
-        Returns logging file to be monitor during server is running.
+    /**
+     *  Returns logging file to be monitor during server is running.
      */
-
+    @Override
     public File getLoggingFile() throws IOException {
 
         File file = null;
@@ -271,6 +278,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     /**
      * Initialize the loggers
      */
+    @Override
     public void postConstruct() {
 
         // if the system property is already set, we don't need to do anything
@@ -304,7 +312,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             System.out.println("#!## LogManagerService.postConstruct : dest=" +dest);
 
             if (!logging.exists()) {
-                LOGGER.log(Level.FINE, logging.getAbsolutePath() + " not found, creating new file from template.");
+                LOGGER.log(Level.FINE, "{0} not found, creating new file from template.", logging.getAbsolutePath());
                 FileUtils.copy(src, dest);
                 logging = new File(env.getConfigDirPath(), ServerEnvironmentImpl.kLoggingPropertiesFileName);
             }
@@ -440,6 +448,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             payaraNotificationLogRotationInTimeLimitInBytesDetail = props.get(PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY);
             payaraNotificationLogmaxHistoryFilesDetail = props.get(PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY);
             payaraNotificationLogCompressOnRotationDetail = props.get(PAYARA_NOTIFICATION_LOG_COMPRESS_ON_ROTATION_PROPERTY);
+            
+            payaraJsonUnderscorePrefix = props.get(PAYARA_JSONLOGFORMATTER_UNDERSCORE);
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, LogFacade.ERROR_APPLYING_CONF, e);
@@ -511,6 +521,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         // finally listen to changes to the logging.properties file
         if (logging != null) {
             fileMonitoring.monitors(logging, new FileMonitoring.FileChangeListener() {
+                @Override
                 public void changed(File changedFile) {
                     synchronized (gfHandlers) {
                         try {
@@ -679,6 +690,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
                 }
 
+                @Override
                 public void deleted(File deletedFile) {
                     LOGGER.log(Level.WARNING, LogFacade.CONF_FILE_DELETED, deletedFile.getAbsolutePath());
                 }
@@ -767,6 +779,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         ucl.unprocessedTransactedEvents(b);
     }
 
+    @Override
     public void addHandler(Handler handler) {
         Logger rootLogger = Logger.getLogger("");
         if (rootLogger != null) {
@@ -779,6 +792,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     }
 
 
+    @Override
     public void preDestroy() {
         //destroy the handlers
         try {
