@@ -125,6 +125,7 @@ public interface NetworkListener extends ConfigBeanProxy, PropertyBag {
     void setPort(String value);
     
     @Attribute(required = false, dataType = String.class)
+    @Pattern(regexp = "^[0-9]{1,5},[0-9]{1,5}$", message = "PortRange must be in the form: 'port,port'.")
     String getPortRange();
 
     void setPortRange(String value);
