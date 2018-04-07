@@ -655,6 +655,14 @@ public class KeystoreManager {
 		}
 	}
 
+	/**
+	 * Reads an unencrypted, PKCS#8 formattted and base64 encoded RSA private key from the given File
+	 * @param keyFile the file containing the private key
+	 * @return the RSA private key
+	 * @throws IOException
+	 * @throws InvalidKeySpecException
+	 * @throws NoSuchAlgorithmException 
+	 */
 	public PrivateKey readPlainPKCS8PrivateKey(File keyFile)
 			throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
 		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
@@ -663,6 +671,16 @@ public class KeystoreManager {
 						Files.lines(keyFile.toPath()))));
 	}
 
+	/**
+	 * Reads an unencrypted, PKCS#8 formattted and base64 encoded private key from the given
+	 * InputStream using the specified algo
+	 * @param is the input stream containing the private key
+	 * @param algo the algorithm used for the private key
+	 * @return the RSA private key
+	 * @throws IOException
+	 * @throws InvalidKeySpecException
+	 * @throws NoSuchAlgorithmException 
+	 */
 	public PrivateKey readPlainPKCS8PrivateKey(InputStream is, String algo)
 			throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
 		KeyFactory keyFactory = KeyFactory.getInstance(algo);
@@ -683,6 +701,13 @@ public class KeystoreManager {
 		return Base64.getDecoder().decode(base64KeyData);
 	}
 
+	/**
+	 * Reads X509 certificate(s) from the provided files
+	 *
+	 * @param pemFile path to the PEM (or .cer) file containing the X.509 certificate
+	 * @return certificate chain loaded from the file, if successful
+	 * @throws KeyStoreException in case of problems
+	 */
 	public Collection<? extends Certificate> readPemCertificateChain ( File pemFile ) throws KeyStoreException {
 		try (InputStream is = new FileInputStream(pemFile)) {
 			return CertificateFactory.getInstance("X.509").generateCertificates(is);
