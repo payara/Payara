@@ -63,7 +63,7 @@
 
     <groupId>fish.payara.arquillian</groupId>
     <artifactId>parent-payara-containers</artifactId>
-    <version>1.0.Beta3-m3</version>
+    <version>1.0.Beta3</version>
     <packaging>pom</packaging>
 
     <name>Arquillian Container Parent Payara</name>
@@ -79,6 +79,7 @@
         <version.arquillian_core>1.1.13.Final</version.arquillian_core>
         <version.jersey>2.26</version.jersey>
         <version.javaee.api>8.0</version.javaee.api>
+        <version.maven.surefire.plugin>2.21.0</version.maven.surefire.plugin>
 
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>

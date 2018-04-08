@@ -513,8 +513,17 @@ public interface PayaraMicroBoot {
      * Adds the library to the classloader and loads it
      * 
      * @param lib The library to add
+     * @return 
      * @since 4.1.2.173
      */
-    public void addLibrary(File lib);
+    public PayaraMicroBoot addLibrary(File lib);
+
+    /**
+     * Sets whether SNI enabled for SSL
+     * @param value true to enable SNI
+     * @return 
+     * @since 4.1.2.182 5.1.2.182
+     */
+    public PayaraMicroBoot setSniEnabled(boolean value);
     
 }
