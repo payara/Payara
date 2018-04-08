@@ -78,7 +78,6 @@ import com.sun.corba.ee.spi.transport.SocketInfo;
 import com.sun.corba.ee.org.omg.CSIIOP.*;
 import org.ietf.jgss.Oid;
 import java.util.Enumeration;
-import sun.security.x509.X500Name;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.auth.login.LoginContextDriver;
 import com.sun.enterprise.security.auth.login.common.LoginException;
@@ -105,6 +104,7 @@ import org.glassfish.internal.api.ORBLocator;
 import javax.inject.Singleton;
 
 import javax.inject.Inject;
+import javax.security.auth.x500.X500Principal;
 
 /**
  * This class is responsible for making various decisions for selecting security information to be
@@ -822,8 +822,8 @@ public final class SecurityMechanismSelector implements PostConstruct {
                 Object o = credIter.next();
                 if (o instanceof GSSUPName) {
                     ctx.identcls = GSSUPName.class;
-                } else if (o instanceof X500Name) {
-                    ctx.identcls = X500Name.class;
+                } else if (o instanceof X500Principal) {
+                    ctx.identcls = X500Principal.class;
                 } else {
                     ctx.identcls = X509CertificateCredential.class;
                 }
@@ -1338,12 +1338,12 @@ public final class SecurityMechanismSelector implements PostConstruct {
                 return null;
             } else {
                 // Set the transport principal in subject and
-                // return the X500Name class
+                // return the X500Principal class
                 ssc = new SecurityContext();
-                X500Name x500Name = (X500Name) certChain[0].getSubjectDN();
+                X500Principal x500Name = (X500Principal) certChain[0].getSubjectX500Principal();
                 ssc.subject = new Subject();
                 ssc.subject.getPublicCredentials().add(x500Name);
-                ssc.identcls = X500Name.class;
+                ssc.identcls = X500Principal.class;
                 ssc.authcls = null;
                 return ssc;
             }

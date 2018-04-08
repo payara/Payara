@@ -107,7 +107,7 @@ import com.sun.logging.LogDomains;
 
 import sun.security.util.DerInputStream;
 import sun.security.util.DerValue;
-import sun.security.x509.X500Name;
+import javax.security.auth.x500.X500Principal;
 import sun.security.x509.X509CertImpl;
 
 /**
@@ -186,7 +186,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
      */
     private SASContextBody createContextError(int major, int minor) {
         if (logger.isLoggable(FINE)) {
-            logger.log(FINE, "Creating ContextError message: major code = " + major + "minor code= " + minor);
+            logger.log(FINE, "Creating ContextError message: major code = {0}minor code= {1}", new Object[]{major, minor});
         }
 
         byte error_token[] = {};
@@ -231,8 +231,6 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
      */
     private ServiceContext createSvcContext(SASContextBody sasContextBody, ORB orb) {
 
-        ServiceContext serviceContext = null;
-
         Any any = orb.create_any();
         SASContextBodyHelper.insert(any, sasContextBody);
 
@@ -243,7 +241,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
             logger.log(Level.SEVERE, "iiop.encode_exception", e);
         }
 
-        serviceContext = new ServiceContext();
+        ServiceContext serviceContext = new ServiceContext();
         serviceContext.context_id = SECURITY_ATTRIBUTE_SERVICE_ID;
         serviceContext.context_data = cdr_encoded_saselm;
 
@@ -283,7 +281,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
             break;
 
         case ITTDistinguishedName.value:
-            // Construct a X500Name
+            // Construct a X500Principal
 
             derEncoding = identityToken.dn();
 
@@ -296,18 +294,18 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
             }
 
             if (logger.isLoggable(FINE)) {
-                logger.log(FINE, "Create an X500Name object from identity token");
+                logger.log(FINE, "Create an X500Principal object from identity token");
             }
 
-            X500Name xname = new X500Name(derEncoding);
+            X500Principal xname = new X500Principal(derEncoding);
 
             if (logger.isLoggable(FINE)) {
-                logger.log(FINE, "Identity to be asserted is " + xname.toString());
-                logger.log(FINE, "Adding X500Name to subject's PublicCredentials");
+                logger.log(FINE, "Identity to be asserted is {0}", xname.toString());
+                logger.log(FINE, "Adding X500Principal to subject's PublicCredentials");
             }
 
             securityContext.subject.getPublicCredentials().add(xname);
-            securityContext.identcls = X500Name.class;
+            securityContext.identcls = X500Principal.class;
             break;
 
         case ITTX509CertChain.value:
