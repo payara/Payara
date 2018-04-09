@@ -166,7 +166,7 @@ public final class DeleteJvmOptions implements AdminCommand, AdminCommandSecurit
             bag1.setJvmOptions(jvmopts);
             int now = jvmopts.size();
             if (removed) {
-                part.setMessage(lsm.getString("deleted.message", (orig-now)));
+                part.setMessage(lsm.getString("deleted.message", (orig - now)));
             } else {
                 part.setMessage(lsm.getString("no.option.deleted"));
             }
