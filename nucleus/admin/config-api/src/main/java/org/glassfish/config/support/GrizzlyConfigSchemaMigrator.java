@@ -80,8 +80,8 @@ import javax.inject.Inject;
 @SuppressWarnings({"deprecation"})
 @Service(name="grizzlyconfigupgrade")
 public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostConstruct {
-    private final static String SSL_CONFIGURATION_WANTAUTH = "org.glassfish.grizzly.ssl.auth";
-    private final static String SSL_CONFIGURATION_SSLIMPL = "org.glassfish.grizzly.ssl.sslImplementation";
+    private static final String SSL_CONFIGURATION_WANTAUTH = "org.glassfish.grizzly.ssl.auth";
+    private static final String SSL_CONFIGURATION_SSLIMPL = "org.glassfish.grizzly.ssl.sslImplementation";
     @Inject
     private Configs configs;
     private Config currentConfig = null;

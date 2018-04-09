@@ -75,11 +75,11 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
         SaxParserHandler.registerBundleNode(this, WLWebServicesTagNames.WEB_SERVICES);
     }
 
-    private final static XMLElement ROOT_ELEMENT = new XMLElement(WLWebServicesTagNames.WEB_SERVICES);
+    private static final XMLElement ROOT_ELEMENT = new XMLElement(WLWebServicesTagNames.WEB_SERVICES);
 
-    private final static String SCHEMA_ID = WLDescriptorConstants.WL_WEBSERVICES_XML_SCHEMA;
-    private final static String SPEC_VERSION = "1.0";
-    private final static List<String> systemIDs = initSystemIDs();
+    private static final String SCHEMA_ID = WLDescriptorConstants.WL_WEBSERVICES_XML_SCHEMA;
+    private static final String SPEC_VERSION = "1.0";
+    private static final List<String> systemIDs = initSystemIDs();
 
     private static List<String> initSystemIDs() {
         List<String> systemIDs = new ArrayList<String>();

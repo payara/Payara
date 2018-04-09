@@ -44,21 +44,21 @@ package com.sun.jdo.api.persistence.enhancer.classfile;
  * ClassMember is a common base class for ClassMethod and ClassField
  */
 
-abstract public class ClassMember implements VMConstants {
+public abstract class ClassMember implements VMConstants {
 
   /* public accessors */
 
   /**
    * Is the member static?
    */
-  final public boolean isStatic() {
+  public final boolean isStatic() {
     return (access() & ACCStatic) != 0;
   }
 
   /**
    * Is the member final?
    */
-  final public boolean isFinal() {
+  public final boolean isFinal() {
     return (access() & ACCFinal) != 0;
   }
 
@@ -75,21 +75,21 @@ abstract public class ClassMember implements VMConstants {
   /**
    * Is the member private?
    */
-  final public boolean isPrivate() {
+  public final boolean isPrivate() {
     return (access() & ACCPrivate) != 0;
   }
 
   /**
    * Is the member protected?
    */
-  final public boolean isProtected() {
+  public final boolean isProtected() {
     return (access() & ACCProtected) != 0;
   }
 
   /**
    * Is the member public?
    */
-  final public boolean isPublic() {
+  public final boolean isPublic() {
     return (access() & ACCPublic) != 0;
   }
 
@@ -98,27 +98,27 @@ abstract public class ClassMember implements VMConstants {
   /**
    * Return the access flags for the method - see VMConstants
    */
-  abstract public int access();
+  public abstract int access();
 
   /**
    * Set the access flags for the method - see VMConstants
    */
-  abstract public void setAccess(int newAccess);
+  public abstract void setAccess(int newAccess);
 
   /**
    * Return the name of the member
    */
-  abstract public ConstUtf8 name();
+  public abstract ConstUtf8 name();
 
   /**
    * Return the type signature of the method
    */
-  abstract public ConstUtf8 signature();
+  public abstract ConstUtf8 signature();
 
   /**
    * Return the attributes associated with the member
    */
-  abstract public AttributeVector attributes();
+  public abstract AttributeVector attributes();
 
 }
 

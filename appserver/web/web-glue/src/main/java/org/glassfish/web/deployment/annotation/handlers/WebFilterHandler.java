@@ -75,7 +75,7 @@ import java.util.logging.Level;
 @Service
 @AnnotationHandlerFor(WebFilter.class)
 public class WebFilterHandler extends AbstractWebHandler {
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(WebFilterHandler.class);
 
     public WebFilterHandler() {

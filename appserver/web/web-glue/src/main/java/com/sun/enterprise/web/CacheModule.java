@@ -62,9 +62,9 @@ import java.util.logging.Logger;
  * configures the cache for the application
  */
 public final class CacheModule {
-    public final static String CACHING_FILTER_CLASSNAME = 
+    public static final String CACHING_FILTER_CLASSNAME = 
                             "com.sun.appserv.web.cache.filter.CachingFilter";
-    public final static String DEFAULT_CACHE_HELPER_CLASSNAME =
+    public static final String DEFAULT_CACHE_HELPER_CLASSNAME =
                             "com.sun.appserv.web.cache.DefaultCacheHelper";
 
     public static final Logger logger = LogFacade.getLogger();

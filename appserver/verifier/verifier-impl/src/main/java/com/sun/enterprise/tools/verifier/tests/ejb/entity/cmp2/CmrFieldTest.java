@@ -57,7 +57,7 @@ import java.util.Set;
  * @author  Jerome Dochez
  * @version 
  */
-abstract public class CmrFieldTest extends CMPTest {
+public abstract class CmrFieldTest extends CMPTest {
 
     /**
      * run an individual verifier test of a declated cmr field of the class

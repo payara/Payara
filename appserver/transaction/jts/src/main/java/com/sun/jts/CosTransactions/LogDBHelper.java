@@ -65,7 +65,7 @@ class LogDBHelper {
     // during auto-recovery when the server name is not yet final
     private String serverName;
 
-    final private String instanceName;
+    private final String instanceName;
 
     private DataSource ds = null;
     private Method getNonTxConnectionMethod = null;

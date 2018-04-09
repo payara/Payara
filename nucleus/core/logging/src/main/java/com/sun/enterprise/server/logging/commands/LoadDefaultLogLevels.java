@@ -68,7 +68,7 @@ public class LoadDefaultLogLevels implements AdminCommand {
     @Inject
     LoggingConfigImpl loggingConfig;
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LoadDefaultLogLevels.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LoadDefaultLogLevels.class);
     
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();

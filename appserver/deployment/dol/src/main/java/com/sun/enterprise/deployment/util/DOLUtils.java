@@ -124,8 +124,8 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
  */
 public class DOLUtils {
     
-    public final static String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
-    public final static String SCHEMA_LOCATION_TAG = "xsi:schemaLocation";
+    public static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
+    public static final String SCHEMA_LOCATION_TAG = "xsi:schemaLocation";
 
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DOLUtils.class);

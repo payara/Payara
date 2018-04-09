@@ -57,7 +57,7 @@ import org.w3c.dom.Node;
  */
 public class RespectBindingNode extends DisplayableComponentNode {
 
-    private final static XMLElement tag =
+    private static final XMLElement tag =
         new XMLElement(WebServicesTagNames.RESPECT_BINDING);
 
 

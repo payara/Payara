@@ -62,58 +62,58 @@ import com.sun.jdo.spi.persistence.utility.JavaTypeHelper;
  */
 public class JavaClassWriterHelper extends JavaTypeHelper {
 
-    public final static String javaExtension_             = ".java"; // NOI18N
-    public final static String void_                      = "void"; // NOI18N
-    public final static String boolean_                   = "boolean"; // NOI18N
-    public final static String byte_                      = "byte"; // NOI18N
-    public final static String byteArray_                 = "byte[]"; // NOI18N
-    public final static String param_                     = "param"; // NOI18N
-    public final static String param0_                    = "param0"; // NOI18N
-    public final static String null_                      = "null"; // NOI18N
-    public final static String home_                      = "home"; // NOI18N
-    public final static String delim_                     = ";"; // NOI18N
-    public final static String paramInitializer_          = "\"\" + "; // NOI18N
-    public final static String paramSeparator_            = ", "; // NOI18N
-    public final static String paramList_                 = ","; // NOI18N
-    public final static String paramConcatenator_         = " + \", \" + "; // NOI18N
-    public final static String space_                     = " "; // NOI18N
-    public final static String none_                      = ""; // NOI18N
-    public final static String escapedEmptyString_        = "\"\""; // NOI18N
-    public final static String dot_                       = "."; // NOI18N
-    public final static String parenleft_                 = "("; // NOI18N
-    public final static String parenright_                = ")"; // NOI18N
-    public final static String parenthesis_               = "()"; // NOI18N
-    public final static String new_                       = "new"; // NOI18N
-    public final static String endLine_                   = "\n"; // NOI18N
-    public final static String true_                      = "true"; // NOI18N
-    public final static String false_                     = "false"; // NOI18N
-    public final static String Collection_                = "java.util.Collection"; // NOI18N
-    public final static String Set_                       = "java.util.Set"; // NOI18N
-    public final static String PersistenceCapable_        = "com.sun.jdo.api.persistence.support.PersistenceCapable"; // NOI18N
-    public final static String brackets_                  = "[]"; // NOI18N
-    public final static String get_                       = "get"; // NOI18N
-    public final static String set_                       = "set"; // NOI18N
-    public final static String Oid_                       = ".Oid"; // NOI18N
-    public final static String Helper_                    = "_JDOHelper"; // NOI18N
-    public final static String returnNull_                = "return null;"; // NOI18N
-    public final static String fileName_                  = "fileName"; // NOI18N
-    public final static String int_                       = "int"; // NOI18N
-    public final static String String_                    = "java.lang.String"; // NOI18N
-    public final static String Class_                     = "java.lang.Class"; // NOI18N
-    public final static String Date_                      = "java.util.Date"; // NOI18N
-    public final static String SqlDate_                   = "java.sql.Date"; // NOI18N
-    public final static String SqlTime_                   = "java.sql.Time"; // NOI18N
-    public final static String SqlTimestamp_              = "java.sql.Timestamp"; // NOI18N
+    public static final String javaExtension_             = ".java"; // NOI18N
+    public static final String void_                      = "void"; // NOI18N
+    public static final String boolean_                   = "boolean"; // NOI18N
+    public static final String byte_                      = "byte"; // NOI18N
+    public static final String byteArray_                 = "byte[]"; // NOI18N
+    public static final String param_                     = "param"; // NOI18N
+    public static final String param0_                    = "param0"; // NOI18N
+    public static final String null_                      = "null"; // NOI18N
+    public static final String home_                      = "home"; // NOI18N
+    public static final String delim_                     = ";"; // NOI18N
+    public static final String paramInitializer_          = "\"\" + "; // NOI18N
+    public static final String paramSeparator_            = ", "; // NOI18N
+    public static final String paramList_                 = ","; // NOI18N
+    public static final String paramConcatenator_         = " + \", \" + "; // NOI18N
+    public static final String space_                     = " "; // NOI18N
+    public static final String none_                      = ""; // NOI18N
+    public static final String escapedEmptyString_        = "\"\""; // NOI18N
+    public static final String dot_                       = "."; // NOI18N
+    public static final String parenleft_                 = "("; // NOI18N
+    public static final String parenright_                = ")"; // NOI18N
+    public static final String parenthesis_               = "()"; // NOI18N
+    public static final String new_                       = "new"; // NOI18N
+    public static final String endLine_                   = "\n"; // NOI18N
+    public static final String true_                      = "true"; // NOI18N
+    public static final String false_                     = "false"; // NOI18N
+    public static final String Collection_                = "java.util.Collection"; // NOI18N
+    public static final String Set_                       = "java.util.Set"; // NOI18N
+    public static final String PersistenceCapable_        = "com.sun.jdo.api.persistence.support.PersistenceCapable"; // NOI18N
+    public static final String brackets_                  = "[]"; // NOI18N
+    public static final String get_                       = "get"; // NOI18N
+    public static final String set_                       = "set"; // NOI18N
+    public static final String Oid_                       = ".Oid"; // NOI18N
+    public static final String Helper_                    = "_JDOHelper"; // NOI18N
+    public static final String returnNull_                = "return null;"; // NOI18N
+    public static final String fileName_                  = "fileName"; // NOI18N
+    public static final String int_                       = "int"; // NOI18N
+    public static final String String_                    = "java.lang.String"; // NOI18N
+    public static final String Class_                     = "java.lang.Class"; // NOI18N
+    public static final String Date_                      = "java.util.Date"; // NOI18N
+    public static final String SqlDate_                   = "java.sql.Date"; // NOI18N
+    public static final String SqlTime_                   = "java.sql.Time"; // NOI18N
+    public static final String SqlTimestamp_              = "java.sql.Timestamp"; // NOI18N
 
     // This variable is used to construct both the type and method name
     // e.g. setObjectField(), so it should be kept in a short version.
-    public final static String Object_                    = "Object"; // NOI18N
+    public static final String Object_                    = "Object"; // NOI18N
 
-    public final static String[] super_                   = new String[] {"super();"}; // NOI18N
+    public static final String[] super_                   = new String[] {"super();"}; // NOI18N
 
     // This String[] is used internally to replace "\t" with the element of this array
     // that represents the corresponding indentation in spaces. 
-    private final static String[] indentation_              = new String[] {
+    private static final String[] indentation_              = new String[] {
         "    ", // NOI18N
         "        ", // NOI18N
         "            ", // NOI18N

@@ -55,7 +55,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class MultipartStreamTest {
     
-    static private final String BOUNDARY_TEXT = "myboundary";
+    private static final String BOUNDARY_TEXT = "myboundary";
     
     /**
      * The Carriage Return ASCII character value.

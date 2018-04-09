@@ -47,11 +47,11 @@ import org.jvnet.hk2.annotations.Contract;
  */
 @Contract
 public interface HK2Service {
-    public final static String LIB1 = "lib1";
-    public final static String EJB1 = "ejb1";
-    public final static String EJB2 = "ejb2";
-    public final static String WAR1 = "war1";
-    public final static String WAR2 = "war2";
+    public static final String LIB1 = "lib1";
+    public static final String EJB1 = "ejb1";
+    public static final String EJB2 = "ejb2";
+    public static final String WAR1 = "war1";
+    public static final String WAR2 = "war2";
     
     public String getComponentName();
 

@@ -78,7 +78,7 @@ import java.beans.PropertyVetoException;
 @I18n("delete.custom.resource")
 public class DeleteCustomResource implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteCustomResource.class);
 
     @Param(optional=true, defaultValue=SystemPropertyConstants.DAS_SERVER_NAME)

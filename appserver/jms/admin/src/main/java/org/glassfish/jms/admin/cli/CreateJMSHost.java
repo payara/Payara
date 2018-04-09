@@ -82,7 +82,7 @@ import javax.inject.Named;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class CreateJMSHost implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateJMSHost.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateJMSHost.class);
     //[target target] [mqhost localhost] [mqport 7676] [mquser admin] [mqpassword admin] jms_host_name
 
     @Param(name="mqHost", alias="host", defaultValue="localhost")

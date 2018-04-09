@@ -112,7 +112,7 @@ public class JBatchJDBCPersistenceManager implements
 	private static final String CLASSNAME = JBatchJDBCPersistenceManager.class
 			.getName();
 
-	private final static Logger logger = Logger.getLogger(CLASSNAME);
+	private static final Logger logger = Logger.getLogger(CLASSNAME);
 
 	private IBatchConfig batchConfig = null;
 

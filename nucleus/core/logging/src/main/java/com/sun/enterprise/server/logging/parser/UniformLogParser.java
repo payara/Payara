@@ -51,7 +51,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 
 final class UniformLogParser implements LogParser {
 
-    final private static LocalStringManagerImpl LOCAL_STRINGS = 
+    private final static LocalStringManagerImpl LOCAL_STRINGS = 
         new LocalStringManagerImpl(UniformLogParser.class);
 
     static final String FIELD_SEPARATOR = "\\|";

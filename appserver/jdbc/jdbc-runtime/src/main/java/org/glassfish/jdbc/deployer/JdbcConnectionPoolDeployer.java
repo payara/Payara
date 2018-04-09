@@ -120,11 +120,11 @@ public class JdbcConnectionPoolDeployer implements ResourceDeployer {
     @Optional //we need it only in server mode
     private Domain domain;
 
-    static private StringManager sm = StringManager.getManager(
+    private static StringManager sm = StringManager.getManager(
             JdbcConnectionPoolDeployer.class);
-    static private String msg = sm.getString("resource.restart_needed");
+    private static String msg = sm.getString("resource.restart_needed");
 
-    static private Logger _logger = LoggerFactory.getLogger(JdbcConnectionPoolDeployer.class);
+    private static Logger _logger = LoggerFactory.getLogger(JdbcConnectionPoolDeployer.class);
 
     private static final Locale locale = Locale.getDefault();
 

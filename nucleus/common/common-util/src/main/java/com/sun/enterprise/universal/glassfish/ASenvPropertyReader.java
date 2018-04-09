@@ -304,7 +304,7 @@ public class ASenvPropertyReader {
             }
         }
 
-        static private String getHostname() {
+        private static String getHostname() {
             String hostname = "localhost";
             try {
                 // canonical name checks to make sure host is proper
@@ -323,7 +323,7 @@ public class ASenvPropertyReader {
          * - JAVA_HOME environment variable
          * - java.home system property
          */
-        static private String getJavaRoot(String fileValue) {
+        private static String getJavaRoot(String fileValue) {
             // make sure we have a folder with java in it!
             // note that we are not in a position to set it from domain.xml yet
 
@@ -363,7 +363,7 @@ public class ASenvPropertyReader {
             return null;
         }
 
-        static private boolean isValidJavaRoot(String javaRootName) {
+        private static boolean isValidJavaRoot(String javaRootName) {
             if (!GFLauncherUtils.ok(javaRootName))
                 return false;
 
@@ -380,7 +380,7 @@ public class ASenvPropertyReader {
 
     }
 
-    static private Map<String, String> envToPropMap = new HashMap<String, String>();
+    private static Map<String, String> envToPropMap = new HashMap<String, String>();
     {
         envToPropMap.put("AS_DERBY_INSTALL", DERBY_ROOT_PROPERTY);
         envToPropMap.put("AS_H2_INSTALL", H2_ROOT_PROPERTY);
@@ -400,6 +400,6 @@ public class ASenvPropertyReader {
      * will share the same map. The key to the propsMap is the install dir that
      * is passed to the constructor.
      */
-    static private final HashMap<File, ASenvMap> propsMap = new HashMap<File, ASenvMap>();
+    private static final HashMap<File, ASenvMap> propsMap = new HashMap<File, ASenvMap>();
     private ASenvMap props;
 }

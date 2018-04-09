@@ -52,9 +52,9 @@ import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 public class SessionConfig extends RuntimeDescriptor
 {
     
-    static public final String SESSION_MANAGER = "SessionManager";	// NOI18N
-    static public final String SESSION_PROPERTIES = "SessionProperties";	// NOI18N
-    static public final String COOKIE_PROPERTIES = "CookieProperties";	// NOI18N
+    public static final String SESSION_MANAGER = "SessionManager";	// NOI18N
+    public static final String SESSION_PROPERTIES = "SessionProperties";	// NOI18N
+    public static final String COOKIE_PROPERTIES = "CookieProperties";	// NOI18N
     
     // This attribute is optional
     public void setSessionManager(SessionManager value)

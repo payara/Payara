@@ -94,7 +94,7 @@ import org.glassfish.api.admin.*;
         })
 })
 public class CreateJMSDestination extends JMSDestination implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateJMSDestination.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateJMSDestination.class);
 
     @Param(name = "destType", shortName = "T", optional = false)
     String destType;

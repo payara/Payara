@@ -92,7 +92,7 @@ public final class MessageSecurityConfigTest
         return msc;
     }
 
-    static private final String AUTH_TYPE = MessageSecurityConfig.AUTH_LAYER_HTTP_SERVLET;
+    private static final String AUTH_TYPE = MessageSecurityConfig.AUTH_LAYER_HTTP_SERVLET;
 
     /**
      Note: this can't be tested except by making a new one, and the names are predefined, so

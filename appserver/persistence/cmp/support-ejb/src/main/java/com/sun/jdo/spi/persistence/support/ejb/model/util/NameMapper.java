@@ -196,7 +196,7 @@ public abstract class NameMapper extends AbstractNameMapper
 	 * @param name the name of the ejb
 	 * @return the EjbCMPEntityDescriptor which represents the ejb.
 	 */
-	abstract public EjbCMPEntityDescriptor getDescriptorForEjbName (
+	public abstract EjbCMPEntityDescriptor getDescriptorForEjbName (
 		String name);
 
 	/** Get the type of key class of this ejb.
@@ -223,12 +223,12 @@ public abstract class NameMapper extends AbstractNameMapper
 	 * @param schemaName the name of the abstract schema
 	 * @return the name of the ejb for the specified abstract schema
 	 */
-	abstract public String getEjbNameForAbstractSchema (String schemaName);
+	public abstract String getEjbNameForAbstractSchema (String schemaName);
 
 	/** Gets the name of the concrete bean class which corresponds to the 
 	 * specified ejb.
 	 * @param name the name of the ejb
 	 * @return the name of the concrete bean for the specified ejb
 	 */
-	abstract public String getConcreteBeanClassForEjbName (String name);
+	public abstract String getConcreteBeanClassForEjbName (String name);
 }

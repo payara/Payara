@@ -79,7 +79,7 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
     public static final String JMS_INJECTION_LOGGER = "javax.enterprise.resource.jms.injection";
 
     private static final Logger logger = Logger.getLogger(JMS_INJECTION_LOGGER);
-    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InjectableJMSContext.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InjectableJMSContext.class);
 
     private final String ipId;  // id per injection point
     private final String id;    // id per scope

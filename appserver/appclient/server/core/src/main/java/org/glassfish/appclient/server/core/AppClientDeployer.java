@@ -201,7 +201,7 @@ public class AppClientDeployer
      * all app client server applications so the deployer can forward
      * notifications to each app client server app.
      */
-    final private Set<AppClientServerApplication> appClientApps =
+    private final Set<AppClientServerApplication> appClientApps =
             new HashSet<AppClientServerApplication>();
 
     public AppClientDeployer() {

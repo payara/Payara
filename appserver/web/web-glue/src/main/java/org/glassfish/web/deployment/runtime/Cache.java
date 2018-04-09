@@ -50,13 +50,13 @@ package org.glassfish.web.deployment.runtime;
 public class Cache extends WebPropertyContainer
 {
     
-    static public final String CACHE_HELPER = "CacheHelper";	// NOI18N
-    static public final String DEFAULT_HELPER = "DefaultHelper";	// NOI18N
-    static public final String PROPERTY = "WebProperty";	// NOI18N
-    static public final String CACHE_MAPPING = "CacheMapping";	// NOI18N
-    static public final String MAX_ENTRIES = "MaxEntries";
-    static public final String TIMEOUT_IN_SECONDS = "TimeoutInSeconds";
-    static public final String ENABLED = "Enabled";
+    public static final String CACHE_HELPER = "CacheHelper";	// NOI18N
+    public static final String DEFAULT_HELPER = "DefaultHelper";	// NOI18N
+    public static final String PROPERTY = "WebProperty";	// NOI18N
+    public static final String CACHE_MAPPING = "CacheMapping";	// NOI18N
+    public static final String MAX_ENTRIES = "MaxEntries";
+    public static final String TIMEOUT_IN_SECONDS = "TimeoutInSeconds";
+    public static final String ENABLED = "Enabled";
     
     public Cache() {
 	

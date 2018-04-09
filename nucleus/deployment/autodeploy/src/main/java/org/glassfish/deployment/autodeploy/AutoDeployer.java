@@ -84,7 +84,7 @@ public class AutoDeployer {
     private String virtualServer = null;
 
     private String target=null;
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AutoDeployer.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AutoDeployer.class);
     private DirectoryScanner directoryScanner=null;
     
     private boolean cancelDeployment =false;

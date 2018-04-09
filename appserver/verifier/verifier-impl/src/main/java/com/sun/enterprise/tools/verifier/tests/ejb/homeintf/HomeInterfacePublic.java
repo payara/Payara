@@ -55,11 +55,11 @@ import java.lang.reflect.Modifier;
 /**
  * All enterprise beans home interface's must be declared as public.
  */
-abstract public class HomeInterfacePublic extends EjbTest implements EjbCheck { 
+public abstract class HomeInterfacePublic extends EjbTest implements EjbCheck { 
  
     /** Method tells the name of the home interface class that called this test
      */
-    abstract protected String getHomeInterfaceName(EjbDescriptor descriptor);
+    protected abstract String getHomeInterfaceName(EjbDescriptor descriptor);
     
     /** 
      * All enterprise beans home interface's must be declared as public.

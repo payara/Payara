@@ -57,14 +57,14 @@ import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
  * 
  * @author Sheetal Vartak
  */
-abstract public class ExtendsRightInterface extends EjbTest implements EjbCheck { 
+public abstract class ExtendsRightInterface extends EjbTest implements EjbCheck { 
     /**
      * Following 3 methods are used to determine whether this method is being called by 
      * local/remote interface.
      */
-    abstract protected String getInterfaceName(EjbDescriptor descriptor);
-    abstract protected String getSuperInterface();
-    abstract protected String getInterfaceType();
+    protected abstract String getInterfaceName(EjbDescriptor descriptor);
+    protected abstract String getSuperInterface();
+    protected abstract String getInterfaceType();
     
     /** 
      * local interfaces extend the EJBLocalObject interface and remote interfaces 

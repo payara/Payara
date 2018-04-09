@@ -57,7 +57,7 @@ public class WSTCPProtocolFinder implements ProtocolFinder {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    private final static byte[] PROTOCOL_SCHEMA_BYTES;
+    private static final byte[] PROTOCOL_SCHEMA_BYTES;
 
     static {
         byte[] bytes;

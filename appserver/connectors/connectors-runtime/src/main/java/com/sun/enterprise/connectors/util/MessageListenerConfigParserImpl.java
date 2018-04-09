@@ -61,7 +61,7 @@ import java.lang.*;
 public class MessageListenerConfigParserImpl implements 
                                MessageListenerConfigParser {
 
-    private final static Logger _logger = LogDomains.getLogger(MessageListenerConfigParserImpl.class, LogDomains.RSR_LOGGER);
+    private static final Logger _logger = LogDomains.getLogger(MessageListenerConfigParserImpl.class, LogDomains.RSR_LOGGER);
    
     /**
      *  Default constructor.

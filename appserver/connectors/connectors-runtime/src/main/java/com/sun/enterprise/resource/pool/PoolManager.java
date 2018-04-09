@@ -66,17 +66,17 @@ import java.util.Hashtable;
 public interface PoolManager extends TransactedPoolManager {
 
     // transaction support levels
-    static public final int NO_TRANSACTION = 0;
-    static public final int LOCAL_TRANSACTION = 1;
-    static public final int XA_TRANSACTION = 2;
+    public static final int NO_TRANSACTION = 0;
+    public static final int LOCAL_TRANSACTION = 1;
+    public static final int XA_TRANSACTION = 2;
 
     // Authentication mechanism levels
-    static public final int BASIC_PASSWORD = 0;
-    static public final int KERBV5 = 1;
+    public static final int BASIC_PASSWORD = 0;
+    public static final int KERBV5 = 1;
 
     // Credential Interest levels
-    static public final String PASSWORD_CREDENTIAL = "javax.resource.spi.security.PasswordCredential";
-    static public final String GENERIC_CREDENTIAL = "javax.resource.spi.security.GenericCredential";
+    public static final String PASSWORD_CREDENTIAL = "javax.resource.spi.security.PasswordCredential";
+    public static final String GENERIC_CREDENTIAL = "javax.resource.spi.security.GenericCredential";
 
     /**
      * Flush Connection pool by reinitializing the connections 

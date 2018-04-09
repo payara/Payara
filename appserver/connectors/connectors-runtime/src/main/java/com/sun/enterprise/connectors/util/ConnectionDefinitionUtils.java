@@ -58,8 +58,8 @@ import java.util.logging.*;
  */
 public class ConnectionDefinitionUtils {
 
-    private final static Logger _logger= LogDomains.getLogger(ConnectionDefinitionUtils.class,LogDomains.RSR_LOGGER);
-    private final static Locale locale = Locale.getDefault();
+    private static final Logger _logger= LogDomains.getLogger(ConnectionDefinitionUtils.class,LogDomains.RSR_LOGGER);
+    private static final Locale locale = Locale.getDefault();
 
     /**
 	 * Gets the properties of the Java bean connection definition class that

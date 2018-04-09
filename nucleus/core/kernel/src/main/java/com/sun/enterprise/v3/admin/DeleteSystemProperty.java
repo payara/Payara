@@ -91,7 +91,7 @@ CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.STA
 public class DeleteSystemProperty implements AdminCommand,
         AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteSystemProperty.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteSystemProperty.class);
 
     @Param(optional=true, defaultValue=SystemPropertyConstants.DAS_SERVER_NAME)
     String target;

@@ -458,7 +458,7 @@ public class MappingPolicy implements Cloneable {
             LogHelperDatabaseGenerator.getLogger();
     
     /** I18N message handler */
-    private final static ResourceBundle messages =
+    private static final ResourceBundle messages =
             I18NHelper.loadBundle(MappingPolicy.class);
 
     //

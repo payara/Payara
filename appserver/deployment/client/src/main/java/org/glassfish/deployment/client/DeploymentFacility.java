@@ -64,7 +64,7 @@ import com.sun.enterprise.util.HostAndPort;
  */
 public interface DeploymentFacility {
 
-    final static String STUBS_JARFILENAME = "clientstubs.jar";
+    static final String STUBS_JARFILENAME = "clientstubs.jar";
     
     /**
      * Connects to a particular instance of the domain adminstration 

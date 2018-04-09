@@ -71,10 +71,10 @@ import org.jvnet.hk2.annotations.Service;
 @AnnotationHandlerFor(ConfigProperty.class)
 public class ConfigPropertyHandler extends AbstractHandler {
 
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ConfigPropertyHandler.class);
 
-    protected final static Logger logger = AnnotationUtils.getLogger();
+    protected static final Logger logger = AnnotationUtils.getLogger();
 
     private static final String SUCCESS = "success";
 

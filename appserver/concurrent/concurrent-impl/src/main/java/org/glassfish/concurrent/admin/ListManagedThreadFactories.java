@@ -79,7 +79,7 @@ import org.glassfish.concurrent.runtime.deployer.DefaultManagedThreadFactory;
 })
 public class ListManagedThreadFactories implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListManagedThreadFactories.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListManagedThreadFactories.class);    
 
     @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     private String target ;

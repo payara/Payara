@@ -65,7 +65,7 @@ import java.util.logging.Level;
  */
 public class ServletNode extends DisplayableComponentNode<WebComponentDescriptor> {
 
-    private final static XMLElement tag = 
+    private static final XMLElement tag = 
         new XMLElement(WebTagNames.SERVLET);
     
     private WebComponentDescriptor descriptor;

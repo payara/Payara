@@ -71,9 +71,9 @@ import java.util.logging.Logger;
  */
 public class AppclientCommandArguments {
 
-    private final static Logger logger = Logger.getLogger(AppclientCommandArguments.class.getName());
-    private final static String LINE_SEP = System.getProperty("line.separator");
-    private final static Logger accLogger = LogDomains.getLogger(
+    private static final Logger logger = Logger.getLogger(AppclientCommandArguments.class.getName());
+    private static final String LINE_SEP = System.getProperty("line.separator");
+    private static final Logger accLogger = LogDomains.getLogger(
             AppclientCommandArguments.class,
             LogDomains.ACC_LOGGER);
 
@@ -83,27 +83,27 @@ public class AppclientCommandArguments {
      * Note that the scripts themselves handle the appclient "-client" option so
      * -client is not one of the arguments managed by this class.
      */
-    private final static String TEXTAUTH = "textauth";
-    private final static String NOAPPINVOKE = "noappinvoke";
-    private final static String MAINCLASS = "mainclass";
-    private final static String NAME = "name";
-    private final static String XML = "xml";
-    private final static String CONFIGXML = "configxml";
-    private final static String USER = "user";
-    private final static String PASSWORD = "password";
-    private final static String PASSWORDFILE = "passwordfile";
-    private final static String TARGETSERVER = "targetserver";
-    private final static String USAGE = "usage";
-    private final static String HELP = "help";
+    private static final String TEXTAUTH = "textauth";
+    private static final String NOAPPINVOKE = "noappinvoke";
+    private static final String MAINCLASS = "mainclass";
+    private static final String NAME = "name";
+    private static final String XML = "xml";
+    private static final String CONFIGXML = "configxml";
+    private static final String USER = "user";
+    private static final String PASSWORD = "password";
+    private static final String PASSWORDFILE = "passwordfile";
+    private static final String TARGETSERVER = "targetserver";
+    private static final String USAGE = "usage";
+    private static final String HELP = "help";
     
-    final static String PASSWORD_FILE_PASSWORD_KEYWORD = "PASSWORD";
+    static final String PASSWORD_FILE_PASSWORD_KEYWORD = "PASSWORD";
 
     /* names of options that take a value */
-    private final static String[] valuedArgNames =
+    private static final String[] valuedArgNames =
             new String[] {MAINCLASS, NAME, XML, CONFIGXML, USER, PASSWORD, PASSWORDFILE, TARGETSERVER};
 
     /* names of options that take no value */
-    private final static String[] unvaluedArgNames =
+    private static final String[] unvaluedArgNames =
             new String[] {TEXTAUTH, NOAPPINVOKE, USAGE, HELP};
 
     private static LocalStringManager localStrings = new LocalStringManagerImpl(AppclientCommandArguments.class);;

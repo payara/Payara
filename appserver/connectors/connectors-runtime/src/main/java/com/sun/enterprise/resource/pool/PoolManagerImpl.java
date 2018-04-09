@@ -84,7 +84,7 @@ import java.util.logging.Logger;
 public class PoolManagerImpl extends AbstractPoolManager implements ComponentInvocationHandler {
 
     private final ConcurrentHashMap<PoolInfo, ResourcePool> poolTable;
-    protected final static StringManager localStrings =
+    protected static final StringManager localStrings =
             StringManager.getManager(PoolManagerImpl.class);
 
     private ResourceManager resourceManager;

@@ -63,7 +63,7 @@ import org.jvnet.hk2.annotations.Service;
 @AnnotationHandlerFor(JMSDestinationDefinitions.class)
 public class JMSDestinationDefinitionsHandler extends AbstractResourceHandler {
 
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(JMSDestinationDefinitionsHandler.class);
 
 

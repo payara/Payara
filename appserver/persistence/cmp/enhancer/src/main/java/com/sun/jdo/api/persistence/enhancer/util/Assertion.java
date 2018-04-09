@@ -45,22 +45,22 @@ package com.sun.jdo.api.persistence.enhancer.util;
  */
 //@olsen: added class
 public class Assertion {
-    static protected final void affirm(boolean condition) {
+    protected static final void affirm(boolean condition) {
         if (!condition)
             throw new InternalError("assertion failed.");//NOI18N
     }
 
-    static protected final void affirm(boolean condition, String msg) {
+    protected static final void affirm(boolean condition, String msg) {
         if (!condition)
             throw new InternalError("assertion failed: " + msg);//NOI18N
     }
 
-    static protected final void affirm(Object object) {
+    protected static final void affirm(Object object) {
         if (object == null)
             throw new InternalError("assertion failed.");//NOI18N
     }
 
-    static protected final void affirm(Object object, String msg) {
+    protected static final void affirm(Object object, String msg) {
         if (object == null)
             throw new InternalError("assertion failed: " + msg);//NOI18N
     }

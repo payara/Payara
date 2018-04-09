@@ -71,7 +71,7 @@ class BCELClassFileLoader implements ClassFileLoader {
     private ClassLoader cl;
     private static String resourceBundleName = "com.sun.enterprise.tools.verifier.apiscan.LocalStrings";
     private static Logger logger = Logger.getLogger("apiscan.classfile", resourceBundleName); // NOI18N
-    private final static String myClassName = "BCELClassFileLoader"; // NOI18N
+    private static final String myClassName = "BCELClassFileLoader"; // NOI18N
 
     /**
      * Creates a new instance of BCELClassFileLoader.

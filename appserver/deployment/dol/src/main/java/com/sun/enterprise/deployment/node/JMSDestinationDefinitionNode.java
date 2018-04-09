@@ -51,7 +51,7 @@ import java.util.logging.Level;
 
 public class JMSDestinationDefinitionNode extends DeploymentDescriptorNode<JMSDestinationDefinitionDescriptor> {
 
-    public final static XMLElement tag = new XMLElement(TagNames.JMS_DESTINATION);
+    public static final XMLElement tag = new XMLElement(TagNames.JMS_DESTINATION);
 
     private JMSDestinationDefinitionDescriptor descriptor = null;
 

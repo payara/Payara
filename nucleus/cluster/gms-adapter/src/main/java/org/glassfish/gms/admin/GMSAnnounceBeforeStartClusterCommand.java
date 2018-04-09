@@ -122,7 +122,7 @@ public class GMSAnnounceBeforeStartClusterCommand implements AdminCommand {
     private List<String> clusterMembers = EMPTY_LIST;
     private GMSAdapter gmsadapter = null;
 
-    static final private List<String> EMPTY_LIST = new LinkedList<String>();
+    private static final List<String> EMPTY_LIST = new LinkedList<String>();
 
 
     @Override

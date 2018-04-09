@@ -64,7 +64,7 @@ import java.util.Properties;
 @I18n("create.pmf.resource")
 public class PMFResourceManager implements ResourceManager {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(PMFResourceManager.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(PMFResourceManager.class);
 
     /**
      * @inheritDoc

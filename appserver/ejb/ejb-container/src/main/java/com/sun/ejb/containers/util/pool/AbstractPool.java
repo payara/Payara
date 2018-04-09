@@ -148,7 +148,7 @@ public abstract class AbstractPool
 
     
     protected abstract void removeIdleObjects();
-    abstract public void close();
+    public abstract void close();
    
     /* *************** For Monitoring ***********************/
     /* ******************************************************/

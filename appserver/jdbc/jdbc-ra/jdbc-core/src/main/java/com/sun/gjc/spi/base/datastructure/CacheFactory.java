@@ -59,10 +59,10 @@ import java.util.logging.Logger;
  * @author Shalini M
  */
 public class CacheFactory {
-    protected final static Logger _logger = 
+    protected static final Logger _logger = 
             LogDomains.getLogger(CacheFactory.class, LogDomains.RSR_LOGGER);
 
-    protected final static StringManager localStrings =
+    protected static final StringManager localStrings =
             StringManager.getManager(DataSourceObjectBuilder.class);
 
     public static Cache getDataStructure(PoolInfo poolInfo, String cacheType,

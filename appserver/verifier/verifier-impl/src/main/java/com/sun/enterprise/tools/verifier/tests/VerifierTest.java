@@ -77,7 +77,7 @@ import com.sun.org.apache.xpath.internal.objects.XObject;
  * @author  Jerome Dochez
  * @version 
  */
-abstract public class VerifierTest extends Object {
+public abstract class VerifierTest extends Object {
     // variables ensuring that result details are added only once
     private boolean addedError   = false;
     private boolean addedGood    = false;

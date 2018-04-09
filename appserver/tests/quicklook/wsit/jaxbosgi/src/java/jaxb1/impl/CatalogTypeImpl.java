@@ -44,10 +44,10 @@ public class CatalogTypeImpl implements jaxb1.CatalogType, com.sun.xml.bind.JAXB
 {
 
     protected java.lang.String _Section;
-    public final static java.lang.Class version = (jaxb1.impl.JAXBVersion.class);
+    public static final java.lang.Class version = (jaxb1.impl.JAXBVersion.class);
     private static com.sun.msv.grammar.Grammar schemaFragment;
 
-    private final static java.lang.Class PRIMARY_INTERFACE_CLASS() {
+    private static final java.lang.Class PRIMARY_INTERFACE_CLASS() {
         return (jaxb1.CatalogType.class);
     }
 

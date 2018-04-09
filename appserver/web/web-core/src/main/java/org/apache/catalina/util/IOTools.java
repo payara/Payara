@@ -67,7 +67,7 @@ import java.io.*;
  * @author Dan Sandberg
  */
 public class IOTools {
-    protected final static int DEFAULT_BUFFER_SIZE=4*1024; //4k
+    protected static final int DEFAULT_BUFFER_SIZE=4*1024; //4k
 
     //Ensure non-instantiability
     private IOTools() {

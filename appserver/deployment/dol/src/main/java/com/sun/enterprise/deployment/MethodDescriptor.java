@@ -89,7 +89,7 @@ public final class MethodDescriptor extends Descriptor {
     private static LocalStringManagerImpl localStrings =
 	    new LocalStringManagerImpl(MethodDescriptor.class);    
 	    
-     final static Logger _logger = DOLUtils.getDefaultLogger();
+     static final Logger _logger = DOLUtils.getDefaultLogger();
 		
     private final int JAVA_FORMAT = 1;
     private final int XML_FORMAT = -1;

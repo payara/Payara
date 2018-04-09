@@ -52,7 +52,7 @@ import java.sql.*;
  */
 public class StatementWrapper40 extends StatementWrapper {
 
-    protected final static StringManager localStrings =
+    protected static final StringManager localStrings =
             StringManager.getManager(ManagedConnectionFactoryImpl.class);
 
     /**

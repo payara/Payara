@@ -47,7 +47,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 
 // Delegate all business methods to JMSContext API
 public abstract class ForwardingJMSContext implements JMSContext {
-    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ForwardingJMSContext.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ForwardingJMSContext.class);
 
     protected abstract JMSContext delegate();
 

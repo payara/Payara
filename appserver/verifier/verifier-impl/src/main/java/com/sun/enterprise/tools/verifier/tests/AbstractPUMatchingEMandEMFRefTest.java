@@ -57,7 +57,7 @@ import java.util.Map;
  */
 public abstract class AbstractPUMatchingEMandEMFRefTest extends VerifierTest
         implements VerifierCheck {
-    final static String className = AbstractPUMatchingEMandEMFRefTest.class.getName();
+    static final String className = AbstractPUMatchingEMandEMFRefTest.class.getName();
     public Result check(Descriptor descriptor) {
         // initialize the result object
         Result result = getInitializedResult();

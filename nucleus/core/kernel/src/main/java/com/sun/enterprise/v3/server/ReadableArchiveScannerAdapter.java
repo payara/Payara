@@ -89,7 +89,7 @@ public class ReadableArchiveScannerAdapter extends AbstractAdapter {
     private final int DEFAULT_TIMEOUT = Integer.getInteger(Parser.DEFAULT_WAIT_SYSPROP, 600);
     
     private final static Level level = Level.FINE;
-    final private static Logger alogger = KernelLoggerInfo.getLogger();
+    private final static Logger alogger = KernelLoggerInfo.getLogger();
     
 
     public ReadableArchiveScannerAdapter(Parser parser, ReadableArchive archive) {

@@ -96,7 +96,7 @@ public class AMXTestBase
      */
     protected static final String PE_CONFIG_NAME = "server-config";
 
-    private final static boolean WEB_MODULE_MONITOR_BROKEN = true;
+    private static final boolean WEB_MODULE_MONITOR_BROKEN = true;
 
     private static boolean MONITORING_ENABLED = false;
 
@@ -512,8 +512,8 @@ public class AMXTestBase
     }
 
 
-    protected final static Class[] OBJECTNAME_SIG = new Class[]{ObjectName.class};
-    protected final static Class[] PROXY_SIG = new Class[]{AMX.class};
+    protected static final Class[] OBJECTNAME_SIG = new Class[]{ObjectName.class};
+    protected static final Class[] PROXY_SIG = new Class[]{AMX.class};
 
     protected void
     testAll(

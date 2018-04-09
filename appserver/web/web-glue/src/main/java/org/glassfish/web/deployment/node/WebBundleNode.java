@@ -60,25 +60,25 @@ import java.util.*;
  */
 public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
 
-    public final static XMLElement tag = new XMLElement(WebTagNames.WEB_BUNDLE);
+    public static final XMLElement tag = new XMLElement(WebTagNames.WEB_BUNDLE);
 
     /** 
      * The public ID for my documents.
      */
-    public final static String PUBLIC_DTD_ID = "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN";
-    public final static String PUBLIC_DTD_ID_12 = "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN";
+    public static final String PUBLIC_DTD_ID = "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN";
+    public static final String PUBLIC_DTD_ID_12 = "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN";
     /** 
      * The system ID of my documents. 
      */
-    public final static String SYSTEM_ID = "http://java.sun.com/dtd/web-app_2_3.dtd";
-    public final static String SYSTEM_ID_12 = "http://java.sun.com/dtd/web-app_2_2.dtd";   
+    public static final String SYSTEM_ID = "http://java.sun.com/dtd/web-app_2_3.dtd";
+    public static final String SYSTEM_ID_12 = "http://java.sun.com/dtd/web-app_2_2.dtd";   
     
-    public final static String SCHEMA_ID_24 = "web-app_2_4.xsd";
-    public final static String SCHEMA_ID_25 = "web-app_2_5.xsd";
-    public final static String SCHEMA_ID_30 = "web-app_3_0.xsd";
-    public final static String SCHEMA_ID_31 = "web-app_3_1.xsd";
-    public final static String SCHEMA_ID = "web-app_4_0.xsd";
-    private final static List<String> systemIDs = initSystemIDs();
+    public static final String SCHEMA_ID_24 = "web-app_2_4.xsd";
+    public static final String SCHEMA_ID_25 = "web-app_2_5.xsd";
+    public static final String SCHEMA_ID_30 = "web-app_3_0.xsd";
+    public static final String SCHEMA_ID_31 = "web-app_3_1.xsd";
+    public static final String SCHEMA_ID = "web-app_4_0.xsd";
+    private static final List<String> systemIDs = initSystemIDs();
 
 
     private static List<String> initSystemIDs() {

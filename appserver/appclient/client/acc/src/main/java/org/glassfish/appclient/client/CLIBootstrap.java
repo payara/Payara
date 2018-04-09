@@ -91,36 +91,36 @@ import org.glassfish.appclient.client.acc.UserError;
  */
 public class CLIBootstrap {
     
-    public final static String FILE_OPTIONS_INTRODUCER = "argsfile=";
+    public static final String FILE_OPTIONS_INTRODUCER = "argsfile=";
 
-    private final static String COMMA_IN_ARG_PLACEHOLDER = "+-+-+-+";
-    private final static boolean isDebug = System.getenv("AS_DEBUG") != null;
-    private final static String INPUT_ARGS = System.getenv("inputArgs");
+    private static final String COMMA_IN_ARG_PLACEHOLDER = "+-+-+-+";
+    private static final boolean isDebug = System.getenv("AS_DEBUG") != null;
+    private static final String INPUT_ARGS = System.getenv("inputArgs");
 
-    final static String ENV_VAR_PROP_PREFIX = "acc.";
+    static final String ENV_VAR_PROP_PREFIX = "acc.";
 
     /** options to the ACC that take a value */
-    private final static String ACC_VALUED_OPTIONS_PATTERN = 
+    private static final String ACC_VALUED_OPTIONS_PATTERN = 
             "-mainclass|-name|-xml|-configxml|-user|-password|-passwordfile|-targetserver";
 
     /** options to the ACC that take no value */
-    private final static String ACC_UNVALUED_OPTIONS_PATTERN =
+    private static final String ACC_UNVALUED_OPTIONS_PATTERN =
             "-textauth|-noappinvoke|-usage|-help";
 
-    private final static String JVM_VALUED_OPTIONS_PATTERN =
+    private static final String JVM_VALUED_OPTIONS_PATTERN =
             "-classpath|-cp";
 
-    private final static String INSTALL_ROOT_PROPERTY_EXPR = "-Dcom.sun.aas.installRoot=";
-    private final static String SECURITY_POLICY_PROPERTY_EXPR = "-Djava.security.policy=";
-    private final static String SECURITY_AUTH_LOGIN_CONFIG_PROPERTY_EXPR = "-Djava.security.auth.login.config=";
-    private final static String SYSTEM_CLASS_LOADER_PROPERTY_EXPR =
+    private static final String INSTALL_ROOT_PROPERTY_EXPR = "-Dcom.sun.aas.installRoot=";
+    private static final String SECURITY_POLICY_PROPERTY_EXPR = "-Djava.security.policy=";
+    private static final String SECURITY_AUTH_LOGIN_CONFIG_PROPERTY_EXPR = "-Djava.security.auth.login.config=";
+    private static final String SYSTEM_CLASS_LOADER_PROPERTY_EXPR =
             "-Djava.system.class.loader=org.glassfish.appclient.client.acc.agent.ACCAgentClassLoader";
 
-    private final static String[] ENV_VARS = {
+    private static final String[] ENV_VARS = {
         "_AS_INSTALL", "APPCPATH", "VMARGS"};
 
-    private final static String EXT_DIRS_INTRODUCER = "-Djava.ext.dirs";
-    private final static String ENDORSED_DIRS_INTRODUCER = "-Djava.endorsed.dirs";
+    private static final String EXT_DIRS_INTRODUCER = "-Djava.ext.dirs";
+    private static final String ENDORSED_DIRS_INTRODUCER = "-Djava.endorsed.dirs";
 
     private static final LocalStringManager localStrings = new LocalStringManagerImpl(CLIBootstrap.class);
 
@@ -1159,8 +1159,8 @@ public class CLIBootstrap {
      */
     static class JavaInfo {
 
-        private final static String CYGWIN_PROP_NAME = "org.glassfish.isCygwin";
-        private final static String SHELL_PROP_NAME = "org.glassfish.appclient.shell";
+        private static final String CYGWIN_PROP_NAME = "org.glassfish.isCygwin";
+        private static final String SHELL_PROP_NAME = "org.glassfish.appclient.shell";
 
         /*
          * The appclient and appclient.bat scripts set ACCJava.
@@ -1169,7 +1169,7 @@ public class CLIBootstrap {
          * the = in -Dprop=value as an argument separator and breaks the
          * property assignment apart into two arguments.
          */
-        private final static String ACCJava_ENV_VAR_NAME = "ACCJava";
+        private static final String ACCJava_ENV_VAR_NAME = "ACCJava";
 
         private final boolean useWindowsSyntax = File.separatorChar == '\\' &&
                 (System.getProperty(SHELL_PROP_NAME) == null);

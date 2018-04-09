@@ -63,7 +63,7 @@ import com.sun.enterprise.config.serverbeans.Engine;
  */
 public class EngineRef {
 
-    final private EngineInfo ctrInfo;
+    private final EngineInfo ctrInfo;
 
     private ApplicationContainer appCtr;
 

@@ -177,7 +177,7 @@ public class GMSConfigUpgrade implements ConfigurationUpgrade, PostConstruct {
         }
     }
 
-    static private class GroupManagementServiceConfigCode implements SingleConfigCode<Config> {
+    private static class GroupManagementServiceConfigCode implements SingleConfigCode<Config> {
         public Object run(Config config) throws PropertyVetoException, TransactionFailure {
             GroupManagementService gms = config.getGroupManagementService();
             Transaction t = Transaction.getTransaction(config);

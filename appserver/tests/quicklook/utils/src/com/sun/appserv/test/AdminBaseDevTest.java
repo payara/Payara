@@ -197,8 +197,8 @@ public abstract class AdminBaseDevTest extends BaseDevTest {
     }
     private final SortedSet<String> reportNames = new TreeSet<String>();
     private int startstops = 0;
-    protected final static boolean DEBUG;
-    protected final static boolean isHudson = Boolean.parseBoolean(System.getenv("HUDSON"));
+    protected static final boolean DEBUG;
+    protected static final boolean isHudson = Boolean.parseBoolean(System.getenv("HUDSON"));
 
     static {
         String name = System.getProperty("user.name");

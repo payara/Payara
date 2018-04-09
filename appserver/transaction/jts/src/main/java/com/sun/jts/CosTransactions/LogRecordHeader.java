@@ -78,7 +78,7 @@ class LogRecordHeader implements Serializable {
     /**
      * This constant holds the size of the LogRecordHeader object.
      */
-    final static int SIZEOF = 3 * LogLSN.SIZEOF + 8;
+    static final int SIZEOF = 3 * LogLSN.SIZEOF + 8;
 
     int    recordType   = 0;
     LogLSN currentLSN   = null;

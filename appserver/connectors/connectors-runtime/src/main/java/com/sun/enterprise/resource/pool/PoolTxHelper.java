@@ -62,7 +62,7 @@ public class PoolTxHelper {
 
     private PoolInfo poolInfo;
 
-    protected final static Logger _logger = LogDomains.getLogger(PoolTxHelper.class, LogDomains.RSR_LOGGER);
+    protected static final Logger _logger = LogDomains.getLogger(PoolTxHelper.class, LogDomains.RSR_LOGGER);
 
     public PoolTxHelper(PoolInfo poolInfo){
         this.poolInfo = poolInfo;

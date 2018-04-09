@@ -62,7 +62,7 @@ import java.beans.PropertyVetoException;
 @Service(name="iiop-listener")
 public class IiopSslConfigHandler implements SslConfigHandler {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(CreateSsl.class);
 
 

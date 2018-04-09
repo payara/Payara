@@ -69,7 +69,7 @@ import org.glassfish.deployment.client.DFProgressObject;
  */
 public class ProgressObjectImpl extends DFProgressObject {
 
-    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ProgressObjectImpl.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ProgressObjectImpl.class);
     
     protected CommandType commandType;
     protected Object[] args;
@@ -85,17 +85,17 @@ public class ProgressObjectImpl extends DFProgressObject {
     protected boolean deployActionCompleted;
     protected String warningMessages;
     
-    private final static String MODULE_ID = 
+    private static final String MODULE_ID = 
         DFDeploymentStatus.MODULE_ID;
-    private final static String MODULE_TYPE = 
+    private static final String MODULE_TYPE = 
         DFDeploymentStatus.MODULE_TYPE;
-    private final static String KEY_SEPARATOR = 
+    private static final String KEY_SEPARATOR = 
         DFDeploymentStatus.KEY_SEPARATOR;
-    private final static String SUBMODULE_COUNT = 
+    private static final String SUBMODULE_COUNT = 
         DFDeploymentStatus.SUBMODULE_COUNT;
-    private final static String CONTEXT_ROOT = 
+    private static final String CONTEXT_ROOT = 
         DFDeploymentStatus.CONTEXT_ROOT;
-    private final static String WARNING_PREFIX = "WARNING: ";
+    private static final String WARNING_PREFIX = "WARNING: ";
 
     /** Creates a new instance of ProgressObjectImpl */
     public ProgressObjectImpl(TargetImpl target) {

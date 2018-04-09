@@ -57,7 +57,7 @@ import java.util.logging.Logger;
 public class LocalTransactionImpl implements javax.resource.spi.LocalTransaction {
 
     private ManagedConnectionImpl mc;
-    protected final static Logger _logger;
+    protected static final Logger _logger;
 
     static {
         _logger = LogDomains.getLogger(LocalTransactionImpl.class, LogDomains.RSR_LOGGER);

@@ -103,7 +103,7 @@ public class AppUtil {
         return Boolean.parseBoolean((String) attrs.get("enabled"));
     }
 
-    static public Map getWsEndpointMap(String appName, String moduleName, List snifferList){
+    public static Map getWsEndpointMap(String appName, String moduleName, List snifferList){
         Map wsAppMap = new HashMap();
         try{
             String encodedAppName = URLEncoder.encode(appName, "UTF-8");
@@ -128,7 +128,7 @@ public class AppUtil {
         return wsAppMap;
     }
 
-    static public Map getEndpointDetails(Map wsEndpointMap, String moduleName, String componentName){
+    public static Map getEndpointDetails(Map wsEndpointMap, String moduleName, String componentName){
         if (wsEndpointMap == null){
             return null;
         }
@@ -139,7 +139,7 @@ public class AppUtil {
         return (Map) modMap.get(componentName);
     }
 
-    static public void manageAppTarget(String applicationName, String targetName, boolean add, String enabled, List clusterList, List standaloneList, List dgList, HandlerContext handlerCtx){
+    public static void manageAppTarget(String applicationName, String targetName, boolean add, String enabled, List clusterList, List standaloneList, List dgList, HandlerContext handlerCtx){
         List clusters = (clusterList == null) ? TargetUtil.getClusters() : clusterList;
         List dgs = (dgList == null) ? TargetUtil.getDeploymentGroups(): dgList;
         String clusterEndpoint = GuiUtil.getSessionValue("REST_URL")+"/clusters/cluster/";
@@ -167,7 +167,7 @@ public class AppUtil {
         RestUtil.restRequest(endpoint, attrs, (add)? "POST" : "DELETE", handlerCtx, false);
     }
     
-    static public Boolean doesAppContainsResources(String appName, 
+    public static Boolean doesAppContainsResources(String appName, 
             List<String> moduleList) {
         boolean resourceFound = false;
         if (RestUtil.doesProxyExist(GuiUtil.getSessionValue("REST_URL")
@@ -187,7 +187,7 @@ public class AppUtil {
         return resourceFound;
     }
     
-    static public String getAppScopedResType(String resName, String type){
+    public static String getAppScopedResType(String resName, String type){
         int index = appResTypes.indexOf(resName);
         if (index != -1){
             if (type.equals("display")) {
@@ -199,11 +199,11 @@ public class AppUtil {
         return null;
     }
 
-    static final public List sniffersHide = new ArrayList();
+    public static final List sniffersHide = new ArrayList();
     static {
         sniffersHide.add("security");
     }
-    static final public List<String> appResTypes = new ArrayList<String>();
+    public static final List<String> appResTypes = new ArrayList<String>();
     static {
         appResTypes.add("<JdbcResource>");
         appResTypes.add("<ConnectorResource>");
@@ -216,7 +216,7 @@ public class AppUtil {
         appResTypes.add("<ResourceAdapterConfig>");
         appResTypes.add("<WorkSecurityMap>");
     }
-    static final public List<String> appResTypesToDisplay = new ArrayList<String>();
+    public static final List<String> appResTypesToDisplay = new ArrayList<String>();
     static {
         appResTypesToDisplay.add(GuiUtil.getMessage("tree.jdbcResources"));
         appResTypesToDisplay.add(GuiUtil.getMessage("tree.connectorResources"));
@@ -229,7 +229,7 @@ public class AppUtil {
         appResTypesToDisplay.add(GuiUtil.getMessage("tree.resourceAdapterConfigs"));
         appResTypesToDisplay.add(GuiUtil.getMessage("tree.workSecurityMaps"));
     }
-    static final public List<String> appResTypesEdit = new ArrayList<String>();
+    public static final List<String> appResTypesEdit = new ArrayList<String>();
     static {
         appResTypesEdit.add("jdbc/jdbcResourceEdit.jsf?name=");
         appResTypesEdit.add("jca/connectorResourceEdit.jsf?name=");

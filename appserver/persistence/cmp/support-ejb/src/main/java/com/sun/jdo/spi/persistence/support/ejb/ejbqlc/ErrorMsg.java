@@ -58,7 +58,7 @@ import com.sun.jdo.spi.persistence.utility.logging.Logger;
 public class ErrorMsg
 {
     /** I18N support. */
-    private final static ResourceBundle msgs = I18NHelper.loadBundle(
+    private static final ResourceBundle msgs = I18NHelper.loadBundle(
         ErrorMsg.class);
     
     /** The logger */

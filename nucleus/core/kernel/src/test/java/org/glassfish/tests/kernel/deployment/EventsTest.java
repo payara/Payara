@@ -82,7 +82,7 @@ public class EventsTest extends ConfigApiTest {
     static ServiceLocator habitat;
     static File application;
     static List<EventListener.Event> allEvents = new ArrayList<EventListener.Event>();
-    static private EventListener listener = new EventListener() {
+    private static EventListener listener = new EventListener() {
         public void event(Event event) {
             //System.out.println("Received event " + event.name());
             allEvents.add(event);

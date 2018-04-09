@@ -65,7 +65,7 @@ public class ResourceHandle implements
         com.sun.appserv.connectors.internal.api.ResourceHandle, TransactionalResource {
 
     // unique ID for resource handles
-    static private long idSequence;
+    private static long idSequence;
 
     private long id;
     private ClientSecurityInfo info;
@@ -97,7 +97,7 @@ public class ResourceHandle implements
     private int usageCount; //holds the no. of times the handle(connection) is used so far.
     private int partition;
 
-    static private long getNextId() {
+    private static long getNextId() {
         synchronized (ResourceHandle.class) {
             idSequence++;
             return idSequence;

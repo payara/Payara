@@ -52,7 +52,7 @@ import java.beans.VetoableChangeSupport;
  */
 public class TypedVetoableChangeSupport extends VetoableChangeSupport {
 
-    final private Object source;
+    private final Object source;
 
     public TypedVetoableChangeSupport(Object sourceBean) {
         super(sourceBean);

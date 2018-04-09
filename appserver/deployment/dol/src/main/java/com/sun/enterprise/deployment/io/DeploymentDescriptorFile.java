@@ -80,8 +80,8 @@ import java.util.logging.Level;
 
 public abstract class DeploymentDescriptorFile<T extends Descriptor> {
     
-    public final static String FULL_VALIDATION = "full";
-    public final static String PARSING_VALIDATION = "parsing";
+    public static final String FULL_VALIDATION = "full";
+    public static final String PARSING_VALIDATION = "parsing";
     
     // should we validate the XML ?
     private boolean xmlValidation = true;

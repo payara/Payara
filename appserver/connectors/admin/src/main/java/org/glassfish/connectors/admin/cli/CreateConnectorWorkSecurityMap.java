@@ -81,7 +81,7 @@ import static org.glassfish.connectors.admin.cli.CLIConstants.WSM.*;
 @I18n("create.connector.work.security.map")
 public class CreateConnectorWorkSecurityMap implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(CreateConnectorWorkSecurityMap.class);
 
     @Param(name=WSM_RA_NAME)

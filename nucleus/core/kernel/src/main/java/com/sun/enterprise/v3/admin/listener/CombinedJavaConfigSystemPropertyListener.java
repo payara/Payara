@@ -432,7 +432,7 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
      * of the values in the values list. A reference is of the form ${pname}.
      * Returns true if the pname is referenced.
      */
-    static private boolean referencesProperty(String pname, Collection<String> values) {
+    private static boolean referencesProperty(String pname, Collection<String> values) {
         String ref = "${" + pname + "}";
         for (String v : values) {
             if ((v != null) && (v.contains(ref))) 

@@ -50,13 +50,13 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  */
 public class AnnotationProcessorException extends Exception {
     
-    final private String message;
+    private final String message;
     
-    transient final private AnnotationInfo locator; // TODO if this class is meant for serialization, make sure all its constituents are serializable.
+    transient private final AnnotationInfo locator; // TODO if this class is meant for serialization, make sure all its constituents are serializable.
     
     boolean isFatal = false;
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AnnotationProcessorException.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AnnotationProcessorException.class);
 
 
     /** 

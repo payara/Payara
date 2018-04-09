@@ -82,7 +82,7 @@ public class SunTransactionHelper extends TransactionHelperImpl
     {
 
     /** I18N message handler */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
         "com.sun.jdo.spi.persistence.support.sqlstore.Bundle", // NOI18N
         SunTransactionHelper.class.getClassLoader());
 
@@ -90,7 +90,7 @@ public class SunTransactionHelper extends TransactionHelperImpl
     
     private static EjbContainerUtil ejbContainerUtil;
     
-    private final static Object pmf_listSyncObject = new Object();
+    private static final Object pmf_listSyncObject = new Object();
     
     /**
      * Array of registered ApplicationLifeCycleEventListener 
@@ -119,10 +119,10 @@ public class SunTransactionHelper extends TransactionHelperImpl
     SunTransactionHelper() { }
 
     // helper class for looking up the TransactionManager instances.
-    static private class TransactionManagerFinder {
+    private static class TransactionManagerFinder {
         
         // JNDI name of the TransactionManager used for managing local transactions.
-        static private final String AS_TM_NAME = "java:appserver/TransactionManager"; //NOI18N
+        private static final String AS_TM_NAME = "java:appserver/TransactionManager"; //NOI18N
 
         // TransactionManager instance used for managing local transactions.
         static TransactionManager appserverTM = null;

@@ -111,7 +111,7 @@ public class AddLibraryCommand implements AdminCommand {
     @Inject
     CommonClassLoaderServiceImpl commonClsLdr;
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AddLibraryCommand.class);    
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AddLibraryCommand.class);    
 
     @Override
     public void execute(AdminCommandContext context) {

@@ -83,7 +83,7 @@ public class UpgradeService implements ConfigurationUpgrade, PostConstruct {
     @Inject @Named("gmsupgrade") @Optional
     ConfigurationUpgrade precondition = null;
 
-    private final static Logger logger = Logger.getAnonymousLogger();
+    private static final Logger logger = Logger.getAnonymousLogger();
 
     private static final String MODULE_TYPE = "moduleType";
     private static final String APPCLIENT_SNIFFER_NAME = "appclient";

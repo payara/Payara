@@ -73,7 +73,7 @@ public class VersionCommand implements AdminCommand {
     @Param(optional=true, defaultValue="false", shortName = "v")
     Boolean verbose;
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(VersionCommand.class);
+    private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(VersionCommand.class);
 
     @Override
     public void execute(AdminCommandContext context) {

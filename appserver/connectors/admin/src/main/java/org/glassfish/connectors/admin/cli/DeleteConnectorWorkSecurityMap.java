@@ -76,7 +76,7 @@ import javax.inject.Inject;
 @I18n("delete.connector.work.security.map")
 public class DeleteConnectorWorkSecurityMap implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteConnectorWorkSecurityMap.class);
 
     @Param(name="raname")

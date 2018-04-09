@@ -103,7 +103,7 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand,
     private String pattern;
     @Inject @Optional
     private MonitoringRuntimeDataRegistry mrdr;
-    final private static LocalStringManagerImpl localStrings =
+    private final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(GetCommand.class);
 
     private ActionReport report;

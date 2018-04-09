@@ -199,7 +199,7 @@ public class NetUtils {
      * @param host2
      * @return
      */
-    static public boolean isEqual(String host1, String host2) {
+    public static boolean isEqual(String host1, String host2) {
         List<String> host1_ips = new ArrayList<String>();
         List<String> host2_ips = new ArrayList<String>();
 
@@ -247,7 +247,7 @@ public class NetUtils {
         }
     }
 
-    static public Socket getClientSocket(final String host, final int port, final int msecTimeout) {
+    public static Socket getClientSocket(final String host, final int port, final int msecTimeout) {
         class SocketFetcher implements Runnable {
             @Override
             public void run() {

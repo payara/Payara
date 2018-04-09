@@ -146,7 +146,7 @@ public class SelectQueryPlan extends QueryPlan {
     private boolean appendAndOp;
 
     /** The logger. */
-    private final static Logger logger = LogHelperSQLStore.getLogger();
+    private static final Logger logger = LogHelperSQLStore.getLogger();
 
     /** Name of the MULTILEVEL_PREFETCH property. */
     public static final String MULTILEVEL_PREFETCH_PROPERTY =

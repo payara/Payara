@@ -87,7 +87,7 @@ public class DeploymentCommandUtils {
     final static String CLUSTERS_RESOURCE_NAME = "domain/clusters/cluster";
     final static String SERVERS_RESOURCE_NAME = "domain/servers/server";
     
-    final private static String COPY_IN_PLACE_ARCHIVE_PROP_NAME = "copy.inplace.archive";
+    private final static String COPY_IN_PLACE_ARCHIVE_PROP_NAME = "copy.inplace.archive";
     
     private static final List<String> LIST_CONTAINING_DOMAIN = new ArrayList<String>(Arrays.asList(DeploymentUtils.DOMAIN_TARGET_NAME));
 

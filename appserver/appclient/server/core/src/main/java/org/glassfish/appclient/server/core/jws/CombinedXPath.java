@@ -108,9 +108,9 @@ abstract class CombinedXPath {
     private static final String DEFAULTED_PROPERTY_NAME = "defaulted";
     private static final String MERGED_PROPERTY_NAME = "merged";
     
-    private final static XPathFactory xPathFactory = XPathFactory.newInstance();
+    private static final XPathFactory xPathFactory = XPathFactory.newInstance();
 
-    private final static XPath xPath = xPathFactory.newXPath();
+    private static final XPath xPath = xPathFactory.newXPath();
 
     private static LSSerializer lsSerializer = null;
     private static LSOutput lsOutput = null;

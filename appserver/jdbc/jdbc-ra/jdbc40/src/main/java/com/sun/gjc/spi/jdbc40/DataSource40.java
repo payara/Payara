@@ -61,7 +61,7 @@ import java.util.logging.Logger;
 public class DataSource40 extends AbstractDataSource {
 
 
-    protected final static StringManager localStrings =
+    protected static final StringManager localStrings =
             StringManager.getManager(ManagedConnectionFactoryImpl.class);
 
     /**

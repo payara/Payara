@@ -74,7 +74,7 @@ import java.beans.PropertyVetoException;
 @I18n("delete.admin.ojbect")
 public class DeleteAdminObject implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteAdminObject.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteAdminObject.class);
 
     @Param(optional=true)
     private String target = SystemPropertyConstants.DAS_SERVER_NAME;

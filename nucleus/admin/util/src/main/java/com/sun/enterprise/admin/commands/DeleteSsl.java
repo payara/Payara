@@ -81,7 +81,7 @@ import java.beans.PropertyVetoException;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class DeleteSsl implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteSsl.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteSsl.class);
 
     @Param(name="type", acceptableValues="network-listener, http-listener, iiop-listener, iiop-service, jmx-connector, protocol")
     public String type;

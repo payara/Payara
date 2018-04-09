@@ -57,7 +57,7 @@ import java.util.logging.Logger;
  */
 public class DataStructureFactory {
     //TODO synchronize datastructure creation ?
-    protected final static Logger _logger = LogDomains.getLogger(DataStructureFactory.class,LogDomains.RSR_LOGGER);
+    protected static final Logger _logger = LogDomains.getLogger(DataStructureFactory.class,LogDomains.RSR_LOGGER);
 
     public static DataStructure getDataStructure(String className, String parameters, int maxPoolSize,
                                                  ResourceHandler handler, String strategyClass) throws PoolingException {

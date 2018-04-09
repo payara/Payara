@@ -67,7 +67,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 @AnnotationHandlerFor(AdministeredObjectDefinitions.class)
 public class AdministeredObjectDefinitionsHandler extends AbstractResourceHandler {
     
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(AdministeredObjectDefinitionsHandler.class);
 
     public AdministeredObjectDefinitionsHandler() {

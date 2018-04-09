@@ -73,7 +73,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
 
     private static final String DESCRIPTION = ServerTags.DESCRIPTION;
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(JDBCConnectionPoolManager.class);
 
     private String datasourceclassname = null;

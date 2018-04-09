@@ -48,6 +48,7 @@ import static java.lang.Boolean.TRUE;
 import static java.util.Arrays.stream;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.WARNING;
+import static java.util.logging.Level.SEVERE;
 import static java.util.stream.StreamSupport.stream;
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION;
 import static org.glassfish.cdi.CDILoggerInfo.ADDING_INJECTION_SERVICES;
@@ -146,6 +147,7 @@ import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
+import java.util.logging.Level;
 
 @Service
 public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationContainer> implements PostConstruct, EventListener {
@@ -513,15 +515,19 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
                 throw new DeploymentException(getDeploymentErrorMsgPrefix(t) + t.getMessage(), t);
             } finally {
-                invocationManager.postInvoke(componentInvocation);
-                invocationManager.popAppEnvironment();
+                try {
+                    invocationManager.postInvoke(componentInvocation);
+                    invocationManager.popAppEnvironment();
+                    deploymentComplete(deploymentImpl);
+                } catch (Throwable t) {
+                    logger.log(SEVERE, "Exception dispatching post deploy event", t);
+                }
 
                 // The TCL is originally the EAR classloader and is reset during Bean deployment to the
                 // corresponding module classloader in BeanDeploymentArchiveImpl.getBeans
                 // for Bean classloading to succeed.
                 // The TCL is reset to its old value here.
                 Thread.currentThread().setContextClassLoader(oldTCL);
-                deploymentComplete(deploymentImpl);
             }
         }
     }

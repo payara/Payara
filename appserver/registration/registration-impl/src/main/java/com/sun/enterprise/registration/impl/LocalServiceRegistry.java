@@ -65,7 +65,7 @@ public class LocalServiceRegistry {
     //Revist: make the debug to true for debugging purpose
     boolean debug = false;
 	
-    private final static  LocalServiceRegistry registry = new LocalServiceRegistry();
+    private static final  LocalServiceRegistry registry = new LocalServiceRegistry();
     /** Creates a new instance of ServiceRegistry */
     private LocalServiceRegistry() {
 	createSerivceRegistryFile();

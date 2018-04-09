@@ -67,7 +67,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 @AnnotationHandlerFor(DataSourceDefinitions.class)
 public class DataSourceDefinitionsHandler extends AbstractResourceHandler {
 
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DataSourceDefinitionsHandler.class);
 
     public DataSourceDefinitionsHandler() {

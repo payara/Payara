@@ -47,20 +47,20 @@ import java.util.*;
 public class Cluster extends org.netbeans.modules.schema2beans.BaseBean {
 
     static Vector comparators = new Vector();
-    static public final String NAME = "Name";	// NOI18N
-    static public final String POLICY = "Policy";	// NOI18N
-    static public final String POLICYMODULE = "PolicyModule";	// NOI18N
-    static public final String INSTANCE = "Instance";	// NOI18N
-    static public final String INSTANCENAME = "InstanceName";	// NOI18N
-    static public final String INSTANCEENABLED = "InstanceEnabled";	// NOI18N
-    static public final String INSTANCEDISABLETIMEOUTINMINUTES = "InstanceDisableTimeoutInMinutes";	// NOI18N
-    static public final String INSTANCELISTENERS = "InstanceListeners";	// NOI18N
-    static public final String INSTANCEWEIGHT = "InstanceWeight";	// NOI18N
-    static public final String WEB_MODULE = "WebModule";	// NOI18N
-    static public final String HEALTH_CHECKER = "HealthChecker";	// NOI18N
-    static public final String HEALTHCHECKERURL = "HealthCheckerUrl";	// NOI18N
-    static public final String HEALTHCHECKERINTERVALINSECONDS = "HealthCheckerIntervalInSeconds";	// NOI18N
-    static public final String HEALTHCHECKERTIMEOUTINSECONDS = "HealthCheckerTimeoutInSeconds";	// NOI18N
+    public static final String NAME = "Name";	// NOI18N
+    public static final String POLICY = "Policy";	// NOI18N
+    public static final String POLICYMODULE = "PolicyModule";	// NOI18N
+    public static final String INSTANCE = "Instance";	// NOI18N
+    public static final String INSTANCENAME = "InstanceName";	// NOI18N
+    public static final String INSTANCEENABLED = "InstanceEnabled";	// NOI18N
+    public static final String INSTANCEDISABLETIMEOUTINMINUTES = "InstanceDisableTimeoutInMinutes";	// NOI18N
+    public static final String INSTANCELISTENERS = "InstanceListeners";	// NOI18N
+    public static final String INSTANCEWEIGHT = "InstanceWeight";	// NOI18N
+    public static final String WEB_MODULE = "WebModule";	// NOI18N
+    public static final String HEALTH_CHECKER = "HealthChecker";	// NOI18N
+    public static final String HEALTHCHECKERURL = "HealthCheckerUrl";	// NOI18N
+    public static final String HEALTHCHECKERINTERVALINSECONDS = "HealthCheckerIntervalInSeconds";	// NOI18N
+    public static final String HEALTHCHECKERTIMEOUTINSECONDS = "HealthCheckerTimeoutInSeconds";	// NOI18N
 
     public Cluster() {
         this(Common.USE_DEFAULT_VALUES);

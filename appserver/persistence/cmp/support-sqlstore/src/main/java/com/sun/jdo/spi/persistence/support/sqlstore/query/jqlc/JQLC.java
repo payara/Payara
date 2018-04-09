@@ -120,7 +120,7 @@ public class JQLC
     protected Map retrieveDescCache = new HashMap();
 
     /** I18N support */
-    protected final static ResourceBundle messages = 
+    protected static final ResourceBundle messages = 
         I18NHelper.loadBundle(JQLC.class);
 
     /** The logger */

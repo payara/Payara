@@ -129,7 +129,7 @@ public class CreateJMSResource implements AdminCommand {
     private static final String NAME = "Name";
     private static final String IMQ_DESTINATION_NAME = "imqDestinationName";
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateJMSResource.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateJMSResource.class);
 
 
     /**

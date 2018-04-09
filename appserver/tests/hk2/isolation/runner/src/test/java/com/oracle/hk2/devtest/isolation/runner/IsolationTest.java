@@ -57,17 +57,17 @@ import org.testng.annotations.Test;
  *
  */
 public class IsolationTest extends NucleusStartStopTest {
-    private final static String ISO1_WAR = "isolation/web/iso1/target/hk2-isolation-web-iso1.war";
-    private final static String ISO1_APP_NAME = "hk2-isolation-web-iso1";
-    private final static String ISO1_URL = "http://localhost:8080/hk2-isolation-web-iso1/iso1";
+    private static final String ISO1_WAR = "isolation/web/iso1/target/hk2-isolation-web-iso1.war";
+    private static final String ISO1_APP_NAME = "hk2-isolation-web-iso1";
+    private static final String ISO1_URL = "http://localhost:8080/hk2-isolation-web-iso1/iso1";
     
-    private final static String ISO2_WAR = "isolation/web/iso2/target/hk2-isolation-web-iso2.war";
-    private final static String ISO2_APP_NAME = "hk2-isolation-web-iso2";
-    private final static String ISO2_URL = "http://localhost:8080/hk2-isolation-web-iso2/iso2";
+    private static final String ISO2_WAR = "isolation/web/iso2/target/hk2-isolation-web-iso2.war";
+    private static final String ISO2_APP_NAME = "hk2-isolation-web-iso2";
+    private static final String ISO2_URL = "http://localhost:8080/hk2-isolation-web-iso2/iso2";
     
-    private final static String SOURCE_HOME = System.getProperty("source.home", "$");
-    private final static String SOURCE_HOME_ISO1_WAR = "/appserver/tests/hk2/" + ISO1_WAR;
-    private final static String SOURCE_HOME_ISO2_WAR = "/appserver/tests/hk2/" + ISO2_WAR;
+    private static final String SOURCE_HOME = System.getProperty("source.home", "$");
+    private static final String SOURCE_HOME_ISO1_WAR = "/appserver/tests/hk2/" + ISO1_WAR;
+    private static final String SOURCE_HOME_ISO2_WAR = "/appserver/tests/hk2/" + ISO2_WAR;
     
     private static final String SERVLET_CONTEXT_LOCATOR = "ServletContextLocator";
     private static final String JNDI_APP_LOCATOR = "JndiAppLocator";

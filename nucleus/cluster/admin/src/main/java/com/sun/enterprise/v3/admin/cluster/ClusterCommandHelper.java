@@ -471,8 +471,8 @@ public class ClusterCommandHelper {
         return sb.toString().trim();
     }
 
-    static public class ReportResult {
-        final public List<String> succeededServerNames = new ArrayList<String>();
-        final public List<String> failedServerNames = new ArrayList<String>();
+    public static class ReportResult {
+        public final List<String> succeededServerNames = new ArrayList<String>();
+        public final List<String> failedServerNames = new ArrayList<String>();
     }
 }

@@ -56,7 +56,7 @@ import java.util.zip.GZIPInputStream;
 
 public class LogParserFactory {
 
-    final private static LocalStringManagerImpl LOCAL_STRINGS = 
+    private final static LocalStringManagerImpl LOCAL_STRINGS = 
             new LocalStringManagerImpl(LogParserFactory.class);
 
     static final String NEWLINE = System.getProperty("line.separator");

@@ -65,7 +65,7 @@ public class Jps {
         }
     }
 
-    static public Map<Integer, String> getProcessTable() {
+    public static Map<Integer, String> getProcessTable() {
         return new Jps().pidMap;
     }
 
@@ -76,7 +76,7 @@ public class Jps {
      * E.g. com.sun.enterprise.glassfish.bootstrap.ASMain and ASMain work the same.
      * @return the process id if possible otherwise 0
      */
-    static public List<Integer> getPid(String mainClassName) {
+    public static List<Integer> getPid(String mainClassName) {
         if (mainClassName == null)
             return Collections.emptyList();
 
@@ -103,7 +103,7 @@ public class Jps {
      * @param apid the pid of interest
      * @return whether there is a process running with that id
      */
-    final static public boolean isPid(int apid) {
+    public final static boolean isPid(int apid) {
         return new Jps().pidMap.containsKey(apid);
     }
 

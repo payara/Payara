@@ -105,7 +105,7 @@ public class PlainTextActionReporter extends ActionReporter {
      * @param s the string to append
      */
     @Override
-    final public void appendMessage(String s) {
+    public final void appendMessage(String s) {
         sb.append(s);
     }
 
@@ -113,7 +113,7 @@ public class PlainTextActionReporter extends ActionReporter {
      * Append the string to the internal buffer and add a linefeed like 'println'
      * @param s the string to append
      */
-    final public void appendMessageln(String s) {
+    public final void appendMessageln(String s) {
         sb.append(s).append('\n');
     }
 

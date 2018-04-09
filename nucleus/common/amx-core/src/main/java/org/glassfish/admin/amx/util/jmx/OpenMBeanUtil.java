@@ -107,7 +107,7 @@ public final class OpenMBeanUtil
     /**
     Get the SimpleType for a class which can be so-represented.
      */
-    static public SimpleType getSimpleType(final Class<?> c)
+    public static SimpleType getSimpleType(final Class<?> c)
     {
         final SimpleType type = getSimpleTypesMap().get(c);
 
@@ -185,7 +185,7 @@ public final class OpenMBeanUtil
     /**
     Get the OpenType of an Object, which must conform to OpenType requirements.
      */
-    static public OpenType getOpenType(final Object o)
+    public static OpenType getOpenType(final Object o)
             throws InvalidOpenTypeException, OpenDataException
     {
         if (o == null)

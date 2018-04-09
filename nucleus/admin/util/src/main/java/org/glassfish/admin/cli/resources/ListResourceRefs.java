@@ -91,7 +91,7 @@ import org.glassfish.api.admin.AdminCommandSecurity;
 public class ListResourceRefs implements AdminCommand, AdminCommandSecurity.Preauthorization,
             AdminCommandSecurity.AccessCheckProvider {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListResourceRefs.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListResourceRefs.class);
 
     @Param(optional=true, primary=true)
     private String target = SystemPropertyConstants.DAS_SERVER_NAME;

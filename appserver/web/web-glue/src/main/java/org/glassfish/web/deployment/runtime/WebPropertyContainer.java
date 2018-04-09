@@ -49,9 +49,9 @@ import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 */
 public class WebPropertyContainer extends RuntimeDescriptor {
     
-    static public final String NAME = "Name";	// NOI18N
-    static public final String VALUE = "Value";	// NOI18N
-    static public final String PROPERTY = "WebProperty";	// NOI18N
+    public static final String NAME = "Name";	// NOI18N
+    public static final String VALUE = "Value";	// NOI18N
+    public static final String PROPERTY = "WebProperty";	// NOI18N
 
     // copy constructor
     public WebPropertyContainer(WebPropertyContainer other) 

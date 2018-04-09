@@ -50,7 +50,7 @@ package com.sun.jts.codegen.otsidl;
 
 
 //#-----------------------------------------------------------------------------
-abstract public class JCoordinatorHelper
+public abstract class JCoordinatorHelper
 {
   private static String  _id = "IDL:otsidl/JCoordinator:1.0";
 

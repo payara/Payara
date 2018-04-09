@@ -94,7 +94,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 public class ValidateRemoteDirDeploymentCommand extends DeployCommandParameters
         implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ValidateRemoteDirDeploymentCommand.class);
 
     @Inject

@@ -64,7 +64,7 @@ import java.util.logging.Level;
 public class WLWebServiceEndpointNode extends DeploymentDescriptorNode {
     private WebServiceEndpoint descriptor = null;
 
-    private final static XMLElement tag =
+    private static final XMLElement tag =
             new XMLElement(WebServicesTagNames.PORT_COMPONENT);
 
     private static final List<String> UNSUPPORTED_TAGS = new ArrayList();

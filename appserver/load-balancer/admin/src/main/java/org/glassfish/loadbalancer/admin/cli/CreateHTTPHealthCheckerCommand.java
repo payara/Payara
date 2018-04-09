@@ -127,7 +127,7 @@ public final class CreateHTTPHealthCheckerCommand implements AdminCommand {
 
     private ActionReport report;
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(CreateHTTPHealthCheckerCommand.class);    
 
     @Override

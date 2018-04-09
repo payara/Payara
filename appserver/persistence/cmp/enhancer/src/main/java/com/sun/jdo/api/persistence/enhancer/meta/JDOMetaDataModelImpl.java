@@ -292,7 +292,7 @@ public class JDOMetaDataModelImpl extends Support
         return getPersistentFields(classPath);
     }
 
-    static protected String pathToName(String classPath) {
+    protected static String pathToName(String classPath) {
         if (classPath != null) {
             return classPath.replace('/', '.');
         } else {
@@ -300,7 +300,7 @@ public class JDOMetaDataModelImpl extends Support
         }
     }
 
-    static protected String nameToPath(String className) {
+    protected static String nameToPath(String className) {
         if (className != null) {
             return className.replace('.', '/');
         } else {

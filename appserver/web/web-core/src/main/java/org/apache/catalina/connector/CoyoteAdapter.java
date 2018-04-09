@@ -142,7 +142,7 @@ public class CoyoteAdapter extends HttpHandler {
     
     // Make sure this value is always aligned with {@link ContainerMapper}
     // (@see com.sun.enterprise.v3.service.impl.ContainerMapper)
-    protected final static Note<MappingData> MAPPING_DATA =
+    protected static final Note<MappingData> MAPPING_DATA =
             org.glassfish.grizzly.http.server.Request.<MappingData>createNote("MappingData");
 
     static final Note<Request> CATALINA_REQUEST_NOTE =
@@ -155,7 +155,7 @@ public class CoyoteAdapter extends HttpHandler {
 
     // Make sure this value is always aligned with {@link ContainerMapper}
     // (@see com.sun.enterprise.v3.service.impl.ContainerMapper)
-    private final static Note<DataChunk> DATA_CHUNK =
+    private static final Note<DataChunk> DATA_CHUNK =
             org.glassfish.grizzly.http.server.Request.<DataChunk>createNote("DataChunk");
     
     // ----------------------------------------------------------- Constructors

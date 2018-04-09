@@ -79,7 +79,7 @@ import org.xml.sax.SAXParseException;
  */
 public class AppClientContainerBuilder implements AppClientContainer.Builder {
 
-    private final static String ENDPOINTS_PROPERTY_NAME = "com.sun.appserv.iiop.endpoints";
+    private static final String ENDPOINTS_PROPERTY_NAME = "com.sun.appserv.iiop.endpoints";
 
     private static final LocalStringManager localStrings = new LocalStringManagerImpl(AppClientContainerBuilder.class);
     /** caller-specified target servers */

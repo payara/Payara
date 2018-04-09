@@ -103,5 +103,5 @@ public class GFLauncherException extends Exception {
     {
         super(t);
     }
-    private final static LocalStringsImpl strings = new LocalStringsImpl(GFLauncherException.class);
+    private static final LocalStringsImpl strings = new LocalStringsImpl(GFLauncherException.class);
 }

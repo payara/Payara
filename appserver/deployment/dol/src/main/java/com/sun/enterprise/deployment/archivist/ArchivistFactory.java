@@ -72,8 +72,8 @@ import java.util.Set;
 @Service
 @Singleton
 public class ArchivistFactory {
-    public final static String ARCHIVE_TYPE = "archiveType";
-    public final static String EXTENSION_ARCHIVE_TYPE = "extensionArchiveType";
+    public static final String ARCHIVE_TYPE = "archiveType";
+    public static final String EXTENSION_ARCHIVE_TYPE = "extensionArchiveType";
     
     @Inject
     private ServiceLocator habitat;

@@ -53,38 +53,38 @@ public class OSUtils {
 
     
     /* @return true/false */
-    static public boolean isWindows() {
+    public static boolean isWindows() {
         return osName.indexOf("windows") == -1 ? false: true;
     }
 
     /* Only supports Mac OS X.
      * @return true/false
      */
-    static public boolean isMac() {
+    public static boolean isMac() {
         return osName.startsWith("mac os x") || osName.startsWith("darwin") ? true : false;
 
     }
 
     /* @return true/false */
-    static public boolean isSolaris() {
+    public static boolean isSolaris() {
         return osName.startsWith("solaris") ? true : false;
 
     }
 
     /* @return true/false */
-    static public boolean isLinux() {
+    public static boolean isLinux() {
         return osName.startsWith("linux") ? true : false;
 
     }
 
     /* @return true/false */
-    static public boolean isAix() {
+    public static boolean isAix() {
         return osName.startsWith("aix") ? true : false;
 
     }
 
       /* @return true/false */
-    static public String getVersion() {
+    public static String getVersion() {
         return osVersion;
 
     }

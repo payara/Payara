@@ -55,13 +55,13 @@ final class Strings {
         // no instances allowed!
     }
 
-    final static String get(String indexString) {
+    static final String get(String indexString) {
         return strings.get(indexString);
     }
 
-    final static String get(String indexString, Object... objects) {
+    static final String get(String indexString, Object... objects) {
         return strings.get(indexString, objects);
     }
 
-    final private static LocalStringsImpl strings = new LocalStringsImpl(Strings.class);
+    private static final LocalStringsImpl strings = new LocalStringsImpl(Strings.class);
 }

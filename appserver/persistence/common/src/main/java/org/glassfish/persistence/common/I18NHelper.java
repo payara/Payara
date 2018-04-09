@@ -89,7 +89,7 @@ public class I18NHelper {
 	/**
 	 * Returns message as String
 	 */
-	final public static String getMessage(ResourceBundle messages, String messageKey) 
+	public static final String getMessage(ResourceBundle messages, String messageKey) 
 	{
     		return messages.getString(messageKey);
   	}
@@ -97,7 +97,7 @@ public class I18NHelper {
   	/**
 	 * Formats message by adding Array of arguments
 	 */
-	final public static String getMessage(ResourceBundle messages, String messageKey, Object msgArgs[]) 
+	public static final String getMessage(ResourceBundle messages, String messageKey, Object msgArgs[]) 
 	{
     		for (int i=0; i<msgArgs.length; i++) {
         		if (msgArgs[i] == null) msgArgs[i] = ""; // NOI18N
@@ -108,7 +108,7 @@ public class I18NHelper {
   	/**
 	 * Formats message by adding a String argument
 	 */
-	final public static String getMessage(ResourceBundle messages, String messageKey, String arg) 
+	public static final String getMessage(ResourceBundle messages, String messageKey, String arg) 
 	{
     		Object []args = {arg};
     		return getMessage(messages, messageKey, args);
@@ -116,7 +116,7 @@ public class I18NHelper {
   	/**
 	 * Formats message by adding two String arguments
 	 */
-	final public static String getMessage(ResourceBundle messages, String messageKey, String arg1,
+	public static final String getMessage(ResourceBundle messages, String messageKey, String arg1,
 				       String arg2) 
 	{
     		Object []args = {arg1, arg2};
@@ -125,7 +125,7 @@ public class I18NHelper {
   	/**
 	 * Formats message by adding three String arguments
 	 */
-	final public static String getMessage(ResourceBundle messages, String messageKey, String arg1,
+	public static final String getMessage(ResourceBundle messages, String messageKey, String arg1,
 				       String arg2, String arg3) 
 	{
     		Object []args = {arg1, arg2, arg3};
@@ -135,7 +135,7 @@ public class I18NHelper {
 	 *
 	 * Formats message by adding an Object as an argument
 	 */
-	final public static String getMessage(ResourceBundle messages, String messageKey, Object arg) 
+	public static final String getMessage(ResourceBundle messages, String messageKey, Object arg) 
 	{
     		Object []args = {arg};
     		return getMessage(messages, messageKey, args);
@@ -143,7 +143,7 @@ public class I18NHelper {
   	/**
 	 * Formats message by adding an int as an argument
 	 */
-	final public static String getMessage(ResourceBundle messages, String messageKey, int arg) 
+	public static final String getMessage(ResourceBundle messages, String messageKey, int arg) 
 	{
     		Object []args = {arg};
     		return getMessage(messages, messageKey, args);
@@ -151,7 +151,7 @@ public class I18NHelper {
   	/**
 	 * Formats message by adding a boolean as an argument
 	 */
-	final public static String getMessage(ResourceBundle messages, String messageKey, boolean arg) 
+	public static final String getMessage(ResourceBundle messages, String messageKey, boolean arg) 
 	{
     		Object []args = {String.valueOf(arg)};
     		return getMessage(messages, messageKey, args);

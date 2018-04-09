@@ -57,7 +57,7 @@ import java.util.logging.Level;
  */
 
 public class AdministeredObjectDefinitionNode extends DeploymentDescriptorNode<AdministeredObjectDefinitionDescriptor> {
-    public final static XMLElement tag = new XMLElement(TagNames.ADMINISTERED_OBJECT);
+    public static final XMLElement tag = new XMLElement(TagNames.ADMINISTERED_OBJECT);
     
     private AdministeredObjectDefinitionDescriptor descriptor = null;
     

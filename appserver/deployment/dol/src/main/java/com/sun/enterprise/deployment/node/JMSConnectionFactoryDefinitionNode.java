@@ -51,7 +51,7 @@ import java.util.logging.Level;
 
 public class JMSConnectionFactoryDefinitionNode extends DeploymentDescriptorNode<JMSConnectionFactoryDefinitionDescriptor> {
 
-    public final static XMLElement tag = new XMLElement(TagNames.JMS_CONNECTION_FACTORY);
+    public static final XMLElement tag = new XMLElement(TagNames.JMS_CONNECTION_FACTORY);
 
     private JMSConnectionFactoryDefinitionDescriptor descriptor = null;
 

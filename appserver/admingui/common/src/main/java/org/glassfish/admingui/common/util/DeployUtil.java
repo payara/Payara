@@ -66,7 +66,7 @@ public class DeployUtil {
     /* reload application for each target.  If the app is disabled for the target, it is an no-op.
      * otherwise, the app is disabled and then enabled to force the reload.
      */
-    static public boolean reloadApplication(String appName, List<String> targets, HandlerContext handlerCtx){
+    public static boolean reloadApplication(String appName, List<String> targets, HandlerContext handlerCtx){
         try{
             String decodedName = URLDecoder.decode(appName, "UTF-8");
             List clusters =  TargetUtil.getClusters();
@@ -101,7 +101,7 @@ public class DeployUtil {
 
 
     //This method returns the list of targets (clusters and standalone instances) of any deployed application
-    static public List getApplicationTarget(String appName, String ref){
+    public static List getApplicationTarget(String appName, String ref){
         List targets = new ArrayList();
         try{
             //check if any cluster has this application-ref
@@ -139,7 +139,7 @@ public class DeployUtil {
         return targets;
     }
     
-    static public List<Map> getRefEndpoints(String name, String ref){
+    public static List<Map> getRefEndpoints(String name, String ref){
         List endpoints = new ArrayList();
         try{
             String encodedName = URLEncoder.encode(name, "UTF-8");

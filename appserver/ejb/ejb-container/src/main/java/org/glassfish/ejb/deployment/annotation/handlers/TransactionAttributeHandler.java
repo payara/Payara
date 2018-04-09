@@ -80,7 +80,7 @@ import org.jvnet.hk2.annotations.Service;
 public class TransactionAttributeHandler extends AbstractAttributeHandler
         implements PostProcessor<EjbContext> {
 
-    private final static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
              new LocalStringManagerImpl(TransactionAttributeHandler.class);
     
     public TransactionAttributeHandler() {

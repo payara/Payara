@@ -100,7 +100,7 @@ import org.glassfish.api.admin.*;
 public class ListJMSDestinations extends JMSDestination implements AdminCommand {
 
         private static final Logger logger = Logger.getLogger(LogUtils.JMS_ADMIN_LOGGER);
-        final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateJMSDestination.class);
+        private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateJMSDestination.class);
 
         @Param(name="destType", optional=true)
         String destType;

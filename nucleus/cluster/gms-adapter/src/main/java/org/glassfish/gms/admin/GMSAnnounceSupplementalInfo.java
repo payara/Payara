@@ -45,10 +45,10 @@ import org.glassfish.gms.bootstrap.GMSAdapter;
 import java.util.List;
 
 class GMSAnnounceSupplementalInfo {
-    final public List<String> clusterMembers;
-    final public boolean gmsInitiated;
-    final public GMSAdapter gmsAdapter;
-    final public GroupManagementService gms;
+    public final List<String> clusterMembers;
+    public final boolean gmsInitiated;
+    public final GMSAdapter gmsAdapter;
+    public final GroupManagementService gms;
 
     GMSAnnounceSupplementalInfo(List<String> members, boolean initiated, GMSAdapter adapter) {
         this.clusterMembers = members;

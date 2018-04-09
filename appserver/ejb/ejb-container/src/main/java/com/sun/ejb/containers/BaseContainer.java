@@ -5087,7 +5087,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
      * from BaseContainer.preInvoke, so it indicates that the bean's
      * method will not be called.
      */
-    public final static class PreInvokeException extends EJBException {
+    public static final class PreInvokeException extends EJBException {
     
         Exception exception;
         

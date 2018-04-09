@@ -54,7 +54,7 @@ import java.lang.reflect.Modifier;
  * @author Jerome Dochez
  * @version
  */
-abstract public class HomeMethodModifiers extends HomeMethodTest {  
+public abstract class HomeMethodModifiers extends HomeMethodTest {  
     
     /**
      * <p>

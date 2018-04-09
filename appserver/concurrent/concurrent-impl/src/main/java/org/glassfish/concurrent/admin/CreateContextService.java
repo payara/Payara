@@ -75,7 +75,7 @@ import java.util.Properties;
 @I18n("create.context.service")
 public class CreateContextService implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateContextService.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateContextService.class);
 
     @Param(name="jndi_name", primary=true)
     private String jndiName;

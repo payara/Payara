@@ -218,7 +218,7 @@ public abstract class InputObject extends ProviderUtil {
     }
 
 
-    /*static protected final String readAsString(InputStream in) throws IOException {
+    /*protected static final String readAsString(InputStream in) throws IOException {
         Reader reader = new InputStreamReader(in);
         StringBuilder sb = new StringBuilder();
         char[] c = new char[1024];
@@ -236,7 +236,7 @@ public abstract class InputObject extends ProviderUtil {
      * @param s A String.
      * @return A simple JSON value.
      */
-    static public Object stringToValue(String s) {
+    public static Object stringToValue(String s) {
         if (s.equals("")) {
             return s;
         }

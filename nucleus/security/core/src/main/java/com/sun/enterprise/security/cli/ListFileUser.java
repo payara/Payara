@@ -105,7 +105,7 @@ import org.glassfish.config.support.TargetType;
 })
 public class ListFileUser implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(ListFileUser.class);    
 
     @Param(name="authrealmname", optional=true)

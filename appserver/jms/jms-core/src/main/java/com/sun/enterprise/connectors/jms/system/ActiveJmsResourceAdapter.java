@@ -165,7 +165,7 @@ import org.jvnet.hk2.config.types.Property;
 public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl implements LazyServiceInitializer, PostConstruct {
 
     private static final Logger _logger = JMSLoggerInfo.getLogger();
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ActiveJmsResourceAdapter.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ActiveJmsResourceAdapter.class);
     
     private final String SETTER = "setProperty";
     private static final String SEPARATOR = "#";

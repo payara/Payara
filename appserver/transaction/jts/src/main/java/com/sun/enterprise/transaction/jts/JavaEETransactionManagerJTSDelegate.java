@@ -121,7 +121,7 @@ public class JavaEETransactionManagerJTSDelegate
            = StringManager.getManager(JavaEETransactionManagerSimplified.class);
 
     private boolean lao = true;
-    private final static ReadWriteLock lock = new ReadWriteLock();
+    private static final ReadWriteLock lock = new ReadWriteLock();
     private static JavaEETransactionManagerJTSDelegate instance = null;
     private volatile TransactionManager transactionManagerImpl = null;
     private TransactionService txnService = null;

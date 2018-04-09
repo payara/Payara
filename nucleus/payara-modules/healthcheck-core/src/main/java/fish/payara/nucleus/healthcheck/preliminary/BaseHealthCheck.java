@@ -69,7 +69,7 @@ import java.util.logging.Level;
 @Contract
 public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C extends Checker> implements HealthCheckConstants {
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(BaseHealthCheck.class);
+    private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(BaseHealthCheck.class);
 
     @Inject
     protected HealthCheckService healthCheckService;

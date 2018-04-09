@@ -83,7 +83,7 @@ import javax.inject.Inject;
 })
 public class UpdateConnectorSecurityMap extends ConnectorSecurityMap implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(UpdateConnectorSecurityMap.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(UpdateConnectorSecurityMap.class);
 
     @Param(optional = true)
     String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;

@@ -61,7 +61,7 @@ public class JDOQLParameterDeclarationParser
     /**
      * I18N support
      */
-    protected final static ResourceBundle messages = I18NHelper.loadBundle(
+    protected static final ResourceBundle messages = I18NHelper.loadBundle(
         JDOQLParameterDeclarationParser.class);
 
     /**

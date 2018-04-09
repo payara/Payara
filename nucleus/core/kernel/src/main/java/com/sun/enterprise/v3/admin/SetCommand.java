@@ -122,7 +122,7 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
 
     @Param(primary = true, multiple = true)
     String[] values;
-    final private static LocalStringManagerImpl localStrings
+    private final static LocalStringManagerImpl localStrings
             = new LocalStringManagerImpl(SetCommand.class);
 
     private HashMap<String, Integer> targetLevel = null;

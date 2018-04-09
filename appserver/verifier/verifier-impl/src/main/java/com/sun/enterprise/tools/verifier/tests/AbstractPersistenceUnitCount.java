@@ -54,7 +54,7 @@ import org.glassfish.deployment.common.RootDeploymentDescriptor;
  */
 public abstract class AbstractPersistenceUnitCount extends VerifierTest
         implements VerifierCheck {
-    final static String className = AbstractPersistenceUnitCount.class.getName();
+    static final String className = AbstractPersistenceUnitCount.class.getName();
     
     public Result check(Descriptor descriptor) {
         

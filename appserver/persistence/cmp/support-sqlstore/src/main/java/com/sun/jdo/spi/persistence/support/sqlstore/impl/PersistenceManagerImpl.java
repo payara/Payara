@@ -308,7 +308,7 @@ public class PersistenceManagerImpl implements PersistenceManager {
     /**
      * I18N message handler
      */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
             "com.sun.jdo.spi.persistence.support.sqlstore.Bundle",  // NOI18N
             PersistenceManagerImpl.class.getClassLoader());
 
@@ -1484,7 +1484,7 @@ public class PersistenceManagerImpl implements PersistenceManager {
      *   because of unresolved dependencies, null if all
      *   instances could be processed.
      */
-    static private List flushToDataStore(List flushList) {
+    private static List flushToDataStore(List flushList) {
         int size = flushList.size();
         List errorList = null;
 
@@ -1524,7 +1524,7 @@ public class PersistenceManagerImpl implements PersistenceManager {
      * @param smList List of state managers.
      * @return Array of persistence capable instances.
      */
-    static private Object[] toPCArray(List smList) {
+    private static Object[] toPCArray(List smList) {
         final int size = smList.size();
         if (size > 0) {
             List pcList = new ArrayList(size);

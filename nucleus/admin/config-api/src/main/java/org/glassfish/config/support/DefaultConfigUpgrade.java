@@ -102,7 +102,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     private static final String INSTALL_ROOT = "com.sun.aas.installRoot";
     private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DefaultConfigUpgrade.class);
-    private final static Logger logger =ConfigApiLoggerInfo.getLogger();
+    private static final Logger logger =ConfigApiLoggerInfo.getLogger();
 
     @Override
     public void postConstruct() {
@@ -1044,7 +1044,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      *  <jms-availability availability-enabled="false"/>
      * </availability-service>
      */
-    static private class AvailabilityServiceConfigCode implements SingleConfigCode<Config> {
+    private static class AvailabilityServiceConfigCode implements SingleConfigCode<Config> {
 
         public Object run(Config config) throws PropertyVetoException {
             try {

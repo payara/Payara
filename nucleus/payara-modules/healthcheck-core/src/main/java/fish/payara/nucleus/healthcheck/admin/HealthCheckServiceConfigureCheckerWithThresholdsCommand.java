@@ -86,7 +86,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class HealthCheckServiceConfigureCheckerWithThresholdsCommand implements AdminCommand {
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceConfigurer.class);
+    private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceConfigurer.class);
 
     @Inject
     ServiceLocator habitat;

@@ -83,7 +83,7 @@ public class ConfigCacheImpl
     private Map classLoaderToClassType;
 
     /** The logger. */
-    protected final static Logger logger = LogHelperSQLStore.getLogger();
+    protected static final Logger logger = LogHelperSQLStore.getLogger();
 
     public ConfigCacheImpl() {
         classConfigs = new HashMap();

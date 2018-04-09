@@ -85,7 +85,7 @@ import org.glassfish.api.admin.*;
 })
 public class InstanceRegisterInstanceCommand extends InstanceRegisterInstanceCommandParameters implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InstanceRegisterInstanceCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InstanceRegisterInstanceCommand.class);
 
     @Inject
     Domain domain;

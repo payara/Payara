@@ -117,7 +117,7 @@ import org.jvnet.hk2.config.ConfigListener;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class CreateMessageSecurityProvider implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(CreateMessageSecurityProvider.class);    
     
     private static final String SERVER = "server";

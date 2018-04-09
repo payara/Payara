@@ -54,7 +54,7 @@ import java.lang.reflect.Method;
  * @author Jerome Dochez
  * @version
  */
-abstract public class HomeMethodNameMatch extends HomeMethodTest {  
+public abstract class HomeMethodNameMatch extends HomeMethodTest {  
     
     /**
      * <p>

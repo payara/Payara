@@ -58,7 +58,7 @@ import java.util.ResourceBundle;
 
 public class RuntimeVersion {
     private static Properties _properties = new Properties();
-    private final static ResourceBundle vendor_info = I18NHelper.loadBundle(
+    private static final ResourceBundle vendor_info = I18NHelper.loadBundle(
             RuntimeVersion.class);
 
 

@@ -83,7 +83,7 @@ public class FieldInfo
     /**
      * I18N support
      */
-    protected final static ResourceBundle messages = I18NHelper.loadBundle(
+    protected static final ResourceBundle messages = I18NHelper.loadBundle(
         "com.sun.jdo.spi.persistence.support.sqlstore.query.Bundle", // NOI18N
         FieldInfo.class.getClassLoader());
 

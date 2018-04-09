@@ -52,11 +52,11 @@ import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 public class LocaleCharsetInfo extends RuntimeDescriptor
 {
     
-    static public final String LOCALE_CHARSET_MAP = "LocaleCharsetMap";	// NOI18N
-    static public final String PARAMETER_ENCODING = "ParameterEncoding";	// NOI18N
-    static public final String FORM_HINT_FIELD = "FormHintField"; // NOI18N
-    static public final String DEFAULT_LOCALE = "DefaultLocale";  // NOI18N
-    static public final String DEFAULT_CHARSET = "DefaultCharset";
+    public static final String LOCALE_CHARSET_MAP = "LocaleCharsetMap";	// NOI18N
+    public static final String PARAMETER_ENCODING = "ParameterEncoding";	// NOI18N
+    public static final String FORM_HINT_FIELD = "FormHintField"; // NOI18N
+    public static final String DEFAULT_LOCALE = "DefaultLocale";  // NOI18N
+    public static final String DEFAULT_CHARSET = "DefaultCharset";
     
     // This attribute is an array containing at least one element
     public void setLocaleCharsetMap(int index, LocaleCharsetMap value)

@@ -79,7 +79,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 @I18n("create.jndi.resource")
 public class CreateJndiResource implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(CreateJndiResource.class);
 
     @Param(name = "restype")

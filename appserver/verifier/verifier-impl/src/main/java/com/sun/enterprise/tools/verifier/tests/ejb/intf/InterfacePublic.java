@@ -56,13 +56,13 @@ import java.util.logging.Level;
  * Declare local and remote interfaces as public interfaces test.  
  * All enterprise bean local and/or remote interfaces must be declared as public.
  */
-abstract public class InterfacePublic extends EjbTest implements EjbCheck { 
+public abstract class InterfacePublic extends EjbTest implements EjbCheck { 
     
     /**
      * Methods to get the type of interface: local/remote and the name of the class
      */
     
-    abstract protected Set<String> getInterfaceNames(EjbDescriptor descriptor);
+    protected abstract Set<String> getInterfaceNames(EjbDescriptor descriptor);
     
     /** 
      * Declare local and remote interfaces as public interfaces test.  

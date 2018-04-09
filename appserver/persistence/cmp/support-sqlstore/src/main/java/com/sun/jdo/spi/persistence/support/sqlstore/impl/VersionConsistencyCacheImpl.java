@@ -75,7 +75,7 @@ public class VersionConsistencyCacheImpl implements VersionConsistencyCache {
     // Not final, so that we can create different kinds of caches for testing.
     private static CacheFactory cacheFactory;
 
-    private final static ResourceBundle messages =
+    private static final ResourceBundle messages =
         I18NHelper.loadBundle(VersionConsistencyCacheImpl.class); 
 
     /** Use the PersistenceManager's logger. */

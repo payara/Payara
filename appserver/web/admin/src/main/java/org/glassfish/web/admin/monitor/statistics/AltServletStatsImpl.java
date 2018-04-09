@@ -64,9 +64,9 @@ public class AltServletStatsImpl implements MonitorContract {
     @Inject
     private MonitoringRuntimeDataRegistry mrdr;
 
-    private final static String name = "servlet";
+    private static final String name = "servlet";
 
-    private final static String displayFormat = "%1$-10s %2$-10s %3$-10s";
+    private static final String displayFormat = "%1$-10s %2$-10s %3$-10s";
 
     public String getName() {
         return name;

@@ -111,7 +111,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
     protected ConfigModel childModel; //good model even if the child entity is null
     protected String childID; // id of the current child if part of a list, might be null
     public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(TemplateRestResource.class);
-    final private static List<String> attributesToSkip = new ArrayList<String>() {
+    private final static List<String> attributesToSkip = new ArrayList<String>() {
 
         {
             add("parent");

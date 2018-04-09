@@ -164,7 +164,7 @@ public class ClassDesc
     private Object updateQueryPlanForDeleteSynchObj = new Object();
 
     /** I18N message handler. */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
             "com.sun.jdo.spi.persistence.support.sqlstore.Bundle", // NOI18N
             ClassDesc.class.getClassLoader());
 
@@ -243,7 +243,7 @@ public class ClassDesc
      * @param className Persistence capable class' name.
      * @param classLoader Persistence capable class' loader.
      */
-    static private void validateModel(Model model,
+    private static void validateModel(Model model,
                                       String className,
                                       ClassLoader classLoader) {
         Collection c = null;

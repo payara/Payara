@@ -96,7 +96,7 @@ public class DeploymentEventListenerImpl {
 //    implements DeploymentEventListener, DatabaseConstants {
 //
 //    /** I18N message handler */
-//    private final static ResourceBundle messages = I18NHelper.loadBundle(
+//    private static final ResourceBundle messages = I18NHelper.loadBundle(
 //        "com.sun.jdo.spi.persistence.support.ejb.ejbc.Bundle", // NOI18N
 //        DeploymentEventListenerImpl.class.getClassLoader());
 //

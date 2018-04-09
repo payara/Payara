@@ -65,9 +65,9 @@ public class ResourceSpec implements Serializable {
 
     private PoolInfo poolInfo;
 
-    static public final int JDBC_URL = 0;
-    static public final int JNDI_NAME = 1;
-    static public final int JMS = 2;
+    public static final int JDBC_URL = 0;
+    public static final int JNDI_NAME = 1;
+    public static final int JMS = 2;
 
     public ResourceSpec(String resourceId,
                         int resourceIdType) {
