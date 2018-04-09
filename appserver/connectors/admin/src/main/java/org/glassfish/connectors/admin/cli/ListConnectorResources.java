@@ -77,7 +77,7 @@ import java.util.Collection;
 })
 public class ListConnectorResources implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListConnectorResources.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListConnectorResources.class);    
  
     @Inject
     private Domain domain;

@@ -67,14 +67,14 @@ import org.glassfish.webservices.connector.LogUtils;
  */
 @Service
 public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescriptor> {    
-    public final static XMLElement ROOT_ELEMENT =
+    public static final XMLElement ROOT_ELEMENT =
         new XMLElement(WebServicesTagNames.WEB_SERVICES);
     
-    public final static String SCHEMA_ID = "javaee_web_services_1_4.xsd";
-    public final static String SCHEMA_ID_12 = "javaee_web_services_1_2.xsd";
-    public final static String SCHEMA_ID_13 = "javaee_web_services_1_3.xsd";
-    public final static String SPEC_VERSION = "1.3";
-    private final static List<String> systemIDs = initSystemIDs();
+    public static final String SCHEMA_ID = "javaee_web_services_1_4.xsd";
+    public static final String SCHEMA_ID_12 = "javaee_web_services_1_2.xsd";
+    public static final String SCHEMA_ID_13 = "javaee_web_services_1_3.xsd";
+    public static final String SPEC_VERSION = "1.3";
+    private static final List<String> systemIDs = initSystemIDs();
     private static final Logger logger = LogUtils.getLogger();
 
     private static List<String> initSystemIDs() {

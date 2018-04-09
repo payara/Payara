@@ -79,7 +79,7 @@ import javax.inject.Inject;
 })
 public class PingConnectionPool implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private static final LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(PingConnectionPool.class);
                                                     
     @Param(name="pool_name", primary=true)

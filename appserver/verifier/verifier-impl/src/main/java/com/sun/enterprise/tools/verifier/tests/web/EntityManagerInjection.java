@@ -59,7 +59,7 @@ import javax.servlet.SingleThreadModel;
  */
 public class EntityManagerInjection extends WebTest implements WebCheck  {
     
-    final static String className = EntityManagerInjection.class.getName();
+    static final String className = EntityManagerInjection.class.getName();
     
     public Result check(WebBundleDescriptor descriptor) {
         

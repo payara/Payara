@@ -79,7 +79,7 @@ public class BindableResourcesHelper {
 
     private final Logger _logger = Logger.getLogger(LOGGER, LOGMESSAGE_RESOURCE);
 
-    final private static LocalStringManagerImpl localStrings =
+    private final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(BindableResourcesHelper.class);
 
     private Server server;

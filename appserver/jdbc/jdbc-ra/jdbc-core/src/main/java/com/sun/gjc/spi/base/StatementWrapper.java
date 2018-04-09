@@ -65,7 +65,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
     protected Statement jdbcStatement = null;
     protected StatementLeakDetector leakDetector = null;
     private boolean markedForReclaim = false;
-    protected final static Logger _logger;
+    protected static final Logger _logger;
     protected MethodExecutor executor = null;
     private boolean closeOnCompletion = false;
     protected AtomicInteger resultSetCount = new AtomicInteger();

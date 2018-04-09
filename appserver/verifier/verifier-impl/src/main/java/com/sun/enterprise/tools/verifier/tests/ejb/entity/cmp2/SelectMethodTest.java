@@ -57,7 +57,7 @@ import java.lang.reflect.Method;
  * @author  dochez
  * @version 
  */
-abstract public class SelectMethodTest extends CMPTest {
+public abstract class SelectMethodTest extends CMPTest {
 
     protected abstract boolean runIndividualSelectTest(Method m, EjbCMPEntityDescriptor descriptor, Result result);
     

@@ -84,16 +84,16 @@ public final class Constants {
     // S1AS 4703023
     public static final int DEFAULT_MAX_DISPATCH_DEPTH = 20;
 
-    public final static String PROXY_AUTH_CERT = "Proxy-auth-cert";
-    public final static String PROXY_IP = "Proxy-ip";
-    public final static String PROXY_KEYSIZE = "Proxy-keysize";
+    public static final String PROXY_AUTH_CERT = "Proxy-auth-cert";
+    public static final String PROXY_IP = "Proxy-ip";
+    public static final String PROXY_KEYSIZE = "Proxy-keysize";
 
     // START SJSAS 6337561
-    public final static String PROXY_JROUTE = "proxy-jroute";
+    public static final String PROXY_JROUTE = "proxy-jroute";
     // END SJSAS 6337561
 
     // START SJSAS 6346226
-    public final static String JROUTE_COOKIE = "JROUTE";
+    public static final String JROUTE_COOKIE = "JROUTE";
     // END SJSAS 6346226
 
     /**

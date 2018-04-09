@@ -70,7 +70,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 @PerLookup
 @I18n("create.jndi.resource")
 public class JndiResourceManager implements ResourceManager {
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(JndiResourceManager.class);
     private static final String DESCRIPTION = ServerTags.DESCRIPTION;
 

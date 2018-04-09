@@ -78,10 +78,10 @@ import java.util.logging.Logger;
 public class Java2DBProcessorHelper { 
 
     /** The logger */
-    private final static Logger logger = LogDomains.getLogger(Java2DBProcessorHelper.class, LogDomains.PERSISTENCE_LOGGER);
+    private static final Logger logger = LogDomains.getLogger(Java2DBProcessorHelper.class, LogDomains.PERSISTENCE_LOGGER);
 
     /** I18N message handler */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
         "org.glassfish.persistence.common.LogStrings", //NOI18N
          Java2DBProcessorHelper.class.getClassLoader());
 
@@ -92,23 +92,23 @@ public class Java2DBProcessorHelper {
      * while <code>default.dbschema</code> will signal that the default
      * had been used.
      **/
-    private final static String DEFAULT_NAME = "default"; // NOI18N
+    private static final String DEFAULT_NAME = "default"; // NOI18N
 
     /**
      * Key for storing and retrieving corresponding values.
      */
-    private final static String APPLICATION_NAME = "org.glassfish.persistence.app_name_property"; // NOI18N
+    private static final String APPLICATION_NAME = "org.glassfish.persistence.app_name_property"; // NOI18N
 
     /**
      * Key prefixes for storing and retrieving corresponding values.
      */
-    private final static String PROCESSOR_TYPE = "org.glassfish.persistence.processor_type."; // NOI18N
-    private final static String RESOURCE_JNDI_NAME = "org.glassfish.persistence.resource_jndi_name_property."; // NOI18N
-    private final static String JDBC_FILE_LOCATION = "org.glassfish.persistence.jdbc_file_location_property."; // NOI18N
-    private final static String CREATE_JDBC_FILE_NAME = "org.glassfish.persistence.create_jdbc_file_name_property."; // NOI18N
-    private final static String DROP_JDBC_FILE_NAME = "org.glassfish.persistence.drop_jdbc_file_name_property."; // NOI18N
-    private final static String CREATE_TABLE_VALUE = "org.glassfish.persistence.create_table_value_property."; // NOI18N
-    private final static String DROP_TABLE_VALUE = "org.glassfish.persistence.drop_table_value_property."; // NOI18N
+    private static final String PROCESSOR_TYPE = "org.glassfish.persistence.processor_type."; // NOI18N
+    private static final String RESOURCE_JNDI_NAME = "org.glassfish.persistence.resource_jndi_name_property."; // NOI18N
+    private static final String JDBC_FILE_LOCATION = "org.glassfish.persistence.jdbc_file_location_property."; // NOI18N
+    private static final String CREATE_JDBC_FILE_NAME = "org.glassfish.persistence.create_jdbc_file_name_property."; // NOI18N
+    private static final String DROP_JDBC_FILE_NAME = "org.glassfish.persistence.drop_jdbc_file_name_property."; // NOI18N
+    private static final String CREATE_TABLE_VALUE = "org.glassfish.persistence.create_table_value_property."; // NOI18N
+    private static final String DROP_TABLE_VALUE = "org.glassfish.persistence.drop_table_value_property."; // NOI18N
     
     private DeploymentContext ctx;
     private Properties deploymentContextProps;

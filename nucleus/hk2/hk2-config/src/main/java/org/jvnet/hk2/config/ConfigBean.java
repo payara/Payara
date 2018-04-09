@@ -335,7 +335,7 @@ public class ConfigBean extends Dom implements ConfigView {
     /**
      * simplistic non reentrant lock implementation, needs rework
      */
-    final private Lock lock = new Lock() {
+    private final Lock lock = new Lock() {
         
         public void lock() {
             throw new UnsupportedOperationException();

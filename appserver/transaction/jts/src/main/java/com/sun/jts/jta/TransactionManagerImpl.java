@@ -229,7 +229,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * @param traceDir directory for tracing, current directory if null
      *
      */
-    static public void initJTSProperties(Properties props, String logDir,
+    public static void initJTSProperties(Properties props, String logDir,
                                          boolean trace, String traceDir) {
         if (traceDir == null) traceDir = "."/*#Frozen*/;
         if (logDir == null) logDir = "."/*#Frozen*/;
@@ -247,7 +247,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * given a CosTransactions Status, return
      * the equivalent JTA Status
      */
-    static public int mapStatus(Status status) {
+    public static int mapStatus(Status status) {
         int statusVal = status.value();
         if (statusVal < 0 || statusVal > maxStatus) {
             return javax.transaction.Status.STATUS_UNKNOWN;

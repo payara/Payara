@@ -137,7 +137,7 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
         return true;
     }
 
-    final public boolean abort() throws LoginException {
+    public final boolean abort() throws LoginException {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "JAAS authentication aborted.");
         }
@@ -167,7 +167,7 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
 
     }
 
-    final public boolean logout() throws LoginException {
+    public final boolean logout() throws LoginException {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "JAAS logout for: {0}", subject.toString());
         }

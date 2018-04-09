@@ -80,7 +80,7 @@ public final class ServerLifecycleModule {
 
     private final static String LIFECYCLE_PREFIX = "lifecycle_"; 
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ServerLifecycleModule.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ServerLifecycleModule.class);
 
     ServerLifecycleModule(ServerContext ctx, String name, String className) {
         this.name = name;

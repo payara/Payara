@@ -73,7 +73,7 @@ import org.glassfish.config.support.CommandTarget;
 public abstract class JMSDestination {
 
     protected static final Logger logger = Logger.getLogger(LogUtils.JMS_ADMIN_LOGGER);
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateJMSDestination.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateJMSDestination.class);
 
     // JMS destination types
            public static final String JMS_DEST_TYPE_TOPIC		= "topic";

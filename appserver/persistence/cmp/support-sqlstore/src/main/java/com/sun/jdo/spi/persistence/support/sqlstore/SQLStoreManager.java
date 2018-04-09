@@ -84,7 +84,7 @@ public class SQLStoreManager implements PersistenceStore {
     private static Logger sqlLogger = LogHelperSQLStore.getSqlLogger();
 
     /** I18N message handler. */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
             SQLStoreManager.class);
 
     /** Fetch size for query statements. */

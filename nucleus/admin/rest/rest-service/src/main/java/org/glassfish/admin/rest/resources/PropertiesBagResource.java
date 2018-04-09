@@ -79,7 +79,7 @@ public class PropertiesBagResource extends AbstractResource {
     protected String tagName;
     public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(PropertiesBagResource.class);
 
-    static public class PropertyResource extends TemplateRestResource {
+    public static class PropertyResource extends TemplateRestResource {
         @Override
         public String getDeleteCommand() {
             return "GENERIC-DELETE";

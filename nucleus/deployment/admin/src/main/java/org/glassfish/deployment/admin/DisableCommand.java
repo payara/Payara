@@ -112,7 +112,7 @@ import org.glassfish.deployment.versioning.VersioningUtils;
 public class DisableCommand extends UndeployCommandParameters implements AdminCommand, 
         DeploymentTargetResolver, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DisableCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DisableCommand.class);
     
     final static String DISABLE_ACTION = "disable";
 

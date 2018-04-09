@@ -52,8 +52,8 @@ import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 public class Servlet extends RuntimeDescriptor
 {
     
-    static public final String SERVLET_NAME = "ServletName";	// NOI18N
-    static public final String PRINCIPAL_NAME = "PrincipalName";	// NOI18N
+    public static final String SERVLET_NAME = "ServletName";	// NOI18N
+    public static final String PRINCIPAL_NAME = "PrincipalName";	// NOI18N
     
     // This attribute is mandatory
     public void setServletName(String value)

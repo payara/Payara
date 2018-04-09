@@ -145,7 +145,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
 
     private SQLTraceDelegator sqlTraceDelegator;
     
-    protected final static Logger _logger;
+    protected static final Logger _logger;
 
     static {
         _logger = LogDomains.getLogger(ManagedConnectionImpl.class, LogDomains.RSR_LOGGER);

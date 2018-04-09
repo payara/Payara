@@ -59,17 +59,17 @@ import com.oracle.hk2.devtest.cdi.ear.ejb2.Ejb2Remote;
  *
  */
 public class CDIEarTest extends NucleusStartStopTest {
-    private final static String APP_JAR = "cdi/ear/app/target/app.ear";
-    private final static String APP_NAME = "app";
+    private static final String APP_JAR = "cdi/ear/app/target/app.ear";
+    private static final String APP_NAME = "app";
     
-    private final static String SOURCE_HOME = System.getProperty("source.home", "$");
-    private final static String SOURCE_HOME_APP = "/appserver/tests/hk2/" + APP_JAR;
+    private static final String SOURCE_HOME = System.getProperty("source.home", "$");
+    private static final String SOURCE_HOME_APP = "/appserver/tests/hk2/" + APP_JAR;
     
-    private final static String EJB1_JNDI_NAME = "java:global/app/ejb1/Ejb1";
-    private final static String EJB2_JNDI_NAME = "java:global/app/ejb2/Ejb2";
+    private static final String EJB1_JNDI_NAME = "java:global/app/ejb1/Ejb1";
+    private static final String EJB2_JNDI_NAME = "java:global/app/ejb2/Ejb2";
     
-    private final static String WAR1_URL = "http://localhost:8080/war1/war1";
-    private final static String WAR2_URL = "http://localhost:8080/war2/war2";
+    private static final String WAR1_URL = "http://localhost:8080/war1/war1";
+    private static final String WAR2_URL = "http://localhost:8080/war2/war2";
     
     private boolean deployed1;
     private Context context;

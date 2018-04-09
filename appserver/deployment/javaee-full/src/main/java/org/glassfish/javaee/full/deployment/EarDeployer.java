@@ -126,7 +126,7 @@ public class EarDeployer implements Deployer {
     @LogMessageInfo(message = "Error occurred", level="WARNING")
     private static final String ERROR_OCCURRED = "AS-DEPLOYMENT-02016";
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EarDeployer.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EarDeployer.class);
 
     public MetaData getMetaData() {
         return new MetaData(false, null, new Class[] { Application.class});

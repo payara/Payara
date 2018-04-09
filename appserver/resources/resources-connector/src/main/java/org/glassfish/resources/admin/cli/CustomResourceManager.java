@@ -71,7 +71,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 @I18n("create.custom.resource")
 public class CustomResourceManager implements ResourceManager {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(CustomResourceManager.class);
     private static final String DESCRIPTION = ServerTags.DESCRIPTION;
 

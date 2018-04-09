@@ -103,7 +103,7 @@ public class GMSAnnounceAfterStopClusterCommand implements AdminCommand {
         announceGMSGroupStopComplete(clusterName, report);
     }
 
-    static public void announceGMSGroupStopComplete(String clusterName, ActionReport report) {
+    public static void announceGMSGroupStopComplete(String clusterName, ActionReport report) {
         if (report != null) {
             GMSAnnounceSupplementalInfo gmsInfo = report.getResultType(GMSAnnounceSupplementalInfo.class);
             if (gmsInfo != null && gmsInfo.gmsInitiated) {

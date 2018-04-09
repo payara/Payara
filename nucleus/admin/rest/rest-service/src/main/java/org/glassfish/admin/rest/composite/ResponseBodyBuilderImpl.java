@@ -64,8 +64,8 @@ public abstract class ResponseBodyBuilderImpl implements ResponseBodyBuilder {
         return responseBody;
     }
 
-    abstract protected boolean includeResourceLinks();
+    protected abstract boolean includeResourceLinks();
 
-    abstract protected ResponseBody success(final ActionReport report);
+    protected abstract ResponseBody success(final ActionReport report);
 }
 

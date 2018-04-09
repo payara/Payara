@@ -100,7 +100,7 @@ import org.jvnet.hk2.config.types.Property;
 })
 public class DeleteFileUser implements /*UndoableCommand*/ AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(DeleteFileUser.class);    
 
     @Param(name="authrealmname", optional=true)

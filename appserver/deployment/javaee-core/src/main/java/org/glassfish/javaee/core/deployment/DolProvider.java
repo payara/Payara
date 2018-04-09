@@ -125,7 +125,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
     private static String WRITEOUT_XML = System.getProperty(
         "writeout.xml");
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DolProvider.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DolProvider.class);
 
 
     public MetaData getMetaData() {

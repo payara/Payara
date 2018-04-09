@@ -133,7 +133,7 @@ public interface ThreadPool extends ConfigBeanProxy, PropertyBag {
 
     class Duck {
 
-        static public List<NetworkListener> findNetworkListeners(ThreadPool threadpool) {
+        public static List<NetworkListener> findNetworkListeners(ThreadPool threadpool) {
             NetworkConfig config = threadpool.getParent().getParent(NetworkConfig.class);
             if (!Dom.unwrap(config).getProxyType().equals(NetworkConfig.class)) {
                 Dom unwrappedConfig = Dom.unwrap(config);

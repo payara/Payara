@@ -72,7 +72,7 @@ import java.util.logging.Logger;
  */
 public class AdministeredObjectResource extends JavaEEResourceBase {
 
-    private final static Logger _logger = LogDomains.getLogger(AdministeredObjectResource.class, LogDomains.RSR_LOGGER);
+    private static final Logger _logger = LogDomains.getLogger(AdministeredObjectResource.class, LogDomains.RSR_LOGGER);
 
     private String resadapter_;
     private String adminObjectClass_;

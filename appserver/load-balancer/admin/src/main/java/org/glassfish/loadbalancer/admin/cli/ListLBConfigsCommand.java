@@ -103,7 +103,7 @@ public final class ListLBConfigsCommand implements AdminCommand {
 
     private ActionReport report;
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(ListLBConfigsCommand.class);
     
     @Override

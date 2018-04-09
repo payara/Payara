@@ -73,7 +73,7 @@ public class JDOHelper
      *                  <code>null</code> otherwise
      * @see PersistenceCapable#jdoGetPersistenceManager()
      */
-    static public PersistenceManager getPersistenceManager(Object obj)
+    public static PersistenceManager getPersistenceManager(Object obj)
     {
         if (obj instanceof PersistenceCapable)
             return ((PersistenceCapable)obj).jdoGetPersistenceManager();
@@ -96,7 +96,7 @@ public class JDOHelper
      *                          dirty
      * @see PersistenceCapable#jdoMakeDirty(String fieldName)
      */
-    static public void makeDirty(Object obj, String fieldName)
+    public static void makeDirty(Object obj, String fieldName)
     {
         if (obj instanceof PersistenceCapable)
             ((PersistenceCapable)obj).jdoMakeDirty(fieldName);
@@ -127,7 +127,7 @@ public class JDOHelper
      * @see PersistenceManager#getObjectId(Object obj)
      * @see PersistenceManager#getObjectById(Object oid)
      */
-    static public Object getObjectId(Object obj)
+    public static Object getObjectId(Object obj)
     {
         if (obj instanceof PersistenceCapable)
             return ((PersistenceCapable)obj).jdoGetObjectId();
@@ -148,7 +148,7 @@ public class JDOHelper
      * @see PersistenceCapable#jdoIsDirty()
      * @see PersistenceCapable#jdoMakeDirty(String fieldName)
      */
-    static public boolean isDirty(Object obj)
+    public static boolean isDirty(Object obj)
     {
         if (obj instanceof PersistenceCapable)
             return ((PersistenceCapable)obj).jdoIsDirty();
@@ -172,7 +172,7 @@ public class JDOHelper
      *                  <code>false</code> otherwise.
      * @see PersistenceCapable#jdoIsTransactional()
      */
-    static public boolean isTransactional(Object obj)
+    public static boolean isTransactional(Object obj)
     {
         if (obj instanceof PersistenceCapable)
             return ((PersistenceCapable)obj).jdoIsTransactional();
@@ -192,7 +192,7 @@ public class JDOHelper
      * @see PersistenceCapable#jdoIsPersistent()
      * @see PersistenceManager#makePersistent(Object obj)
      */
-    static public boolean isPersistent(Object obj)
+    public static boolean isPersistent(Object obj)
     {
         if (obj instanceof PersistenceCapable)
             return ((PersistenceCapable)obj).jdoIsPersistent();
@@ -213,7 +213,7 @@ public class JDOHelper
      * @see PersistenceCapable#jdoIsNew()
      * @see PersistenceManager#makePersistent(Object obj)
      */
-    static public boolean isNew(Object obj)
+    public static boolean isNew(Object obj)
     {
         if (obj instanceof PersistenceCapable)
             return ((PersistenceCapable)obj).jdoIsNew();
@@ -234,7 +234,7 @@ public class JDOHelper
      * @see PersistenceCapable#jdoIsDeleted()
      * @see PersistenceManager#deletePersistent(Object obj)
      */
-    static public boolean isDeleted(Object obj)
+    public static boolean isDeleted(Object obj)
     {
         if (obj instanceof PersistenceCapable)
             return ((PersistenceCapable)obj).jdoIsDeleted();    
@@ -244,7 +244,7 @@ public class JDOHelper
     /**
      * I18N message handler
      */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
                                 "com.sun.jdo.spi.persistence.support.sqlstore.impl.Bundle", // NOI18N
                                 JDOHelper.class.getClassLoader());
 
@@ -259,7 +259,7 @@ public class JDOHelper
      * on the object.
      * Does not allow to access fields of the deleted object
      */
-    static public String printObject(Object o) {
+    public static String printObject(Object o) {
         if (o==null)
                 return null_instance;
         else if (isDeleted(o))

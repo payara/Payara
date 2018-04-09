@@ -110,7 +110,7 @@ public class ListLogAttributes implements AdminCommand {
     @Inject
     Clusters clusters;
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListLoggerLevels.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListLoggerLevels.class);
 
     public void execute(AdminCommandContext context) {
 

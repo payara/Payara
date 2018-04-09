@@ -67,7 +67,7 @@ public class LBCommandsBase {
     @Inject
     Domain domain;
     
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(LBCommandsBase.class);
     
     Map<String,Integer> getInstanceWeightsMap(String weights) throws CommandException

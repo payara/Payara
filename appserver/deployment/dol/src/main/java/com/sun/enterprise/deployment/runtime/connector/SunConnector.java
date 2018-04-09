@@ -84,8 +84,8 @@ import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 public class SunConnector extends RuntimeDescriptor
 {
     
-    static public final String RESOURCE_ADAPTER = "ResourceAdapter";	// NOI18N
-    static public final String ROLE_MAP = "RoleMap";	// NOI18N
+    public static final String RESOURCE_ADAPTER = "ResourceAdapter";	// NOI18N
+    public static final String ROLE_MAP = "RoleMap";	// NOI18N
 
     
     // This attribute is mandatory

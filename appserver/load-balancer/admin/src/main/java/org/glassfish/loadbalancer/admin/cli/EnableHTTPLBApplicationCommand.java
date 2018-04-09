@@ -88,7 +88,7 @@ public final class EnableHTTPLBApplicationCommand implements AdminCommand {
     @Inject
     Domain domain;
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(EnableHTTPLBApplicationCommand.class);
 
     @Override

@@ -91,7 +91,7 @@ import javax.management.openmbean.CompositeData;
         description="change-master-broker")
 })
 public class ChangeMasterBrokerCommand extends JMSDestination implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ChangeMasterBrokerCommand.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ChangeMasterBrokerCommand.class);
     // [usemasterbroker] [availability-enabled] [dbvendor] [dbuser] [dbpassword admin] [jdbcurl] [properties props] clusterName
 
     private static enum BrokerStatusCode {

@@ -65,9 +65,9 @@ public abstract class DatabaseCommand extends CLICommand {
 
     protected static final String DB_TYPE_DEFAULT = "h2";
     protected static final String DB_HOST_DEFAULT = "0.0.0.0";
-    protected final static String DB_USER = "dbuser";
-    //protected final static String DB_PASSWORD   = "dbpassword";
-    protected final static String DB_PASSWORDFILE = "dbpasswordfile";
+    protected static final String DB_USER = "dbuser";
+    //protected static final String DB_PASSWORD   = "dbpassword";
+    protected static final String DB_PASSWORDFILE = "dbpasswordfile";
 
     @Param(name = "dbtype", optional = true, defaultValue = DB_TYPE_DEFAULT)
     protected String dbType;

@@ -66,7 +66,7 @@ public abstract class AbstractSecurityContext implements AppServSecurityContext,
      * Credentials of the caller. 
      * @return The caller Principal. 
      */
-    abstract public Principal getCallerPrincipal();
+    public abstract Principal getCallerPrincipal();
     
     /**
      * This method should be implemented by the subclasses to return 
@@ -74,7 +74,7 @@ public abstract class AbstractSecurityContext implements AppServSecurityContext,
      * @return A credentials object associated with the current client 
      * invocation.
      */
-    abstract public Subject getSubject();
+    public abstract Subject getSubject();
     
     public Principal getAdditionalPrincipal() { 
         return additional;

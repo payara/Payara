@@ -67,14 +67,14 @@ public class VMOp implements VMConstants {
   /**
    * Return the opcode value 
    */
-  final public int opcode() {
+  public final int opcode() {
     return opcodeValue;
   }
 
   /**
    * Return the opcode name
    */
-  final public String name() {
+  public final String name() {
     return opcodeName;
   }
 
@@ -82,7 +82,7 @@ public class VMOp implements VMConstants {
    * Return the number of words of stack arguments expected by this operation.
    * If the number is not a fixed value, return -1;
    */
-  final public int nStackArgs() {
+  public final int nStackArgs() {
     return stackArgs;
   }
 
@@ -90,21 +90,21 @@ public class VMOp implements VMConstants {
    * Return the number of words of stack results produced by this operation.
    * If the number is not a fixed value, return -1;
    */
-  final public int nStackResults() {
+  public final int nStackResults() {
     return stackResults;
   }
 
   /**
    * Return the type descriptor for the stack arguments to the operation.
    */
-  final public String argTypes() {
+  public final String argTypes() {
     return stackArgTypes;
   }
 
   /**
    * Return the type descriptor for the stack results of the operation.
    */
-  final public String resultTypes() {
+  public final String resultTypes() {
     return stackResultTypes;
   }
 

@@ -150,7 +150,7 @@ public class QueryImpl
     /**
      * I18N support
      */
-    protected final static ResourceBundle messages =
+    protected static final ResourceBundle messages =
         I18NHelper.loadBundle(QueryImpl.class);
 
     /** The logger */

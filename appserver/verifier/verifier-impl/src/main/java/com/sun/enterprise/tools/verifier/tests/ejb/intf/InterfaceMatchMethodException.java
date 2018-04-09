@@ -59,7 +59,7 @@ import java.util.logging.Level;
  *     of the enterprise Bean class must be defined in the throws clause of 
  *     the method of the local/remote interface. 
  */
-abstract public class InterfaceMatchMethodException extends InterfaceMethodTest { 
+public abstract class InterfaceMatchMethodException extends InterfaceMethodTest { 
     /**
      * <p>
      * run an individual verifier test against a declared method of the 

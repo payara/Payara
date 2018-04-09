@@ -349,7 +349,7 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
      * @return Array of SSL protocol variants to be enabled, or null if none of the requested protocol variants are
      *         supported
      */
-    abstract protected String[] getEnabledProtocols(SSLServerSocket socket, String requestedProtocols);
+    protected abstract String[] getEnabledProtocols(SSLServerSocket socket, String requestedProtocols);
 
     /**
      * Set the SSL protocol variants to be enabled.
@@ -357,7 +357,7 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
      * @param socket the SSLServerSocket.
      * @param protocols the protocols to use.
      */
-    abstract protected void setEnabledProtocols(SSLServerSocket socket, String[] protocols);
+    protected abstract void setEnabledProtocols(SSLServerSocket socket, String[] protocols);
 
     /**
      * Configures the given SSL server socket with the requested cipher suites, protocol versions, and need for client

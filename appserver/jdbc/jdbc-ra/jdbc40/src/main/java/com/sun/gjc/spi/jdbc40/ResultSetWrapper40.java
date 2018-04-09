@@ -58,7 +58,7 @@ import javax.resource.ResourceException;
  */
 public class ResultSetWrapper40 extends ResultSetWrapper {
 
-    protected final static StringManager localStrings =
+    protected static final StringManager localStrings =
             StringManager.getManager(ManagedConnectionFactoryImpl.class);
 
     /**

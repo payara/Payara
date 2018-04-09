@@ -123,12 +123,12 @@ public class XID implements Xid {
     /**
      * The maximum size of the global transaction identifier.
      */
-    static public  final int MAXGTRIDSIZE= 64; // Maximum size (in bytes) of gtrid
+    public static  final int MAXGTRIDSIZE= 64; // Maximum size (in bytes) of gtrid
 
     /**
      * The maximum size of the branch qualifier.
      */
-    static public  final int MAXBQUALSIZE= 64; // Maximum size (in bytes) of bqual
+    public static  final int MAXBQUALSIZE= 64; // Maximum size (in bytes) of bqual
 
     static private final String hextab= "0123456789ABCDEF"/*#Frozen*/;
 

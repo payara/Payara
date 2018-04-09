@@ -89,9 +89,9 @@ public class WebModuleVirtualServerStatsImpl implements MonitorContract {
 
     private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
-    private final static String name = "webmodule";
+    private static final String name = "webmodule";
 
-    private final static String displayFormat = 
+    private static final String displayFormat = 
     "%1$-5s %2$-5s %3$-5s %4$-5s %5$-5s %6$-5s %7$-5s %8$-8s %9$-10s %10$-5s";
 
     public String getName() {

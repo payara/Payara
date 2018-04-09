@@ -78,7 +78,7 @@ import java.util.*;
 })
 public class ListJdbcResources implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListJdbcResources.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListJdbcResources.class);    
 
     @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME, alias = "targetName")
     private String target ;

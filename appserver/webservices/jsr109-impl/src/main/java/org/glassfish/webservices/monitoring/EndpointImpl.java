@@ -59,9 +59,9 @@ import com.sun.enterprise.deployment.WebServiceEndpoint;
  */
 public class EndpointImpl implements Endpoint {
     
-    public final static String NAME = "MONITORING_ENDPOINT";
-    public final static String MESSAGE_ID = "MONITORING_MESSAGE_ID";
-    public final static String REQUEST_TRACE = "MONITORING_REQUEST_MESSAGE_TRACE";
+    public static final String NAME = "MONITORING_ENDPOINT";
+    public static final String MESSAGE_ID = "MONITORING_MESSAGE_ID";
+    public static final String REQUEST_TRACE = "MONITORING_REQUEST_MESSAGE_TRACE";
     
     final String endpointSelector;
     final EndpointType type;

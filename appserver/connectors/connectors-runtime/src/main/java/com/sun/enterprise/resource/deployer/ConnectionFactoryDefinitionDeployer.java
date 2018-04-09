@@ -82,7 +82,7 @@ public class ConnectionFactoryDefinitionDeployer implements ResourceDeployer {
     private Provider<org.glassfish.resourcebase.resources.util.ResourceManagerFactory> resourceManagerFactoryProvider;
 
     private static Logger _logger = LogDomains.getLogger(ConnectionFactoryDefinitionDeployer.class, LogDomains.RSR_LOGGER);
-    final static String PROPERTY_PREFIX = "org.glassfish.connector-connection-pool.";
+    static final String PROPERTY_PREFIX = "org.glassfish.connector-connection-pool.";
 
     public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
         //TODO ASR

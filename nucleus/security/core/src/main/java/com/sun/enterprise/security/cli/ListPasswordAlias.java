@@ -97,7 +97,7 @@ import javax.inject.Inject;
 @AccessRequired(resource="domain/passwordAliases", action="read")
 public class ListPasswordAlias implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private final static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(ListPasswordAlias.class);
 
     @Inject

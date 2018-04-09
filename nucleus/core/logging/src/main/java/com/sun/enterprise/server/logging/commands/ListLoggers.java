@@ -87,7 +87,7 @@ public class ListLoggers implements AdminCommand {
 
     private static final String UNKNOWN = "?";
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListLoggers.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListLoggers.class);
     
     @Param(optional=true, name="_internal", defaultValue="false")    
     private boolean listInternalLoggers;

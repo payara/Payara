@@ -69,7 +69,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class JAXWSServletModule extends ServletModule {
     
     //Map of context-roots to JAXWSServletModules
-    private final static Map<String, JAXWSServletModule> modules =
+    private static final Map<String, JAXWSServletModule> modules =
             new ConcurrentHashMap<String, JAXWSServletModule>();
 
     //Map of uri->BoundEndpoint used to implement getBoundEndpoint.  Map is rather

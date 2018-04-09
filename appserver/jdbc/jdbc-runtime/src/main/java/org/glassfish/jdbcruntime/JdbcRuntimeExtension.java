@@ -85,7 +85,7 @@ public class JdbcRuntimeExtension implements ConnectorRuntimeExtension {
     @Inject
     private Provider<DataSourceDefinitionDeployer> dataSourceDefinitionDeployerProvider;
 
-    protected final static Logger logger = LoggerFactory.getLogger(JdbcRuntimeExtension.class);
+    protected static final Logger logger = LoggerFactory.getLogger(JdbcRuntimeExtension.class);
 
     protected ConnectorRuntime runtime;
 

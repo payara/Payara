@@ -84,7 +84,7 @@ import java.beans.PropertyVetoException;
 @I18n("delete.connector.resource")
 public class DeleteConnectorResource implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteConnectorResource.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteConnectorResource.class);
 
     @Param(optional=true)
     private String target = SystemPropertyConstants.DAS_SERVER_NAME;

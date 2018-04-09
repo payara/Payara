@@ -53,15 +53,15 @@ import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
  *  Interface test.  
  * Verify that the bean local or remote interface class exist and is loadable.
  */
-abstract public class InterfaceClassExist extends EjbTest implements EjbCheck { 
+public abstract class InterfaceClassExist extends EjbTest implements EjbCheck { 
     
     
     /**
      * Following 2 methods are used to determine whether this method is being called by 
      * local/remote interface.
      */
-    abstract protected String getInterfaceName(EjbDescriptor descriptor);
-    abstract protected String getInterfaceType();
+    protected abstract String getInterfaceName(EjbDescriptor descriptor);
+    protected abstract String getInterfaceType();
     
     /**  
      * Local Interface test.

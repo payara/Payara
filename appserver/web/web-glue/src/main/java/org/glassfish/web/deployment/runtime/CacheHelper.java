@@ -49,7 +49,7 @@ package org.glassfish.web.deployment.runtime;
 */
 public class CacheHelper extends WebPropertyContainer
 {
-    static public final String CLASS_NAME = "ClassName";
+    public static final String CLASS_NAME = "ClassName";
 
     // copy constructor
     public CacheHelper(CacheHelper other)

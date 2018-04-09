@@ -69,7 +69,7 @@ import java.util.Set;
 @AnnotationHandlerFor(MailSessionDefinitions.class)
 public class MailSessionDefinitionsHandler extends AbstractResourceHandler {
 
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(MailSessionDefinitionsHandler.class);
 
     public MailSessionDefinitionsHandler() {

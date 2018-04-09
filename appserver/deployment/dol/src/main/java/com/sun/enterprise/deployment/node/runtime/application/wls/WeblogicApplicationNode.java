@@ -65,9 +65,9 @@ import java.util.Map;
  */
 public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
 
-    public final static String SCHEMA_ID = "weblogic-application.xsd";
+    public static final String SCHEMA_ID = "weblogic-application.xsd";
 
-    private final static List<String> systemIDs = initSystemIDs();
+    private static final List<String> systemIDs = initSystemIDs();
 
     private static List<String> initSystemIDs() {
         List<String> systemIDs = new ArrayList<String>();
@@ -75,8 +75,8 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
         return Collections.unmodifiableList(systemIDs);
     }
 
-    public final static String PUBLIC_DTD_ID_2 = "-//BEA Systems, Inc.//DTD WebLogic Application 8.1.0//EN";
-    public final static String SYSTEM_ID_2 = "http://www.beasys.com/servers/wls810/dtd/weblogic-application_2_0.dtd";
+    public static final String PUBLIC_DTD_ID_2 = "-//BEA Systems, Inc.//DTD WebLogic Application 8.1.0//EN";
+    public static final String SYSTEM_ID_2 = "http://www.beasys.com/servers/wls810/dtd/weblogic-application_2_0.dtd";
 
     /** Creates new WeblogicApplicationNode */
     public WeblogicApplicationNode(Application descriptor) {

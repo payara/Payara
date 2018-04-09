@@ -109,8 +109,8 @@ public final class RestMonitoringAdapter extends HttpHandler implements Adapter 
     @Optional
     RestMonitoringConfiguration restMonitoringServiceConfiguration;
     
-    private final static Logger logger = Logger.getLogger(RestMonitoringAdapter.class.getName());
-    private final static String RESOURCE_PACKAGE = "fish/payara/appserver/monitoring/rest/service/adapter";
+    private static final Logger logger = Logger.getLogger(RestMonitoringAdapter.class.getName());
+    private static final String RESOURCE_PACKAGE = "fish/payara/appserver/monitoring/rest/service/adapter";
     private final CountDownLatch latch = new CountDownLatch(1);
     
     @PostConstruct

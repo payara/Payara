@@ -77,7 +77,7 @@ import javax.inject.Inject;
 })
 public class ListConnectorWorkSecurityMaps implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ListConnectorWorkSecurityMaps.class);
 
     @Param(name="securitymap", optional=true)

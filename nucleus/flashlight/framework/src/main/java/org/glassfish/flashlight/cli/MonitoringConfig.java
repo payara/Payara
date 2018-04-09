@@ -59,7 +59,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Service(name="monitoring-config")
 public class MonitoringConfig {
 
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(MonitoringConfig.class);
 
     private static AtomicBoolean valueUpdated = new AtomicBoolean(false);

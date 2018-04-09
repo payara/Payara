@@ -54,7 +54,7 @@ import org.w3c.dom.Node;
  * @version 
  */
 public class OrderingNode extends DeploymentDescriptorNode {
-    public final static XMLElement tag = new XMLElement(WebTagNames.ORDERING);
+    public static final XMLElement tag = new XMLElement(WebTagNames.ORDERING);
        
     protected OrderingDescriptor descriptor = null;
 

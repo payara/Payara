@@ -59,7 +59,7 @@ import java.lang.*;
 
 public class MCFConfigParserImpl implements MCFConfigParser {
 
-    private final static Logger _logger = LogDomains.getLogger(MCFConfigParserImpl.class, LogDomains.RSR_LOGGER);
+    private static final Logger _logger = LogDomains.getLogger(MCFConfigParserImpl.class, LogDomains.RSR_LOGGER);
    
     /**
      *  Default constructor.

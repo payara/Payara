@@ -53,8 +53,8 @@ public class SunCmpMapping extends org.netbeans.modules.schema2beans.BaseBean
 	static Vector comparators = new Vector();
 	private static final org.netbeans.modules.schema2beans.Version runtimeVersion = new org.netbeans.modules.schema2beans.Version(5, 0, 0);
 
-	static public final String SCHEMA = "Schema";	// NOI18N
-	static public final String ENTITY_MAPPING = "EntityMapping";	// NOI18N
+	public static final String SCHEMA = "Schema";	// NOI18N
+	public static final String ENTITY_MAPPING = "EntityMapping";	// NOI18N
 
 	public SunCmpMapping() {
 		this(Common.USE_DEFAULT_VALUES);

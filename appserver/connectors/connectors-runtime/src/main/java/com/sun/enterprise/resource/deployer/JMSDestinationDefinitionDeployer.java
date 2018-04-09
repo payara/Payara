@@ -76,7 +76,7 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
     private Provider<org.glassfish.resourcebase.resources.util.ResourceManagerFactory> resourceManagerFactoryProvider;
 
     private static Logger _logger = LogDomains.getLogger(JMSDestinationDefinitionDeployer.class, LogDomains.RSR_LOGGER);
-    final static String PROPERTY_PREFIX = "org.glassfish.jms-destination.";
+    static final String PROPERTY_PREFIX = "org.glassfish.jms-destination.";
 
     public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
         //TODO ASR

@@ -63,7 +63,7 @@ public class StringUtils {
      * @param inputStr String to be validated.
      * @return true/false.
      **/
-    static public boolean isNumeric(String inputStr) {
+    public static boolean isNumeric(String inputStr) {
         char str[] = inputStr.toCharArray();
         for (int i = 0; i < str.length; i++) {
             if (Character.isDigit(str[i]) == false) {
@@ -77,7 +77,7 @@ public class StringUtils {
      * @param inputStr String to be validated.
      * @return true/false.
      **/
-    static public boolean isAlphaNumeric(String inputStr) {
+    public static boolean isAlphaNumeric(String inputStr) {
         char str[] = inputStr.toCharArray();
         for (int i = 0; i < str.length; i++) {
             if (Character.isLetterOrDigit(str[i]) == false) {
@@ -91,7 +91,7 @@ public class StringUtils {
      * @param inputStr String to be validated.
      * @return true/false.
      **/
-    static public boolean isAscii(String str) {
+    public static boolean isAscii(String str) {
         try {
             if (!str.equals(new String(str.getBytes(ASCII_CHARSET),
                     ASCII_CHARSET))) {
@@ -108,7 +108,7 @@ public class StringUtils {
      * @param v Vector to scan.
      * @return true/false depending on the presence of string in vector. 
      */
-    static public boolean isStringInVector(String str, Vector v) {
+    public static boolean isStringInVector(String str, Vector v) {
         if (v == null) {
             return false;
         }
@@ -130,7 +130,7 @@ public class StringUtils {
      * @param newValue replacement string.
      * @return new String formed after token replacement.
      */
-    static public String substString(StringBuffer str, String token, String newValue) {
+    public static String substString(StringBuffer str, String token, String newValue) {
         int offset = 0, tokenLen = token.length(), valLen = newValue.length();
         offset = str.toString().indexOf(token, offset);
         while (offset != -1) {

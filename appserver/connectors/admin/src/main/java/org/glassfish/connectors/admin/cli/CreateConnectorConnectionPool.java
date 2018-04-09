@@ -73,7 +73,7 @@ import static org.glassfish.connectors.admin.cli.CLIConstants.*;
 @I18n("create.connector.connection.pool")
 public class CreateConnectorConnectionPool implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateConnectorConnectionPool.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateConnectorConnectionPool.class);
 
     @Param(name=CCP_RA_NAME, alias= "resourceAdapterName")
     String raname;

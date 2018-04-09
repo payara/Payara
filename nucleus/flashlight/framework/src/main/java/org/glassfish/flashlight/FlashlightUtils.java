@@ -125,7 +125,7 @@ public class FlashlightUtils {
         return dtraceEnabled;
     }
 
-    static public DTraceContract getDtraceEngine() {
+    public static DTraceContract getDtraceEngine() {
         return isDtraceAvailable() ? dt : null;
     }
 

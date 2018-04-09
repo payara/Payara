@@ -67,7 +67,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
  */
 public class TranslatedViewCreationTest extends ConfigApiTest {
 
-    final static String propName = "com.sun.my.chosen.docroot";
+    static final String propName = "com.sun.my.chosen.docroot";
 
     public String getFileName() {
         return "DomainTest";

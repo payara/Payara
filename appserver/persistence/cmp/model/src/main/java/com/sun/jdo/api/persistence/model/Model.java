@@ -184,7 +184,7 @@ public abstract class Model
 		 * @return a new instance of the requested class (which implements 
 		 * Model).
 		 */
-		static protected Model NewModel (String testName, String modelName) {
+		protected static Model NewModel (String testName, String modelName) {
 			Class DynamicClass = null;
 			Model model = null;
 			try {
@@ -216,7 +216,7 @@ public abstract class Model
 	 * @return the input stream for the specified resource, <code>null</code>
 	 * if an error occurs or none exists
 	 */
-	abstract protected BufferedInputStream getInputStreamForResource (
+	protected abstract BufferedInputStream getInputStreamForResource (
 		String className, ClassLoader classLoader, String resourceName);
 
 	/** Determines if the specified className represents an interface type.
@@ -224,7 +224,7 @@ public abstract class Model
 	 * @return <code>true</code> if this class name represents an interface;
 	 * <code>false</code> otherwise.
 	 */
- 	abstract public boolean isInterface (String className);
+ 	public abstract boolean isInterface (String className);
 
 	/** Determines if the specified className has a persistent superclass.
 	 * @param className the fully qualified name of the class to be checked
@@ -249,14 +249,14 @@ public abstract class Model
 	 * @return the top non-Object superclass for className,
 	 * <code>className</code> if an error occurs or none exists
 	 */
-	abstract protected String findPenultimateSuperclass (String className);
+	protected abstract String findPenultimateSuperclass (String className);
 
 	/** Returns the name of the superclass for the given class name.
 	 * @param className the fully qualified name of the class to be checked
 	 * @return thesuperclass for className, <code>null</code> if an error
 	 * occurs or none exists
 	 */
-	abstract protected String getSuperclass (String className);
+	protected abstract String getSuperclass (String className);
 
 	/** Returns a PersistenceClassElement created from the specified class name.
 	 * Since our implementation of the mapping model class includes the
@@ -1061,7 +1061,7 @@ public abstract class Model
 	 * if an error occurs or none exists
 	 * @exception IOException if there is some error creating the file
 	 */
-	abstract protected BufferedOutputStream createFile (String className,
+	protected abstract BufferedOutputStream createFile (String className,
 		String baseFileName, String extension) throws IOException;
 
 	/** Deletes the file with the given file name which is parallel
@@ -1070,7 +1070,7 @@ public abstract class Model
 	 * @param fileName the name of the file
 	 * @exception IOException if there is some error deleting the file
 	 */
-	abstract protected void deleteFile (String className, String fileName)
+	protected abstract void deleteFile (String className, String fileName)
 		throws IOException;
 
 	/** Returns a list of names of all the declared field elements in the
@@ -1078,7 +1078,7 @@ public abstract class Model
 	 * @param className the fully qualified name of the class to be checked
 	 * @return the names of the field elements for the specified class
 	 */
-	abstract public List getFields (String className);
+	public abstract List getFields (String className);
 
 	/** Returns a list of names of all the field elements in the
 	 * class with the specified name.  This list includes the inherited 
@@ -1113,7 +1113,7 @@ public abstract class Model
 	 * @param classLoader the class loader used to find mapping information
 	 * @return the class element for the specified className
 	 */
-	abstract public Object getClass (String className, ClassLoader classLoader);
+	public abstract Object getClass (String className, ClassLoader classLoader);
 
 	/** Determines if a class with the specified className exists.
 	 * @param className the fully qualified name of the class to be checked
@@ -1146,7 +1146,7 @@ public abstract class Model
 	 * <code>false</code> otherwise.
 	 * @see #getClass
 	 */
-	abstract public boolean implementsInterface (Object classElement, 
+	public abstract boolean implementsInterface (Object classElement, 
 		String interfaceName);
 
 	/** Determines if the class with the specified name declares a constructor.
@@ -1155,7 +1155,7 @@ public abstract class Model
 	 * <code>false</code> otherwise.
 	 * @see #getClass
 	 */
-	abstract public boolean hasConstructor (String className);
+	public abstract boolean hasConstructor (String className);
 
 	/** Returns the constructor element for the specified argument types 
 	 * in the class with the specified name. Types are specified as type 
@@ -1167,7 +1167,7 @@ public abstract class Model
 	 * @return the constructor element
 	 * @see #getClass
 	 */
-	abstract public Object getConstructor (String className, 
+	public abstract Object getConstructor (String className, 
 		String[] argTypeNames);
 
 	/** Returns the method element for the specified method name and argument 
@@ -1181,7 +1181,7 @@ public abstract class Model
 	 * @return the method element
 	 * @see #getClass
 	 */
-	abstract public Object getMethod (String className, String methodName, 
+	public abstract Object getMethod (String className, String methodName, 
 		String[] argTypeNames);
 
 	/** Returns the inherited method element for the specified method 
@@ -1223,7 +1223,7 @@ public abstract class Model
 	 * @see #getField
 	 * @see #getMethod
 	 */
-	abstract public String getType (Object element);
+	public abstract String getType (Object element);
 
 	/** Returns the field element for the specified fieldName in the class
 	 * with the specified className.
@@ -1232,7 +1232,7 @@ public abstract class Model
 	 * @param fieldName the name of the field to be checked
 	 * @return the field element for the specified fieldName
 	 */
-	abstract public Object getField (String className, String fieldName);
+	public abstract Object getField (String className, String fieldName);
 
 	/** Returns the inherited field element for the specified fieldName in 
 	 * the class with the specified className.  Note that the class 
@@ -1293,7 +1293,7 @@ public abstract class Model
 	 * <code>false</code> otherwise.
 	 * @see #getField
 	 */
-	abstract public boolean isSerializable (Object fieldElement);
+	public abstract boolean isSerializable (Object fieldElement);
 
 	/** Determines if a field with the specified fieldName in the class
 	 * with the specified className has a primitive type.
@@ -1331,7 +1331,7 @@ public abstract class Model
 	 * field; <code>false</code> otherwise.
 	 * @see #getFieldType
 	 */
-	abstract public boolean isArray (String className, String fieldName);
+	public abstract boolean isArray (String className, String fieldName);
 
 	/** Determines if a field with the specified fieldName in the class
 	 * with the specified className is a byte array.
@@ -1415,7 +1415,7 @@ public abstract class Model
 	 * @see #getConstructor
 	 * @see #getMethod
 	 */
-	abstract public String getDeclaringClass (Object memberElement);
+	public abstract String getDeclaringClass (Object memberElement);
 
 	/** Returns the modifier mask for the specified member element.
 	 * Note, the member element is either a class element as returned by 
@@ -1430,7 +1430,7 @@ public abstract class Model
 	 * @see #getConstructor
 	 * @see #getMethod
 	 */
-	abstract public int getModifiers (Object memberElement);
+	public abstract int getModifiers (Object memberElement);
 
 	/** Returns the modifier mask for the specified className.
 	 * @param className the fully qualified name of the class to be checked

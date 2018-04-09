@@ -77,7 +77,7 @@ import java.util.List;
 })
 public class ListJndiResources implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ListJndiResources.class);
 
     @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)

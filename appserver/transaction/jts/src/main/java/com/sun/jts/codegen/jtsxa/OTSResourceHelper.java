@@ -50,7 +50,7 @@ package com.sun.jts.codegen.jtsxa;
 
 
 //#-----------------------------------------------------------------------------
-abstract public class OTSResourceHelper
+public abstract class OTSResourceHelper
 {
   private static String  _id = "IDL:jtsxa/OTSResource:1.0";
 

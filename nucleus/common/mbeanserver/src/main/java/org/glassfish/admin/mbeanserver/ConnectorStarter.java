@@ -146,7 +146,7 @@ abstract class ConnectorStarter {
         }
     }
 
-    static protected void ignore(Throwable t) {
+    protected static void ignore(Throwable t) {
         // ignore
     }
 

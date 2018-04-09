@@ -70,7 +70,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 @I18n("add.resources")
 public class JavaMailResourceManager implements org.glassfish.resources.admin.cli.ResourceManager {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(JavaMailResourceManager.class);
     private static final String DESCRIPTION = ServerTags.DESCRIPTION;
 

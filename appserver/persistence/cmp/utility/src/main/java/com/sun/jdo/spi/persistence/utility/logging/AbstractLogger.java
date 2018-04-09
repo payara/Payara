@@ -62,7 +62,7 @@ import com.sun.jdo.spi.persistence.utility.StringHelper;
  * @author Rochelle Raccah
  * @version %I%
  */
-abstract public class AbstractLogger implements Logger
+public abstract class AbstractLogger implements Logger
 {
 	/** I18N message handler for this class */
 	private static final ResourceBundle _messages =
@@ -642,7 +642,7 @@ abstract public class AbstractLogger implements Logger
 	 * @param msg The string message (or a key in the message catalog)
 	 * @param thrown The exception to log
 	 */
-	abstract public void log (int level, String msg, Throwable thrown);
+	public abstract void log (int level, String msg, Throwable thrown);
 
 	/**
 	 * Log a message.
@@ -916,5 +916,5 @@ abstract public class AbstractLogger implements Logger
 	 * @param level the level to print
 	 * @param message the message to print
 	 */
-	abstract protected void logInternal (int level, String message);
+	protected abstract void logInternal (int level, String message);
 }

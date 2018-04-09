@@ -85,7 +85,7 @@ import javax.validation.constraints.Min;
 })
 public class HealthCheckServiceConfigurer implements AdminCommand {
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceConfigurer.class);
+    private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceConfigurer.class);
 
     @Inject
     ServiceLocator habitat;

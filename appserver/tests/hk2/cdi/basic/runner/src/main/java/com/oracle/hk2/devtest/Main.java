@@ -52,7 +52,7 @@ import com.oracle.hk2.devtest.cdi.ejb1.BasicEjb;
  *
  */
 public class Main {
-    private final static String BASIC_EJB_JNDI_NAME = "java:global/ejb1/EjbInjectedWithServiceLocator!" +
+    private static final String BASIC_EJB_JNDI_NAME = "java:global/ejb1/EjbInjectedWithServiceLocator!" +
             BasicEjb.class.getName();
     
     private static int go() throws NamingException {

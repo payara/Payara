@@ -78,7 +78,7 @@ import org.glassfish.hk2.api.PerLookup;
 @AccessRequired(resource="domain/security-service", action="read")
 public class ListSupportedCipherSuites implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ListSupportedCipherSuites.class);
     @Inject
     SSLUtils sslutils;

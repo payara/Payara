@@ -108,7 +108,7 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext.Phase;
 public class EnableCommand extends StateCommandParameters implements AdminCommand, 
         DeploymentTargetResolver, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EnableCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EnableCommand.class);
     
     final static String ENABLE_ACTION = "enable";
 

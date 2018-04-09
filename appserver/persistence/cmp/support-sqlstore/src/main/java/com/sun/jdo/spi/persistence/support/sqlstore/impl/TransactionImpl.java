@@ -256,7 +256,7 @@ public class TransactionImpl
     /**
      * I18N message handler
      */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
             TransactionImpl.class);
 
     /**

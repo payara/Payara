@@ -103,7 +103,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 })
 public class CreateFileUser implements /*UndoableCommand*/ AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(CreateFileUser.class);    
 
     @Param(name="groups", optional=true, separator=':')

@@ -329,7 +329,7 @@ public class AdminLoginModule implements LoginModule {
 
     class PrincipalAuthenticator extends Authenticator {
 
-        final private PrincipalCallback pcb;
+        private final PrincipalCallback pcb;
         PrincipalAuthenticator() {
             super(AuthenticatorType.PRINCIPAL, new PrincipalCallback());
             pcb = (PrincipalCallback) cb;

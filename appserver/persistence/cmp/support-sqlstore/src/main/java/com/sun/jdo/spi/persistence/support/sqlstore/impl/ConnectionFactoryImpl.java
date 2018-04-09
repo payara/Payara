@@ -86,7 +86,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
         /**
          * I18N message handler
          */
-        private transient final static ResourceBundle messages = I18NHelper.loadBundle(
+        private transient static final ResourceBundle messages = I18NHelper.loadBundle(
                                 ConnectionFactoryImpl.class);
 
 	

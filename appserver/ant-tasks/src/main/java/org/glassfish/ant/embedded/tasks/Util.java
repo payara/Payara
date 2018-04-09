@@ -57,7 +57,7 @@ import java.util.Map;
 
 public class Util {
 
-    private final static Map<String, GlassFish> gfMap =
+    private static final Map<String, GlassFish> gfMap =
             new HashMap<String, GlassFish>();
 
     private static GlassFishRuntime glassfishRuntime;

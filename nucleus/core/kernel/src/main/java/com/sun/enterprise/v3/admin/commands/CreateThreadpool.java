@@ -79,7 +79,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 
 public class CreateThreadpool implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
-    final private static LocalStringManagerImpl localStrings = new
+    private final static LocalStringManagerImpl localStrings = new
             LocalStringManagerImpl(CreateThreadpool.class);
 
     // TODO:  Once Grizzly provides constants for default values, update this class to use those

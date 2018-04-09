@@ -67,7 +67,7 @@ public class MQJMXConnectorInfo {
     private String brokerInstanceName = null;
     private String brokerType = null;
     private static final Logger _logger = Logger.getLogger(LogUtils.JMS_ADMIN_LOGGER);
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(MQJMXConnectorInfo.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(MQJMXConnectorInfo.class);
     private JMXConnector connector = null;
 
     public MQJMXConnectorInfo(String asInstanceName, String brokerInstanceName,

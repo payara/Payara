@@ -112,7 +112,7 @@ public class ParameterTable
     static final Unbound unbound = new Unbound();
 
     /** I18N support */
-    protected final static ResourceBundle messages =
+    protected static final ResourceBundle messages =
         I18NHelper.loadBundle(ParameterTable.class);
 
     /**

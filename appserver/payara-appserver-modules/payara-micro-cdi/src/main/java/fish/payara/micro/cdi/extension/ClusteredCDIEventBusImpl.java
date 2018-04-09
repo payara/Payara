@@ -92,9 +92,9 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
 
     private JavaEEContextUtil ctxUtil;
 
-    private final static String INSTANCE_PROPERTY = "InstanceName";
+    private static final String INSTANCE_PROPERTY = "InstanceName";
     
-    private final static String EVENT_PROPERTY = "EventName";
+    private static final String EVENT_PROPERTY = "EventName";
     
     @PostConstruct
     void postConstruct() {

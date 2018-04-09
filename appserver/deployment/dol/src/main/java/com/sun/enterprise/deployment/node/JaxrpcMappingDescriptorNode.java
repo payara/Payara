@@ -58,11 +58,11 @@ public class JaxrpcMappingDescriptorNode extends AbstractBundleNode
                                     
 {    
 
-    public final static XMLElement ROOT_ELEMENT = 
+    public static final XMLElement ROOT_ELEMENT = 
         new XMLElement(WebServicesTagNames.JAXRPC_MAPPING_FILE_ROOT);
 
-    public final static String SCHEMA_ID = "j2ee_jaxrpc_mapping_1_1.xsd";
-    private final static List<String> systemIDs = initSystemIDs();
+    public static final String SCHEMA_ID = "j2ee_jaxrpc_mapping_1_1.xsd";
+    private static final List<String> systemIDs = initSystemIDs();
 
     private static final Set complexElements = initComplexElements();
     private JaxrpcMappingDescriptor descriptor=null;

@@ -94,7 +94,7 @@ public final class ConfigureLBWeightCommand extends LBCommandsBase
     @Param(primary=true)
     String weights;
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(ConfigureLBWeightCommand.class);
 
 

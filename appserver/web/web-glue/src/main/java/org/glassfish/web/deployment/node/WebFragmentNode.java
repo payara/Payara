@@ -57,13 +57,13 @@ import java.util.*;
 @Service
 public class WebFragmentNode extends WebCommonNode<WebFragmentDescriptor> {
 
-   public final static XMLElement tag = new XMLElement(WebTagNames.WEB_FRAGMENT);
+   public static final XMLElement tag = new XMLElement(WebTagNames.WEB_FRAGMENT);
 
     /** 
      * The system ID of my documents. 
      */
-    public final static String SCHEMA_ID = "web-fragment_3_0.xsd";
-    private final static List<String> systemIDs = initSystemIDs();
+    public static final String SCHEMA_ID = "web-fragment_3_0.xsd";
+    private static final List<String> systemIDs = initSystemIDs();
 
     private static List<String> initSystemIDs() {
         List<String> systemIDs = new ArrayList<String>();

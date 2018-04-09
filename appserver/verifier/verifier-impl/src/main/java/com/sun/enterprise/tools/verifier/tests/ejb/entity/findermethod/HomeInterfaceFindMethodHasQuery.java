@@ -67,7 +67,7 @@ import java.lang.reflect.Method;
 public class HomeInterfaceFindMethodHasQuery extends EjbTest implements EjbCheck { 
     Result result = null;
     ComponentNameConstructor compName = null;
-    private final static String FINDBYPRIMARYKEY = "findByPrimaryKey";
+    private static final String FINDBYPRIMARYKEY = "findByPrimaryKey";
 
 
     /**

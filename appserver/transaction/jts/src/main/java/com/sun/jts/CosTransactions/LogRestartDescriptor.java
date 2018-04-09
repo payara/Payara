@@ -77,7 +77,7 @@ class LogRestartDescriptor implements Serializable {
     /**
      *This constant holds the size of the LogRestartDecriptor object.
      */
-    final static int SIZEOF = 12;
+    static final int SIZEOF = 12;
 
     int restartValid      = 0;
     int restartDataLength = 0;

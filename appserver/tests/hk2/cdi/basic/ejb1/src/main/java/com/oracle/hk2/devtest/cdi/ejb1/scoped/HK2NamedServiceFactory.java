@@ -53,7 +53,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 public class HK2NamedServiceFactory implements Factory<HK2NamedService> {
-    public final static String NAMED_SERVICE_NAME = "rumplestiltskin";
+    public static final String NAMED_SERVICE_NAME = "rumplestiltskin";
 
     /* (non-Javadoc)
      * @see org.glassfish.hk2.api.Factory#provide()

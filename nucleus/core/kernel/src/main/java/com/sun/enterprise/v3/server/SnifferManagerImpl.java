@@ -67,7 +67,7 @@ import java.util.List;
  */
 @Service
 public class SnifferManagerImpl implements SnifferManager {
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SnifferManagerImpl.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SnifferManagerImpl.class);
 
     @Inject
     protected ServiceLocator habitat;

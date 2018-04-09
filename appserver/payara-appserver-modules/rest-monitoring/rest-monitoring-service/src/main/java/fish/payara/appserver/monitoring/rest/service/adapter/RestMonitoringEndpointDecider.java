@@ -69,7 +69,7 @@ public class RestMonitoringEndpointDecider {
     private List<String> hosts;
     private RestMonitoringConfiguration restMonitoringServiceConfiguration;
     
-    private final static String DEFAULT_CONTEXT_ROOT = "/rest-monitoring";
+    private static final String DEFAULT_CONTEXT_ROOT = "/rest-monitoring";
     
     public static final int DEFAULT_ADMIN_PORT = 4848;
     

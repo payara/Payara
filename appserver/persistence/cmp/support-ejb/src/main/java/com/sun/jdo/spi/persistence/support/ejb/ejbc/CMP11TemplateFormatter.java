@@ -67,44 +67,44 @@ import com.sun.jdo.spi.persistence.utility.generator.JavaClassWriterHelper;
  */
 class CMP11TemplateFormatter extends CMPTemplateFormatter {
 
-    private final static String templateFile =
+    private static final String templateFile =
         "com/sun/jdo/spi/persistence/support/ejb/ejbc/CMP11Templates.properties"; // NOI18N
 
     // Strings for CMP 1.1 code generation:
-    public final static String one_oneVariables_          = "one_oneVariables"; // NOI18N
-    public final static String ejbQuerySetIgnoreCache_    = "ejbQuerySetIgnoreCache"; //NOI18N
+    public static final String one_oneVariables_          = "one_oneVariables"; // NOI18N
+    public static final String ejbQuerySetIgnoreCache_    = "ejbQuerySetIgnoreCache"; //NOI18N
 
     // Inner helper Class strings.
-    public final static String helper11Interface_
+    public static final String helper11Interface_
                       = "com.sun.jdo.spi.persistence.support.sqlstore.ejb.JDOEJB11Helper"; // NOI18N
-    public final static String helper11Impl_
+    public static final String helper11Impl_
                       = "com.sun.jdo.spi.persistence.support.ejb.cmp.JDOEJB11HelperImpl"; // NOI18N
 
     // CMP1.1 properties
-    public final static String ejbCreate1_1_              = "ejbCreate1_1"; // NOI18N
-    public final static String ejbCreateUnknownPK1_1_     = "ejbCreateUnknownPK1_1"; // NOI18N
-    public final static String ejbPostCreate1_1_          = "ejbPostCreate1_1"; // NOI18N
-    public final static String ejbRemove1_1_              = "ejbRemove1_1"; // NOI18N
-    public final static String storeFields1_1_            = "jdoStoreFields"; // NOI18N
-    public final static String loadFields1_1_             = "jdoLoadFields"; // NOI18N
-    public final static String setEntityContext1_1_       = "setEntityContext1_1"; // NOI18N
-    public final static String internalMethods1_1_        = "internalMethods1_1"; // NOI18N
-    public final static String helperMethods1_1_          = "helperMethods1_1"; // NOI18N
-    public final static String load1_1_                   = "load1_1"; // NOI18N
-    public final static String store1_1_                  = "store1_1"; // NOI18N
-    public final static String assertPKStore1_1_          = "assertPKStore1_1"; // NOI18N
-    public final static String pkstore1_1_                = "pkstore1_1"; // NOI18N
-    public final static String pkstringstore1_1_          = "pkstringstore1_1"; // NOI18N
-    public final static String pkcopystore1_1_            = "pkcopystore1_1"; // NOI18N
-    public final static String copyload1_1_               = "copyload1_1"; // NOI18N
-    public final static String copystore1_1_              = "copystore1_1"; // NOI18N
-    public final static String arrayload1_1_              = "arrayload1_1"; // NOI18N
-    public final static String arraystore1_1_             = "arraystore1_1"; // NOI18N
-    public final static String loadSerializable1_1_       = "loadSerializable1_1"; // NOI18N
-    public final static String storeSerializable1_1_      = "storeSerializable1_1"; // NOI18N
+    public static final String ejbCreate1_1_              = "ejbCreate1_1"; // NOI18N
+    public static final String ejbCreateUnknownPK1_1_     = "ejbCreateUnknownPK1_1"; // NOI18N
+    public static final String ejbPostCreate1_1_          = "ejbPostCreate1_1"; // NOI18N
+    public static final String ejbRemove1_1_              = "ejbRemove1_1"; // NOI18N
+    public static final String storeFields1_1_            = "jdoStoreFields"; // NOI18N
+    public static final String loadFields1_1_             = "jdoLoadFields"; // NOI18N
+    public static final String setEntityContext1_1_       = "setEntityContext1_1"; // NOI18N
+    public static final String internalMethods1_1_        = "internalMethods1_1"; // NOI18N
+    public static final String helperMethods1_1_          = "helperMethods1_1"; // NOI18N
+    public static final String load1_1_                   = "load1_1"; // NOI18N
+    public static final String store1_1_                  = "store1_1"; // NOI18N
+    public static final String assertPKStore1_1_          = "assertPKStore1_1"; // NOI18N
+    public static final String pkstore1_1_                = "pkstore1_1"; // NOI18N
+    public static final String pkstringstore1_1_          = "pkstringstore1_1"; // NOI18N
+    public static final String pkcopystore1_1_            = "pkcopystore1_1"; // NOI18N
+    public static final String copyload1_1_               = "copyload1_1"; // NOI18N
+    public static final String copystore1_1_              = "copystore1_1"; // NOI18N
+    public static final String arrayload1_1_              = "arrayload1_1"; // NOI18N
+    public static final String arraystore1_1_             = "arraystore1_1"; // NOI18N
+    public static final String loadSerializable1_1_       = "loadSerializable1_1"; // NOI18N
+    public static final String storeSerializable1_1_      = "storeSerializable1_1"; // NOI18N
 
     // property key for the CVS keyword substitution
-    public final static String signature1_1_ = "signature1_1"; //NOI18N
+    public static final String signature1_1_ = "signature1_1"; //NOI18N
 
     // finder/selector methods
     public static MessageFormat querysetignorecacheformatter = null; // statement to set the ignoreCache flag for a JDOQL query 

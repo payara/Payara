@@ -69,7 +69,7 @@ public class ParameterSupport
     private String[] parameterEjbNames;
     
     /** I18N support. */
-    protected final static ResourceBundle msgs = I18NHelper.loadBundle(
+    protected static final ResourceBundle msgs = I18NHelper.loadBundle(
         ParameterSupport.class);
 
     /** 

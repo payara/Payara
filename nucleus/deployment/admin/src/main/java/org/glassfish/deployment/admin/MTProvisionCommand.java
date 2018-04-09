@@ -124,7 +124,7 @@ public class MTProvisionCommand implements AdminCommand, AdminCommandSecurity.Ac
         return accessChecks;
     }
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(MTProvisionCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(MTProvisionCommand.class);
 
     public void execute(AdminCommandContext context) {
 

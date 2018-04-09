@@ -131,7 +131,7 @@ public final class Main
     /**
      * I18N message handler
      */
-    private final static ResourceBundle messages = I18NHelper.loadBundle("com.sun.jdo.api.persistence.enhancer.Bundle"); // NOI18N
+    private static final ResourceBundle messages = I18NHelper.loadBundle("com.sun.jdo.api.persistence.enhancer.Bundle"); // NOI18N
     public Main()
     {}
 

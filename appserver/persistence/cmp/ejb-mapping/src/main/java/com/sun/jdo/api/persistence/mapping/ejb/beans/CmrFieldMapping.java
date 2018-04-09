@@ -54,9 +54,9 @@ public class CmrFieldMapping extends org.netbeans.modules.schema2beans.BaseBean
 	static Vector comparators = new Vector();
 	private static final org.netbeans.modules.schema2beans.Version runtimeVersion = new org.netbeans.modules.schema2beans.Version(5, 0, 0);
 
-	static public final String CMR_FIELD_NAME = "CmrFieldName";	// NOI18N
-	static public final String COLUMN_PAIR = "ColumnPair";	// NOI18N
-	static public final String FETCHED_WITH = "FetchedWith";	// NOI18N
+	public static final String CMR_FIELD_NAME = "CmrFieldName";	// NOI18N
+	public static final String COLUMN_PAIR = "ColumnPair";	// NOI18N
+	public static final String FETCHED_WITH = "FetchedWith";	// NOI18N
 
 	public CmrFieldMapping() {
 		this(Common.USE_DEFAULT_VALUES);

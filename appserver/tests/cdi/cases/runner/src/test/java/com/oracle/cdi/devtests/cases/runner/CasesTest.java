@@ -63,8 +63,8 @@ import com.oracle.cdi.cases.devtests.predestroy.lib.PreDestroyConstants;
  * @author jwells
  */
 public class CasesTest extends NucleusStartStopTest {
-    private final static String SOURCE_HOME = System.getProperty("source.home", "$");
-    private final static String SOURCE_HOME_CDI = "/appserver/tests/cdi/";
+    private static final String SOURCE_HOME = System.getProperty("source.home", "$");
+    private static final String SOURCE_HOME_CDI = "/appserver/tests/cdi/";
     
     private Context context;
     
@@ -93,10 +93,10 @@ public class CasesTest extends NucleusStartStopTest {
         Assert.assertTrue(success);
     }
     
-    private final static String MULTI_BEANS_XML_JAR = "cases/multiBeansXml/multiBeansApp/target/multiBeansApp.ear";
-    private final static String MULTI_BEANS_XML_APP = "multiBeansApp";
-    private final static String MULTI_BEANS_EJB1_JNDI = "java:global/multiBeansApp/ejb1/InterceptedEjb1!com.oracle.cdi.cases.devtests.multiejb1.MultiBeansXmlEjb1";
-    private final static String MULTI_BEANS_EJB2_JNDI = "java:global/multiBeansApp/ejb2/InterceptedEjb2!com.oracle.cdi.cases.devtests.multiejb2.MultiBeansXmlEjb2";
+    private static final String MULTI_BEANS_XML_JAR = "cases/multiBeansXml/multiBeansApp/target/multiBeansApp.ear";
+    private static final String MULTI_BEANS_XML_APP = "multiBeansApp";
+    private static final String MULTI_BEANS_EJB1_JNDI = "java:global/multiBeansApp/ejb1/InterceptedEjb1!com.oracle.cdi.cases.devtests.multiejb1.MultiBeansXmlEjb1";
+    private static final String MULTI_BEANS_EJB2_JNDI = "java:global/multiBeansApp/ejb2/InterceptedEjb2!com.oracle.cdi.cases.devtests.multiejb2.MultiBeansXmlEjb2";
     
     @Test
     public void testMultiBeansXml() throws NamingException {
@@ -141,11 +141,11 @@ public class CasesTest extends NucleusStartStopTest {
         
     }
     
-    private final static String PRE_DESTROY_SCOPING_JAR = "cases/preDestroyScoping/ear/target/preDestroyScoping.ear";
-    private final static String PRE_DESTROY_SCOPING_APP = "preDestroyScoping";
-    private final static String BEAN_URL = "http://localhost:8080/web/bean";
-    private final static String LOGOUT_BASE_URL = "http://localhost:8080/web/logout;jsessionid=";
-    private final static String EVENTS_URL = "http://localhost:8080/web/events";
+    private static final String PRE_DESTROY_SCOPING_JAR = "cases/preDestroyScoping/ear/target/preDestroyScoping.ear";
+    private static final String PRE_DESTROY_SCOPING_APP = "preDestroyScoping";
+    private static final String BEAN_URL = "http://localhost:8080/web/bean";
+    private static final String LOGOUT_BASE_URL = "http://localhost:8080/web/logout;jsessionid=";
+    private static final String EVENTS_URL = "http://localhost:8080/web/events";
     
     private static List<String> getLines(String lines) {
         StringTokenizer st = new StringTokenizer(lines, "\n");

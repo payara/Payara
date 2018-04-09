@@ -93,15 +93,15 @@ class LogFile {
 
     /**Constants for write types.
      */
-    final static int UNFORCED = 0;
-    final static int FORCED   = 1;
+    static final int UNFORCED = 0;
+    static final int FORCED   = 1;
 
     /**Constants for log record types.
      */
-    final static int NORMAL         = 0;
-    final static int KEYPOINT_START = 1;
-    final static int KEYPOINT_END   = 2;
-    final static int REWRITE        = 3;
+    static final int NORMAL         = 0;
+    static final int KEYPOINT_START = 1;
+    static final int KEYPOINT_END   = 2;
+    static final int REWRITE        = 3;
 	
 	/*
 		Logger to log transaction messages

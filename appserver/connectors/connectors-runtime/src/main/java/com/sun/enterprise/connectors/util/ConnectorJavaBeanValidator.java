@@ -56,7 +56,7 @@ import com.sun.enterprise.connectors.ConnectorRegistry;
 @Service
 public class ConnectorJavaBeanValidator {
 
-    private final static Logger _logger = LogDomains.getLogger(
+    private static final Logger _logger = LogDomains.getLogger(
             ConnectorJavaBeanValidator.class, LogDomains.RSR_LOGGER);
 
     public void validateJavaBean(Object bean, String rarName) {

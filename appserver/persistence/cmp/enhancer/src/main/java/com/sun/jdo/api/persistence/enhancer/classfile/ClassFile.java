@@ -53,7 +53,7 @@ import java.io.DataOutputStream;
  * a class file.
  */
 
-final public class ClassFile implements VMConstants {
+public final class ClassFile implements VMConstants {
 
   /* Class file constants */
   public static final int magic = 0xcafebabe;
@@ -127,28 +127,28 @@ final public class ClassFile implements VMConstants {
   /**
    * Is the class final?
    */
-  final public boolean isFinal() {
+  public final boolean isFinal() {
     return (accessFlags & ACCFinal) != 0;
   }
 
   /**
    * Is the class an interface?
    */
-  final public boolean isInterface() {
+  public final boolean isInterface() {
     return (accessFlags & ACCInterface) != 0;
   }
 
   /**
    * Is the class public?
    */
-  final public boolean isPublic() {
+  public final boolean isPublic() {
     return (accessFlags & ACCPublic) != 0;
   }
 
   /**
    * Is the class abstract?
    */
-  final public boolean isAbstract() {
+  public final boolean isAbstract() {
     return (accessFlags & ACCAbstract) != 0;
   }
 

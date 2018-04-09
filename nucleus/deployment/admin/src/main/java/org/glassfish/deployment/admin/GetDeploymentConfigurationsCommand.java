@@ -85,7 +85,7 @@ import org.glassfish.api.admin.RestParam;
 @AccessRequired(resource=DeploymentCommandUtils.APPLICATION_RESOURCE_NAME + "/$appname", action="read")
 public class GetDeploymentConfigurationsCommand implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GetDeploymentConfigurationsCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GetDeploymentConfigurationsCommand.class);
 
     @Param(primary=true)
     private String appname = null;

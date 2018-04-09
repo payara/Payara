@@ -79,7 +79,7 @@ import java.beans.PropertyVetoException;
 @I18n("delete.jndi.resource")
 public class DeleteJndiResource implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteJndiResource.class);
 
     @Param(optional=true, defaultValue= SystemPropertyConstants.DAS_SERVER_NAME)

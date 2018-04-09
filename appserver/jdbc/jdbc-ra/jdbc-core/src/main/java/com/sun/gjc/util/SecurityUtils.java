@@ -146,7 +146,7 @@ public class SecurityUtils {
      * @return true    if the two PasswordCredentials are equal
      *         false	otherwise
      */
-    static public boolean isPasswordCredentialEqual(PasswordCredential pC1, PasswordCredential pC2) {
+    public static boolean isPasswordCredentialEqual(PasswordCredential pC1, PasswordCredential pC2) {
         if (pC1 == pC2)
             return true;
         if (pC1 == null || pC2 == null)

@@ -45,7 +45,7 @@ package com.sun.enterprise.security.acl;
  * 
  * @author Harish Prabandham
  */
-abstract public class Resource {
+public abstract class Resource {
     private String app;
     private String name;
     private String method;

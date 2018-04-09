@@ -77,7 +77,7 @@ import javax.inject.Inject;
 @I18n("delete.connector.security.map")
 public class DeleteConnectorSecurityMap extends ConnectorSecurityMap implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteConnectorSecurityMap.class);
 
     @Param(name="poolname")

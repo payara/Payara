@@ -52,7 +52,7 @@ import java.io.FileReader;
  */
 public class TmpCleaner {
 
-    private final static String TMPDIR = System.getProperty("java.io.tmpdir");
+    private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 
     public void run() {
 

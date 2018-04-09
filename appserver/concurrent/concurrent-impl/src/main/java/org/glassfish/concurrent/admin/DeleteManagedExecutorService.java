@@ -70,7 +70,7 @@ import javax.inject.Inject;
 @I18n("delete.managed.executor.service")
 public class DeleteManagedExecutorService implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteManagedExecutorService.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteManagedExecutorService.class);    
 
     @Param(optional=true)
     private String target = SystemPropertyConstants.DAS_SERVER_NAME;

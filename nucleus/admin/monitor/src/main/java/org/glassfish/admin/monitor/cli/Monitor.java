@@ -74,7 +74,7 @@ public class Monitor implements AdminCommand {
     @Inject
     private ServiceLocator habitat;
 
-    final private LocalStringManagerImpl localStrings = 
+    private final LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(Monitor.class);
 
 

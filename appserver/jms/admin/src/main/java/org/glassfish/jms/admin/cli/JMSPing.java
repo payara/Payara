@@ -92,8 +92,8 @@ public class JMSPing implements AdminCommand {
     @Param(optional=true)
     String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(JMSPing.class);
-    final private static String JNDINAME_APPENDER="-Connection-Pool";
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(JMSPing.class);
+    private static final String JNDINAME_APPENDER="-Connection-Pool";
 
     @Inject
     private ConnectorRuntime connectorRuntime;

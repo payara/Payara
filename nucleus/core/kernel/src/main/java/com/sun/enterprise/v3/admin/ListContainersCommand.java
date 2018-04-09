@@ -77,7 +77,7 @@ import javax.inject.Singleton;
 @AccessRequired(resource="domain", action="read")
 public class ListContainersCommand implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListContainersCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListContainersCommand.class);
 
     @Inject
     ContainerRegistry containerRegistry;

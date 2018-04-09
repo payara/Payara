@@ -82,7 +82,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 @ConfiguredBy(Resources.class)
 public class JDBCResourceManager implements ResourceManager {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(JDBCResourceManager.class);
     private static final String DESCRIPTION = ServerTags.DESCRIPTION;
 

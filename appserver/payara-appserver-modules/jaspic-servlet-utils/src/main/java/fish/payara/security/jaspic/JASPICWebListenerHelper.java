@@ -62,7 +62,7 @@ public class JASPICWebListenerHelper {
      * Use this servlet context initialiser property to define whether a new instance of your SAM
      * is created on each request or only a single instance is created.
      */
-    public final static String SAM_PER_REQUEST_PROPERTY = "fish.payara.security.jaspic.SAMPerRequest";
+    public static final String SAM_PER_REQUEST_PROPERTY = "fish.payara.security.jaspic.SAMPerRequest";
     
     private String registrationID;
     

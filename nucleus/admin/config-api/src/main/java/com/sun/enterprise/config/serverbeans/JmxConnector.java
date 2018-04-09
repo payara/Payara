@@ -71,7 +71,7 @@ import org.jvnet.hk2.config.*;
 @Configured
 @ReferenceConstraint(skipDuringCreation=true, payload=JmxConnector.class)
 public interface JmxConnector extends ConfigBeanProxy, Named, PropertyBag, Payload {
-    final static String PORT_PATTERN = "\\$\\{[\\p{L}\\p{N}_][\\p{L}\\p{N}\\-_./;#]*\\}"
+    static final String PORT_PATTERN = "\\$\\{[\\p{L}\\p{N}_][\\p{L}\\p{N}\\-_./;#]*\\}"
             + "|[1-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1-9][0-9][0-9][0-9]"
             + "|[1-5][0-9][0-9][0-9][0-9]|6[0-4][0-9][0-9][0-9]"
             + "|65[0-4][0-9][0-9]|655[0-2][0-9]|6553[0-5]";

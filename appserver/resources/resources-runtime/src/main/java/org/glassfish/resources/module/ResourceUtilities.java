@@ -60,8 +60,8 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 */
 public class ResourceUtilities {
 
-    private final static Logger _logger = LogDomains.getLogger(ResourceUtilities.class, LogDomains.RSR_LOGGER);
-    private final static StringManager localStrings =
+    private static final Logger _logger = LogDomains.getLogger(ResourceUtilities.class, LogDomains.RSR_LOGGER);
+    private static final StringManager localStrings =
             StringManager.getManager(ResourceUtilities.class);
 
      private ResourceUtilities()/*disallowed*/ {

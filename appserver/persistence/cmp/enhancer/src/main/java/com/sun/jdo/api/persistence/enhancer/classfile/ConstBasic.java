@@ -47,7 +47,7 @@ import java.io.*;
  * the class constant pool.
  */
 
-abstract public class ConstBasic implements VMConstants {
+public abstract class ConstBasic implements VMConstants {
   /* The index of the constant entry in the constant pool */
   protected int index = 0;
 

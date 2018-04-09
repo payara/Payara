@@ -69,7 +69,7 @@ import org.glassfish.persistence.common.I18NHelper;
  *
  * @author Marina Vatkina
  */
-abstract public class JDOEJB20HelperImpl extends JDOEJB11HelperImpl
+public abstract class JDOEJB20HelperImpl extends JDOEJB11HelperImpl
     implements JDOEJB20Helper {
 
     /**
@@ -219,7 +219,7 @@ abstract public class JDOEJB20HelperImpl extends JDOEJB11HelperImpl
      * @param o the instance to validate.
      * @throws IllegalArgumentException if validation fails.
      */
-    abstract public void assertInstanceOfLocalInterfaceImpl(Object o);
+    public abstract void assertInstanceOfLocalInterfaceImpl(Object o);
 
    /**
      * Validates that this instance is of the correct implementation class

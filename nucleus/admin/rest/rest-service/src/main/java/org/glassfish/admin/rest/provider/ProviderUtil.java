@@ -162,12 +162,12 @@ public class ProviderUtil {
         return sb.toString();
     }
 
-    static public String getElementLink(UriInfo uriInfo, String elementName) {
+    public static String getElementLink(UriInfo uriInfo, String elementName) {
         return uriInfo.getRequestUriBuilder().segment(elementName).build().toASCIIString();
 
     }
 
-    static protected String getStartXmlElement(String name) {
+    protected static String getStartXmlElement(String name) {
         assert((name != null) && name.length() > 0);
         String result ="<";
         result = result + name;
@@ -175,7 +175,7 @@ public class ProviderUtil {
         return result;
     }
 
-    static protected String getEndXmlElement(String name) {
+    protected static String getEndXmlElement(String name) {
         assert((name != null) && name.length() > 0);
         String result ="<";
         result = result + "/";
@@ -184,7 +184,7 @@ public class ProviderUtil {
         return result;
     }
 
-    static public Map getStatistics(Statistic statistic) throws
+    public static Map getStatistics(Statistic statistic) throws
             IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         HashMap results = new HashMap();
         Class classObject = statistic.getClass();
@@ -212,7 +212,7 @@ public class ProviderUtil {
         return results;
     }
 
-    static public Map<String, Object> getStatistic(Statistic statistic) {
+    public static Map<String, Object> getStatistic(Statistic statistic) {
         Map<String,Object> statsMap;
         // Most likely we will get the proxy of the StatisticImpl,
         // reconvert that so you can access getStatisticAsMap method
@@ -225,7 +225,7 @@ public class ProviderUtil {
         return  statsMap;
     }
 
-    static public HashMap<String, String> getStringMap(Map<String, Object> map) {
+    public static HashMap<String, String> getStringMap(Map<String, Object> map) {
         HashMap<String, String> stringMap = new HashMap<String, String>();
         if (map != null) {
             //Convert attribute value to String if that's not the case.
@@ -248,7 +248,7 @@ public class ProviderUtil {
         return stringMap;
     }
 
-    static protected String getHtmlRepresentationForAttributes(ConfigBean proxy, UriInfo uriInfo) {
+    protected static String getHtmlRepresentationForAttributes(ConfigBean proxy, UriInfo uriInfo) {
         StringBuilder result = new StringBuilder();
 
         MethodMetaData methodMetaData = ResourceUtil.getMethodMetaData(proxy.model);
@@ -277,7 +277,7 @@ public class ProviderUtil {
         }
     }
 
-    static protected String getHtmlRespresentationsForCommand(MethodMetaData methodMetaData, String commandMethod,
+    protected static String getHtmlRespresentationsForCommand(MethodMetaData methodMetaData, String commandMethod,
                                                               String commandDisplayName, UriInfo uriInfo) {
         StringBuilder result = new StringBuilder();
         if (methodMetaData != null) {
@@ -339,7 +339,7 @@ public class ProviderUtil {
         return result.toString();
     }
 
-    static protected String getHtmlForComponent(String component, String heading, String result) {
+    protected static String getHtmlForComponent(String component, String heading, String result) {
         if ((component != null) && (component.length() > 0)) {
             result = result + "<h2>" + heading + "</h2>";
             result = result + component;
@@ -355,7 +355,7 @@ public class ProviderUtil {
      * @param mediaType the media type of the input request
      * @return a hit to display when module monitoring levels are all OFF
      */
-    static protected String getHint(UriInfo uriInfo, String mediaType) {
+    protected static String getHint(UriInfo uriInfo, String mediaType) {
         String result = "";
         java.net.URI baseUri = uriInfo.getBaseUri();
         String monitoringLevelsConfigUrl = baseUri.getScheme() + "://" +
@@ -396,7 +396,7 @@ public class ProviderUtil {
        return result;
     }
 
-    static public String jsonValue(Object value) {
+    public static String jsonValue(Object value) {
         String result ="";
 
         if (value.getClass().getName().equals("java.lang.String")) {
@@ -408,7 +408,7 @@ public class ProviderUtil {
         return result;
     }
 
-    static public String getHtmlHeader(String baseUri) {
+    public static String getHtmlHeader(String baseUri) {
         String title = Version.getVersion() + " REST Interface";
         String result = "<html><head><title>" + title + "</title>";
         result = result + getInternalStyleSheet(baseUri);
@@ -419,17 +419,17 @@ public class ProviderUtil {
         return result;
     }
 
-    static protected JsonArray getJsonForMethodMetaData(OptionsResult metaData) throws JsonException {
+    protected static JsonArray getJsonForMethodMetaData(OptionsResult metaData) throws JsonException {
         OptionsResultJsonProvider provider = new OptionsResultJsonProvider();
         return provider.getRespresenationForMethodMetaData(metaData);
     }
 
-    static protected String getJsonForMethodMetaData(OptionsResult metaData, String indent) {
+    protected static String getJsonForMethodMetaData(OptionsResult metaData, String indent) {
         OptionsResultJsonProvider provider = new OptionsResultJsonProvider();
         return provider.getRespresenationForMethodMetaData(metaData).toString();
     }
 
-    static protected String getXmlForMethodMetaData(OptionsResult metaData, String indent) {
+    protected static String getXmlForMethodMetaData(OptionsResult metaData, String indent) {
         OptionsResultXmlProvider provider = new OptionsResultXmlProvider();
         return provider.getRespresenationForMethodMetaData(metaData, indent);
     }

@@ -68,7 +68,7 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
 
     private static final String CLASSNAME = H2PersistenceManager.class.getName();
 
-    private final static Logger logger = Logger.getLogger(CLASSNAME);
+    private static final Logger logger = Logger.getLogger(CLASSNAME);
 
     private IBatchConfig batchConfig = null;
 

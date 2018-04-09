@@ -117,7 +117,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     private static final String EMBEDDED_RAR = "embedded_rar";
 
     private static LocalStringsImpl strings = new LocalStringsImpl(EarHandler.class);
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EarHandler.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EarHandler.class);
 
     private static final Logger _logger = EarDeployer.deplLogger;
 

@@ -55,7 +55,7 @@ import java.util.Map;
  */
 public class MailSessionNode extends DeploymentDescriptorNode<MailSessionDescriptor> {
 
-    public final static XMLElement tag = new XMLElement(TagNames.MAIL_SESSION);
+    public static final XMLElement tag = new XMLElement(TagNames.MAIL_SESSION);
     private MailSessionDescriptor descriptor = null;
 
     public MailSessionNode() {

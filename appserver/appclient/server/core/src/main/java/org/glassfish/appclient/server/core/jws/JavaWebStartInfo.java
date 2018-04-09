@@ -105,7 +105,7 @@ import org.jvnet.hk2.config.types.Property;
 @PerLookup
 public class JavaWebStartInfo implements ConfigListener {
 
-    private final static String GLASSFISH_DIRECTORY_PREFIX = "glassfish/";
+    private static final String GLASSFISH_DIRECTORY_PREFIX = "glassfish/";
 
     @Inject
     private JWSAdapterManager jwsAdapterManager;
@@ -164,8 +164,8 @@ public class JavaWebStartInfo implements ConfigListener {
 
     private String signingAlias;
 
-    final private Map<String,StaticContent> staticContent = new HashMap<String,StaticContent>();
-    final private Map<String,DynamicContent> dynamicContent = new HashMap<String,DynamicContent>();
+    private final Map<String,StaticContent> staticContent = new HashMap<String,StaticContent>();
+    private final Map<String,DynamicContent> dynamicContent = new HashMap<String,DynamicContent>();
 
     private static final String JNLP_MIME_TYPE = "application/x-java-jnlp-file";
 
@@ -208,7 +208,7 @@ public class JavaWebStartInfo implements ConfigListener {
 
     private final JavaWebStartState jwsState = new JavaWebStartState();
 
-    private final static String JAVA_WEB_START_ENABLED_PROPERTY_NAME =
+    private static final String JAVA_WEB_START_ENABLED_PROPERTY_NAME =
             DeploymentUtils.DEPLOYMENT_PROPERTY_JAVA_WEB_START_ENABLED;
 
     private AppClientDeployerHelper helper;

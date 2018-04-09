@@ -92,20 +92,20 @@ import com.sun.jdo.api.persistence.enhancer.util.Support;
  */
 public class EnhancerClassLoader extends URLClassLoader {
 
-    static public final String DO_SIMPLE_TIMING
+    public static final String DO_SIMPLE_TIMING
         = FilterEnhancer.DO_SIMPLE_TIMING;
-    static public final String VERBOSE_LEVEL
+    public static final String VERBOSE_LEVEL
         = FilterEnhancer.VERBOSE_LEVEL;
-    static public final String VERBOSE_LEVEL_QUIET
+    public static final String VERBOSE_LEVEL_QUIET
         = FilterEnhancer.VERBOSE_LEVEL_QUIET;
-    static public final String VERBOSE_LEVEL_WARN
+    public static final String VERBOSE_LEVEL_WARN
         = FilterEnhancer.VERBOSE_LEVEL_WARN;
-    static public final String VERBOSE_LEVEL_VERBOSE
+    public static final String VERBOSE_LEVEL_VERBOSE
         = FilterEnhancer.VERBOSE_LEVEL_VERBOSE;
-    static public final String VERBOSE_LEVEL_DEBUG
+    public static final String VERBOSE_LEVEL_DEBUG
         = FilterEnhancer.VERBOSE_LEVEL_DEBUG;
 
-    static public URL[] pathToURLs(String classpath) {
+    public static URL[] pathToURLs(String classpath) {
         return URLClassPath.pathToURLs(classpath);
     }
 

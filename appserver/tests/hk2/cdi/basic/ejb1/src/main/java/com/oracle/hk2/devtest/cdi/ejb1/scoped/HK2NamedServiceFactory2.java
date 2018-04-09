@@ -50,7 +50,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 public class HK2NamedServiceFactory2 implements Factory<HK2NamedService> {
-    public final static String NAME = "Alice";
+    public static final String NAME = "Alice";
 
     /* (non-Javadoc)
      * @see org.glassfish.hk2.api.Factory#provide()

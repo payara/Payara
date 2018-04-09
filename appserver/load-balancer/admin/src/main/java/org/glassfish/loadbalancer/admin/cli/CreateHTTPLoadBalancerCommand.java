@@ -177,7 +177,7 @@ public final class CreateHTTPLoadBalancerCommand extends LBCommandsBase
 
     private ActionReport report;
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(CreateHTTPLoadBalancerCommand.class);
 
     

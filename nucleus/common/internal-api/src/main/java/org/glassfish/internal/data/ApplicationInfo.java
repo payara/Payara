@@ -76,16 +76,16 @@ public class ApplicationInfo extends ModuleInfo {
     /** The prefix that will be given to the service locator, followed by the name of the application */
     public final static String APP_SERVICE_LOCATOR_PREFIX = "JavaEEApp.";
 
-    final private Collection<ModuleInfo> modules = new ArrayList<ModuleInfo>();
+    private final Collection<ModuleInfo> modules = new ArrayList<ModuleInfo>();
 
     // The reversed modules contain the same elements as modules but just in 
     // reversed order, they are used when stopping/unloading the application.
     // The modules should be stopped/unloaded in the reverse order of what 
     // they were originally loaded/started.
-    final private LinkedList<ModuleInfo> reversedModules = new LinkedList<ModuleInfo>();
+    private final LinkedList<ModuleInfo> reversedModules = new LinkedList<ModuleInfo>();
 
-    final private ReadableArchive source;
-    final private Map<String, Object> transientAppMetaData = new HashMap<String, Object>();
+    private final ReadableArchive source;
+    private final Map<String, Object> transientAppMetaData = new HashMap<String, Object>();
 
     private String libraries;
     private boolean isJavaEEApp = false;

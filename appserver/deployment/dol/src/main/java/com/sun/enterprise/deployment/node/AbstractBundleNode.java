@@ -62,10 +62,10 @@ import java.util.StringTokenizer;
 public abstract class AbstractBundleNode<T extends RootDeploymentDescriptor>
         extends DisplayableComponentNode<T> implements BundleNode, RootXMLNode<T> {
     
-    public final static String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
-    public final static String W3C_XML_SCHEMA_INSTANCE = "http://www.w3.org/2001/XMLSchema-instance";
+    public static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
+    public static final String W3C_XML_SCHEMA_INSTANCE = "http://www.w3.org/2001/XMLSchema-instance";
         
-    protected final static String SCHEMA_LOCATION_TAG = "xsi:schemaLocation";
+    protected static final String SCHEMA_LOCATION_TAG = "xsi:schemaLocation";
     
     protected String docType;
     

@@ -109,10 +109,10 @@ public class DriverLoader implements ConnectorConstants {
             System.getProperty(ConnectorConstants.INSTALL_ROOT) + File.separator + 
             "lib" + File.separator + "install" + File.separator + "databases" +
             File.separator + "dbvendormapping" + File.separator;
-    private final static String DS_PROPERTIES = "ds.properties";
-    private final static String CPDS_PROPERTIES = "cpds.properties";
-    private final static String XADS_PROPERTIES = "xads.properties";
-    private final static String DRIVER_PROPERTIES = "driver.properties";
+    private static final String DS_PROPERTIES = "ds.properties";
+    private static final String CPDS_PROPERTIES = "cpds.properties";
+    private static final String XADS_PROPERTIES = "xads.properties";
+    private static final String DRIVER_PROPERTIES = "driver.properties";
     private final String VENDOR_PROPERTIES = "dbvendor.properties";
 
     /**

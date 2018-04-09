@@ -69,7 +69,7 @@ import com.sun.jdo.spi.persistence.utility.logging.Logger;
 public class CMPBeanHelper {
 
     /** I18N message handlers */
-    private final static ResourceBundle cmpMessages = I18NHelper.loadBundle(
+    private static final ResourceBundle cmpMessages = I18NHelper.loadBundle(
         "com.sun.jdo.spi.persistence.support.ejb.ejbc.Bundle", // NOI18N
         CMPBeanHelper.class.getClassLoader());
 

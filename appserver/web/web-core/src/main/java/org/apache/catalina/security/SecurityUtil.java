@@ -94,15 +94,15 @@ import java.util.logging.Logger;
 
 public final class SecurityUtil{
     
-    private final static int INIT= 0;
-    private final static int SERVICE = 1;
-    private final static int DOFILTER = 1;
-    private final static int DESTROY = 2;
+    private static final int INIT= 0;
+    private static final int SERVICE = 1;
+    private static final int DOFILTER = 1;
+    private static final int DESTROY = 2;
     
-    private final static String INIT_METHOD = "init";
-    private final static String DOFILTER_METHOD = "doFilter";
-    private final static String SERVICE_METHOD = "service";
-    private final static String DESTROY_METHOD = "destroy";
+    private static final String INIT_METHOD = "init";
+    private static final String DOFILTER_METHOD = "doFilter";
+    private static final String SERVICE_METHOD = "service";
+    private static final String DESTROY_METHOD = "destroy";
    
     /**
      * Cache every object for which we are creating method on it.

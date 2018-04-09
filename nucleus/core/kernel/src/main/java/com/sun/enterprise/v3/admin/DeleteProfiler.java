@@ -90,7 +90,7 @@ import org.glassfish.api.admin.*;
 })
 public class DeleteProfiler implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
-   final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteProfiler.class);
+   private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteProfiler.class);
 
     @Param(name="target", optional=true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     String target;

@@ -51,10 +51,10 @@ import java.util.Enumeration;
 
 public class ClassMethod extends ClassMember {
   /* The name of the constructor code */
-    public final static String intializerName = "<init>";//NOI18N
+    public static final String intializerName = "<init>";//NOI18N
 
   /* The name of the static initializer code */
-    public final static String staticIntializerName = "<clinit>";//NOI18N
+    public static final String staticIntializerName = "<clinit>";//NOI18N
 
   /* access flag bit mask - see VMConstants */
   private int accessFlags;

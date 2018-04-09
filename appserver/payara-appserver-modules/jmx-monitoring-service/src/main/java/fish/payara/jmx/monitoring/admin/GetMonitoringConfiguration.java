@@ -98,7 +98,7 @@ import java.util.ArrayList;
 public class GetMonitoringConfiguration implements AdminCommand {
 
     private final String ATTRIBUTE_HEADERS[] = {"|Object Name|", "|Attribute|", "|Description|"};
-    private final static String NOTIFIER_HEADERS[] = {"Name", "Notifier Enabled"};
+    private static final String NOTIFIER_HEADERS[] = {"Name", "Notifier Enabled"};
 
     @Inject
     private Target targetUtil;

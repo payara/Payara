@@ -63,7 +63,7 @@ public abstract class ListenerClass extends WebTest implements WebCheck {
      * @param listenerClass is the individual listener class object to test
      * @return true if the test pass
      */    
-    abstract protected boolean runIndividualListenerTest(Result result, Class listenerClass);
+    protected abstract boolean runIndividualListenerTest(Result result, Class listenerClass);
     
     /** 
      * Listener class must implement a no arg constructor.

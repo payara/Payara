@@ -75,7 +75,7 @@ import java.util.Properties;
 })
 public class NotifierServiceLister implements AdminCommand {
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(NotifierServiceLister.class);
+    private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(NotifierServiceLister.class);
 
     @Inject
     ServiceLocator habitat;

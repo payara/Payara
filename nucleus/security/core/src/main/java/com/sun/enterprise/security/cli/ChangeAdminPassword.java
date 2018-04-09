@@ -92,7 +92,7 @@ import org.glassfish.internal.api.Target;
 @ExecuteOn({RuntimeType.ALL})
 public class ChangeAdminPassword implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(ChangeAdminPassword.class);    
 
     @Param(name="password", password=true)

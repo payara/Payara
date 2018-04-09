@@ -53,7 +53,7 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name="grizzly")
 public class GrizzlyAdapterSniffer extends GenericSniffer {
     
-    final static private String[] containerNames = { "grizzly" };
+    static private final String[] containerNames = { "grizzly" };
 
     public GrizzlyAdapterSniffer() {
         super("grizzly", GrizzlyModuleDescriptor.DescriptorPath ,null);

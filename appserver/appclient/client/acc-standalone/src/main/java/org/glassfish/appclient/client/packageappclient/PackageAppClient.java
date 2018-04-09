@@ -87,28 +87,28 @@ import java.util.zip.ZipException;
  */
 public class PackageAppClient {
 
-    private final static String OUTPUT_PREFIX = "appclient/";
+    private static final String OUTPUT_PREFIX = "appclient/";
 
-    private final static String GLASSFISH_LIB = "glassfish/lib";
+    private static final String GLASSFISH_LIB = "glassfish/lib";
 
-    private final static String GLASSFISH_BIN = "glassfish/bin";
+    private static final String GLASSFISH_BIN = "glassfish/bin";
 
-    private final static String GLASSFISH_CONFIG = "glassfish/config";
+    private static final String GLASSFISH_CONFIG = "glassfish/config";
 
-    private final static String MODULES_ENDORSED_DIR = "glassfish/modules/endorsed";
+    private static final String MODULES_ENDORSED_DIR = "glassfish/modules/endorsed";
 
-    private final static String MQ_LIB = "mq/lib";
+    private static final String MQ_LIB = "mq/lib";
 
-    private final static String DOMAIN_1_CONFIG = "glassfish/domains/domain1/config";
+    private static final String DOMAIN_1_CONFIG = "glassfish/domains/domain1/config";
 
-    private final static String INDENT = "  ";
+    private static final String INDENT = "  ";
 
-    private final static String ACC_CONFIG_FILE_DEFAULT = "/glassfish-acc.xml";
-    private final static String ACC_CONFIG_FILE_DEFAULT_OLD = "/sun-acc.xml";
+    private static final String ACC_CONFIG_FILE_DEFAULT = "/glassfish-acc.xml";
+    private static final String ACC_CONFIG_FILE_DEFAULT_OLD = "/sun-acc.xml";
 
 
     /* DIRS_TO_COPY entries are all relative to the installation directory */
-    private final static String[] DIRS_TO_COPY = new String[] {
+    private static final String[] DIRS_TO_COPY = new String[] {
         GLASSFISH_LIB + "/dtds",
         GLASSFISH_LIB + "/schemas",
         GLASSFISH_LIB + "/appclient"
@@ -119,42 +119,42 @@ public class PackageAppClient {
      * separately from other directorys because we do not include all files from
      * the endorsed directory.
      */
-    private final static String LIB_ENDORSED_DIR = GLASSFISH_LIB + "/endorsed";
+    private static final String LIB_ENDORSED_DIR = GLASSFISH_LIB + "/endorsed";
 
-    private final static String[] ENDORSED_DIRS_TO_COPY = new String[] {
+    private static final String[] ENDORSED_DIRS_TO_COPY = new String[] {
         LIB_ENDORSED_DIR,
         MODULES_ENDORSED_DIR
     };
 
     /* default sun-acc.xml is relative to the installation directory */
-    private final static String DEFAULT_ACC_XML =
+    private static final String DEFAULT_ACC_XML =
             DOMAIN_1_CONFIG + ACC_CONFIG_FILE_DEFAULT;
-    private final static String OLD_ACC_XML =
+    private static final String OLD_ACC_XML =
             DOMAIN_1_CONFIG + ACC_CONFIG_FILE_DEFAULT_OLD;
 
-    private final static String[] DEFAULT_ACC_CONFIG_FILES = {
+    private static final String[] DEFAULT_ACC_CONFIG_FILES = {
         DEFAULT_ACC_XML, OLD_ACC_XML
         };
 
-    private final static String IMQJMSRA_APP =
+    private static final String IMQJMSRA_APP =
             GLASSFISH_LIB + "/install/applications/jmsra/imqjmsra.jar";
 
-    private final static String IMQ_JAR = MQ_LIB + "/imq.jar";
-    private final static String IMQADMIN_JAR = MQ_LIB + "/imqadmin.jar";
-    private final static String IMQUTIL_JAR = MQ_LIB + "/imqutil.jar";
-    private final static String FSCONTEXT_JAR = MQ_LIB + "/fscontext.jar";
+    private static final String IMQ_JAR = MQ_LIB + "/imq.jar";
+    private static final String IMQADMIN_JAR = MQ_LIB + "/imqadmin.jar";
+    private static final String IMQUTIL_JAR = MQ_LIB + "/imqutil.jar";
+    private static final String FSCONTEXT_JAR = MQ_LIB + "/fscontext.jar";
 
-    private final static String WIN_SCRIPT = GLASSFISH_BIN + "/appclient.bat";
-    private final static String WIN_JS = GLASSFISH_BIN + "/appclient.js";
-    private final static String NONWIN_SCRIPT = GLASSFISH_BIN + "/appclient";
+    private static final String WIN_SCRIPT = GLASSFISH_BIN + "/appclient.bat";
+    private static final String WIN_JS = GLASSFISH_BIN + "/appclient.js";
+    private static final String NONWIN_SCRIPT = GLASSFISH_BIN + "/appclient";
 
-    private final static String ASENV_CONF = GLASSFISH_CONFIG + "/asenv.conf";
-    private final static String ASENV_BAT = GLASSFISH_CONFIG + "/asenv.bat";
+    private static final String ASENV_CONF = GLASSFISH_CONFIG + "/asenv.conf";
+    private static final String ASENV_BAT = GLASSFISH_CONFIG + "/asenv.bat";
 
     private static final char UNIX_SEPARATOR = '/';
     private static final char WINDOWS_SEPARATOR = '\\';
 
-    private final static String[] SINGLE_FILES_TO_COPY = {
+    private static final String[] SINGLE_FILES_TO_COPY = {
         IMQJMSRA_APP,
         IMQ_JAR,
         IMQADMIN_JAR,
@@ -167,9 +167,9 @@ public class PackageAppClient {
         ASENV_BAT};
 
     /* default output file */
-    private final static String DEFAULT_OUTPUT_PATH = GLASSFISH_LIB +  "/appclient.jar";
+    private static final String DEFAULT_OUTPUT_PATH = GLASSFISH_LIB +  "/appclient.jar";
 
-    private final static LocalStringsImpl strings = new LocalStringsImpl(PackageAppClient.class);
+    private static final LocalStringsImpl strings = new LocalStringsImpl(PackageAppClient.class);
 
     private boolean isVerbose;
 

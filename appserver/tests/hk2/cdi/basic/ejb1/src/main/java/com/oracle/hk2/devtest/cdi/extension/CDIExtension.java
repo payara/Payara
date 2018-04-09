@@ -76,10 +76,10 @@ import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
  *
  */
 public class CDIExtension implements Extension {
-    private final static String FILE_PREFIX = "destroyed-";
-    private final static String FILE_POSTFIX = ".txt";
-    private final static String JNDI_APP_NAME = "java:app/AppName";
-    private final static String JNDI_LOCATOR_NAME = "java:app/hk2/ServiceLocator";
+    private static final String FILE_PREFIX = "destroyed-";
+    private static final String FILE_POSTFIX = ".txt";
+    private static final String JNDI_APP_NAME = "java:app/AppName";
+    private static final String JNDI_LOCATOR_NAME = "java:app/hk2/ServiceLocator";
     
     private File createDestructionFileObject() {
         try {

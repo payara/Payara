@@ -47,17 +47,17 @@ import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
 
 public interface SunWebApp {
 
-    static public final String SECURITY_ROLE_MAPPING = "SecurityRoleMapping";	// NOI18N
-    static public final String SECURITY_ROLE_ASSIGNMENT = "SecurityRoleAssignment";	// NOI18N
-    static public final String SERVLET = "Servlet";	// NOI18N
-    static public final String SESSION_CONFIG = "SessionConfig";	// NOI18N
-    static public final String CACHE = "Cache";	// NOI18N
-    static public final String CLASS_LOADER = "ClassLoader";	// NOI18N
-    static public final String JSP_CONFIG = "JspConfig";	// NOI18N
-    static public final String LOCALE_CHARSET_INFO = "LocaleCharsetInfo";	// NOI18N
-    static public final String PARAMETER_ENCODING = "ParameterEncoding";
-    static public final String FORM_HINT_FIELD = "FormHintField";
-    static public final String DEFAULT_CHARSET = "DefaultCharset";
+    public static final String SECURITY_ROLE_MAPPING = "SecurityRoleMapping";	// NOI18N
+    public static final String SECURITY_ROLE_ASSIGNMENT = "SecurityRoleAssignment";	// NOI18N
+    public static final String SERVLET = "Servlet";	// NOI18N
+    public static final String SESSION_CONFIG = "SessionConfig";	// NOI18N
+    public static final String CACHE = "Cache";	// NOI18N
+    public static final String CLASS_LOADER = "ClassLoader";	// NOI18N
+    public static final String JSP_CONFIG = "JspConfig";	// NOI18N
+    public static final String LOCALE_CHARSET_INFO = "LocaleCharsetInfo";	// NOI18N
+    public static final String PARAMETER_ENCODING = "ParameterEncoding";
+    public static final String FORM_HINT_FIELD = "FormHintField";
+    public static final String DEFAULT_CHARSET = "DefaultCharset";
     public static final String IDEMPOTENT_URL_PATTERN = "IdempotentUrlPattern";
     public static final String ERROR_URL = "ErrorUrl";
     public static final String HTTPSERVLET_SECURITY_PROVIDER = "HttpServletSecurityProvider";

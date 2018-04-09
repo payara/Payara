@@ -53,7 +53,7 @@ class LoggerHelper
 	
 	///////////////////////////////////////////////////////////////////////////
 
-	final static Logger get()
+	static final Logger get()
 	{
 		// the final should cause this to be inlined...
 		return logger;
@@ -61,7 +61,7 @@ class LoggerHelper
 	
 	///////////////////////////////////////////////////////////////////////////
 
-	final static void setLevel(BackupRequest req)
+	static final void setLevel(BackupRequest req)
 	{
 		// the final should cause this to be inlined...
 		if(req.terse)
@@ -87,18 +87,18 @@ class LoggerHelper
 	////////         Convenience methods        ///////////////////////////////
 	///////////////////////////////////////////////////////////////////////////
 
-	final static void finest(String s) { logger.finest(s); }
-	final static void finest(String s, Object o) { logger.log(Level.FINEST, s, new Object[] { o }); }
-	final static void finer(String s) { logger.finer(s); }
-	final static void finer(String s, Object o) { logger.log(Level.FINER, s, new Object[] { o }); }
-	final static void fine(String s) { logger.fine(s); }
-	final static void fine(String s, Object o) { logger.log(Level.FINE, s, new Object[] { o }); }
-	final static void info(String s) { logger.info(s); }
-	final static void info(String s, Object o) { logger.log(Level.INFO, s, new Object[] { o }); }
-	final static void warning(String s) { logger.warning(s); }
-	final static void warning(String s, Object o) { logger.log(Level.WARNING, s, new Object[] { o }); }
-	final static void severe(String s) { logger.severe(s); }
-	final static void severe(String s, Object o) { logger.log(Level.SEVERE, s, new Object[] { o }); }
+	static final void finest(String s) { logger.finest(s); }
+	static final void finest(String s, Object o) { logger.log(Level.FINEST, s, new Object[] { o }); }
+	static final void finer(String s) { logger.finer(s); }
+	static final void finer(String s, Object o) { logger.log(Level.FINER, s, new Object[] { o }); }
+	static final void fine(String s) { logger.fine(s); }
+	static final void fine(String s, Object o) { logger.log(Level.FINE, s, new Object[] { o }); }
+	static final void info(String s) { logger.info(s); }
+	static final void info(String s, Object o) { logger.log(Level.INFO, s, new Object[] { o }); }
+	static final void warning(String s) { logger.warning(s); }
+	static final void warning(String s, Object o) { logger.log(Level.WARNING, s, new Object[] { o }); }
+	static final void severe(String s) { logger.severe(s); }
+	static final void severe(String s, Object o) { logger.log(Level.SEVERE, s, new Object[] { o }); }
 	
 	///////////////////////////////////////////////////////////////////////////
 

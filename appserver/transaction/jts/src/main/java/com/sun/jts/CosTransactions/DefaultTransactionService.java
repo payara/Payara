@@ -379,7 +379,7 @@ public class DefaultTransactionService implements ProxyChecker {
      *
      * @see
      */
-    final static void createPOAs()
+    static final void createPOAs()
         throws Exception {
 
         POA rootPOA = (POA)orb.resolve_initial_references("RootPOA"/*#Frozen*/);

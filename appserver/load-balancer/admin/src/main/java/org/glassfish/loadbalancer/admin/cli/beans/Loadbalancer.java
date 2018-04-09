@@ -89,8 +89,8 @@ import java.io.*;
 public class Loadbalancer extends org.netbeans.modules.schema2beans.BaseBean {
 
     static Vector comparators = new Vector();
-    static public final String CLUSTER = "Cluster";	// NOI18N
-    static public final String PROPERTY2 = "Property2";	// NOI18N
+    public static final String CLUSTER = "Cluster";	// NOI18N
+    public static final String PROPERTY2 = "Property2";	// NOI18N
 
     public Loadbalancer() {
         this(null, Common.USE_DEFAULT_VALUES);

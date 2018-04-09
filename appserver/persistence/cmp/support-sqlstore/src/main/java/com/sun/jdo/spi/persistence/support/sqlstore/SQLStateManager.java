@@ -148,7 +148,7 @@ public class SQLStateManager implements Cloneable, StateManager, TestStateManage
     private static Logger logger = LogHelperStateManager.getLogger();
 
     /** I18N message handler. */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
             SQLStateManager.class);
 
     /** Name of the USE_BATCH property. */

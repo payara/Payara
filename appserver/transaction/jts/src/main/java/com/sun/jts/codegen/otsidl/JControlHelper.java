@@ -50,7 +50,7 @@ package com.sun.jts.codegen.otsidl;
 
 
 //#-----------------------------------------------------------------------------
-abstract public class JControlHelper
+public abstract class JControlHelper
 {
   private static String  _id = "IDL:otsidl/JControl:1.0";
 

@@ -73,7 +73,7 @@ import javax.inject.Inject;
 @I18n("delete.resource.adapter.config")
 public class DeleteResourceAdapterConfig implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteResourceAdapterConfig.class);
 
     @Param(name="raname", primary=true)

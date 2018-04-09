@@ -51,9 +51,9 @@ import org.testng.annotations.Test;
  *
  */
 public class NegativeTest extends NucleusStartStopTest {
-    private final static String NORMAL_WITH_FINALS_JAR = "negative/normalScopeWithFinal/target/normalScopeWithFinal.jar";
-    private final static String SOURCE_HOME = System.getProperty("source.home", "$");
-    private final static String SOURCE_HOME_CDI = "/appserver/tests/cdi/";
+    private static final String NORMAL_WITH_FINALS_JAR = "negative/normalScopeWithFinal/target/normalScopeWithFinal.jar";
+    private static final String SOURCE_HOME = System.getProperty("source.home", "$");
+    private static final String SOURCE_HOME_CDI = "/appserver/tests/cdi/";
     
     private static String getDeployablePath(String endPath) {
         if (!SOURCE_HOME.startsWith("$")) {

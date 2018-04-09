@@ -103,7 +103,7 @@ public class ReDeployCommand extends DeployCommandParameters implements AdminCom
     private final Collection<String> excludedDeployCommandParamNames =
             initExcludedDeployCommandParamNames();
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ReDeployCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ReDeployCommand.class);
     
     /**
      * Executes the command.

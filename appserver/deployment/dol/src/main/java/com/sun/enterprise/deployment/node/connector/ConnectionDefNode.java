@@ -68,7 +68,7 @@ public class ConnectionDefNode extends DeploymentDescriptorNode {
 
     ConnectionDefDescriptor descriptor = null; 
    
-    public final static XMLElement tag = new XMLElement(ConnectorTagNames.CONNECTION_DEFINITION);
+    public static final XMLElement tag = new XMLElement(ConnectorTagNames.CONNECTION_DEFINITION);
     
     //default constructor...for normal operation in case of 1.5 DTD
     public ConnectionDefNode() {

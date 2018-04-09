@@ -86,7 +86,7 @@ import org.glassfish.hk2.api.ServiceLocator;
     CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE } )
 public class DeleteIiopListener implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteIiopListener.class);
 
     @Param(name="listener_id", primary=true)

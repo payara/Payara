@@ -65,7 +65,7 @@ public class DatabaseOutputStream extends OutputStream {
             LogHelperDatabaseGenerator.getLogger();
 
     /** I18N message handler */
-    private final static ResourceBundle messages =
+    private static final ResourceBundle messages =
             I18NHelper.loadBundle(DatabaseOutputStream.class);
 
     /** Connection to the database. */

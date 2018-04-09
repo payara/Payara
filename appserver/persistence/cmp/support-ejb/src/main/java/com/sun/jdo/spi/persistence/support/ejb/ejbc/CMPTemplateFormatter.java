@@ -63,138 +63,138 @@ import com.sun.jdo.spi.persistence.utility.generator.JavaClassWriterHelper;
  */
 public class CMPTemplateFormatter extends JavaClassWriterHelper{
 
-    private final static String templateFile =
+    private static final String templateFile =
         "com/sun/jdo/spi/persistence/support/ejb/ejbc/CMPTemplates.properties"; // NOI18N
 
     // Strings for CMP code generation:
-    public final static String ejb_                       = "ejb"; // NOI18N
-    public final static String ejbObject_                 = "EJBObject"; // NOI18N
-    public final static String ejbHome_                   = "EJBHome"; // NOI18N
-    public final static String ejbContext_                = "EJBContext"; // NOI18N
-    public final static String context_                   = "context"; // NOI18N
-    public final static String key_                       = "key"; // NOI18N
-    public final static String keys_                      = "keys"; // NOI18N
-    public final static String oid_                       = "jdoObjectId"; // NOI18N
-    public final static String oids_                      = "oids"; // NOI18N
-    public final static String pc_                        = "pc"; // NOI18N
-    public final static String cmpImplComments_           = "cmpImplComments"; // NOI18N
-    public final static String imports_                   = "imports"; // NOI18N
-    public final static String interfaces_                = "interfaces"; // NOI18N
-    public final static String helperImports_             = "helperImports"; // NOI18N
-    public final static String staticTransientPackageVariables_  = "staticTransientPackageVariables"; // NOI18N
-    public final static String privateStaticVariables_    = "privateStaticVariables"; // NOI18N
-    public final static String privateTransientVariables_ = "privateTransientVariables"; // NOI18N
-    public final static String privateStaticFinalVariables_  = "privateStaticFinalVariables"; // NOI18N
-    public final static String publicStaticFinalVariables_ = "publicStaticFinalVariables"; // NOI18N
-    public final static String finderSelectorStaticVariables_  = "finderSelectorStaticVariables"; // NOI18N
-    public final static String finderSelectorStaticFinalVariables_  = "finderSelectorStaticFinalVariables"; // NOI18N
-    public final static String otherVariables_            = "otherVariables"; // NOI18N
-    public final static String setNull_                   = "setNull"; // NOI18N
-    public final static String commonPrivateMethods_      = "commonPrivateMethods"; // NOI18N
-    public final static String commonPublicMethods_       = "commonPublicMethods"; // NOI18N
-    public final static String otherPublicMethods_        = "otherPublicMethods"; // NOI18N
-    public final static String jdoLookupPersistenceManagerFactory_
+    public static final String ejb_                       = "ejb"; // NOI18N
+    public static final String ejbObject_                 = "EJBObject"; // NOI18N
+    public static final String ejbHome_                   = "EJBHome"; // NOI18N
+    public static final String ejbContext_                = "EJBContext"; // NOI18N
+    public static final String context_                   = "context"; // NOI18N
+    public static final String key_                       = "key"; // NOI18N
+    public static final String keys_                      = "keys"; // NOI18N
+    public static final String oid_                       = "jdoObjectId"; // NOI18N
+    public static final String oids_                      = "oids"; // NOI18N
+    public static final String pc_                        = "pc"; // NOI18N
+    public static final String cmpImplComments_           = "cmpImplComments"; // NOI18N
+    public static final String imports_                   = "imports"; // NOI18N
+    public static final String interfaces_                = "interfaces"; // NOI18N
+    public static final String helperImports_             = "helperImports"; // NOI18N
+    public static final String staticTransientPackageVariables_  = "staticTransientPackageVariables"; // NOI18N
+    public static final String privateStaticVariables_    = "privateStaticVariables"; // NOI18N
+    public static final String privateTransientVariables_ = "privateTransientVariables"; // NOI18N
+    public static final String privateStaticFinalVariables_  = "privateStaticFinalVariables"; // NOI18N
+    public static final String publicStaticFinalVariables_ = "publicStaticFinalVariables"; // NOI18N
+    public static final String finderSelectorStaticVariables_  = "finderSelectorStaticVariables"; // NOI18N
+    public static final String finderSelectorStaticFinalVariables_  = "finderSelectorStaticFinalVariables"; // NOI18N
+    public static final String otherVariables_            = "otherVariables"; // NOI18N
+    public static final String setNull_                   = "setNull"; // NOI18N
+    public static final String commonPrivateMethods_      = "commonPrivateMethods"; // NOI18N
+    public static final String commonPublicMethods_       = "commonPublicMethods"; // NOI18N
+    public static final String otherPublicMethods_        = "otherPublicMethods"; // NOI18N
+    public static final String jdoLookupPersistenceManagerFactory_
                                                           = "jdoLookupPersistenceManagerFactory"; // NOI18N
-    public final static String helperMethods_             = "helperMethods"; // NOI18N
-    public final static String getInstance_               = "jdoGetInstance"; // NOI18N
-    public final static String findByPrimaryKey_          = "findByPrimaryKey"; // NOI18N
-    public final static String ejbFindByPrimaryKey_       = "ejbFindByPrimaryKey"; // NOI18N
-    public final static String ejbFinderSelectorBody_     = "ejbFinderSelectorBody"; // NOI18N
-    public final static String ejbQueryExecutionParamConvBody_  = "ejbQueryExecutionParamConvBody"; // NOI18N
-    public final static String ejbQueryExecutionParamConvBodyArgument_  = "ejbQueryExecutionParamConvBodyArgument"; // NOI18N
-    public final static String ejbQueryExecutionBody_     = "ejbQueryExecutionBody"; // NOI18N
-    public final static String ejbAggregateQueryExecutionBody_     = "ejbAggregateQueryExecutionBody"; // NOI18N
-    public final static String ejbAggregateQueryExecutionParamConvBody_  = "ejbAggregateQueryExecutionParamConvBody"; // NOI18N
-    public final static String ejbMultiFinderBody_        = "ejbMultiFinderBody"; // NOI18N
-    public final static String ejbMultiFinderBodyEnumeration_  = "ejbMultiFinderBodyEnumeration"; // NOI18N
-    public final static String ejbSingleFinderBody_       = "ejbSingleFinderBody"; // NOI18N
-    public final static String jdoGetJdoInstanceClass_    = "jdoGetJdoInstanceClass"; // NOI18N
-    public final static String find_                      = "find"; // NOI18N
-    public final static String catchClause_               = "catchClause"; //NOI18N
-    public final static String ejbSelect_                 = "ejbSelect"; // NOI18N
-    public final static String create_                    = "create"; // NOI18N
-    public final static String remove_                    = "remove"; // NOI18N
-    public final static String ejbCreate_                 = "ejbCreate"; // NOI18N
-    public final static String ejbCreateUnknownPK_        = "ejbCreateUnknownPK"; // NOI18N
-    public final static String ejbPostCreate_             = "ejbPostCreate"; // NOI18N
-    public final static String ejbRemove_                 = "ejbRemove"; // NOI18N
-    public final static String ejbLoad_                   = "ejbLoad"; // NOI18N
-    public final static String CreateException_           = "javax.ejb.CreateException"; // NOI18N
-    public final static String DuplicateKeyException_     = "javax.ejb.DuplicateKeyException"; // NOI18N
-    public final static String RemoveException_           = "javax.ejb.RemoveException"; // NOI18N
-    public final static String ejbException_              = "EJBException"; // NOI18N
-    public final static String finderException_           = "javax.ejb.FinderException"; // NOI18N
-    public final static String assertInTransaction_       = "assertInTransaction"; // NOI18N
-    public final static String assertPersistenceManagerIsNull_       
+    public static final String helperMethods_             = "helperMethods"; // NOI18N
+    public static final String getInstance_               = "jdoGetInstance"; // NOI18N
+    public static final String findByPrimaryKey_          = "findByPrimaryKey"; // NOI18N
+    public static final String ejbFindByPrimaryKey_       = "ejbFindByPrimaryKey"; // NOI18N
+    public static final String ejbFinderSelectorBody_     = "ejbFinderSelectorBody"; // NOI18N
+    public static final String ejbQueryExecutionParamConvBody_  = "ejbQueryExecutionParamConvBody"; // NOI18N
+    public static final String ejbQueryExecutionParamConvBodyArgument_  = "ejbQueryExecutionParamConvBodyArgument"; // NOI18N
+    public static final String ejbQueryExecutionBody_     = "ejbQueryExecutionBody"; // NOI18N
+    public static final String ejbAggregateQueryExecutionBody_     = "ejbAggregateQueryExecutionBody"; // NOI18N
+    public static final String ejbAggregateQueryExecutionParamConvBody_  = "ejbAggregateQueryExecutionParamConvBody"; // NOI18N
+    public static final String ejbMultiFinderBody_        = "ejbMultiFinderBody"; // NOI18N
+    public static final String ejbMultiFinderBodyEnumeration_  = "ejbMultiFinderBodyEnumeration"; // NOI18N
+    public static final String ejbSingleFinderBody_       = "ejbSingleFinderBody"; // NOI18N
+    public static final String jdoGetJdoInstanceClass_    = "jdoGetJdoInstanceClass"; // NOI18N
+    public static final String find_                      = "find"; // NOI18N
+    public static final String catchClause_               = "catchClause"; //NOI18N
+    public static final String ejbSelect_                 = "ejbSelect"; // NOI18N
+    public static final String create_                    = "create"; // NOI18N
+    public static final String remove_                    = "remove"; // NOI18N
+    public static final String ejbCreate_                 = "ejbCreate"; // NOI18N
+    public static final String ejbCreateUnknownPK_        = "ejbCreateUnknownPK"; // NOI18N
+    public static final String ejbPostCreate_             = "ejbPostCreate"; // NOI18N
+    public static final String ejbRemove_                 = "ejbRemove"; // NOI18N
+    public static final String ejbLoad_                   = "ejbLoad"; // NOI18N
+    public static final String CreateException_           = "javax.ejb.CreateException"; // NOI18N
+    public static final String DuplicateKeyException_     = "javax.ejb.DuplicateKeyException"; // NOI18N
+    public static final String RemoveException_           = "javax.ejb.RemoveException"; // NOI18N
+    public static final String ejbException_              = "EJBException"; // NOI18N
+    public static final String finderException_           = "javax.ejb.FinderException"; // NOI18N
+    public static final String assertInTransaction_       = "assertInTransaction"; // NOI18N
+    public static final String assertPersistenceManagerIsNull_       
                                                           = "assertPersistenceManagerIsNull"; // NOI18N
-    public final static String assertPersistenceManagerIsNullCall_       
+    public static final String assertPersistenceManagerIsNullCall_       
                                                           = "assertPersistenceManagerIsNullCall"; // NOI18N
-    public final static String setEntityContext_          = "setEntityContext"; // NOI18N
-    public final static String EntityContext_             = "javax.ejb.EntityContext"; // NOI18N
-    public final static String castKey_                   = "castKey"; // NOI18N
-    public final static String castOid_                   = "castOid"; // NOI18N
-    public final static String getPK_                     = "getPK"; // NOI18N
-    public final static String getPKClone_                = "getPKClone"; // NOI18N
-    public final static String newPK_                     = "newPK"; // NOI18N
-    public final static String newOid_                    = "newOid"; // NOI18N
-    public final static String getPK1_                    = "getPK1"; // NOI18N
-    public final static String getPK1Clone_               = "getPK1Clone"; // NOI18N
-    public final static String getPK1primitive_           = "getPK1primitive"; // NOI18N
-    public final static String getOid_                    = "getOid"; // NOI18N
-    public final static String getOidString_              = "getOidString"; // NOI18N
-    public final static String getOidClone_               = "getOidClone"; // NOI18N
-    public final static String getOid1_                   = "getOid1"; // NOI18N
-    public final static String getOid1primitive_          = "getOid1primitive"; // NOI18N
-    public final static String getOid1String_             = "getOid1String"; // NOI18N
-    public final static String getOid1Clone_              = "getOid1Clone"; // NOI18N
-    public final static String getObjectId_               = "jdoGetObjectId"; // NOI18N
-    public final static String convertObjectIdToPrimaryKey_
+    public static final String setEntityContext_          = "setEntityContext"; // NOI18N
+    public static final String EntityContext_             = "javax.ejb.EntityContext"; // NOI18N
+    public static final String castKey_                   = "castKey"; // NOI18N
+    public static final String castOid_                   = "castOid"; // NOI18N
+    public static final String getPK_                     = "getPK"; // NOI18N
+    public static final String getPKClone_                = "getPKClone"; // NOI18N
+    public static final String newPK_                     = "newPK"; // NOI18N
+    public static final String newOid_                    = "newOid"; // NOI18N
+    public static final String getPK1_                    = "getPK1"; // NOI18N
+    public static final String getPK1Clone_               = "getPK1Clone"; // NOI18N
+    public static final String getPK1primitive_           = "getPK1primitive"; // NOI18N
+    public static final String getOid_                    = "getOid"; // NOI18N
+    public static final String getOidString_              = "getOidString"; // NOI18N
+    public static final String getOidClone_               = "getOidClone"; // NOI18N
+    public static final String getOid1_                   = "getOid1"; // NOI18N
+    public static final String getOid1primitive_          = "getOid1primitive"; // NOI18N
+    public static final String getOid1String_             = "getOid1String"; // NOI18N
+    public static final String getOid1Clone_              = "getOid1Clone"; // NOI18N
+    public static final String getObjectId_               = "jdoGetObjectId"; // NOI18N
+    public static final String convertObjectIdToPrimaryKey_
                                      = "convertObjectIdToPrimaryKey"; // NOI18N
-    public final static String convertPrimaryKeyToObjectId_
+    public static final String convertPrimaryKeyToObjectId_
                                      = "convertPrimaryKeyToObjectId"; // NOI18N
 
-    public final static String convertPCToEJBObject_   = "convertPCToEJBObject"; // NOI18N
-    public final static String convertEJBObjectToPC_   = "convertEJBObjectToPC"; // NOI18N
-    public final static String convertEJBLocalObjectToPC_
+    public static final String convertPCToEJBObject_   = "convertPCToEJBObject"; // NOI18N
+    public static final String convertEJBObjectToPC_   = "convertEJBObjectToPC"; // NOI18N
+    public static final String convertEJBLocalObjectToPC_
                                      = "convertEJBLocalObjectToPC"; // NOI18N
 
-    public final static String jdoPersistenceManager_     = "_jdoPersistenceManager"; // NOI18N
-    public final static String jdoPersistenceManagerClass_
+    public static final String jdoPersistenceManager_     = "_jdoPersistenceManager"; // NOI18N
+    public static final String jdoPersistenceManagerClass_
                                      = "com.sun.jdo.api.persistence.support.PersistenceManager"; // NOI18N
-    public final static String jdoGetPersistenceManager_  = "jdoGetPersistenceManager"; // NOI18N
-    public final static String jdoGetPersistenceManager0_ = "jdoGetPersistenceManager0"; // NOI18N
-    public final static String jdoClosePersistenceManager_= "jdoClosePersistenceManager"; // NOI18N
-    public final static String jdoReleasePersistenceManager_  
+    public static final String jdoGetPersistenceManager_  = "jdoGetPersistenceManager"; // NOI18N
+    public static final String jdoGetPersistenceManager0_ = "jdoGetPersistenceManager0"; // NOI18N
+    public static final String jdoClosePersistenceManager_= "jdoClosePersistenceManager"; // NOI18N
+    public static final String jdoReleasePersistenceManager_  
                                      = "jdoReleasePersistenceManager"; // NOI18N
-    public final static String jdoReleasePersistenceManager0_  
+    public static final String jdoReleasePersistenceManager0_  
                                      = "jdoReleasePersistenceManager0"; // NOI18N
 
-    public final static String jdoArrayCopy_              = "jdoArrayCopy"; // NOI18N
-    public final static String jdoCleanAllRefs_           = "jdoCleanAllRefs"; // NOI18N
-    public final static String returnKey_                 = "return key;"; // NOI18N
-    public final static String returnOid_                 = "return jdoObjectId;"; // NOI18N
+    public static final String jdoArrayCopy_              = "jdoArrayCopy"; // NOI18N
+    public static final String jdoCleanAllRefs_           = "jdoCleanAllRefs"; // NOI18N
+    public static final String returnKey_                 = "return key;"; // NOI18N
+    public static final String returnOid_                 = "return jdoObjectId;"; // NOI18N
 
     // Inner helper Class strings.
-    public final static String helperComments_            = "helperComments"; // NOI18N
-    public final static String helperVariables_           = "helperVariables"; // NOI18N
-    public final static String getHelperInstance_         = "getHelperInstance"; // NOI18N
+    public static final String helperComments_            = "helperComments"; // NOI18N
+    public static final String helperVariables_           = "helperVariables"; // NOI18N
+    public static final String getHelperInstance_         = "getHelperInstance"; // NOI18N
 
-    public final static String getPCClass_                = "getPCClass"; // NOI18N
-    public final static String getContainer_              = "getContainer"; // NOI18N
-    public final static String assertInstanceOfRemoteInterfaceImpl_
+    public static final String getPCClass_                = "getPCClass"; // NOI18N
+    public static final String getContainer_              = "getContainer"; // NOI18N
+    public static final String assertInstanceOfRemoteInterfaceImpl_
                                                           = "assertInstanceOfRemoteInterfaceImpl"; // NOI18N
-    public final static String assertPKNotNull_           = "assertPKNotNull"; // NOI18N
-    public final static String assertPKFieldNotNull_      = "assertPKFieldNotNull"; // NOI18N
-    public final static String assertOidNotNull_          = "assertOidNotNull"; // NOI18N
-    public final static String afterCompletion_           = "afterCompletion"; // NOI18N
-    public final static String ejb__flush_                = "ejb__flush"; // NOI18N
-    public final static String ejb__refresh_              = "ejb__refresh"; // NOI18N
-    public final static String ejb__remove_               = "ejb__remove"; // NOI18N
+    public static final String assertPKNotNull_           = "assertPKNotNull"; // NOI18N
+    public static final String assertPKFieldNotNull_      = "assertPKFieldNotNull"; // NOI18N
+    public static final String assertOidNotNull_          = "assertOidNotNull"; // NOI18N
+    public static final String afterCompletion_           = "afterCompletion"; // NOI18N
+    public static final String ejb__flush_                = "ejb__flush"; // NOI18N
+    public static final String ejb__refresh_              = "ejb__refresh"; // NOI18N
+    public static final String ejb__remove_               = "ejb__remove"; // NOI18N
 
     // property key for the CVS keyword substitution 
-    public final static String signature_ = "signature"; //NOI18N
+    public static final String signature_ = "signature"; //NOI18N
 
-    public final static String signatureDelimiter_ = " ## "; //NOI18N
+    public static final String signatureDelimiter_ = " ## "; //NOI18N
 
     // Code generator templates.
     public static Properties helpers = null;
@@ -204,7 +204,7 @@ public class CMPTemplateFormatter extends JavaClassWriterHelper{
 
     // variables
     public static MessageFormat privatetransientvformatter = null; // private transient varibales
-    public static MessageFormat privatestaticfinalvformatter = null; // final static variables
+    public static MessageFormat privatestaticfinalvformatter = null; // static final variables
     public static MessageFormat publicstaticfinalvformatter = null; // static final variables
     public static MessageFormat finderselectorstaticvformatter = null; // finder / selector static variables
     public static MessageFormat finderselectorstaticfinalvformatter = null; // finder / selector static final variables

@@ -61,7 +61,7 @@ import java.util.logging.Logger;
 public class ClassFileLoaderFactory {
     private static String resourceBundleName = "com.sun.enterprise.tools.verifier.apiscan.LocalStrings";
     private static Logger logger = Logger.getLogger("apiscan.classfile", resourceBundleName); // NOI18N
-    private final static String myClassName = "ClassFileLoaderFactory"; // NOI18N
+    private static final String myClassName = "ClassFileLoaderFactory"; // NOI18N
     /**
      * a factory method to create ClassFileLoader instance. It decides which
      * kind of loader class to instantioate based on the class name supplied by

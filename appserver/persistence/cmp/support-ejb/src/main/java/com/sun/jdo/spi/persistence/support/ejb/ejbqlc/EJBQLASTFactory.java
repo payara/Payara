@@ -64,7 +64,7 @@ public class EJBQLASTFactory
     private static EJBQLASTFactory factory = new EJBQLASTFactory();
 
     /** I18N support. */
-    private final static ResourceBundle msgs = 
+    private static final ResourceBundle msgs = 
         I18NHelper.loadBundle(EJBQLASTFactory.class);
     
     /** 

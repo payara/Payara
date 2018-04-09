@@ -172,10 +172,10 @@ public abstract class FieldDesc implements java.io.Serializable {
     protected final ClassDesc classDesc;
 
     /** The logger. */
-    protected final static Logger logger = LogHelperSQLStore.getLogger();
+    protected static final Logger logger = LogHelperSQLStore.getLogger();
 
     /** I18N message handler. */
-    protected final static ResourceBundle messages = I18NHelper.loadBundle(
+    protected static final ResourceBundle messages = I18NHelper.loadBundle(
             "com.sun.jdo.spi.persistence.support.sqlstore.Bundle", // NOI18N
             FieldDesc.class.getClassLoader());
 

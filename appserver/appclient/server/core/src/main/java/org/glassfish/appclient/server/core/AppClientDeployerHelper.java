@@ -101,12 +101,12 @@ import org.jboss.logging.LogMessage;
  */
 public abstract class AppClientDeployerHelper {
 
-    private final static String PERSISTENCE_XML_PATH = "META-INF/persistence.xml";
+    private static final String PERSISTENCE_XML_PATH = "META-INF/persistence.xml";
     
-    final static String GF_CLIENT_MODULE_PATH ="gf-client-module.jar";
+    static final String GF_CLIENT_MODULE_PATH ="gf-client-module.jar";
     
-    final static String[] CLIENT_POLICY_FILE_NAMES = {"javaee.client.policy","restrict.client.policy"};
-    final static String CLIENT_POLICY_PATH_IN_JAR = "META-INF/";
+    static final String[] CLIENT_POLICY_FILE_NAMES = {"javaee.client.policy","restrict.client.policy"};
+    static final String CLIENT_POLICY_PATH_IN_JAR = "META-INF/";
     
     private final DeploymentContext dc;
     private final ApplicationClientDescriptor appClientDesc;

@@ -79,7 +79,7 @@ public class AdministeredObjectDefinitionDeployer implements ResourceDeployer {
     private Provider<ResourceManagerFactory> resourceManagerFactoryProvider;
 
     private static Logger _logger = LogDomains.getLogger(AdministeredObjectDefinitionDeployer.class, LogDomains.RSR_LOGGER);
-    final static String PROPERTY_PREFIX = "org.glassfish.admin-object.";
+    static final String PROPERTY_PREFIX = "org.glassfish.admin-object.";
 
     public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
         //TODO ASR

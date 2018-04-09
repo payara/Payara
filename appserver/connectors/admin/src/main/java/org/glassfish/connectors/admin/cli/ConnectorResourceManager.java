@@ -79,7 +79,7 @@ public class ConnectorResourceManager implements ResourceManager {
 
     private static final String DESCRIPTION = ServerTags.DESCRIPTION;
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ConnectorResourceManager.class);
 
     private String poolName = null;

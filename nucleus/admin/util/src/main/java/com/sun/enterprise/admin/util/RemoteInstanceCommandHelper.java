@@ -128,6 +128,6 @@ public final class RemoteInstanceCommandHelper {
     // private to final on the method
     ///////////////////////////////////////////////////////////////////////////
 
-    final private List<Server> servers;
-    final private ServiceLocator habitat;
+    private final List<Server> servers;
+    private final ServiceLocator habitat;
 }

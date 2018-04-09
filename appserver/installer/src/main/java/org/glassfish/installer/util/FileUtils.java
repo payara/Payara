@@ -62,7 +62,7 @@ public class FileUtils {
         LOGGER = Logger.getLogger(ClassUtils.getClassName());
     }
 
-    static public boolean isSymLink(File dirName) throws IOException {
+    public static boolean isSymLink(File dirName) throws IOException {
         boolean symLink = true;
         LOGGER.log(Level.FINEST, dirName.getAbsolutePath());
         if (OSUtils.isWindows()) {
@@ -79,7 +79,7 @@ public class FileUtils {
     /* Recursively delete the given directory and its contents.
      * @param objName File/Directory root to delete.
      */
-    static public void deleteDirectory(File objName) throws IOException {
+    public static void deleteDirectory(File objName) throws IOException {
 
         File filesList[] = objName.listFiles();
 

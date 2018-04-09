@@ -101,7 +101,7 @@ public final class DisableHTTPLBServerCommand extends LBCommandsBase
     @Inject
     Target tgt;
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(DisableHTTPLBServerCommand.class);
 
     @Override

@@ -81,7 +81,7 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
             new ArrayList<Class<? extends WorkContext>>();
     private static final Logger logger = LogFacade.getLogger();
 
-    private final static Locale locale = Locale.getDefault();
+    private static final Locale locale = Locale.getDefault();
 
     @Inject
     private ConnectorRuntime runtime ;

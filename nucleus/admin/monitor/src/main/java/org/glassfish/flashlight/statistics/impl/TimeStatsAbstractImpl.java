@@ -82,9 +82,9 @@ public abstract class TimeStatsAbstractImpl extends AbstractTreeNode
         return average.getAverage();
     }
 
-    abstract public void entry();
+    public abstract void entry();
 
-    abstract public void exit();
+    public abstract void exit();
 
     protected void postEntry(long entryTime) {
         if (startTime == 0) {

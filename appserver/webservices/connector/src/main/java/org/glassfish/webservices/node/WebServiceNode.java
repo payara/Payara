@@ -57,7 +57,7 @@ import java.util.Map;
  */
 public class WebServiceNode extends DisplayableComponentNode {
 
-    private final static XMLElement tag =
+    private static final XMLElement tag =
         new XMLElement(WebServicesTagNames.WEB_SERVICE);
 
     public WebServiceNode() {

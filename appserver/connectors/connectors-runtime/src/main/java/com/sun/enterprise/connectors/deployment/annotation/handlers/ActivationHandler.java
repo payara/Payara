@@ -63,7 +63,7 @@ import org.glassfish.apf.impl.HandlerProcessingResultImpl;
 @AnnotationHandlerFor(Activation.class)
 public class ActivationHandler extends AbstractHandler {
 
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ActivationHandler.class);
     
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {

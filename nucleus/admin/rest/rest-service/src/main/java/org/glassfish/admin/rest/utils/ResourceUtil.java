@@ -921,7 +921,7 @@ public class ResourceUtil {
      * REST can now be configured via RestConfig to show or hide the deprecated
      * elements and attributes @return true if this model is deprecated
      */
-    static public boolean isDeprecated(ConfigModel model) {
+    public static boolean isDeprecated(ConfigModel model) {
         try {
             Class<? extends ConfigBeanProxy> cbp = (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.loadClass(model.targetTypeName);
             Deprecated dep = cbp.getAnnotation(Deprecated.class);

@@ -92,5 +92,5 @@ public abstract class PasswordLoginModule extends BasePasswordLoginModule
             new AuthenticationStatusImpl(username, authMethod, realm, status);
         return as;
     }
-    abstract protected AuthenticationStatus authenticate() throws LoginException;
+    protected abstract AuthenticationStatus authenticate() throws LoginException;
 }

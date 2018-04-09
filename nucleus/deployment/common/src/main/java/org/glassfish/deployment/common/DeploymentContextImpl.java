@@ -93,7 +93,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     public static final Logger deplLogger =
         Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeploymentContextImpl.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeploymentContextImpl.class);
 
     private static final String INTERNAL_DIR_NAME = "__internal";
     private static final String APP_TENANTS_SUBDIR_NAME = "__app-tenants";

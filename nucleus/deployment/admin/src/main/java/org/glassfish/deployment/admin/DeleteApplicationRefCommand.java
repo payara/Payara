@@ -103,7 +103,7 @@ import org.glassfish.deployment.versioning.VersioningService;
 })
 public class DeleteApplicationRefCommand implements AdminCommand, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteApplicationRefCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteApplicationRefCommand.class);
 
     @Param(primary=true)
     public String name = null;

@@ -56,7 +56,7 @@ public class ConnectorConfigProperty extends EnvironmentProperty {
     private boolean setConfidentialCalled = false;
     private boolean setSupportsDynamicUpdatesCalled = false;
 
-    private final static Logger _logger = DOLUtils.getDefaultLogger();
+    private static final Logger _logger = DOLUtils.getDefaultLogger();
 
     /**
     ** copy constructor.

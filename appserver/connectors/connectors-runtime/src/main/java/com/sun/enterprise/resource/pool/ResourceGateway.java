@@ -55,7 +55,7 @@ import java.util.logging.Logger;
  */
 public class ResourceGateway {
 
-    protected final static Logger _logger = LogDomains.getLogger(ResourceGateway.class, LogDomains.RSR_LOGGER);
+    protected static final Logger _logger = LogDomains.getLogger(ResourceGateway.class, LogDomains.RSR_LOGGER);
 
     /**
      * indicates whether resource access is allowed or not.

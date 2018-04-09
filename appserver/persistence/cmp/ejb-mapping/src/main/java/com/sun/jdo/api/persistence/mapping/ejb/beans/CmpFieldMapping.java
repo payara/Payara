@@ -54,10 +54,10 @@ public class CmpFieldMapping extends org.netbeans.modules.schema2beans.BaseBean
 	static Vector comparators = new Vector();
 	private static final org.netbeans.modules.schema2beans.Version runtimeVersion = new org.netbeans.modules.schema2beans.Version(5, 0, 0);
 
-	static public final String FIELD_NAME = "FieldName";	// NOI18N
-	static public final String COLUMN_NAME = "ColumnName";	// NOI18N
-	static public final String READ_ONLY = "ReadOnly";	// NOI18N
-	static public final String FETCHED_WITH = "FetchedWith";	// NOI18N
+	public static final String FIELD_NAME = "FieldName";	// NOI18N
+	public static final String COLUMN_NAME = "ColumnName";	// NOI18N
+	public static final String READ_ONLY = "ReadOnly";	// NOI18N
+	public static final String FETCHED_WITH = "FetchedWith";	// NOI18N
 
 	public CmpFieldMapping() {
 		this(Common.USE_DEFAULT_VALUES);

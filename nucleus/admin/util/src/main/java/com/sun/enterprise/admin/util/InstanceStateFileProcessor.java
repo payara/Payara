@@ -85,7 +85,7 @@ class InstanceStateFileProcessor {
         }
     }
 
-    static public InstanceStateFileProcessor createNew(HashMap<String, InstanceState> st, File xmlFileObject)
+    public static InstanceStateFileProcessor createNew(HashMap<String, InstanceState> st, File xmlFileObject)
             throws IOException {
         BufferedWriter writer = null;
         try {

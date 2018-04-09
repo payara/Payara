@@ -56,7 +56,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
     protected DatabaseMetaData databaseMetaData = null;
     protected Connection connection = null;
     private MethodExecutor executor = null;
-    protected final static Logger _logger;
+    protected static final Logger _logger;
 
     static {
         _logger = LogDomains.getLogger(MethodExecutor.class, LogDomains.RSR_LOGGER);

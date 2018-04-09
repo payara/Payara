@@ -65,7 +65,7 @@ public abstract class SQLTraceCache {
     protected ConcurrentSkipListMap<String, SQLTrace> cache;
     
     private SQLTraceTimerTask sqlTraceTimerTask;
-    protected final static Logger _logger = LogDomains.getLogger(SQLTraceCache.class,
+    protected static final Logger _logger = LogDomains.getLogger(SQLTraceCache.class,
             LogDomains.RSR_LOGGER);
     protected static final String LINE_BREAK = "%%%EOL%%%";
 

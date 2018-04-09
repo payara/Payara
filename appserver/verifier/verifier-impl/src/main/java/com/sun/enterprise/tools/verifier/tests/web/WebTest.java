@@ -60,7 +60,7 @@ import java.io.*;
  * @author Jerome Dochez
  * @version 1.0
  */
-abstract public class WebTest extends VerifierTest implements VerifierCheck, WebCheck {
+public abstract class WebTest extends VerifierTest implements VerifierCheck, WebCheck {
 
     // variables ensuring that result details are added only once
     private boolean addedError   = false;

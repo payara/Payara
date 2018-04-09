@@ -153,6 +153,6 @@ public class JMXUtil {
         }
         return valid;
     }
-    public final static String DomainDiagnosticsMBeanName = "com.sun.appserv:type=DomainDiagnostics,name=server,category=monitor";
-    public final static String DomainDiagnosticsGenerateReportMethod = "generateReport";
+    public static final String DomainDiagnosticsMBeanName = "com.sun.appserv:type=DomainDiagnostics,name=server,category=monitor";
+    public static final String DomainDiagnosticsGenerateReportMethod = "generateReport";
 }

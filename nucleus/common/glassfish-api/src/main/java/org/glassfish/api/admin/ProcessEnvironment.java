@@ -100,6 +100,6 @@ public class ProcessEnvironment {
         this.type = type;
     }
 
-    final private ProcessType type;
+    private final ProcessType type;
 
 }

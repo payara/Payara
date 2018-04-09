@@ -64,7 +64,7 @@ public class ConnectionPoolUtil {
     @Inject
     private ServerEnvironment env;
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(ConnectionPoolUtil.class);
 
     public boolean isValidApplication(String applicationName, String poolName, ActionReport report) {

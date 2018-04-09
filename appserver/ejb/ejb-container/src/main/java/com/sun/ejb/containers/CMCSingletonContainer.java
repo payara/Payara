@@ -66,8 +66,8 @@ public class CMCSingletonContainer
 
     private final ReentrantReadWriteLock.WriteLock writeLock = rwLock.writeLock();
 
-    private final static long NO_BLOCKING = 0;
-    private final static long BLOCK_INDEFINITELY = -1;
+    private static final long NO_BLOCKING = 0;
+    private static final long BLOCK_INDEFINITELY = -1;
 
     private final MethodLockInfo defaultMethodLockInfo;
 

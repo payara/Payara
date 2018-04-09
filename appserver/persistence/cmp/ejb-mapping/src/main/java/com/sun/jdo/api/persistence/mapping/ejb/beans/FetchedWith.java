@@ -53,10 +53,10 @@ public class FetchedWith extends org.netbeans.modules.schema2beans.BaseBean
 	static Vector comparators = new Vector();
 	private static final org.netbeans.modules.schema2beans.Version runtimeVersion = new org.netbeans.modules.schema2beans.Version(5, 0, 0);
 
-	static public final String DEFAULT = "Default";	// NOI18N
-	static public final String LEVEL = "Level";	// NOI18N
-	static public final String NAMED_GROUP = "NamedGroup";	// NOI18N
-	static public final String NONE = "None";	// NOI18N
+	public static final String DEFAULT = "Default";	// NOI18N
+	public static final String LEVEL = "Level";	// NOI18N
+	public static final String NAMED_GROUP = "NamedGroup";	// NOI18N
+	public static final String NONE = "None";	// NOI18N
 
 	public FetchedWith() {
 		this(Common.USE_DEFAULT_VALUES);
