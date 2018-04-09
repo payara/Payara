@@ -805,7 +805,7 @@ public final class Main
           }
     }
 
-    static private String createMethodName(final String prefix,
+    private static String createMethodName(final String prefix,
                                            final String fieldName)
     {
         return (prefix + Character.toUpperCase(fieldName.charAt(0))

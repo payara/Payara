@@ -1484,7 +1484,7 @@ public class PersistenceManagerImpl implements PersistenceManager {
      *   because of unresolved dependencies, null if all
      *   instances could be processed.
      */
-    static private List flushToDataStore(List flushList) {
+    private static List flushToDataStore(List flushList) {
         int size = flushList.size();
         List errorList = null;
 
@@ -1524,7 +1524,7 @@ public class PersistenceManagerImpl implements PersistenceManager {
      * @param smList List of state managers.
      * @return Array of persistence capable instances.
      */
-    static private Object[] toPCArray(List smList) {
+    private static Object[] toPCArray(List smList) {
         final int size = smList.size();
         if (size > 0) {
             List pcList = new ArrayList(size);

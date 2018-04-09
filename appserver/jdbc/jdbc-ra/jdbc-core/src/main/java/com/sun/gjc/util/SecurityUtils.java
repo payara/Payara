@@ -62,7 +62,7 @@ import java.util.Set;
  */
 public class SecurityUtils {
 
-    static private StringManager sm = StringManager.getManager(
+    private static StringManager sm = StringManager.getManager(
             DataSourceObjectBuilder.class);
 
     /**
@@ -130,7 +130,7 @@ public class SecurityUtils {
      * @return true    if the two strings are equal
      *         false	otherwise
      */
-    static private boolean isEqual(String str1, String str2) {
+    private static boolean isEqual(String str1, String str2) {
         if (str1 == null) {
             return (str2 == null);
         } else {

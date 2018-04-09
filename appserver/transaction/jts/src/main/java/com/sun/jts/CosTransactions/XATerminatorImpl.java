@@ -371,12 +371,12 @@ public class XATerminatorImpl implements XATerminator {
         }              
     }
 
-    static private final TransactionImport tim = getTransactionImportManager();
+    private static final TransactionImport tim = getTransactionImportManager();
 
    // no standardized JNDI name exists across as implementations for TM, this is Sun App Server specific.
     private static final String AS_TXN_MGR_JNDI_NAME = "java:appserver/TransactionManager";
     
-    static private Object jndiLookup(final String jndiName) {
+    private static Object jndiLookup(final String jndiName) {
         Object result = null;
         try {
             final Context ctx = new InitialContext();
@@ -385,17 +385,17 @@ public class XATerminatorImpl implements XATerminator {
         return result;
     }
     
-    static private TransactionImport getTransactionImportManager() {
+    private static TransactionImport getTransactionImportManager() {
         return (TransactionImport)jndiLookup(AS_TXN_MGR_JNDI_NAME);
     }
 
-    static private void recreate(Xid xid, int timeout) {
+    private static void recreate(Xid xid, int timeout) {
         if (tim != null) {
             tim.recreate(xid, timeout);
         }
     }
 
-    static private void release(Xid xid) {
+    private static void release(Xid xid) {
         if (tim != null) {
             tim.release(xid);
         }

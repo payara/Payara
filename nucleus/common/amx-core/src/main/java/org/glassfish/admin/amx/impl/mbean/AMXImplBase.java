@@ -689,7 +689,7 @@ public class AMXImplBase extends MBeanImplBase
     @param name the name to which "get" will be prepended
     @return a Method or null if not found
      */
-    static private final Class[] GETTER_SIG = new Class[0];
+    private static final Class[] GETTER_SIG = new Class[0];
 
     protected final Method findGetter(String name) {
         final String methodName = GET + name;

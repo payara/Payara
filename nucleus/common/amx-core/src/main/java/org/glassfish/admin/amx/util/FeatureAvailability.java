@@ -79,7 +79,7 @@ To see how long client code is blocking, set the {@link #DEBUG_ENABLED} flag to 
  */
 public final class FeatureAvailability
 {
-    static private final FeatureAvailability INSTANCE = new FeatureAvailability();
+    private static final FeatureAvailability INSTANCE = new FeatureAvailability();
 
     private final Map<String, Object> mFeatures;
 

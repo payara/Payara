@@ -456,47 +456,47 @@ class FieldTypeInfo
         fieldSetArgType = argType;
     }
 
-    static private FieldTypeInfo byteInfo =
+    private static FieldTypeInfo byteInfo =
     new FieldTypeInfo("createByte", "(Ljava/lang/String;)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setByteField", "(IBLcom/sun/forte4j/persistence/internal/ClassInfo;)V", T_BYTE,//NOI18N
                       "getByteField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)B", T_BYTE);//NOI18N
 
-    static private FieldTypeInfo charInfo =
+    private static FieldTypeInfo charInfo =
     new FieldTypeInfo("createChar", "(Ljava/lang/String;)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setCharField", "(ICLcom/sun/forte4j/persistence/internal/ClassInfo;)V", T_CHAR,//NOI18N
                       "getCharField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)C", T_CHAR);//NOI18N
 
-    static private FieldTypeInfo shortInfo =
+    private static FieldTypeInfo shortInfo =
     new FieldTypeInfo("createShort", "(Ljava/lang/String;)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setShortField", "(ISLcom/sun/forte4j/persistence/internal/ClassInfo;)V", T_SHORT,//NOI18N
                       "getShortField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)S", T_SHORT);//NOI18N
 
-    static private FieldTypeInfo intInfo =
+    private static FieldTypeInfo intInfo =
     new FieldTypeInfo("createInt", "(Ljava/lang/String;)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setIntField", "(IILcom/sun/forte4j/persistence/internal/ClassInfo;)V", T_INT,//NOI18N
                       "getIntField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)I", T_INT);//NOI18N
 
-    static private FieldTypeInfo longInfo =
+    private static FieldTypeInfo longInfo =
     new FieldTypeInfo("createLong", "(Ljava/lang/String;)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setLongField", "(IJLcom/sun/forte4j/persistence/internal/ClassInfo;)V", T_LONG,//NOI18N
                       "getLongField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)J", T_LONG);//NOI18N
 
-    static private FieldTypeInfo floatInfo =
+    private static FieldTypeInfo floatInfo =
     new FieldTypeInfo("createFloat", "(Ljava/lang/String;)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setFloatField", "(IFLcom/sun/forte4j/persistence/internal/ClassInfo;)V", T_FLOAT,//NOI18N
                       "getFloatField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)F", T_FLOAT);//NOI18N
 
-    static private FieldTypeInfo doubleInfo =
+    private static FieldTypeInfo doubleInfo =
     new FieldTypeInfo("createDouble", "(Ljava/lang/String;)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setDoubleField", "(IDLcom/sun/forte4j/persistence/internal/ClassInfo;)V", T_DOUBLE,//NOI18N
                       "getDoubleField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)D", T_DOUBLE);//NOI18N
 
-    static private FieldTypeInfo booleanInfo =
+    private static FieldTypeInfo booleanInfo =
     new FieldTypeInfo("createBoolean", "(Ljava/lang/String;)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setBooleanField", "(IZLcom/sun/forte4j/persistence/internal/ClassInfo;)V", T_BOOLEAN,//NOI18N
                       "getBooleanField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)Z", T_BOOLEAN);
 
-    static private FieldTypeInfo classInfo =
+    private static FieldTypeInfo classInfo =
     new FieldTypeInfo("createClass", "(Ljava/lang/String;Ljava/lang/String;)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setClassField", "(ILjava/lang/Object;Lcom/sun/forte4j/persistence/internal/ClassInfo;)V", TC_OBJECT,//NOI18N
                       "getClassField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)Ljava/lang/Object;", TC_OBJECT);//NOI18N
@@ -504,68 +504,68 @@ class FieldTypeInfo
 //@olsen: disabled feature
 /*
     //@olsen: don't distinguish between class and interface types
-    static private FieldTypeInfo interfaceInfo =
+    private static FieldTypeInfo interfaceInfo =
     new FieldTypeInfo("createInterface", "(Ljava/lang/String;Ljava/lang/String;)Lcom/sun/forte4j/persistence/internal/Field;",
                       "setInterfaceField", "(ILjava/lang/Object;Lcom/sun/forte4j/persistence/internal/ClassInfo;)V", TC_OBJECT,
                       "getInterfaceField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)Ljava/lang/Object;", TC_OBJECT);
 */
 
-    static private FieldTypeInfo stringInfo =
+    private static FieldTypeInfo stringInfo =
     new FieldTypeInfo("createString", "(Ljava/lang/String;)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setStringField", "(ILjava/lang/String;Lcom/sun/forte4j/persistence/internal/ClassInfo;)V", TC_STRING,//NOI18N
                       "getStringField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)Ljava/lang/String;", TC_STRING);//NOI18N
 
-    static private FieldTypeInfo byteArrayInfo =
+    private static FieldTypeInfo byteArrayInfo =
     new FieldTypeInfo("createByteArray", "(Ljava/lang/String;I)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setArrayField", "(ILjava/lang/Object;Lcom/sun/forte4j/persistence/internal/ClassInfo;)V", TC_OBJECT,//NOI18N
                       "getArrayField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)Ljava/lang/Object;", TC_OBJECT);//NOI18N
 
-    static private FieldTypeInfo charArrayInfo =
+    private static FieldTypeInfo charArrayInfo =
     new FieldTypeInfo("createCharArray", "(Ljava/lang/String;I)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setArrayField", "(ILjava/lang/Object;Lcom/sun/forte4j/persistence/internal/ClassInfo;)V", TC_OBJECT,//NOI18N
                       "getArrayField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)Ljava/lang/Object;", TC_OBJECT);//NOI18N
 
-    static private FieldTypeInfo shortArrayInfo =
+    private static FieldTypeInfo shortArrayInfo =
     new FieldTypeInfo("createShortArray", "(Ljava/lang/String;I)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setArrayField", "(ILjava/lang/Object;Lcom/sun/forte4j/persistence/internal/ClassInfo;)V", TC_OBJECT,//NOI18N
                       "getArrayField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)Ljava/lang/Object;", TC_OBJECT);//NOI18N
 
-    static private FieldTypeInfo intArrayInfo =
+    private static FieldTypeInfo intArrayInfo =
     new FieldTypeInfo("createIntArray", "(Ljava/lang/String;I)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setArrayField", "(ILjava/lang/Object;Lcom/sun/forte4j/persistence/internal/ClassInfo;)V", TC_OBJECT,//NOI18N
                       "getArrayField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)Ljava/lang/Object;", TC_OBJECT);//NOI18N
 
-    static private FieldTypeInfo longArrayInfo =
+    private static FieldTypeInfo longArrayInfo =
     new FieldTypeInfo("createLongArray", "(Ljava/lang/String;I)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setArrayField", "(ILjava/lang/Object;Lcom/sun/forte4j/persistence/internal/ClassInfo;)V", TC_OBJECT,//NOI18N
                       "getArrayField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)Ljava/lang/Object;", TC_OBJECT);//NOI18N
 
-    static private FieldTypeInfo floatArrayInfo =
+    private static FieldTypeInfo floatArrayInfo =
     new FieldTypeInfo("createFloatArray", "(Ljava/lang/String;I)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setArrayField", "(ILjava/lang/Object;Lcom/sun/forte4j/persistence/internal/ClassInfo;)V", TC_OBJECT,//NOI18N
                       "getArrayField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)Ljava/lang/Object;", TC_OBJECT);//NOI18N
 
-    static private FieldTypeInfo doubleArrayInfo =
+    private static FieldTypeInfo doubleArrayInfo =
     new FieldTypeInfo("createDoubleArray", "(Ljava/lang/String;I)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setArrayField", "(ILjava/lang/Object;Lcom/sun/forte4j/persistence/internal/ClassInfo;)V", TC_OBJECT,//NOI18N
                       "getArrayField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)Ljava/lang/Object;", TC_OBJECT);//NOI18N
 
-    static private FieldTypeInfo booleanArrayInfo =
+    private static FieldTypeInfo booleanArrayInfo =
     new FieldTypeInfo("createBooleanArray", "(Ljava/lang/String;I)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setArrayField", "(ILjava/lang/Object;Lcom/sun/forte4j/persistence/internal/ClassInfo;)V", TC_OBJECT,//NOI18N
                       "getArrayField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)Ljava/lang/Object;", TC_OBJECT);//NOI18N
 
-    static private FieldTypeInfo classArrayInfo =
+    private static FieldTypeInfo classArrayInfo =
     new FieldTypeInfo("createClassArray", "(Ljava/lang/String;Ljava/lang/String;I)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setArrayField", "(ILjava/lang/Object;Lcom/sun/forte4j/persistence/internal/ClassInfo;)V", TC_OBJECT,//NOI18N
                       "getArrayField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)Ljava/lang/Object;", TC_OBJECT);//NOI18N
 
-    static private FieldTypeInfo interfaceArrayInfo =
+    private static FieldTypeInfo interfaceArrayInfo =
     new FieldTypeInfo("createInterfaceArray", "(Ljava/lang/String;Ljava/lang/String;I)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setArrayField", "(ILjava/lang/Object;Lcom/sun/forte4j/persistence/internal/ClassInfo;)V", TC_OBJECT,//NOI18N
                       "getArrayField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)Ljava/lang/Object;", TC_OBJECT);//NOI18N
 
-    static private FieldTypeInfo stringArrayInfo =
+    private static FieldTypeInfo stringArrayInfo =
     new FieldTypeInfo("createStringArray", "(Ljava/lang/String;I)Lcom/sun/forte4j/persistence/internal/Field;",//NOI18N
                       "setArrayField", "(ILjava/lang/Object;Lcom/sun/forte4j/persistence/internal/ClassInfo;)V", TC_OBJECT,//NOI18N
                       "getArrayField", "(ILcom/sun/forte4j/persistence/internal/ClassInfo;)Ljava/lang/Object;", TC_OBJECT);//NOI18N

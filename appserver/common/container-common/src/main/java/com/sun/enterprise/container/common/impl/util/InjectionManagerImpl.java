@@ -84,7 +84,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 @Service
 public class InjectionManagerImpl implements InjectionManager, PostConstruct {
 
-    static private LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InjectionManagerImpl.class);
+    private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InjectionManagerImpl.class);
     
     @Inject
     private Logger _logger;

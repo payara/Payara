@@ -238,7 +238,7 @@ public final class GenericTest
         return (valid);
     }
 
-    static private final String SECTION_LINE =
+    private static final String SECTION_LINE =
             "--------------------------------------------------------------------------------";
 
 

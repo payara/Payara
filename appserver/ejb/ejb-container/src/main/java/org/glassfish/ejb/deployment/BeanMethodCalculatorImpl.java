@@ -70,7 +70,7 @@ import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 public final class BeanMethodCalculatorImpl {
     
     // TODO - change logger if/when other EJB deployment classes are changed
-    static private final Logger _logger = LogDomains.getLogger(BeanMethodCalculatorImpl.class, LogDomains.DPL_LOGGER);
+    private static final Logger _logger = LogDomains.getLogger(BeanMethodCalculatorImpl.class, LogDomains.DPL_LOGGER);
 
     public Vector getPossibleCmpCmrFields(ClassLoader cl,
                                                  String className)

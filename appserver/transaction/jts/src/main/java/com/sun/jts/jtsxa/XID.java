@@ -118,7 +118,7 @@ public class XID implements Xid {
     /**
      * The size of <b>data</b>.
      */
-    static private final int XIDDATASIZE= 128; // Size in bytes
+    private static final int XIDDATASIZE= 128; // Size in bytes
 
     /**
      * The maximum size of the global transaction identifier.
@@ -130,7 +130,7 @@ public class XID implements Xid {
      */
     public static  final int MAXBQUALSIZE= 64; // Maximum size (in bytes) of bqual
 
-    static private final String hextab= "0123456789ABCDEF"/*#Frozen*/;
+    private static final String hextab= "0123456789ABCDEF"/*#Frozen*/;
 
     static Logger _logger = LogDomains.getLogger(XID.class, LogDomains.TRANSACTION_LOGGER);
 

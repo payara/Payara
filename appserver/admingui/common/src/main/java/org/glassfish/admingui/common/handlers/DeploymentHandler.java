@@ -344,7 +344,7 @@ public class DeploymentHandler {
 
     //For any undeployed applications, we need to ensure that it is no longer specified as the
     //default web module of any VS.
-    static private void  removeFromDefaultWebModule(String undeployedAppName, List<String> targets){
+    private static void  removeFromDefaultWebModule(String undeployedAppName, List<String> targets){
 
         String prefix = GuiUtil.getSessionValue("REST_URL")+"/configs/config/";
         Map attrsMap = new HashMap();

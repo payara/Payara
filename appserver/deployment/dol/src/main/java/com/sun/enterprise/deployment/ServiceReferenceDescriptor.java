@@ -59,7 +59,7 @@ import java.lang.annotation.Annotation;
 public class ServiceReferenceDescriptor extends EnvironmentProperty 
         implements HandlerChainContainer {
 
-    static private final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
+    private static final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
 
     private String serviceInterface;
 

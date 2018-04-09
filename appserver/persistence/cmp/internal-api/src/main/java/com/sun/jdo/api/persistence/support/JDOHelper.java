@@ -278,7 +278,7 @@ public class JDOHelper
    * @return the class loader that loaded the class or interface 
    * represented by this object.
    */
-   static private ClassLoader getObjectClassLoader(Object obj) {
+   private static ClassLoader getObjectClassLoader(Object obj) {
 	Class clazz = obj.getClass();
 
 	if (obj instanceof Collection) {
@@ -298,7 +298,7 @@ public class JDOHelper
    * @return the class loader that loaded the class or interface 
    * represented by its elements.
    */
-   static private ClassLoader getCollectionClassLoader (Collection col) {
+   private static ClassLoader getCollectionClassLoader (Collection col) {
 	Object[] arr = col.toArray();
 	return getArrayClassLoader(arr);
    }
@@ -312,7 +312,7 @@ public class JDOHelper
    * @return the class loader that loaded the class or interface 
    * represented by its elements.
    */
-   static private ClassLoader getArrayClassLoader (Object[] arr) {
+   private static ClassLoader getArrayClassLoader (Object[] arr) {
 	ClassLoader cl = null;
 
 	for (int i = 0; i < arr.length; i++) {

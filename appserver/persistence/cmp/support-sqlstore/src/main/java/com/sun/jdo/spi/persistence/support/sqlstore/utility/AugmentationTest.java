@@ -437,7 +437,7 @@ public class AugmentationTest
         return NEGATIVE;
     }
 
-    static private final String[] transientPrefixes
+    private static final String[] transientPrefixes
         = {"java.",
            "javax.",
            "com.sun.jdo."};

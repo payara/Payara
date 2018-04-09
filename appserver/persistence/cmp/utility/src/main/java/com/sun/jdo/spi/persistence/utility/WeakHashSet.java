@@ -158,7 +158,7 @@ public class WeakHashSet
      * It redefines equals and hashCode which delegate to the corresponding methods 
      * of the wrapped element.
      */
-    static private class WeakElement 
+    private static class WeakElement 
         extends WeakReference 
     {
         private int hash;	/* Hashcode of key, stored here since the key

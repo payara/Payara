@@ -56,8 +56,8 @@ public final class CustomResourceConfigTest
     static final Map<String, String> OPTIONAL = new HashMap<String, String>();
 
     // doesn't exist, just give a syntactically valid name
-    static private final String RES_TYPE = "CustomResourceConfigTest.Dummy";
-    static private final String FACTORY_CLASS =
+    private static final String RES_TYPE = "CustomResourceConfigTest.Dummy";
+    private static final String FACTORY_CLASS =
             "org.glassfish.admin.amxtest.config.CustomResourceConfigTestDummy";
 
     public CustomResourceConfigTest() {

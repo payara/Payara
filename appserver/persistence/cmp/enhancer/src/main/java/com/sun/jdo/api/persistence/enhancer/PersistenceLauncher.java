@@ -64,10 +64,10 @@ import com.sun.jdo.api.persistence.enhancer.util.Support;
 public class PersistenceLauncher {
 
     // chose whether to separate or join out and err channels
-    //static private final PrintWriter err = new PrintWriter(System.err, true);
-    static private final PrintWriter err = new PrintWriter(System.out, true);
-    static private final PrintWriter out = new PrintWriter(System.out, true);
-    static private final String prefix = "PersistenceLauncher.main() : ";//NOI18N
+    //private static final PrintWriter err = new PrintWriter(System.err, true);
+    private static final PrintWriter err = new PrintWriter(System.out, true);
+    private static final PrintWriter out = new PrintWriter(System.out, true);
+    private static final String prefix = "PersistenceLauncher.main() : ";//NOI18N
 
     /**
      * Creates new PersistenceLauncher.

@@ -243,7 +243,7 @@ public class ClassDesc
      * @param className Persistence capable class' name.
      * @param classLoader Persistence capable class' loader.
      */
-    static private void validateModel(Model model,
+    private static void validateModel(Model model,
                                       String className,
                                       ClassLoader classLoader) {
         Collection c = null;

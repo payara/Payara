@@ -58,7 +58,7 @@ public class Support
     /**
      * I18N message handler
      */
-    static private ResourceBundle MESSAGES;
+    private static ResourceBundle MESSAGES;
 
 
     /**

@@ -434,11 +434,11 @@ public class ProviderUtil {
         return provider.getRespresenationForMethodMetaData(metaData, indent);
     }
 
-    static private String getHtmlRespresentationForParameter(String parameter, ParameterMetaData parameterMetaData) {
+    private static String getHtmlRespresentationForParameter(String parameter, ParameterMetaData parameterMetaData) {
         return getHtmlRespresentationForParameter(parameter, parameterMetaData, null);
     }
 
-    static private String getHtmlRespresentationForParameter(String parameter,
+    private static String getHtmlRespresentationForParameter(String parameter,
             ParameterMetaData parameterMetaData, String parameterValue) {
 
       if ("true".equals(parameterMetaData.getAttributeValue(Constants.DEPRECATED))) {

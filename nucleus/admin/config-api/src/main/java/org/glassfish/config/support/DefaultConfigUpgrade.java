@@ -1044,7 +1044,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      *  <jms-availability availability-enabled="false"/>
      * </availability-service>
      */
-    static private class AvailabilityServiceConfigCode implements SingleConfigCode<Config> {
+    private static class AvailabilityServiceConfigCode implements SingleConfigCode<Config> {
 
         public Object run(Config config) throws PropertyVetoException {
             try {

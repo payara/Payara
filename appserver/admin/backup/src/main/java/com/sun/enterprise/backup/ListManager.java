@@ -243,7 +243,7 @@ public class ListManager extends BackupRestoreManager
      * When camparing the Status in order to order the list output
      * we first sort by backup-config and then by file name.
      */
-    static private class FileNameComparator implements Comparator<Status>,
+    private static class FileNameComparator implements Comparator<Status>,
         Serializable {
 
         public int compare(Status s1, Status s2) {

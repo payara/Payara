@@ -54,7 +54,7 @@ import org.glassfish.config.support.TranslatedConfigView;
 
 public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbReference, NamedDescriptor {
 
-    static private final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
+    private static final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
 
     // In case the reference has been resolved, the ejbDescriptor will
     // be the referenced ejb.

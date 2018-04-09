@@ -82,12 +82,12 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
     private static final String INVALID_ZIP_FILE = "NCLS-DEPLOYMENT-00020";
 
     // the file we are currently mapped to 
-    volatile protected JarFile jarFile=null;
+    protected volatile JarFile jarFile=null;
     
     // in case this abstraction is dealing with a jar file
     // within a jar file, the jarFile will be null and this
     // JarInputStream will contain the 
-    volatile protected JarInputStream jarIS=null;
+    protected volatile JarInputStream jarIS=null;
     
     // the archive Uri
     volatile private URI uri;

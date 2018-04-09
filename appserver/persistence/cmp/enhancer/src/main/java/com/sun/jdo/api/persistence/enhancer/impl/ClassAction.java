@@ -117,43 +117,43 @@ final class ClassAction
     private static final short  AnnotatedVersion = 1;
 
     //@olsen: added method name constants
-    static private final String jdoGetStateManagerName
+    private static final String jdoGetStateManagerName
     = "jdoGetStateManager";//NOI18N
-    static private final String jdoSetStateManagerName
+    private static final String jdoSetStateManagerName
     = "jdoSetStateManager";//NOI18N
-    static private final String jdoGetFlagsName
+    private static final String jdoGetFlagsName
     = "jdoGetFlags";//NOI18N
-    static private final String jdoSetFlagsName
+    private static final String jdoSetFlagsName
     = "jdoSetFlags";//NOI18N
-    static private final String jdoMakeDirtyName
+    private static final String jdoMakeDirtyName
     = "jdoMakeDirty";//NOI18N
-    static private final String jdoIsDirtyName
+    private static final String jdoIsDirtyName
     = "jdoIsDirty";//NOI18N
-    static private final String jdoIsTransactionalName
+    private static final String jdoIsTransactionalName
     = "jdoIsTransactional";//NOI18N
-    static private final String jdoIsPersistentName
+    private static final String jdoIsPersistentName
     = "jdoIsPersistent";//NOI18N
-    static private final String jdoIsNewName
+    private static final String jdoIsNewName
     = "jdoIsNew";//NOI18N
-    static private final String jdoIsDeletedName
+    private static final String jdoIsDeletedName
     = "jdoIsDeleted";//NOI18N
-    static private final String jdoGetPersistenceManagerName
+    private static final String jdoGetPersistenceManagerName
     = "jdoGetPersistenceManager";//NOI18N
-    static private final String jdoGetObjectIdName
+    private static final String jdoGetObjectIdName
     = "jdoGetObjectId";//NOI18N
-    static private final String jdoConstructorName
+    private static final String jdoConstructorName
     = "<init>";//NOI18N
-    static private final String jdoNewInstanceName
+    private static final String jdoNewInstanceName
     = "jdoNewInstance";//NOI18N
-    static private final String jdoClearName
+    private static final String jdoClearName
     = "jdoClear";//NOI18N
-    static private final String jdoCopyName
+    private static final String jdoCopyName
     = "jdoCopy";//NOI18N
-    static private final String jdoGetFieldName
+    private static final String jdoGetFieldName
     = "jdoGetField";//NOI18N
-    static private final String jdoSetFieldName
+    private static final String jdoSetFieldName
     = "jdoSetField";//NOI18N
-    static private final String jdoCloneName
+    private static final String jdoCloneName
     = "clone";//NOI18N
 
     /* The class to be annotated */
