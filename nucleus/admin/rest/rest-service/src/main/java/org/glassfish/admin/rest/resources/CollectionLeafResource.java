@@ -228,7 +228,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
         ar.setActionDescription(typeKey);
         if (isJvmOptions) {
             ar.getExtraProperties().put("leafList", getEntity().stream().map(JvmOption::new)
-                    .map(option -> ImmutableMap.of("minVersion", option.minVersion.isPresent()? option.minVersion.get().toString() : "",
+                    .map(option -> ImmutableMap.of("minVersion", option.minVersion.isPresent() ? option.minVersion.get().toString() : "",
                             "maxVersion", option.maxVersion.isPresent()? option.maxVersion.get().toString(): "", "jvmOption", option.option)).toArray());
         }
         else {
