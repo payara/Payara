@@ -294,7 +294,7 @@ public class MiniXmlParser {
             if (!minVersion.isPresent() && !maxVersion.isPresent()) {
                 return option;
             }
-            return String.format("[%s|%s]%s", minVersion.isPresent()? minVersion.get(): "", maxVersion.isPresent()? maxVersion.get(): "", option);
+            return String.format("[%s|%s]%s", minVersion.isPresent() ? minVersion.get() : "", maxVersion.isPresent() ? maxVersion.get() : "", option);
         }
     }
 
