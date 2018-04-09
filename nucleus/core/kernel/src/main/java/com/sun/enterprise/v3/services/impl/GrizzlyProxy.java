@@ -276,10 +276,11 @@ public class GrizzlyProxy implements NetworkProxy {
             throw e;
         }
 
+        portNumber = grizzlyListener.getPort();
         logger.log(Level.INFO, KernelLoggerInfo.listenerStarted,
                 new Object[]{grizzlyListener.getName(),
                 System.currentTimeMillis() - t1,
-                grizzlyListener.getAddress() + ":" + grizzlyListener.getPort()});
+                grizzlyListener.getAddress() + ":" + portNumber});
     }
     
     @Override

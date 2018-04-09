@@ -554,11 +554,11 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
             final long startTime = System.currentTimeMillis();
 
             // Keep a list of successfully started listeners
-            Map<String, Integer> startedListeners = new HashMap<>();
+            List<NetworkListener> startedListeners = new ArrayList<>();
             for (NetworkListener listener : networkConfig.getNetworkListeners().getNetworkListener()) {
                 if (createNetworkProxy(listener) != null) {
                     isAtLeastOneProxyStarted = true;
-                    startedListeners.put(listener.getAddress(), getRealPort(listener));
+                    startedListeners.add(listener);
                 }
             }
 
@@ -569,8 +569,8 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
 
                 // Log the listeners which started.
                 String boundAddresses = Arrays.toString(
-                        startedListeners.entrySet().stream()
-                            .map(listener -> listener.getKey() + ":" + listener.getValue())
+                        startedListeners.stream()
+                            .map(listener -> listener.getName() + ":" + getRealPort(listener))
                             .collect(Collectors.toList())
                         .toArray());
                 LOGGER.log(Level.INFO, KernelLoggerInfo.grizzlyStarted,
