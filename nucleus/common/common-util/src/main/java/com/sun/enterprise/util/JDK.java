@@ -84,10 +84,10 @@ public final class JDK {
         private Version(String string) {
             String[] split = string.split("[\\._u\\-]+");
 
-            major = split.length > 0? Integer.parseInt(split[0]) : 0;
-            minor = split.length > 1? Optional.of(Integer.parseInt(split[1])) : Optional.empty();
-            subminor = split.length > 2? Optional.of(Integer.parseInt(split[2])) : Optional.empty();
-            update = split.length > 3? Optional.of(Integer.parseInt(split[3])) : Optional.empty();
+            major = split.length > 0 ? Integer.parseInt(split[0]) : 0;
+            minor = split.length > 1 ? Optional.of(Integer.parseInt(split[1])) : Optional.empty();
+            subminor = split.length > 2 ? Optional.of(Integer.parseInt(split[2])) : Optional.empty();
+            update = split.length > 3 ? Optional.of(Integer.parseInt(split[3])) : Optional.empty();
         }
 
         private Version() {
