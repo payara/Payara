@@ -1019,7 +1019,7 @@ public class ASURLClassLoader
 
         /** jar file if url is a jar else null,
             ensure thread visibility by making it 'volatile'  */
-        protected volatileJarFile zip     = null;
+        protected volatile JarFile zip     = null;
 
         /** true if url is a jar,
             ensure thread visibility by making it 'volatile'  */
