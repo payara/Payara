@@ -271,7 +271,7 @@ public class GrizzlyProxy implements NetworkProxy {
             grizzlyListener.start();
         } catch (BindException e) {
             logger.log(Level.SEVERE, KernelLoggerInfo.listenerUnableToBind,
-                new Object[]{Grizzly.getDotedVersion(),
+                new Object[]{grizzlyListener.getName(),
                 grizzlyListener.getAddress() + ":" + grizzlyListener.getPort()});
             throw e;
         }
