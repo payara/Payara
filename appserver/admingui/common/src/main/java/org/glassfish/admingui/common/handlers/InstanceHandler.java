@@ -181,8 +181,8 @@ public class InstanceHandler {
     private static void prepareJvmOptionPayload(Map<String, Object> payload, String target, List<Map<String, Object>> options) {
         payload.put(TARGET, target);
         for (Map<String, Object> oneRow : options) {
-            String jvmOptionUnescaped = new JvmOption((String)oneRow.get(JVM_OPTION),
-                    (String)oneRow.get(MIN_VERSION), (String)oneRow.get(MAX_VERSION)).toString();
+            String jvmOptionUnescaped = new JvmOption((String) oneRow.get(JVM_OPTION),
+                    (String) oneRow.get(MIN_VERSION), (String) oneRow.get(MAX_VERSION)).toString();
             String jvmOptionEscape = UtilHandlers.escapePropertyValue(jvmOptionUnescaped);         //refer to GLASSFISH-19069
             ArrayList kv = getKeyValuePair(jvmOptionEscape);
             payload.put((String)kv.get(0), kv.get(1));
