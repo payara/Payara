@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.universal.xml;
 
@@ -49,6 +48,7 @@ import com.sun.common.util.logging.LoggingPropertyNames;
 import com.sun.enterprise.universal.glassfish.GFLauncherUtils;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.HostAndPort;
+import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.StringUtils;
 
 import javax.xml.stream.XMLInputFactory;
@@ -59,13 +59,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.util.*;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static javax.xml.stream.XMLStreamConstants.*;
 
@@ -126,7 +126,7 @@ public class MiniXmlParser {
 
 
 
-    public List<String> getJvmOptions() throws MiniXmlParserException {
+    public List<JvmOption> getJvmOptions() throws MiniXmlParserException {
         if (!valid) {
             throw new MiniXmlParserException(strings.get("invalid"));
         }
@@ -232,7 +232,80 @@ public class MiniXmlParser {
         }
         return logFilename;
     }
-    
+
+    public static class JvmOption {
+        public final String option;
+        public final Optional<JDK.Version> minVersion;
+        public final Optional<JDK.Version> maxVersion;
+
+        // splits the versioned JVM option pattern into three groups:
+        //     Gr1  Gr2 Gr3
+        //      <>  <>  <------------>
+        // Ex: [1.7|1.8]-XX:MyJvmOption (both min and max version present)
+        // Below examples have missing verisions, with is also OK
+        // Ex: [|1.8]-XX:MyJvmOption (only max version present)
+        // Ex: [1.7|]-XX:MyJvmOption (only min version present)
+        // Gr1 or Gr2 can be null (optional)
+        private static final Pattern PATTERN = Pattern.compile("^\\[(.*)\\|(.*)\\](.*)");
+
+        public JvmOption(String option) {
+            Matcher matcher = PATTERN.matcher(option);
+            if (matcher.matches()) {
+                this.minVersion = Optional.ofNullable(JDK.getVersion(matcher.group(1)));
+                this.maxVersion = Optional.ofNullable(JDK.getVersion(matcher.group(2)));
+                this.option = matcher.group(3);
+            }
+            else {
+                this.option = option;
+                this.minVersion = Optional.empty();
+                this.maxVersion = Optional.empty();
+            }
+        }
+
+        public JvmOption(String option, String minVersion, String maxVersion) {
+            this.option = option;
+            this.minVersion = Optional.ofNullable(JDK.getVersion(minVersion));
+            this.maxVersion = Optional.ofNullable(JDK.getVersion(maxVersion));
+        }
+
+        public static boolean hasVersionPattern(String option) {
+            return PATTERN.matcher(option).matches();
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 79 * hash + Objects.hashCode(this.option);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final JvmOption other = (JvmOption) obj;
+            if (!Objects.equals(this.option, other.option)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            if (!minVersion.isPresent() && !maxVersion.isPresent()) {
+                return option;
+            }
+            return String.format("[%s|%s]%s", minVersion.isPresent() ? minVersion.get() : "", maxVersion.isPresent() ? maxVersion.get() : "", option);
+        }
+    }
+
     private static String replaceOld(
             final String aInput,
             final String aOldPattern,
@@ -526,7 +599,7 @@ public class MiniXmlParser {
     private void parseJvmAndProfilerOptions() throws XMLStreamException, EndDocumentException {
         while (skipToButNotPast("java-config", "jvm-options", "profiler")) {
             if ("jvm-options".equals(parser.getLocalName())) {
-                jvmOptions.add(parser.getElementText());
+                jvmOptions.add(new JvmOption(parser.getElementText()));
             } else {// profiler
                 parseProfiler();
             }
@@ -1022,7 +1095,7 @@ public class MiniXmlParser {
     private InputStreamReader reader;
     private String serverName;
     private String configRef;
-    private List<String> jvmOptions = new ArrayList<String>();
+    private List<JvmOption> jvmOptions = new ArrayList<>();
     private List<String> profilerJvmOptions = new ArrayList<String>();
     private Map<String, String> javaConfig;
     private Map<String, String> profilerConfig = Collections.emptyMap();
@@ -1043,6 +1116,5 @@ public class MiniXmlParser {
     private SysPropsHandler sysProps = new SysPropsHandler();
     private List<ParsedCluster> clusters = null;
     private boolean secureAdminEnabled = false;
-
-
+    private static final JDK.Version JDK_VERSION = JDK.getVersion();
 }
