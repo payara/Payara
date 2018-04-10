@@ -238,6 +238,13 @@ public class MiniXmlParser {
         public final Optional<JDK.Version> minVersion;
         public final Optional<JDK.Version> maxVersion;
 
+        // splits the versioned JVM option pattern into three groups:
+        //     Gr1  Gr2 Gr3
+        //      <>  <>  <------------>
+        // Ex: [1.7|1.8]-XX:MyJvmOption (both min and max version present)
+        // Below examples have missing verisions, with is also OK
+        // Ex: [|1.8]-XX:MyJvmOption (only max version present)
+        // Ex: [1.7|]-XX:MyJvmOption (only min version present
         private static final Pattern PATTERN = Pattern.compile("^\\[(.*)\\|(.*)\\](.*)");
 
         public JvmOption(String option) {

@@ -59,6 +59,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.sun.enterprise.util.HostAndPort;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author bnevins
@@ -511,5 +512,23 @@ public class MiniXmlParserTest {
         assertEquals(clu, "cluster");
         assertEquals(dom, "domain");
 
+    }
+
+    @Test
+    public void versionedOptions() {
+       JvmOption opt = new JvmOption("[1.7|1.8]-XX:xxx");
+       assertEquals("1.7", opt.minVersion.get());
+       assertEquals("1.8", opt.maxVersion.get());
+       assertEquals("-XX:xxx", opt.option);
+
+       opt = new JvmOption("|1.8]-XX:xxx");
+       assertFalse("Min Version Not Present", opt.minVersion.isPresent());
+       assertEquals("1.8", opt.maxVersion.get());
+       assertEquals("-XX:xxx", opt.option);
+
+       opt = new JvmOption("[1.7|]-XX:xxx");
+       assertEquals("1.7", opt.minVersion.get());
+       assertFalse("Max Version Not Present", opt.maxVersion.isPresent());
+       assertEquals("-XX:xxx", opt.option);
     }
 }

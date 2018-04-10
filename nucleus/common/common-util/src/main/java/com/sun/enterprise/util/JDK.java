@@ -82,6 +82,10 @@ public final class JDK {
         private final Optional<Integer> update;
 
         private Version(String string) {
+            // split java version into it's constituent parts, i.e.
+            // 1.2.3.4 -> [ 1, 2, 3, 4]
+            // 1.2.3u4 -> [ 1, 2, 3, 4]
+            // 1.2.3_4 -> [ 1, 2, 3, 4]
             String[] split = string.split("[\\._u\\-]+");
 
             major = split.length > 0 ? Integer.parseInt(split[0]) : 0;
@@ -223,6 +227,8 @@ public final class JDK {
 
     public static Version getVersion(String string) {
         if (string != null && string.matches("([0-9]+[\\._u\\-]+)*[0-9]+")) {
+            // make sure the string is a valid JDK version, i.e.
+            // 1.8.0_162 or something that is returned by "java -version"
             return new Version(string);
         } else {
             return null;
@@ -238,7 +244,7 @@ public final class JDK {
         if (minVersion.isPresent()) {
             correctJDK = JDK_VERSION.newerOrEquals(minVersion.get());
         }
-        if (correctJDK == true && maxVersion.isPresent()) {
+        if (correctJDK && maxVersion.isPresent()) {
             correctJDK = JDK_VERSION.olderOrEquals(maxVersion.get());
         }
         return correctJDK;
