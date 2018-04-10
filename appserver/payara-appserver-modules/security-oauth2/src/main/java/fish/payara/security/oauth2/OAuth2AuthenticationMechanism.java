@@ -52,7 +52,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- *
+ * The AuthenticationMechanism used for authenticate users
  * 
  * @author jonathan coustick
  * @since 4.1.2.172
@@ -88,12 +88,16 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
     }
     
     @Override
-    public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthenticationException {        
+    public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthenticationException {
+
         if (request.getRequestURL().toString().equals(redirectURI)){
+            String recievedState = request.getParameter("state");
+            if (recievedState != null && recievedState.equals(state.getState())){
+                
+            } else {
             
-            
-            
-            return httpMessageContext.notifyContainerAboutLogin(CredentialValidationResult.INVALID_RESULT);
+                return httpMessageContext.notifyContainerAboutLogin(CredentialValidationResult.INVALID_RESULT);
+            }
         } else {
             StringBuilder authTokenRequest = new StringBuilder(authEndpoint);
             authTokenRequest.append("?client_id=").append(clientID);
@@ -110,7 +114,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
             
             return httpMessageContext.redirect(authTokenRequest.toString());
         }
-        
+        return null;
     } 
     
     void setAuthEndpoint(String endpoint){

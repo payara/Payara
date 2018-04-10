@@ -93,16 +93,16 @@ public @interface OAuth2AuthenticationDefinition {
     /**
      * The callback URI.
      * <p>
-     * This must be equal to one set in the OAuth2 Authentication provider
+     * If supplied this must be equal to one set in the OAuth2 Authentication provider
      * @return 
      */
-    String redirectURI();
+    String redirectURI() default "";
     
     /**
      * The scopes that will be requested from the OAuth provider
      * @return 
      */
-    String scopes();
+    String scopes() default "";
     
     /**
      * An array of extra options that will be sent to the OAuth provider
@@ -110,5 +110,5 @@ public @interface OAuth2AuthenticationDefinition {
      * Some OAuth providers require additional 
      * @return 
      */
-    String[] extraParameters();
+    String[] extraParameters() default {};
 }
