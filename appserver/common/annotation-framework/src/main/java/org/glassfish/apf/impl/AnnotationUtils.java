@@ -70,21 +70,39 @@ public class AnnotationUtils {
         return logger;        
     }
     
-    @Deprecated
+    /**
+     * Sets the logger
+     * @deprecated Since 4.1.2.172 as unused in Payara
+     * @param lg 
+     * @see #getLogger() 
+     */
     public static void setLogger(Logger lg) {
         logger = lg;
     }
-    
-    @Deprecated
+      
+    /**
+     * Sets what type of things are to logged
+     * @deprecated Since 4.1.2.172 as unused in Payara
+     * @param what
+     */
     public static void setLoggerTarget(String what) {
         whatToLog = what;
     }
     
-    @Deprecated
+    /**
+     * @deprecated Since 4.1.2.172 as unused in Payara
+     * @return 
+     */
     public static String getLoggerTarget() {
         return whatToLog;
     }
     
+    /**
+     * @deprecated Since 4.1.2.172, use of different {@link Logger}s is the preferred method
+     * @param what
+     * @return
+     * @see Logger#getLogger(String) 
+     */
     public static boolean shouldLog(String what) {
         
         if (logger.isLoggable(Level.FINER)) {
