@@ -65,19 +65,22 @@ public class AnnotationUtils {
 
     public static Logger getLogger() {
         if (logger==null) {
-            logger = Logger.global;
-        }
+            logger = Logger.getLogger("Annotation-Framework");
+    }
         return logger;        
     }
-
+    
+    @Deprecated
     public static void setLogger(Logger lg) {
         logger = lg;
     }
     
+    @Deprecated
     public static void setLoggerTarget(String what) {
         whatToLog = what;
     }
     
+    @Deprecated
     public static String getLoggerTarget() {
         return whatToLog;
     }
@@ -85,7 +88,7 @@ public class AnnotationUtils {
     public static boolean shouldLog(String what) {
         
         if (logger.isLoggable(Level.FINER)) {
-            if (whatToLog.indexOf(what)!=-1) 
+            if (whatToLog.contains(what)) 
                 return true;
             if ("*".equals(whatToLog))
                 return true;
@@ -113,7 +116,9 @@ public class AnnotationUtils {
             public boolean matches(Descriptor d) {
                 Map<String, List<String>> metadata = d.getMetadata();
                 List<String> handlerForList = metadata.get(AnnotationHandler.ANNOTATION_HANDLER_METADATA);
-                if (handlerForList == null || handlerForList.isEmpty()) return false;
+                if (handlerForList == null || handlerForList.isEmpty()) {
+                    return false;
+                }
                 
                 String descriptorForThis = handlerForList.get(0);
                 

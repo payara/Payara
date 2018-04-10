@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.apf.impl;
 
@@ -71,10 +72,11 @@ public class DefaultErrorHandler implements ErrorHandler {
     }
 
     /**
-     * Receive notication of a fine error message
+     * Receive notification of a fine error message
      * @param ape The warning information
-     * @throws any exception to stop the annotation processing 
+     * @throws AnnotationProcessorException any exception to stop the annotation processing 
      */ 
+    @Override
     public void fine(AnnotationProcessorException ape) throws
             AnnotationProcessorException {
         
@@ -95,8 +97,9 @@ public class DefaultErrorHandler implements ErrorHandler {
     /**
      * Receive notification of a warning
      * @param ape The warning information
-     * @throws any exception to stop the annotation processing 
+     * @throws AnnotationProcessorException any exception to stop the annotation processing 
      */
+    @Override
     public void warning(AnnotationProcessorException ape) throws
             AnnotationProcessorException {
         
@@ -116,8 +119,9 @@ public class DefaultErrorHandler implements ErrorHandler {
     /**
      * Receive notification of an error
      * @param ape The error information
-     * @throws amy exception to stop the annotation processing
+     * @throws AnnotationProcessorException any exception to stop the annotation processing
      */
+    @Override
     public void error(AnnotationProcessorException ape) throws 
             AnnotationProcessorException {
         

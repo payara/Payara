@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.apf.impl;
 
@@ -45,16 +46,12 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.util.Set;
-import java.util.Iterator;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.logging.Level;
 
 import org.glassfish.apf.Scanner;
-import org.glassfish.hk2.classmodel.reflect.Parser;
-import org.glassfish.hk2.classmodel.reflect.ParsingContext;
-import org.glassfish.hk2.classmodel.reflect.Types;
 
 /**
  * Implementation of the Scanner interface for a directory
@@ -67,6 +64,7 @@ public class DirectoryScanner extends JavaEEScanner implements Scanner {
     Set<String> entries = new HashSet<String>();
     ClassLoader classLoader = null;
 
+    @Override
     public void process(File directory, Object bundleDesc, ClassLoader classLoader)
             throws IOException {
         AnnotationUtils.getLogger().finer("dir is " + directory);
@@ -84,6 +82,7 @@ public class DirectoryScanner extends JavaEEScanner implements Scanner {
     private void init(File top, File directory) throws java.io.IOException {
         
         File[] dirFiles = directory.listFiles(new FileFilter() {
+                @Override
                 public boolean accept(File pathname) {
                     return pathname.getAbsolutePath().endsWith(".class");
                 }
@@ -93,6 +92,7 @@ public class DirectoryScanner extends JavaEEScanner implements Scanner {
         }
         
         File[] subDirs = directory.listFiles(new FileFilter() {
+                @Override
                 public boolean accept(File pathname) {
                     return pathname.isDirectory();
                 }
@@ -106,6 +106,7 @@ public class DirectoryScanner extends JavaEEScanner implements Scanner {
         return entries;
     }
 
+    @Override
     public ClassLoader getClassLoader() {
         if (classLoader==null) {
             final URL[] urls = new URL[1];
@@ -119,12 +120,13 @@ public class DirectoryScanner extends JavaEEScanner implements Scanner {
                   }
                 }.run();
             } catch(Exception e) {
-                e.printStackTrace();
+                AnnotationUtils.getLogger().log(Level.SEVERE, null, e);
             }
         }
         return classLoader;
     }
 
+    @Override
     public Set<Class> getElements() {
         
         
@@ -137,12 +139,12 @@ public class DirectoryScanner extends JavaEEScanner implements Scanner {
             // convert to a class name...
             String className = fileName.replace(File.separatorChar, '.');
             className = className.substring(0, className.length()-6);
-            System.out.println("Getting " + className);
+            AnnotationUtils.getLogger().log(Level.FINE, "Getting {0}", className);
             try {                
                 elements.add(classLoader.loadClass(className));
                 
             } catch(Throwable cnfe) {
-                AnnotationUtils.getLogger().severe("cannot load " + className + " reason : " + cnfe.getMessage());
+                AnnotationUtils.getLogger().log(Level.SEVERE, "cannot load {0} reason : {1}", new Object[]{className, cnfe.getMessage()});
             }
         }
         return elements;
