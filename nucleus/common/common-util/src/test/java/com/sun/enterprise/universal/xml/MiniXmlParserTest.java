@@ -517,17 +517,17 @@ public class MiniXmlParserTest {
     @Test
     public void versionedOptions() {
        JvmOption opt = new JvmOption("[1.7|1.8]-XX:xxx");
-       assertEquals("1.7", opt.minVersion.get());
-       assertEquals("1.8", opt.maxVersion.get());
+       assertEquals("1.7", opt.minVersion.get().toString());
+       assertEquals("1.8", opt.maxVersion.get().toString());
        assertEquals("-XX:xxx", opt.option);
 
-       opt = new JvmOption("|1.8]-XX:xxx");
+       opt = new JvmOption("[|1.8]-XX:xxx");
        assertFalse("Min Version Not Present", opt.minVersion.isPresent());
-       assertEquals("1.8", opt.maxVersion.get());
+       assertEquals("1.8", opt.maxVersion.get().toString());
        assertEquals("-XX:xxx", opt.option);
 
        opt = new JvmOption("[1.7|]-XX:xxx");
-       assertEquals("1.7", opt.minVersion.get());
+       assertEquals("1.7", opt.minVersion.get().toString());
        assertFalse("Max Version Not Present", opt.maxVersion.isPresent());
        assertEquals("-XX:xxx", opt.option);
     }
