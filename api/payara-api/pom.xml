@@ -144,7 +144,8 @@
                                     fish.payara.notification,
                                     fish.payara.notification.eventbus,
                                     fish.payara.notification.healthcheck,
-                                    fish.payara.notification.requesttracing
+                                    fish.payara.notification.requesttracing,
+                                    fish.payara.security.oauth2.annotation
                                 </Export-Package>
                             </instructions>
                         </configuration>

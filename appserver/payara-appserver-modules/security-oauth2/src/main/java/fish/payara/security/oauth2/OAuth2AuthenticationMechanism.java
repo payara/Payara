@@ -40,7 +40,7 @@
 package fish.payara.security.oauth2;
 
 
-import java.util.function.Function;
+import fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition;
 import javax.inject.Inject;
 import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;

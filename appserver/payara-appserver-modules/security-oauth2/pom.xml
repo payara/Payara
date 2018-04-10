@@ -52,6 +52,17 @@
     <packaging>glassfish-jar</packaging>
     <name>OAuth 2 Client Integration</name>
     
+    <developers>
+        <developer>
+            <name>Jonathan Coustick</name>
+            <url>http://www.payara.fish</url>
+            <organization>Payara</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+    
     <dependencies>
         <dependency>
             <groupId>fish.payara.api</groupId>
@@ -80,4 +91,43 @@
             <artifactId>cdi-api</artifactId>
         </dependency>
     </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                        <configuration>
+                            <instructions>
+                                <Import-Package>
+                                    fish.payara.security.oauth2.annotation,
+                                    javax.inject,
+                                    javax.enterprise.context,
+                                    javax.enterprise.inject.spi,
+                                    javax.enterprise.util,
+                                    javax.security.enterprise,
+                                    javax.servlet.http,
+                                    com.sun.enterprise.deployment.annotation.handlers,
+                                    org.glassfish.apf,
+                                    org.glassfish.hk2.runlevel,
+                                    org.jvnet.hk2.annotations
+                                </Import-Package>
+                                <Export-Package>
+                                    fish.payara.security.oauth2
+                                </Export-Package>
+                            </instructions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    
 </project>

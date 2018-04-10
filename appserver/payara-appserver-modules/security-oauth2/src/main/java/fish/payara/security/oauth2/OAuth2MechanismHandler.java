@@ -39,7 +39,6 @@
  */
 package fish.payara.security.oauth2;
 
-import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
 import java.util.function.Function;
 import java.util.logging.Level;
 import javax.enterprise.event.Observes;
@@ -47,12 +46,19 @@ import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
+
+import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
+
+import fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition;
+
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.apf.ResultType;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -61,6 +67,7 @@ import org.jvnet.hk2.annotations.Service;
  * @since 4.1.2.172
  */
 @Service
+@RunLevel(StartupRunLevel.VAL)
 @AnnotationHandlerFor(OAuth2AuthenticationDefinition.class)
 public class OAuth2MechanismHandler extends AbstractHandler implements Extension {
 
