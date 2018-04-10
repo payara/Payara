@@ -530,5 +530,9 @@ public class MiniXmlParserTest {
        assertEquals("1.7", opt.minVersion.get().toString());
        assertFalse("Max Version Not Present", opt.maxVersion.isPresent());
        assertEquals("-XX:xxx", opt.option);
+
+       opt = new JvmOption("-XX:xxx");
+       assertFalse("Min Version Not Present", opt.minVersion.isPresent());
+       assertFalse("Max Version Not Present", opt.maxVersion.isPresent());
     }
 }
