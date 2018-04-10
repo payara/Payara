@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.deployment;
 
@@ -291,4 +292,11 @@ public interface Deployment {
     // gets the default target when no target is specified for non-paas case
     public String getDefaultTarget(Boolean isClassicStyle);
 
+    /**
+     * Returns thread-local deployment, which is the currently-executing deployment context,
+     * or null if none
+     * 
+     * @return Currently-executing deployment context
+     */
+    public ExtendedDeploymentContext getCurrentDeploymentContext();
 }
