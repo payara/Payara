@@ -220,6 +220,7 @@ public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
 
          ArrayList<String> instancesList = new ArrayList<String>();
          File[] files = parent.listFiles(new FileFilter() {
+             @Override
              public boolean accept(File f) {
                  return f.isDirectory();
              }

@@ -56,6 +56,7 @@ public final class ProviderStringifier implements Stringifier
 	}
 	
 	
+        @Override
 		public String
 	stringify( Object object )
 	{

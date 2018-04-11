@@ -79,6 +79,7 @@ class FormattedWriter
 	 * @return The string representation of the internal StringBuffer 
 	 * used by this object.
 	 */	
+        @Override
 	public String toString () { return getBuffer().toString(); }
 
 	void writeComments (final String[] comments)

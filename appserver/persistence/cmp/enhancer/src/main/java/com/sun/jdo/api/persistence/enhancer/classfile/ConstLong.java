@@ -58,6 +58,7 @@ public class ConstLong extends ConstValue {
   /**
    * The tag of this constant entry
    */
+  @Override
   public int tag () { return MyTag; }
 
   /**
@@ -70,6 +71,7 @@ public class ConstLong extends ConstValue {
   /**
    * Return the descriptor string for the constant type.
    */
+  @Override
   public String descriptor() {
       return "J";//NOI18N
   }
@@ -77,6 +79,7 @@ public class ConstLong extends ConstValue {
   /**
    * A printable representation
    */
+  @Override
   public String toString () {
       return "CONSTANTLong(" + indexAsString() + "): " + //NOI18N
           "longValue(" + Long.toString(longValue) + ")";//NOI18N
@@ -88,6 +91,7 @@ public class ConstLong extends ConstValue {
     longValue = i;
   }
 
+  @Override
   void formatData (DataOutputStream b) throws IOException {
     b.writeLong(longValue);
   }
@@ -96,6 +100,7 @@ public class ConstLong extends ConstValue {
     return new ConstLong (input.readLong());
   }
 
+  @Override
   void resolve (ConstantPool p) { }
 
 

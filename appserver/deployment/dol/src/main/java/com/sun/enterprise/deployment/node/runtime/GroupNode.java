@@ -62,6 +62,7 @@ public class GroupNode extends DeploymentDescriptorNode {
    /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
         return group;
     }
@@ -69,6 +70,7 @@ public class GroupNode extends DeploymentDescriptorNode {
     /**
      * SAX Parser API implementation, we don't really care for now.
      */
+    @Override
     public void startElement(XMLElement element, Attributes attributes) {
 
         if (RuntimeTagNames.GROUP.equals(element.getQName())) {

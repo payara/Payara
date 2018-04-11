@@ -77,6 +77,7 @@ public class MessageDrivenHandler extends AbstractEjbHandler {
      * @param annotation
      * @return name
      */
+    @Override
     protected String getAnnotatedName(Annotation annotation) {
         MessageDriven mdAn = (MessageDriven)annotation;
         return mdAn.name();
@@ -88,6 +89,7 @@ public class MessageDrivenHandler extends AbstractEjbHandler {
      * @param annotation
      * @return boolean check for validity of EjbDescriptor
      */
+    @Override
     protected boolean isValidEjbDescriptor(EjbDescriptor ejbDesc,
             Annotation annotation) {
         return EjbMessageBeanDescriptor.TYPE.equals(ejbDesc.getType());
@@ -99,6 +101,7 @@ public class MessageDrivenHandler extends AbstractEjbHandler {
      * @param ainfo
      * @return a new EjbDescriptor
      */
+    @Override
     protected EjbDescriptor createEjbDescriptor(String elementName,
             AnnotationInfo ainfo) throws AnnotationProcessorException {
 
@@ -118,6 +121,7 @@ public class MessageDrivenHandler extends AbstractEjbHandler {
      * @param ainfo
      * @return HandlerProcessingResult
      */
+    @Override
     protected HandlerProcessingResult setEjbDescriptorInfo(
             EjbDescriptor ejbDesc, AnnotationInfo ainfo)
             throws AnnotationProcessorException {

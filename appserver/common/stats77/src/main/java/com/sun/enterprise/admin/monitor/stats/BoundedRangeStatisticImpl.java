@@ -61,6 +61,7 @@ public final class BoundedRangeStatisticImpl extends StatisticImpl implements
     private static final StringManager localStrMgr = 
                 StringManager.getManager(BoundedRangeStatisticImpl.class);
     
+    @Override
     public String toString() {
         return super.toString() + NEWLINE + 
             "Current: " + getCurrent() + NEWLINE +
@@ -243,6 +244,7 @@ public final class BoundedRangeStatisticImpl extends StatisticImpl implements
      * Returns the current value of this statistic.
 	 * @return long indicating the current value
      */
+    @Override
     public long getCurrent() {
         return currentVal;
     }
@@ -251,6 +253,7 @@ public final class BoundedRangeStatisticImpl extends StatisticImpl implements
      * Returns the highest value of this statistic, since measurement started.
 	 * @return long indicating high water mark
      */
+    @Override
      public long getHighWaterMark() {
         return highWaterMark;
     }
@@ -259,6 +262,7 @@ public final class BoundedRangeStatisticImpl extends StatisticImpl implements
      * Returns the lowest value of this statistic, since measurement started.
 	 * @return long indicating low water mark
      */
+    @Override
     public long getLowWaterMark() {
         return lowWaterMark;
     }
@@ -267,6 +271,7 @@ public final class BoundedRangeStatisticImpl extends StatisticImpl implements
      * Return the lowest possible value, that this statistic is permitted to attain.
 	 * @return long indicating the lower bound
      */
+    @Override
     public long getLowerBound() {
         return lowerBound;
     }
@@ -275,6 +280,7 @@ public final class BoundedRangeStatisticImpl extends StatisticImpl implements
      * Returns the highest possible value, that this statistic is permitted to attain.
 	 * @return long indicating the higher bound
      */
+    @Override
     public long getUpperBound() {
         return upperBound;
     }

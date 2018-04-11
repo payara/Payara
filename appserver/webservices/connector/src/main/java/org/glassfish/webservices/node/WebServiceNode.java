@@ -84,6 +84,7 @@ public class WebServiceNode extends DisplayableComponentNode {
      *  
      * @return map with the element name as a key, the setter method as a value
      */
+    @Override
     protected Map getDispatchTable() {
         Map table = super.getDispatchTable();
         table.put(WebServicesTagNames.WEB_SERVICE_DESCRIPTION_NAME, 
@@ -96,6 +97,7 @@ public class WebServiceNode extends DisplayableComponentNode {
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return tag;
     }
@@ -106,6 +108,7 @@ public class WebServiceNode extends DisplayableComponentNode {
      *
      * @param descriptor the new descriptor
      */
+    @Override
     public void addDescriptor(Object descriptor) {    
         WebServiceEndpoint endpoint = (WebServiceEndpoint) descriptor;
         WebService webService = (WebService) getDescriptor();

@@ -120,6 +120,7 @@ public class BucketizedHashtable implements Cloneable, Map, Serializable {
      * @param  key  a key in the hashtable
      * @return the value to which the specified key is mapped.
      */
+    @Override
     public Object get(Object key) {
         return hashtables[getBucketIndex(key)].get(key);
     }
@@ -130,6 +131,7 @@ public class BucketizedHashtable implements Cloneable, Map, Serializable {
      * @return the value to which the key had been mapped,
      *         or <code>null</code> if the key did not have a mapping.
      */
+    @Override
     public Object remove(Object key) {
         return hashtables[getBucketIndex(key)].remove(key);
     }
@@ -143,6 +145,7 @@ public class BucketizedHashtable implements Cloneable, Map, Serializable {
      * @return      the previous value of the specified key in hashtables,
      *              or <code>null</code> if it did not have one.
      */
+    @Override
     public Object put(Object key, Object value) {
         return hashtables[getBucketIndex(key)].put(key, value);
     }
@@ -151,6 +154,7 @@ public class BucketizedHashtable implements Cloneable, Map, Serializable {
      * @param t  BucketizedHashtable
      *           or a Map with a supported operation entrySet
      */
+    @Override
     public void putAll(Map t) {
         if (t instanceof BucketizedHashtable) {
             BucketizedHashtable bt = (BucketizedHashtable)t;
@@ -167,6 +171,7 @@ public class BucketizedHashtable implements Cloneable, Map, Serializable {
      * @return true if and only if the specified object is a key in one of
      *         of the hashtables
      */
+    @Override
     public boolean containsKey(Object key) {
         return hashtables[getBucketIndex(key)].containsKey(key);
     }
@@ -176,6 +181,7 @@ public class BucketizedHashtable implements Cloneable, Map, Serializable {
      * @return true if and only if the specified object is a value in one of
      *         of the hashtables
      */
+    @Override
     public boolean containsValue(Object value) {
         for (int i = 0; i < bucketSize; i++) {
             if (hashtables[i].containsValue(value)) {
@@ -188,6 +194,7 @@ public class BucketizedHashtable implements Cloneable, Map, Serializable {
     /**
      * @return the total number of key-value mappings of all buckets
      */
+    @Override
     public int size() {
         int totalSize = 0;
         for (int i = 0; i < bucketSize; i++) {
@@ -199,6 +206,7 @@ public class BucketizedHashtable implements Cloneable, Map, Serializable {
     /**
      * @return the hash code value for this map
      */
+    @Override
     public int hashCode() {
         int h = 0;
         for (int i = 0; i < bucketSize; i++) {
@@ -210,6 +218,7 @@ public class BucketizedHashtable implements Cloneable, Map, Serializable {
     /**
      * @return true if this map contains no key-value mappings
      */
+    @Override
     public boolean isEmpty() {
         for (int i = 0; i < bucketSize; i++) {
              if (!hashtables[i].isEmpty()) {
@@ -222,6 +231,7 @@ public class BucketizedHashtable implements Cloneable, Map, Serializable {
     /**
      * Clears this BucketizedHashtable so that it contains no key.
      */
+    @Override
     public void clear() {
         for (int i = 0; i < bucketSize; i++) {
             hashtables[i].clear();
@@ -234,6 +244,7 @@ public class BucketizedHashtable implements Cloneable, Map, Serializable {
      * @return a set of Map.Entry when bucketSet equal 1
      * @exception UnsupportedOperationException when bucketSize is greater one
      */
+    @Override
     public Set entrySet() {
         if (bucketSize == 1) {
             return hashtables[0].entrySet();
@@ -248,6 +259,7 @@ public class BucketizedHashtable implements Cloneable, Map, Serializable {
      * @return a set of keys when bucketSet equal 1
      * @exception UnsupportedOperationException when bucketSize is greater one
      */
+    @Override
     public Set keySet() {
         if (bucketSize == 1) {
             return hashtables[0].keySet();
@@ -262,6 +274,7 @@ public class BucketizedHashtable implements Cloneable, Map, Serializable {
      * @return a collection of values when bucketSet equal 1
      * @exception UnsupportedOperationException when bucketSize is greater one
      */
+    @Override
     public Collection values() {
         if (bucketSize == 1) {
             return hashtables[0].values();
@@ -275,6 +288,7 @@ public class BucketizedHashtable implements Cloneable, Map, Serializable {
      * @return true if the specified object is a BucketizedHashtable
      *         with hashtables represent the same set of mappings. 
      */
+    @Override
     public boolean equals(Object o) {
         if (o == this) {
             return true;
@@ -302,6 +316,7 @@ public class BucketizedHashtable implements Cloneable, Map, Serializable {
      * The keys and values are not cloned.
      * @return  a clone of BucketizedHashtable
      */
+    @Override
     public Object clone() {
         try {
             BucketizedHashtable bt = (BucketizedHashtable)super.clone();
@@ -321,6 +336,7 @@ public class BucketizedHashtable implements Cloneable, Map, Serializable {
     /**
      * @return a string representation of this BucketizedHashtable
      */
+    @Override
     public String toString() {
         StringBuffer buf = new StringBuffer("[");  // NOI18N
         //bucketSize always >= 1 

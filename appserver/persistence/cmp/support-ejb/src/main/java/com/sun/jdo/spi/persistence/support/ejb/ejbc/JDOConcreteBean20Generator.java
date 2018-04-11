@@ -124,6 +124,7 @@ class JDOConcreteBean20Generator extends JDOConcreteBeanGenerator {
      * @return a Collection of Exception instances with a separate instance for 
      * each failed validation.
      */
+    @Override
     Collection validate(AbstractMethodHelper methodHelper, String beanName) {
         Collection rc = super.validate(methodHelper, beanName);
 
@@ -136,6 +137,7 @@ class JDOConcreteBean20Generator extends JDOConcreteBeanGenerator {
 
     /** Add interfaces to the class declarations.
      */
+    @Override
     void addInterfaces() throws IOException {
         super.addInterfaces();
         jdoHelperWriter.addInterface(CMP20TemplateFormatter.helper20Interface_);
@@ -143,12 +145,14 @@ class JDOConcreteBean20Generator extends JDOConcreteBeanGenerator {
 
     /** Set super class for the helper class.
      */
+    @Override
     void setHelperSuperclass() throws IOException {
         jdoHelperWriter.setSuperclass(CMP20TemplateFormatter.helper20Impl_);
     }
 
     /** Add import statements for for the generated classes.
      */
+    @Override
     void addImportStatements(JavaFileWriter concreteImplFileWriter,
             JavaFileWriter helperFileWriter) throws IOException {
 
@@ -159,6 +163,7 @@ class JDOConcreteBean20Generator extends JDOConcreteBeanGenerator {
 
     /** Generate CMP2.0 specific methods.
      */
+    @Override
     void generateTypeSpecificMethods(PersistenceFieldElement[] allFields,
             AbstractMethodHelper methodHelper) throws IOException {
 
@@ -456,6 +461,7 @@ class JDOConcreteBean20Generator extends JDOConcreteBeanGenerator {
      * all categorized methods and some other convenience methods for this bean.
      * @return JDOQLElements instance.
      */
+    @Override
     JDOQLElements getJDOQLElements(Method m,
             AbstractMethodHelper methodHelper) throws IOException{
         // Call the EJBQL compiler if there is no known result
@@ -517,6 +523,7 @@ class JDOConcreteBean20Generator extends JDOConcreteBeanGenerator {
      * parameters to be passed to another method as String.
      * @return method body as String.
      */
+    @Override
     String getEJBCreateMethodBody(String createName,
             String[] exc, String parametersList,
             String parametersListWithSeparator) {
@@ -558,6 +565,7 @@ class JDOConcreteBean20Generator extends JDOConcreteBeanGenerator {
      * parameters to be passed to another method as String.
      * @return method body as String.
      */
+    @Override
     String getEJBPostCreateMethodBody(String postCreateName,
             String parametersList, String parametersListWithSeparator) {
 
@@ -578,6 +586,7 @@ class JDOConcreteBean20Generator extends JDOConcreteBeanGenerator {
     /** Returns method body for EJBRemove method.
      * @return method body as String.
      */
+    @Override
     String getEJBRemoveMethodBody() {
         // For read-only beans it will throw an exception. For updateable
         // beans it will be generated as required.
@@ -603,6 +612,7 @@ class JDOConcreteBean20Generator extends JDOConcreteBeanGenerator {
      * not need formatting but differ between CMP types.
      * CMP20TemplateFormatter.otherPublicMethods_ differ between CMP types.
      */
+    @Override
     void generateKnownMethods(AbstractMethodHelper methodHelper)
                        throws IOException {
 
@@ -637,6 +647,7 @@ class JDOConcreteBean20Generator extends JDOConcreteBeanGenerator {
     /**
      * Generates helper methods for the helper class.
      */
+    @Override
     void generateHelperClassMethods() throws IOException {
 
         super.generateHelperClassMethods();
@@ -657,6 +668,7 @@ class JDOConcreteBean20Generator extends JDOConcreteBeanGenerator {
      * Generates conversion methods from PC to EJBObject and back
      * to the helper class.
      */
+    @Override
     void generateConversions() throws IOException {
 
         super.generateConversions();
@@ -967,6 +979,7 @@ class JDOConcreteBean20Generator extends JDOConcreteBeanGenerator {
      * @return the codefragment for the checking local/remote parameters
      *         for method if EJB name is known from ejbql.
      */
+    @Override
     String generateFinderSelectorParamCheck(Method m,
             String[] parameterEjbNames) {
         StringBuffer checkBody = new StringBuffer();
@@ -1000,6 +1013,7 @@ class JDOConcreteBean20Generator extends JDOConcreteBeanGenerator {
      * @param finder Methodobject of the finder
      * @return <code>true</code> if the finder returns a Enumeration
      */
+    @Override
     boolean isFinderReturningEnumeration(Method finder) {
         return false;
     }
@@ -1028,6 +1042,7 @@ class JDOConcreteBean20Generator extends JDOConcreteBeanGenerator {
      * involved in the codegen.
      * @return The signatures as a string.
      */
+    @Override
     String getSignaturesOfGeneratorClasses()
     {
         StringBuffer signatures = new StringBuffer().

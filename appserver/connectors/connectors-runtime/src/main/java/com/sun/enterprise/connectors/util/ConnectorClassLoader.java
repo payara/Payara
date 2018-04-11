@@ -88,6 +88,7 @@ public class ConnectorClassLoader extends ASURLClassLoader
         if (classLoader == null) {
             classLoader =
                     AccessController.doPrivileged(new PrivilegedAction<ConnectorClassLoader>() {
+                        @Override
                         public ConnectorClassLoader run() {
                             return new ConnectorClassLoader();
                         }
@@ -117,6 +118,7 @@ public class ConnectorClassLoader extends ASURLClassLoader
             synchronized (ConnectorClassLoader.class) {
                 if (classLoader == null) {
                     classLoader = AccessController.doPrivileged(new PrivilegedAction<ConnectorClassLoader>() {
+                        @Override
                         public ConnectorClassLoader run() {
                             return new ConnectorClassLoader(parent);
                         }
@@ -140,6 +142,7 @@ public class ConnectorClassLoader extends ASURLClassLoader
         try {
             File file = new File(moduleDir);
             ASURLClassLoader cl = AccessController.doPrivileged(new PrivilegedAction<ASURLClassLoader>() {
+                        @Override
                         public ASURLClassLoader run() {
                             return new ASURLClassLoader(parent);
                         }
@@ -192,6 +195,7 @@ public class ConnectorClassLoader extends ASURLClassLoader
       *
       * @see java.lang.ClassLoader#loadClass(java.lang.String, boolean)
       */
+    @Override
     public synchronized Class loadClass(String name, boolean resolve)
             throws ClassNotFoundException {
         Class clz = null;
@@ -250,6 +254,7 @@ public class ConnectorClassLoader extends ASURLClassLoader
      *         in the chain. An empty string if there exists no connectors in the chain.
      */
 
+    @Override
     public String getClasspath() {
         StringBuffer strBuf = new StringBuffer();
         for (int i = 0; i < classLoaderChain.size(); i++) {

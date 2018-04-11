@@ -596,6 +596,7 @@ public class DriverLoader implements ConnectorConstants {
 
         private static final String JAR_EXT = ".jar";
 
+        @Override
         public boolean accept(File dir, String name) {
             return name.endsWith(JAR_EXT);
         }

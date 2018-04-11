@@ -131,6 +131,7 @@ public class PermissionsNode extends AbstractBundleNode {
         return SPEC_VERSION;
     }
 
+    @Override
     protected XMLElement getXMLRootTag() {
         return ROOT_ELEMENT;
     }

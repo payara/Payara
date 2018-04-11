@@ -56,10 +56,12 @@ import javax.inject.Singleton;
 @Singleton
 public class OSGiContainer implements Container {
 
+    @Override
     public Class<? extends Deployer> getDeployer() {
         return OSGiDeployer.class;
     }
 
+    @Override
     public String getName() {
         return OSGiSniffer.CONTAINER_NAME; // used for reporting purpose,so any string is fine actually
     }

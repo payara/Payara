@@ -84,6 +84,7 @@ public class ListBatchJobsProxy
         return "_ListBatchJobs";
     }
 
+    @Override
     protected void fillParameterMap(ParameterMap parameterMap) {
        super.fillParameterMap(parameterMap);
         if (jobName != null)
@@ -91,6 +92,7 @@ public class ListBatchJobsProxy
     }
 
 
+    @Override
     protected void postInvoke(AdminCommandContext context, ActionReport subReport) {
         Properties subProperties = subReport.getExtraProperties();
         Properties extraProps = context.getActionReport().getExtraProperties();

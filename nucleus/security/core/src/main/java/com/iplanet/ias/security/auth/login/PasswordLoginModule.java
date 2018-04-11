@@ -59,6 +59,7 @@ public abstract class PasswordLoginModule extends BasePasswordLoginModule
      * of this subclass
      * @throws LoginException
      */
+    @Override
     protected final void authenticateUser() throws LoginException{
         AuthenticationStatus as = authenticate();
         if(as.getStatus() == as.AUTH_SUCCESS)

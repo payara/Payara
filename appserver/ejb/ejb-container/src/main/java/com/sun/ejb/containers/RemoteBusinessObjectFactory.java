@@ -56,6 +56,7 @@ public class RemoteBusinessObjectFactory implements ObjectFactory {
 
 
 
+    @Override
     public Object getObjectInstance(Object obj, 
 				    Name name, 
 				    Context nameCtx,

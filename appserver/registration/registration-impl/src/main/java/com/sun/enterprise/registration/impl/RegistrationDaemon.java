@@ -66,6 +66,7 @@ public class RegistrationDaemon {
         if (registrationService.isRegistrationEnabled() ) {
             final Timer registrationTimer = new Timer("registration", true); //Mark the timer as daemon so that it does not hold up appserver shutdown
             TimerTask registrationTask = new TimerTask() {
+                @Override
                 public void run() {
                     try {
                         registrationService.transferEligibleServiceTagsToSysNet();

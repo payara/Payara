@@ -99,6 +99,7 @@ public class ResourceRecoveryManagerImpl implements PostConstruct, ResourceRecov
     private static List externallyRegisteredRecoveryResourceHandlers = new ArrayList();
 
 
+    @Override
     public void postConstruct() {
         if (configured) {
             _logger.log(Level.WARNING, "", new IllegalStateException());
@@ -115,6 +116,7 @@ public class ResourceRecoveryManagerImpl implements PostConstruct, ResourceRecov
      * @return boolean indicating the status of transaction recovery
      * @throws Exception when unable to recover
      */
+    @Override
     public boolean recoverIncompleteTx(boolean delegated, String logPath) throws Exception {
         return recoverIncompleteTx(delegated, logPath, 
                 ((delegated)? null : Configuration.getPropertyValue(Configuration.INSTANCE_NAME)), false);
@@ -129,6 +131,7 @@ public class ResourceRecoveryManagerImpl implements PostConstruct, ResourceRecov
      * @return boolean indicating the status of transaction recovery
      * @throws Exception when unable to recover
      */
+    @Override
     public boolean recoverIncompleteTx(boolean delegated, String logPath, String instance, 
             boolean notifyRecoveryListeners) throws Exception {
         boolean result = false; 
@@ -219,6 +222,7 @@ public class ResourceRecoveryManagerImpl implements PostConstruct, ResourceRecov
      * recover the xa-resources
      * @param force boolean to indicate if it has to be forced.
      */
+    @Override
     public void recoverXAResources(boolean force) {
         if (force) {
             try {
@@ -326,6 +330,7 @@ public class ResourceRecoveryManagerImpl implements PostConstruct, ResourceRecov
      *
      * @param lazy boolean
      */
+    @Override
     public void setLazyRecovery(boolean lazy) {
         lazyRecovery = lazy;
     }
@@ -333,6 +338,7 @@ public class ResourceRecoveryManagerImpl implements PostConstruct, ResourceRecov
     /**
      * to recover xa resources
      */
+    @Override
     public void recoverXAResources() {
         recoverXAResources(!lazyRecovery);
     }
@@ -356,10 +362,12 @@ public class ResourceRecoveryManagerImpl implements PostConstruct, ResourceRecov
     public static void registerRecoveryResourceHandler(final XAResource xaResource) {
         RecoveryResourceHandler recoveryResourceHandler =
                 new RecoveryResourceHandler() {
+                    @Override
                     public void loadXAResourcesAndItsConnections(List xaresList, List connList) {
                         xaresList.add(xaResource);
                     }
 
+                    @Override
                     public void closeConnections(List connList) {
                         ;
                     }

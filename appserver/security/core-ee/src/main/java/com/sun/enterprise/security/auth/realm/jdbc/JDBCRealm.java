@@ -151,6 +151,7 @@ public final class JDBCRealm extends DigestRealmBase {
      *                If the configuration parameters specify a realm which doesn't exist.
      */
     @SuppressWarnings("unchecked")
+    @Override
     public synchronized void init(Properties props) throws BadRealmException, NoSuchRealmException {
         super.init(props);
         
@@ -245,6 +246,7 @@ public final class JDBCRealm extends DigestRealmBase {
      *
      * @return Description of the kind of authentication that is directly supported by this realm.
      */
+    @Override
     public String getAuthType() {
         return AUTH_TYPE;
     }
@@ -260,6 +262,7 @@ public final class JDBCRealm extends DigestRealmBase {
      *                thrown if the realm does not support this operation - e.g. Certificate realm does not support this
      *                operation.
      */
+    @Override
     public Enumeration getGroupNames(String username) throws InvalidOperationException, NoSuchUserException {
         Vector vector = groupCache.get(username);
         if (vector == null) {
@@ -335,10 +338,12 @@ public final class JDBCRealm extends DigestRealmBase {
                 if (!PRE_HASHED.equalsIgnoreCase(getProperty(PARAM_ENCODING))) {
                     return new Password() {
 
+                        @Override
                         public byte[] getValue() {
                             return pwd.getBytes();
                         }
 
+                        @Override
                         public int getType() {
                             return Password.PLAIN_TEXT;
                         }
@@ -346,10 +351,12 @@ public final class JDBCRealm extends DigestRealmBase {
                 } else {
                     return new Password() {
 
+                        @Override
                         public byte[] getValue() {
                             return pwd.getBytes();
                         }
 
+                        @Override
                         public int getType() {
                             return Password.HASHED;
                         }

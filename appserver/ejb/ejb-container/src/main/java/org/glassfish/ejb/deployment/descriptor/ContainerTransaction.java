@@ -116,6 +116,7 @@ public final class ContainerTransaction extends Descriptor {
      * same transaction attribute.
      * @return true if the objects are equal, false otherwise.
      */
+    @Override
     public boolean equals(Object other) {
 	if (other != null && other instanceof ContainerTransaction) {
 	    ContainerTransaction otherContainerTransaction = 
@@ -128,6 +129,7 @@ public final class ContainerTransaction extends Descriptor {
 	return false;
     }
 
+    @Override
     public int hashCode() {
         int result = 17;
         result = 37*result + getTransactionAttribute().hashCode();
@@ -138,6 +140,7 @@ public final class ContainerTransaction extends Descriptor {
     /**
      * Returns a formatted String representing my state.
      */
+    @Override
     public void print(StringBuffer toStringBuffer) {
 	toStringBuffer.append("Container Transaction: ").append(this.getTransactionAttribute()).append("@").append(this.getDescription());
     }

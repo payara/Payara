@@ -78,6 +78,7 @@ public class IiopServiceSslConfigHandler implements SslConfigHandler {
         }
         try {
             ConfigSupport.apply(new SingleConfigCode<IiopService>() {
+                        @Override
                         public Object run(IiopService param)
                                 throws PropertyVetoException, TransactionFailure {
                             SslClientConfig newSslClientCfg =
@@ -108,6 +109,7 @@ public class IiopServiceSslConfigHandler implements SslConfigHandler {
 
         try {
             ConfigSupport.apply(new SingleConfigCode<IiopService>() {
+                    @Override
                     public Object run(IiopService param)
                             throws PropertyVetoException {
                         param.setSslClientConfig(null);

@@ -126,6 +126,7 @@ class SenderReceiver implements Sender, Receiver {
      *
      * @see
      */
+    @Override
     public void sending_request(int id, PropagationContextHolder holder)
             throws TRANSACTION_ROLLEDBACK, TRANSACTION_REQUIRED {
 
@@ -164,6 +165,7 @@ class SenderReceiver implements Sender, Receiver {
      *
      * @see
      */
+    @Override
     public void received_reply(int id, PropagationContext context,
             org.omg.CORBA.Environment ex)
             throws org.omg.CORBA.WrongTransaction {
@@ -199,6 +201,7 @@ class SenderReceiver implements Sender, Receiver {
      *
      * @see
      */
+    @Override
     public void received_request(int id, PropagationContext context) {
 
         if (_logger.isLoggable(Level.FINE)) {
@@ -239,6 +242,7 @@ class SenderReceiver implements Sender, Receiver {
      *
      * @see
      */
+    @Override
     public void sending_reply(int id, PropagationContextHolder holder)
         throws INVALID_TRANSACTION, TRANSACTION_ROLLEDBACK {
 

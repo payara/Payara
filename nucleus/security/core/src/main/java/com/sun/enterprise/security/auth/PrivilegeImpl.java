@@ -62,6 +62,7 @@ public class PrivilegeImpl implements Privilege {
     /**
      * Returns the hashCode ..
      */
+    @Override
     public int hashCode() {
 	return name.hashCode();
     }
@@ -70,6 +71,7 @@ public class PrivilegeImpl implements Privilege {
      * Returns the name of the name of the Privilege.
      * @return The name of the name of the Privilege.
      */
+    @Override
     public String getName() {
 	return name;
     }
@@ -77,6 +79,7 @@ public class PrivilegeImpl implements Privilege {
     /**
      * Compares equality...
      */
+    @Override
     public boolean equals(Object obj) {
 	if(obj instanceof Privilege) {
 	    Privilege priv = (Privilege) obj;

@@ -257,6 +257,7 @@ public class StatsProviderRegistry {
             return this.resetMethod;
         }
 
+        @Override
         public String toString() {
             String str = "    configStr = " + configStr + "\n" +
                          "    statsProvider = " + statsProvider.getClass().getName() + "\n" +

@@ -67,6 +67,7 @@ public class MessageDestinationNode extends DisplayableComponentNode  {
      *
      * @return map with the element name as a key, the setter method as a value
      */    
+    @Override
     protected Map getDispatchTable() {
         Map table = super.getDispatchTable();
         table.put(TagNames.MESSAGE_DESTINATION_NAME, "setName");

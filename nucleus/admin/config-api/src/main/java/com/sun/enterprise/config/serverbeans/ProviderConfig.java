@@ -216,5 +216,6 @@ public interface ProviderConfig extends ConfigBeanProxy, PropertyBag {
     }
     )
     @Element
+    @Override
     List<Property> getProperty();
 }

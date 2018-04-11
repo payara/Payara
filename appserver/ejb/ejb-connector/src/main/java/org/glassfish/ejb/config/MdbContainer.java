@@ -158,5 +158,6 @@ public interface MdbContainer extends ConfigBeanProxy, PropertyBag, ConfigExtens
     }
     )
     @Element
+    @Override
     List<Property> getProperty();
 }

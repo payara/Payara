@@ -75,6 +75,7 @@ public class InjectionTargetNode extends DeploymentDescriptorNode {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */    
+    @Override
     protected Map getDispatchTable() {
         Map table = super.getDispatchTable();
         table.put(TagNames.INJECTION_TARGET_CLASS, 

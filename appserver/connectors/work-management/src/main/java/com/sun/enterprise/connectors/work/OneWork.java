@@ -80,6 +80,7 @@ public final class OneWork implements com.sun.corba.ee.spi.threadpool.Work {
     /**
      * This method is executed by thread pool as the basic work operation.
      */
+    @Override
     public void doWork() {
         ClassLoader callerCL = Thread.currentThread().getContextClassLoader();
         if(tcc != null && tcc != callerCL){
@@ -144,6 +145,7 @@ public final class OneWork implements com.sun.corba.ee.spi.threadpool.Work {
      *
      * @param tme Time in milliseconds.
      */
+    @Override
     public void setEnqueueTime(long tme) {
         this.nqTime = tme;
     }
@@ -153,6 +155,7 @@ public final class OneWork implements com.sun.corba.ee.spi.threadpool.Work {
      *
      * @return Time in milliseconds.
      */
+    @Override
     public long getEnqueueTime() {
         return nqTime;
     }
@@ -162,6 +165,7 @@ public final class OneWork implements com.sun.corba.ee.spi.threadpool.Work {
      *
      * @return Name of the work.
      */
+    @Override
     public String getName() {
         return name;
     }
@@ -176,6 +180,7 @@ public final class OneWork implements com.sun.corba.ee.spi.threadpool.Work {
      *
      * @return String representation of work.
      */
+    @Override
     public String toString() {
         StringBuffer result = new StringBuffer();
         if(nameSet){

@@ -68,16 +68,20 @@ public final class MEJBBean implements SessionBean
     {
     }
     
+    @Override
     public void setSessionContext(SessionContext context) {
         ctx = context;
     }
 
+    @Override
     public void ejbActivate() {
     }
 
+    @Override
     public void ejbPassivate() {
     }
     
+    @Override
     public void ejbRemove() {
     }
 

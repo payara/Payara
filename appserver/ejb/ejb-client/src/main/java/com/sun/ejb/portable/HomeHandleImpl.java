@@ -67,6 +67,7 @@ public final class HomeHandleImpl implements HomeHandle, Serializable
     }
 
     // This is the public API from javax.ejb.HomeHandle
+    @Override
     public EJBHome getEJBHome() throws RemoteException
     {
 	return ejbHome;

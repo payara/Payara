@@ -156,6 +156,7 @@ public class PoolMetaData {
         return this.isAuthCredentialsDefinedInPool_;
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer("PoolMetaData : " + poolInfo);
         sb.append("\ntxSupport => " + txSupport_);

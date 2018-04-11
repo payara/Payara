@@ -77,6 +77,7 @@ public class NullSemaphore implements Semaphore {
 
     /** Does nothing.
      */
+    @Override
     public void acquire() {
 
         if (_logger.isLoggable(Logger.FINEST)) {
@@ -87,6 +88,7 @@ public class NullSemaphore implements Semaphore {
 
     /** Does nothing.
      */
+    @Override
     public void release() {
 
         if (_logger.isLoggable(Logger.FINEST)) {

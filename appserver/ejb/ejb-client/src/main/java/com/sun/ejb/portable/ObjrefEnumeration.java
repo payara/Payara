@@ -65,6 +65,7 @@ public final class ObjrefEnumeration implements Enumeration, Serializable
 	objrefs.add(obj);
     }
 
+    @Override
     public boolean hasMoreElements()
     {
 	if ( objrefs == null )
@@ -72,6 +73,7 @@ public final class ObjrefEnumeration implements Enumeration, Serializable
 	return count < objrefs.size();
     }
 
+    @Override
     public Object nextElement()
     {
 	if ( objrefs != null ) {

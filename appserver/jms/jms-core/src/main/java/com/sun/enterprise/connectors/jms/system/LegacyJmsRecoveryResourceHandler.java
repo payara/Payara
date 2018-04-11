@@ -84,6 +84,7 @@ public class LegacyJmsRecoveryResourceHandler implements RecoveryResourceHandler
     private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LegacyJmsRecoveryResourceHandler.class);
 
 
+    @Override
      public void loadXAResourcesAndItsConnections(List xaresList, List connList)
      {
             try {
@@ -131,6 +132,7 @@ public class LegacyJmsRecoveryResourceHandler implements RecoveryResourceHandler
             }
         }
      }
+    @Override
      public void closeConnections(List connList) {
         for (Object obj : connList) {
             try {

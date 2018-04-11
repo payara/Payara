@@ -68,6 +68,7 @@ public class BeforeCompletionHandler extends AbstractAttributeHandler {
     public BeforeCompletionHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
         
@@ -92,12 +93,14 @@ public class BeforeCompletionHandler extends AbstractAttributeHandler {
      * require to be processed (if present) before it processes it's own 
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         
         return new Class[] { Stateful.class};
                 
     }
 
+    @Override
     protected boolean supportTypeInheritance() {
         return true;
     }

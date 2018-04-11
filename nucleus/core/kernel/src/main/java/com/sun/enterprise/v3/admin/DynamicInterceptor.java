@@ -297,6 +297,7 @@ public class DynamicInterceptor implements MBeanServer
         mDelegateMBeanServer    = server;
     }
 
+    @Override
     public Object invoke( final ObjectName objectName, final String operationName,
                           final Object[] params, final String[] signature)
             throws ReflectionException, InstanceNotFoundException, MBeanException {
@@ -318,6 +319,7 @@ public class DynamicInterceptor implements MBeanServer
         return returnValue;
     }
     
+    @Override
     public final Object getAttribute(final ObjectName objectName, final String attributeName)
             throws InstanceNotFoundException, AttributeNotFoundException, MBeanException, ReflectionException {
         if(objectName == null)
@@ -332,6 +334,7 @@ public class DynamicInterceptor implements MBeanServer
         }
     }
     
+    @Override
     public void setAttribute(final ObjectName objectName, final Attribute attribute) throws
             InstanceNotFoundException, AttributeNotFoundException, MBeanException,
             ReflectionException, InvalidAttributeValueException {
@@ -354,6 +357,7 @@ public class DynamicInterceptor implements MBeanServer
         }
     }
 
+    @Override
     public final AttributeList getAttributes(final ObjectName objectName, final String[] attrNames)
             throws InstanceNotFoundException, ReflectionException {
         if(objectName == null)
@@ -369,6 +373,7 @@ public class DynamicInterceptor implements MBeanServer
         }
     }
 
+    @Override
     public AttributeList setAttributes (final ObjectName objectName, final AttributeList attributeList)
             throws InstanceNotFoundException, ReflectionException {
         if(objectName == null)
@@ -390,11 +395,13 @@ public class DynamicInterceptor implements MBeanServer
         return ret;
     }
     
+    @Override
     public final ObjectInstance registerMBean(final Object obj, final ObjectName objectName)
             throws NotCompliantMBeanException, MBeanRegistrationException, InstanceAlreadyExistsException {
         return getDelegateMBeanServer().registerMBean( obj, objectName );
     }
 
+    @Override
     public final void unregisterMBean(final ObjectName objectName)
             throws InstanceNotFoundException, MBeanRegistrationException {
        // System.out.println("Unregistering MBean :"+objectName.toString());
@@ -417,6 +424,7 @@ public class DynamicInterceptor implements MBeanServer
         }
     }
 
+    @Override
     public final Integer getMBeanCount() {
         return getDelegateMBeanServer().getMBeanCount( );
     }
@@ -445,6 +453,7 @@ public class DynamicInterceptor implements MBeanServer
         }
     }
 
+    @Override
     public final MBeanInfo getMBeanInfo( final ObjectName objectName)
             throws InstanceNotFoundException, IntrospectionException, ReflectionException {
         if(objectName == null)
@@ -460,6 +469,7 @@ public class DynamicInterceptor implements MBeanServer
         }
     }
 
+    @Override
     public final boolean isRegistered( final ObjectName objectName) {
         if(objectName == null)
             return false;
@@ -482,6 +492,7 @@ public class DynamicInterceptor implements MBeanServer
         }
     }
 
+    @Override
     public final void addNotificationListener( final ObjectName objectName,
                                                final NotificationListener notificationListener,
                                                final NotificationFilter notificationFilter, final Object obj)
@@ -508,6 +519,7 @@ public class DynamicInterceptor implements MBeanServer
         }
     }
 
+    @Override
     public final void addNotificationListener(final ObjectName objectName, final ObjectName objectName1,
                                               final NotificationFilter notificationFilter, final Object obj)
             throws InstanceNotFoundException {
@@ -533,12 +545,14 @@ public class DynamicInterceptor implements MBeanServer
         }
     }
 
+    @Override
     public final ObjectInstance createMBean( final String str, final ObjectName objectName)
             throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException,
                 MBeanException, NotCompliantMBeanException {
         return createMBean(str, objectName, (Object[]) null, (String[]) null);
     }
 
+    @Override
     public final ObjectInstance createMBean( final String str, final ObjectName objectName,
                                              final ObjectName objectName2)
             throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException, MBeanException,
@@ -546,6 +560,7 @@ public class DynamicInterceptor implements MBeanServer
         return createMBean(str, objectName, objectName2, (Object[]) null, (String[]) null);
     }
 
+    @Override
     public final ObjectInstance createMBean( final String str, final ObjectName objectName, final Object[] obj,
                                              final String[] str3)
             throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException,
@@ -568,6 +583,7 @@ public class DynamicInterceptor implements MBeanServer
         }
     }
 
+    @Override
     public final ObjectInstance createMBean ( final String str, final ObjectName objectName,
                                               final ObjectName objectName2, final Object[] obj, final String[] str4)
             throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException,
@@ -591,25 +607,30 @@ public class DynamicInterceptor implements MBeanServer
         }
     }
 
+    @Override
     public final ObjectInputStream deserialize (String str, byte[] values)
             throws OperationsException, ReflectionException {
         return getDelegateMBeanServer().deserialize (str, values);
     }
 
+    @Override
     public final ObjectInputStream deserialize( final ObjectName objectName, final byte[] values)
             throws InstanceNotFoundException, OperationsException {
         return getDelegateMBeanServer().deserialize (objectName, values);
     }
 
+    @Override
     public final ObjectInputStream deserialize( final String str, final ObjectName objectName, byte[] values)
             throws InstanceNotFoundException, OperationsException, ReflectionException {
         return getDelegateMBeanServer().deserialize (str, objectName, values);
     }
 
+    @Override
     public final String getDefaultDomain() {
         return getDelegateMBeanServer().getDefaultDomain();
     }
     
+    @Override
     public final ObjectInstance getObjectInstance(ObjectName objectName) throws InstanceNotFoundException {
         if(objectName == null)
             throw new InstanceNotFoundException();
@@ -626,10 +647,12 @@ public class DynamicInterceptor implements MBeanServer
         }
     }
     
+    @Override
     public final Object instantiate( final String str) throws ReflectionException, MBeanException {
         return getDelegateMBeanServer().instantiate(str);
     }
     
+    @Override
     public final Object instantiate( final String str, final ObjectName objectName)
             throws ReflectionException, MBeanException, InstanceNotFoundException {
         if(objectName == null)
@@ -637,11 +660,13 @@ public class DynamicInterceptor implements MBeanServer
         return getDelegateMBeanServer().instantiate(str, objectName);
     }
     
+    @Override
     public final Object instantiate( final String str, final Object[] obj, final String[] str2)
             throws ReflectionException, MBeanException {
         return getDelegateMBeanServer().instantiate(str, obj, str2);
     }
     
+    @Override
     public final Object instantiate( final String str, final ObjectName objectName, final Object[] obj,
                                      final String[] str3)
             throws ReflectionException, MBeanException, InstanceNotFoundException {
@@ -650,6 +675,7 @@ public class DynamicInterceptor implements MBeanServer
         return getDelegateMBeanServer().instantiate(str, objectName, obj, str3);
     }
 
+    @Override
     public final boolean isInstanceOf ( final ObjectName objectName,  final String str)
             throws InstanceNotFoundException {
         if(objectName == null)
@@ -667,6 +693,7 @@ public class DynamicInterceptor implements MBeanServer
         }
     }
 
+    @Override
     public final Set queryNames( final ObjectName objectName, final QueryExp queryExp) {
         Set returnVal = null;
         //if(objectName == null)
@@ -701,6 +728,7 @@ public class DynamicInterceptor implements MBeanServer
         return returnVal;
     }
 
+    @Override
     public final void removeNotificationListener(final ObjectName objectName,  final ObjectName objectName1)
             throws InstanceNotFoundException, ListenerNotFoundException {
         if(objectName == null)
@@ -722,6 +750,7 @@ public class DynamicInterceptor implements MBeanServer
         }
     }
 
+    @Override
     public final void removeNotificationListener( final ObjectName objectName,
                                                   final NotificationListener notificationListener)
             throws InstanceNotFoundException, ListenerNotFoundException {
@@ -744,6 +773,7 @@ public class DynamicInterceptor implements MBeanServer
         }
     }
       
+    @Override
     public final void removeNotificationListener( final ObjectName objectName,
                                                   final NotificationListener notificationListener,
                                                   final NotificationFilter notificationFilter, final Object obj)
@@ -770,6 +800,7 @@ public class DynamicInterceptor implements MBeanServer
         }
     }
     
+    @Override
     public final void removeNotificationListener( final ObjectName objectName, final ObjectName objectName1,
                                                   final NotificationFilter    notificationFilter, final Object obj)
             throws InstanceNotFoundException, ListenerNotFoundException {
@@ -794,22 +825,26 @@ public class DynamicInterceptor implements MBeanServer
             throw new InstanceNotFoundException(ioex.getLocalizedMessage());
         }    }
 
+    @Override
     public final ClassLoader getClassLoader( final ObjectName objectName) throws InstanceNotFoundException {
         if(objectName == null)
             throw new InstanceNotFoundException();
         return getDelegateMBeanServer().getClassLoader( objectName );
     }
     
+    @Override
     public final ClassLoader getClassLoaderFor( final ObjectName objectName) throws InstanceNotFoundException {
         if(objectName == null)
             throw new InstanceNotFoundException();
         return getDelegateMBeanServer().getClassLoaderFor( objectName );
     }
     
+    @Override
     public final ClassLoaderRepository getClassLoaderRepository() {
     	return getDelegateMBeanServer().getClassLoaderRepository();
     }
     
+    @Override
     public final String[] getDomains() {
         return getDelegateMBeanServer().getDomains();
     }

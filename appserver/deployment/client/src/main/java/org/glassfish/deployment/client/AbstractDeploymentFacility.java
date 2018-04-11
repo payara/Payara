@@ -199,6 +199,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
      * @param targetDAS the DAS to contact
      * @return true if the connection was made successfully; false otherwise
      */
+    @Override
     public boolean connect(ServerConnectionIdentifier targetDAS) {
         connected = true;
         this.targetDAS = targetDAS;
@@ -218,6 +219,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
      * Disconnects the deployment facility from the DAS.
      * @return true if the disconnection was successful; false otherwise
      */
+    @Override
     public boolean disconnect() {
         connected = false;
         domain = null;
@@ -225,10 +227,12 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         return doDisconnect();
     }
 
+    @Override
     public DFProgressObject createAppRef(Target[] targets, String moduleID, Map options) {
         return changeAppRef(targets, moduleID, "create-application-ref", "Creation", options);
     }
 
+    @Override
     public DFProgressObject deleteAppRef(Target[] targets, String moduleID, Map options) {
         return changeAppRef(targets, moduleID, "delete-application-ref", "Removal", options);
     }
@@ -267,10 +271,12 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         }
     }
 
+    @Override
     public Target createTarget(String name) {
         return new TargetImpl(this, name, "");
     }
 
+    @Override
     public Target[] createTargets(String[] targets) {
         if (targets == null) {
             targets = new String[0];
@@ -294,6 +300,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         return sb.toString();
     }
 
+    @Override
     public DFProgressObject deploy(Target[] targets, ReadableArchive source, ReadableArchive deploymentPlan, Map deploymentOptions) throws IOException {
         if (source == null) {
             throw new IllegalArgumentException();
@@ -385,6 +392,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
      * @param deploymentOptions options to be applied to the deployment
      * @return DFProgressObject the caller can use to monitor progress and query status
      */
+    @Override
     public DFProgressObject deploy(Target[] targets, URI source, URI deploymentPlan, Map deploymentOptions) {
         ensureConnected();
         targets = prepareTargets(targets);
@@ -513,10 +521,12 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
      * @param moduleID the app
      * @return DFProgressObject for monitoring progress and querying status
      */
+    @Override
     public DFProgressObject disable(Target[] targets, String moduleID) {
         return changeState(targets, moduleID, "disable", "Disable");
     }
 
+    @Override
     public String downloadFile(File location, String moduleID, String moduleURI) throws IOException {
         throw new UnsupportedOperationException("Not supported in v3");
     }
@@ -527,6 +537,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
      * @param moduleID the app
      * @return DFProgressObject for monitoring progress and querying status
      */
+    @Override
     public DFProgressObject enable(Target[] targets, String moduleID) {
         return changeState(targets, moduleID, "enable", "Enable");
     }
@@ -541,10 +552,12 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
      * Reports whether the deployment facility is connected.
      * @return true if connected, false otherwise
      */
+    @Override
     public boolean isConnected() {
         return connected;
     }
 
+    @Override
     public List<String> getSubModuleInfoForJ2EEApplication(String appName) throws IOException {
         ensureConnected();
         String commandName = LIST_SUB_COMPONENTS_COMMAND;
@@ -641,6 +654,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         }
     }
 
+    @Override
     public String getContextRoot(String moduleName) throws IOException {
         ensureConnected();
         String commandName = GET_COMMAND;
@@ -688,6 +702,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         }
     }
 
+    @Override
     public ModuleType getModuleType(String moduleName) throws IOException {
         ensureConnected();
         String commandName = GET_COMMAND;
@@ -732,10 +747,12 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         }
     }
 
+    @Override
     public Target[] listTargets() throws IOException {
         return listReferencedTargets("*");
     }
 
+    @Override
     public Target[] listReferencedTargets(String appName) throws IOException {
         ensureConnected();
         String commandName = "_get-targets";
@@ -782,6 +799,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         }
     }
 
+    @Override
     public void getClientStubs(String location, String moduleID)
         throws IOException {
         ensureConnected();
@@ -819,19 +837,23 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         }
     }
 
+    @Override
     public HostAndPort getHostAndPort(String target) throws IOException {
         return getHostAndPort(target, false);
     }
 
+    @Override
     public HostAndPort getHostAndPort(String target, boolean securityEnabled) 
         throws IOException {
         return getHostAndPort(target, null, securityEnabled);
     }
 
+    @Override
     public HostAndPort getVirtualServerHostAndPort(String target, String virtualServer, boolean securityEnabled) throws IOException {
         return getHostAndPort(target, null, virtualServer, securityEnabled);
     }
 
+    @Override
     public HostAndPort getHostAndPort(String target, String moduleId, boolean securityEnabled) 
         throws IOException {
         return getHostAndPort(target, moduleId, null, securityEnabled);
@@ -887,6 +909,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         }
     }
 
+    @Override
     public TargetModuleID[] listAppRefs(String[] targets) throws IOException {
         ensureConnected();
         List<TargetModuleIDImpl> targetModuleIDList =
@@ -938,19 +961,23 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         return (TargetModuleIDImpl[]) targetModuleIDList.toArray(result);
     }
 
+    @Override
     public TargetModuleID[] _listAppRefs(String[] targets) throws IOException {
         return _listAppRefs(targets, DFDeploymentProperties.ALL);
     }
 
+    @Override
     public TargetModuleID[] _listAppRefs(String[] targets, String state) throws IOException {
         return _listAppRefs(targets, state, null);
     }
 
+    @Override
     public TargetModuleID[] _listAppRefs(String[] targets, String state, String type) throws IOException {
         Target[] targetImpls = prepareTargets(createTargets(targets));
         return _listAppRefs(targetImpls, state, type);
     }
 
+    @Override
     public TargetModuleID[] _listAppRefs(Target[] targets, String state, String type) throws IOException {
         ensureConnected();
         String commandName = "_list-app-refs";
@@ -1049,6 +1076,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
      * @param moduleID the app
      * @return DFProgressObject for monitoring progress and querying status
      */
+    @Override
     public DFProgressObject undeploy(Target[] targets, String moduleID) {
         return undeploy(targets, moduleID, new HashMap());
     }
@@ -1060,6 +1088,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
      * @param undeploymentOptions options to control the undeployment
      * @return DFProgressObject for monitoring progress and querying status
      */
+    @Override
     public DFProgressObject undeploy(Target[] targets, String moduleID, Map undeploymentOptions) {
         ensureConnected();
         targets = prepareTargets(targets);
@@ -1129,6 +1158,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
      *  should be exported.
      *  @return the absolute location to the main jar file.
      */
+    @Override
     public String exportClientStubs(String appName, String destDir) 
         throws IOException {
         getClientStubs(destDir, appName); 
@@ -1141,15 +1171,18 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
      * @param po DFProgressObject for the operation of interestt
      * @return DFDeploymentStatus final status for the operation
      */
+    @Override
     public DFDeploymentStatus waitFor(DFProgressObject po) {
         return po.waitFor();
     }
 
 
+    @Override
     public String getWebURL(TargetModuleID tmid) {
         return targetModuleWebURLs.get(tmid.getModuleID());
     }
 
+    @Override
     public void setWebURL(TargetModuleID tmid, String webURL) {
         targetModuleWebURLs.put(tmid.getModuleID(), webURL);
     }

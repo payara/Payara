@@ -69,6 +69,7 @@ public class PMFResourceManager implements ResourceManager {
     /**
      * @inheritDoc
      */
+    @Override
     public ResourceStatus create(Resources resources, HashMap attributes, Properties properties, String target)
             throws Exception {
         return new ResourceStatus(ResourceStatus.WARNING, getWarningMessage(attributes));
@@ -88,6 +89,7 @@ public class PMFResourceManager implements ResourceManager {
     /**
      * @inheritDoc
      */
+    @Override
     public Resource createConfigBean(Resources resources, HashMap attributes, Properties properties, boolean validate)
             throws Exception {
         throw new ResourceException(getWarningMessage(attributes));
@@ -96,6 +98,7 @@ public class PMFResourceManager implements ResourceManager {
     /**
      * @inheritDoc
      */
+    @Override
     public String getResourceType() {
         return ServerTags.PERSISTENCE_MANAGER_FACTORY_RESOURCE;
     }

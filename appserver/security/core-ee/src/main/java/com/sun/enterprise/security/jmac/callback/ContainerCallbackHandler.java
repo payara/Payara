@@ -78,11 +78,13 @@ public final class ContainerCallbackHandler
         }
     }
 
+    @Override
     public void handle(Callback[] callbacks)
             throws IOException, UnsupportedCallbackException {
         handler.handle(callbacks);
     }
 
+    @Override
     public void setHandlerContext(HandlerContext handlerContext) {
         ((CallbackHandlerConfig)handler).setHandlerContext(handlerContext);
     }
@@ -91,6 +93,7 @@ public final class ContainerCallbackHandler
         final String fRealmName = realm;
         HandlerContext handlerContext = new HandlerContext() {
 
+            @Override
             public String getRealmName() {
                 return fRealmName;
             }

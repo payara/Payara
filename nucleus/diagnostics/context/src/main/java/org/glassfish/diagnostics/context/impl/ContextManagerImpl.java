@@ -78,10 +78,12 @@ public class ContextManagerImpl
       super((View)null);
     }
 
+    @Override
     public String getLocationId(){
       return "<unavailable>";
     }
 
+    @Override
     public String getOrigin(){
       return "<unavailable>";
     }

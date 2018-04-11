@@ -109,6 +109,7 @@ public class ConnectorCallbackHandler implements CallbackHandler {
             publish = true)
     private static final String RAR_UNSUPPORT_CALLBACK = "AS-RAR-05012";
     
+    @Override
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
 
         Callback[] mappedCallbacks = callbacks;

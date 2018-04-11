@@ -99,6 +99,7 @@ public class X509CertificateCredential {
      * the same and false otherwise.
      * @return true if the instances are equal, false otherwise.
      */
+    @Override
     public boolean equals(Object o) {
 	if(o instanceof X509CertificateCredential) {
 	    X509CertificateCredential pc = (X509CertificateCredential) o;
@@ -119,6 +120,7 @@ public class X509CertificateCredential {
      * Return the hashCode computed from the certificate, realm and alias.
      * @return the hash code.
      */
+    @Override
     public int hashCode() {
 	return Arrays.hashCode(certChain) + realm.hashCode() + ((alias != null)?alias.hashCode():0);
     }
@@ -126,6 +128,7 @@ public class X509CertificateCredential {
     /**
      * String representation of the credential.
      */
+    @Override
     public String toString() {
 	String s = "Realm=" + realm;
 	s = s + " alias=" + alias;

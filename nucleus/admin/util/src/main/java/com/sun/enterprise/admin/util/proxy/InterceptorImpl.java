@@ -46,9 +46,11 @@ package com.sun.enterprise.admin.util.proxy;
  */
 public class InterceptorImpl implements Interceptor {
 
+    @Override
     public void preInvoke(CallStack callStack) {
     }
 
+    @Override
     public void postInvoke(CallStack callStack) {
     }
 }

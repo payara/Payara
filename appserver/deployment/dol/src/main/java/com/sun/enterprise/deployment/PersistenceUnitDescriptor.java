@@ -101,10 +101,12 @@ public class PersistenceUnitDescriptor extends Descriptor {
     // by PersistenceNode. So any change here has to be reflcted there as
     // well. Compiler won't catch them for you.
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String value) {
         this.name = value;
 
@@ -118,10 +120,12 @@ public class PersistenceUnitDescriptor extends Descriptor {
         this.transactionType = transactionType;
     }
 
+    @Override
     public String getDescription() {
         return description;
     }
 
+    @Override
     public void setDescription(String description) {
         this.description = description;
     }

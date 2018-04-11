@@ -99,6 +99,7 @@ public class TargetModuleIDImpl implements TargetModuleID {
      * Returns the Target on which the module is deployed.
      * @return the Target
      */
+    @Override
     public Target getTarget() {
         return target;
     }
@@ -111,6 +112,7 @@ public class TargetModuleIDImpl implements TargetModuleID {
      * Returns the name of the module that is deployed to a given Target.
      * @return the module name
      */
+    @Override
     public String getModuleID() {
         return moduleID;
     }
@@ -120,6 +122,7 @@ public class TargetModuleIDImpl implements TargetModuleID {
      * represents a Web module or submodule on a Target.
      * @return the URL
      */
+    @Override
     public String getWebURL() {
         return target.getOwner().getWebURL(this);
     }
@@ -139,6 +142,7 @@ public class TargetModuleIDImpl implements TargetModuleID {
      * this TargetModuleID represents a submodule.
      * @return the parent TargetModuleID
      */
+    @Override
     public TargetModuleID getParentTargetModuleID() {
         return parent;
     }
@@ -148,6 +152,7 @@ public class TargetModuleIDImpl implements TargetModuleID {
      * deployed to the Target.
      * @return the child TargetModuleID objects
      */
+    @Override
     public TargetModuleID[] getChildTargetModuleID() {
         return children;
     }

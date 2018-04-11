@@ -57,6 +57,7 @@ import java.util.concurrent.Semaphore;
 
 public class ConcurrentAccessTest extends ConfigApiTest {
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }

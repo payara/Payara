@@ -74,6 +74,7 @@ public class ListCustomResourcesTest extends ConfigApiTest {
         return new TestDocument(habitat);
     }
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }

@@ -174,6 +174,7 @@ class LogRestartDescriptor implements Serializable {
      *
      * @see
      */
+    @Override
     public final String toString() {
         return "LRD(valid="/*#Frozen*/ + restartValid +
                ",len="/*#Frozen*/ + restartDataLength +

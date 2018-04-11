@@ -93,27 +93,33 @@ public class ConfigBean extends Dom implements ConfigView {
 
             List<VetoableChangeListener> listeners = new ArrayList<VetoableChangeListener>();
 
+            @Override
             public ConstrainedBeanListener getConfiguration() {
                 return new ConstrainedBeanListener() {
 
+                    @Override
                     public void removeVetoableChangeListener(VetoableChangeListener listener) {
                         listeners.remove(listener);
                     }
 
+                    @Override
                     public void addVetoableChangeListener(VetoableChangeListener listener) {
                         listeners.add(listener);
                     }
                 };
             }
 
+            @Override
             public void beforeChange(PropertyChangeEvent evt) throws PropertyVetoException {
                 for (VetoableChangeListener listener : listeners) {
                     listener.vetoableChange(evt);
                 }
             }
+            @Override
             public void afterChange(PropertyChangeEvent evt, long timestamp) {
             }
 
+            @Override
             public void readValue(ConfigBean source, String xmlName, Object Value) {
             }
         });
@@ -139,6 +145,7 @@ public class ConfigBean extends Dom implements ConfigView {
         return (T) new ConfigBean(this, parent);
     }
 
+    @Override
     public boolean equals(Object o) {
         if (super.equals(o)) {
             if(((ConfigBean)o).objectName == this.objectName) {
@@ -148,6 +155,7 @@ public class ConfigBean extends Dom implements ConfigView {
         return false;
     }
 
+    @Override
     public int hashCode() {
         return System.identityHashCode(this);
     }
@@ -173,6 +181,7 @@ public class ConfigBean extends Dom implements ConfigView {
         return optionalFeatures.values();
     }
 
+    @Override
     protected void setter(ConfigModel.Property target, Object value) throws Exception  {
         if (!writeLock) {
             throw new PropertyVetoException("Instance of " + getImplementation() + " named '" + getKey() +
@@ -202,6 +211,7 @@ public class ConfigBean extends Dom implements ConfigView {
         return value;        
     }
 
+    @Override
     protected Object getter(ConfigModel.Property target, Type t) {
         final Object value = _getter(target, t);
         if (value instanceof List) {
@@ -210,21 +220,26 @@ public class ConfigBean extends Dom implements ConfigView {
             // we need to protect this list as it was obtained from a readable view...
             return new AbstractList() {
 
+                @Override
                 public int size() {
                     return valueList.size();
                 }
 
+                @Override
                 public Object get(int index) {
                     return valueList.get(index);
                 }
 
+                @Override
                 public boolean add(Object o) {
                     throw new IllegalStateException("Not part of a transaction !", null);
                 }
+                @Override
                 public Object set(int index, Object element) {
                     throw new IllegalStateException("Not part of a transaction !", null);
                 }
 
+                @Override
                 public Object remove(int index) {
                     throw new IllegalStateException("Not part of a transaction !", null);
                 }
@@ -250,10 +265,12 @@ public class ConfigBean extends Dom implements ConfigView {
      *
      * @return the master view
      */
+    @Override
     public ConfigBean getMasterView() {
         return this;
     }
 
+    @Override
     public void setMasterView(ConfigView view) {        
     }
 
@@ -263,6 +280,7 @@ public class ConfigBean extends Dom implements ConfigView {
      * @param proxyType requested proxy type
      * @return Java SE proxy
      */
+    @Override
     public <T extends ConfigBeanProxy> T getProxy(final Class<T> proxyType) {
         ClassLoader cl;
         if (System.getSecurityManager()!=null) {
@@ -337,14 +355,17 @@ public class ConfigBean extends Dom implements ConfigView {
      */
     private final Lock lock = new Lock() {
         
+        @Override
         public void lock() {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public void lockInterruptibly() throws InterruptedException {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public synchronized boolean tryLock() {
             if (!writeLock) {
                 writeLock=true;
@@ -353,6 +374,7 @@ public class ConfigBean extends Dom implements ConfigView {
             return false;
         }
 
+        @Override
         public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
             long nanosTimeout = TimeUnit.NANOSECONDS.convert(time, unit);
             long increment = nanosTimeout / WAIT_ITERATIONS;
@@ -374,11 +396,13 @@ public class ConfigBean extends Dom implements ConfigView {
             throw new InterruptedException();
         }
 
+        @Override
         public synchronized void unlock() {
             writeLock = false;
             writeableView = null;
         }
 
+        @Override
         public Condition newCondition() {
             throw new UnsupportedOperationException();
         }

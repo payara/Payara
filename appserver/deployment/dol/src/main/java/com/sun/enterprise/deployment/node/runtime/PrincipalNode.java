@@ -59,6 +59,7 @@ public class PrincipalNode extends DeploymentDescriptorNode {
    /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
         return principal;
     }
@@ -69,6 +70,7 @@ public class PrincipalNode extends DeploymentDescriptorNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         
         if (RuntimeTagNames.NAME.equals(element.getQName())) {

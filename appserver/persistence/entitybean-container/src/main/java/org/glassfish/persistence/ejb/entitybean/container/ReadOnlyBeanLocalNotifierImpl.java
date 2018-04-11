@@ -57,10 +57,12 @@ public final class ReadOnlyBeanLocalNotifierImpl
 		this.robContainer = container;
 	}
 
+    @Override
     public void refresh (Object primaryKey)  {
 		robContainer.setRefreshFlag(primaryKey);
     }
 
+    @Override
     public void refreshAll() {
         robContainer.refreshAll();
     }

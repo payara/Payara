@@ -63,18 +63,22 @@ class ProcessingContextImpl implements ProcessingContext {
         this.processor = processor;
     }
     
+    @Override
     public AnnotationProcessor getProcessor() {
         return processor;
     }
         
+    @Override
     public ReadableArchive getArchive() {
         return archive;    
     }
 
+    @Override
     public void setArchive(ReadableArchive archive) {
         this.archive = archive;
     }
 
+    @Override
     public void pushHandler(AnnotatedElementHandler handler) {
         if (handler instanceof AnnotationContext) {
             ((AnnotationContext) handler).setProcessingContext(this);
@@ -82,6 +86,7 @@ class ProcessingContextImpl implements ProcessingContext {
         handlers.push(handler);
     }
     
+    @Override
     public AnnotatedElementHandler getHandler() {
         if (handlers.isEmpty()) 
             return null;
@@ -89,6 +94,7 @@ class ProcessingContextImpl implements ProcessingContext {
         return handlers.peek();
     }
     
+    @Override
     public AnnotatedElementHandler popHandler() {
         if (handlers.isEmpty()) 
             return null;
@@ -100,6 +106,7 @@ class ProcessingContextImpl implements ProcessingContext {
      * @return the previously set ClientContext casted to the requestd
      * type if possible or throw an exception otherwise.
      */
+    @Override
     public <U extends AnnotatedElementHandler> U getHandler(Class<U> contextType)
         throws ClassCastException {
         
@@ -111,9 +118,11 @@ class ProcessingContextImpl implements ProcessingContext {
         return contextType.cast(handlers.peek());
     }
     
+    @Override
     public Scanner getProcessingInput() {
         return scanner;
     }
+    @Override
     public void setProcessingInput(Scanner scanner) {
         this.scanner = scanner;
     }
@@ -123,6 +132,7 @@ class ProcessingContextImpl implements ProcessingContext {
     /** 
      * Sets the error handler for this processing context.
      */
+    @Override
     public void setErrorHandler(ErrorHandler errorHandler) {
         this.errorHandler = errorHandler;
     }
@@ -130,6 +140,7 @@ class ProcessingContextImpl implements ProcessingContext {
     /**
      * @return the error handler for this processing context.
      */
+    @Override
     public ErrorHandler getErrorHandler() {
         return errorHandler;
     }      

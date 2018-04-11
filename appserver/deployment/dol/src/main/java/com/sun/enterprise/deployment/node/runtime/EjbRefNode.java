@@ -68,6 +68,7 @@ public class EjbRefNode extends DeploymentDescriptorNode<EjbReference> {
    /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
    public EjbReference getDescriptor() {
         return descriptor;
     }            
@@ -78,6 +79,7 @@ public class EjbRefNode extends DeploymentDescriptorNode<EjbReference> {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */    
+    @Override
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
         table.put(RuntimeTagNames.JNDI_NAME, "setJndiName");
@@ -90,6 +92,7 @@ public class EjbRefNode extends DeploymentDescriptorNode<EjbReference> {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         if (RuntimeTagNames.EJB_REFERENCE_NAME.equals(element.getQName())) {
             Object parentDesc = getParentNode().getDescriptor();
@@ -116,6 +119,7 @@ public class EjbRefNode extends DeploymentDescriptorNode<EjbReference> {
      * @param the descriptor to write
      * @return the DOM tree top node
      */    
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, EjbReference ejbRef) {        
         Node ejbRefNode = appendChild(parent, nodeName);
         appendTextChild(ejbRefNode, RuntimeTagNames.EJB_REFERENCE_NAME, ejbRef.getName());

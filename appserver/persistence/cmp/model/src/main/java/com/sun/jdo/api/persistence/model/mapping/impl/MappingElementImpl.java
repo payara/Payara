@@ -100,6 +100,7 @@ public abstract class MappingElementImpl implements MappingElement
 	 * of this mapping element.
 	 * @return a string representation of the object
 	 */
+        @Override
 	public String toString () { return getName(); }
 
     /** Overrides Object's <code>equals</code> method by comparing the name of this mapping element
@@ -108,6 +109,7 @@ public abstract class MappingElementImpl implements MappingElement
 	 * @return <code>true</code> if this object is the same as the obj argument; <code>false</code> otherwise.
      * @param obj the reference object with which to compare.
      */
+        @Override
     public boolean equals(Object obj)
     {
         if (obj == null)
@@ -122,6 +124,7 @@ public abstract class MappingElementImpl implements MappingElement
     /** Overrides Object's <code>hashCode</code> method to return the hashCode of this mapping element's name.
      * @return a hash code value for this object.
      */
+        @Override
     public int hashCode()
     {
         return (getName()==null) ? 0 : getName().hashCode();
@@ -156,6 +159,7 @@ public abstract class MappingElementImpl implements MappingElement
 	/** Add a property change listener.
 	 * @param l the listener to add
 	 */
+        @Override
 	public synchronized void addPropertyChangeListener 
 		(PropertyChangeListener l)
 	{
@@ -170,6 +174,7 @@ public abstract class MappingElementImpl implements MappingElement
 	/** Remove a property change listener.
 	 * @param l the listener to remove
 	 */
+        @Override
 	public void removePropertyChangeListener (PropertyChangeListener l)
 	{
 		if (_support != null)
@@ -179,6 +184,7 @@ public abstract class MappingElementImpl implements MappingElement
 	/** Add a vetoable change listener.
 	 * @param l the listener to add
 	 */
+        @Override
 	public synchronized void addVetoableChangeListener 
 		(VetoableChangeListener l)
 	{
@@ -191,6 +197,7 @@ public abstract class MappingElementImpl implements MappingElement
 	/** Remove a vetoable change listener.
 	 * @param l the listener to remove
 	 */
+        @Override
 	public synchronized void removeVetoableChangeListener (
 		VetoableChangeListener l)
 	{
@@ -201,12 +208,14 @@ public abstract class MappingElementImpl implements MappingElement
 	/** Get the name of this mapping element.
 	 * @return the name
 	 */
+        @Override
 	public String getName () { return _name; }
 
 	/** Set the name of this mapping element.
 	 * @param name the name
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setName (String name) throws ModelException
 	{
 		String old = getName();
@@ -236,6 +245,7 @@ public abstract class MappingElementImpl implements MappingElement
      * or greater than the specified object.
      * @exception ClassCastException - if the specified object is null or is not an instance of MappingElementImpl
      */
+        @Override
     public int compareTo(Object o)
     {
         // null is not allowed

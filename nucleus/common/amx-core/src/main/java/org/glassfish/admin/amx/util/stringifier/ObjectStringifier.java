@@ -46,6 +46,7 @@ package org.glassfish.admin.amx.util.stringifier;
  */
 public final class ObjectStringifier implements Stringifier
 {
+                @Override
 		public String
 	stringify( Object o )
 	{

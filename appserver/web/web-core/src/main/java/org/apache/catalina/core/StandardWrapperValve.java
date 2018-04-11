@@ -443,6 +443,7 @@ final class StandardWrapperValve extends ValveBase {
 
     // Don't register in JMX
 
+    @Override
     public ObjectName createObjectName(String domain, ObjectName parent)
             throws MalformedObjectNameException {
         return null;

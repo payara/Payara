@@ -61,6 +61,7 @@ public class JDBCLoginModule extends PasswordLoginModule {
      *
      * @throws LoginException If login fails (JAAS login() behavior).
      */    
+    @Override
     protected void authenticate() throws LoginException {
         if (!(_currentRealm instanceof JDBCRealm)) {
             String msg = sm.getString("jdbclm.badrealm");

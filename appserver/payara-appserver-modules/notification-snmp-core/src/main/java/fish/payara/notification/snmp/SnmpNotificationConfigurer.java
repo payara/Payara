@@ -82,6 +82,7 @@ public class SnmpNotificationConfigurer extends BaseNotificationConfigurer<SnmpN
     @Param(name = "port", defaultValue = "162", optional = true)
     private Integer port;
 
+    @Override
     protected void applyValues(SnmpNotifierConfiguration configuration) throws PropertyVetoException {
         if(this.enabled != null) {
             configuration.enabled(this.enabled);

@@ -264,6 +264,7 @@ public abstract class CLICommand implements PostConstruct {
     /**
      * Initialize the logger after being instantiated by HK2.
      */
+    @Override
     public void postConstruct() {
         initializeLogger();
     }

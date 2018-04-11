@@ -303,6 +303,7 @@ public class DoubleLinkedList
 	 * <p> 
 	 * @return  String representation of this object.
 	 */
+        @Override
 	public synchronized String toString()
 	{
 		/*		boolean dif = ThreadContext.lgr().test

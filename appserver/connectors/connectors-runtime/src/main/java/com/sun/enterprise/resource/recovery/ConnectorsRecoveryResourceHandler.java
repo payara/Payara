@@ -208,6 +208,7 @@ public class ConnectorsRecoveryResourceHandler implements RecoveryResourceHandle
     /**
      * {@inheritDoc}
      */
+    @Override
     public void loadXAResourcesAndItsConnections(List xaresList, List connList) {
 
         //Done so as to initialize connectors-runtime before loading connector-resources. need a better way ?
@@ -378,6 +379,7 @@ public class ConnectorsRecoveryResourceHandler implements RecoveryResourceHandle
     /**
      * {@inheritDoc}
      */
+    @Override
     public void closeConnections(List connList) {
         for (Object obj : connList) {
             try {

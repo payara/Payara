@@ -64,6 +64,7 @@ public class PostConstructHandler extends AbstractResourceHandler {
     public PostConstructHandler() {
     }
     
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {

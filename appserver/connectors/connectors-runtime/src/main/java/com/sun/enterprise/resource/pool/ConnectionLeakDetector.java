@@ -221,6 +221,7 @@ public class ConnectionLeakDetector {
             this.resourceHandle = resourceHandle;
         }
 
+        @Override
         public void run() {
             potentialConnectionLeakFound(resourceHandle);
         }

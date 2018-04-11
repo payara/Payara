@@ -180,11 +180,13 @@ public class StatelessSessionContainer
         return true;
     }
 
+    @Override
     protected EjbMonitoringStatsProvider getMonitoringStatsProvider(
             String appName, String modName, String ejbName) {
         return new StatelessSessionBeanStatsProvider(this, getContainerId(), appName, modName, ejbName);
     }
 
+    @Override
     protected void initializeHome()
         throws Exception
     {
@@ -272,6 +274,7 @@ public class StatelessSessionContainer
         }
     }
 
+    @Override
     protected void registerMonitorableComponents() {
         super.registerMonitorableComponents();
 
@@ -283,9 +286,11 @@ public class StatelessSessionContainer
         _logger.log(Level.FINE, "[SLSB Container] registered monitorable");
     }
 
+    @Override
     public void onReady() {
     }
 
+    @Override
     public EJBObjectImpl createRemoteBusinessObjectImpl()
         throws CreateException, RemoteException
     {
@@ -304,6 +309,7 @@ public class StatelessSessionContainer
     /**
      *
      */
+    @Override
     public EJBObjectImpl createEJBObjectImpl()
         throws CreateException, RemoteException
     {
@@ -327,6 +333,7 @@ public class StatelessSessionContainer
     /**
      * Called during client creation request through EJB LocalHome view.
      */
+    @Override
     public EJBLocalObjectImpl createEJBLocalObjectImpl()
         throws CreateException
     {	
@@ -350,6 +357,7 @@ public class StatelessSessionContainer
     /**
      * Called during internal creation of session bean
      */
+    @Override
     public EJBLocalObjectImpl createEJBLocalBusinessObjectImpl(boolean localBeanView)
         throws CreateException
     {	
@@ -365,6 +373,7 @@ public class StatelessSessionContainer
 
     // Called from EJBObjectImpl.remove, EJBLocalObjectImpl.remove,
     // EJBHomeImpl.remove(Handle).
+    @Override
     protected void removeBean(EJBLocalRemoteObject ejbo, Method removeMethod,
 	    boolean local)
 	throws RemoveException, EJBException, RemoteException
@@ -384,6 +393,7 @@ public class StatelessSessionContainer
      * Note: EJB2.0 section 18.3.1 says that discarding an EJB
      * means that no methods other than finalize() should be invoked on it.
      */
+    @Override
     protected void forceDestroyBean(EJBContextImpl sc) {
         if ( sc.getState() == EJBContextImpl.BeanState.DESTROYED )
                 return;
@@ -399,10 +409,12 @@ public class StatelessSessionContainer
     /**
      * Called when a remote invocation arrives for an EJB.
      */
+    @Override
     protected EJBObjectImpl getEJBObjectImpl(byte[] instanceKey) {
         return theEJBObjectImpl;
     }
     
+    @Override
     EJBObjectImpl getEJBRemoteBusinessObjectImpl(byte[] instanceKey) {
         return theRemoteBusinessObjectImpl;
     }
@@ -411,6 +423,7 @@ public class StatelessSessionContainer
     * Called from EJBLocalObjectImpl.getLocalObject() while deserializing
     * a local object reference.
     */
+    @Override
     protected EJBLocalObjectImpl getEJBLocalObjectImpl(Object key) {
         return theEJBLocalObjectImpl;
     }
@@ -419,6 +432,7 @@ public class StatelessSessionContainer
     * Called from EJBLocalObjectImpl.getLocalObject() while deserializing
     * a local business object reference.
     */
+    @Override
     EJBLocalObjectImpl getEJBLocalBusinessObjectImpl(Object key) {
         return theEJBLocalBusinessObjectImpl;
     }
@@ -427,6 +441,7 @@ public class StatelessSessionContainer
     * Called from EJBLocalObjectImpl.getLocalObject() while deserializing
     * a local business object reference.
     */
+    @Override
     EJBLocalObjectImpl getOptionalEJBLocalBusinessObjectImpl(Object key) {
         return theOptionalEJBLocalBusinessObjectImpl;
     }
@@ -436,6 +451,7 @@ public class StatelessSessionContainer
     * Called from preInvoke which is called from the EJBObject
     * for local and remote invocations.
     */
+    @Override
     protected ComponentContext _getContext(EjbInvocation inv) {
         try {
             SessionContextImpl sessionCtx = 
@@ -447,6 +463,7 @@ public class StatelessSessionContainer
         }
     }
 
+    @Override
     protected EJBContextImpl _constructEJBContextImpl(Object instance) {
 	return new SessionContextImpl(instance, this);
     }
@@ -541,6 +558,7 @@ public class StatelessSessionContainer
         }
     }
 
+    @Override
     protected void doTimerInvocationInit(EjbInvocation inv, Object primaryKey)
             throws Exception {
         // TODO I don't understand this check.  What is ejbObject used for?
@@ -553,6 +571,7 @@ public class StatelessSessionContainer
         }
     }
 
+    @Override
     public boolean userTransactionMethodsAllowed(ComponentInvocation inv) {
         boolean utMethodsAllowed = false;
         if( isBeanManagedTran ) {
@@ -573,6 +592,7 @@ public class StatelessSessionContainer
      * Called from preInvoke which is called from the EJBObject
      * for local and remote invocations.
      */
+    @Override
     public void releaseContext(EjbInvocation inv) {
         SessionContextImpl sc = (SessionContextImpl)inv.context;
 
@@ -594,6 +614,7 @@ public class StatelessSessionContainer
     }
 
 
+    @Override
     protected boolean isIdentical(EJBObjectImpl ejbo, EJBObject other)
         throws RemoteException
     {
@@ -626,6 +647,7 @@ public class StatelessSessionContainer
     * Check if the given EJBObject/LocalObject has been removed.
     * @exception NoSuchObjectLocalException if the object has been removed.
     */
+    @Override
     protected void checkExists(EJBLocalRemoteObject ejbObj) 
     {
         // For stateless session beans, EJBObject/EJBLocalObj are never removed.
@@ -633,16 +655,19 @@ public class StatelessSessionContainer
     }
 
 
+    @Override
     protected void afterBegin(EJBContextImpl context) {
         // Stateless SessionBeans cannot implement SessionSynchronization!!
         // EJB2.0 Spec 7.8.
     }
 
+    @Override
     protected void beforeCompletion(EJBContextImpl context) {
         // Stateless SessionBeans cannot implement SessionSynchronization!!
         // EJB2.0 Spec 7.8.
     }
 
+    @Override
     protected void afterCompletion(EJBContextImpl ctx, int status) {
         // Stateless SessionBeans cannot implement SessionSynchronization!!
         // EJB2.0 Spec 7.8.
@@ -651,6 +676,7 @@ public class StatelessSessionContainer
     }
 
     // default
+    @Override
     public boolean passivateEJB(ComponentContext context) {
         return false;
     }   
@@ -667,6 +693,7 @@ public class StatelessSessionContainer
     }
 **/
 
+    @Override
     protected void doConcreteContainerShutdown(boolean appBeingUndeployed) {
 
         try {
@@ -708,6 +735,7 @@ public class StatelessSessionContainer
         implements ObjectFactory
     {
 
+        @Override
         public Object create(Object param) {
             try {
                     return createStatelessEJB();
@@ -716,6 +744,7 @@ public class StatelessSessionContainer
             }
         }
 
+        @Override
         public void destroy(Object obj) {
             SessionContextImpl sessionCtx = (SessionContextImpl) obj;
             // Note: stateless SessionBeans cannot have incomplete transactions

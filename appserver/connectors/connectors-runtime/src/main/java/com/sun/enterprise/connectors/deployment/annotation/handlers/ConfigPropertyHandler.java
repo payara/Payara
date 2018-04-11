@@ -78,6 +78,7 @@ public class ConfigPropertyHandler extends AbstractHandler {
 
     private static final String SUCCESS = "success";
 
+    @Override
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();
         ConfigProperty configProperty = (ConfigProperty) element.getAnnotation();
@@ -595,12 +596,14 @@ public class ConfigPropertyHandler extends AbstractHandler {
     /**
      * @return a default processed result
      */
+    @Override
     protected HandlerProcessingResult getDefaultProcessedResult() {
         return HandlerProcessingResultImpl.getDefaultResult(
                 getAnnotationType(), ResultType.PROCESSED);
     }
 
 
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return new Class[]{Connector.class, ConnectionDefinition.class, ConnectionDefinitions.class,
                 Activation.class, AdministeredObject.class};

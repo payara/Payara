@@ -64,6 +64,7 @@ public class JmxLruCache extends JmxBaseCache implements JmxLruCacheMBean {
     /**
      * Returns the current lenght of the LRU list
      */
+    @Override
     public Integer getLruListLength() {
         return (Integer) lruCache.getStatByName(
                                         Constants.STAT_LRUCACHE_LIST_LENGTH);
@@ -72,6 +73,7 @@ public class JmxLruCache extends JmxBaseCache implements JmxLruCacheMBean {
     /**
      * Returns the number of entries that have been trimmed
      */
+    @Override
     public Integer getTrimCount() {
         return (Integer) lruCache.getStatByName(
                                         Constants.STAT_LRUCACHE_TRIM_COUNT);

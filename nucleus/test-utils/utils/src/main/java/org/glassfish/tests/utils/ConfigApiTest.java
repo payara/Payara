@@ -92,6 +92,7 @@ public abstract class ConfigApiTest extends HK2Runner {
             });
 */            
                 AccessController.doPrivileged(new PrivilegedAction<List<ServiceHandle<? extends Object>>>() {
+                    @Override
                     public List<ServiceHandle<? extends Object>> run() {
                         
                         List<ServiceHandle<? extends Object>> identities = (List<ServiceHandle<? extends Object>>)getBaseServiceLocator().getAllServices(

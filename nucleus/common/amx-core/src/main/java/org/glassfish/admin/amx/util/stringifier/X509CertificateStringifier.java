@@ -110,6 +110,7 @@ public final class X509CertificateStringifier implements Stringifier
 		return( buf.toString() );
 	}
 	
+        @Override
 		public String
 	stringify( Object object )
 	{

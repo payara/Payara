@@ -51,6 +51,7 @@ public class ConnectorValidator extends ComponentValidator implements ConnectorV
     public ConnectorValidator() {
     }
 
+    @Override
     public void accept (BundleDescriptor descriptor) {
         if (descriptor instanceof ConnectorDescriptor) {
             ConnectorDescriptor connectorDesc = (ConnectorDescriptor)descriptor;
@@ -62,6 +63,7 @@ public class ConnectorValidator extends ComponentValidator implements ConnectorV
      * visits a connector descriptor
      * @param connDesc connector descriptor
      */
+    @Override
     public void accept(ConnectorDescriptor connDesc) {
     }
 }

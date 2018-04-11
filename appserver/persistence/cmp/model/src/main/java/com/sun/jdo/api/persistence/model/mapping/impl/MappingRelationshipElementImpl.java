@@ -115,6 +115,7 @@ public class MappingRelationshipElementImpl extends MappingFieldElementImpl
 	 * @return the names of the columns mapped by this mapping field
 	 * @see MappingFieldElement#getColumns
 	 */
+        @Override
 	public ArrayList getAssociatedColumns ()
 	{
 		if (_associatedColumns == null)
@@ -133,6 +134,7 @@ public class MappingRelationshipElementImpl extends MappingFieldElementImpl
 	 * @see MappingFieldElement#addColumn
 	 * @see #addAssociatedColumn
 	 */
+        @Override
 	public void addLocalColumn (ColumnPairElement column)
 		throws ModelException
 	{
@@ -151,6 +153,7 @@ public class MappingRelationshipElementImpl extends MappingFieldElementImpl
 	 * @see MappingFieldElement#addColumn
 	 * @see #addLocalColumn
 	 */
+        @Override
 	public void addAssociatedColumn (ColumnPairElement column)
 		throws ModelException
 	{
@@ -198,6 +201,7 @@ public class MappingRelationshipElementImpl extends MappingFieldElementImpl
 	 * @param column column element to be added to the mapping
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void addColumn (DBMemberElement column) throws ModelException
 	{
 		if (column instanceof ColumnPairElement)
@@ -228,6 +232,7 @@ public class MappingRelationshipElementImpl extends MappingFieldElementImpl
 	 * the mapping
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void removeColumn (String columnName) throws ModelException
 	{
 		try
@@ -363,6 +368,7 @@ public class MappingRelationshipElementImpl extends MappingFieldElementImpl
 	/** Boston to Pilsen conversion.
 	 * This method converts the absolute column names to relative names.
 	 */
+        @Override
 	protected void stripSchemaName ()
 	{
 		// call super to handle the columns stored in _columns

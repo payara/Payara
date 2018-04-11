@@ -65,6 +65,7 @@ public class RAWriterAdapter extends Writer {
         autoFlush = Boolean.valueOf(autoFlushValue);
     }
 
+    @Override
     public void write(char cbuf[], int off, int len) {
         if (autoFlush) {
             logger.log(Level.INFO, new String(cbuf, off, len));
@@ -78,6 +79,7 @@ public class RAWriterAdapter extends Writer {
         }
     }
 
+    @Override
     public void flush() {
         if (!autoFlush) {
             logger.log(Level.INFO, log.toString());
@@ -85,6 +87,7 @@ public class RAWriterAdapter extends Writer {
         }
     }
 
+    @Override
     public void close() {
         //no-op
     }

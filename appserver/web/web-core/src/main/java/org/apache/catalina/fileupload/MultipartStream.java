@@ -839,6 +839,7 @@ public class MultipartStream {
          * @throws IOException An I/O error occurs.
          * @return Number of bytes in the buffer.
          */
+        @Override
         public int available() throws IOException {
             if (pos == -1) {
                 return tail - head - pad;
@@ -856,6 +857,7 @@ public class MultipartStream {
          *   integer, or -1 for EOF.
          * @throws IOException An I/O error occurred.
          */
+        @Override
         public int read() throws IOException {
             if (available() == 0) {
                 if (makeAvailable() == 0) {
@@ -879,6 +881,7 @@ public class MultipartStream {
          *   or -1 for EOF.
          * @throws IOException An I/O error occurred.
          */
+        @Override
         public int read(byte[] b, int off, int len) throws IOException {
             if (len == 0) {
                 return 0;
@@ -901,6 +904,7 @@ public class MultipartStream {
          * Closes the input stream.
          * @throws IOException An I/O error occurred.
          */
+        @Override
         public void close() throws IOException {
             close(false);
         }
@@ -942,6 +946,7 @@ public class MultipartStream {
          *   skipped.
          * @throws IOException An I/O error occurred.
          */
+        @Override
         public long skip(long bytes) throws IOException {
             int av = available();
             if (av == 0) {

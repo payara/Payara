@@ -74,6 +74,7 @@ public class XMLElement extends java.lang.Object {
         return qName;
     }
     
+    @Override
     public String toString() {
         return qName;
     }

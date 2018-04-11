@@ -67,6 +67,7 @@ import org.glassfish.api.invocation.ComponentInvocation;
 public class LazyEnlistableResourceManagerImpl extends ResourceManagerImpl {
     
 
+    @Override
     protected void enlist( JavaEETransactionManager tm, Transaction tran,
         ResourceHandle h ){
         //do nothing
@@ -77,6 +78,7 @@ public class LazyEnlistableResourceManagerImpl extends ResourceManagerImpl {
      * @param handle
      * @throws PoolingException
      */
+    @Override
       public void registerResource(ResourceHandle handle)
             throws PoolingException {
             handle.setEnlistmentSuspended(true);

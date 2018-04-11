@@ -108,6 +108,7 @@ public class SqlTimestamp
      * @param   time   the number of milliseconds.
      * @see     java.sql.Timestamp
      */  
+    @Override
     public void setTime(long time) {
 	this.makeDirty();
 	super.setTime(time);
@@ -122,6 +123,7 @@ public class SqlTimestamp
      *            is greater than 999999999 or less than 0
      * @see     java.sql.Timestamp
      */  
+    @Override
     public void setNanos(int n) {
 	this.makeDirty();
         try {
@@ -140,6 +142,7 @@ public class SqlTimestamp
      * objects. In contrast to Object.clone(), this method must not throw a
      * CloneNotSupportedException.
      */
+    @Override
     public Object clone()
     {
         SqlTimestamp obj = (SqlTimestamp) super.clone();
@@ -162,6 +165,7 @@ public class SqlTimestamp
      * @deprecated As of JDK version 1.1,
      * replaced by <code>Calendar.set(Calendar.YEAR, year + 1900)</code>.
      */  
+    @Override
     public void setYear(int year) {
 	this.makeDirty();
         super.setYear(year);
@@ -175,6 +179,7 @@ public class SqlTimestamp
      * @deprecated As of JDK version 1.1,
      * replaced by <code>Calendar.set(Calendar.MONTH, int month)</code>.
      */  
+    @Override
     public void setMonth(int month) {
 	this.makeDirty();
         super.setMonth(month);
@@ -190,6 +195,7 @@ public class SqlTimestamp
      * @deprecated As of JDK version 1.1,
      * replaced by <code>Calendar.set(Calendar.DAY_OF_MONTH, int date)</code>.
      */
+    @Override
     public void setDate(int date) {
 	this.makeDirty();
         super.setDate(date);
@@ -205,6 +211,7 @@ public class SqlTimestamp
      * @deprecated As of JDK version 1.1,
      * replaced by <code>Calendar.set(Calendar.HOUR_OF_DAY, int hours)</code>.
      */  
+    @Override
     public void setHours(int hours) {
 	this.makeDirty();
         super.setHours(hours);
@@ -219,6 +226,7 @@ public class SqlTimestamp
      * @deprecated As of JDK version 1.1,
      * replaced by <code>Calendar.set(Calendar.MINUTE, int minutes)</code>.
      */
+    @Override
     public void setMinutes(int minutes) {
 	this.makeDirty();
         super.setMinutes(minutes);
@@ -233,6 +241,7 @@ public class SqlTimestamp
      * @deprecated As of JDK version 1.1,
      * replaced by <code>Calendar.set(Calendar.SECOND, int seconds)</code>.
      */  
+    @Override
     public void setSeconds(int seconds) {
 	this.makeDirty();
         super.setSeconds(seconds);
@@ -244,6 +253,7 @@ public class SqlTimestamp
      * Creates and returns a copy of this object without resetting the owner and field value.
      *   
      */  
+    @Override
     public Object cloneInternal()
     {
         return super.clone();
@@ -256,6 +266,7 @@ public class SqlTimestamp
      * @param   time   the number of milliseconds.
      * @see     java.sql.Timestamp
      */  
+    @Override
     public void setTimeInternal(long time) {
 	super.setTime(time);
     }
@@ -278,6 +289,7 @@ public class SqlTimestamp
 	 * NOTE: This method should be called under the locking of
 	 * the owener' state manager.
      */
+    @Override
     public void unsetOwner() 
     { 
 		this.owner = null; 
@@ -289,6 +301,7 @@ public class SqlTimestamp
      * 
      * @return owner object 
      */ 
+    @Override
     public Object getOwner()
     {    
         return this.owner; 
@@ -299,6 +312,7 @@ public class SqlTimestamp
      *   
      * @return field name as java.lang.String
      */  
+    @Override
     public String getFieldName()
     {
         return this.fieldName;
@@ -307,6 +321,7 @@ public class SqlTimestamp
     /**
      * Marks object dirty
      */
+    @Override
     public StateManager makeDirty()
     {
 		if (owner != null)
@@ -346,6 +361,7 @@ public class SqlTimestamp
     /**
      * Apply changes (no-op)
      */  
+    @Override
     public void applyUpdates(StateManager sm, boolean modified)
     {
     }

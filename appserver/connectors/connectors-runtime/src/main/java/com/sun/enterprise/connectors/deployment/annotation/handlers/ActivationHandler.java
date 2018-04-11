@@ -66,6 +66,7 @@ public class ActivationHandler extends AbstractHandler {
     protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ActivationHandler.class);
     
+    @Override
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();
         Activation activation = (Activation) element.getAnnotation();
@@ -110,6 +111,7 @@ public class ActivationHandler extends AbstractHandler {
         return getDefaultProcessedResult();
     }
 
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return null;
     }
@@ -117,6 +119,7 @@ public class ActivationHandler extends AbstractHandler {
     /**
      * @return a default processed result
      */
+    @Override
     protected HandlerProcessingResult getDefaultProcessedResult() {
         return HandlerProcessingResultImpl.getDefaultResult(
                 getAnnotationType(), ResultType.PROCESSED);

@@ -84,6 +84,7 @@ public interface Context extends ServletContext {
      * @throws IllegalStateException if this context has already been
      * initialized and started
      */
+    @Override
     public <T extends EventListener> void addListener(T t);
 
     /**
@@ -108,6 +109,7 @@ public interface Context extends ServletContext {
      * @throws IllegalStateException if this context has already been
      * initialized and started
      */
+    @Override
     public void addListener(Class <? extends EventListener> c);
 
     /**

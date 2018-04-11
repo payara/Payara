@@ -71,6 +71,7 @@ public class WebServicesDescriptor extends RootDeploymentDescriptor {
      * @return the default version of the deployment descriptor
      * loaded by this descriptor
      */
+    @Override
     public String getDefaultSpecVersion() {
         return "1.3";//TODO fix this WebServicesDescriptorNode.SPEC_VERSION;
     }
@@ -87,6 +88,7 @@ public class WebServicesDescriptor extends RootDeploymentDescriptor {
         return !(webServices.isEmpty());
     }
 
+    @Override
     public boolean isEmpty() {
         return webServices.isEmpty();
     }
@@ -168,6 +170,7 @@ public class WebServicesDescriptor extends RootDeploymentDescriptor {
         return allEndpoints;
     }
     
+    @Override
     public ArchiveType getModuleType() {
         if (bundleDesc!=null) {
           return bundleDesc.getModuleType();  
@@ -180,13 +183,17 @@ public class WebServicesDescriptor extends RootDeploymentDescriptor {
     // Dummy RootDeploymentDescriptor implementations for methods that
     // do not apply to WebServicesDescriptor.
     //
+    @Override
     public String getModuleID() { return ""; } 
+    @Override
     public ClassLoader getClassLoader() { return null; }
+    @Override
     public boolean isApplication() {return false; }
 
     /**
      * Returns a formatted String of the attributes of this object.
      */
+    @Override
     public void print(StringBuffer toStringBuffer) {
 	super.print(toStringBuffer);
         if (hasWebServices()) {

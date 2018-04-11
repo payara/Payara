@@ -264,6 +264,7 @@ public abstract class AuthenticatorBase
     /**
      * Return the Container to which this Valve is attached.
      */
+    @Override
     public Container getContainer() {
         return (this.context);
     }
@@ -274,6 +275,7 @@ public abstract class AuthenticatorBase
      *
      * @param container The container to which we are attached
      */
+    @Override
     public void setContainer(Container container) {
         
         if (!(container instanceof Context))
@@ -289,6 +291,7 @@ public abstract class AuthenticatorBase
     /**
      * Return the debugging detail level for this component.
      */
+    @Override
     public int getDebug() {
         return (this.debug);
     }
@@ -299,6 +302,7 @@ public abstract class AuthenticatorBase
      *
      * @param debug The new debugging detail level
      */
+    @Override
     public void setDebug(int debug) {
         this.debug = debug;
     }
@@ -1048,6 +1052,7 @@ public abstract class AuthenticatorBase
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
         // START CR 6411114
         if (started)            // Ignore multiple starts

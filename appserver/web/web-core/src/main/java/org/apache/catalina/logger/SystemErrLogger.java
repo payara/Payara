@@ -91,6 +91,7 @@ public class SystemErrLogger
      * @param msg A <code>String</code> specifying the message to be written
      *  to the log file
      */
+    @Override
     public void log(String msg) {
 
         System.err.println(msg);

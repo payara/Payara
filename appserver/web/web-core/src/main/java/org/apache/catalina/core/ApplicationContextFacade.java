@@ -1065,6 +1065,7 @@ public final class ApplicationContextFacade
                                      
         if (Globals.IS_SECURITY_ENABLED){
            return AccessController.doPrivileged(new PrivilegedExceptionAction<Object>(){
+                @Override
                 public Object run() throws IllegalAccessException, InvocationTargetException{
                     return method.invoke(context,  params);
                 }

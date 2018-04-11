@@ -131,6 +131,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      *                               this data type
      * @since 1.6
      */
+    @Override
     public Clob createClob() throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -152,6 +153,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      *                               this data type
      * @since 1.6
      */
+    @Override
     public Blob createBlob() throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -173,6 +175,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      *                               this data type
      * @since 1.6
      */
+    @Override
     public NClob createNClob() throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -194,6 +197,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      *                               this data type
      * @since 1.6
      */
+    @Override
     public SQLXML createSQLXML() throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -223,6 +227,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * @since 1.6
      *        <p/>
      */
+    @Override
     public boolean isValid(int timeout) throws SQLException {
         checkValidity();
         return con.isValid(timeout);
@@ -283,6 +288,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      *          <p/>
      * @since 1.6
      */
+    @Override
     public void setClientInfo(String name, String value) throws SQLClientInfoException {
         try {
             checkValidity();
@@ -325,6 +331,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * @since 1.6
      *        <p/>
      */
+    @Override
     public void setClientInfo(Properties properties) throws SQLClientInfoException {
         try {
             checkValidity();
@@ -370,6 +377,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * @since 1.6
      *        <p/>
      */
+    @Override
     public String getClientInfo(String name) throws SQLException {
         checkValidity();
         return con.getClientInfo(name);
@@ -391,6 +399,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      *                               <p/>
      * @since 1.6
      */
+    @Override
     public Properties getClientInfo() throws SQLException {
         checkValidity();
         return con.getClientInfo();
@@ -450,6 +459,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      *                               if the JDBC driver does not support this data type
      * @since 1.6
      */
+    @Override
     public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -470,6 +480,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      *                               if the JDBC driver does not support this data type
      * @since 1.6
      */
+    @Override
     public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -527,6 +538,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
         InvocationHandler ih;
         try {
             ih = new InvocationHandler() {
+                @Override
                 public Object invoke(Object proxy, Method method, Object[] args) throws SQLException,
                         IllegalAccessException, InvocationTargetException {
                     // When close() is called on proxy object, call close() on resource adapter's
@@ -567,6 +579,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      *                               for an object with the given interface.
      * @since 1.6
      */
+    @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         checkValidity();
         boolean result;
@@ -584,6 +597,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      *
      * @throws SQLException In case of a database error.
      */
+    @Override
     public void close() throws SQLException {
         if (isClosed) {
             if (_logger.isLoggable(Level.FINE)) {
@@ -608,6 +622,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
         super.close();
     }
 
+    @Override
     public void setSchema(String schema) throws SQLException {
         if(DataSourceObjectBuilder.isJDBC41()) {
             checkValidity();
@@ -623,6 +638,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
         throw new UnsupportedOperationException("Operation not supported in this runtime.");
     }
 
+    @Override
     public String getSchema() throws SQLException {
         if(DataSourceObjectBuilder.isJDBC41()) {
             checkValidity();
@@ -636,6 +652,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
         throw new UnsupportedOperationException("Operation not supported in this runtime.");
     }
 
+    @Override
     public void setNetworkTimeout(Executor executorObj, int milliseconds)
             throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
@@ -652,6 +669,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
         throw new UnsupportedOperationException("Operation not supported in this runtime.");
     }
 
+    @Override
     public int getNetworkTimeout() throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
             checkValidity();
@@ -675,6 +693,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * @param executor
      * @throws SQLException
      */
+    @Override
     public void abort(Executor executor) throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
             getManagedConnection().markForRemoval(true);

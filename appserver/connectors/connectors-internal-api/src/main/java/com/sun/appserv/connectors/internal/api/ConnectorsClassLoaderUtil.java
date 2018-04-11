@@ -121,6 +121,7 @@ public class ConnectorsClassLoaderUtil {
             throws MalformedURLException, ConnectorRuntimeException {
         try {
             return (DelegatingClassLoader.ClassFinder) AccessController.doPrivileged(new PrivilegedExceptionAction(){
+                @Override
                 public Object run() throws Exception {
                     return clh.getAppLibClassFinder(appLibs);
                 }
@@ -141,10 +142,12 @@ public class ConnectorsClassLoaderUtil {
         try{
             final DelegatingClassLoader.ClassFinder librariesCL = getLibrariesClassLoader(appLibs);
             cl = (ConnectorClassFinder)AccessController.doPrivileged(new PrivilegedExceptionAction() {
+                @Override
                 public Object run() throws Exception {
                         final ConnectorClassFinder ccf = new ConnectorClassFinder(parent, moduleName, librariesCL);
                         if (processEnv.getProcessType().isEmbedded()) {
                             events.register(new EventListener() {
+                            @Override
                                 public void event(Event event) {
                                     if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
                                         ccf.done();

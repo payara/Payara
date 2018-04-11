@@ -70,12 +70,15 @@ public class TransactionServerInterceptor extends LocalObject
         tm = habitat.getService(JavaEETransactionManager.class);
     }
 
+    @Override
     public String name() { 
         return name; 
     }
 
+    @Override
     public void receive_request_service_contexts(ServerRequestInfo sri) { }
 
+    @Override
     public int compareTo(Object o)
     {
 	int otherOrder = -1;
@@ -90,20 +93,25 @@ public class TransactionServerInterceptor extends LocalObject
         return 1;
     }
 
+    @Override
     public void destroy() {
     }
 
+    @Override
     public void receive_request(ServerRequestInfo sri) { 
     }
 
+    @Override
     public void send_reply(ServerRequestInfo sri) {
         checkTransaction(sri);
     }
 
+    @Override
     public void send_exception(ServerRequestInfo sri) {
         checkTransaction(sri);
     }
 
+    @Override
     public void send_other(ServerRequestInfo sri) {
         checkTransaction(sri);
     }

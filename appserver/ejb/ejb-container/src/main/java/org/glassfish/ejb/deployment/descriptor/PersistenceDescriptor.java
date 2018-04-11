@@ -995,6 +995,7 @@ public final class PersistenceDescriptor extends Descriptor {
         // allowed to reflect on private members of classes.
         Field field = (Field)java.security.AccessController.doPrivileged(
             new java.security.PrivilegedAction() {
+                @Override
                 public Object run()  {
                     try {
                         // this is needed for EJB2.0 CMP beans whose 
@@ -1165,6 +1166,7 @@ public final class PersistenceDescriptor extends Descriptor {
     /**
     * Return my formatted string representation.
     */
+    @Override
     public void print(StringBuffer toStringBuffer) {
 	super.print(toStringBuffer);
 	toStringBuffer.append("\n Entity descriptor");

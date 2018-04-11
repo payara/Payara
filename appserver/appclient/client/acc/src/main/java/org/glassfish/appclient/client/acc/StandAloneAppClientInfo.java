@@ -91,6 +91,7 @@ public class StandAloneAppClientInfo extends AppClientInfo implements PostConstr
         appClientArchive = archive;
     }
 
+    @Override
     public void postConstruct() {
         Archivist archivist = archivistFactory.getArchivist(ModuleType.CAR.toString(), getClassLoader());
         if (!(archivist instanceof AppClientArchivist)) {

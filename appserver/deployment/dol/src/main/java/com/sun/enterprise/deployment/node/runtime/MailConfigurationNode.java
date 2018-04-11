@@ -63,6 +63,7 @@ public class MailConfigurationNode extends DeploymentDescriptorNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         if (RuntimeTagNames.NAME.equals(element.getQName())) {
             name = value;
@@ -76,6 +77,7 @@ public class MailConfigurationNode extends DeploymentDescriptorNode {
     /**
      * notification of the end of XML parsing for this node
      */
+    @Override
     public void postParsing() {
         getParentNode().addDescriptor(new MailConfiguration(name, mail_from, mail_host));                    
     }

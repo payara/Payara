@@ -81,10 +81,12 @@ public class PersistentNonTransactional extends LifeCycleState {
     /**
      * Operations that cause life cycle state transitions
      */
+    @Override
     public LifeCycleState transitionDeletePersistent() {
         return changeState(P_DELETED);
     }
 
+    @Override
     public LifeCycleState transitionWriteField(boolean transactionActive) {
         if (transactionActive) {
             return changeState(P_DIRTY);
@@ -93,6 +95,7 @@ public class PersistentNonTransactional extends LifeCycleState {
         }
     }
 
+    @Override
     public LifeCycleState transitionReload(boolean transactionActive) {
         if (!transactionActive) {
             return this;
@@ -101,6 +104,7 @@ public class PersistentNonTransactional extends LifeCycleState {
         }
     }
 
+    @Override
     public boolean needsReload(boolean optimistic,
                                boolean nontransactionalRead,
                                boolean transactionActive) {

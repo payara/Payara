@@ -62,6 +62,7 @@ public class LocatorBridge {
         return remoteLocator;
     }
 
+    @Override
     public String toString() {
         return "LocatorBridge(" + remoteLocator + "," + System.identityHashCode(this) + ")";
     }

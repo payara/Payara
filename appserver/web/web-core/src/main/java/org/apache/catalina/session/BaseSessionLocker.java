@@ -80,14 +80,17 @@ public class BaseSessionLocker implements SessionLocker {
     public BaseSessionLocker() {
     }
     
+    @Override
     public void init(Context context) {
         _context = context;
     }
     
+    @Override
     public boolean lockSession(ServletRequest req) throws ServletException {
         return true;
     }
     
+    @Override
     public void unlockSession(ServletRequest req) {
     }
     

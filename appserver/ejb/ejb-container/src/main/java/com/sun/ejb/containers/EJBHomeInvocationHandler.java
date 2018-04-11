@@ -125,6 +125,7 @@ public class EJBHomeInvocationHandler
         invocationInfoMap_ = map;
     }
 
+    @Override
     protected EJBHome getEJBHome() {
         return proxy_;
     }
@@ -132,6 +133,7 @@ public class EJBHomeInvocationHandler
     /**
      * Called by EJBHome proxy.
      */
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args) 
         throws Throwable {
 

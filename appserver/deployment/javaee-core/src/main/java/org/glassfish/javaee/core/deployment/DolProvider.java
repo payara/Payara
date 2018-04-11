@@ -128,6 +128,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
     private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DolProvider.class);
 
 
+    @Override
     public MetaData getMetaData() {
         return new MetaData(false, new Class[] { Application.class }, null);
     }
@@ -218,6 +219,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         return application;
     }
 
+    @Override
     public Application load(DeploymentContext dc) throws IOException {
         DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
         Application application = processDOL(dc);
@@ -245,6 +247,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
     /**
      * return the name for the given application
      */
+    @Override
     public String getNameFor(ReadableArchive archive,
                              DeploymentContext context) {
         if (context == null) {

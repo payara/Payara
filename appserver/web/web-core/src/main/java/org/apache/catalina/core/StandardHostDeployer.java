@@ -171,6 +171,7 @@ public class StandardHostDeployer implements Deployer {
     /**
      * Return the name of the Container with which this Deployer is associated.
      */
+    @Override
     public String getName() {
 
         return (host.getName());
@@ -205,6 +206,7 @@ public class StandardHostDeployer implements Deployer {
      * @exception IOException if an input/output error was encountered
      *  during installation
      */
+    @Override
     public synchronized void install(String contextPath, URL war)
         throws IOException {
 
@@ -453,6 +455,7 @@ public class StandardHostDeployer implements Deployer {
      * @exception IOException if an input/output error was encountered
      *  during installation
      */
+    @Override
     public synchronized void install(URL config, URL war) throws IOException {
 
         // Validate the format and state of our arguments
@@ -539,6 +542,7 @@ public class StandardHostDeployer implements Deployer {
      *
      * @param contextPath The context path of the requested web application
      */
+    @Override
     public Context findDeployedApp(String contextPath) {
 
         return ((Context) host.findChild(contextPath));
@@ -551,6 +555,7 @@ public class StandardHostDeployer implements Deployer {
      * Container.  If there are no deployed applications, a zero-length
      * array is returned.
      */
+    @Override
     public String[] findDeployedApps() {
 
         Container children[] = host.findChildren();
@@ -578,6 +583,7 @@ public class StandardHostDeployer implements Deployer {
      * @exception IOException if an input/output error occurs during
      *  removal
      */
+    @Override
     public void remove(String contextPath) throws IOException {
 
         // Validate the format and state of our arguments
@@ -630,6 +636,7 @@ public class StandardHostDeployer implements Deployer {
      * @exception IOException if an input/output error occurs during
      *  removal
      */
+    @Override
     public void remove(String contextPath, boolean undeploy)
         throws IOException {
 
@@ -751,6 +758,7 @@ public class StandardHostDeployer implements Deployer {
      * @exception IOException if an input/output error occurs during
      *  startup
      */
+    @Override
     public void start(String contextPath) throws IOException {
 
         // Validate the format and state of our arguments
@@ -793,6 +801,7 @@ public class StandardHostDeployer implements Deployer {
      * @exception IOException if an input/output error occurs while stopping
      *  the web application
      */
+    @Override
     public void stop(String contextPath) throws IOException {
 
         // Validate the format and state of our arguments

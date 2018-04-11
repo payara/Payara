@@ -101,6 +101,7 @@ public class EjbContext extends ResourceContainerContextImpl {
         return endpoint;
     }
 
+    @Override
     public void endElement(ElementType type, AnnotatedElement element) 
             throws AnnotationProcessorException {
         
@@ -150,6 +151,7 @@ public class EjbContext extends ResourceContainerContextImpl {
         return getDescriptor().getEjbBundleDescriptor().getEjbByClassName(implName);
     }    
 
+    @Override
     public HandlerChainContainer[] 
             getHandlerChainContainers(boolean serviceSideHandlerChain, Class declaringClass) {
         if(serviceSideHandlerChain) {

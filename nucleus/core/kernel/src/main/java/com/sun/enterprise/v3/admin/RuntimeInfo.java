@@ -123,6 +123,7 @@ public class RuntimeInfo implements AdminCommand {
                 final Method jm = osBean.getClass().getMethod("getTotalPhysicalMemorySize");
                 AccessController.doPrivileged(
                         new PrivilegedExceptionAction() {
+                            @Override
                             public Object run() throws Exception {
                                 if (!jm.isAccessible()) {
                                     jm.setAccessible(true);

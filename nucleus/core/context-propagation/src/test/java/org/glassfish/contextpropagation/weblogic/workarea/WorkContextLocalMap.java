@@ -73,6 +73,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
   // Implementation of weblogic.workarea.WorkContextMap
 
   @SuppressWarnings("unchecked")
+  @Override
   public WorkContext put(String key, WorkContext workContext,
                   int propagationMode) throws PropertyReadOnlyException 
   {
@@ -103,11 +104,13 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
     return wce == null ? null : wce.getWorkContext();
   }
 
+  @Override
   public WorkContext put(String key, WorkContext workContext)
     throws PropertyReadOnlyException {
     return put(key, workContext, PropagationMode.DEFAULT);
   }
 
+  @Override
   public WorkContext get(String key) {
     if (debugWorkContext.isLoggable(Level.FINEST)) {
           debugWorkContext.log(Level.FINEST, "get(" + key + ")");
@@ -122,6 +125,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
     return wce.getWorkContext();
   }
 
+  @Override
   public WorkContext remove(String key) throws NoWorkContextException,
                                         PropertyReadOnlyException {
     if (debugWorkContext.isLoggable(Level.FINEST)) {
@@ -143,6 +147,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
     return wce.getWorkContext();
   }
 
+  @Override
   public int getPropagationMode(String key) {
     if (!WorkContextAccessController.isAccessAllowed(key, WorkContextAccessController.READ)) {
       throw new AccessControlException("No READ permission for key: \"" + key + "\"");
@@ -151,6 +156,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
   }
 
   @SuppressWarnings("unchecked")
+  @Override
   public boolean isPropagationModePresent(int propMode) {
     boolean status = false;
     for (Iterator<WorkContextEntry> i = map.values().iterator(); i.hasNext();) {
@@ -163,16 +169,19 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
     return status;
   }
 
+  @Override
   public boolean isEmpty() {
     return map.isEmpty();
   }
 
   @SuppressWarnings("rawtypes")
+  @Override
   public Iterator iterator() {
     return new WorkContextIterator(this);
   }
 
   @SuppressWarnings("rawtypes")
+  @Override
   public Iterator keys() {
     return new WorkContextKeys(this);
   }
@@ -188,6 +197,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
   // Implementation of weblogic.workarea.spi.WorkContextMapInterceptor
 
   @SuppressWarnings("unchecked")
+  @Override
   public void sendRequest(WorkContextOutput out, int propagationMode)
     throws IOException 
   {
@@ -204,6 +214,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
   }
 
   @SuppressWarnings("rawtypes")
+  @Override
   public void sendResponse(WorkContextOutput out, int propagationMode) 
     throws IOException 
   {
@@ -223,6 +234,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
   }
 
   @SuppressWarnings("unchecked")
+  @Override
   public void receiveRequest(WorkContextInput in)
     throws IOException 
   {
@@ -249,6 +261,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
   }
 
   @SuppressWarnings("unchecked")
+  @Override
   public void receiveResponse(WorkContextInput in)
     throws IOException 
   {
@@ -300,6 +313,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
   }
 
   @SuppressWarnings("unchecked")
+  @Override
   public WorkContextMapInterceptor copyThreadContexts(int mode) {
     if (map.isEmpty()) {
       return null;
@@ -325,6 +339,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
   }
 
   @SuppressWarnings("unchecked")
+  @Override
   public void restoreThreadContexts(WorkContextMapInterceptor contexts) {
     if (debugWorkContext.isLoggable(Level.FINEST)) {
           debugWorkContext.log(Level.FINEST, "restoreThreadContexts(" + (contexts == null ? null
@@ -341,14 +356,17 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
     version++;
   }
 
+  @Override
   public WorkContextMapInterceptor suspendThreadContexts() {
     throw new UnsupportedOperationException("suspendThreadContexts()");
   }
 
+  @Override
   public void resumeThreadContexts(WorkContextMapInterceptor contexts) {
     throw new UnsupportedOperationException("resumeThreadContexts()");
   }
 
+  @Override
   public int version() {
     return version;
   }
@@ -365,15 +383,18 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
       iter = map.map.values().iterator();
     }
 
+    @Override
     public void remove() {
       version++;
       iter.remove();
     }
 
+    @Override
     public boolean hasNext() {
       return iter.hasNext();
     }
 
+    @Override
     public Object next() {
       WorkContextEntry wce = (WorkContextEntry)iter.next();
       while (wce != null &&
@@ -396,15 +417,18 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
       iter = map.map.values().iterator();
     }
 
+    @Override
     public void remove() {
       version++;
       iter.remove();
     }
 
+    @Override
     public boolean hasNext() {
       return iter.hasNext();
     }
 
+    @Override
     public Object next() {
       WorkContextEntry wce = (WorkContextEntry)iter.next();
       while (wce != null &&

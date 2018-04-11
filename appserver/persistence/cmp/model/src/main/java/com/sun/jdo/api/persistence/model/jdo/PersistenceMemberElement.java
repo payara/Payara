@@ -108,6 +108,7 @@ public abstract class PersistenceMemberElement extends PersistenceElement
 	 * <code>false</code> otherwise.
 	 * @param obj the reference object with which to compare.
 	 */
+        @Override
 	public boolean equals (Object obj)
 	{
 		if (super.equals(obj) && (obj instanceof PersistenceMemberElement))
@@ -127,6 +128,7 @@ public abstract class PersistenceMemberElement extends PersistenceElement
 	 * the hashCode of this persistence element's declaring class.
 	 * @return a hash code value for this object.
 	 */
+        @Override
 	public int hashCode ()
 	{
 		PersistenceClassElement declaringClass = getDeclaringClass();

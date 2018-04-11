@@ -120,6 +120,7 @@ public abstract class EJBLocalHomeImpl
     /**
      * This is the implementation of the javax.ejb.EJBLocalHome remove method.
      */
+    @Override
     public final void remove(Object primaryKey)
         throws RemoveException, EJBException
     {
@@ -150,6 +151,7 @@ public abstract class EJBLocalHomeImpl
         }
     }
     
+    @Override
     public SerializableObjectFactory getSerializableObjectFactory() {
         return new SerializableLocalHome(
             container.getEjbDescriptor().getUniqueId());

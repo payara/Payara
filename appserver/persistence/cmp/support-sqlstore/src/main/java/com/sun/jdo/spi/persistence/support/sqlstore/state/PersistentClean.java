@@ -82,11 +82,13 @@ public class PersistentClean extends LifeCycleState {
     /**
      * Operations that cause life cycle state transitions
      */
+    @Override
     public LifeCycleState transitionDeletePersistent() {
         return changeState(P_DELETED);
     }
 
 
+    @Override
     public LifeCycleState transitionCommit(boolean retainValues) {
         if (retainValues) {
             return changeState(P_NON_TX);
@@ -95,6 +97,7 @@ public class PersistentClean extends LifeCycleState {
         }
     }
 
+    @Override
     public LifeCycleState transitionRollback(boolean retainValues) {
         if (retainValues) {
             return changeState(P_NON_TX);
@@ -103,6 +106,7 @@ public class PersistentClean extends LifeCycleState {
         }
     }
 
+    @Override
     public LifeCycleState transitionWriteField(boolean transactionActive) {
         assertTransaction(transactionActive);
         return changeState(P_DIRTY);

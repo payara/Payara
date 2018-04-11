@@ -51,6 +51,8 @@ import java.beans.PropertyVetoException;
 public interface GarbageCollectorChecker extends Checker, ThresholdDiagnosticsChecker {
 
     @Attribute(defaultValue = "GBGC")
+    @Override
     String getName();
+    @Override
     void setName(String value) throws PropertyVetoException;
 }

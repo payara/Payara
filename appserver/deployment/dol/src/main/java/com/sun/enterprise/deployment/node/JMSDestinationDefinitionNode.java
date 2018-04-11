@@ -60,6 +60,7 @@ public class JMSDestinationDefinitionNode extends DeploymentDescriptorNode<JMSDe
                 "addJMSDestinationPropertyDescriptor");
     }
 
+    @Override
     protected Map<String, String> getDispatchTable() {
         // no need to be synchronized for now
         Map<String, String> table = super.getDispatchTable();
@@ -82,6 +83,7 @@ public class JMSDestinationDefinitionNode extends DeploymentDescriptorNode<JMSDe
     )
     private static final String RESOURCE_ADAPTER_NAME_INVALID = "AS-DEPLOYMENT-00025";
 
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, JMSDestinationDefinitionDescriptor desc) {
         Node node = appendChild(parent, nodeName);
         appendTextChild(node, TagNames.JMS_DESTINATION_DESCRIPTION, desc.getDescription());
@@ -113,6 +115,7 @@ public class JMSDestinationDefinitionNode extends DeploymentDescriptorNode<JMSDe
         return node;
     }
 
+    @Override
     public JMSDestinationDefinitionDescriptor getDescriptor() {
         if (descriptor == null) {
             descriptor = new JMSDestinationDefinitionDescriptor();

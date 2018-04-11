@@ -111,11 +111,13 @@ public class PEDomainConfigValidator extends DomainConfigValidator
         super(entries);
     }
 
+    @Override
     public void validate(Object domainConfig) throws InvalidConfigException{
         super.validate(domainConfig);
         uniquePorts((DomainConfig) domainConfig);
     }
 
+    @Override
     protected boolean isValidate(String name, Object domainConfig)
     {
         boolean isPortEntry =   DomainConfig.K_ADMIN_PORT.equals(name) ||

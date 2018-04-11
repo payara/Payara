@@ -54,14 +54,17 @@ public class AutoPersistentNewFlushed extends AutoPersistentNew {
         stateType = AP_NEW_FLUSHED;
     }
 
+    @Override
     public LifeCycleState transitionMakePersistent() {
         return changeState(P_NEW_FLUSHED);
     }
 
+    @Override
     public LifeCycleState transitionMakePending() {
         return changeState(AP_NEW_FLUSHED_PENDING);
     }
 
+    @Override
     public LifeCycleState transitionDeletePersistent() {
         return changeState(AP_NEW_FLUSHED_DELETED);
     }

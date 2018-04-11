@@ -133,6 +133,7 @@ public class ConnectorDeployer extends JavaEEDeployer<ConnectorContainer, Connec
      *
      * @return the meta data for this Deployer
      */
+    @Override
     public MetaData getMetaData() {
         return new MetaData(false, null,
                 new Class[]{Application.class});
@@ -143,6 +144,7 @@ public class ConnectorDeployer extends JavaEEDeployer<ConnectorContainer, Connec
      *
      * @param type type of metadata that this deployer has declared providing.
      */
+    @Override
     public <T> T loadMetaData(Class<T> type, DeploymentContext context) {
         return null;
     }
@@ -223,6 +225,7 @@ public class ConnectorDeployer extends JavaEEDeployer<ConnectorContainer, Connec
      * @param appContainer instance to be stopped
      * @param context      of the undeployment
      */
+    @Override
     public void unload(ConnectorApplication appContainer, DeploymentContext context) {
 
         String moduleName = appContainer.getModuleName();
@@ -257,6 +260,7 @@ public class ConnectorDeployer extends JavaEEDeployer<ConnectorContainer, Connec
      *
      * @param dc deployment context
      */
+    @Override
     public void clean(DeploymentContext dc) {
         super.clean(dc);
         //delete resource configuration
@@ -304,6 +308,7 @@ public class ConnectorDeployer extends JavaEEDeployer<ConnectorContainer, Connec
             try {
                 // delete resource-adapter-config
                 if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                    @Override
                     public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                         return param.getResources().remove(rac);
                     }
@@ -324,6 +329,7 @@ public class ConnectorDeployer extends JavaEEDeployer<ConnectorContainer, Connec
                 // delete work-security-maps
                 if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
 
+                    @Override
                     public Object run(Resources param) throws PropertyVetoException,
                             TransactionFailure {
                         for (WorkSecurityMap resource : workSecurityMaps) {
@@ -356,6 +362,7 @@ public class ConnectorDeployer extends JavaEEDeployer<ConnectorContainer, Connec
 
                 // delete admin-object-resource
                 if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                    @Override
                     public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                         for (AdminObjectResource resource : adminObjectResources) {
                             param.getResources().remove(resource);
@@ -387,6 +394,7 @@ public class ConnectorDeployer extends JavaEEDeployer<ConnectorContainer, Connec
 
                 // delete connector-resource
                 if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                    @Override
                     public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                         for (Resource resource : connectorResources) {
                             param.getResources().remove(resource);
@@ -445,6 +453,7 @@ public class ConnectorDeployer extends JavaEEDeployer<ConnectorContainer, Connec
             // delete connector connection pool
             try {
                 if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                    @Override
                     public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                         for (ConnectorConnectionPool cp : conPools) {
                             return param.getResources().remove(cp);
@@ -467,6 +476,7 @@ public class ConnectorDeployer extends JavaEEDeployer<ConnectorContainer, Connec
      * The component has been injected with any dependency and
      * will be placed into commission by the subsystem.
      */
+    @Override
     public void postConstruct() {
         resources = domain.getResources();
         events.register(this);
@@ -583,6 +593,7 @@ public class ConnectorDeployer extends JavaEEDeployer<ConnectorContainer, Connec
         registry.removeBeanValidator(rarName);
     }
 
+    @Override
     public void event(Event event) {
 
         // added this pre-check so as to validate whether connector-resources referring
@@ -663,6 +674,7 @@ public class ConnectorDeployer extends JavaEEDeployer<ConnectorContainer, Connec
         report.setMessage(message);
     }
 
+    @Override
     public void preDestroy() {
         events.unregister(this);
     }

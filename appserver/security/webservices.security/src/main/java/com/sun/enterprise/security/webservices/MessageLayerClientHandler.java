@@ -100,6 +100,7 @@ public class MessageLayerClientHandler implements Handler {
 	}
     }
     
+    @Override
     public boolean handleFault(MessageContext messageContext) {
         // no need to do any special processing
         if(_logger.isLoggable(Level.FINE)){
@@ -109,6 +110,7 @@ public class MessageLayerClientHandler implements Handler {
         return true;
     }
     
+    @Override
     public boolean handleRequest(MessageContext messageContext) {
         if(!isSoapMessageContext(messageContext)){
             // cannot process this, as this is not a soap message context
@@ -141,6 +143,7 @@ public class MessageLayerClientHandler implements Handler {
         return true;
     }
     
+    @Override
     public boolean handleResponse(MessageContext messageContext) {
         boolean retValue;
         if(!isSoapMessageContext(messageContext)){
@@ -174,14 +177,17 @@ public class MessageLayerClientHandler implements Handler {
     // if headers contains the list of understood headers, then we need to make
     // sure that wsse is included; although if so, we need a way to make sure
     // that the provider honors this commitment.
+    @Override
     public javax.xml.namespace.QName[] getHeaders() {
         return qname;
     }
     
+    @Override
     public void destroy() {
         qname = null;
     }
     
+    @Override
     public void init(javax.xml.rpc.handler.HandlerInfo info) {
         // 109 mandates saving qnames in init
         qname = info.getHeaders();

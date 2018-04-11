@@ -75,6 +75,7 @@ public class ResourceAdapterAdminServiceImpl extends ConnectorService {
 
     private ExecutorService execService =
     Executors.newCachedThreadPool(new ThreadFactory() {
+           @Override
            public Thread newThread(Runnable r) {
              Thread th = new Thread(r);
              th.setDaemon(true);
@@ -619,6 +620,7 @@ public class ResourceAdapterAdminServiceImpl extends ConnectorService {
             this.ra = ratoBeShutDown;
         }
 
+        @Override
         public void run() {
             if(_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "Calling RA [ " + ra.getModuleName() + " ] shutdown ");
@@ -633,6 +635,7 @@ public class ResourceAdapterAdminServiceImpl extends ConnectorService {
         public RAShutdownHandler(String moduleName){
             this.moduleName = moduleName;
         }
+        @Override
         public void run(){
             stopActiveResourceAdapter(moduleName);     
         }

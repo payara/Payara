@@ -222,6 +222,7 @@ class LogFileHandle {
             fileClose();
     }
 
+    @Override
     protected void finalize()
         throws LogException {
 

@@ -66,6 +66,7 @@ public class EntityManagerFactoryReferencesHandler
     public EntityManagerFactoryReferencesHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {

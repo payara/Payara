@@ -68,6 +68,7 @@ public class ResourcesExceededException extends Exception {
         return ex;
     }
 
+    @Override
     public void printStackTrace() {
         super.printStackTrace();
         if (ex != null) {
@@ -75,6 +76,7 @@ public class ResourcesExceededException extends Exception {
         }
     }
 
+    @Override
     public void printStackTrace(PrintStream ps) {
         super.printStackTrace(ps);
         if (ex != null) {
@@ -82,6 +84,7 @@ public class ResourcesExceededException extends Exception {
         }
     }
 
+    @Override
     public void printStackTrace(PrintWriter pw) {
         super.printStackTrace(pw);
         if (ex != null) {

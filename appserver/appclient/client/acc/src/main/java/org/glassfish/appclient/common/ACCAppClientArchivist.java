@@ -84,6 +84,7 @@ public class ACCAppClientArchivist extends AppClientArchivist implements PostCon
         super.readRuntimeDeploymentDescriptor(archive, descriptor, false);
     }
 
+    @Override
     public void postConstruct() {
         extensionsArchivists = new ArrayList<ExtensionsArchivist>();
         for (ExtensionsArchivist extensionArchivist : allExtensionArchivists) {

@@ -66,6 +66,7 @@ public class JmxMultiLruCache extends JmxBaseCache
     /**
      * Returns the number of entries that have been trimmed
      */
+    @Override
     public Integer getTrimCount() {
         return (Integer) multiLruCache.getStatByName(
                                         Constants.STAT_MULTILRUCACHE_TRIM_COUNT);
@@ -74,6 +75,7 @@ public class JmxMultiLruCache extends JmxBaseCache
     /**
      * Returns the size of each segment
      */
+    @Override
     public Integer getSegmentSize() {
         return (Integer) multiLruCache.getStatByName(
                                         Constants.STAT_MULTILRUCACHE_SEGMENT_SIZE);
@@ -82,6 +84,7 @@ public class JmxMultiLruCache extends JmxBaseCache
     /**
      * Returns the legnth of the segment list
      */
+    @Override
     public Integer[] getSegmentListLength() {
         return (Integer[]) multiLruCache.getStatByName(
                                         Constants.STAT_MULTILRUCACHE_SEGMENT_LIST_LENGTH);

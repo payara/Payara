@@ -99,10 +99,12 @@ public class ManagedThreadFactoryManager implements ResourceManager {
     @Inject
     private BindableResourcesHelper resourcesHelper;
 
+    @Override
     public String getResourceType () {
         return ServerTags.MANAGED_THREAD_FACTORY;
     }
 
+    @Override
     public ResourceStatus create(Resources resources, HashMap attributes, final Properties properties,
                                  String target) throws Exception {
 
@@ -116,6 +118,7 @@ public class ManagedThreadFactoryManager implements ResourceManager {
         try {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
 
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     return createResource(param, properties);
                 }
@@ -189,6 +192,7 @@ public class ManagedThreadFactoryManager implements ResourceManager {
         return managedThreadFactory;
     }
 
+    @Override
     public Resource createConfigBean(final Resources resources, HashMap attributes, final Properties properties, boolean validate) throws Exception{
         setAttributes(attributes, null);
         ResourceStatus status = null;
@@ -251,6 +255,7 @@ public class ManagedThreadFactoryManager implements ResourceManager {
             
             // delete managed-thread-factory
             if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     ManagedThreadFactory resource = (ManagedThreadFactory) ConnectorsUtil.getResourceByName(resources, ManagedThreadFactory.class, jndiName);
                     return param.getResources().remove(resource);

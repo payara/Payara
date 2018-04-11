@@ -200,6 +200,7 @@ public class EjbNamingReferenceManagerImpl
         return resolved ? jndiObj : EJBUtils.resolveEjbRefObject(ejbRefDesc, jndiObj);
     }
 
+    @Override
     public boolean isEjbReferenceCacheable(EjbReferenceDescriptor ejbRefDesc) {
         // Ejb-ref is only eligible for caching if it refers to the legacy
         // Home view and it is resolved to an ejb within the same application.
@@ -211,6 +212,7 @@ public class EjbNamingReferenceManagerImpl
     }
 
 
+    @Override
     public Object getEJBContextObject(String contextType) {
 
         ComponentInvocation currentInv = invMgr.getCurrentInvocation();

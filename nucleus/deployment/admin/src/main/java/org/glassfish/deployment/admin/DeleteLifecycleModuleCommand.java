@@ -149,6 +149,7 @@ public class DeleteLifecycleModuleCommand implements AdminCommand, AdminCommandS
         return accessChecks;
     }
    
+    @Override
     public void execute(AdminCommandContext context) {
         
         ActionReport report = context.getActionReport();

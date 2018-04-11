@@ -295,6 +295,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
         }
     }
 
+    @Override
     public void done() {
         finishClass();
     }

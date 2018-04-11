@@ -94,6 +94,7 @@ public class DeleteConnectorWorkSecurityMap implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
@@ -113,6 +114,7 @@ public class DeleteConnectorWorkSecurityMap implements AdminCommand {
 
                 Collection<WorkSecurityMap> workSecurityMaps =
                         domain.getResources().getResources(WorkSecurityMap.class);
+                @Override
                 public Object run(Resources param) throws PropertyVetoException,
                         TransactionFailure {
                     for (WorkSecurityMap resource : workSecurityMaps) {

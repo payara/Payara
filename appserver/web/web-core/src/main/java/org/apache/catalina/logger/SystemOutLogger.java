@@ -93,6 +93,7 @@ public class SystemOutLogger
      * @param msg A <code>String</code> specifying the message to be written
      *  to the log file
      */
+    @Override
     public void log(String msg) {
 
         System.out.println(msg);

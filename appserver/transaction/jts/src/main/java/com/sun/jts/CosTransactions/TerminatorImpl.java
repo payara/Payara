@@ -214,6 +214,7 @@ class TerminatorImpl extends TerminatorPOA implements Terminator {
      *
      * @see
      */
+    @Override
     synchronized public void commit(boolean reportHeuristics)
         throws HeuristicMixed, HeuristicHazard, TRANSACTION_ROLLEDBACK {
 
@@ -273,6 +274,7 @@ class TerminatorImpl extends TerminatorPOA implements Terminator {
      *
      * @see
      */
+    @Override
     public void rollback() throws SystemException {
 
         // for checked transaction behaviour (Ram J)
@@ -373,34 +375,42 @@ class TerminatorImpl extends TerminatorPOA implements Terminator {
      * interface method implementation below shall be discarded.
      */
 
+    @Override
     public org.omg.CORBA.Object _duplicate() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public void _release() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public boolean _is_a(String repository_id) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public boolean _is_equivalent(org.omg.CORBA.Object that) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public boolean _non_existent() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public int _hash(int maximum) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public Request _request(String operation) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public Request _create_request(Context ctx,
 				   String operation,
 				   NVList arg_list,
@@ -408,6 +418,7 @@ class TerminatorImpl extends TerminatorPOA implements Terminator {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public Request _create_request(Context ctx,
 				   String operation,
 				   NVList arg_list,
@@ -417,18 +428,22 @@ class TerminatorImpl extends TerminatorPOA implements Terminator {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public org.omg.CORBA.Object _get_interface_def() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public org.omg.CORBA.Policy _get_policy(int policy_type) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public org.omg.CORBA.DomainManager[] _get_domain_managers() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public org.omg.CORBA.Object _set_policy_override(
             org.omg.CORBA.Policy[] policies,
             org.omg.CORBA.SetOverrideType set_add) {

@@ -54,6 +54,7 @@ public class ConnectorInternalObjectsProxy implements NamingObjectProxy {
         this.actualObject = o;
     }
 
+    @Override
     public Object create(Context ic) throws NamingException {
         return actualObject;        
     }

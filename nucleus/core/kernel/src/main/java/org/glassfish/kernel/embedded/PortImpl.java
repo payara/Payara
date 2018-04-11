@@ -90,6 +90,7 @@ public class PortImpl implements Port {
         number = portNumber;
     }
 
+    @Override
     public void close() {
         removeListener();
         ports.remove(this);
@@ -98,6 +99,7 @@ public class PortImpl implements Port {
     private void removeListener() {
         try {
             ConfigSupport.apply(new ConfigCode() {
+                @Override
                 public Object run(ConfigBeanProxy[] params) throws PropertyVetoException, TransactionFailure {
                     final NetworkListeners nt = (NetworkListeners) params[0];
                     final VirtualServer vs = (VirtualServer) params[1];
@@ -132,6 +134,7 @@ public class PortImpl implements Port {
         }
     }
 
+    @Override
     public int getPortNumber() {
         return number;
     }

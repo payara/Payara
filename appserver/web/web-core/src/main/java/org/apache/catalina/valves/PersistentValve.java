@@ -97,6 +97,7 @@ public class PersistentValve
     /**
      * Return descriptive information about this Valve implementation.
      */
+    @Override
     public String getInfo() {
 
         return (info);
@@ -118,6 +119,7 @@ public class PersistentValve
      * @exception IOException if an input/output error occurred
      * @exception ServletException if a servlet error occurred
      */
+    @Override
      public int invoke(Request request, Response response)
          throws IOException, ServletException {
 
@@ -172,6 +174,7 @@ public class PersistentValve
     }
 
 
+    @Override
     public void postInvoke(Request request, Response response)
                                     throws IOException, ServletException{
         Context context = request.getContext();

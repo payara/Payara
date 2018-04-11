@@ -54,6 +54,7 @@ import java.util.Iterator;
 public class ClassPathBuilder implements Iterable<File> {
     private final List<File> elements = new ArrayList<File>();
 
+    @Override
     public Iterator<File> iterator() {
         return elements.iterator();
     }
@@ -96,6 +97,7 @@ public class ClassPathBuilder implements Iterable<File> {
      * Formats the path in a single-argument format suitable
      * after the "-cp" JVM option.
      */
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
         for (File f : elements) {

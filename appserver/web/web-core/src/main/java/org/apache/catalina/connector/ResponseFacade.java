@@ -318,6 +318,7 @@ public class ResponseFacade
             try {
                 doPrivileged(new PrivilegedExceptionAction<Void>() {
 
+                    @Override
                     public Void run() throws IOException {
                         response.setAppCommitted(true);
 

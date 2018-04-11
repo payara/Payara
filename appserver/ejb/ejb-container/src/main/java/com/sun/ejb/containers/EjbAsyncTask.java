@@ -85,6 +85,7 @@ public class EjbAsyncTask<V>
         return inv;
     }
 
+    @Override
     public V call()
             throws Exception {
         V returnValue = null;

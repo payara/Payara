@@ -81,6 +81,7 @@ public final class RangeStatisticImpl extends StatisticImpl implements RangeStat
      * Returns the current value of this statistic.
 	 * @return long indicating the current value
      */
+    @Override
     public long getCurrent() {
         return currentVal;
     }
@@ -89,6 +90,7 @@ public final class RangeStatisticImpl extends StatisticImpl implements RangeStat
      * Returns the highest value of this statistic, since measurement started.
 	 * @return long indicating high water mark
      */
+    @Override
     public long getHighWaterMark() {
         return highWaterMark;
     }
@@ -97,10 +99,12 @@ public final class RangeStatisticImpl extends StatisticImpl implements RangeStat
      * Returns the lowest value of this statistic, since measurement started.
 	 * @return long indicating low water mark
      */
+    @Override
     public long getLowWaterMark() {
         return lowWaterMark;
     }
     
+    @Override
     public final String toString() {
         return super.toString() + NEWLINE + 
             "Current: " + getCurrent() + NEWLINE +

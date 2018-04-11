@@ -99,6 +99,7 @@ public class AppTest extends TestCase {
         return new TestSuite(AppTest.class);
     }
 
+    @Override
     public void setUp() {
         try {
             t = new JavaEETransactionManagerSimplified();
@@ -1701,6 +1702,7 @@ public class AppTest extends TestCase {
             this.t = t;
         }
 
+        @Override
         public void beforeCompletion() {
             System.out.println("**Called beforeCompletion  **");
             called_beforeCompletion = true;
@@ -1719,6 +1721,7 @@ public class AppTest extends TestCase {
             }
         }
 
+        @Override
         public void afterCompletion(int status) {
             System.out.println("**Called afterCompletion with status:  "
                     + JavaEETransactionManagerSimplified.getStatusAsString(status));
@@ -1792,6 +1795,7 @@ public class AppTest extends TestCase {
           }
       }
 
+      @Override
       public void commit(Xid xid, boolean onePhase) throws XAException{
         // test goes here
         System.out.println("in XA commit");
@@ -1802,12 +1806,14 @@ public class AppTest extends TestCase {
         }
       }
     
+      @Override
       public boolean isSameRM(XAResource xaresource)
         throws XAException {
           return xaresource == this || this.id == ((TestResource)xaresource).id;
       }
     
     
+      @Override
       public void rollback(Xid xid)
             throws XAException {
           System.out.println("in XA rollback");
@@ -1818,6 +1824,7 @@ public class AppTest extends TestCase {
         }
       }
     
+      @Override
       public int prepare(Xid xid)
             throws XAException {
           System.out.println("in XA prepare");
@@ -1829,21 +1836,25 @@ public class AppTest extends TestCase {
           return XAResource.XA_OK;
       }
     
+      @Override
       public boolean setTransactionTimeout(int i)
             throws XAException {
           return true;
        }
     
+      @Override
        public int getTransactionTimeout()
             throws XAException {
             return 0;
         }
+      @Override
        public void forget(Xid xid)
             throws XAException {
             _forgetCalled = true;
             inUse = false;
         }
     
+      @Override
        public void start(Xid xid, int flags)
             throws XAException {
               if (inUse)
@@ -1856,12 +1867,14 @@ public class AppTest extends TestCase {
        }
     
     
+      @Override
          public void end(Xid xid, int flags)
             throws XAException {
               inUse = false;
         }
     
     
+      @Override
        public Xid[] recover(int flags)
             throws XAException {
             return null;
@@ -1912,41 +1925,51 @@ public class AppTest extends TestCase {
           this.resource = resource;
         }
   
+        @Override
         public boolean isTransactional() {
           return true;
         }
   
+        @Override
         public boolean isShareable() {
           return true;
         }
   
+        @Override
         public boolean supportsXA() {
           return true;
         }
          
+        @Override
         public ResourceAllocator getResourceAllocator() {
           return null;
         }
   
+        @Override
         public Object getResource() {
           return resource;
         }
   
+        @Override
         public XAResource getXAResource() {
           return resource;
         }
   
+        @Override
         public Object getUserConnection() {
           return null;
         }
   
+        @Override
         public ClientSecurityInfo getClientSecurityInfo() {
           return null;
         }
   
+        @Override
         public void fillInResourceObjects(Object userConnection, XAResource xares) {
         }
   
+        @Override
         public void enlistedInTransaction(Transaction tran) throws IllegalStateException {
             poolMgr.resourceEnlisted(tran, this);
         }

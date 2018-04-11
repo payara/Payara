@@ -109,6 +109,7 @@ public class ReadOnlyBeanMessageCallBack implements MessageReceiver, Distributed
      * @param pk
      *            The primary key of the bean(s) that is to be refreshed
      */
+    @Override
     public void notifyRefresh(long ejbID, byte[] pk) {
         int size = pk.length;
         byte[] payload = new byte[size + 8];
@@ -131,6 +132,7 @@ public class ReadOnlyBeanMessageCallBack implements MessageReceiver, Distributed
      * @param pk
      *            The primary key of the bean(s) that is to be refreshed
      */
+    @Override
     public void notifyRefreshAll(long ejbID) {
         byte[] payload = new byte[8];
 

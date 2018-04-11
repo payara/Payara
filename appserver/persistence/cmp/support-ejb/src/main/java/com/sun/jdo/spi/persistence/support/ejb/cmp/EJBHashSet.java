@@ -108,6 +108,7 @@ public class EJBHashSet extends HashSet {
      * element.
      * @see java.util.HashSet
      */  
+    @Override
     public boolean add(Object o) {
         logger.finest("---EJBHashSet.add---"); // NOI18N
         assertIsValid();
@@ -130,6 +131,7 @@ public class EJBHashSet extends HashSet {
      * @see java.util.AbstractCollection
      * @see java.util.HashSet
      */
+    @Override
     public boolean addAll(Collection c) {
         logger.finest("---EJBHashSet.addAll---"); // NOI18N
         assertIsValid();
@@ -145,6 +147,7 @@ public class EJBHashSet extends HashSet {
      * @return <tt>true</tt> if the set contained the specified element.
      * @see java.util.HashSet
      */  
+    @Override
     public boolean remove(Object o) {
         logger.finest("---EJBHashSet.remove---"); // NOI18N
         assertIsValid();
@@ -170,6 +173,7 @@ public class EJBHashSet extends HashSet {
      * @see java.util.HashSet
      * @see java.util.AbstractCollection
      */  
+    @Override
     public boolean removeAll(Collection c) {
         logger.finest("---EJBHashSet.removeAll---"); // NOI18N
         assertIsValid();
@@ -191,6 +195,7 @@ public class EJBHashSet extends HashSet {
      * @see java.util.HashSet
      * @see java.util.AbstractCollection
      */  
+    @Override
     public boolean retainAll(Collection c) {
         logger.finest("---EJBHashSet.retainAll---"); // NOI18N
         assertIsValid();
@@ -204,6 +209,7 @@ public class EJBHashSet extends HashSet {
      * Removes all of the elements from this set.
      * @see java.util.HashSet
      */  
+    @Override
     public void clear() {
         logger.finest("---EJBHashSet.clear---"); // NOI18N
         assertIsValid();
@@ -216,6 +222,7 @@ public class EJBHashSet extends HashSet {
      * 
      * @return the number of elements in this set (its cardinality).
      */
+    @Override
     public int size() {
         logger.finest("---EJBHashSet.size---"); // NOI18N
         assertIsValid();
@@ -228,6 +235,7 @@ public class EJBHashSet extends HashSet {
      * 
      * @return <tt>true</tt> if this set contains no elements.
      */
+    @Override
     public boolean isEmpty() {
         logger.finest("---EJBHashSet.isEmpty---"); // NOI18N
         assertIsValid();
@@ -241,6 +249,7 @@ public class EJBHashSet extends HashSet {
      * @param o element whose presence in this set is to be tested.
      * @return <tt>true</tt> if this set contains the specified element.
      */
+    @Override
     public boolean contains(Object o) {
         logger.finest("---EJBHashSet.contains---"); // NOI18N
         assertIsValid();
@@ -265,6 +274,7 @@ public class EJBHashSet extends HashSet {
      *   
      * @see #contains(Object)
      */  
+    @Override
     public boolean containsAll(Collection c) {
         logger.finest("---EJBHashSet.containsAll---"); // NOI18N
         assertIsValid();
@@ -279,6 +289,7 @@ public class EJBHashSet extends HashSet {
      *   
      * @return a shallow copy of this set.
      */  
+    @Override
     public Object clone() {
         logger.finest("---EJBHashSet.clone---"); // NOI18N
         EJBHashSet newSet = (EJBHashSet)super.clone();
@@ -317,6 +328,7 @@ public class EJBHashSet extends HashSet {
      * @return an Iterator over the elements in this set.
      * @see ConcurrentModificationException
      */
+    @Override
     public Iterator iterator() {
         assertIsValid();
         assertInTransaction();
@@ -331,12 +343,14 @@ public class EJBHashSet extends HashSet {
             _iterator = pcSet.iterator();
         }
 
+        @Override
         public boolean hasNext() {
             assertIsValid();
             assertInTransaction();
             return _iterator.hasNext();
         }
 
+        @Override
         public Object next() {
             assertIsValid();
             assertInTransaction();
@@ -351,6 +365,7 @@ public class EJBHashSet extends HashSet {
             return  helper.convertPCToEJBLocalObject(lastReturned, pm);
         }
 
+        @Override
         public void remove() {
             assertIsValid();
             assertInTransaction();

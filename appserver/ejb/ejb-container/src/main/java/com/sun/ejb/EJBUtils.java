@@ -165,6 +165,7 @@ public class EJBUtils {
                     ejbStaticCodegenProp = (String)
                     java.security.AccessController.doPrivileged
                             (new java.security.PrivilegedAction() {
+                        @Override
                         public java.lang.Object run() {
                             return 
                                 System.getProperty(EJB_USE_STATIC_CODEGEN_PROP);
@@ -601,6 +602,7 @@ public class EJBUtils {
             } else {
                 result = (Class)  java.security.AccessController.doPrivileged
                         (new java.security.PrivilegedAction() {
+                    @Override
                     public java.lang.Object run() {
                     	return  _generate(loader, protectionDomainBase.getProtectionDomain(),
                                           props);
@@ -676,6 +678,7 @@ public class EJBUtils {
             contextLoader = (ClassLoader)
             java.security.AccessController.doPrivileged
                     (new java.security.PrivilegedAction() {
+                @Override
                 public java.lang.Object run() {
                     // Return context class loader.  If there is none,
                     // which could happen within Appclient container,
@@ -698,6 +701,7 @@ public class EJBUtils {
             appClassLoader = (ClassLoader)
             java.security.AccessController.doPrivileged
                     (new java.security.PrivilegedAction() {
+                @Override
                 public java.lang.Object run() {
                     return businessInterfaceClass.getClassLoader();
                     
@@ -739,6 +743,7 @@ public class EJBUtils {
                 } else {
                     value = java.security.AccessController.doPrivileged(
                             new java.security.PrivilegedExceptionAction() {
+                        @Override
                         public java.lang.Object run() throws Exception {
                             if( !nextField.isAccessible() ) {
                                 nextField.setAccessible(true);
@@ -824,6 +829,7 @@ public class EJBUtils {
                 } else {
                     java.security.AccessController.doPrivileged(
                             new java.security.PrivilegedExceptionAction() {
+                        @Override
                         public java.lang.Object run() throws Exception {
                             if( !nextField.isAccessible() ) {
                                 nextField.setAccessible(true);

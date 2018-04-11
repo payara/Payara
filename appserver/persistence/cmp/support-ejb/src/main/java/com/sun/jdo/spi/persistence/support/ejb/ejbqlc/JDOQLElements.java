@@ -268,6 +268,7 @@ public class JDOQLElements
     }
 
     /** Returns a string representation of this JDOQLElements instance. */
+    @Override
     public String toString()
     {
         StringBuffer repr = new StringBuffer();

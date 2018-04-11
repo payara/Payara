@@ -75,6 +75,7 @@ public class DefaultErrorHandler implements ErrorHandler {
      * @param ape The warning information
      * @throws any exception to stop the annotation processing 
      */ 
+    @Override
     public void fine(AnnotationProcessorException ape) throws
             AnnotationProcessorException {
         
@@ -97,6 +98,7 @@ public class DefaultErrorHandler implements ErrorHandler {
      * @param ape The warning information
      * @throws any exception to stop the annotation processing 
      */
+    @Override
     public void warning(AnnotationProcessorException ape) throws
             AnnotationProcessorException {
         
@@ -118,6 +120,7 @@ public class DefaultErrorHandler implements ErrorHandler {
      * @param ape The error information
      * @throws amy exception to stop the annotation processing
      */
+    @Override
     public void error(AnnotationProcessorException ape) throws 
             AnnotationProcessorException {
         

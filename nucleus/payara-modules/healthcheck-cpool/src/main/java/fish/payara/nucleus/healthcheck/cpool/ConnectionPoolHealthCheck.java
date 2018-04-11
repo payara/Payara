@@ -85,6 +85,7 @@ public class ConnectionPoolHealthCheck extends BaseThresholdHealthCheck<HealthCh
         postConstruct(this, ConnectionPoolChecker.class);
     }
 
+    @Override
     public HealthCheckConnectionPoolExecutionOptions constructOptions(ConnectionPoolChecker checker) {
         return new HealthCheckConnectionPoolExecutionOptions(Boolean.valueOf(checker.getEnabled()),
                 Long.parseLong(checker.getTime()),

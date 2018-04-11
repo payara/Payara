@@ -97,6 +97,7 @@ public class MethodLockInfo {
         return this.distributed;
     }
 
+    @Override
     public String toString() {
         return lockType + "(Distributed=" + (distributed? "yes" : "no") + "):" + timeout + ":" + timeUnit;
     }

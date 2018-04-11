@@ -53,6 +53,7 @@ import org.glassfish.api.ActionReport;
 @Service(name="simple-public-command")
 @Visibility(Public.class)
 public class SimplePublicCommand implements AdminCommand {
+    @Override
     public void execute(AdminCommandContext context) {
         context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }

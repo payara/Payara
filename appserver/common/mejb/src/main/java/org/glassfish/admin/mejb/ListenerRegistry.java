@@ -86,6 +86,7 @@ public final class ListenerRegistry implements javax.management.j2ee.ListenerReg
      * @exception InstanceNotFoundException The managed object name provided does not match any of the registered managed objects.
      *
      */
+    @Override
     public void addNotificationListener(
             final ObjectName name,
             final NotificationListener listener,
@@ -114,6 +115,7 @@ public final class ListenerRegistry implements javax.management.j2ee.ListenerReg
      * @exception InstanceNotFoundException The managed object name provided does not match any of the registered managed objects.
      * @exception ListenerNotFoundException The listener is not registered in the managed object.
      */
+    @Override
     public void removeNotificationListener(
             final ObjectName name,
             final NotificationListener listener)

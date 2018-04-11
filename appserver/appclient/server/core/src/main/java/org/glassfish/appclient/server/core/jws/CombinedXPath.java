@@ -128,16 +128,19 @@ abstract class CombinedXPath {
 
     private static enum Type {
         OWNED(OWNED_PROPERTY_NAME) {
+            @Override
             CombinedXPath combinedXPath(String pathA, String pathB) {
                 return new OwnedXPath(xPath, pathA, pathB);
             }
         },
         DEFAULTED(DEFAULTED_PROPERTY_NAME) {
+            @Override
             CombinedXPath combinedXPath(String pathA, String pathB) {
                 return new DefaultedXPath(xPath, pathA, pathB);
             }
         },
         MERGED(MERGED_PROPERTY_NAME) {
+            @Override
             CombinedXPath combinedXPath(String pathA, String pathB) {
                 return new MergedXPath(xPath, pathA, pathB);
             }

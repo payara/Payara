@@ -68,6 +68,7 @@ public class EarSniffer extends GenericSniffer {
         super("ear", "META-INF/application.xml", null);
     }
 
+    @Override
     public String[] getContainersNames() {
         return new String[] { "org.glassfish.javaee.full.deployment.EarContainer"};
     }                                                                              
@@ -103,6 +104,7 @@ public class EarSniffer extends GenericSniffer {
      * @return whether this sniffer should be visible to user
      *
      */
+    @Override
     public boolean isUserVisible() {
         return true;
     }
@@ -111,6 +113,7 @@ public class EarSniffer extends GenericSniffer {
      * @return whether this sniffer represents a Java EE container type
      *
      */
+    @Override
     public boolean isJavaEE() {
         return true;
     }
@@ -126,6 +129,7 @@ public class EarSniffer extends GenericSniffer {
      * @return whether the sniffer supports the archive type
      *
      */
+    @Override
     public boolean supportsArchiveType(ArchiveType archiveType) {
         if (archiveType.equals(earType)) {
             return true;

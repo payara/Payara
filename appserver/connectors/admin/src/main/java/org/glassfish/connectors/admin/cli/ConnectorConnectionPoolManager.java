@@ -121,10 +121,12 @@ public class ConnectorConnectionPoolManager implements ResourceManager {
     public ConnectorConnectionPoolManager() {
     }
 
+    @Override
     public String getResourceType() {
         return ServerTags.CONNECTOR_CONNECTION_POOL;
     }
 
+    @Override
     public ResourceStatus create(Resources resources, HashMap attributes, final Properties properties,
                                  String target) throws Exception {
         setParams(attributes);
@@ -135,6 +137,7 @@ public class ConnectorConnectionPoolManager implements ResourceManager {
         }
         try {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     return createResource(param, properties);
                 }
@@ -364,6 +367,7 @@ public class ConnectorConnectionPoolManager implements ResourceManager {
         }
         return false;
     }
+    @Override
     public Resource createConfigBean(Resources resources, HashMap attributes, Properties properties, boolean validate)
             throws Exception{
         setParams(attributes);

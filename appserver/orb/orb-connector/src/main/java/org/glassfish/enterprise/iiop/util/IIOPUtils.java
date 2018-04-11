@@ -95,6 +95,7 @@ public class IIOPUtils implements PostConstruct {
 
     //private GlassFishORBManager gfORBMgr;
 
+    @Override
     public void postConstruct() {
 
         processType = processEnv.getProcessType();

@@ -182,6 +182,7 @@ public class LoginConfig implements Serializable {
     /**
      * Return a String representation of this object.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("LoginConfig[");

@@ -101,6 +101,7 @@ public class DeleteJMSHost implements AdminCommand {
      *
      * @param context information
      */
+        @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
@@ -156,6 +157,7 @@ public class DeleteJMSHost implements AdminCommand {
         final JmsHost jHost = jmsHost;
          try {
             ConfigSupport.apply(new SingleConfigCode<JmsService>() {
+                    @Override
                 public Object run(JmsService param) throws PropertyVetoException, TransactionFailure {
                     return param.getJmsHost().remove(jHost);
                 }

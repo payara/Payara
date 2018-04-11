@@ -61,6 +61,7 @@ public final class WorkContextInputAdapter implements WorkContextInput
   }
 
   @SuppressWarnings("deprecation")
+  @Override
   public String readASCII() throws IOException {
     int len = readInt();
     byte[] buf = new byte[len];
@@ -69,6 +70,7 @@ public final class WorkContextInputAdapter implements WorkContextInput
   }
 
   // WorkContextInput
+  @Override
   public WorkContext readContext()
     throws IOException, ClassNotFoundException
   {
@@ -98,62 +100,77 @@ public final class WorkContextInputAdapter implements WorkContextInput
     }
   }
 
+  @Override
   public void readFully(byte[] bytes) throws IOException {
     oi.readFully(bytes);
   }
 
+  @Override
   public void readFully(byte[] bytes, int i, int i1) throws IOException {
     oi.readFully(bytes, i, i1);
   }
 
+  @Override
   public int skipBytes(int i) throws IOException {
     return oi.skipBytes(i);
   }
 
+  @Override
   public boolean readBoolean() throws IOException {
     return oi.readBoolean();
   }
 
+  @Override
   public byte readByte() throws IOException {
     return oi.readByte();
   }
 
+  @Override
   public int readUnsignedByte() throws IOException {
     return oi.readUnsignedByte();
   }
 
+  @Override
   public short readShort() throws IOException {
     return oi.readShort();
   }
 
+  @Override
   public int readUnsignedShort() throws IOException {
     return oi.readUnsignedShort();
   }
 
+  @Override
   public char readChar() throws IOException {
     return oi.readChar();
   }
 
+  @Override
   public int readInt() throws IOException {
     return oi.readInt();
   }
 
+  @Override
   public long readLong() throws IOException {
     return oi.readLong();
   }
 
+  @Override
   public float readFloat() throws IOException {
     return oi.readFloat();
   }
 
+  @Override
   public double readDouble() throws IOException {
     return oi.readDouble();
   }
 
+  @Override
   public String readLine() throws IOException {
     return oi.readLine();
   }
 
+  @Override
   public String readUTF() throws IOException {
     return oi.readUTF();
   }

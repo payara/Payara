@@ -81,10 +81,12 @@ public class ContextResourceLink extends ResourceBase {
      */
     private String name = null;
 
+    @Override
     public String getName() {
         return (this.name);
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -95,10 +97,12 @@ public class ContextResourceLink extends ResourceBase {
      */
     private String type = null;
 
+    @Override
     public String getType() {
         return (this.type);
     }
 
+    @Override
     public void setType(String type) {
         this.type = type;
     }
@@ -124,6 +128,7 @@ public class ContextResourceLink extends ResourceBase {
     /**
      * Return a String representation of this object.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("ContextResourceLink[");

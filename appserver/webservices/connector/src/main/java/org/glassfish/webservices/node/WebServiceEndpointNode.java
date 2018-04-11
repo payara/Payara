@@ -90,6 +90,7 @@ public class WebServiceEndpointNode extends DisplayableComponentNode {
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return tag;
     }
@@ -105,6 +106,7 @@ public class WebServiceEndpointNode extends DisplayableComponentNode {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */
+    @Override
     protected Map getDispatchTable() {
         Map table = super.getDispatchTable();
         table.put(WebServicesTagNames.PORT_COMPONENT_NAME, "setEndpointName");
@@ -122,6 +124,7 @@ public class WebServiceEndpointNode extends DisplayableComponentNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         String elementName = element.getQName();
         WebServiceEndpoint endpoint = (WebServiceEndpoint) getDescriptor();

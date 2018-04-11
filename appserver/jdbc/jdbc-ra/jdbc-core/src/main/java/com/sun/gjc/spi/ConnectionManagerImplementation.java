@@ -61,6 +61,7 @@ public class ConnectionManagerImplementation implements javax.resource.spi.Conne
      * @return A <code>Connection</code> Object.
      * @throws ResourceException In case of an error in getting the <code>Connection</code>.
      */
+    @Override
     public Object allocateConnection(ManagedConnectionFactory mcf,
                                      ConnectionRequestInfo info)
             throws ResourceException {

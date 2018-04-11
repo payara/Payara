@@ -157,6 +157,7 @@ public class DeleteFileUser implements /*UndoableCommand*/ AdminCommand, AdminCo
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         
         final ActionReport report = context.getActionReport();
@@ -207,6 +208,7 @@ public class DeleteFileUser implements /*UndoableCommand*/ AdminCommand, AdminCo
          //hypothetically ?.
         try {
             ConfigSupport.apply(new SingleConfigCode<SecurityService>() {
+                @Override
                 public Object run(SecurityService param)
                         throws PropertyVetoException, TransactionFailure {
                     try {

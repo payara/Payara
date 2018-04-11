@@ -138,6 +138,7 @@ public class ForeignFieldDesc extends FieldDesc {
     /**
      * Returns true.
      */
+    @Override
     public boolean isRelationshipField() {
         return true;
     }
@@ -307,6 +308,7 @@ public class ForeignFieldDesc extends FieldDesc {
         inverseRelationshipField = f;
     }
 
+    @Override
     void computeTrackedRelationshipFields() {
         // If the field is a ForeignFieldDesc, we only need
         // to compare against other ForeignFieldDesc. The reason

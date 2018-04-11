@@ -81,6 +81,7 @@ public class EjbInterceptor extends InterceptorDescriptor {
         this.interceptor = interceptor;
     }
     
+    @Override
     public String toString() {
         return "EjbInterceptor class = " + getInterceptorClassName();
     }

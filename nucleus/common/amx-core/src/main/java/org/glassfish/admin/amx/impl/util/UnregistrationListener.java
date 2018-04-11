@@ -62,6 +62,7 @@ public final class UnregistrationListener implements NotificationListener {
         // DO NOT listen here; thread-safety problem
     }
 
+    @Override
     public void handleNotification(final Notification notifIn, final Object handback) {
         if (notifIn instanceof MBeanServerNotification) {
             final MBeanServerNotification notif = (MBeanServerNotification) notifIn;

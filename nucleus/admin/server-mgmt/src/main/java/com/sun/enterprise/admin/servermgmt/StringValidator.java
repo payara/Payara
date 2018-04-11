@@ -68,6 +68,7 @@ public class StringValidator extends Validator
      * validations such as 0 length.
      * @throws InvalidConfigException
      */
+    @Override
     public void validate(Object str) throws InvalidConfigException
     {
         super.validate(str);

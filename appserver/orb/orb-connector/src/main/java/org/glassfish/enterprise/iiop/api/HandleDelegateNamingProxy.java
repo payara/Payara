@@ -69,6 +69,7 @@ public class HandleDelegateNamingProxy implements NamedNamingObjectProxy {
 
     private volatile HandleDelegateFacade facade;
 
+    @Override
     public Object handle(String name) throws NamingException {
 
         HandleDelegate delegate = null;

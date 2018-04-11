@@ -62,6 +62,7 @@ public class PluginConsoleProvider implements ConsoleProvider {
      *     file, or <code>null</code>.  If <code>null</code> is returned, the
      *     default ("META-INF/admingui/console-config.xml") will be used.</p>
      */
+    @Override
     public URL getConfiguration() {
         return null;
     }

@@ -76,6 +76,7 @@ public final class BoundaryStatisticImpl extends StatisticImpl implements Bounda
      * Returns the lowest possible value, that this statistic is permitted to attain
 	 * @return		long the lowest permissible value
      */
+    @Override
     public long getLowerBound() {
         return lowerBound;
     }
@@ -84,6 +85,7 @@ public final class BoundaryStatisticImpl extends StatisticImpl implements Bounda
      * Return the highest possible value, that this statistic is permitted to attain
 	 * @return		long the highest permissible value
      */
+    @Override
     public long getUpperBound() {
         return upperBound;
     }

@@ -130,6 +130,7 @@ public class JavaEETransactionManagerJTSDelegate
         globalTransactions = new Hashtable();
     }
 
+    @Override
     public void postConstruct() {
         if (javaEETM != null) {
             // JavaEETransactionManager has been already initialized
@@ -142,16 +143,19 @@ public class JavaEETransactionManagerJTSDelegate
         setInstance(this);
     }
 
+    @Override
     public boolean useLAO() {
          return lao;
     }
 
+    @Override
     public void setUseLAO(boolean b) {
         lao = b;
     }
 
     /** An XA transaction commit
      */
+    @Override
     public void commitDistributedTransaction() throws 
             RollbackException, HeuristicMixedException, 
             HeuristicRollbackException, SecurityException, 
@@ -198,6 +202,7 @@ public class JavaEETransactionManagerJTSDelegate
 
     /** An XA transaction rollback
     */
+    @Override
     public void rollbackDistributedTransaction() throws IllegalStateException, 
             SecurityException, SystemException {
 
@@ -231,6 +236,7 @@ public class JavaEETransactionManagerJTSDelegate
         }
     }
 
+    @Override
     public int getStatus() throws SystemException {
 
         JavaEETransaction tx = javaEETM.getCurrentTransaction();
@@ -248,6 +254,7 @@ public class JavaEETransactionManagerJTSDelegate
         return status;
     }
 
+    @Override
     public Transaction getTransaction() 
             throws SystemException {
         JavaEETransaction tx = javaEETM.getCurrentTransaction();
@@ -282,6 +289,7 @@ public class JavaEETransactionManagerJTSDelegate
         }
     }
 
+    @Override
     public JavaEETransaction getJavaEETransaction(Transaction t) {
         if(t instanceof JavaEETransaction){
             return  (JavaEETransaction)t;
@@ -290,6 +298,7 @@ public class JavaEETransactionManagerJTSDelegate
         return (JavaEETransaction)globalTransactions.get(t);
 
     }
+    @Override
     public boolean enlistDistributedNonXAResource(Transaction tx, TransactionalResource h)
            throws RollbackException, IllegalStateException, SystemException {
         if(useLAO()) {
@@ -308,6 +317,7 @@ public class JavaEETransactionManagerJTSDelegate
         }
     }
 
+    @Override
     public boolean enlistLAOResource(Transaction tran, TransactionalResource h)
            throws RollbackException, IllegalStateException, SystemException {
 
@@ -334,6 +344,7 @@ public class JavaEETransactionManagerJTSDelegate
 
     }
 
+    @Override
     public void setRollbackOnlyDistributedTransaction()
             throws IllegalStateException, SystemException {
         if (_logger.isLoggable(Level.FINE))
@@ -343,6 +354,7 @@ public class JavaEETransactionManagerJTSDelegate
         tmLocal.get().setRollbackOnly();
     }
 
+    @Override
     public Transaction suspend(JavaEETransaction tx) throws SystemException {
         if ( tx != null ) {
             if ( !tx.isLocalTx() )
@@ -357,6 +369,7 @@ public class JavaEETransactionManagerJTSDelegate
         return null;
     }
 
+    @Override
     public void resume(Transaction tx)
         throws InvalidTransactionException, IllegalStateException,
         SystemException {
@@ -369,19 +382,23 @@ public class JavaEETransactionManagerJTSDelegate
         }
     }
 
+    @Override
     public void removeTransaction(Transaction tx) {
         globalTransactions.remove(tx);
     }
 
+    @Override
     public int getOrder() {
         return 3;
     }
 
+    @Override
     public void setTransactionManager(JavaEETransactionManager tm) {
         javaEETM = tm;
         _logger = ((JavaEETransactionManagerSimplified)javaEETM).getLogger();
     }
 
+    @Override
     public TransactionInternal startJTSTx(JavaEETransaction tran, boolean isAssociatedTimeout) 
             throws RollbackException, IllegalStateException, SystemException {
         setTransactionManager();
@@ -408,26 +425,31 @@ public class JavaEETransactionManagerJTSDelegate
         return jtsTx;
     }
 
+    @Override
     public void initRecovery(boolean force) {
         TransactionServiceProperties.initRecovery(force);
     }
 
+    @Override
     public void recover(XAResource[] resourceList) {
         setTransactionManager();
         TransactionManagerImpl.recover(
                 Collections.enumeration(Arrays.asList(resourceList)));
     }
 
+    @Override
     public void release(Xid xid) throws WorkException {
         setTransactionManager();
         TransactionManagerImpl.release(xid);
     }
 
+    @Override
     public void recreate(Xid xid, long timeout) throws WorkException {
         setTransactionManager();
         TransactionManagerImpl.recreate(xid, timeout);
     }
 
+    @Override
     public XATerminator getXATerminator() {
         setTransactionManager();
         return TransactionManagerImpl.getXATerminator();
@@ -459,6 +481,7 @@ public class JavaEETransactionManagerJTSDelegate
             tmLocal.set(transactionManagerImpl);
     }
 
+    @Override
     public XAResourceWrapper getXAResourceWrapper(String clName) {
         XAResourceWrapper rc = xaresourcewrappers.get(clName);
 
@@ -468,6 +491,7 @@ public class JavaEETransactionManagerJTSDelegate
         return null;
     }
 
+    @Override
     public void handlePropertyUpdate(String name, Object value) {
         if (name.equals(ServerTags.KEYPOINT_INTERVAL)) {
             Configuration.setKeypointTrigger(Integer.parseInt((String)value,10));
@@ -478,6 +502,7 @@ public class JavaEETransactionManagerJTSDelegate
         }
     }
 
+    @Override
     public boolean recoverIncompleteTx(boolean delegated, String logPath, 
             XAResource[] xaresArray) throws Exception {
         boolean result = false;
@@ -497,6 +522,7 @@ public class JavaEETransactionManagerJTSDelegate
         ((JavaEETransactionManagerSimplified)javaEETM).monitorTxBegin(tm.getTransaction());
     }
 
+    @Override
     public boolean supportsXAResource() {
         return true;
     }
@@ -547,6 +573,7 @@ public class JavaEETransactionManagerJTSDelegate
      * that the client had an active
      * tx but the client container did not support tx interop.
      */
+    @Override
     public boolean isNullTransaction() {
         try {
             return com.sun.jts.pi.InterceptorImpl.isTxCtxtNull();
@@ -557,6 +584,7 @@ public class JavaEETransactionManagerJTSDelegate
         }
     }
 
+    @Override
     public TransactionAdminBean getTransactionAdminBean(Transaction t) 
             throws javax.transaction.SystemException {
         TransactionAdminBean tBean = null;
@@ -590,6 +618,7 @@ public class JavaEETransactionManagerJTSDelegate
 
     /** {@inheritDoc}
     */
+    @Override
     public String getTxLogLocation() {
         if (Configuration.getServerName() == null) {
             // If server name is null, the properties were not fully initialized
@@ -604,14 +633,17 @@ public class JavaEETransactionManagerJTSDelegate
 
     /** {@inheritDoc}
     */
+    @Override
     public void registerRecoveryResourceHandler(XAResource xaResource) {
             ResourceRecoveryManagerImpl.registerRecoveryResourceHandler(xaResource);
     }
 
+    @Override
     public Lock getReadLock() {
         return lock;
     }
 
+    @Override
     public void acquireWriteLock() {
         if(com.sun.jts.CosTransactions.AdminUtil.isFrozenAll()){
             //multiple freezes will hang this thread, therefore just return
@@ -629,6 +661,7 @@ public class JavaEETransactionManagerJTSDelegate
         lock.acquireWriteLock();
     }
 
+    @Override
     public void releaseWriteLock() {
         if(com.sun.jts.CosTransactions.AdminUtil.isFrozenAll()){
             com.sun.jts.CosTransactions.AdminUtil.unfreezeAll();
@@ -643,6 +676,7 @@ public class JavaEETransactionManagerJTSDelegate
         lock.releaseWriteLock();
     }
 
+    @Override
     public boolean isWriteLocked() {
         return com.sun.jts.CosTransactions.AdminUtil.isFrozenAll();
     }
@@ -664,10 +698,12 @@ public class JavaEETransactionManagerJTSDelegate
     private static class ReadWriteLock implements Lock {
         private static final RWLock freezeLock = new RWLock();
 
+        @Override
         public void lock() { 
             freezeLock.acquireReadLock(); 
         }
         
+        @Override
         public void unlock() { 
             freezeLock.releaseReadLock(); 
         }
@@ -680,19 +716,23 @@ public class JavaEETransactionManagerJTSDelegate
             freezeLock.releaseWriteLock();
         }
 
+        @Override
         public void lockInterruptibly() throws InterruptedException {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public  boolean tryLock() {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public boolean tryLock(long timeout, TimeUnit unit) 
                 throws InterruptedException {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public Condition newCondition() {
             throw new UnsupportedOperationException();
         }

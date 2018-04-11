@@ -316,6 +316,7 @@ public class CMPTemplateFormatter extends JavaClassWriterHelper{
             final ClassLoader loader = CMPTemplateFormatter.class.getClassLoader();
             InputStream in = (InputStream)java.security.AccessController.doPrivileged(
                 new java.security.PrivilegedAction() {
+                    @Override
                     public Object run() {
                         if (loader != null) {
                             return loader.getResourceAsStream(templateFile);

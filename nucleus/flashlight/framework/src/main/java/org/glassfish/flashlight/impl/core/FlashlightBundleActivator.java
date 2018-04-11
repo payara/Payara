@@ -52,9 +52,11 @@ import org.osgi.framework.BundleContext;
 public class FlashlightBundleActivator
     implements BundleActivator {
 
+    @Override
     public void start(BundleContext bCtx) {
     }
 
+    @Override
     public void stop(BundleContext bCtx) {
 
     }

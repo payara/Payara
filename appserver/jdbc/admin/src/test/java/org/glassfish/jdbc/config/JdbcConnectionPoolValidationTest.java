@@ -88,6 +88,7 @@ public class JdbcConnectionPoolValidationTest extends ConfigApiTest {
     public void testBooleanDoesNotTakeInteger1() throws Throwable {
         try {
             ConfigSupport.apply(new SingleConfigCode<JdbcConnectionPool>() {
+                @Override
                 public Object run(JdbcConnectionPool jdbcConnectionPool) throws PropertyVetoException, TransactionFailure {
                     jdbcConnectionPool.setConnectionLeakReclaim("123"); //this method should only take boolean;
                     return null;

@@ -835,6 +835,7 @@ public class LogControl {
                     */                                        
                     java.security.AccessController.doPrivileged(
                         new java.security.PrivilegedAction() {
+                            @Override
                             public Object run(){
                                 for( int j = 0; j < logFiles.length; j++ ){
                                     new File(logFileDir,logFiles[j]).delete();                                    
@@ -845,6 +846,7 @@ public class LogControl {
                     );                    
                     java.security.AccessController.doPrivileged(
                         new java.security.PrivilegedAction() {
+                            @Override
                             public Object run(){
                                 logFileDir.delete();
                                 return null;

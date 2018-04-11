@@ -137,6 +137,7 @@ public interface AdminObjectResource extends ConfigBeanProxy, BindableResource, 
      *         {@link String }
      */
     @Attribute (defaultValue="true",dataType=Boolean.class)
+    @Override
     String getEnabled();
 
     /**
@@ -145,6 +146,7 @@ public interface AdminObjectResource extends ConfigBeanProxy, BindableResource, 
      * @param value allowed object is
      *              {@link String }
      */
+    @Override
     void setEnabled(String value) throws PropertyVetoException;
 
     /**
@@ -170,9 +172,11 @@ public interface AdminObjectResource extends ConfigBeanProxy, BindableResource, 
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 
     @DuckTyped
+    @Override
     String getIdentity();
 
     class Duck {

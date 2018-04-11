@@ -84,6 +84,7 @@ public class ImplementorCacheDelegateImpl extends ImplementorCacheDelegate {
         rpcFactory_ = JaxRpcObjectFactory.newInstance();
     }
 
+    @Override
     public Implementor getImplementorFor(RuntimeEndpointInfo targetEndpoint) {
 
         Implementor implementor = null;
@@ -111,11 +112,13 @@ public class ImplementorCacheDelegateImpl extends ImplementorCacheDelegate {
         return implementor;
     }
 
+    @Override
     public void releaseImplementor(RuntimeEndpointInfo targetEndpoint, 
                                    Implementor implementor) {
         // do nothing
     }
 
+    @Override
     public void destroy() {
         for (Iterator iter = implementorCache_.values().iterator(); 
              iter.hasNext();) {

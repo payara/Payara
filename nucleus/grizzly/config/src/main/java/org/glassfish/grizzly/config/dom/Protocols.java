@@ -63,6 +63,7 @@ public interface Protocols extends ConfigBeanProxy, PropertyBag {
     Protocol findProtocol(String name);
 
     @DuckTyped
+    @Override
     NetworkConfig getParent();
     
     class Duck {

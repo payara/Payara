@@ -112,6 +112,7 @@ public abstract class PasswordLoginModule extends BasePasswordLoginModule
      * calls authenticateUser
      * @throws LoginException
      */
+    @Override
     protected final void authenticateUser () throws LoginException{
         authenticate();
     }

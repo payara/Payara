@@ -75,6 +75,7 @@ public class SOAPMessageContextImpl implements SOAPMessageContext {
         this.message = null;
     }
 
+    @Override
     public SOAPMessage getMessage() {
 
         if (message != null) {
@@ -100,6 +101,7 @@ public class SOAPMessageContextImpl implements SOAPMessageContext {
         return soapMsg;
     }
 
+    @Override
     public void setMessage(SOAPMessage newMsg) {
         message = newMsg;
 
@@ -108,26 +110,31 @@ public class SOAPMessageContextImpl implements SOAPMessageContext {
         packet.setMessage(Messages.create(newMsg));
     }
 
+    @Override
     public Object[] getHeaders(QName header, JAXBContext jaxbContext, boolean allRoles) {
         // this is a dummy impl; we do not use it at all
         return null;
     }
 
+    @Override
     public Set<String> getRoles() {
         // this is a dummy impl; we do not use it at all
         return null;
     }
 
+    @Override
     public Scope getScope(String name) {
         // this is a dummy impl; we do not use it at all
         return null;
     }
 
+    @Override
     public void setScope(String name, Scope scope) {
         // this is a dummy impl; we do not use it at all
         return;
     }
 
+    @Override
     public boolean isAlreadySoap() {
         // In jaxws-rearch, only SOAP messages come here
         // So always return true
@@ -136,11 +143,13 @@ public class SOAPMessageContextImpl implements SOAPMessageContext {
 
     /* java.util.Map methods below here */
 
+    @Override
     public void clear() {
         // We just clear whatever we set; we do not clear jaxws's properties'
         packet.invocationProperties.clear();
     }
 
+    @Override
     public boolean containsKey(Object obj) {
         // First check our property bag
         if(packet.supports(obj)) {
@@ -149,14 +158,17 @@ public class SOAPMessageContextImpl implements SOAPMessageContext {
         return packet.invocationProperties.containsKey(obj);
     }
 
+    @Override
     public boolean containsValue(Object obj) {
         return packet.invocationProperties.containsValue(obj);
     }
 
+    @Override
     public Set<Entry<String, Object>> entrySet() {
         return packet.invocationProperties.entrySet();
     }
 
+    @Override
     public Object get(Object obj) {
         if(packet.supports(obj)) {
             return packet.get(obj);
@@ -164,30 +176,37 @@ public class SOAPMessageContextImpl implements SOAPMessageContext {
         return packet.invocationProperties.get(obj);
     }
 
+    @Override
     public boolean isEmpty() {
         return packet.invocationProperties.isEmpty();
     }
 
+    @Override
     public Set<String> keySet() {
         return packet.invocationProperties.keySet();
     }
 
+    @Override
     public Object put(String str, Object obj) {
         return packet.invocationProperties.put(str, obj);
     }
 
+    @Override
     public void putAll(Map<? extends String, ? extends Object> map) {
         packet.invocationProperties.putAll(map);
     }
 
+    @Override
     public Object remove(Object obj) {
         return packet.invocationProperties.remove(obj);
     }
 
+    @Override
     public int size() {
         return packet.invocationProperties.size();
     }
 
+    @Override
     public Collection<Object> values() {
         return packet.invocationProperties.values();
     }

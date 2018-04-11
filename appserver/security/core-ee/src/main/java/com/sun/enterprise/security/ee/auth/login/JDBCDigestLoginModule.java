@@ -56,6 +56,7 @@ public class JDBCDigestLoginModule extends DigestLoginModule {
     public JDBCDigestLoginModule() {
     }
 
+    @Override
     protected Enumeration getGroups(String username) {
         try {
             return this.getRealm().getGroupNames(username);

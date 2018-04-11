@@ -67,6 +67,7 @@ public class JmxBoundedMultiLruCache extends JmxMultiLruCache
     /**
      * Returns the current size of the cache in bytes
      */
+    @Override
     public Long getCurrentSize() {
         return (Long) boundedMultiLruCache.getStatByName(
                                         Constants.STAT_BOUNDEDMULTILRUCACHE_CURRENT_SIZE);
@@ -75,6 +76,7 @@ public class JmxBoundedMultiLruCache extends JmxMultiLruCache
     /**
      * Returns the upper bound on the cache size
      */
+    @Override
     public Long getMaxSize() {
         Object object = boundedMultiLruCache.getStatByName(
                                         Constants.STAT_BOUNDEDMULTILRUCACHE_MAX_SIZE);

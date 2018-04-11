@@ -69,11 +69,13 @@ public class GenericHomeGenerator extends Generator
      * Get the fully qualified name of the generated class.
      * @return the name of the generated class.
      */
+    @Override
     public String getGeneratedClass() {
         return genericEJBHomeClassName;
     }
 
     // For corba codegen infrastructure
+    @Override
     public String className() {
         return getGeneratedClass();
     }
@@ -88,6 +90,7 @@ public class GenericHomeGenerator extends Generator
     }
 
 
+    @Override
     public void evaluate() {
 
         _clear();

@@ -55,6 +55,7 @@ import static com.sun.enterprise.naming.util.LogFacade.logger;
 public class IIOPObjectFactory implements ObjectFactory {
     Hashtable env = new Hashtable();
 
+    @Override
     public Object getObjectInstance(Object obj,
                                     Name name,
                                     Context nameCtx,

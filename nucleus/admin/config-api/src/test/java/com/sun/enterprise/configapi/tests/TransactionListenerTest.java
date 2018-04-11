@@ -63,6 +63,7 @@ import java.util.List;
  * Time: 10:48:55 PM
  */
 public class TransactionListenerTest extends ConfigApiTest {
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -78,10 +79,12 @@ public class TransactionListenerTest extends ConfigApiTest {
             .getNetworkListener().get(0);
         final Http http = netListener.findHttpProtocol().getHttp();
         final TransactionListener listener = new TransactionListener() {
+                @Override
                 public void transactionCommited(List<PropertyChangeEvent> changes) {
                     events = changes;
                 }
 
+                @Override
             public void unprocessedTransactedEvents(List<UnprocessedChangeEvents> changes) {
             }
         };
@@ -94,6 +97,7 @@ public class TransactionListenerTest extends ConfigApiTest {
             logger.fine("Max connections = " + http.getMaxConnections());
             ConfigSupport.apply(new SingleConfigCode<Http>() {
 
+                @Override
                 public Object run(Http param) {
                     param.setMaxConnections("500");
                     return null;
@@ -120,6 +124,7 @@ public class TransactionListenerTest extends ConfigApiTest {
         // put back the right values in the domain to avoid test collisions
         ConfigSupport.apply(new SingleConfigCode<Http>() {
 
+            @Override
             public Object run(Http param) {
                 param.setMaxConnections("250");
                 return null;

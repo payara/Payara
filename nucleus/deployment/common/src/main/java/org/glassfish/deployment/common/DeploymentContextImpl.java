@@ -137,23 +137,28 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         this.env = env;
     }
 
+    @Override
     public Phase getPhase()
     {
         return phase;
     }
 
+    @Override
     public void setPhase(Phase newPhase) {
         this.phase = newPhase;
     }
 
+    @Override
     public ReadableArchive getSource() {
         return source;
     }
 
+    @Override
     public void setSource(ReadableArchive source) {
         this.source = source;
     }
 
+    @Override
     public <U extends OpsParams> U getCommandParameters(Class<U> commandParametersType) {
         try {
             return commandParametersType.cast(parameters);
@@ -162,10 +167,12 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         }
     }
 
+    @Override
     public Logger getLogger() {
         return deplLogger;
     }
 
+    @Override
     public synchronized void preDestroy() {
         try {
             PreDestroy.class.cast(sharableTemp).preDestroy();
@@ -191,6 +198,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *         source
      * @link {org.jvnet.glassfish.apu.deployment.archive.ArchiveHandler.getClassLoader()}
      */
+    @Override
     public ClassLoader getFinalClassLoader() {
         return cloader;
     }
@@ -207,6 +215,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *         source
      * @link {org.jvnet.glassfish.apu.deployment.archive.ArchiveHandler.getClassLoader()}
      */
+    @Override
     public ClassLoader getClassLoader() { 
       /* TODO -- Replace this method with another that does not imply it is
        * an accessor and conveys that the result may change depending on the
@@ -216,6 +225,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
       return getClassLoader(true);
     }
 
+    @Override
     public synchronized void setClassLoader(ClassLoader cloader) {
         this.cloader = cloader;
     }
@@ -223,6 +233,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
 
     // this classloader will be used for sniffer retrieval, metadata parsing 
     // and the prepare
+    @Override
     public synchronized void createDeploymentClassLoader(ClassLoaderHierarchy clh, ArchiveHandler handler)
             throws URISyntaxException, MalformedURLException {
         this.addTransientAppMetaData(ExtendedDeploymentContext.IS_TEMP_CLASSLOADER, Boolean.TRUE);
@@ -230,6 +241,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     }
 
     // this classloader will used to load and start the application
+    @Override
     public void createApplicationClassLoader(ClassLoaderHierarchy clh, ArchiveHandler handler)
             throws URISyntaxException, MalformedURLException {
         this.addTransientAppMetaData(ExtendedDeploymentContext.IS_TEMP_CLASSLOADER, Boolean.FALSE);
@@ -283,6 +295,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *         passed in subDirName. Returns the root scratch dir if the
      *         passed in value is null.
      */
+    @Override
     public File getScratchDir(String subDirName) {
         File rootScratchDir = env.getApplicationStubPath();
         if (tenant != null && originalAppName != null) {
@@ -306,17 +319,20 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     /**
      * {@inheritDoc}
      */
+    @Override
     public File getSourceDir() {
 
         return new File(getSource().getURI());
     }
 
+    @Override
     public void addModuleMetaData(Object metaData) {
         if (metaData!=null) {
             modulesMetaData.put(metaData.getClass().getName(), metaData);
         }
     }
 
+    @Override
     public <T> T getModuleMetaData(Class<T> metadataType) {
         Object moduleMetaData = modulesMetaData.get(metadataType.getName());
         if (moduleMetaData != null) {
@@ -332,24 +348,28 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         }
     }
 
+    @Override
     public Collection<Object> getModuleMetadata() {
         List<Object> copy = new ArrayList<Object>();
         copy.addAll(modulesMetaData.values());
         return copy;
     }
 
+    @Override
     public Map<String, Object> getTransientAppMetadata() {
         HashMap<String, Object> copy = new HashMap<String, Object>();
         copy.putAll(transientAppMetaData);
         return copy;
     }
 
+    @Override
     public void addTransientAppMetaData(String metaDataKey, Object metaData) {
         if (metaData!=null) {
             transientAppMetaData.put(metaDataKey, metaData);
         }
     }
 
+    @Override
     public <T> T getTransientAppMetaData(String key, Class<T> metadataType) {
         Object metaData = transientAppMetaData.get(key);
         if (metaData != null) {
@@ -367,6 +387,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *
      * @return the application's properties.
      */
+    @Override
     public Properties getAppProps() {
         if (props==null) {
             props = new Properties();
@@ -382,6 +403,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      * Module level properties are only visible to the current module.
      * @return the module's properties.
      */
+    @Override
     public Properties getModuleProps() {
         // for standalone case, it would return the same as application level 
         // properties
@@ -402,6 +424,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      * registration of a ClassFileTransformer. In such case, the deployer should either fail
      * deployment or revert to a mode without the byteocode enhancement feature.
      */
+    @Override
     public void addTransformer(ClassFileTransformer transformer) {
 
         InstrumentableClassLoader icl = InstrumentableClassLoader.class.cast(getFinalClassLoader());
@@ -438,10 +461,12 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *
      * @return the transformers list
      */ 
+    @Override
     public List<ClassFileTransformer> getTransformers() {
         return transformers;
     }
 
+    @Override
     public List<URI> getAppLibs()
             throws URISyntaxException {
         List<URI> libURIs = new ArrayList<URI>();
@@ -478,6 +503,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         return libURIs;
     }
 
+    @Override
     public void clean() {
         if (parameters.origin == OpsParams.Origin.undeploy ||
             parameters.origin == OpsParams.Origin.deploy ) {
@@ -521,14 +547,17 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         }
     }
 
+    @Override
     public ArchiveHandler getArchiveHandler() {
         return archiveHandler;
     }
 
+    @Override
     public void setArchiveHandler(ArchiveHandler archiveHandler) {
         this.archiveHandler = archiveHandler;
     }
 
+    @Override
     public ReadableArchive getOriginalSource() {
         return originalSource;
     }
@@ -538,6 +567,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *
      * @return a map containing module properties
      */
+    @Override
     public Map<String, Properties> getModulePropsMap() {
         return modulePropsMap;
     }
@@ -547,6 +577,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *
      * @param modulePropsMap
      */
+    @Override
     public void setModulePropsMap(Map<String, Properties> modulePropsMap) {
         this.modulePropsMap = modulePropsMap;
     }
@@ -556,6 +587,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *
      * @param parentContext
      */
+    @Override
     public void setParentContext(ExtendedDeploymentContext parentContext) {
         this.parentContext = parentContext;
     }
@@ -566,6 +598,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *
      * @return the parent context
      */
+    @Override
     public ExtendedDeploymentContext getParentContext() {
         return parentContext;
     }
@@ -575,6 +608,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *
      * @return the module uri
      */
+    @Override
     public String getModuleUri() {
         return moduleUri;
     }
@@ -584,6 +618,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *
      * @param moduleUri
      */
+    @Override
     public void setModuleUri(String moduleUri) {
         this.moduleUri = moduleUri;
     }
@@ -594,6 +629,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *
      * @return a map containing module archive handlers
      */
+    @Override
     public Map<String, ArchiveHandler> getModuleArchiveHandlers() {
         return moduleArchiveHandlers;
     }
@@ -603,6 +639,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *
      * @return a map containing module deployment contexts
      */
+    @Override
     public Map<String, ExtendedDeploymentContext> getModuleDeploymentContexts() {
         return moduleDeploymentContexts;
     }
@@ -612,20 +649,24 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *
      * @return an action report
      */
+    @Override
     public ActionReport getActionReport() {
         return actionReport;
     }
 
+    @Override
     public File getAppInternalDir() {
         final File internalDir = new File(env.getApplicationRepositoryPath(), INTERNAL_DIR_NAME);
         return new File(internalDir, VersioningUtils.getRepositoryName(parameters.name()));
     }
 
+    @Override
     public File getAppAltDDDir() {
         final File altDDDir = env.getApplicationAltDDPath();
         return new File(altDDDir, VersioningUtils.getRepositoryName(parameters.name()));
     }
 
+    @Override
     public void setTenant(final String tenant, final String appName) {
         this.tenant = tenant;
         this.originalAppName = appName;
@@ -659,10 +700,12 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         return rootScratchTenantDirForApp;
     }
 
+    @Override
     public String getTenant() {
         return tenant;
     }
 
+    @Override
     public File getTenantDir() {
         return tenantDir;
     }
@@ -687,6 +730,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      * Prepare the scratch directories, creating the directories
      * if they do not exist
      */
+    @Override
     public void prepareScratchDirs() throws IOException {
         prepareScratchDir(getScratchDir("ejb"));
         prepareScratchDir(getScratchDir("xml"));

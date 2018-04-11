@@ -118,6 +118,7 @@ public class ConnectorXAResource implements XAResource {
         throw xae;
     }
 
+    @Override
     public void commit(Xid xid, boolean onePhase) throws XAException {
         try {
             ResourceHandle handle = getResourceHandleAndBeginTxIfNeeded();
@@ -132,6 +133,7 @@ public class ConnectorXAResource implements XAResource {
     }
 
 
+    @Override
     public void start(Xid xid, int flags) throws XAException {
         try {
             ResourceHandle handle = getResourceHandleAndBeginTxIfNeeded();
@@ -152,6 +154,7 @@ public class ConnectorXAResource implements XAResource {
         }
     }
 
+    @Override
     public void end(Xid xid, int flags) throws XAException {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "connection_sharing_end");
@@ -176,6 +179,7 @@ public class ConnectorXAResource implements XAResource {
         }
     }
     
+    @Override
     public void forget(Xid xid) throws XAException {
         if(_logger.isLoggable(Level.FINE)) {
 	    _logger.fine("Well, forget is called for xid :"+xid);
@@ -183,10 +187,12 @@ public class ConnectorXAResource implements XAResource {
         // no-op
     }
 
+    @Override
     public int getTransactionTimeout() throws XAException {
         return 0;
     }
     
+    @Override
     public boolean isSameRM(XAResource other) throws XAException {
         if (this == other) return true;
         if (other == null) return false;
@@ -199,14 +205,17 @@ public class ConnectorXAResource implements XAResource {
         }
     }        
 
+    @Override
     public int prepare(Xid xid) throws XAException {
         return TransactionConstants.LAO_PREPARE_OK;
     }
     
+    @Override
     public Xid[] recover(int flag) throws XAException {
         return new Xid[0];
     }
     
+    @Override
     public void rollback(Xid xid) throws XAException {
         try {
 	    ResourceHandle handle = getResourceHandleAndBeginTxIfNeeded();
@@ -220,6 +229,7 @@ public class ConnectorXAResource implements XAResource {
         }
     }
 
+    @Override
     public boolean setTransactionTimeout(int seconds) throws XAException {
         return false;
     }

@@ -81,6 +81,7 @@ public class ServerContextImpl implements ServerContext, PostConstruct {
     String[] args;
 
     /** Creates a new instance of ServerContextImpl */
+    @Override
     public void postConstruct() {
         this.instanceRoot = env.getDomainRoot();
         this.args = new String[startupContext.getArguments().size()*2];
@@ -95,50 +96,61 @@ public class ServerContextImpl implements ServerContext, PostConstruct {
         return instanceRoot;
     }
 
+    @Override
     public String[] getCmdLineArgs() {
         return args;
     }
 
+    @Override
     public File getInstallRoot() {
         return StartupContextUtil.getInstallRoot(startupContext);
     }
 
+    @Override
     public String getInstanceName() {
         return env.getInstanceName();
     }
 
+    @Override
     public String getServerConfigURL() {
         File domainXML = new File(instanceRoot, ServerEnvironmentImpl.kConfigDirName);
         domainXML = new File(domainXML, ServerEnvironmentImpl.kConfigXMLFileName);
         return domainXML.toURI().toString();
     }
 
+    @Override
     public com.sun.enterprise.config.serverbeans.Server getConfigBean() {
         return services.getService(com.sun.enterprise.config.serverbeans.Server.class);
     }
 
+    @Override
     public InitialContext getInitialContext() {
         GlassfishNamingManager gfNamingManager = 
             services.getService(GlassfishNamingManager.class);
         return (InitialContext)gfNamingManager.getInitialContext();
     }
 
+    @Override
     public ClassLoader getCommonClassLoader() {
         return services.<CommonClassLoaderServiceImpl>getService(CommonClassLoaderServiceImpl.class).getCommonClassLoader();
     }
 
+    @Override
     public ClassLoader getSharedClassLoader() {
         return services.<ClassLoaderHierarchy>getService(ClassLoaderHierarchy.class).getConnectorClassLoader(null);
     }
 
+    @Override
     public ClassLoader getLifecycleParentClassLoader() {
         return services.<ClassLoaderHierarchy>getService(ClassLoaderHierarchy.class).getConnectorClassLoader(null);
     }
 
+    @Override
     public InvocationManager getInvocationManager() {
         return services.getService(InvocationManager.class);
     }
 
+    @Override
     public String getDefaultDomainName() {
         return "glassfish-web";
     }
@@ -146,6 +158,7 @@ public class ServerContextImpl implements ServerContext, PostConstruct {
      * Returns the default services for this instance
      * @return default services
      */
+    @Override
     public ServiceLocator getDefaultServices() {
         return services;
         

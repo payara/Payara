@@ -148,6 +148,7 @@ public class SingleSignOn
     /**
      * Return the debugging detail level.
      */
+    @Override
     public int getDebug() {
         return (this.debug);
     }
@@ -157,6 +158,7 @@ public class SingleSignOn
      *
      * @param debug The new debugging detail level
      */
+    @Override
     public void setDebug(int debug) {
         this.debug = debug;
     }
@@ -213,6 +215,7 @@ public class SingleSignOn
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
         // START CR 6411114
         if (started)            // Ignore multiple starts
@@ -234,6 +237,7 @@ public class SingleSignOn
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
     public void stop() throws LifecycleException {
         // START CR 6411114
         if (!started)       // Ignore stop if not started
@@ -257,6 +261,7 @@ public class SingleSignOn
      *
      * @param event SessionEvent that has occurred
      */
+    @Override
     public void sessionEvent(SessionEvent event) {
 
         // We only care about session destroyed events
@@ -284,6 +289,7 @@ public class SingleSignOn
     /**
      * Return descriptive information about this Valve implementation.
      */
+    @Override
     public String getInfo() {
 
         return (info);
@@ -300,6 +306,7 @@ public class SingleSignOn
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet error occurs
      */
+    @Override
     public int invoke(Request request, Response response)
         throws IOException, ServletException {
 
@@ -399,6 +406,7 @@ public class SingleSignOn
     /**
      * Return a String rendering of this object.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("SingleSignOn[");

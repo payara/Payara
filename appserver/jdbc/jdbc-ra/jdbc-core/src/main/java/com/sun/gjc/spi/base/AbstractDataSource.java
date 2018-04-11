@@ -109,6 +109,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
      * @return <code> Connection </code> object.
      * @throws SQLException In case of an error.
      */
+    @Override
     public Connection getConnection() throws SQLException {
         try {
             ConnectionHolder con = (ConnectionHolder)
@@ -140,6 +141,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
      * @return <code> Connection </code> object.
      * @throws SQLException In case of an error.
      */
+    @Override
     public Connection getConnection(String user, String pwd) throws SQLException {
         try {
             ConnectionRequestInfoImpl info = new ConnectionRequestInfoImpl(user, pwd.toCharArray());
@@ -163,6 +165,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
      * @throws <code>java.sql.SQLException</code>
      *          If connection cannot be obtained.
      */
+    @Override
     public Connection getConnection(Connection con) throws SQLException {
 
         Connection driverCon = con;
@@ -184,6 +187,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
      * @throws <code>java.sql.SQLException</code>
      *          If connection cannot be obtained
      */
+    @Override
     public Connection getNonTxConnection() throws SQLException {
         try {
             ConnectionHolder con = (ConnectionHolder)
@@ -211,6 +215,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
      * @throws <code>java.sql.SQLException</code>
      *          If connection cannot be obtained
      */
+    @Override
     public Connection getNonTxConnection(String user, String password) throws SQLException {
         try {
             ConnectionRequestInfoImpl cxReqInfo = new ConnectionRequestInfoImpl(user, password.toCharArray());
@@ -233,6 +238,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
      * @return login timeout.
      * @throws SQLException If a database error occurs.
      */
+    @Override
     public int getLoginTimeout() throws SQLException {
         return loginTimeout;
     }
@@ -243,6 +249,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
      * @param loginTimeout Login timeout.
      * @throws SQLException If a database error occurs.
      */
+    @Override
     public void setLoginTimeout(int loginTimeout) throws SQLException {
         this.loginTimeout = loginTimeout;
     }
@@ -253,6 +260,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
      * @return <code> PrintWriter </code> object.
      * @throws SQLException If a database error occurs.
      */
+    @Override
     public PrintWriter getLogWriter() throws SQLException {
         return logWriter;
     }
@@ -263,6 +271,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
      * @param logWriter object.
      * @throws SQLException If a database error occurs.
      */
+    @Override
     public void setLogWriter(PrintWriter logWriter) throws SQLException {
         this.logWriter = logWriter;
     }
@@ -290,6 +299,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
      *
      * @return <code>Reference</code>object.
      */
+    @Override
     public Reference getReference() {
         return reference;
     }
@@ -299,6 +309,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
      *
      * @param reference <code>Reference</code> object.
      */
+    @Override
     public void setReference(Reference reference) {
         this.reference = reference;
     }
@@ -368,6 +379,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
      *
      * @param conn <code>java.sql.Connection</code>
      */
+    @Override
     public void markConnectionAsBad(Connection conn) {
         if (conn instanceof ConnectionHolder) {
             ConnectionHolder userConn = ((ConnectionHolder) conn);

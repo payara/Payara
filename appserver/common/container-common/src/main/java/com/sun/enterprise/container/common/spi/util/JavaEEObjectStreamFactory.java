@@ -103,6 +103,7 @@ public class JavaEEObjectStreamFactory {
             try {
                 oos = (ObjectOutputStream) AccessController.doPrivileged(
                         new PrivilegedExceptionAction() {
+                    @Override
                     public java.lang.Object run()
                     throws Exception {
                         return new JavaEEObjectOutputStream(os, replaceObject, handlers);
@@ -143,6 +144,7 @@ public class JavaEEObjectStreamFactory {
                 try {
                     ois = (ObjectInputStream)AccessController.doPrivileged(
                             new PrivilegedExceptionAction() {
+                        @Override
                         public java.lang.Object run()
                         throws Exception {
                             return new JavaEEObjectInputStream(

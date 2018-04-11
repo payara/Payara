@@ -64,6 +64,7 @@ public class LoggerFactoryiAS extends LoggerFactoryJDK14 {
     }
 
     
+    @Override
     protected String getDomainRoot() {
         return DOMAIN_ROOT;
     }
@@ -80,10 +81,11 @@ public class LoggerFactoryiAS extends LoggerFactoryJDK14 {
      * @param bundleName the fully qualified name of the resource bundle
      * @return the logger
      */  
+    @Override
     protected LoggerJDK14 createLogger (final String absoluteLoggerName, 
                                         final String bundleName) {
-        return (LoggerJDK14) AccessController.doPrivileged ( 
-            new PrivilegedAction () {
+        return (LoggerJDK14) AccessController.doPrivileged (new PrivilegedAction () {
+            @Override
                 public Object run () {
                     LoggerJDK14 result = new LoggerJDK14(absoluteLoggerName, bundleName);
                     //Handlers and Formatters will be set in addLogger().
@@ -98,6 +100,7 @@ public class LoggerFactoryiAS extends LoggerFactoryJDK14 {
     /**
      * This method is a no-op in the Sun ONE Application server.
      */
+    @Override
     protected void configureFileHandler(LoggerJDK14 logger) {
     }    
 

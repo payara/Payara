@@ -192,6 +192,7 @@ public class Response
     /**
      * Return the Connector through which this Request was received.
      */
+    @Override
     public Connector getConnector() {
         return this.connector;
     }
@@ -201,6 +202,7 @@ public class Response
      *
      * @param connector The new connector
      */
+    @Override
     public void setConnector(Connector connector) {
         this.connector = connector;
     }
@@ -232,6 +234,7 @@ public class Response
     /**
      * Return the Context within which this Request is being processed.
      */
+    @Override
     public Context getContext() {
         /*
          * Ideally, we would call CoyoteResponse.setContext() from
@@ -252,6 +255,7 @@ public class Response
      *
      * @param context The newly associated Context
      */
+    @Override
     public void setContext(Context context) {
         this.context = context;
     }
@@ -343,6 +347,7 @@ public class Response
      * Release all object references, and initialize instance variables, in
      * preparation for reuse of this object.
      */
+    @Override
     public void recycle() {
 
         if (request != null && request.isAsyncStarted()) {
@@ -386,6 +391,7 @@ public class Response
     /**
      * Return the number of bytes actually written to the output stream.
      */
+    @Override
     public int getContentCount() {
         return outputBuffer.getContentWritten();
     }
@@ -396,6 +402,7 @@ public class Response
      * 
      * @param appCommitted The new application committed flag value
      */
+    @Override
     public void setAppCommitted(boolean appCommitted) {
         this.appCommitted = appCommitted;
     }
@@ -404,6 +411,7 @@ public class Response
     /**
      * Application commit flag accessor.
      */
+    @Override
     public boolean isAppCommitted() {
         return this.appCommitted || isCommitted() || isSuspended()
                 || getContentLength() > 0
@@ -414,6 +422,7 @@ public class Response
     /**
      * Return the "processing inside an include" flag.
      */
+    @Override
     public boolean getIncluded() {
         return included;
     }
@@ -425,6 +434,7 @@ public class Response
      * @param included <code>true</code> if we are currently inside a
      *  RequestDispatcher.include(), else <code>false</code>
      */
+    @Override
     public void setIncluded(boolean included) {
         this.included = included;
     }
@@ -435,6 +445,7 @@ public class Response
      * the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
      */
+    @Override
     public String getInfo() {
         return info;
     }
@@ -448,6 +459,7 @@ public class Response
     /**
      * Return the Request with which this Response is associated.
      */
+    @Override
     public org.apache.catalina.Request getRequest() {
         return this.request;
     }
@@ -457,6 +469,7 @@ public class Response
      *
      * @param request The new associated request
      */
+    @Override
     public void setRequest(org.apache.catalina.Request request) {
         if (request instanceof Request) {
             this.request = (Request) request;
@@ -473,6 +486,7 @@ public class Response
      * Return the <code>ServletResponse</code> for which this object
      * is the facade.
      */
+    @Override
     public HttpServletResponse getResponse() {
         if (facade == null) {
             facade = new ResponseFacade(this);
@@ -484,6 +498,7 @@ public class Response
     /**
      * Return the output stream associated with this Response.
      */
+    @Override
     public OutputStream getStream() {
         if (outputStream == null) {
             outputStream = new CoyoteOutputStream(outputBuffer);
@@ -497,6 +512,7 @@ public class Response
      *
      * @param stream The new output stream
      */
+    @Override
     public void setStream(OutputStream stream) {
         // This method is evil
     }
@@ -507,6 +523,7 @@ public class Response
      * 
      * @param suspended The new suspended flag value
      */
+    @Override
     public void setSuspended(boolean suspended) {
         outputBuffer.setSuspended(suspended);
     }
@@ -515,6 +532,7 @@ public class Response
     /**
      * Suspended flag accessor.
      */
+    @Override
     public boolean isSuspended() {
         return outputBuffer.isSuspended();
     }
@@ -523,6 +541,7 @@ public class Response
     /**
      * Set the error flag.
      */
+    @Override
     public void setError() {
         error = true;
     }
@@ -531,6 +550,7 @@ public class Response
     /**
      * Error flag accessor.
      */
+    @Override
     public boolean isError() {
         return error;
     }
@@ -542,6 +562,7 @@ public class Response
      *
      * @param message detail error message
      */
+    @Override
     public void setDetailMessage(String message) {
         this.detailErrorMsg = message;
     }
@@ -552,6 +573,7 @@ public class Response
      *
      * @return the detail error message
      */
+    @Override
     public String getDetailMessage() {
         return this.detailErrorMsg;
     }
@@ -564,6 +586,7 @@ public class Response
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public ServletOutputStream createOutputStream() 
         throws IOException {
         // Probably useless
@@ -580,6 +603,7 @@ public class Response
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public void finishResponse() 
         throws IOException {
 
@@ -597,6 +621,7 @@ public class Response
     /**
      * Return the content length that was set or calculated for this Response.
      */
+    @Override
     public int getContentLength() {
         return coyoteResponse.getContentLength();
     }
@@ -606,6 +631,7 @@ public class Response
      * Return the content type that was set or calculated for this response,
      * or <code>null</code> if no content type was set.
      */
+    @Override
     public String getContentType() {
         return coyoteResponse.getContentType();
     }
@@ -623,6 +649,7 @@ public class Response
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public PrintWriter getReporter() throws IOException {
         if (outputBuffer.isNew()) {
             outputBuffer.checkConverter();
@@ -644,6 +671,7 @@ public class Response
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public void flushBuffer() 
         throws IOException {
         outputBuffer.flush();
@@ -653,6 +681,7 @@ public class Response
     /**
      * Return the actual buffer size used for this Response.
      */
+    @Override
     public int getBufferSize() {
         return outputBuffer.getBufferSize();
     }
@@ -661,6 +690,7 @@ public class Response
     /**
      * Return the character encoding used for this Response.
      */
+    @Override
     public String getCharacterEncoding() {
         return coyoteResponse.getCharacterEncoding();
     }
@@ -673,6 +703,7 @@ public class Response
      *
      * @param charset String containing the name of the character encoding.
      */
+    @Override
     public void setCharacterEncoding(String charset) {
 
         if (isCommitted())
@@ -699,6 +730,7 @@ public class Response
      *  already been called for this response
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public ServletOutputStream getOutputStream() 
         throws IOException {
 
@@ -718,6 +750,7 @@ public class Response
     /**
      * Return the Locale assigned to this response.
      */
+    @Override
     public Locale getLocale() {
         return coyoteResponse.getLocale();
     }
@@ -730,6 +763,7 @@ public class Response
      *  already been called for this response
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public PrintWriter getWriter() 
         throws IOException {
 
@@ -763,6 +797,7 @@ public class Response
     /**
      * Has the output of this response already been committed?
      */
+    @Override
     public boolean isCommitted() {
         return coyoteResponse.isCommitted();
     }
@@ -774,6 +809,7 @@ public class Response
      * @exception IllegalStateException if this response has already
      *  been committed
      */
+    @Override
     public void reset() {
 
         if (included)
@@ -795,6 +831,7 @@ public class Response
      * @exception IllegalStateException if the response has already
      *  been committed
      */
+    @Override
     public void resetBuffer() {
         resetBuffer(false);
     }
@@ -811,6 +848,7 @@ public class Response
      * @exception IllegalStateException if the response has already
      *  been committed
      */
+    @Override
     public void resetBuffer(boolean resetWriterStreamFlags) {
 
         if (isCommitted())
@@ -835,6 +873,7 @@ public class Response
      * @exception IllegalStateException if this method is called after
      *  output has been committed for this response
      */
+    @Override
     public void setBufferSize(int size) {
 
         if (isCommitted() || !outputBuffer.isNew())
@@ -850,6 +889,7 @@ public class Response
      *
      * @param length The new content length
      */
+    @Override
     public void setContentLength(int length) {
 
         setContentLengthLong(length);
@@ -863,6 +903,7 @@ public class Response
      *
      * @param length The new content length
      */
+    @Override
     public void setContentLengthLong(long length) {
 
         if (isCommitted())
@@ -885,6 +926,7 @@ public class Response
      *
      * @param type The new content type
      */
+    @Override
     public void setContentType(String type) {
 
         if (isCommitted())
@@ -939,6 +981,7 @@ public class Response
      *
      * @param locale The new locale
      */
+    @Override
     public void setLocale(Locale locale) {
 
         if (isCommitted())
@@ -979,6 +1022,7 @@ public class Response
      *
      * @param name Header name to look up
      */
+    @Override
     public String getHeader(String name) {
         return coyoteResponse.getHeader(name);
     }
@@ -988,6 +1032,7 @@ public class Response
      * @return a (possibly empty) <code>Collection</code> of the names
      * of the headers of this response
      */
+    @Override
     public Collection<String> getHeaderNames() {
         final Collection<String> result = new ArrayList<String>();
         for (final String headerName : coyoteResponse.getResponse().getHeaders().names()) {
@@ -1004,6 +1049,7 @@ public class Response
      * @return a (possibly empty) <code>Collection</code> of the values
      * of the response header with the given name
      */
+    @Override
     public Collection<String> getHeaders(String name) {
         final Collection<String> result = new ArrayList<String>();
         for (final String headerValue : coyoteResponse.getResponse().getHeaders().values(name)) {
@@ -1018,6 +1064,7 @@ public class Response
      * Return the error message that was set with <code>sendError()</code>
      * for this Response.
      */
+    @Override
     public String getMessage() {
         return coyoteResponse.getMessage();
     }
@@ -1026,6 +1073,7 @@ public class Response
     /**
      * Return the HTTP status code associated with this Response.
      */
+    @Override
     public int getStatus() {
         return coyoteResponse.getStatus();
     }
@@ -1038,6 +1086,7 @@ public class Response
      * @exception IllegalStateException if this response has already been
      *  committed
      */
+    @Override
     public void reset(int status, String message) {
         reset();
         setStatus(status, message);
@@ -1053,6 +1102,7 @@ public class Response
      *
      * @param cookie Cookie to be added
      */
+    @Override
     public void addCookie(final Cookie cookie) {
 
         if (isCommitted())
@@ -1102,6 +1152,7 @@ public class Response
      * any previous 
      * @param cookie
      */
+    @Override
     public void addSessionCookieInternal(final Cookie cookie) {
         if (isCommitted())
             return;
@@ -1134,6 +1185,7 @@ public class Response
      * @param name Name of the header to set
      * @param value Date value to be set
      */
+    @Override
     public void addDateHeader(String name, long value) {
 
         if (name == null || name.length() == 0) {
@@ -1165,6 +1217,7 @@ public class Response
      * @param name Name of the header to set
      * @param value Value to be set
      */
+    @Override
     public void addHeader(String name, String value) {
 
         if (name == null || name.length() == 0 || value == null) {
@@ -1189,6 +1242,7 @@ public class Response
      * @param name Name of the header to set
      * @param value Integer value to be set
      */
+    @Override
     public void addIntHeader(String name, int value) {
 
         if (name == null || name.length() == 0) {
@@ -1212,6 +1266,7 @@ public class Response
      *
      * @param name Name of the header to check
      */
+    @Override
     public boolean containsHeader(String name) {
         return coyoteResponse.containsHeader(name);
     }
@@ -1223,6 +1278,7 @@ public class Response
      *
      * @param url URL to be encoded
      */
+    @Override
     public String encodeRedirectURL(String url) {
         if (isEncodeable(toAbsolute(url))) {
             String sessionVersion = null;
@@ -1256,6 +1312,7 @@ public class Response
      * @deprecated As of Version 2.1 of the Java Servlet API, use
      *  <code>encodeRedirectURL()</code> instead.
      */
+    @Override
     public String encodeRedirectUrl(String url) {
         return encodeRedirectURL(url);
     }
@@ -1267,6 +1324,7 @@ public class Response
      *
      * @param url URL to be encoded
      */
+    @Override
     public String encodeURL(String url) {
         String absolute = toAbsolute(url);
         if (isEncodeable(absolute)) {
@@ -1301,6 +1359,7 @@ public class Response
      * @deprecated As of Version 2.1 of the Java Servlet API, use
      *  <code>encodeURL()</code> instead.
      */
+    @Override
     public String encodeUrl(String url) {
         return encodeURL(url);
     }
@@ -1312,6 +1371,7 @@ public class Response
      *
      * @param url URL to be encoded
      */
+    @Override
     public String encode(String url) {
         return urlEncoder.encodeURL(url);
     }
@@ -1322,6 +1382,7 @@ public class Response
      * 
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public void sendAcknowledgement()
         throws IOException {
 
@@ -1347,6 +1408,7 @@ public class Response
      *  already been committed
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public void sendError(int status) 
         throws IOException {
         sendError(status, null);
@@ -1363,6 +1425,7 @@ public class Response
      *  already been committed
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public void sendError(int status, String message) 
         throws IOException {
 
@@ -1399,6 +1462,7 @@ public class Response
      *  already been committed
      * @throws IOException if an input/output error occurs
      */
+    @Override
     public void sendRedirect(String location) throws IOException {
         sendRedirect(location, true);
     }
@@ -1492,6 +1556,7 @@ public class Response
      * @param name Name of the header to set
      * @param value Date value to be set
      */
+    @Override
     public void setDateHeader(String name, long value) {
 
         if (name == null || name.length() == 0) {
@@ -1523,6 +1588,7 @@ public class Response
      * @param name Name of the header to set
      * @param value Value to be set
      */
+    @Override
     public void setHeader(String name, String value) {
 
         if (name == null || name.length() == 0 || value == null) {
@@ -1547,6 +1613,7 @@ public class Response
      * @param name Name of the header to set
      * @param value Integer value to be set
      */
+    @Override
     public void setIntHeader(String name, int value) {
 
         if (name == null || name.length() == 0) {
@@ -1570,6 +1637,7 @@ public class Response
      *
      * @param status The new HTTP status
      */
+    @Override
     public void setStatus(int status) {
         setStatus(status, null);
     }
@@ -1585,6 +1653,7 @@ public class Response
      *  has been deprecated due to the ambiguous meaning of the message
      *  parameter.
      */
+    @Override
     public void setStatus(int status, String message) {
 
         if (isCommitted())
@@ -1769,6 +1838,7 @@ public class Response
                         try{
                             encodedURI = AccessController.doPrivileged( 
                                 new PrivilegedExceptionAction<String>(){                                
+                                    @Override
                                     public String run() throws IOException{
                                         return urlEncoder.encodeURL(frelativePath);
                                     }
@@ -1934,6 +2004,7 @@ public class Response
         if (SecurityUtil.isPackageProtectionEnabled()) {
             cookieValue = AccessController.doPrivileged(
                 new PrivilegedAction<String>() {
+                    @Override
                     public String run(){
                         CookieSerializerUtils.serializeServerCookie(
                             sb, versionOneStrictCompliance, rfc6265Support,

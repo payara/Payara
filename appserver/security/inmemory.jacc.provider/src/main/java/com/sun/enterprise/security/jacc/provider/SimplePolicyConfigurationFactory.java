@@ -100,6 +100,7 @@ public class SimplePolicyConfigurationFactory extends PolicyConfigurationFactory
      *             getPolicyConfiguration method signature. The exception thrown by the implementation class will be
      *             encapsulated (during construction) in the thrown PolicyContextException.
      */
+    @Override
     public PolicyConfiguration getPolicyConfiguration(String contextID, boolean remove) throws PolicyContextException {
         return SimplePolicyConfiguration.getPolicyConfig(contextID, remove);
     }
@@ -123,6 +124,7 @@ public class SimplePolicyConfigurationFactory extends PolicyConfigurationFactory
      *             signature. The exception thrown by the implementation class will be encapsulated (during construction) in
      *             the thrown PolicyContextException.
      */
+    @Override
     public boolean inService(String contextID) throws PolicyContextException {
         return SimplePolicyConfiguration.inService(contextID);
     }

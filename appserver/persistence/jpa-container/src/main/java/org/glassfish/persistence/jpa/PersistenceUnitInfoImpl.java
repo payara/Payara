@@ -117,6 +117,7 @@ public class PersistenceUnitInfoImpl implements PersistenceUnitInfo {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getPersistenceUnitName() {
         return persistenceUnitDescriptor.getName();
     }
@@ -124,6 +125,7 @@ public class PersistenceUnitInfoImpl implements PersistenceUnitInfo {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getPersistenceProviderClassName() {
         return getPersistenceProviderClassNameForPuDesc(persistenceUnitDescriptor);
     }
@@ -131,6 +133,7 @@ public class PersistenceUnitInfoImpl implements PersistenceUnitInfo {
     /**
      * {@inheritDoc}
      */
+    @Override
     public PersistenceUnitTransactionType getTransactionType() {
         return PersistenceUnitTransactionType.valueOf(
                 persistenceUnitDescriptor.getTransactionType());
@@ -139,6 +142,7 @@ public class PersistenceUnitInfoImpl implements PersistenceUnitInfo {
     /**
      * {@inheritDoc}
      */
+    @Override
     public DataSource getJtaDataSource() {
         return jtaDataSource;
     }
@@ -146,10 +150,12 @@ public class PersistenceUnitInfoImpl implements PersistenceUnitInfo {
     /**
      * {@inheritDoc}
      */
+    @Override
     public DataSource getNonJtaDataSource() {
         return nonJtaDataSource;
     }
 
+    @Override
     public URL getPersistenceUnitRootUrl() {
         try {
             return getAbsolutePuRootFile().toURI().toURL();
@@ -161,6 +167,7 @@ public class PersistenceUnitInfoImpl implements PersistenceUnitInfo {
     /**
      * {@inheritDoc}
      */
+    @Override
     public List<String> getMappingFileNames() {
         return persistenceUnitDescriptor.getMappingFiles(); // its already unmodifiable
     }
@@ -168,6 +175,7 @@ public class PersistenceUnitInfoImpl implements PersistenceUnitInfo {
     /**
      * {@inheritDoc}
      */
+    @Override
     public List<URL> getJarFileUrls() {
         return jarFiles;
     }
@@ -175,18 +183,22 @@ public class PersistenceUnitInfoImpl implements PersistenceUnitInfo {
     /**
      * {@inheritDoc}
      */
+    @Override
     public List<String> getManagedClassNames() {
         return persistenceUnitDescriptor.getClasses(); // its already unmodifiable
     }
 
+    @Override
     public boolean excludeUnlistedClasses() {
         return persistenceUnitDescriptor.isExcludeUnlistedClasses();
     }
 
+    @Override
     public SharedCacheMode getSharedCacheMode() {
         return persistenceUnitDescriptor.getSharedCacheMode();
     }
 
+    @Override
     public ValidationMode getValidationMode() {
         return persistenceUnitDescriptor.getValidationMode();
     }
@@ -194,10 +206,12 @@ public class PersistenceUnitInfoImpl implements PersistenceUnitInfo {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Properties getProperties() {
         return persistenceUnitDescriptor.getProperties(); // its already a clone
     }
 
+    @Override
     public String getPersistenceXMLSchemaVersion() {
         return persistenceUnitDescriptor.getParent().getSpecVersion();
     }
@@ -205,6 +219,7 @@ public class PersistenceUnitInfoImpl implements PersistenceUnitInfo {
     /**
      * {@inheritDoc}
      */
+    @Override
     public ClassLoader getClassLoader() {
         return providerContainerContractInfo.getClassLoader();
     }
@@ -212,6 +227,7 @@ public class PersistenceUnitInfoImpl implements PersistenceUnitInfo {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void addTransformer(ClassTransformer transformer) {
         providerContainerContractInfo.addTransformer(transformer);
     }
@@ -219,6 +235,7 @@ public class PersistenceUnitInfoImpl implements PersistenceUnitInfo {
     /**
      * {@inheritDoc}
      */
+    @Override
     public ClassLoader getNewTempClassLoader() {
         return providerContainerContractInfo.getTempClassloader();
     }

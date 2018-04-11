@@ -76,6 +76,7 @@ public class LockHandler extends AbstractAttributeHandler
     public LockHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 
@@ -120,12 +121,14 @@ public class LockHandler extends AbstractAttributeHandler
      *         require to be processed (if present) before it processes it's own
      *         annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
 
         return new Class[]{Singleton.class, ConcurrencyManagement.class};
 
     }
 
+    @Override
     protected boolean supportTypeInheritance() {
         return true;
     }
@@ -134,6 +137,7 @@ public class LockHandler extends AbstractAttributeHandler
      * Set the default value (from class type annotation) on all
      * methods that don't have a value.
      */
+    @Override
     public void postProcessAnnotation(AnnotationInfo ainfo, EjbContext ejbContext)
             throws AnnotationProcessorException {
         EjbSessionDescriptor ejbDesc = (EjbSessionDescriptor) ejbContext.getDescriptor();

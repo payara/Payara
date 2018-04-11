@@ -107,6 +107,7 @@ public class DeleteConnectorResource implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
@@ -172,6 +173,7 @@ public class DeleteConnectorResource implements AdminCommand {
 
             // delete connector-resource
             if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     ConnectorResource resource = (ConnectorResource)
                             ConnectorsUtil.getResourceByName(domain.getResources(), ConnectorResource.class, jndiName );

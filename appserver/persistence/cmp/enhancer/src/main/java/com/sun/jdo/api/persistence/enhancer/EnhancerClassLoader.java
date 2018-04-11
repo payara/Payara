@@ -333,6 +333,7 @@ public class EnhancerClassLoader extends URLClassLoader {
      *
      * @param url the URL to be added to the search path of URLs
      */
+    @Override
     protected void addURL(URL url) {
         throw new UnsupportedOperationException("Not implemented yet: EnhancerClassLoader.addURL(URL)");//NOI18N
         //super.addURL(url);
@@ -388,6 +389,7 @@ public class EnhancerClassLoader extends URLClassLoader {
         message("EnhancerClassLoader: jdoMetaData = " + metaData);//NOI18N
     }
 
+    @Override
     public synchronized Class loadClass(String name, boolean resolve)
         throws ClassNotFoundException {
         message();
@@ -533,6 +535,7 @@ public class EnhancerClassLoader extends URLClassLoader {
             }
             return (Class)
             AccessController.doPrivileged(new PrivilegedExceptionAction() {
+                @Override
                 public Object run() throws ClassNotFoundException {
                     String path = name.replace('.', '/').concat(".class");//NOI18N
                     //message("path=" + path);

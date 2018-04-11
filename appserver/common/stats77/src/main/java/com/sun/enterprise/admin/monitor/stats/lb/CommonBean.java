@@ -51,14 +51,17 @@ public interface CommonBean {
 
 	public void childBeans(boolean recursive, java.util.List beans);
 
+        @Override
 	public boolean equals(Object o);
 
 	public Object fetchPropertyByName(String name);
 
+        @Override
 	public int hashCode();
 
 	public void readNode(org.w3c.dom.Node node);
 
+        @Override
 	public String toString();
 
 	public void validate() throws com.sun.enterprise.admin.monitor.stats.lb.LoadBalancerStats.ValidateException;

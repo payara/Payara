@@ -48,10 +48,12 @@ import org.glassfish.api.deployment.Deployer;
 @Service(name="appclient")
 public class AppClientContainerStarter implements Container {
 
+    @Override
     public String getName() {
         return "appclient";
     }
 
+    @Override
     public Class<? extends Deployer> getDeployer() {
         return AppClientDeployer.class;
     }

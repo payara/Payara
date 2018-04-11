@@ -64,6 +64,7 @@ public class WebServiceRuntimeNode extends DeploymentDescriptorNode {
 
     private WebService descriptor;
 
+    @Override
     public Object getDescriptor() {
         return descriptor;
     }
@@ -75,6 +76,7 @@ public class WebServiceRuntimeNode extends DeploymentDescriptorNode {
      * @param value it's associated value
      */
 
+    @Override
     public void setElementValue(XMLElement element, String value) {
         if (WebServicesTagNames.WEB_SERVICE_DESCRIPTION_NAME.equals
             (element.getQName())) {

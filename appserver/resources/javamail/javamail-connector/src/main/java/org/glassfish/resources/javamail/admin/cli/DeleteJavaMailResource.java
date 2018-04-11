@@ -104,6 +104,7 @@ public class DeleteJavaMailResource implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
@@ -155,6 +156,7 @@ public class DeleteJavaMailResource implements AdminCommand {
 
             // delete java-mail-resource
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                @Override
                 public Object run(Resources param) throws PropertyVetoException,
                         TransactionFailure {
                     MailResource resource = (MailResource)

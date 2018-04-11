@@ -62,6 +62,7 @@ public class HandlerResolverImpl implements HandlerResolver {
         chainMap = new HashMap<PortInfo, List<Handler>>();
     }
 
+    @Override
     public List<Handler> getHandlerChain(PortInfo info) {
         Iterator<PortInfo> piSet = chainMap.keySet().iterator();
         List<Handler> chain = null;

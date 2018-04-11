@@ -71,6 +71,7 @@ public class PoolWaitQueueFactory {
 
     private static PoolWaitQueue initializeCustomWaitQueueInPrivilegedMode(final String className) throws PoolingException {
         Object result = AccessController.doPrivileged(new PrivilegedAction() {
+            @Override
             public Object run() {
 
                 Object result = null;

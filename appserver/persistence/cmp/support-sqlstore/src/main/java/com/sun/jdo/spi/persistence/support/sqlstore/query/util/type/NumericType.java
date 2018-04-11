@@ -67,6 +67,7 @@ public abstract class NumericType
     /**
      * A numeric type defines an ordering.
      */
+    @Override
     public boolean isOrderable()
     {
         return true;
@@ -79,6 +80,7 @@ public abstract class NumericType
      * @param value value to be converted
      * @return converted value
      */
+    @Override
     public abstract Number getValue(Number value);
 
     /**
@@ -86,6 +88,7 @@ public abstract class NumericType
      * @param value value to be negated
      * @return -value
      */
+    @Override
     public abstract Number negate(Number value);
    
 }

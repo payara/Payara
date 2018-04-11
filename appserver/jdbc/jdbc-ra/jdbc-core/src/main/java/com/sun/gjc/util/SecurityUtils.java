@@ -95,6 +95,7 @@ public class SecurityUtils {
             } else {
                 PasswordCredential pc = (PasswordCredential) AccessController.doPrivileged
                         (new PrivilegedAction() {
+                            @Override
                             public Object run() {
                                 Set passwdCredentialSet = subject.getPrivateCredentials(PasswordCredential.class);
                                 Iterator iter = passwdCredentialSet.iterator();

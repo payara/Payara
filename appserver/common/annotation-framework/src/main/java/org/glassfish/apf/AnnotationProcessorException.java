@@ -83,6 +83,7 @@ public class AnnotationProcessorException extends Exception {
      * Return a meaningful string explaining the exception cause
      * @return the exception reason
      */
+    @Override
     public String getMessage() {
         return message;
     }
@@ -99,6 +100,7 @@ public class AnnotationProcessorException extends Exception {
     /**
      * @return a meaningful description
      */
+    @Override
     public String toString() {
         if (locator == null) {
             return message;

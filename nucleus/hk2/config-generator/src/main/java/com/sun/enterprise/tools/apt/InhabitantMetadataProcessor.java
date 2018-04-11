@@ -143,6 +143,7 @@ public class InhabitantMetadataProcessor extends TypeHierarchyVisitor<MultiMap<S
         return r;
     }
 
+    @Override
     protected void check(TypeElement d, MultiMap<String, String> result) {
         checkAnnotations(d, result);
         super.check(d,result);

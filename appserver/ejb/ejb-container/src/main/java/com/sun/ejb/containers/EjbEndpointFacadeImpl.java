@@ -71,6 +71,7 @@ public class EjbEndpointFacadeImpl implements EjbEndpointFacade {
     }
 
 
+    @Override
     public ClassLoader getEndpointClassLoader() {
 
         return container_.getClassLoader();
@@ -78,6 +79,7 @@ public class EjbEndpointFacadeImpl implements EjbEndpointFacade {
     }
 
 
+    @Override
     public ComponentInvocation startInvocation() {
 
         // We need to split the preInvoke tasks into stages since handlers
@@ -106,6 +108,7 @@ public class EjbEndpointFacadeImpl implements EjbEndpointFacade {
     }
 
     
+    @Override
     public void endInvocation(ComponentInvocation inv) {
 
         try {

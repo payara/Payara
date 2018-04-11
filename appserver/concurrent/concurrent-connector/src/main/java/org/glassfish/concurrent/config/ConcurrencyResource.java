@@ -109,5 +109,6 @@ public interface ConcurrencyResource extends PropertyBag  {
         Properties as per {@link PropertyBag}
      */
     @Element
+    @Override
     List<Property> getProperty();
 }

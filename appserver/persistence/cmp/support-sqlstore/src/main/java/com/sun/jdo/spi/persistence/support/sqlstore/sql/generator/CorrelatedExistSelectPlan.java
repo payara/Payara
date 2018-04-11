@@ -70,6 +70,7 @@ public class CorrelatedExistSelectPlan extends CorrelatedSelectPlan {
      * This method just adds the table for the nested select.
      * The statement for nested select is created as a side effect.
      */
+    @Override
     protected void processFields() {
         for (int i = 0; i < parentField.foreignFields.size(); i++) {
             LocalFieldDesc field = (LocalFieldDesc) parentField.foreignFields.get(i);
@@ -81,6 +82,7 @@ public class CorrelatedExistSelectPlan extends CorrelatedSelectPlan {
      * The correlated constraint joining this subquery with the parent field.
      * The joined table is added as a side-effect.
      */
+    @Override
     protected void doCorrelatedJoin() {
         ArrayList foreignFields = null;
 
@@ -107,6 +109,7 @@ public class CorrelatedExistSelectPlan extends CorrelatedSelectPlan {
         }
     }
 
+    @Override
     protected Statement newStatement() {
         return new SelectOneStatement(store.getVendorType(), this);
     }

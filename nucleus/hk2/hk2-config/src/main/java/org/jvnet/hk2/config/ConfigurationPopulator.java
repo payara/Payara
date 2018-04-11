@@ -53,6 +53,7 @@ import org.jvnet.hk2.annotations.Service;
 public class ConfigurationPopulator
     implements ConfigPopulator {
     
+    @Override
     public void populateConfig(ServiceLocator serviceLocator) {
         for (Populator p : serviceLocator.<Populator>getAllServices(Populator.class)) {
             p.run(new ConfigParser(serviceLocator));

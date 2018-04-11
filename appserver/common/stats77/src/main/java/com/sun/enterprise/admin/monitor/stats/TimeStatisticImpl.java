@@ -58,6 +58,7 @@ public class TimeStatisticImpl extends StatisticImpl implements TimeStatistic {
     private static final StringManager localStrMgr = 
                 StringManager.getManager(TimeStatisticImpl.class);
 
+    @Override
     public final String toString() {
         return super.toString() + NEWLINE + 
             "Count: " + getCount() + NEWLINE +
@@ -121,6 +122,7 @@ public class TimeStatisticImpl extends StatisticImpl implements TimeStatistic {
      * Returns the number of times an operation was invoked 
      * @return long indicating the number of invocations 
      */
+    @Override
     public long getCount() {
         return count;
     }
@@ -130,6 +132,7 @@ public class TimeStatisticImpl extends StatisticImpl implements TimeStatistic {
      * operation, since measurement started.
      * @return long indicating the maximum time for one invocation
      */
+    @Override
     public long getMaxTime() {
         return maxTime;
     }
@@ -139,6 +142,7 @@ public class TimeStatisticImpl extends StatisticImpl implements TimeStatistic {
      * operation, since measurement started.
      * @return long indicating the minimum time for one invocation 
      */
+    @Override
     public long getMinTime() {
         return minTime;
     }    
@@ -148,6 +152,7 @@ public class TimeStatisticImpl extends StatisticImpl implements TimeStatistic {
      * since measurement started.
      * @return long indicating the total time for all invocation 
      */
+    @Override
     public long getTotalTime() {
         return totTime;
     }

@@ -78,6 +78,7 @@ public final class HttpDigestParamGenerator extends DigestParameterGenerator {
     }
 
 
+    @Override
     public com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter[] generateParameters(AlgorithmParameterSpec param) throws InvalidAlgorithmParameterException {
         javax.servlet.ServletInputStream sis = null;
 

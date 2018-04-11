@@ -46,6 +46,7 @@ public class RedeployTask extends DeployTask {
         setAction("redeploy");
     }
 
+    @Override
     public void setForce(boolean force) {
         optionIgnored("force");
     }

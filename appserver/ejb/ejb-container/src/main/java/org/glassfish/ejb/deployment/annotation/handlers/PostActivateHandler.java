@@ -66,6 +66,7 @@ public class PostActivateHandler extends AbstractAttributeHandler {
     public PostActivateHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 
@@ -82,6 +83,7 @@ public class PostActivateHandler extends AbstractAttributeHandler {
         return getDefaultProcessedResult();        
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbInterceptorContext ejbInterceptorContext)
             throws AnnotationProcessorException {
@@ -107,10 +109,12 @@ public class PostActivateHandler extends AbstractAttributeHandler {
      * require to be processed (if present) before it processes it's own 
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAnnotationTypes();
     }
 
+    @Override
     protected boolean isDelegatee() {
         return true;
     }

@@ -122,6 +122,7 @@ public class ClassLoaderHierarchyImpl implements ClassLoaderHierarchy {
             return connectorCLS.getConnectorClassLoader(application);
         }else{
             return AccessController.doPrivileged(new PrivilegedAction<DelegatingClassLoader>() {
+                @Override
                 public DelegatingClassLoader run() {
                     return new DelegatingClassLoader(commonCLS.getCommonClassLoader());
                 }

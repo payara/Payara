@@ -106,6 +106,7 @@ public final class ListClustersCommand implements AdminCommand {
     @Inject
     private Clusters allClusters;
 
+    @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);

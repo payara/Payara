@@ -155,6 +155,7 @@ public class AutoUndeploymentOperation extends AutoOperation {
     /**
      * {@inheritDoc}
      */
+    @Override
     protected String getMessageString(AutodeploymentStatus ds, File file) {
         return localStrings.getLocalString(
                 ds.undeploymentMessageKey, 
@@ -165,6 +166,7 @@ public class AutoUndeploymentOperation extends AutoOperation {
     /**
      * {@inheritDoc}
      */
+    @Override
     protected void markFiles(AutodeploymentStatus ds, File file) {
         /*
          * Before managing the marker file for the app, see if 

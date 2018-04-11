@@ -67,6 +67,7 @@ public class PrincipalNameNode  extends RuntimeDescriptorNode {
      * @param element the xml element                
      * @param value it's associated value
      */    
+    @Override
     public void setElementValue(XMLElement element, String value) {   
         PrincipalNameDescriptor principal = 
                 (PrincipalNameDescriptor) getDescriptor();
@@ -87,6 +88,7 @@ public class PrincipalNameNode  extends RuntimeDescriptorNode {
      * @param the attribute value
      * @return true if the attribute was processed
      */ 
+    @Override
     protected boolean setAttributeValue(
             XMLElement element, XMLElement attribute, String value) {
 

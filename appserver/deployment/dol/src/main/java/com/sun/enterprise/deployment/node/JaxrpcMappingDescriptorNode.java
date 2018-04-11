@@ -105,6 +105,7 @@ public class JaxrpcMappingDescriptorNode extends AbstractBundleNode
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return ROOT_ELEMENT;
     }
@@ -112,6 +113,7 @@ public class JaxrpcMappingDescriptorNode extends AbstractBundleNode
     /**
      * @return the DOCTYPE of the XML file
      */
+    @Override
     public String getDocType() {
         return null;
     }
@@ -119,6 +121,7 @@ public class JaxrpcMappingDescriptorNode extends AbstractBundleNode
     /**
      * @return the SystemID of the XML file
      */
+    @Override
     public String getSystemID() {
         return SCHEMA_ID;
     }
@@ -126,6 +129,7 @@ public class JaxrpcMappingDescriptorNode extends AbstractBundleNode
     /**
      * @return the list of SystemID of the XML schema supported
      */
+    @Override
     public List<String> getSystemIDs() {
         return systemIDs;
     }
@@ -133,6 +137,7 @@ public class JaxrpcMappingDescriptorNode extends AbstractBundleNode
         /**
      * @return the complete URL for J2EE schemas
      */
+    @Override
     protected String getSchemaURL() {
        return WebServicesTagNames.IBM_NAMESPACE + "/" + getSystemID();
     }
@@ -140,10 +145,12 @@ public class JaxrpcMappingDescriptorNode extends AbstractBundleNode
    /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
         return descriptor;
     }     
 
+    @Override
     public void startElement(XMLElement element, Attributes attributes) {
         if( complexMapping ) {
             // NOTE : we don't call super.startElement in this case because
@@ -165,6 +172,7 @@ public class JaxrpcMappingDescriptorNode extends AbstractBundleNode
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {   
         if (complexMapping) {
             // We only gather namespace->package mapping. In exhaustive(complex)
@@ -185,6 +193,7 @@ public class JaxrpcMappingDescriptorNode extends AbstractBundleNode
     /**
      * @return the default spec version level this node complies to
      */
+    @Override
     public String getSpecVersion() {
         return "1.1";
     }

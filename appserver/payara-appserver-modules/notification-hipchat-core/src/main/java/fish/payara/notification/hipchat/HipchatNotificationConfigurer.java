@@ -72,6 +72,7 @@ public class HipchatNotificationConfigurer extends BaseNotificationConfigurer<Hi
     @Param(name = "token")
     private String token;
 
+    @Override
     protected void applyValues(HipchatNotifierConfiguration configuration) throws PropertyVetoException {
         if(this.enabled != null) {
             configuration.enabled(this.enabled);

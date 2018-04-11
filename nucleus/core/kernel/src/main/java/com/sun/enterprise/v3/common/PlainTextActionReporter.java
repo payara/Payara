@@ -124,6 +124,7 @@ public class PlainTextActionReporter extends ActionReporter {
         appendMessage(message);
     }
 
+    @Override
     public final String getMessage() {
         return sb.toString();
     }

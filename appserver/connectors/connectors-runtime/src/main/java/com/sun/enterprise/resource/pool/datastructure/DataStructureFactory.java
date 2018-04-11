@@ -85,6 +85,7 @@ public class DataStructureFactory {
                                                                                final String strategyClass)
             throws PoolingException {
         Object result = AccessController.doPrivileged(new PrivilegedAction() {
+            @Override
             public Object run() {
 
                 Object result = null;

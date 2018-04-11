@@ -66,6 +66,7 @@ public class ConnectorRARClassLoader extends SecureClassLoader{
         return (jarResources.getResource(className));
     }
 
+    @Override
     public Class findClass(String name) throws ClassNotFoundException {
         byte[] b = loadClassBytes(name);
         if (b == null) {

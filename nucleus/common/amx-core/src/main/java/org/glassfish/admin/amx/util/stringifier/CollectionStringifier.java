@@ -69,6 +69,7 @@ public class CollectionStringifier implements Stringifier
 		mElementStringifier	= elementStringifier;
 	}
 	
+        @Override
 		public String
 	stringify( Object o )
 	{

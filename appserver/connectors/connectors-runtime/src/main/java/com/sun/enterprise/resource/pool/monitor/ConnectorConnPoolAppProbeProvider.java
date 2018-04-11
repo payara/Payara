@@ -62,6 +62,7 @@ public class ConnectorConnPoolAppProbeProvider extends ConnectionPoolAppProbePro
      * @param appName for which decrement numConnUsed is got
      */
     @Probe(name="decrementConnectionUsedEvent")
+    @Override
     public void decrementConnectionUsedEvent(
             @ProbeParam("poolName") String poolName,
             @ProbeParam("appName") String appName) { }
@@ -75,6 +76,7 @@ public class ConnectorConnPoolAppProbeProvider extends ConnectionPoolAppProbePro
      * @param appName for which increment numConnUsed is got
      */
     @Probe(name="connectionUsedEvent")
+    @Override
     public void connectionUsedEvent(
             @ProbeParam("poolName") String poolName,
             @ProbeParam("appName") String appName) { }
@@ -88,6 +90,7 @@ public class ConnectorConnPoolAppProbeProvider extends ConnectionPoolAppProbePro
      * @param appName
      */
     @Probe(name="connectionAcquiredEvent")
+    @Override
     public void connectionAcquiredEvent(
             @ProbeParam("poolName") String poolName,
             @ProbeParam("appName") String appName) { }
@@ -101,6 +104,7 @@ public class ConnectorConnPoolAppProbeProvider extends ConnectionPoolAppProbePro
      * @param appName
      */
     @Probe(name="connectionReleasedEvent")
+    @Override
     public void connectionReleasedEvent(@ProbeParam("poolName") String poolName,
             @ProbeParam("appName") String appName) { }
 

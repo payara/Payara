@@ -125,6 +125,7 @@ public class EjbApplication
         initializeInOrder = (app != null) && (app.isInitializeInOrder());
     }
     
+    @Override
     public Collection<EjbDescriptor> getDescriptor() {
         return ejbs;
     }
@@ -144,6 +145,7 @@ public class EjbApplication
         }
     }
 
+    @Override
     public boolean start(ApplicationContext startupContext) throws Exception {
         started = true;
 
@@ -250,6 +252,7 @@ public class EjbApplication
         containers.forEach(Container::initialize);
     }
 
+    @Override
     public boolean stop(ApplicationContext stopContext) {
         DeploymentContext depc = (DeploymentContext) stopContext;
         OpsParams params = depc.getCommandParameters(OpsParams.class);
@@ -326,6 +329,7 @@ public class EjbApplication
      *
      * @return true if suspending was successful, false otherwise.
      */
+    @Override
     public boolean suspend() {
         // Not (yet) supported
         return false;
@@ -336,6 +340,7 @@ public class EjbApplication
      *
      * @return true if resumption was successful, false otherwise.
      */
+    @Override
     public boolean resume() {
         // Not (yet) supported
         return false;
@@ -346,6 +351,7 @@ public class EjbApplication
      *
      * @return ClassLoader for this app
      */
+    @Override
     public ClassLoader getClassLoader() {
         return ejbAppClassLoader;
     }

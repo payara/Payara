@@ -82,6 +82,7 @@ public class MCFConfigParserImpl implements MCFConfigParser {
      *
      */
 
+    @Override
     public String[] getConnectionDefinitionNames(ConnectorDescriptor desc)
                throws ConnectorRuntimeException
     {
@@ -130,6 +131,7 @@ public class MCFConfigParserImpl implements MCFConfigParser {
      *           If no connection definition name is found in ra.xml
      */
 
+    @Override
     public Properties getJavaBeanProps(ConnectorDescriptor desc, 
                String connectionDefName, String rarName) throws ConnectorRuntimeException 
     {
@@ -195,6 +197,7 @@ public class MCFConfigParserImpl implements MCFConfigParser {
     }
 
 
+    @Override
     public List<String> getConfidentialProperties(ConnectorDescriptor desc, String rarName, String... keyFields)
             throws ConnectorRuntimeException {
         if(keyFields == null || keyFields.length == 0 || keyFields[0] == null){

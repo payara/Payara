@@ -93,6 +93,7 @@ public class FIFOEJBObjectCache
         this.name = name;
     }
     
+    @Override
     public void init(int maxEntries, int numberOfVictimsToSelect, long timeout,
             float loadFactor, Properties props)
     {
@@ -102,10 +103,12 @@ public class FIFOEJBObjectCache
         _logger.log(Level.FINE, name + ": FIFOEJBObject cache created....");
     }
     
+    @Override
     public void setEJBObjectCacheListener(EJBObjectCacheListener listener) {
         this.listener = listener;
     }
     
+    @Override
     public Object get(Object key) {
         int hashCode = hash(key);
         
@@ -113,18 +116,21 @@ public class FIFOEJBObjectCache
     }
     
     
+    @Override
     public Object get(Object key, boolean incrementRefCount) {
         int hashCode = hash(key);
         
         return internalGet(hashCode, key, incrementRefCount);
     }
     
+    @Override
     public Object put(Object key, Object value) {
         int hashCode = hash(key);
         
         return internalPut(hashCode, key, value, -1, false);
     }
     
+    @Override
     public Object put(Object key, Object value, boolean incrementRefCount) {
         int hashCode = hash(key);
         
@@ -132,20 +138,25 @@ public class FIFOEJBObjectCache
     }
     
     
+    @Override
     public Object remove(Object key) {
         return internalRemove(key, true);
     }
     
+    @Override
     public Object remove(Object key, boolean decrementRefCount) {
         return internalRemove(key, decrementRefCount);
     }
     
+    @Override
     protected boolean isThresholdReached() {
         return listSize > maxCacheSize;
     }
     
+    @Override
     protected void itemAccessed(CacheItem item) { }
     
+    @Override
     protected void itemRemoved(CacheItem item) {
         // LruCacheItem(more specifically EJBObjectCacheItem) should always be used in conjunction with FIFOEJBObjectCache
         assert item instanceof LruCacheItem;
@@ -355,6 +366,7 @@ public class FIFOEJBObjectCache
     }
      */
     
+    @Override
     protected CacheItem createItem(int hashCode, Object key, Object value, 
                                    int size) {
         return new EJBObjectCacheItem(hashCode, key, value, size);
@@ -370,6 +382,7 @@ public class FIFOEJBObjectCache
         }
     }
     
+    @Override
     public Map getStats() {
         Map map = new HashMap();
         StringBuffer sbuf = new StringBuffer();
@@ -387,6 +400,7 @@ public class FIFOEJBObjectCache
         return map;
     }
     
+    @Override
     public void trimExpiredEntries(int maxCount) {
         
         int count = 0;

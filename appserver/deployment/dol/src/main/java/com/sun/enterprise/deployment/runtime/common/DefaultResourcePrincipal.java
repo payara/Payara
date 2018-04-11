@@ -56,12 +56,14 @@ public class DefaultResourcePrincipal extends RuntimeDescriptor
     public static final String PASSWORD = "Password";	// NOI18N
     
     // This attribute is mandatory
+    @Override
     public void setName(String value)
     {
 	this.setValue(NAME, value);
     }
     
     //
+    @Override
     public String getName()
     {
 	return (String)this.getValue(NAME);

@@ -95,6 +95,7 @@ public class JMSConfigListener implements ConfigListener{
 
 
         /** Implementation of org.jvnet.hk2.config.ConfigListener */
+    @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         //Events that we can't process now because they require server restart.
         jmsService = serverConfig.getExtensionByType(JmsService.class);

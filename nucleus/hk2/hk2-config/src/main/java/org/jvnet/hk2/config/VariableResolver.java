@@ -56,6 +56,7 @@ package org.jvnet.hk2.config;
  * @author Kohsuke Kawaguchi
  */
 public abstract class VariableResolver implements Translator {
+    @Override
     public String translate(String str) throws TranslationException {
         if(str.indexOf('$')==-1)
             return str; // fast path for the common case

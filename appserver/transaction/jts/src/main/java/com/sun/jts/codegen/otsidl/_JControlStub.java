@@ -53,6 +53,7 @@ package com.sun.jts.codegen.otsidl;
 public class _JControlStub extends org.omg.CORBA.portable.ObjectImpl implements com.sun.jts.codegen.otsidl.JControl
 {
 
+  @Override
   public org.omg.CosTransactions.otid_t getGlobalTID (org.omg.CosTransactions.StatusHolder status)
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -75,6 +76,7 @@ public class _JControlStub extends org.omg.CORBA.portable.ObjectImpl implements 
 
 
   // transaction, and a value that indicates the state of the transaction.
+  @Override
   public long getLocalTID (org.omg.CosTransactions.StatusHolder status)
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -97,6 +99,7 @@ public class _JControlStub extends org.omg.CORBA.portable.ObjectImpl implements 
 
 
   // value that indicates the state of the transaction.
+  @Override
   public org.omg.CosTransactions.Status getTranState ()
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -118,6 +121,7 @@ public class _JControlStub extends org.omg.CORBA.portable.ObjectImpl implements 
 
 
   // Returns the state of the transaction as the Control object knows it.
+  @Override
   public void setTranState (org.omg.CosTransactions.Status state)
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -136,6 +140,7 @@ public class _JControlStub extends org.omg.CORBA.portable.ObjectImpl implements 
     }
   } // setTranState
 
+  @Override
   public org.omg.CosTransactions.Terminator get_terminator () throws org.omg.CosTransactions.Unavailable
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -158,6 +163,7 @@ public class _JControlStub extends org.omg.CORBA.portable.ObjectImpl implements 
     }
   } // get_terminator
 
+  @Override
   public org.omg.CosTransactions.Coordinator get_coordinator () throws org.omg.CosTransactions.Unavailable
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -185,6 +191,7 @@ public class _JControlStub extends org.omg.CORBA.portable.ObjectImpl implements 
     "IDL:otsidl/JControl:1.0", 
     "IDL:omg.org/CosTransactions/Control:1.0"};
 
+  @Override
   public String[] _ids ()
   {
     return (String[])__ids.clone ();

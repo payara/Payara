@@ -147,6 +147,7 @@ public abstract class StoreBase
     /**
      * Return the info for this Store.
      */
+    @Override
     public String getInfo() {
         return(info);
     }
@@ -182,6 +183,7 @@ public abstract class StoreBase
      *
      * @param manager The newly associated Manager
      */
+    @Override
     public void setManager(Manager manager) {
         Manager oldManager = this.manager;
         this.manager = manager;
@@ -191,6 +193,7 @@ public abstract class StoreBase
     /**
      * Return the Manager with which the Store is associated.
      */
+    @Override
     public Manager getManager() {
         return(this.manager);
     }
@@ -203,6 +206,7 @@ public abstract class StoreBase
      *
      * @param listener The listener to add
      */
+    @Override
     public void addLifecycleListener(LifecycleListener listener) {
         lifecycle.addLifecycleListener(listener);
     }
@@ -212,6 +216,7 @@ public abstract class StoreBase
      * Gets the (possibly empty) list of lifecycle listeners associated
      * with this Store.
      */
+    @Override
     public List<LifecycleListener> findLifecycleListeners() {
         return lifecycle.findLifecycleListeners();
     }
@@ -222,6 +227,7 @@ public abstract class StoreBase
      *
      * @param listener The listener to add
      */
+    @Override
     public void removeLifecycleListener(LifecycleListener listener) {
         lifecycle.removeLifecycleListener(listener);
     }
@@ -231,6 +237,7 @@ public abstract class StoreBase
      *
      * @param listener a value of type 'PropertyChangeListener'
      */
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
@@ -240,6 +247,7 @@ public abstract class StoreBase
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
@@ -426,6 +434,7 @@ public abstract class StoreBase
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
         // Validate and update our current component state
         if (started)
@@ -445,6 +454,7 @@ public abstract class StoreBase
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
     public void stop() throws LifecycleException {
         // Validate and update our current component state
         if (!started)

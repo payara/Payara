@@ -209,6 +209,7 @@ public final class CommonWorkManager implements WorkManager {
      * @param work work instance from resource adapter
      * @throws WorkException if there is an exception while executing work.
      */
+    @Override
     public void doWork(Work work)
             throws WorkException {
         doWork(work, -1, null, null);
@@ -224,6 +225,7 @@ public final class CommonWorkManager implements WorkManager {
      * @param workListener Listener from RA that will listen to work events.
      * @throws WorkException if there is an exception while executing work.
      */
+    @Override
     public void doWork(Work work, long startTimeout,
                        ExecutionContext execContext, WorkListener workListener)
             throws WorkException {
@@ -259,6 +261,7 @@ public final class CommonWorkManager implements WorkManager {
      * @param work work instance from resource adapter
      * @throws WorkException if there is an exception while executing work.
      */
+    @Override
     public long startWork(Work work) // startTimeout = INDEFINITE
             throws WorkException {
         //block the current application thread
@@ -278,6 +281,7 @@ public final class CommonWorkManager implements WorkManager {
      * @param workListener Listener from RA that will listen to work events.
      * @throws WorkException if there is an exception while executing work.
      */
+    @Override
     public long startWork(Work work, long startTimeout,
                           ExecutionContext execContext, WorkListener workListener)
             throws WorkException {
@@ -328,6 +332,7 @@ public final class CommonWorkManager implements WorkManager {
      * @param work work instance from resource adapter
      * @throws WorkException if there is an exception while executing work.
      */
+    @Override
     public void scheduleWork(Work work) // startTimeout = INDEFINITE
             throws WorkException {
         scheduleWork(work, -1, null, null);
@@ -344,6 +349,7 @@ public final class CommonWorkManager implements WorkManager {
      * @param workListener Listener from RA that will listen to work events.
      * @throws WorkException if there is an exception while executing work.
      */
+    @Override
     public void scheduleWork(Work work, long startTimeout,
                              ExecutionContext execContext, WorkListener workListener)
             throws WorkException {

@@ -139,6 +139,7 @@ public class UpdateQueryPlan extends QueryPlan {
         }
     }
 
+    @Override
     public void build() {
         build(false);
     }
@@ -299,6 +300,7 @@ public class UpdateQueryPlan extends QueryPlan {
         }
     }
 
+    @Override
     protected void processStatements() {
         int size = statements.size();
 
@@ -386,6 +388,7 @@ public class UpdateQueryPlan extends QueryPlan {
         statements.addAll(insertStatements);
     }
 
+    @Override
     protected Statement newStatement() {
         return new UpdateStatement(store.getVendorType(), this, batch);
     }

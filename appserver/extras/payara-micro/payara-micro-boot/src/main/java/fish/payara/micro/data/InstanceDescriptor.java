@@ -57,6 +57,7 @@ public interface InstanceDescriptor extends Serializable {
      * @param obj
      * @return
      */
+    @Override
     boolean equals(Object obj);
 
     /**

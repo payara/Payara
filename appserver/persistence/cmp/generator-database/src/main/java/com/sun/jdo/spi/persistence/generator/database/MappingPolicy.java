@@ -611,6 +611,7 @@ public class MappingPolicy implements Cloneable {
      * @return clone of this MappingPolicy
      * @throws CloneNotSupportedException never thrown
      */
+    @Override
     protected Object clone() throws CloneNotSupportedException {
         MappingPolicy mappingPolicyClone = (MappingPolicy) super.clone();
         mappingPolicyClone.namespaces = new HashMap();
@@ -649,6 +650,7 @@ public class MappingPolicy implements Cloneable {
                 in = (InputStream) AccessController.doPrivileged(
                         new PrivilegedAction() {
 
+                            @Override
                             public Object run() {
                                 Object rc = null;
                                 if (loader != null) {
@@ -1532,6 +1534,7 @@ public class MappingPolicy implements Cloneable {
      * @return A description of this MappingPolicy in string form.
      * Basically, all it's "interesting" values.
      */
+    @Override
     public String toString() {
         StringBuffer rc = new StringBuffer(
             "statementSeparator=" + statementSeparator // NOI18N

@@ -71,6 +71,7 @@ public class WebServicesDeploymentDescriptorFile extends DeploymentDescriptorFil
      * @return the location of the DeploymentDescriptor file for a
      * particular type of J2EE Archive
      */
+    @Override
     public String getDeploymentDescriptorPath() {
         return descriptorPath;
     }
@@ -89,6 +90,7 @@ public class WebServicesDeploymentDescriptorFile extends DeploymentDescriptorFil
      *
      * @param the descriptor for which we need the node
      */
+    @Override
     public RootXMLNode getRootXMLNode(Descriptor descriptor) {
         if( descriptor instanceof BundleDescriptor ) {
             return new WebServicesDescriptorNode((BundleDescriptor) descriptor);

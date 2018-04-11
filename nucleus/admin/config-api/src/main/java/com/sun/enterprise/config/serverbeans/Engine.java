@@ -139,6 +139,7 @@ public interface Engine extends ConfigBeanProxy, PropertyBag {
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 
     // TODO: remove this once hk2/config supports non-list @Element("*").
@@ -157,6 +158,7 @@ public interface Engine extends ConfigBeanProxy, PropertyBag {
                 final Engine instance, final Class<T> configType) throws TransactionFailure {
             return (T) ConfigSupport.apply(new SingleConfigCode<Engine>() {
 
+                @Override
                 public Object run(Engine e) throws PropertyVetoException, TransactionFailure {
                     T newChild = e.createChild(configType);
                     e.getApplicationConfigs().add(newChild);

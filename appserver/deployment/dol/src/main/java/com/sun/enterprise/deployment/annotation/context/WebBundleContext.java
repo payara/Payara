@@ -98,6 +98,7 @@ public class WebBundleContext extends ResourceContainerContextImpl {
         return aeHandler;
     }
     
+    @Override
     public HandlerChainContainer[] 
             getHandlerChainContainers(boolean serviceSideHandlerChain, Class declaringClass) {
         if(serviceSideHandlerChain) {

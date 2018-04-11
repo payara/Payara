@@ -54,6 +54,7 @@ public abstract class HttpTransportInfo implements TransportInfo {
     /**
      * @return the transport type
      */
+    @Override
     public TransportType getTransportType() {
         return TransportType.HTTP;
     }

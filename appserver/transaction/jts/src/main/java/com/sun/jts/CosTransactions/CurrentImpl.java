@@ -144,6 +144,7 @@ public class CurrentImpl extends org.omg.CORBA.LocalObject
      *
      * @see
      */
+    @Override
     public void begin()
         throws INVALID_TRANSACTION, SystemException, SubtransactionsUnavailable {
 
@@ -511,6 +512,7 @@ public class CurrentImpl extends org.omg.CORBA.LocalObject
      *
      * @see
      */
+    @Override
     public void commit( boolean reportHeuristics )
         throws NO_PERMISSION, INVALID_TRANSACTION, TRANSACTION_ROLLEDBACK,
         NoTransaction, HeuristicHazard, HeuristicMixed, SystemException {
@@ -656,6 +658,7 @@ public class CurrentImpl extends org.omg.CORBA.LocalObject
      *
      * @see
      */
+    @Override
     public void rollback()
         throws NoTransaction, INVALID_TRANSACTION, NO_PERMISSION,
         TRANSACTION_ROLLEDBACK, SystemException {
@@ -794,6 +797,7 @@ public class CurrentImpl extends org.omg.CORBA.LocalObject
      *
      * @see
      */
+    @Override
     public void rollback_only()
         throws NoTransaction {
 
@@ -821,6 +825,7 @@ public class CurrentImpl extends org.omg.CORBA.LocalObject
      *
      * @see
      */
+    @Override
     public Status get_status() {
 
         Status result = Status.StatusNoTransaction;
@@ -850,6 +855,7 @@ public class CurrentImpl extends org.omg.CORBA.LocalObject
      *
      * @see
      */
+    @Override
     public String get_transaction_name() {
 
         String result = null;
@@ -878,6 +884,7 @@ public class CurrentImpl extends org.omg.CORBA.LocalObject
      *
      * @see
      */
+    @Override
     public void set_timeout( int timeout ) {
         // timeout < 0 will be rejected (no op).
         // timeout = 0 implies tx has no timeout or a default timeout is used.
@@ -887,6 +894,7 @@ public class CurrentImpl extends org.omg.CORBA.LocalObject
         }
     }
 
+    @Override
     public int get_timeout() {
 	return timeOut;
     }
@@ -903,6 +911,7 @@ public class CurrentImpl extends org.omg.CORBA.LocalObject
      *
      * @see
      */
+    @Override
     public Control get_control()
         throws TRANSACTION_ROLLEDBACK {
         Control result = null;
@@ -934,6 +943,7 @@ public class CurrentImpl extends org.omg.CORBA.LocalObject
      *
      * @see
      */
+    @Override
     public Control suspend() {
         Control result = null;
         ControlImpl cImpl = CurrentTransaction.endCurrent(false);
@@ -971,6 +981,7 @@ public class CurrentImpl extends org.omg.CORBA.LocalObject
      *
      * @see
      */
+    @Override
     public void resume( Control control )
         throws InvalidControl, INVALID_TRANSACTION {
 

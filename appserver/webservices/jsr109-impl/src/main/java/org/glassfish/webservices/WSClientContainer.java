@@ -58,6 +58,7 @@ public class WSClientContainer extends Container {
         }
     }
 
+    @Override
     public <T> T getSPI(Class<T> spiType) {
         
         if((spiType == com.sun.xml.ws.assembler.ClientPipelineHook.class) ||

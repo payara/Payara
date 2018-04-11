@@ -84,6 +84,7 @@ public class LineNumberTableAttribute extends ClassAttribute {
     return  new LineNumberTableAttribute(attrName, lineNums, targs);
   }
 
+    @Override
   void write(DataOutputStream out) throws IOException {
     out.writeShort(attrName().getIndex());
     int nlines = lineNumbers.length;
@@ -95,6 +96,7 @@ public class LineNumberTableAttribute extends ClassAttribute {
     }
   }
 
+    @Override
   void print(PrintStream out, int indent) {
     ClassPrint.spaces(out, indent);
     out.println("Line Numbers: ");//NOI18N

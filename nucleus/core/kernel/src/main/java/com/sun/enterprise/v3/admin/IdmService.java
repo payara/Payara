@@ -82,6 +82,7 @@ public class IdmService implements PostConstruct, IdentityManagement {
 
     private static final String MP_PROPERTY = "AS_ADMIN_MASTERPASSWORD";
 
+    @Override
     public void postConstruct() {
         boolean success;
         boolean readStdin = sc.getArguments().containsKey(STDIN_OPTION_TO_ASMAIN);

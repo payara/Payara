@@ -385,6 +385,7 @@ class FieldInfoVector // { extends Vector
     ////////////////////////////////////////////////////////////////////////////
     /**
      * @return  */
+    @Override
     public String toString() {
         int veclen = v.size();
         StringBuffer s = new StringBuffer();

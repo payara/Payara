@@ -73,6 +73,7 @@ public class WebComponentContext extends ResourceContainerContextImpl {
         descriptor = webComp.getWebBundleDescriptor();
     }
 
+    @Override
     public void endElement(ElementType type, AnnotatedElement element) {
         
         if (ElementType.TYPE.equals(type)) {

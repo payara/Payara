@@ -110,42 +110,52 @@ abstract class CoordinatorImpl extends JCoordinatorPOA implements JCoordinator {
 
     /**OMG Coordinator operation required of all subclasses.
      */
+    @Override
     public abstract Status get_status();
 
     /**OMG Coordinator operation required of all subclasses.
      */
+    @Override
     public abstract Status get_parent_status();
 
     /**OMG Coordinator operation required of all subclasses.
      */
+    @Override
     public abstract Status get_top_level_status();
 
     /**OMG Coordinator operation required of all subclasses.
      */
+    @Override
     public abstract boolean is_same_transaction( Coordinator other );
 
     /**OMG Coordinator operation required of all subclasses.
      */
+    @Override
     public abstract boolean is_related_transaction( Coordinator other );
 
     /**OMG Coordinator operation required of all subclasses.
      */
+    @Override
     public abstract boolean is_ancestor_transaction( Coordinator other );
 
     /**OMG Coordinator operation required of all subclasses.
      */
+    @Override
     public abstract boolean is_descendant_transaction( Coordinator other );
 
     /**OMG Coordinator operation required of all subclasses.
      */
+    @Override
     public abstract boolean is_top_level_transaction();
 
     /**OMG Coordinator operation required of all subclasses.
      */
+    @Override
     public abstract int hash_transaction();
 
     /**OMG Coordinator operation required of all subclasses.
      */
+    @Override
     public abstract int hash_top_level_tran();
 	/*
 		Logger to log transaction messages
@@ -157,6 +167,7 @@ abstract class CoordinatorImpl extends JCoordinatorPOA implements JCoordinator {
      * @exception Inactive  The Coordinator is completing the transaction and
      *   cannot accept this registration.
      */
+    @Override
     public abstract RecoveryCoordinator register_resource( Resource res )
         throws Inactive;
 
@@ -167,6 +178,7 @@ abstract class CoordinatorImpl extends JCoordinatorPOA implements JCoordinator {
      * @exception Inactive  The Coordinator is completing the transaction and
      *   cannot accept this registration.
      */
+    @Override
     public abstract
         void register_subtran_aware( SubtransactionAwareResource sares )
         throws Inactive, NotSubtransaction;
@@ -175,11 +187,13 @@ abstract class CoordinatorImpl extends JCoordinatorPOA implements JCoordinator {
      *
      * @exception Inactive  The Coordinator is already completing the transaction.
      */
+    @Override
     public abstract void rollback_only()
         throws Inactive;
 
     /**OMG Coordinator operation required of all subclasses.
      */
+    @Override
     public abstract String get_transaction_name();
 
     /**OMG Coordinator operation required of all subclasses.
@@ -188,6 +202,7 @@ abstract class CoordinatorImpl extends JCoordinatorPOA implements JCoordinator {
      *   cannot create a new child.
      * @exception SubtransactionsUnavailable  Subtransactions are not available.
      */
+    @Override
     public abstract Control create_subtransaction()
         throws Inactive, SubtransactionsUnavailable;
 
@@ -197,6 +212,7 @@ abstract class CoordinatorImpl extends JCoordinatorPOA implements JCoordinator {
      *   cannot accept the registration.
      * @exception SynchronizationUnavailable  Synchronization is not supported.
      */
+    @Override
     public abstract void register_synchronization( Synchronization sync )
         throws Inactive, SynchronizationUnavailable;
 
@@ -204,6 +220,7 @@ abstract class CoordinatorImpl extends JCoordinatorPOA implements JCoordinator {
      *
      * @exception Inactive  The Coordinator is completing the transaction.
      */
+    @Override
     public abstract PropagationContext get_txcontext()
         throws Unavailable;
 
@@ -211,18 +228,22 @@ abstract class CoordinatorImpl extends JCoordinatorPOA implements JCoordinator {
      *
      * @exception Unavailable  The global transaction identifier is not available.
      */
+    @Override
     public abstract otid_t getGlobalTID();
 
     /**IDL JCoordinator operation required of all subclasses.
      */
+    @Override
     public abstract long getLocalTID();
 
     /**IDL JCoordinator operation required of all subclasses.
      */
+    @Override
     public abstract TransIdentity[] getAncestors();
 
     /**IDL JCoordinator operation required of all subclasses.
      */
+    @Override
     public abstract boolean isRollbackOnly();
 
     /**Add the given Coordinator reference to the set of children of the target
@@ -420,34 +441,42 @@ abstract class CoordinatorImpl extends JCoordinatorPOA implements JCoordinator {
      * interface method implementation below shall be discarded.
      */
 
+    @Override
     public org.omg.CORBA.Object _duplicate() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public void _release() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public boolean _is_a(String repository_id) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public boolean _is_equivalent(org.omg.CORBA.Object that) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public boolean _non_existent() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public int _hash(int maximum) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public Request _request(String operation) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public Request _create_request(Context ctx,
 				   String operation,
 				   NVList arg_list,
@@ -455,6 +484,7 @@ abstract class CoordinatorImpl extends JCoordinatorPOA implements JCoordinator {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public Request _create_request(Context ctx,
 				   String operation,
 				   NVList arg_list,
@@ -464,18 +494,22 @@ abstract class CoordinatorImpl extends JCoordinatorPOA implements JCoordinator {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public org.omg.CORBA.Object _get_interface_def() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public org.omg.CORBA.Policy _get_policy(int policy_type) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public org.omg.CORBA.DomainManager[] _get_domain_managers() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public org.omg.CORBA.Object _set_policy_override(
             org.omg.CORBA.Policy[] policies,
             org.omg.CORBA.SetOverrideType set_add) {

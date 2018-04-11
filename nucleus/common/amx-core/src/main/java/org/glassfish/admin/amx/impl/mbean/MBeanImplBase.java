@@ -137,6 +137,7 @@ public abstract class MBeanImplBase
         getNotificationEmitter().removeNotificationListener(listener, filter, handback);
     }
 
+    @Override
     public void sendNotification(final Notification notification) {
         getNotificationEmitter().sendNotification(notification);
     }
@@ -325,6 +326,7 @@ public abstract class MBeanImplBase
         return (StringUtil.quote("" + o));
     }
 
+    @Override
     public ObjectName preRegister(
             final MBeanServer server,
             final ObjectName nameIn)
@@ -340,6 +342,7 @@ public abstract class MBeanImplBase
     protected void postRegisterHook(final Boolean registrationSucceeded) {
     }
 
+    @Override
     public final void postRegister(final Boolean registrationSucceeded) {
         if (registrationSucceeded.booleanValue()) {
             getMBeanLogger().finest("postRegister: " + getObjectName());
@@ -354,6 +357,7 @@ public abstract class MBeanImplBase
             throws Exception {
     }
 
+    @Override
     public final void preDeregister()
             throws Exception {
         getMBeanLogger().finest("preDeregister: " + getObjectName());
@@ -364,6 +368,7 @@ public abstract class MBeanImplBase
     protected void postDeregisterHook() {
     }
 
+    @Override
     public final void postDeregister() {
         getMBeanLogger().finest("postDeregister: " + getObjectName());
 

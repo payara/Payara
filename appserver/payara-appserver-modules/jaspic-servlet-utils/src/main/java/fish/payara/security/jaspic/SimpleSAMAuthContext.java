@@ -72,6 +72,7 @@ class SimpleSAMAuthContext implements ServerAuthContext {
                         new MessagePolicy.TargetPolicy((MessagePolicy.Target[]) null,
                         new MessagePolicy.ProtectionPolicy() {
 
+                            @Override
                             public String getID() {
                                 return MessagePolicy.ProtectionPolicy.AUTHENTICATE_SENDER;
                             }

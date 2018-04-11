@@ -75,10 +75,12 @@ public class DeleteJndiResourceTest extends ConfigApiTest {
     private AdminCommandContext context;
     private CommandRunner cr;
 
+    @Override
     public DomDocument getDocument(ServiceLocator habitat) {
         return new TestDocument(habitat);
     }
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -98,6 +100,7 @@ public class DeleteJndiResourceTest extends ConfigApiTest {
     public void tearDown() throws TransactionFailure {
         parameters = new ParameterMap();
         ConfigSupport.apply(new SingleConfigCode<Resources>() {
+            @Override
             public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                 Resource target = null;
                 for (Resource resource : param.getResources()) {

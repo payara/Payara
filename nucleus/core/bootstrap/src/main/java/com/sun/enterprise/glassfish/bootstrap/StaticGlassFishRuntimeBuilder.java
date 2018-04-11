@@ -72,6 +72,7 @@ public class StaticGlassFishRuntimeBuilder implements RuntimeBuilder {
     private static final String JAR_EXT = ".jar";
     final List<String> moduleExcludes = Arrays.asList("jsftemplating.jar", "gf-client-module.jar");
 
+    @Override
     public GlassFishRuntime build(BootstrapProperties bsProps) throws GlassFishException {
         /* Step 1. Build the classloader. */
         // The classloader should contain installRoot/modules/**/*.jar files.
@@ -100,6 +101,7 @@ public class StaticGlassFishRuntimeBuilder implements RuntimeBuilder {
         return glassFishRuntime;
     }
 
+    @Override
     public boolean handles(BootstrapProperties bsProps) {
         // See GLASSFISH-16743 for the reason behind additional check
         final String builderName = bsProps.getProperty(Constants.BUILDER_NAME_PROPERTY);
@@ -154,6 +156,7 @@ public class StaticGlassFishRuntimeBuilder implements RuntimeBuilder {
         final File autostartModulesDir = new File(modulesDir, "autostart/");
         final List<URL> moduleJarURLs = new ArrayList<URL>();
         modulesDir.listFiles(new FileFilter() {
+            @Override
             public boolean accept(File pathname) {
                 if (pathname.isDirectory() && !pathname.equals(autostartModulesDir)) {
                     pathname.listFiles(this);

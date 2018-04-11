@@ -86,6 +86,7 @@ public class LoadBalancerStats implements com.sun.enterprise.admin.monitor.stats
 	}
 
 	// This attribute is an array, possibly empty
+        @Override
 	public void setClusterStats(com.sun.enterprise.admin.monitor.stats.lb.ClusterStats[] value) {
 		if (value == null)
 			value = new ClusterStats[0];
@@ -95,34 +96,41 @@ public class LoadBalancerStats implements com.sun.enterprise.admin.monitor.stats
 		}
 	}
 
+        @Override
 	public void setClusterStats(int index, com.sun.enterprise.admin.monitor.stats.lb.ClusterStats value) {
 		_ClusterStats.set(index, value);
 	}
 
+        @Override
 	public com.sun.enterprise.admin.monitor.stats.lb.ClusterStats[] getClusterStats() {
 		ClusterStats[] arr = new ClusterStats[_ClusterStats.size()];
 		return (ClusterStats[]) _ClusterStats.toArray(arr);
 	}
 
+        @Override
 	public java.util.List fetchClusterStatsList() {
 		return _ClusterStats;
 	}
 
+        @Override
 	public com.sun.enterprise.admin.monitor.stats.lb.ClusterStats getClusterStats(int index) {
 		return (ClusterStats)_ClusterStats.get(index);
 	}
 
 	// Return the number of clusterStats
+        @Override
 	public int sizeClusterStats() {
 		return _ClusterStats.size();
 	}
 
+        @Override
 	public int addClusterStats(com.sun.enterprise.admin.monitor.stats.lb.ClusterStats value) {
 		_ClusterStats.add(value);
 		return _ClusterStats.size()-1;
 	}
 
 	// Search from the end looking for @param value, and then remove it.
+        @Override
 	public int removeClusterStats(com.sun.enterprise.admin.monitor.stats.lb.ClusterStats value) {
 		int pos = _ClusterStats.indexOf(value);
 		if (pos >= 0) {
@@ -155,6 +163,7 @@ public class LoadBalancerStats implements com.sun.enterprise.admin.monitor.stats
 		writeNode(out, "load-balancer-stats", "");	// NOI18N
 	}
 
+        @Override
 	public void writeNode(java.io.Writer out, String nodeName, String indent) throws java.io.IOException {
 		out.write(indent);
 		out.write("<");
@@ -183,6 +192,7 @@ public class LoadBalancerStats implements com.sun.enterprise.admin.monitor.stats
 	public static LoadBalancerStats readNoEntityResolver(java.io.InputStream in) throws javax.xml.parsers.ParserConfigurationException, org.xml.sax.SAXException, java.io.IOException {
 		return read(new org.xml.sax.InputSource(in), false,
 			new org.xml.sax.EntityResolver() {
+                        @Override
 			public org.xml.sax.InputSource resolveEntity(String publicId, String systemId) {
 				java.io.ByteArrayInputStream bin = new java.io.ByteArrayInputStream(new byte[0]);
 				return new org.xml.sax.InputSource(bin);
@@ -207,6 +217,7 @@ public class LoadBalancerStats implements com.sun.enterprise.admin.monitor.stats
 		return aLoadBalancerStats;
 	}
 
+        @Override
 	public void readNode(org.w3c.dom.Node node) {
 		org.w3c.dom.NodeList children = node.getChildNodes();
 		for (int i = 0, size = children.getLength(); i < size; ++i) {
@@ -271,6 +282,7 @@ public class LoadBalancerStats implements com.sun.enterprise.admin.monitor.stats
 		public com.sun.enterprise.admin.monitor.stats.lb.CommonBean getFailedBean() {return failedBean;}
 	}
 
+        @Override
 	public void validate() throws com.sun.enterprise.admin.monitor.stats.lb.LoadBalancerStats.ValidateException {
 		boolean restrictionFailure = false;
 		// Validating property clusterStats
@@ -282,6 +294,7 @@ public class LoadBalancerStats implements com.sun.enterprise.admin.monitor.stats
 		}
 	}
 
+        @Override
 	public void changePropertyByName(String name, Object value) {
 		if (name == null) return;
 		name = name.intern();
@@ -293,6 +306,7 @@ public class LoadBalancerStats implements com.sun.enterprise.admin.monitor.stats
 			throw new IllegalArgumentException(name+" is not a valid property name for LoadBalancerStats");
 	}
 
+        @Override
 	public Object fetchPropertyByName(final String name) {
 		if (name.equals("clusterStats[]"))
 			return getClusterStats();
@@ -300,6 +314,7 @@ public class LoadBalancerStats implements com.sun.enterprise.admin.monitor.stats
 	}
 
 	// Return an array of all of the properties that are beans and are set.
+        @Override
 	public com.sun.enterprise.admin.monitor.stats.lb.CommonBean[] childBeans(boolean recursive) {
 		java.util.List children = new java.util.LinkedList();
 		childBeans(recursive, children);
@@ -308,6 +323,7 @@ public class LoadBalancerStats implements com.sun.enterprise.admin.monitor.stats
 	}
 
 	// Put all child beans into the beans list.
+        @Override
 	public void childBeans(boolean recursive, java.util.List beans) {
 		for (java.util.Iterator it = _ClusterStats.iterator(); 
 			it.hasNext(); ) {
@@ -321,6 +337,7 @@ public class LoadBalancerStats implements com.sun.enterprise.admin.monitor.stats
 		}
 	}
 
+        @Override
 	public boolean equals(Object o) {
 		if (o == this)
 			return true;
@@ -340,12 +357,14 @@ public class LoadBalancerStats implements com.sun.enterprise.admin.monitor.stats
 		return true;
 	}
 
+        @Override
 	public int hashCode() {
 		int result = 17;
 		result = 37*result + (_ClusterStats == null ? 0 : _ClusterStats.hashCode());
 		return result;
 	}
 
+        @Override
 	public String toString() {
 		java.io.StringWriter sw = new java.io.StringWriter();
 		try {

@@ -48,6 +48,7 @@ import java.util.*;
 
 public class PropertiesFactory implements Serializable, ObjectFactory {
     public static final String filePropertyName = "org.glassfish.resources.custom.factory.PropertiesFactory.fileName";
+    @Override
     public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
         Reference ref = (Reference)obj;
         Enumeration<RefAddr> refAddrs = ref.getAll();

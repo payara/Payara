@@ -130,6 +130,7 @@ public class CreateProfiler implements AdminCommand, AdminCommandSecurity.Preaut
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
@@ -145,6 +146,7 @@ public class CreateProfiler implements AdminCommand, AdminCommandSecurity.Preaut
         try {
             ConfigSupport.apply(new SingleConfigCode<JavaConfig>() {
 
+                @Override
                 public Object run(JavaConfig param) throws PropertyVetoException, TransactionFailure {
                     Profiler newProfiler = param.createChild(Profiler.class);
                     newProfiler.setName(name);

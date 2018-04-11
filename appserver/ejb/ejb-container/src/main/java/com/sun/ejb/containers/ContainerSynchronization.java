@@ -133,6 +133,7 @@ final class ContainerSynchronization implements Synchronization
         timerSyncs.remove(timerId);
     }
 
+    @Override
     public void beforeCompletion()
     {
         // first call beforeCompletion for each bean instance
@@ -206,6 +207,7 @@ final class ContainerSynchronization implements Synchronization
         }
     }
 
+    @Override
     public void afterCompletion(int status)
     {	
         for ( int i=0; i<pmSyncs.size(); i++ ) {

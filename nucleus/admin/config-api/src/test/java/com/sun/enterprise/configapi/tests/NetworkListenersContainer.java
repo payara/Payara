@@ -69,11 +69,13 @@ public class NetworkListenersContainer implements ConfigListener {
 
     volatile boolean received=false;
 
+    @Override
     public synchronized UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         if (received) {
             // I am already happy
         }
         return ConfigSupport.sortAndDispatch(events, new Changed() {
+            @Override
             public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> tClass, T t) {
                 if (type==TYPE.ADD) {
                     received=true;

@@ -175,11 +175,13 @@ public final class Timer {
 
         Arrays.sort(calls,
                     new Comparator() {
+                            @Override
                             public int compare(Object o1,
                                                Object o2) {
                                 return (int)(((MethodDescriptor)o2).total
                                              - ((MethodDescriptor)o1).total);
                             }
+                            @Override
                             public boolean equals(Object obj) {
                                 return (obj != null && compare(this, obj) == 0);
                             }

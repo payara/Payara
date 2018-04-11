@@ -88,6 +88,7 @@ public class ConfigurationException extends HK2RuntimeException {
         return location;
     }
 
+    @Override
     public String getMessage() {
         if(location==null)
             return super.getMessage();

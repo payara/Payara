@@ -275,11 +275,13 @@ public class ExpressionParseTree {
         /**
          * Returns true if the string is not empty.
          */
+        @Override
         public boolean evaluate() {
             return !(getValue().length() == 0);
         }
 
 
+        @Override
         public String toString() {
             return value.toString();
         }
@@ -320,11 +322,13 @@ public class ExpressionParseTree {
         }
     }
     private final class NotNode extends OppNode {
+        @Override
         public boolean evaluate() {
             return !left.evaluate();
         }
 
 
+        @Override
         public int getPrecedence() {
             return PRECEDENCE_NOT;
         }
@@ -333,16 +337,19 @@ public class ExpressionParseTree {
         /**
          * Overridden to pop only one value.
          */
+        @Override
         public void popValues(List<Node> values) {
             left = values.remove(0);
         }
 
 
+        @Override
         public String toString() {
             return left + " NOT";
         }
     }
     private final class AndNode extends OppNode {
+        @Override
         public boolean evaluate() {
             if (!left.evaluate()) // Short circuit
                 return false;
@@ -350,16 +357,19 @@ public class ExpressionParseTree {
         }
 
 
+        @Override
         public int getPrecedence() {
             return PRECEDENCE_LOGICAL;
         }
 
 
+        @Override
         public String toString() {
             return left + " " + right + " AND";
         }
     }
     private final class OrNode extends OppNode {
+        @Override
         public boolean evaluate() {
             if (left.evaluate()) // Short circuit
                 return true;
@@ -367,11 +377,13 @@ public class ExpressionParseTree {
         }
 
 
+        @Override
         public int getPrecedence() {
             return PRECEDENCE_LOGICAL;
         }
 
 
+        @Override
         public String toString() {
             return left + " " + right + " OR";
         }
@@ -384,46 +396,55 @@ public class ExpressionParseTree {
         }
     }
     private final class EqualNode extends CompareNode {
+        @Override
         public boolean evaluate() {
             return (compareBranches() == 0);
         }
 
 
+        @Override
         public int getPrecedence() {
             return PRECEDENCE_COMPARE;
         }
 
 
+        @Override
         public String toString() {
             return left + " " + right + " EQ";
         }
     }
     private final class GreaterThanNode extends CompareNode {
+        @Override
         public boolean evaluate() {
             return (compareBranches() > 0);
         }
 
 
+        @Override
         public int getPrecedence() {
             return PRECEDENCE_COMPARE;
         }
 
 
+        @Override
         public String toString() {
             return left + " " + right + " GT";
         }
     }
     private final class LessThanNode extends CompareNode {
+        @Override
         public boolean evaluate() {
             return (compareBranches() < 0);
         }
 
 
+        @Override
         public int getPrecedence() {
             return PRECEDENCE_COMPARE;
         }
 
 
+        @Override
         public String toString() {
             return left + " " + right + " LT";
         }

@@ -94,6 +94,7 @@ public class IiopSslConfigHandler implements SslConfigHandler {
         }
         try {
             ConfigSupport.apply(new SingleConfigCode<IiopListener>() {
+                        @Override
                         public Object run(IiopListener param)
                                 throws PropertyVetoException, TransactionFailure {
                             Ssl newSsl = param.createChild(Ssl.class);
@@ -137,6 +138,7 @@ public class IiopSslConfigHandler implements SslConfigHandler {
         }
         try {
             ConfigSupport.apply(new SingleConfigCode<IiopListener>() {
+                @Override
                 public Object run(IiopListener param)
                 throws PropertyVetoException {
                     param.setSsl(null);

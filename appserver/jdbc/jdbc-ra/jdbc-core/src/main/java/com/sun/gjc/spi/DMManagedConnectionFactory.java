@@ -102,6 +102,7 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      * @throws SecurityException if there ino <code>PasswordCredential</code> object
      *                           satisfying this request
      */
+    @Override
     public javax.resource.spi.ManagedConnection createManagedConnection(javax.security.auth.Subject subject,
                                                                         ConnectionRequestInfo cxRequestInfo) throws ResourceException {
         logFine("In createManagedConnection");
@@ -313,6 +314,7 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      *         <code>ManagedConnectionFactory</code> objects are the same
      *         false	otherwise
      */
+    @Override
     public boolean equals(Object other) {
         logFine("In equals");
 
@@ -339,6 +341,7 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      * @param loginTimeOut <code>String</code>
      * @see <code>getLoginTimeOut</code>
      */
+    @Override
     public void setLoginTimeOut(String loginTimeOut) {
         int timeOut = 0;
         try {
@@ -391,6 +394,7 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactoryImpl {
         return spec.getDetail(DataSourceSpec.URL);
     }
 
+    @Override
     public Object getDataSource() throws ResourceException {
         return null;
     }

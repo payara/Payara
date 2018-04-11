@@ -132,6 +132,7 @@ public class ConnectionPoolStatsProviderBootstrap implements PostConstruct,
         registerPoolLifeCycleListener();
     }
     
+    @Override
     public void postConstruct() {
         if(logger.isLoggable(Level.FINEST)) {
             logger.finest("[Monitor]In the ConnectionPoolStatsProviderBootstrap");
@@ -331,6 +332,7 @@ public class ConnectionPoolStatsProviderBootstrap implements PostConstruct,
      * of any monitoring attributes.
      * @param poolInfo
      */
+    @Override
     public void poolCreated(PoolInfo poolInfo) {
         if(logger.isLoggable(Level.FINEST)) {
             logger.finest("Pool created : " + poolInfo);
@@ -356,6 +358,7 @@ public class ConnectionPoolStatsProviderBootstrap implements PostConstruct,
      * should be unregistered.
      * @param poolInfo
      */
+    @Override
     public void poolDestroyed(PoolInfo poolInfo) {
         if(logger.isLoggable(Level.FINEST)) {
             logger.finest("Pool Destroyed : " + poolInfo);

@@ -54,6 +54,7 @@ import static org.junit.Assert.*;
  * Time: 2:44:59 PM
  */
 public class Ssl2EnabledTest extends ConfigApiTest {
+    @Override
     public String getFileName() {
         return "DomainTest";
     }

@@ -128,6 +128,7 @@ public class CountStatisticImpl extends StatisticImpl implements CountStatistic 
         count = countVal; 
     }
     
+    @Override
     public String toString() {
         return super.toString() + NEWLINE + "Count: " + getCount();
     }
@@ -137,6 +138,7 @@ public class CountStatisticImpl extends StatisticImpl implements CountStatistic 
      * Returns the current value of this statistic.
 	 * @return long indicating current value
      */
+    @Override
     public long getCount() {
         return count;
     }

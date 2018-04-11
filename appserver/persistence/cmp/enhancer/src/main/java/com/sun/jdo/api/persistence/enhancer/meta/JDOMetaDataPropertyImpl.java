@@ -162,6 +162,7 @@ public class JDOMetaDataPropertyImpl extends Support
     /**
      * Tests whether a class is known to be persistence-capable.
      */
+    @Override
     public boolean isPersistenceCapableClass(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -179,6 +180,7 @@ public class JDOMetaDataPropertyImpl extends Support
      *
      *********************************************************************/
 
+    @Override
     public boolean isTransientClass(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -188,6 +190,7 @@ public class JDOMetaDataPropertyImpl extends Support
     /**
      * Tests whether a class is known as a persistence-capable root class.
      */
+    @Override
     public boolean isPersistenceCapableRootClass(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -206,6 +209,7 @@ public class JDOMetaDataPropertyImpl extends Support
     /**
      * Returns the name of the persistence-capable root class of a class.
      */
+    @Override
     public String getPersistenceCapableRootClass(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -217,6 +221,7 @@ public class JDOMetaDataPropertyImpl extends Support
      *  Returns the superclass of a class.
      */
 
+    @Override
     public final String getSuperClass (String classname)
     {
 
@@ -229,6 +234,7 @@ public class JDOMetaDataPropertyImpl extends Support
     /**
      * Tests whether a type is known for Second Class Objects.
      */
+    @Override
     public boolean isSecondClassObjectType(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -238,6 +244,7 @@ public class JDOMetaDataPropertyImpl extends Support
     /**
      * Tests whether a type is known for Mutable Second Class Objects.
      */
+    @Override
     public boolean isMutableSecondClassObjectType(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -247,6 +254,7 @@ public class JDOMetaDataPropertyImpl extends Support
     /**
      * Tests whether a field of a class is known to be persistent.
      */
+    @Override
     public boolean isPersistentField(String classPath, String fieldName)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -257,6 +265,7 @@ public class JDOMetaDataPropertyImpl extends Support
     /**
      * Tests whether a field of a class is known to be transactional.
      */
+    @Override
     public boolean isTransactionalField(String classPath, String fieldName)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -267,6 +276,7 @@ public class JDOMetaDataPropertyImpl extends Support
     /**
      * Tests whether a field of a class is known to be Primary Key.
      */
+    @Override
     public boolean isPrimaryKeyField(String classPath, String fieldName)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -278,6 +288,7 @@ public class JDOMetaDataPropertyImpl extends Support
      * Tests whether a field of a class is known to be part of the
      * Default Fetch Group.
      */
+    @Override
     public boolean isDefaultFetchGroupField(String classPath, String fieldName)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -289,6 +300,7 @@ public class JDOMetaDataPropertyImpl extends Support
      * Returns the unique field index of a declared, persistent field of a
      * class.
      */
+    @Override
     public int getFieldNo(String classPath, String fieldName)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -300,6 +312,7 @@ public class JDOMetaDataPropertyImpl extends Support
      * Returns an array of field names of all declared, persistent fields
      * of a class.
      */
+    @Override
     public String [] getManagedFields (String classname)
     {
 
@@ -313,6 +326,7 @@ public class JDOMetaDataPropertyImpl extends Support
      *  No interface method.
      *********************************************************************/
 
+    @Override
     public final String [] getKnownClasses ()
     {
 
@@ -325,6 +339,7 @@ public class JDOMetaDataPropertyImpl extends Support
      *  Gets all known fields of a class.
      *********************************************************************/
 
+    @Override
     public final String [] getKnownFields (String classname)
     {
 
@@ -338,6 +353,7 @@ public class JDOMetaDataPropertyImpl extends Support
      *  Gets the access modifier of a class.
      *********************************************************************/
 
+    @Override
     public final int getClassModifiers (String classname)
     {
 
@@ -351,6 +367,7 @@ public class JDOMetaDataPropertyImpl extends Support
      *  Gets the access modifier of a field.
      *********************************************************************/
 
+    @Override
     public final int getFieldModifiers (String classname,
                                         String fieldname)
     {
@@ -365,6 +382,7 @@ public class JDOMetaDataPropertyImpl extends Support
      *
      *********************************************************************/
 
+    @Override
     public final String getFieldType (String classname,
                                       String fieldname)
     {
@@ -431,6 +449,7 @@ public class JDOMetaDataPropertyImpl extends Support
      *
      *********************************************************************/
 
+    @Override
     public String getKeyClass(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -443,6 +462,7 @@ public class JDOMetaDataPropertyImpl extends Support
      *
      *********************************************************************/
 
+    @Override
     public boolean isKeyField(String classPath, String fieldName)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -455,6 +475,7 @@ public class JDOMetaDataPropertyImpl extends Support
      *
      *********************************************************************/
 
+    @Override
     public boolean isKnownNonManagedField(String classPath,
                                           String fieldName,
                                           String fieldSig)
@@ -472,6 +493,7 @@ public class JDOMetaDataPropertyImpl extends Support
      *
      *********************************************************************/
 
+    @Override
     public boolean isManagedField(String classPath, String fieldName)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -484,6 +506,7 @@ public class JDOMetaDataPropertyImpl extends Support
      *
      *********************************************************************/
 
+    @Override
     public int getFieldFlags(String classPath, String fieldName)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -526,6 +549,7 @@ public class JDOMetaDataPropertyImpl extends Support
      *
      *********************************************************************/
 
+    @Override
     public int[] getFieldFlags(String classPath, String[] fieldNames)
         throws  JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -542,6 +566,7 @@ public class JDOMetaDataPropertyImpl extends Support
      *
      *********************************************************************/
 
+    @Override
     public final String[] getFieldType(String classname,
                                         String[] fieldnames)
     {
@@ -558,6 +583,7 @@ public class JDOMetaDataPropertyImpl extends Support
      *
      *********************************************************************/
 
+    @Override
     public int[] getFieldNo(String classPath, String[] fieldNames)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -574,6 +600,7 @@ public class JDOMetaDataPropertyImpl extends Support
      *
      *********************************************************************/
 
+    @Override
     public String[] getKeyFields(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -593,6 +620,7 @@ public class JDOMetaDataPropertyImpl extends Support
      *
      *********************************************************************/
 
+    @Override
     public String getPersistenceCapableSuperClass(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -611,6 +639,7 @@ public class JDOMetaDataPropertyImpl extends Support
      *
      *********************************************************************/
 
+    @Override
     public String getSuperKeyClass(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {

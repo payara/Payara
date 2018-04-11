@@ -123,6 +123,7 @@ public class LruCache extends BaseCache {
      * subclasses may override to provide their own CacheItem extensions
      * e.g. one that permits persistence.
      */
+    @Override
     protected CacheItem createItem(int hashCode, Object key,
                                         Object value, int size) {
         return new LruCacheItem(hashCode, key, value, size);
@@ -174,6 +175,7 @@ public class LruCache extends BaseCache {
      *
      * Cache bucket is already synchronized by the caller
      */
+    @Override
     protected CacheItem itemAdded(CacheItem item) {
         boolean updateThreshold = false;
         CacheItem overflow = null;
@@ -220,6 +222,7 @@ public class LruCache extends BaseCache {
      *
      * Cache bucket is already synchronized by the caller
      */
+    @Override
     protected void itemAccessed(CacheItem item) {
 	if(head == null)
 	    return;
@@ -264,6 +267,7 @@ public class LruCache extends BaseCache {
      * @param oldSize size of the previous value that was refreshed
      * Cache bucket is already synchronized by the caller
      */
+    @Override
     protected void itemRefreshed(CacheItem item, int oldSize) {
         itemAccessed(item);
     }
@@ -274,6 +278,7 @@ public class LruCache extends BaseCache {
      *
      * Cache bucket is already synchronized by the caller
      */
+    @Override
     protected void itemRemoved(CacheItem item) {
         if(! (item instanceof LruCacheItem))
             return;
@@ -313,6 +318,7 @@ public class LruCache extends BaseCache {
      * NOTE: this algorithm assumes that all the entries in the cache have
      * identical timeout (otherwise traversing from tail won't be right).
      */
+    @Override
     public void trimExpiredEntries(int maxCount) {
 
         int count = 0;
@@ -366,6 +372,7 @@ public class LruCache extends BaseCache {
      * @return an Object corresponding to the stat
      * See also: Constant.java for the key
      */
+    @Override
     public Object getStatByName(String key) {
         Object stat = super.getStatByName(key);
 
@@ -378,6 +385,7 @@ public class LruCache extends BaseCache {
         return stat;
     }
 
+    @Override
     public Map getStats() {
         Map stats = super.getStats();
         stats.put(Constants.STAT_LRUCACHE_LIST_LENGTH,

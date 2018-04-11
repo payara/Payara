@@ -63,6 +63,7 @@ public class Jdbc30ObjectsFactory extends JdbcObjectsFactory {
      * @param statementWrapping Whether to wrap statement objects or not.
      * @return ConnectionHolder
      */
+    @Override
     public ConnectionHolder getConnection(Connection conObject,
                                           ManagedConnectionImpl mcObject,
                                           javax.resource.spi.ConnectionRequestInfo criObject,
@@ -92,6 +93,7 @@ public class Jdbc30ObjectsFactory extends JdbcObjectsFactory {
      * @param cmObject  Connection Manager
      * @return DataSource
      */
+    @Override
     public javax.sql.DataSource getDataSourceInstance(ManagedConnectionFactoryImpl mcfObject,
                                                       javax.resource.spi.ConnectionManager cmObject) {
         return new DataSource30(mcfObject, cmObject);

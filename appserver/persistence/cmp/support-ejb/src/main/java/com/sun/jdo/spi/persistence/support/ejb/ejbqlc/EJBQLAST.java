@@ -99,6 +99,7 @@ public class EJBQLAST
     }
     
     /** */
+    @Override
     public void initialize(Token t)
     {
         setType(t.getType());
@@ -116,6 +117,7 @@ public class EJBQLAST
     }
 
     /** */
+    @Override
     public void initialize(AST _ast)
     {
         EJBQLAST ast = (EJBQLAST)_ast;
@@ -133,6 +135,7 @@ public class EJBQLAST
     }
 
     /** */
+    @Override
     public int getLine()
     {
         return line;
@@ -145,6 +148,7 @@ public class EJBQLAST
     }
 
     /** */
+    @Override
     public int getColumn()
     {
         return column;
@@ -166,6 +170,7 @@ public class EJBQLAST
      * Returns a string representation of this EJBQLAST w/o child ast nodes.
      * @return a string representation of the object.
      */
+    @Override
     public String toString()
     {
         Object typeInfo = getTypeInfo();
@@ -236,6 +241,7 @@ public class EJBQLAST
      * and the sibling is null.
      * @return a clone of this instance.
      */
+    @Override
     protected Object clone()
         throws CloneNotSupportedException
     {

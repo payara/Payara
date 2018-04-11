@@ -54,6 +54,7 @@ public class InsnConstOp extends Insn {
 
   /* public accessors */
 
+  @Override
   public int nStackArgs() {
     int n = VMOp.ops[opcode()].nStackArgs();
     if (n >= 0) 
@@ -85,6 +86,7 @@ public class InsnConstOp extends Insn {
     }
   }
 
+  @Override
   public int nStackResults() {
     int n = VMOp.ops[opcode()].nStackResults();
     if (n >= 0) 
@@ -114,6 +116,7 @@ public class InsnConstOp extends Insn {
     }
   }
 
+  @Override
   public String argTypes() {
     switch (opcode()) {
     case opc_putstatic:
@@ -145,6 +148,7 @@ public class InsnConstOp extends Insn {
     }
   }
 
+  @Override
   public String resultTypes() {
     switch (opcode()) {
     case opc_invokevirtual:
@@ -178,6 +182,7 @@ public class InsnConstOp extends Insn {
     }
   }
 
+  @Override
   public boolean branches() {
     /* invokes don't count as a branch */
     return false;
@@ -200,12 +205,14 @@ public class InsnConstOp extends Insn {
     
   /* package local methods */
 
+  @Override
   void print (PrintStream out, int indent) {
     ClassPrint.spaces(out, indent);
     out.println(offset() + "  " + opName(opcode()) + "  pool(" + //NOI18N
 		constValue.getIndex() + ")");//NOI18N
   }
 
+  @Override
   int store(byte[] buf, int index) {
     if (opcode() == opc_ldc && !isNarrowldc())
       buf[index++] = (byte) opc_ldc_w;
@@ -218,6 +225,7 @@ public class InsnConstOp extends Insn {
     return index;
   }
 
+  @Override
   int size() {
     return isNarrowldc() ? 2 : 3;
   }

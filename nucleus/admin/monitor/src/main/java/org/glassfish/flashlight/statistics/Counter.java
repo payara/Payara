@@ -59,6 +59,7 @@ public interface Counter extends TreeNode, CountStatistic{
 
     public void decrement();
 
+    @Override
     public long getCount();
 
     public void increment();

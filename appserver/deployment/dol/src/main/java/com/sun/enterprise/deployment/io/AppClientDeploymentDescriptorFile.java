@@ -60,6 +60,7 @@ public class AppClientDeploymentDescriptorFile extends DeploymentDescriptorFile 
      * @return the location of the DeploymentDescriptor file for a 
      * particular type of J2EE Archive
      */    
+    @Override
     public String getDeploymentDescriptorPath() {
         return DescriptorConstants.APP_CLIENT_JAR_ENTRY;
     }    
@@ -70,6 +71,7 @@ public class AppClientDeploymentDescriptorFile extends DeploymentDescriptorFile 
      *
      * @param the descriptor for which we need the node
      */
+    @Override
     public RootXMLNode getRootXMLNode(Descriptor descriptor) {
         return new AppClientNode();        
     }

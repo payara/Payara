@@ -60,22 +60,27 @@ public class InsnTableSwitch extends Insn {
 
   /* public accessors */
 
+  @Override
   public int nStackArgs() {
     return 1;
   }
 
+  @Override
   public int nStackResults() {
     return 0;
   }
 
+  @Override
   public String argTypes() {
       return "I";//NOI18N
   }
 
+  @Override
   public String resultTypes() {
       return "";//NOI18N
   }
 
+  @Override
   public boolean branches() {
     return true;
   }
@@ -83,6 +88,7 @@ public class InsnTableSwitch extends Insn {
   /**
    * Mark possible branch targets
    */
+  @Override
   public void markTargets() {
     defaultOp.setBranchTarget();
     for (int i=0; i<targetsOp.length; i++)
@@ -123,6 +129,7 @@ public class InsnTableSwitch extends Insn {
 
   /* package local methods */
 
+  @Override
   void print (PrintStream out, int indent) {
     ClassPrint.spaces(out, indent);
     out.println(offset() + "  opc_tableswitch  ");//NOI18N
@@ -137,6 +144,7 @@ public class InsnTableSwitch extends Insn {
     out.println("default -> " + defaultOp.offset());//NOI18N
   }
 
+  @Override
   int store(byte[] buf, int index) {
     buf[index++] = (byte) opcode();
     index = (index + 3) & ~3;
@@ -148,6 +156,7 @@ public class InsnTableSwitch extends Insn {
     return index;
   }
 
+  @Override
   int size() {
     /* account for the instruction, 0-3 bytes of pad, 3 ints */
     int basic = ((offset() + 4) & ~3) - offset() + 12;

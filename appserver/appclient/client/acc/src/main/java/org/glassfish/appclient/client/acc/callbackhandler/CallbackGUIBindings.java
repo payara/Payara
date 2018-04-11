@@ -183,6 +183,7 @@ public class CallbackGUIBindings {
 
         protected abstract JComponent createComponent();
 
+        @Override
         public JComponent getComponent() {
             if (component == null) {
                 component = createComponent();

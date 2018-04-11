@@ -73,6 +73,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
   }
   
   // Implementation of weblogic.workarea.WorkContextMap
+  @Override
   public WorkContext put(String key, WorkContext workContext,
                   int propagationMode) throws PropertyReadOnlyException {
     try {
@@ -85,6 +86,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
     }
   }
 
+  @Override
   public WorkContext put(String key, WorkContext workContext)
     throws PropertyReadOnlyException {
     try {
@@ -97,6 +99,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
     }
   }
 
+  @Override
   public WorkContext get(String key) {
     WorkContextMap map = getMapMaybe();
     if (map == null) {
@@ -105,6 +108,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
     return map.get(key);
   }
 
+  @Override
   public WorkContext remove(String key) throws NoWorkContextException,
                                         PropertyReadOnlyException {
     WorkContextMap map = getMapMaybe();
@@ -121,16 +125,19 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
     return prev;
   }
 
+  @Override
   public int getPropagationMode(String key) {
     if(isEmpty())
       return PropagationMode.LOCAL;
     return getMapMaybe().getPropagationMode(key);
   }
 
+  @Override
   public boolean isPropagationModePresent(int propMode) {
     return getMapMaybe().isPropagationModePresent(propMode);
   }
 
+  @Override
   public boolean isEmpty() {
     return (getMapMaybe() == null);
   }
@@ -141,6 +148,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
   }
 
   @SuppressWarnings("rawtypes")
+  @Override
   public Iterator iterator() {
     WorkContextMap map = getMapMaybe();
     // REVIEW vmehra@bea.com 2004-Apr-23 -- instead of returning null
@@ -149,6 +157,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
   }
 
   @SuppressWarnings("rawtypes")
+  @Override
   public Iterator keys() {
     WorkContextMap map = getMapMaybe();
     // REVIEW vmehra@bea.com 2004-Apr-23 -- instead of returning null
@@ -156,6 +165,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
     return map == null ? null : map.keys();
   }
 
+  @Override
   public int version() {
     WorkContextMapInterceptor map
       = (WorkContextMapInterceptor)localContextMap.get();
@@ -187,6 +197,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
 
   // Implementation of weblogic.workarea.spi.WorkContextMapInterceptor
 
+  @Override
   public void sendRequest(WorkContextOutput out, int propagationMode) throws IOException {
     WorkContextMapInterceptor inter = getInterceptor();
     if (inter != null) {
@@ -194,6 +205,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
     }
   }
 
+  @Override
   public void sendResponse(WorkContextOutput out, int propagationMode) throws IOException {
     WorkContextMapInterceptor inter = getInterceptor();
     if (inter != null) {
@@ -201,6 +213,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
     }
   }
 
+  @Override
   public void receiveRequest(WorkContextInput in)
     throws IOException
   {
@@ -208,6 +221,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
   }
 
   @SuppressWarnings("unchecked")
+  @Override
   public void receiveResponse(WorkContextInput in)
     throws IOException
   {
@@ -232,6 +246,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
     }
   }
 
+  @Override
   public WorkContextMapInterceptor copyThreadContexts(int mode) {
     WorkContextMapInterceptor inter = getInterceptor();
     if (inter != null) {
@@ -240,12 +255,14 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
     return null;
   }
 
+  @Override
   public void restoreThreadContexts(WorkContextMapInterceptor contexts) {
     if (contexts != null) {
       ((WorkContextMapInterceptor)getMap()).restoreThreadContexts(contexts);
     }
   }
 
+  @Override
   public WorkContextMapInterceptor suspendThreadContexts() {
     WorkContextMapInterceptor map = getInterceptor();
     if (map != null) {
@@ -255,6 +272,7 @@ import org.glassfish.contextpropagation.weblogic.workarea.spi.WorkContextMapInte
   }
 
   @SuppressWarnings("unchecked")
+  @Override
   public void resumeThreadContexts(WorkContextMapInterceptor contexts) {
     localContextMap.set(contexts);
   }

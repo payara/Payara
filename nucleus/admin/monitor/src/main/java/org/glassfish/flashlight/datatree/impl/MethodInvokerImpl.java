@@ -57,17 +57,21 @@ public class MethodInvokerImpl extends AbstractTreeNode implements MethodInvoker
     Method method;
     Object methodInstance;
 
+    @Override
     public void setMethod (Method m){
         method = m;
     }
+    @Override
     public Method getMethod (){
         return method;
     }
     
+    @Override
     public void setInstance (Object i){
         methodInstance = i;
     }
     
+    @Override
     public Object getInstance (){
     
         return methodInstance;

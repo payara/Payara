@@ -101,10 +101,12 @@ public class DataSourceDefinitionDescriptor extends ResourceDescriptor {
         return deployed;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -116,6 +118,7 @@ public class DataSourceDefinitionDescriptor extends ResourceDescriptor {
     public String getUrl(){
         return url;
     }
+    @Override
     public String getDescription() {
         return description;
     }
@@ -128,6 +131,7 @@ public class DataSourceDefinitionDescriptor extends ResourceDescriptor {
         return transactionSet;
     }
 
+    @Override
     public void setDescription(String description) {
         this.description = description;
     }
@@ -344,6 +348,7 @@ public class DataSourceDefinitionDescriptor extends ResourceDescriptor {
         return properties;
     }
 
+    @Override
     public boolean equals(Object object) {
         if (object instanceof DataSourceDefinitionDescriptor) {
             DataSourceDefinitionDescriptor reference = (DataSourceDefinitionDescriptor) object;
@@ -352,6 +357,7 @@ public class DataSourceDefinitionDescriptor extends ResourceDescriptor {
         return false;
     }
 
+    @Override
     public int hashCode() {
         int result = 17;
         result = 37*result + getName().hashCode();

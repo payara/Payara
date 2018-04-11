@@ -135,6 +135,7 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
     SFTPClient ftpClient=null;
     private WindowsRemoteFile wrf;
 
+    @Override
     public void execute(AdminCommandContext context) {
         report = context.getActionReport();
         logger = context.getLogger();

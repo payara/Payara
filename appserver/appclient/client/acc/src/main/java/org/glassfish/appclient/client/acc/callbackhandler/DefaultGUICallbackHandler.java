@@ -105,6 +105,7 @@ public class DefaultGUICallbackHandler implements javax.security.auth.callback.C
      * @throws UnsupportedCallbackException if this handler does not support the
      * specified callback
      */
+    @Override
     public void handle(Callback[] callbacks) 
             throws IOException, UnsupportedCallbackException {
         new GUILoginDialog(localStrings.get("dialog.user"), callbacks);

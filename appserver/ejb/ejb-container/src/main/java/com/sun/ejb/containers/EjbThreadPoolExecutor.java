@@ -115,6 +115,7 @@ public class EjbThreadPoolExecutor extends ThreadPoolExecutor {
             this.threadPoolName = threadPoolName;
         }
 
+        @Override
         public Thread newThread(Runnable r) {
             Thread th = new Thread(r, threadPoolName + threadId.incrementAndGet());
             th.setDaemon(true);

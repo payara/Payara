@@ -96,6 +96,7 @@ public class ListLoggerLevels implements AdminCommand {
 
     private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListLoggerLevels.class);
 
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();

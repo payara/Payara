@@ -56,6 +56,7 @@ public class CompositeDataStringifier implements Stringifier
     {
     }
 
+    @Override
     public String stringify(Object o)
     {
         final StringBuffer buf = new StringBuffer();

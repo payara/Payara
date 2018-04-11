@@ -84,6 +84,7 @@ public class ConnectorNode extends RuntimeBundleNode<ConnectorDescriptor> {
      *
      * @param descriptor the new descriptor
      */
+    @Override
     public void addDescriptor(Object newDescriptor) {
         if (newDescriptor instanceof ResourceAdapter) {
             getSunConnectorDescriptor().setResourceAdapter(
@@ -100,6 +101,7 @@ public class ConnectorNode extends RuntimeBundleNode<ConnectorDescriptor> {
     /** 
      * @return the DOCTYPE that should be written to the XML file
      */
+    @Override
     public String getDocType() {
 	return DTDRegistry.SUN_CONNECTOR_100_DTD_PUBLIC_ID;
     }
@@ -107,6 +109,7 @@ public class ConnectorNode extends RuntimeBundleNode<ConnectorDescriptor> {
     /**
      * @return the SystemID of the XML file
      */
+    @Override
     public String getSystemID() {
 	return DTDRegistry.SUN_CONNECTOR_100_DTD_SYSTEM_ID;
     }
@@ -114,10 +117,12 @@ public class ConnectorNode extends RuntimeBundleNode<ConnectorDescriptor> {
     /**
      * @return NULL for all runtime nodes.
      */
+    @Override
     public List<String> getSystemIDs() {
         return null;
     }
     
+    @Override
     protected XMLElement getXMLRootTag() {
         return new XMLElement(RuntimeTagNames.S1AS_CONNECTOR_RUNTIME_TAG);
     }      
@@ -144,6 +149,7 @@ public class ConnectorNode extends RuntimeBundleNode<ConnectorDescriptor> {
         return connector;
     }
 
+    @Override
     public ConnectorDescriptor getDescriptor() {
         return descriptor;
     }
@@ -156,6 +162,7 @@ public class ConnectorNode extends RuntimeBundleNode<ConnectorDescriptor> {
      * @param the descriptor to write
      * @return the DOM tree top node
      */    
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, ConnectorDescriptor connector) {
 	Node connectorNode = super.writeDescriptor(parent, nodeName, connector);
 	

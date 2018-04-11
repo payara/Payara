@@ -62,6 +62,7 @@ public class DefaultResourcePrincipalNode extends DeploymentDescriptorNode {
    /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
         return null;
     }
@@ -72,6 +73,7 @@ public class DefaultResourcePrincipalNode extends DeploymentDescriptorNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         if (RuntimeTagNames.NAME.equals(element.getQName())) {
             name = value;
@@ -83,6 +85,7 @@ public class DefaultResourcePrincipalNode extends DeploymentDescriptorNode {
     /**
      * notification of the end of XML parsing for this node
      */
+    @Override
     public void postParsing() {   
         if (getParentNode().getDescriptor() instanceof ResourceReferenceDescriptor) {
             ((ResourceReferenceDescriptor) getParentNode().getDescriptor()).setResourcePrincipal(new ResourcePrincipal(name, passwd));

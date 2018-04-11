@@ -63,10 +63,12 @@ public class DescribableDescriptor extends Descriptor {
     public DescribableDescriptor() {
     }
     
+    @Override
     public void setDescription(String description) {
         this.description = description;
     }
     
+    @Override
     public String  getDescription() {
         return description;
     }    

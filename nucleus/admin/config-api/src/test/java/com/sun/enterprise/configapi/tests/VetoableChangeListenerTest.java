@@ -65,6 +65,7 @@ public class VetoableChangeListenerTest extends ConfigApiTest implements Vetoabl
     ServiceLocator habitat;
     boolean result = false;
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -96,6 +97,7 @@ public class VetoableChangeListenerTest extends ConfigApiTest implements Vetoabl
         try {
             ConfigSupport.apply(new SingleConfigCode<VirtualServer>() {
 
+                @Override
                 public Object run(VirtualServer param) throws PropertyVetoException, TransactionFailure {
                     param.setId("foo");
                     param.setAccessLog("Foo");
@@ -115,6 +117,7 @@ public class VetoableChangeListenerTest extends ConfigApiTest implements Vetoabl
         try {
             ConfigSupport.apply(new SingleConfigCode<VirtualServer>() {
 
+                @Override
                 public Object run(VirtualServer param) throws PropertyVetoException, TransactionFailure {
                     param.setId("foo");
                     param.setAccessLog("Foo");
@@ -135,6 +138,7 @@ public class VetoableChangeListenerTest extends ConfigApiTest implements Vetoabl
         try {
             ConfigSupport.apply(new SingleConfigCode<VirtualServer>() {
 
+                @Override
                 public Object run(VirtualServer param) throws PropertyVetoException, TransactionFailure {
                     // first one is fine...
                     param.setAccessLog("Foo");
@@ -151,6 +155,7 @@ public class VetoableChangeListenerTest extends ConfigApiTest implements Vetoabl
     }
 
 
+    @Override
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
         throw new PropertyVetoException("I don't think so !", evt);
     }

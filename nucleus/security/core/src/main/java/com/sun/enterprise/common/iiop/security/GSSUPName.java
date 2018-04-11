@@ -259,6 +259,7 @@ public class GSSUPName {
         return username;
     }
 
+    @Override
     public boolean equals(Object o) {
 	if(o instanceof GSSUPName) {
 	    GSSUPName nm = (GSSUPName)o;
@@ -269,11 +270,13 @@ public class GSSUPName {
     }
 
     /* Return the hashCode. */
+    @Override
     public int hashCode() {
 	return username.hashCode() + realm.hashCode();
     }
 
     /* String representation of the GSSUPname */
+    @Override
     public String toString() {
 	String s = "Username = " + username;
 	s = s + " Realm = " + realm;

@@ -109,10 +109,12 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
                 new Class[] {Application.class} /* requires Application from dol */);
     }
 
+    @Override
     protected void generateArtifacts(DeploymentContext dc) throws DeploymentException {
         // Noting to generate yet!!
     }
 
+    @Override
     protected void cleanArtifacts(DeploymentContext dc) throws DeploymentException {
         // Drop tables if needed on undeploy.
         OpsParams params = dc.getCommandParameters(OpsParams.class);
@@ -155,6 +157,7 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
     /**
      * @inheritDoc
      */
+    @Override
     public <V> V loadMetaData(Class<V> type, DeploymentContext context) {
         return null;
     }
@@ -359,6 +362,7 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
      * @inheritDoc
      */
     //@Override
+    @Override
     public JPApplicationContainer load(JPAContainer container, DeploymentContext context) {
         return new JPApplicationContainer();
     }

@@ -64,6 +64,7 @@ public class GFAppClientRuntimeNode extends AppClientRuntimeNode {
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return new XMLElement(RuntimeTagNames.GF_APPCLIENT_RUNTIME_TAG);
     }    
@@ -71,6 +72,7 @@ public class GFAppClientRuntimeNode extends AppClientRuntimeNode {
     /** 
      * @return the DOCTYPE that should be written to the XML file
      */
+    @Override
     public String getDocType() {
         return DTDRegistry.GF_APPCLIENT_602_DTD_PUBLIC_ID;
     }
@@ -78,6 +80,7 @@ public class GFAppClientRuntimeNode extends AppClientRuntimeNode {
     /**
      * @return the SystemID of the XML file
      */
+    @Override
     public String getSystemID() {
         return DTDRegistry.GF_APPCLIENT_602_DTD_SYSTEM_ID;
     }

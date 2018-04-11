@@ -54,6 +54,7 @@ import com.sun.enterprise.config.serverbeans.Config;
  */
 public class GetElementTypeByNameTest extends ConfigApiTest {
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }

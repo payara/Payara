@@ -105,6 +105,7 @@ public class OTSResourceImpl extends OTSResourcePOA implements OTSResource {
      *                               by the resource manager.
      */
 
+    @Override
     public void commit() throws NotPrepared, HeuristicRollback,
             HeuristicHazard, HeuristicMixed, SystemException {
 
@@ -166,6 +167,7 @@ public class OTSResourceImpl extends OTSResourcePOA implements OTSResource {
      * @exception SystemException    an unindentified error has been reported
      *                               by the resource manager.
      */
+    @Override
     public void commit_one_phase() throws HeuristicHazard, SystemException {
 
         //ensureInitialized();
@@ -232,6 +234,7 @@ public class OTSResourceImpl extends OTSResourcePOA implements OTSResource {
      * The resource manager can forget all knowledge of the transaction.
      *
      */
+    @Override
     public void forget() {
 
         //ensureInitialized();
@@ -261,6 +264,7 @@ public class OTSResourceImpl extends OTSResourcePOA implements OTSResource {
      *                               some updates have been commited
      *                               and others rolled back.
      */
+    @Override
     public Vote prepare() throws HeuristicHazard, HeuristicMixed {
 
         //ensureInitialized();
@@ -318,6 +322,7 @@ public class OTSResourceImpl extends OTSResourcePOA implements OTSResource {
      * @exception SystemException    an unindentified error has been reported
      *                               by the resource manager
      */
+    @Override
     public  void rollback() throws HeuristicCommit, HeuristicMixed,
             HeuristicHazard, SystemException {
 
@@ -385,6 +390,7 @@ public class OTSResourceImpl extends OTSResourcePOA implements OTSResource {
      *         by org.omg.CosTransactions.otid_t
      *
      */
+    @Override
     public otid_t getGlobalTID() {
 
         byte[] gtrid = xid.getGlobalTransactionId();
@@ -428,6 +434,7 @@ public class OTSResourceImpl extends OTSResourcePOA implements OTSResource {
         return thisRef;
     }
 
+    @Override
     public final String toString() {
         return "OTSResource : XAResource " + xaRes + " XID " + xid;
     }
@@ -489,34 +496,42 @@ public class OTSResourceImpl extends OTSResourcePOA implements OTSResource {
      * interface method implementation below shall be discarded.
      */
 
+    @Override
     public org.omg.CORBA.Object _duplicate() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public void _release() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public boolean _is_a(String repository_id) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public boolean _is_equivalent(org.omg.CORBA.Object that) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public boolean _non_existent() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public int _hash(int maximum) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public Request _request(String operation) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public Request _create_request(Context ctx,
 				   String operation,
 				   NVList arg_list,
@@ -524,6 +539,7 @@ public class OTSResourceImpl extends OTSResourcePOA implements OTSResource {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public Request _create_request(Context ctx,
 				   String operation,
 				   NVList arg_list,
@@ -533,18 +549,22 @@ public class OTSResourceImpl extends OTSResourcePOA implements OTSResource {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public org.omg.CORBA.Object _get_interface_def() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public org.omg.CORBA.Policy _get_policy(int policy_type) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public org.omg.CORBA.DomainManager[] _get_domain_managers() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public org.omg.CORBA.Object _set_policy_override(
             org.omg.CORBA.Policy[] policies,
             org.omg.CORBA.SetOverrideType set_add) {

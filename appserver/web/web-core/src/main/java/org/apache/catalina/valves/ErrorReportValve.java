@@ -125,6 +125,7 @@ public class ErrorReportValve
     /**
      * Return descriptive information about this Valve implementation.
      */
+    @Override
     public String getInfo() {
 
         return (info);
@@ -145,6 +146,7 @@ public class ErrorReportValve
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet error occurs
      */
+    @Override
      public int invoke(Request request, Response response)
          throws IOException, ServletException {
 
@@ -153,6 +155,7 @@ public class ErrorReportValve
 
      }
 
+    @Override
      public void postInvoke(Request request, Response response)
          throws IOException, ServletException {
 
@@ -234,6 +237,7 @@ public class ErrorReportValve
     /**
      * Return a String rendering of this object.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("ErrorReportValve[");

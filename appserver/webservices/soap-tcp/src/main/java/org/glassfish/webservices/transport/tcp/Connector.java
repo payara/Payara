@@ -76,6 +76,7 @@ public class Connector implements WSTCPConnector {
         processor = IncomeMessageProcessor.registerListener(port, listener, properties);
     }
 
+    @Override
     public void listen() throws IOException {
     }
 
@@ -94,35 +95,44 @@ public class Connector implements WSTCPConnector {
         processor.notifyClosed(channel);
     }
 
+    @Override
     public String getHost() {
         return host;
     }
 
+    @Override
     public void setHost(String host) {
     }
 
+    @Override
     public int getPort() {
         return port;
     }
 
+    @Override
     public void setPort(int port) {
     }
 
+    @Override
     public TCPMessageListener getListener() {
         return listener;
     }
 
+    @Override
     public void setListener(TCPMessageListener arg0) {
     }
 
+    @Override
     public void setFrameSize(int frameSize) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public int getFrameSize() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void close() {
         IncomeMessageProcessor.releaseListener(port);
     }

@@ -154,6 +154,7 @@ class DirectoryClassPathElement extends ClassPathElement {
    * If this class path element resolves the class, return a 
    * ClassFileSource for the class.
    */
+  @Override
   public ClassFileSource sourceOf(String className) {
     File f = fileOf(className);
     if (f != null && f.exists()) {
@@ -162,6 +163,7 @@ class DirectoryClassPathElement extends ClassPathElement {
     return null;
   }
 
+  @Override
   public Enumeration classesInPackage(String packageName) {
     if (!exists)
       return null;
@@ -169,6 +171,7 @@ class DirectoryClassPathElement extends ClassPathElement {
     return new DirectoryClassPackageEnumerator(directory, packageName);
   }
 
+  @Override
   boolean matches(File matchDirectory) {
     String dir = FilePath.canonicalize(directory);
     String matchDir = FilePath.canonicalize(matchDirectory);
@@ -233,6 +236,7 @@ class ZipFileClassPathElement extends ClassPathElement {
    * If this class path element resolves the class, return a 
    * ClassFileSource for the class.
    */
+  @Override
   public ClassFileSource sourceOf(String className) {
     if (zipFile != null) {
       ZipEntry entry =
@@ -244,6 +248,7 @@ class ZipFileClassPathElement extends ClassPathElement {
     return null;
   }
 
+  @Override
   public Enumeration classesInPackage(String packageName) {
     if (zipFile == null)
       return null;
@@ -251,6 +256,7 @@ class ZipFileClassPathElement extends ClassPathElement {
     return new ZipFileClassPackageEnumerator(zipFile, packageName);
   }
 
+  @Override
   boolean matches(File directory) {
     return false;
   }
@@ -311,10 +317,12 @@ class DirectoryClassPackageEnumerator
     }
   }
 
+  @Override
   public boolean hasMoreElements() {
     return (nextMatch >= 0);
   }
 
+  @Override
   public Object nextElement() {
     if (!hasMoreElements())
       throw new NoSuchElementException();
@@ -329,6 +337,7 @@ class DirectoryClassPackageEnumerator
    * Needed for FilenameFilter implementation.
    */
 
+  @Override
   public boolean accept(File dir, String name) {
     int nameLength = name.length();
     boolean isOk = (nameLength > 6 &&
@@ -353,6 +362,7 @@ class ZipFileClassPackageEnumerator implements Enumeration {
     this.packageName = packageName;
   }
 
+  @Override
   public boolean hasMoreElements() {
     while (nextEntry == null && zipFileEntries != null &&
 	   zipFileEntries.hasMoreElements()) {
@@ -381,6 +391,7 @@ class ZipFileClassPackageEnumerator implements Enumeration {
     return nextEntry != null;
   }
 
+  @Override
   public Object nextElement() {
     if (!hasMoreElements())
       throw new NoSuchElementException();

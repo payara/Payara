@@ -68,6 +68,7 @@ public abstract class CoordinatorResourcePOA extends org.omg.PortableServer.Serv
     _methods.put ("forget", 6);
   }
 
+  @Override
   public org.omg.CORBA.portable.OutputStream _invoke (String $method,
                                 org.omg.CORBA.portable.InputStream in,
                                 org.omg.CORBA.portable.ResponseHandler $rh)
@@ -182,6 +183,7 @@ public abstract class CoordinatorResourcePOA extends org.omg.PortableServer.Serv
     "IDL:omg.org/CosTransactions/SubtransactionAwareResource:1.0", 
     "IDL:omg.org/CosTransactions/Resource:1.0"};
 
+  @Override
   public String[] _all_interfaces (org.omg.PortableServer.POA poa, byte[] objectId)
   {
     return (String[])__ids.clone ();

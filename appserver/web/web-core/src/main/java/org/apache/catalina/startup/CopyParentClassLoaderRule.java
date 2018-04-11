@@ -105,6 +105,7 @@ public class CopyParentClassLoaderRule extends Rule {
      *
      * @exception Exception if a processing error occurs
      */
+    @Override
     public void begin(Attributes attributes) throws Exception {
 
         if (digester.getDebug() >= 1)

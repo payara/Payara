@@ -99,6 +99,7 @@ public class ConsoleClassLoader extends ClassLoader {
      *	<p> In order for this method to find the Resource...
      *	    </p>
      */
+    @Override
     public URL findResource(String name) {
 //System.out.println("Find Resource: " + name);
 	// Find module name

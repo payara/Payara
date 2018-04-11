@@ -78,6 +78,7 @@ public class EndpointImpl implements Endpoint {
      * @return the endpoint URL as a string. This is the URL
      * web service clients use to invoke the endpoint.
      */
+    @Override
     public String getEndpointSelector() {        
         return endpointSelector;
     }
@@ -85,6 +86,7 @@ public class EndpointImpl implements Endpoint {
     /**
      * @return the endpoint type
      */
+    @Override
     public EndpointType getEndpointType() {
         return type;
     }
@@ -92,6 +94,7 @@ public class EndpointImpl implements Endpoint {
     /**
      * Returns the Transport type 
      */
+    @Override
     public TransportType getTransport() {
         return TransportType.HTTP;
     }
@@ -100,6 +103,7 @@ public class EndpointImpl implements Endpoint {
      * registers a new SOAPMessageListener for this endpoint
      * @param  newListener instance to register.
      */
+    @Override
     public void addListener(MessageListener newListener) {
         listeners.add(newListener);
     }
@@ -108,6 +112,7 @@ public class EndpointImpl implements Endpoint {
      * unregiters a SOAPMessageListener for this endpoint
      * @param  listener instance to unregister.
      */
+    @Override
     public void removeListener(MessageListener listener) {
         listeners.remove(listener);
     }
@@ -124,6 +129,7 @@ public class EndpointImpl implements Endpoint {
      * Return the deployment descriptors associated with this 
      * endpoint.
      */
+    @Override
     public WebServiceEndpoint getDescriptor() {
         return endpointDesc;
     }

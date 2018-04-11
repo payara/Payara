@@ -53,6 +53,7 @@ package com.sun.jts.codegen.otsidl;
 public class _CoordinatorResourceStub extends org.omg.CORBA.portable.ObjectImpl implements com.sun.jts.codegen.otsidl.CoordinatorResource
 {
 
+  @Override
   public void commit_subtransaction (org.omg.CosTransactions.Coordinator parent)
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -71,6 +72,7 @@ public class _CoordinatorResourceStub extends org.omg.CORBA.portable.ObjectImpl 
     }
   } // commit_subtransaction
 
+  @Override
   public void rollback_subtransaction ()
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -88,6 +90,7 @@ public class _CoordinatorResourceStub extends org.omg.CORBA.portable.ObjectImpl 
     }
   } // rollback_subtransaction
 
+  @Override
   public org.omg.CosTransactions.Vote prepare () throws org.omg.CosTransactions.HeuristicMixed, org.omg.CosTransactions.HeuristicHazard
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -112,6 +115,7 @@ public class _CoordinatorResourceStub extends org.omg.CORBA.portable.ObjectImpl 
     }
   } // prepare
 
+  @Override
   public void rollback () throws org.omg.CosTransactions.HeuristicCommit, org.omg.CosTransactions.HeuristicMixed, org.omg.CosTransactions.HeuristicHazard
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -136,6 +140,7 @@ public class _CoordinatorResourceStub extends org.omg.CORBA.portable.ObjectImpl 
     }
   } // rollback
 
+  @Override
   public void commit () throws org.omg.CosTransactions.NotPrepared, org.omg.CosTransactions.HeuristicRollback, org.omg.CosTransactions.HeuristicMixed, org.omg.CosTransactions.HeuristicHazard
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -162,6 +167,7 @@ public class _CoordinatorResourceStub extends org.omg.CORBA.portable.ObjectImpl 
     }
   } // commit
 
+  @Override
   public void commit_one_phase () throws org.omg.CosTransactions.HeuristicHazard
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -182,6 +188,7 @@ public class _CoordinatorResourceStub extends org.omg.CORBA.portable.ObjectImpl 
     }
   } // commit_one_phase
 
+  @Override
   public void forget ()
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -205,6 +212,7 @@ public class _CoordinatorResourceStub extends org.omg.CORBA.portable.ObjectImpl 
     "IDL:omg.org/CosTransactions/SubtransactionAwareResource:1.0", 
     "IDL:omg.org/CosTransactions/Resource:1.0"};
 
+  @Override
   public String[] _ids ()
   {
     return (String[])__ids.clone ();

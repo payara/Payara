@@ -61,6 +61,7 @@ public class RuntimeSecurityMap {
         this.groupMap = (HashMap) groupMap.clone();
     }
 
+    @Override
     public boolean equals(Object map) {
         if (map instanceof RuntimeSecurityMap) {
             RuntimeSecurityMap rsm = (RuntimeSecurityMap) map;
@@ -74,10 +75,12 @@ public class RuntimeSecurityMap {
         return false;
     }
 
+    @Override
     public int hashCode(){
         return this.userMap.hashCode() + this.groupMap.hashCode();
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         // implement

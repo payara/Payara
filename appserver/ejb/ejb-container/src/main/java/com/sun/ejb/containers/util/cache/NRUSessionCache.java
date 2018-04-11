@@ -57,17 +57,20 @@ public class NRUSessionCache
         super("NRU-" + cacheName, container, cacheIdleTime, removalTime);
     }
 
+    @Override
     public void init(int maxEntries, float loadFactor, Properties props) {
         super.init(maxEntries, loadFactor, props);
         orderingThreshold = (int) (0.75 * threshold);
     }
     
+    @Override
     protected CacheItem itemAdded(CacheItem item) {
         CacheItem addedItem = super.itemAdded(item);
         doOrdering = (entryCount >= orderingThreshold);
         return addedItem;
     }
     
+    @Override
     protected void itemAccessed(CacheItem item) {
         LruCacheItem lc = (LruCacheItem) item;
         synchronized (this) {
@@ -83,14 +86,17 @@ public class NRUSessionCache
         }
     }
 
+    @Override
     protected void itemRefreshed(CacheItem item, int oldSize) {
     }
     
+    @Override
     protected void itemRemoved(CacheItem item) {
         super.itemRemoved(item);
         doOrdering = (entryCount >= orderingThreshold);
     }
 
+    @Override
     public void trimTimedoutItems(int  maxCount) {
         // If we are maintaining an ordered list use 
         // the superclass method for trimming

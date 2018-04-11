@@ -149,6 +149,7 @@ public abstract class PersistenceElement extends Object
 	 * of this persistence element.
 	 * @return a string representation of the object
 	 */
+        @Override
 	public String toString () { return getName(); }
 
     /** Overrides Object's <code>equals</code> method by comparing the name of this persistence element
@@ -157,6 +158,7 @@ public abstract class PersistenceElement extends Object
 	 * @return <code>true</code> if this object is the same as the obj argument; <code>false</code> otherwise.
      * @param obj the reference object with which to compare.
      */
+        @Override
     public boolean equals(Object obj)
     {
         if (obj == null)
@@ -171,6 +173,7 @@ public abstract class PersistenceElement extends Object
     /** Overrides Object's <code>hashCode</code> method to return the hashCode of this persistence element's name.
      * @return a hash code value for this object.
      */
+        @Override
     public int hashCode()
     {
         return (getName()==null) ? 0 : getName().hashCode();
@@ -189,6 +192,7 @@ public abstract class PersistenceElement extends Object
      * or greater than the specified object.
      * @exception ClassCastException - if the specified object is null or is not an instance of PersistenceElement
      */
+        @Override
     public int compareTo(Object o)
     {
         // null is not allowed

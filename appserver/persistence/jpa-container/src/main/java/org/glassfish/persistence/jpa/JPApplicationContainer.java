@@ -61,14 +61,17 @@ public class JPApplicationContainer implements ApplicationContainer {
     }
 
     //-------------- Begin Methods implementing ApplicationContainer interface -------------- //
+    @Override
     public Object getDescriptor() {
         return null;
     }
 
+    @Override
     public boolean start(ApplicationContext startupContxt) {
         return true;
     }
 
+    @Override
     public boolean stop(ApplicationContext stopContext) {
         return true;
     }
@@ -78,6 +81,7 @@ public class JPApplicationContainer implements ApplicationContainer {
      *
      * @return true if suspending was successful, false otherwise.
      */
+    @Override
     public boolean suspend() {
         // Not (yet) supported
         return false;
@@ -88,11 +92,13 @@ public class JPApplicationContainer implements ApplicationContainer {
      *
      * @return true if resumption was successful, false otherwise.
      */
+    @Override
     public boolean resume() {
         // Not (yet) supported
         return false;
     }
 
+    @Override
     public ClassLoader getClassLoader() {
         //TODO: Check with Jerome. Should this return anything but null? currently it does not seem so.
         return null;

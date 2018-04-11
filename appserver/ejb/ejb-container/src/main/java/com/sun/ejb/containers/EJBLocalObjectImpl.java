@@ -170,6 +170,7 @@ public abstract class EJBLocalObjectImpl
         return localObjectImpl;
     }    
     
+    @Override
     public EJBLocalHome getEJBLocalHome() throws EJBException {
         container.authorizeLocalMethod(
             BaseContainer.EJBLocalObject_getEJBLocalHome);
@@ -178,6 +179,7 @@ public abstract class EJBLocalObjectImpl
         return container.getEJBLocalHome();
     }
     
+    @Override
     public void remove() throws RemoveException, EJBException {
 
         // authorization is performed within container
@@ -194,6 +196,7 @@ public abstract class EJBLocalObjectImpl
         }
     }
     
+    @Override
     public Object getPrimaryKey()
         throws EJBException
     {
@@ -201,6 +204,7 @@ public abstract class EJBLocalObjectImpl
             return primaryKey;
     }
     
+    @Override
     public boolean isIdentical(EJBLocalObject other)
         throws EJBException
     {
@@ -219,6 +223,7 @@ public abstract class EJBLocalObjectImpl
     /**
      * Called from EJBUtils.EJBObjectOutputStream.replaceObject
      */
+    @Override
     public SerializableObjectFactory getSerializableObjectFactory() {
         // Note: for stateful SessionBeans, the EJBLocalObjectImpl contains
         // a pointer to the EJBContext. We should not serialize it here.

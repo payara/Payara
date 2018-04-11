@@ -132,6 +132,7 @@ public class ResourceSpec implements Serializable {
      * resourceId and resourceType                                *
      */
 
+    @Override
     public boolean equals(Object other) {
         if (other == null) return false;
         if (other instanceof ResourceSpec) {
@@ -155,6 +156,7 @@ public class ResourceSpec implements Serializable {
      * If connectionpool is null return the hashcode of
      * resourceId + resourceIdType
      */
+    @Override
     public int hashCode() {
         if (poolInfo == null) {
             return resourceId.hashCode() + resourceIdType;
@@ -214,6 +216,7 @@ public class ResourceSpec implements Serializable {
         return connectionToAssoc_;
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer("ResourceSpec :- ");
         sb.append("\nconnectionPoolName : ").append(poolInfo);

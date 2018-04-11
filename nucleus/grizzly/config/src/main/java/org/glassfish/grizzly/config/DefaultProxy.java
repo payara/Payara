@@ -68,6 +68,7 @@ public class DefaultProxy implements InvocationHandler {
         return parent;
     }
 
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Object value = null;
         if (methods.get(method.getName()) != null) {

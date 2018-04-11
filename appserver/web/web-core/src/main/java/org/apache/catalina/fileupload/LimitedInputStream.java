@@ -132,6 +132,7 @@ abstract class LimitedInputStream
      * @exception  IOException  if an I/O error occurs.
      * @see        java.io.FilterInputStream#in
      */
+    @Override
     public int read() throws IOException {
         int res = super.read();
         if (res != -1) {
@@ -164,6 +165,7 @@ abstract class LimitedInputStream
      * @exception  IOException  if an I/O error occurs.
      * @see        java.io.FilterInputStream#in
      */
+    @Override
     public int read(byte[] b, int off, int len) throws IOException {
         int res = super.read(b, off, len);
         if (res > 0) {
@@ -191,6 +193,7 @@ abstract class LimitedInputStream
      * @exception  IOException  if an I/O error occurs.
      * @see        java.io.FilterInputStream#in
      */
+    @Override
     public void close() throws IOException {
         closed = true;
         super.close();

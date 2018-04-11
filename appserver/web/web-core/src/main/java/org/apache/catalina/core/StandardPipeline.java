@@ -211,6 +211,7 @@ public class StandardPipeline
     /**
      * Return the Container with which this Pipeline is associated.
      */
+    @Override
     public Container getContainer() {
 
         return (this.container);
@@ -223,6 +224,7 @@ public class StandardPipeline
      *
      * @param container The new associated container
      */
+    @Override
     public void setContainer(Container container) {
         this.container = container;
     }
@@ -235,6 +237,7 @@ public class StandardPipeline
      *
      * @param listener The listener to add
      */
+    @Override
     public void addLifecycleListener(LifecycleListener listener) {
         lifecycle.addLifecycleListener(listener);
     }
@@ -244,6 +247,7 @@ public class StandardPipeline
      * Gets the (possibly empty) list of lifecycle listeners
      * associated with this Pipeline.
      */
+    @Override
     public List<LifecycleListener> findLifecycleListeners() {
         return lifecycle.findLifecycleListeners();
     }
@@ -254,6 +258,7 @@ public class StandardPipeline
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removeLifecycleListener(LifecycleListener listener) {
         lifecycle.removeLifecycleListener(listener);
     }
@@ -267,6 +272,7 @@ public class StandardPipeline
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents it from being started
      */
+    @Override
     public synchronized void start() throws LifecycleException {
 
         // Validate and update our current component state
@@ -311,6 +317,7 @@ public class StandardPipeline
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
     public synchronized void stop() throws LifecycleException {
 
         // Validate and update our current component state
@@ -356,6 +363,7 @@ public class StandardPipeline
      * <p>Return the Valve instance that has been distinguished as the basic
      * Valve for this Pipeline (if any).
      */
+    @Override
     public GlassFishValve getBasic() {
 
         return (this.basic);
@@ -375,6 +383,7 @@ public class StandardPipeline
      *
      * @param valve Valve to be distinguished as the basic Valve
      */
+    @Override
     public void setBasic(GlassFishValve valve) {
 
         // Change components if necessary
@@ -454,6 +463,7 @@ public class StandardPipeline
      * @exception IllegalStateException if the specified Valve is already
      *  associated with a different Container
      */
+    @Override
     public void addValve(GlassFishValve valve) {
 
         if (firstTcValve != null) {
@@ -492,6 +502,7 @@ public class StandardPipeline
     /**
      * Add Tomcat-style valve.
      */
+    @Override
     public synchronized void addValve(Valve valve) {
 
         /*
@@ -543,6 +554,7 @@ public class StandardPipeline
      * Container, including the basic Valve (if any).  If there are no
      * such Valves, a zero-length array is returned.
      */
+    @Override
     public GlassFishValve[] getValves() {
         if (basic == null) {
             return (valves);
@@ -558,6 +570,7 @@ public class StandardPipeline
      * @return true if this pipeline has any non basic valves, false
      * otherwise
      */
+    @Override
     public boolean hasNonBasicValves() {
         return ((valves != null && valves.length > 0) || firstTcValve != null);
     }
@@ -588,6 +601,7 @@ public class StandardPipeline
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet exception is thrown
      */
+    @Override
     public void invoke(Request request, Response response)
             throws IOException, ServletException {
         doInvoke(request,response,false);
@@ -773,6 +787,7 @@ public class StandardPipeline
      *
      * @param valve Valve to be removed
      */
+    @Override
     public void removeValve(GlassFishValve valve) {
 
         // Locate this Valve in our list

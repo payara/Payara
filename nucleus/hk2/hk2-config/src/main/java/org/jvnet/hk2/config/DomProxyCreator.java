@@ -64,6 +64,7 @@ final class DomProxyCreator<T extends ConfigBeanProxy> implements Creator<T> {
         this.dom = dom;
     }
 
+    @Override
     public T create() {
         if (proxyInstance == null) {
             synchronized (this) {

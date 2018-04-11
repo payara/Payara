@@ -62,6 +62,7 @@ public class ResourcePrincipal extends  PrincipalImpl {
         return password;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null) return false;
@@ -73,6 +74,7 @@ public class ResourcePrincipal extends  PrincipalImpl {
         return false;
     }
 
+    @Override
     public int hashCode() {
         int result = NULL_HASH_CODE;
         String name = getName();

@@ -56,11 +56,13 @@ public class ConstInterfaceMethodRef extends ConstBasicMemberRef {
   /**
    * The tag of this constant entry
    */
+  @Override
   public int tag () { return MyTag; }
 
   /**
    * A printable representation
    */
+  @Override
   public String toString () {
       return "CONSTANTInterfaceMethodRef(" + indexAsString() + "): " + //NOI18N
            super.toString();

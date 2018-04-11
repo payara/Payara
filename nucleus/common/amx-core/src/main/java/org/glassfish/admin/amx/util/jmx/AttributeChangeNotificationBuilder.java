@@ -55,6 +55,7 @@ public class AttributeChangeNotificationBuilder extends NotificationBuilder
         super(AttributeChangeNotification.ATTRIBUTE_CHANGE, source);
     }
 
+    @Override
     public final Notification buildNew()
     {
         throw new IllegalArgumentException();

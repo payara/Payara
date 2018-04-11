@@ -82,6 +82,7 @@ public abstract class AbstractLoggerFactory implements LoggerFactory
 	 * @param loader the class loader used to load the resource bundle, or null
 	 * @return the logger
 	 */
+        @Override
 	public synchronized Logger getLogger (String relativeLoggerName, 
 		String bundleName, ClassLoader loader)
 	{

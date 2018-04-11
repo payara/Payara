@@ -166,6 +166,7 @@ public class RepositoryConfig extends HashMap<String, Object> {
                 getFilePath(envProperties.get(SystemPropertyConstants.CONFIG_ROOT_PROPERTY)));
     }
 
+    @Override
     public String toString() {
         return ("repositoryRoot " + _repositoryRoot + " repositoryName " + _repositoryName
                 + " instanceName " + _instanceName + " configurationName " + _configurationName);

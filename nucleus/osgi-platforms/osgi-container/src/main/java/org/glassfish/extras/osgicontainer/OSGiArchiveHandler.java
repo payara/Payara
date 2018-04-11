@@ -101,27 +101,33 @@ public class OSGiArchiveHandler extends GenericHandler implements CompositeHandl
     private String SCHEME_SEP = ":";
 
 
+    @Override
     public String getArchiveType() {
         return OSGiArchiveDetector.OSGI_ARCHIVE_TYPE;
     }
 
+    @Override
     public boolean accept(ReadableArchive source, String entryName) {
         // we hide everything so far.
         return false;
     }
 
+    @Override
     public void initCompositeMetaData(DeploymentContext context) {
         // nothing to initialize
     }
 
+    @Override
     public boolean handles(ReadableArchive archive) throws IOException {
         return detector.handles(archive);
     }
 
+    @Override
     public ClassLoader getClassLoader(ClassLoader parent, DeploymentContext context) {
         return parent;
     }
 
+    @Override
     public String getDefaultApplicationName(ReadableArchive archive,
                                             DeploymentContext context) {
         return getDefaultApplicationNameFromArchiveName(archive);
@@ -269,6 +275,7 @@ public class OSGiArchiveHandler extends GenericHandler implements CompositeHandl
      * @param archive file
      * @return whether this archive requires annotation scanning
      */
+    @Override
     public boolean requiresAnnotationScanning(ReadableArchive archive) {
         return false;
     }

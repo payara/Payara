@@ -55,6 +55,7 @@ public class WebHello extends HttpServlet {
         System.out.println("Servlet WEB-HELLO initialized");
     }
 
+    @Override
     public void doGet(HttpServletRequest req, HttpServletResponse res)
             throws IOException, ServletException {
         PrintWriter pw = res.getWriter();

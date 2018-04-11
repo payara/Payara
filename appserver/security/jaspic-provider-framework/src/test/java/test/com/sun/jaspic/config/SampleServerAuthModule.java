@@ -57,21 +57,26 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class SampleServerAuthModule implements ServerAuthModule {
 
+    @Override
     public void initialize(MessagePolicy mp, MessagePolicy mp1, CallbackHandler ch, Map map) throws AuthException {
     }
 
+    @Override
     public Class[] getSupportedMessageTypes() {
         return new Class[]{HttpServletRequest.class, HttpServletResponse.class};
     }
 
+    @Override
     public AuthStatus validateRequest(MessageInfo mi, Subject sbjct, Subject sbjct1) throws AuthException {
         return AuthStatus.SUCCESS;
     }
 
+    @Override
     public AuthStatus secureResponse(MessageInfo mi, Subject sbjct) throws AuthException {
         return AuthStatus.SEND_SUCCESS;
     }
 
+    @Override
     public void cleanSubject(MessageInfo mi, Subject sbjct) throws AuthException {
     }
 }

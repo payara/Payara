@@ -60,6 +60,7 @@ public class UniqueResourceNameValidator implements ConstraintValidator<UniqueRe
 
     Domain domain = null;
 
+    @Override
     public void initialize(final UniqueResourceNameConstraint constraint) {
 
         /*ServiceLocator locator = ServiceLocatorFactory.getInstance().find("default");

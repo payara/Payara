@@ -70,14 +70,17 @@ public final class UnprocessedConfigListener implements PostConstruct, Transacti
         //debug( "UnprocessedConfigListener.UnprocessedConfigListener" );
     }
 
+    @Override
     public void postConstruct() {
         mTransactions.addTransactionsListener(this);
     }
 
+    @Override
     public void transactionCommited(final List<PropertyChangeEvent> changes) {
         // ignore, we only are interested in those that were not processed
     }
 
+    @Override
     public synchronized void unprocessedTransactedEvents(List<UnprocessedChangeEvents> changes) {
         mUnprocessedChangeEvents.addAll(changes);
     }

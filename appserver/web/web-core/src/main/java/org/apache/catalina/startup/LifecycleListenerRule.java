@@ -123,6 +123,7 @@ public class LifecycleListenerRule extends Rule {
      *
      * @exception Exception if a processing error occurs
      */
+    @Override
     public void begin(Attributes attributes) throws Exception {
 
         // Instantiate a new LifecyleListener implementation object

@@ -68,24 +68,29 @@ public class InvocationPolicyImpl
 
     // org.omg.CosTransactions.InvocationPolicyOperations implementation
 
+    @Override
     public short value() {
         return this.value;
     }
 
     // org.omg.CORBA.PolicyOperations implementation
 
+    @Override
     public int policy_type() {
 	return INVOCATION_POLICY_TYPE.value;
     }
 
+    @Override
     public Policy copy() {
 	return new InvocationPolicyImpl(this.value);
     }
 
+    @Override
     public void destroy() {
 	value = EITHER.value;
     }
 
+    @Override
     public String toString() {
 	return "InvocationPolicy[" + this.value + "]";
     }

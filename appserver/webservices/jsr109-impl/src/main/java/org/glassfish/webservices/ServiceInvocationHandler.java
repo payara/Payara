@@ -150,6 +150,7 @@ public class ServiceInvocationHandler implements InvocationHandler {
         addMessageSecurityHandler(delegate);
     }
 
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args)
             throws Throwable {
 

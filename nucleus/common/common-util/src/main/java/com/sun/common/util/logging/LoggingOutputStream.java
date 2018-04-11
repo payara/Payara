@@ -99,6 +99,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
      *
      * @throws java.io.IOException in case of error
      */
+    @Override
     public void flush() throws IOException {
 
         String logMessage = null;
@@ -125,6 +126,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
     private void initializePump() {
         pump = new Thread() {
+            @Override
             public void run() {
                 while (!done.isSignalled()) {
                     try {
@@ -174,6 +176,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
     }
     
+    @Override
     public void close() throws IOException {
         done.tryReleaseShared(1);
         pump.interrupt();
@@ -229,6 +232,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             logger = l;
         }
 
+        @Override
         public void println(Object x) {
             if (!checkLocks()) return;
 
@@ -244,6 +248,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
         }
 
+        @Override
         public PrintStream printf(String str, Object... args) {
             StringBuilder sb = new StringBuilder();
             Formatter formatter = new Formatter(sb, Locale.getDefault());
@@ -252,6 +257,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             return  null;
         }
 
+        @Override
         public PrintStream printf(Locale locale, String str, Object... args) {
             StringBuilder sb = new StringBuilder();
             Formatter formatter = new Formatter(sb, locale);
@@ -260,6 +266,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             return  null;
         }
 
+        @Override
         public PrintStream format(String format, Object... args) {
             StringBuilder sb = new StringBuilder();
             Formatter formatter = new Formatter(sb, Locale.getDefault());
@@ -268,6 +275,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             return  null;
         }
 
+        @Override
         public PrintStream format(Locale locale,String format, Object... args) {
             StringBuilder sb = new StringBuilder();
             Formatter formatter = new Formatter(sb, locale);
@@ -276,6 +284,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             return  null;
         }
 
+        @Override
         public void println(String str) {
             if (!checkLocks()) return;
 
@@ -299,107 +308,126 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             }
         }
 
+        @Override
         public void print(String x) {
             if (checkLocks())
                 super.print(x);
         }
 
 
+        @Override
         public void print(Object x) {
             if (checkLocks())
                 super.print(x);
         }
 
+        @Override
         public void print(boolean x) {
             if (checkLocks()) {
                 super.print(x);
             }
         }
 
+        @Override
         public void println(boolean x) {
             if (checkLocks())
                 super.println(x);
         }
 
+        @Override
         public void print(char x) {
             if (checkLocks()) {
                 super.print(x);
             }
         }
 
+        @Override
         public void println(char x) {
             if (checkLocks())
                 super.println(x);
         }
 
+        @Override
         public void print(int x) {
             if (checkLocks()) {
                 super.print(x);
             }
         }
 
+        @Override
         public void println(int x) {
             if (checkLocks())
                 super.println(x);
         }
 
+        @Override
         public void print(long x) {
             if (checkLocks()) {
                 super.print(x);
             }
         }
 
+        @Override
         public void println(long x) {
             if (checkLocks())
                 super.println(x);
         }
 
+        @Override
         public void print(float x) {
             if (checkLocks()) {
                 super.print(x);
             }
         }
 
+        @Override
         public void println(float x) {
             if (checkLocks())
                 super.println(x);
         }
 
+        @Override
         public void print(double x) {
             if (checkLocks()) {
                 super.print(x);
             }
         }
 
+        @Override
         public void println(double x) {
             if (checkLocks())
                 super.println(x);
         }
 
+        @Override
         public void print(char[] x) {
             if (checkLocks()) {
                 super.print(x);
             }
         }
 
+        @Override
         public void println(char[] x) {
             if (checkLocks())
                 super.println(x);
         }
 
 
+        @Override
         public void println() {
             if (checkLocks()) {
                 super.println();
             }
         }
 
+        @Override
         public void write(byte[] buf, int off, int len) {
             if (checkLocks()) {
                 super.write(buf, off, len);
             }
         }
 
+        @Override
         public void write(int b) {
             if (checkLocks()) {
                 super.write(b);
@@ -465,6 +493,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             cbStream.println(x);
         }
 
+        @Override
         public String toString() {
             return stString;
         }

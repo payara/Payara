@@ -137,11 +137,13 @@ public class CmrFieldMapping extends org.netbeans.modules.schema2beans.BaseBean
 	}
 
 	// This attribute is optional
+        @Override
 	public void setFetchedWith(FetchedWith value) {
 		this.setValue(FETCHED_WITH, value);
 	}
 
 	//
+        @Override
 	public FetchedWith getFetchedWith() {
 		return (FetchedWith)this.getValue(FETCHED_WITH);
 	}
@@ -195,6 +197,7 @@ public class CmrFieldMapping extends org.netbeans.modules.schema2beans.BaseBean
 	}
 
 	// Dump the content of this bean returning it as a String
+        @Override
 	public void dump(StringBuffer str, String indent){
 		String s;
 		Object o;
@@ -232,6 +235,7 @@ public class CmrFieldMapping extends org.netbeans.modules.schema2beans.BaseBean
 		this.dumpAttributes(FETCHED_WITH, 0, str, indent);
 
 	}
+        @Override
 	public String dumpBeanNode(){
 		StringBuffer str = new StringBuffer();
 		str.append("CmrFieldMapping\n");	// NOI18N

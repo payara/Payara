@@ -77,6 +77,7 @@ public class UnprocessedEventsTest  extends ConfigApiTest
      *
      * @return the configuration file name
      */
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -123,6 +124,7 @@ public class UnprocessedEventsTest  extends ConfigApiTest
 
     }
 
+    @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
         assertEquals("Array size", propertyChangeEvents.length, 1 );
         
@@ -132,10 +134,12 @@ public class UnprocessedEventsTest  extends ConfigApiTest
         return unprocessed;
     }
 
+    @Override
     public void transactionCommited(List<PropertyChangeEvent> changes) {
         // don't care...
     }
 
+    @Override
     public void unprocessedTransactedEvents(List<UnprocessedChangeEvents> changes) {
         assertTrue(changes.size()==1);
     }

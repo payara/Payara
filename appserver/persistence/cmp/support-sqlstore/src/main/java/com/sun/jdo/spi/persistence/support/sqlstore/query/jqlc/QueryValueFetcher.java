@@ -80,6 +80,7 @@ public class QueryValueFetcher implements ValueFetcher
      * @param whichOne the parameter index
      * @return the parameter value
      */
+    @Override
     public Object getValue(int whichOne) 
     {
         if (parameters == null || whichOne >= parameters.length) 

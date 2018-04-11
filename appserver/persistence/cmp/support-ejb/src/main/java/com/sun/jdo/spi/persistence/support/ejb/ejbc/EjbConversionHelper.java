@@ -170,6 +170,7 @@ public class EjbConversionHelper implements ConversionHelper {
 
     //---- implements interface ConversionHelper ----
 
+    @Override
     public String getMappedClassName(String ejbName) {
         return nameMapper.getPersistenceClassForEjbName(ejbName);
     }
@@ -183,6 +184,7 @@ public class EjbConversionHelper implements ConversionHelper {
      * @return <code>true</code> if the bean contains the field, otherwise
      * return <code>false</code> 
      */
+    @Override
     public boolean hasField(String ejbName, String fieldName) {
         if (!generateFields && isGeneratedRelationship(ejbName, fieldName))
             return false;
@@ -200,6 +202,7 @@ public class EjbConversionHelper implements ConversionHelper {
      * @param ejbName The ejb-name element for the bean
      * @return an array of fields in the ejb bean 
      */
+    @Override
     public Object[] getFields(String ejbName) {
         HashMap fieldMap = (HashMap)ejbFieldMap.get(ejbName);
         if (fieldMap != null) {
@@ -215,6 +218,7 @@ public class EjbConversionHelper implements ConversionHelper {
     /**
      * The boolean argument candidate is ignored in this case.
      */
+    @Override
     public boolean isKey(String ejbName, String fieldName, boolean candidate) {
         HashMap keyMap = (HashMap)ejbKeyMap.get(ejbName);
         return (keyMap != null) ? (keyMap.get(fieldName) != null) : false;
@@ -224,6 +228,7 @@ public class EjbConversionHelper implements ConversionHelper {
      * This API will only be called from MappingFile when multiplicity is Many
      * on the other role.
      */
+    @Override
     public String getRelationshipFieldType(String ejbName, String fieldName) {
         if (isGeneratedRelationship(ejbName, fieldName)) {
             return java.util.Collection.class.getName();
@@ -238,12 +243,14 @@ public class EjbConversionHelper implements ConversionHelper {
      * getMultiplicity of the other role on the relationship
      * Please note that multiplicity is JDO style
      */
+    @Override
     public String getMultiplicity(String ejbName, String fieldName) {
         RelationRoleDescriptor oppRole = getRelationRoleDescriptor(ejbName,
                 fieldName, false);
         return (oppRole.getIsMany()) ? MANY : ONE;
     }
 
+    @Override
     public String getRelationshipFieldContent(String ejbName, String fieldName) {
         RelationRoleDescriptor oppRole = getRelationRoleDescriptor(ejbName,
                 fieldName, false);
@@ -253,6 +260,7 @@ public class EjbConversionHelper implements ConversionHelper {
     /**
      * This method return the fieldName of relation role on the other end.
      */
+    @Override
     public String getInverseFieldName(String ejbName, String fieldName) {
         RelationRoleDescriptor oppRole = getRelationRoleDescriptor(ejbName,
                 fieldName, false);
@@ -274,6 +282,7 @@ public class EjbConversionHelper implements ConversionHelper {
      * @return <code>true</code> to apply the default unknown PK Class Strategy,
      * <code>false</code> otherwise
      */
+    @Override
     public boolean applyDefaultUnknownPKClassStrategy(String ejbName) {
         IASEjbCMPEntityDescriptor ejbDesc =
                 (IASEjbCMPEntityDescriptor)ejbDescMap.get(ejbName);
@@ -286,6 +295,7 @@ public class EjbConversionHelper implements ConversionHelper {
      * Returns the name used for generated primary key fields.
      * @return a string for key field name
      */
+    @Override
     public String getGeneratedPKFieldName() {
         return nameMapper.GENERATED_KEY_FIELD_NAME;
     }
@@ -294,10 +304,12 @@ public class EjbConversionHelper implements ConversionHelper {
      * Returns the prefix used for generated version fields.
      * @return a string for version field name prefix
      */
+    @Override
     public String getGeneratedVersionFieldNamePrefix() {
         return nameMapper.GENERATED_VERSION_FIELD_PREFIX;
     }
 
+    @Override
     public boolean relatedObjectsAreDeleted(String beanName, String fieldName) {
         RelationRoleDescriptor oppRole = getRelationRoleDescriptor(beanName, fieldName, false);
         return oppRole.getCascadeDelete();
@@ -311,6 +323,7 @@ public class EjbConversionHelper implements ConversionHelper {
      * @return <code>true</code> to generate fields in the dot-mapping file
      * (if they are not present).
      */
+    @Override
     public boolean generateFields() {
         return generateFields;
     }
@@ -321,6 +334,7 @@ public class EjbConversionHelper implements ConversionHelper {
      * @param generateFields a flag which indicates whether fields should be
      * generated
      */
+    @Override
     public void setGenerateFields(boolean generateFields) {
         this.generateFields = generateFields;
     }
@@ -330,6 +344,7 @@ public class EjbConversionHelper implements ConversionHelper {
      * @return <code>true</code> to validate all the fields in the dot-mapping
      * file.
      */
+    @Override
     public boolean ensureValidation() {
         return ensureValidation;
     }
@@ -339,6 +354,7 @@ public class EjbConversionHelper implements ConversionHelper {
      * against schema columns.
      * @param isValidating a boolean of indicating validating fields or not
      */
+    @Override
     public void setEnsureValidation(boolean isValidating) {
         ensureValidation = isValidating;
     }
@@ -353,10 +369,12 @@ public class EjbConversionHelper implements ConversionHelper {
      * otherwise.
      */
 
+    @Override
     public boolean isGeneratedField(String ejbName, String fieldName) {
         return nameMapper.isGeneratedField(ejbName, fieldName);
     }
 
+    @Override
     public boolean isGeneratedRelationship(String ejbName, String fieldName) {
         return nameMapper.isGeneratedEjbRelationship(ejbName, fieldName);
     }
@@ -366,6 +384,7 @@ public class EjbConversionHelper implements ConversionHelper {
      * @param ejbName The ejb-name element for the bean
      * @return a list of generated relationship field names
      */
+    @Override
     public List getGeneratedRelationships(String ejbName) {
         return nameMapper.getGeneratedRelationshipsForEjbName(ejbName);
  

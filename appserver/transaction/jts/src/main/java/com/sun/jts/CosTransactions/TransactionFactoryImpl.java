@@ -134,6 +134,7 @@ class TransactionFactoryImpl extends TransactionFactoryPOA implements Transactio
      *
      * @see
      */
+    @Override
     public Control create(int timeOut) throws SystemException {
 
         Control result = null;
@@ -248,6 +249,7 @@ class TransactionFactoryImpl extends TransactionFactoryPOA implements Transactio
      *
      * @see
      */
+    @Override
     public Control recreate(PropagationContext context)
             throws SystemException {
 
@@ -650,34 +652,42 @@ class TransactionFactoryImpl extends TransactionFactoryPOA implements Transactio
      * interface method implementation below shall be discarded.
      */
 
+    @Override
     public org.omg.CORBA.Object _duplicate() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public void _release() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public boolean _is_a(String repository_id) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public boolean _is_equivalent(org.omg.CORBA.Object that) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public boolean _non_existent() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public int _hash(int maximum) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public Request _request(String operation) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public Request _create_request(Context ctx,
                    String operation,
                    NVList arg_list,
@@ -685,6 +695,7 @@ class TransactionFactoryImpl extends TransactionFactoryPOA implements Transactio
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public Request _create_request(Context ctx,
                    String operation,
                    NVList arg_list,
@@ -694,18 +705,22 @@ class TransactionFactoryImpl extends TransactionFactoryPOA implements Transactio
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public org.omg.CORBA.Object _get_interface_def() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public org.omg.CORBA.Policy _get_policy(int policy_type) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public org.omg.CORBA.DomainManager[] _get_domain_managers() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
     }
 
+    @Override
     public org.omg.CORBA.Object _set_policy_override(
             org.omg.CORBA.Policy[] policies,
             org.omg.CORBA.SetOverrideType set_add) {

@@ -98,6 +98,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
      *
      * @return the meta data for this Deployer
      */
+    @Override
     public MetaData getMetaData() {
         return new MetaData(false, null, null);
     }
@@ -187,6 +188,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
      * @param type type of metadata that this deployer has declared providing.
      * @param dc deployment context
      */
+    @Override
     public <V> V loadMetaData(Class<V> type, DeploymentContext dc) {
         return null;
     }
@@ -202,6 +204,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
      * @return true if the prepare phase was successful
      *
      */
+    @Override
     public boolean prepare(DeploymentContext dc) {
         try {
             ((ExtendedDeploymentContext)dc).prepareScratchDirs();
@@ -238,6 +241,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
      * @param context of the deployment
      * @return an ApplicationContainer instance identifying the running application
      */
+    @Override
     public U load(T container, DeploymentContext context) {
         // reset classloader on DOL object before loading so we have a
         // valid classloader set on DOL
@@ -259,6 +263,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
      *
      * @param context deployment context
      */
+    @Override
     public void clean(DeploymentContext context) {
         if (undeploymentVisitor!=null) {
 

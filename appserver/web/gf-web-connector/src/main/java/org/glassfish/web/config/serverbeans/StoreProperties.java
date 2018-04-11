@@ -104,5 +104,6 @@ public interface StoreProperties extends ConfigBeanProxy, PropertyBag {
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 }

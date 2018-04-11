@@ -115,6 +115,7 @@ public class FileValidator extends Validator
      * @param str Must be the absolute path of the File that will be validated.
      * @throws InvalidConfigException
      */
+    @Override
     public void validate(Object str) throws InvalidConfigException
     {
         super.validate(str);

@@ -66,6 +66,7 @@ public class GFEjbRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {
      * @return the location of the DeploymentDescriptor file for a
      *         particular type of J2EE Archive
      */
+    @Override
     public String getDeploymentDescriptorPath() {
         return DOLUtils.warType().equals(getArchiveType()) ?
         		DescriptorConstants.GF_EJB_IN_WAR_ENTRY : DescriptorConstants.GF_EJB_JAR_ENTRY;
@@ -76,6 +77,7 @@ public class GFEjbRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {
      * @return a RootXMLNode responsible for handling the deployment
      *         descriptors associated with this J2EE module
      */
+    @Override
     public RootXMLNode<EjbBundleDescriptorImpl> getRootXMLNode(Descriptor descriptor) {
         if (descriptor instanceof EjbBundleDescriptorImpl) {
             return new GFEjbBundleRuntimeNode((EjbBundleDescriptorImpl) descriptor);

@@ -193,6 +193,7 @@ public class ObjectNameQueryImpl implements ObjectNameQuery
         {
         }
 
+        @Override
         public boolean match(ObjectName name, Pattern[] names, Pattern[] values)
         {
             return (matchAny(name, names, values));
@@ -206,6 +207,7 @@ public class ObjectNameQueryImpl implements ObjectNameQuery
         {
         }
 
+        @Override
         public boolean match(ObjectName name, Pattern[] names, Pattern[] values)
         {
             return (matchAll(name, names, values));
@@ -251,11 +253,13 @@ public class ObjectNameQueryImpl implements ObjectNameQuery
         return (results);
     }
 
+    @Override
     public Set<ObjectName> matchAll(Set<ObjectName> startingSet, String[] regexNames, String[] regexValues)
     {
         return (matchEither(new MatchAllMatcher(), startingSet, regexNames, regexValues));
     }
 
+    @Override
     public Set<ObjectName> matchAny(Set<ObjectName> startingSet, String[] regexNames, String[] regexValues)
     {
         return (matchEither(new MatchAnyMatcher(), startingSet, regexNames, regexValues));

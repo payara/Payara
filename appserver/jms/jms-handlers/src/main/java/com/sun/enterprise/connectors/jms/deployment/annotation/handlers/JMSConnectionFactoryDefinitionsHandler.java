@@ -98,6 +98,7 @@ public class JMSConnectionFactoryDefinitionsHandler extends AbstractResourceHand
     }
 
 
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAndWebAnnotationTypes();
     }

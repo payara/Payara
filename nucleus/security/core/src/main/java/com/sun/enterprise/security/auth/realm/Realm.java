@@ -151,6 +151,7 @@ public abstract class Realm implements Comparable {
      * there's only a partial order defined, in the case that those other
      * objects compare themselves "before" a realm object).
      */
+    @Override
     public int compareTo (Object realm) {
 	if (!(realm instanceof Realm)) {
 	    return 1;

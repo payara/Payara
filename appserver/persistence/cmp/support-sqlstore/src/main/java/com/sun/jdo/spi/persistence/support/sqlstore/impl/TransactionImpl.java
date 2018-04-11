@@ -296,15 +296,18 @@ public class TransactionImpl
     /**
      * Returns PersistenceManager associated with this transaction
      */
+    @Override
     public com.sun.jdo.api.persistence.support.PersistenceManager getPersistenceManager() {
         return persistenceManager.getCurrentWrapper();
     }
 
+    @Override
     public boolean isActive() {
         return (this.status == Status.STATUS_ACTIVE ||
             this.status == Status.STATUS_MARKED_ROLLBACK);
     }
 
+    @Override
     public void setRetainValues(boolean flag) {
         //
         // First do a quick check to make sure the transaction is active.
@@ -338,10 +341,12 @@ public class TransactionImpl
         }
     }
 
+    @Override
     public boolean getRetainValues() {
         return retainValues;
     }
     
+    @Override
     public void setRestoreValues(boolean flag) {
         //
         // First do a quick check to make sure the transaction is active.
@@ -370,11 +375,13 @@ public class TransactionImpl
         }
     }
 
+    @Override
     public boolean getRestoreValues() {
         return restoreValues;
     }
     
 
+    @Override
     public void setNontransactionalRead (boolean flag) {
         //
         // First do a quick check to make sure the transaction is active.
@@ -412,6 +419,7 @@ public class TransactionImpl
         }
     }
 
+    @Override
     public boolean getNontransactionalRead() {
         return nontransactionalRead;
     }
@@ -421,6 +429,7 @@ public class TransactionImpl
      * to execute in the datastore associated with this  Transaction instance
      * @param timeout          new timout value in seconds; zero means unlimited
      */
+    @Override
     public void setQueryTimeout(int timeout) {
         queryTimeout = timeout;
     }
@@ -430,6 +439,7 @@ public class TransactionImpl
      * to execute in the datastore associated with this  Transaction instance
      * @return      timout value in seconds; zero means unlimited
      */
+    @Override
     public int getQueryTimeout() {
         return queryTimeout;
     }
@@ -439,6 +449,7 @@ public class TransactionImpl
      * to execute in the datastore associated with this  Transaction instance
      * @param timeout          new timout value in seconds; zero means unlimited
      */
+    @Override
     public void setUpdateTimeout(int timeout) {
         updateTimeout = timeout;
     }
@@ -448,10 +459,12 @@ public class TransactionImpl
      * to execute in the datastore associated with this  Transaction instance
      * @return      timout value in seconds; zero means unlimited
      */
+    @Override
     public int getUpdateTimeout() {
         return updateTimeout;
     }
 
+    @Override
     public void setOptimistic(boolean flag) {
         //
         // First do a quick check to make sure the transaction is active.
@@ -488,10 +501,12 @@ public class TransactionImpl
         }
     }
 
+    @Override
     public boolean getOptimistic() {
         return optimistic;
     }
 
+    @Override
     public void setSynchronization(Synchronization sync) {
         if (this.tracing)
         this.traceCall("setSynchronization"); // NOI18N
@@ -511,6 +526,7 @@ public class TransactionImpl
         }
     }
 
+    @Override
     public Synchronization getSynchronization() {
         persistenceManager.acquireShareLock();
 
@@ -549,6 +565,7 @@ public class TransactionImpl
     /**
      * Begin a transaction.
      */
+    @Override
     public void begin() {
 
         persistenceManager.acquireExclusiveLock();
@@ -607,6 +624,7 @@ public class TransactionImpl
     /**
      * Begin a transaction in managed environment
      */
+    @Override
     public void begin(javax.transaction.Transaction t) {
 
         persistenceManager.acquireExclusiveLock();
@@ -631,6 +649,7 @@ public class TransactionImpl
      * Commit the transaction represented by this Transaction object
      *
      */
+    @Override
     public void commit() {
 
         persistenceManager.acquireExclusiveLock();
@@ -667,6 +686,7 @@ public class TransactionImpl
     /**
      * Called in the managed environment only for transaction completion
      */
+    @Override
     public void beforeCompletion() {
 
         if (txType == NON_MGD) {
@@ -691,6 +711,7 @@ public class TransactionImpl
     /**
      * Called in the managed environment only for transaction completion
      */
+    @Override
     public void afterCompletion(int st) {
 
         if (txType == NON_MGD) {
@@ -943,6 +964,7 @@ public class TransactionImpl
      * Rollback the transaction represented by this transaction object.
      *
      */
+    @Override
     public void rollback() {
 
         persistenceManager.acquireExclusiveLock();
@@ -1064,6 +1086,7 @@ public class TransactionImpl
      * the transaction is to roll back.
      *
      */
+    @Override
     public void setRollbackOnly() {
         if (this.tracing)
             this.traceCall("setRollbackOnly"); // NOI18N
@@ -1346,6 +1369,7 @@ public class TransactionImpl
      * Returns a Connection. If there is no existing one, asks
      * ConnectionFactory for a new Connection
      */
+    @Override
     public synchronized Connection getConnection() {
         boolean debug = logger.isLoggable(Logger.FINEST);
 
@@ -1397,6 +1421,7 @@ public class TransactionImpl
      * Replace a connection. Used in a managed environment only.
      * In a J2EE RI Connection need to be replaced at the beforeCompletion.
      */
+    @Override
     public void replaceConnection() {
         if (EJBHelper.isManaged()) {
             this.releaseConnection();
@@ -1410,6 +1435,7 @@ public class TransactionImpl
      * Connection cannot be closed if it is part of the commit/rollback
      * operation or inside a pessimistic transaction
      */
+    @Override
     public synchronized void releaseConnection() {
         boolean debug = logger.isLoggable(Logger.FINEST);
 
@@ -1544,6 +1570,7 @@ public class TransactionImpl
      *
      * @return  String describing contents of this Transaction object.
      */
+    @Override
     public String toString() {
         int        i;
         Object    o;

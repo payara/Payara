@@ -68,21 +68,25 @@ public class DebugOutImpl implements DebugOut
         this(id, debug, null);
     }
 
+    @Override
     public String getID()
     {
         return mID;
     }
 
+    @Override
     public boolean getDebug()
     {
         return mDebug;
     }
 
+    @Override
     public void print(final Object o)
     {
         mSink.print("" + o);
     }
 
+    @Override
     public void println(Object o)
     {
         mSink.println("" + o);
@@ -98,6 +102,7 @@ public class DebugOutImpl implements DebugOut
         mDebug = debug;
     }
 
+    @Override
     public void debug(final Object... args)
     {
         if (getDebug())
@@ -106,6 +111,7 @@ public class DebugOutImpl implements DebugOut
         }
     }
 
+    @Override
     public void debugMethod(
             final String methodName,
             final Object... args)
@@ -116,6 +122,7 @@ public class DebugOutImpl implements DebugOut
         }
     }
 
+    @Override
     public void debugMethod(
             final String msg,
             final String methodName,

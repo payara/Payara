@@ -76,14 +76,17 @@ public class ComponentDefinition implements ComponentInfo {
         initializeMethods();
     }
 
+    @Override
     public Field[] getFields() {
         return fields.toArray(new Field[fields.size()]);
     }
 
+    @Override
     public Method[] getMethods() {
         return methodMap.values().toArray(new Method[methodMap.size()]);
     }
 
+    @Override
     public Constructor[] getConstructors() {
         return constructors.toArray(new Constructor[constructors.size()]);
     }
@@ -151,6 +154,7 @@ public class ComponentDefinition implements ComponentInfo {
             classPackage = m.getDeclaringClass().getPackage();
         }
 
+        @Override
         public int hashCode() { 
 
             return hashCode;
@@ -161,6 +165,7 @@ public class ComponentDefinition implements ComponentInfo {
          * We depends on java compiler to rule out irrelvant cases here.
          * @return true for overriding and false otherwise
          */
+        @Override
         public boolean equals(Object o) {
             if (!(o instanceof MethodKey)) {
                 return false;

@@ -136,6 +136,7 @@ public class JNDIConfigSource extends PayaraConfigSource implements ConfigSource
 
         ConfigSupport.apply(new SingleConfigCode<Resources>() {
 
+            @Override
             public Object run(Resources param) throws PropertyVetoException,
                     TransactionFailure {
                 CustomResource resource = (CustomResource) domainConfiguration.getResources().getResourceByName(CustomResource.class, propertyName);

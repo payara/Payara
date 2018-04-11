@@ -57,6 +57,7 @@ public class LazyEnlistableConnectionManagerImpl extends ConnectionManagerImpl
         super( poolInfo, resourceInfo );
     }
     
+    @Override
     public void lazyEnlist( javax.resource.spi.ManagedConnection mc ) throws ResourceException {
         ConnectorRuntime.getRuntime().getPoolManager().lazyEnlist( mc );
     }

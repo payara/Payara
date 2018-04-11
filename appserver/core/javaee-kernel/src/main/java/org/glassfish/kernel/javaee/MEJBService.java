@@ -78,6 +78,7 @@ public class MEJBService implements PostConstruct {
 
     private static final Logger _logger = Logger.getLogger(MEJBService.class.getName());
   
+    @Override
     public void postConstruct() {
         GlassfishNamingManager gfNamingManager =
             gfNamingManagerProvider.get();

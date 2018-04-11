@@ -75,6 +75,7 @@ public class IIOPMBeanServerImpl extends PortableRemoteObject implements IIOPMBe
      * @return  A set containing the ObjectNames for the managed objects selected.
      * If no managed object satisfies the query, an empty list is returned.
      */
+    @Override
     public Set queryNames(ObjectName name, QueryExp query) throws RemoteException {
         return server.queryNames(name, query);
     }
@@ -86,11 +87,13 @@ public class IIOPMBeanServerImpl extends PortableRemoteObject implements IIOPMBe
      * @exception RuntimeOperationsException Wraps a <CODE>java.lang.IllegalArgumentException</CODE>: The object
      * name in parameter is null.
      */
+    @Override
     public boolean isRegistered(ObjectName name) throws RemoteException {
         return server.isRegistered(name);
     }
 
     /** Returns the number of MBeans registered in the MBean server. */
+    @Override
     public Integer getMBeanCount() throws RemoteException {
         return server.getMBeanCount();
     }
@@ -103,6 +106,7 @@ public class IIOPMBeanServerImpl extends PortableRemoteObject implements IIOPMBe
      * @exception InstanceNotFoundException The MBean specified is not found.
      * @exception ReflectionException An exception occurred when trying to invoke the getMBeanInfo of a Dynamic MBean.
      */
+    @Override
     public MBeanInfo getMBeanInfo(ObjectName name) throws InstanceNotFoundException,
         IntrospectionException, ReflectionException, RemoteException {
             return server.getMBeanInfo(name);
@@ -120,6 +124,7 @@ public class IIOPMBeanServerImpl extends PortableRemoteObject implements IIOPMBe
      * @exception RuntimeOperationsException Wraps a <CODE>java.lang.IllegalArgumentException</CODE>: The object name in
      * parameter is null or the attribute in parameter is null.
      */
+    @Override
     public Object getAttribute(ObjectName name, String attribute) throws MBeanException,
         AttributeNotFoundException, InstanceNotFoundException,
         ReflectionException, RemoteException {
@@ -136,6 +141,7 @@ public class IIOPMBeanServerImpl extends PortableRemoteObject implements IIOPMBe
      * @exception RuntimeOperationsException Wrap a <CODE>java.lang.IllegalArgumentException</CODE>: The object name in
      * parameter is null or attributes in parameter is null.
      */
+    @Override
     public AttributeList getAttributes(ObjectName name, String[] attributes)
         throws InstanceNotFoundException, ReflectionException, RemoteException {
             return server.getAttributes(name, attributes);
@@ -154,6 +160,7 @@ public class IIOPMBeanServerImpl extends PortableRemoteObject implements IIOPMBe
      * @exception RuntimeOperationsException Wraps a <CODE>java.lang.IllegalArgumentException</CODE>: The object name in
      * parameter is null or the attribute in parameter is null.
      */
+    @Override
     public void setAttribute(ObjectName name, Attribute attribute)
         throws InstanceNotFoundException, AttributeNotFoundException,
         InvalidAttributeValueException, MBeanException,
@@ -172,6 +179,7 @@ public class IIOPMBeanServerImpl extends PortableRemoteObject implements IIOPMBe
      * @exception RuntimeOperationsException Wraps a <CODE>java.lang.IllegalArgumentException</CODE>: The object name in
      * parameter is null or attributes in parameter is null.
      */
+    @Override
     public AttributeList setAttributes(ObjectName name, AttributeList attributes)
         throws InstanceNotFoundException, ReflectionException, RemoteException {
             return server.setAttributes(name, attributes);
@@ -190,6 +198,7 @@ public class IIOPMBeanServerImpl extends PortableRemoteObject implements IIOPMBe
      * @exception MBeanException  Wraps an exception thrown by the MBean's invoked method.
      * @exception ReflectionException  Wraps a <CODE>java.lang.Exception</CODE> thrown while trying to invoke the method.
      */
+    @Override
     public Object invoke(ObjectName name, String operationName, Object[] params, String[] signature)
         throws InstanceNotFoundException, MBeanException,
         ReflectionException, RemoteException {
@@ -201,6 +210,7 @@ public class IIOPMBeanServerImpl extends PortableRemoteObject implements IIOPMBe
      * The default domain name is used as the domain part in the ObjectName
      * of managed objects if no domain is specified by the user.
      */
+    @Override
     public String getDefaultDomain() throws RemoteException {
         return server.getDefaultDomain();
     }
@@ -448,6 +458,7 @@ public class IIOPMBeanServerImpl extends PortableRemoteObject implements IIOPMBe
      * parameter is null or the MBean you are when trying to de-register is the {@link javax.management.MBeanServerDelegate
      * MBeanServerDelegate} MBean.
      */
+    @Override
     public void unregisterMBean(ObjectName name) throws InstanceNotFoundException,
         MBeanRegistrationException, RemoteException {
             server.unregisterMBean(name);

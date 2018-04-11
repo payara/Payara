@@ -172,6 +172,7 @@ public final class ProxyFactory implements NotificationListener {
      * internally as callback for {@link javax.management.NotificationListener}.
      * <b>DO NOT CALL THIS METHOD</b>.
      */
+    @Override
     public void handleNotification(
             final Notification notifIn,
             final Object handback) {

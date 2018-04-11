@@ -72,6 +72,7 @@ public class ZipItem
      *
 	 * @return String with the path and the zip entry name
 	 */	
+        @Override
 	public String toString()
 	{
 		return "File: " + file.getPath() + ", name: " + name;

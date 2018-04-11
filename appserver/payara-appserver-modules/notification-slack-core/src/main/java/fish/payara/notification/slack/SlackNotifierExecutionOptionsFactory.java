@@ -61,6 +61,7 @@ public class SlackNotifierExecutionOptionsFactory extends NotifierExecutionOptio
         register(NotifierType.SLACK, this);
     }
 
+    @Override
     public NotifierExecutionOptions build(SlackNotifier notifier) {
         SlackNotifierExecutionOptions executionOptions = new SlackNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));

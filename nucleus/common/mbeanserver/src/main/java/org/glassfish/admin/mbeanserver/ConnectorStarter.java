@@ -116,6 +116,7 @@ abstract class ConnectorStarter {
              * @param credentials
              * @return
              */
+            @Override
             public Subject authenticate(Object credentials) {
                 // lazy init...
                 // todo : lloyd, if this becomes a performance bottleneck, we should cache

@@ -139,6 +139,7 @@ class LogRecordEnding implements Serializable {
      *
      * @see
      */
+    @Override
     public final String toString() {
         return "LRE(curr="/*#Frozen*/+currentLSN+")"/*#Frozen*/;
     }

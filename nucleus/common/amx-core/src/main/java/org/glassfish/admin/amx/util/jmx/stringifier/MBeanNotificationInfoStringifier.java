@@ -65,6 +65,7 @@ public class MBeanNotificationInfoStringifier
         return DEFAULT.stringify(info);
     }
     
+    @Override
     public String stringify(Object o)
     {
         final MBeanNotificationInfo notif = (MBeanNotificationInfo) o;

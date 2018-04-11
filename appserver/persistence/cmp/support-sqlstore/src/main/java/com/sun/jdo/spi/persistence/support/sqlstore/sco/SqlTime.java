@@ -107,6 +107,7 @@ public class SqlTime
      * @param   time   the number of milliseconds.
      * @see     java.sql.Time
      */  
+    @Override
     public void setTime(long time) {
 	this.makeDirty();
 	super.setTime(time);
@@ -120,6 +121,7 @@ public class SqlTime
      * objects. In contrast to Object.clone(), this method must not throw a
      * CloneNotSupportedException.
      */
+    @Override
     public Object clone()
     {
         SqlTime obj = (SqlTime) super.clone();
@@ -141,6 +143,7 @@ public class SqlTime
      * @deprecated As of JDK version 1.1,
      * replaced by <code>Calendar.set(Calendar.HOUR_OF_DAY, int hours)</code>.
      */  
+    @Override
     public void setHours(int hours) {
 	this.makeDirty();
         super.setHours(hours);
@@ -155,6 +158,7 @@ public class SqlTime
      * @deprecated As of JDK version 1.1,
      * replaced by <code>Calendar.set(Calendar.MINUTE, int minutes)</code>.
      */
+    @Override
     public void setMinutes(int minutes) {
 	this.makeDirty();
         super.setMinutes(minutes);
@@ -169,6 +173,7 @@ public class SqlTime
      * @deprecated As of JDK version 1.1,
      * replaced by <code>Calendar.set(Calendar.SECOND, int seconds)</code>.
      */  
+    @Override
     public void setSeconds(int seconds) {
 	this.makeDirty();
         super.setSeconds(seconds);
@@ -180,6 +185,7 @@ public class SqlTime
      * Creates and returns a copy of this object without resetting the owner and field value.
      *   
      */  
+    @Override
     public Object cloneInternal()
     {
         return super.clone();
@@ -192,6 +198,7 @@ public class SqlTime
      * @param   time   the number of milliseconds.
      * @see     java.sql.Time
      */  
+    @Override
     public void setTimeInternal(long time) {
 	super.setTime(time);
     }
@@ -201,6 +208,7 @@ public class SqlTime
 	 * NOTE: This method should be called under the locking of
 	 * the owener' state manager.
      */
+    @Override
     public void unsetOwner() 
     { 
 		this.owner = null; 
@@ -212,6 +220,7 @@ public class SqlTime
      * 
      * @return owner object 
      */ 
+    @Override
     public Object getOwner()
     {    
         return this.owner; 
@@ -222,6 +231,7 @@ public class SqlTime
      *   
      * @return field name as java.lang.String
      */  
+    @Override
     public String getFieldName()
     {
         return this.fieldName;
@@ -230,6 +240,7 @@ public class SqlTime
     /**
      * Marks object dirty
      */
+    @Override
     public StateManager makeDirty()
     {
 		if (owner != null)
@@ -269,6 +280,7 @@ public class SqlTime
     /**
      * Apply changes (no-op)
      */  
+    @Override
     public void applyUpdates(StateManager sm, boolean modified)
     {
     }

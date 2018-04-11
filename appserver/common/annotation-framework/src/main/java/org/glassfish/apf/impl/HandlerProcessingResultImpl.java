@@ -76,6 +76,7 @@ public class HandlerProcessingResultImpl implements HandlerProcessingResult {
         return impl;                
     }
     
+    @Override
     public Map<Class<? extends Annotation>,ResultType> processedAnnotations() {
         return results;
     }

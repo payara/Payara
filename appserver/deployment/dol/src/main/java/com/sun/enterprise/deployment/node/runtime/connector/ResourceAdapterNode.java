@@ -75,6 +75,7 @@ public class ResourceAdapterNode extends RuntimeDescriptorNode {
    /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
         if (descriptor==null) {
 	    descriptor = (RuntimeDescriptor) super.getDescriptor();
@@ -95,6 +96,7 @@ public class ResourceAdapterNode extends RuntimeDescriptorNode {
      * @param the attribute value
      * @return true if the attribute was processed
      */
+    @Override
     protected boolean setAttributeValue(XMLElement elementName, XMLElement attributeName, String value) {
 	getDescriptor();
 	if (descriptor==null) {

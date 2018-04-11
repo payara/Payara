@@ -56,10 +56,12 @@ public class UuidGeneratorPaddedImpl implements UuidGenerator {
     public UuidGeneratorPaddedImpl() {
     }
     
+    @Override
     public String generateUuid() {
         return UuidUtilPadded.generateUuid();
     }
     
+    @Override
     public String generateUuid(Object obj) {
         return UuidUtilPadded.generateUuid(obj, UuidUtilPadded.DESIRED_UUID_LENGTH);
     }    

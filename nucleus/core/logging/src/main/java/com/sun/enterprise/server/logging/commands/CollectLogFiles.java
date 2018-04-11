@@ -115,6 +115,7 @@ public class CollectLogFiles implements AdminCommand {
     @Inject
     LoggingConfigImpl loggingConfig;
 
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();

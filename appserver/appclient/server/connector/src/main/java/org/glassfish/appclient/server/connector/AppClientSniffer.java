@@ -121,6 +121,7 @@ public class AppClientSniffer extends GenericSniffer {
      * @return whether this sniffer represents a Java EE container type
      *
      */
+    @Override
     public boolean isJavaEE() {
         return true;
     }
@@ -149,6 +150,7 @@ public class AppClientSniffer extends GenericSniffer {
      * @return whether the sniffer supports the archive type
      *
      */
+    @Override
     public boolean supportsArchiveType(ArchiveType archiveType) {
         if (archiveType.equals(carType)) {
             return true;

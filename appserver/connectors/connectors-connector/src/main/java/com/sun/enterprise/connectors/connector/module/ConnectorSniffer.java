@@ -110,6 +110,7 @@ public class ConnectorSniffer extends GenericSniffer {
      *
      * @return list of container names known to the habitat for this sniffer
      */
+    @Override
     public String[] getContainersNames() {
         return containerNames;
     }
@@ -119,6 +120,7 @@ public class ConnectorSniffer extends GenericSniffer {
      *
      * @return the container name
      */
+    @Override
     public String getModuleType() {
         return ConnectorConstants.CONNECTOR_MODULE;
     }
@@ -141,6 +143,7 @@ public class ConnectorSniffer extends GenericSniffer {
      * @return whether this sniffer should be visible to user
      *
      */
+    @Override
     public boolean isUserVisible() {
         return true;
     }
@@ -149,6 +152,7 @@ public class ConnectorSniffer extends GenericSniffer {
      * @return whether this sniffer represents a Java EE container type
      *
      */
+    @Override
     public boolean isJavaEE() {
         return true;
     }
@@ -161,6 +165,7 @@ public class ConnectorSniffer extends GenericSniffer {
      * lists for a certain module
      *
      */
+    @Override
     public String[] getIncompatibleSnifferTypes() {
         return new String[] {"ejb", "web"};
     }
@@ -191,6 +196,7 @@ public class ConnectorSniffer extends GenericSniffer {
      * @return whether the sniffer supports the archive type
      *
      */
+    @Override
     public boolean supportsArchiveType(ArchiveType archiveType) {
         if (archiveType.equals(rarType)) {
             return true;

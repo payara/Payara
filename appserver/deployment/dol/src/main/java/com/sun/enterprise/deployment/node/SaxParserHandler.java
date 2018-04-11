@@ -226,6 +226,7 @@ public class SaxParserHandler extends DefaultHandler {
         _mappingStuff.mBundleRegistrationStatus.put(rootNodeKey, Boolean.TRUE);
     }
 
+    @Override
     public InputSource resolveEntity(String publicID, String systemID) throws SAXException {
         try {
             if(DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {
@@ -274,6 +275,7 @@ public class SaxParserHandler extends DefaultHandler {
     }
 	
     
+    @Override
     public void error(SAXParseException spe) throws SAXParseException {
         DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.invalidDescriptorFailure",
             new Object[] {errorReportingString , String.valueOf(spe.getLineNumber()), 
@@ -283,6 +285,7 @@ public class SaxParserHandler extends DefaultHandler {
 	 }
     } 
     
+    @Override
     public void fatalError(SAXParseException spe) throws SAXParseException {
         DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.invalidDescriptorFailure",
             new Object[] {errorReportingString , String.valueOf(spe.getLineNumber()), 
@@ -379,6 +382,7 @@ public class SaxParserHandler extends DefaultHandler {
       return null;
     }
 
+    @Override
     public void notationDecl(java.lang.String name,
                          java.lang.String publicId,
                          java.lang.String systemId)
@@ -389,6 +393,7 @@ public class SaxParserHandler extends DefaultHandler {
     }
     
 
+    @Override
     public void startPrefixMapping(String prefix,
                                String uri)
                         throws SAXException {
@@ -409,6 +414,7 @@ public class SaxParserHandler extends DefaultHandler {
     }
 
 
+    @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) {
         if( !pushedNamespaceContext ) {
             // We need one namespae context per element, so push a context 
@@ -516,6 +522,7 @@ public class SaxParserHandler extends DefaultHandler {
         }        
     }
     
+    @Override
     public void endElement(String uri, String localName, String qName) {
 
         String lastElement = null;
@@ -642,6 +649,7 @@ public class SaxParserHandler extends DefaultHandler {
         }
     }
     
+    @Override
     public void characters(char[] ch, int start, int stop) {
         if (elementData!=null) {
             elementData = elementData.append(ch,start, stop);

@@ -48,6 +48,7 @@ public class RequestedJMSContextManager extends AbstractJMSContextManager {
         super();
     }
 
+    @Override
     public String getType() {
         return "RequestScoped";
     }

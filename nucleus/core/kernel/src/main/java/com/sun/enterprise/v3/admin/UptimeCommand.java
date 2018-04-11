@@ -82,6 +82,7 @@ public class UptimeCommand implements AdminCommand {
     @Param(name = "milliseconds", optional = true, defaultValue = "false")
     Boolean milliseconds;
 
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         long totalTime_ms = getUptime();

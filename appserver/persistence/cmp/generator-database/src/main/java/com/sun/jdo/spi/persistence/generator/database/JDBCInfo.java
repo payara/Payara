@@ -358,6 +358,7 @@ class JDBCInfo {
      * Debugging support.
      * @return A String with the value of each field.
      */
+    @Override
     public String toString() {
         return "JDBCInfo:" // NOI18N
             + " jdbcType=" + jdbcType // NOI18N

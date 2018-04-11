@@ -75,10 +75,12 @@ public abstract class ServerPipeCreator extends ServerPipelineHook {
 	      (endpoint.getProtocolBinding())) ? true : false); 
     }
 
+    @Override
     public Pipe createMonitoringPipe(ServerPipeAssemblerContext ctxt, Pipe tail) {
         return new MonitoringPipe(ctxt, tail, endpoint);
     }    
     
+    @Override
     public abstract Pipe createSecurityPipe(PolicyMap map, SEIModel sei,
             WSDLPort port, WSEndpoint owner, Pipe tail);
     

@@ -93,6 +93,7 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
     /**
      * @return the DOCTYPE of the XML file
      */
+    @Override
     public String getDocType() {
         return null;
     }
@@ -100,6 +101,7 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
     /**
      * @return the SystemID of the XML file
      */
+    @Override
     public String getSystemID() {
         return SCHEMA_ID;
     }
@@ -107,6 +109,7 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
     /**
      * @return the list of SystemID of the XML schema supported
      */
+    @Override
     public List<String> getSystemIDs() {
         return systemIDs;
     }
@@ -125,6 +128,7 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
     /**
      * @return the complete URL for J2EE schemas
      */
+    @Override
     protected String getSchemaURL() {
         return WLDescriptorConstants.WL_WEBSERVICES_SCHEMA_LOCATION;
     }
@@ -132,6 +136,7 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return ROOT_ELEMENT;
     }
@@ -181,10 +186,12 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
     /**
      * @return the descriptor instance to associate with this XMLNode
      */
+    @Override
     public WebServicesDescriptor getDescriptor() {
         return parentDescriptor;
     }
 
+    @Override
     public Node writeDescriptor(Node parent, RootDeploymentDescriptor descriptor) {
         Node bundleNode;
         if (getDocType() == null) {
@@ -236,6 +243,7 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
     /**
      * @return the default spec version level this node complies to
      */
+    @Override
     public String getSpecVersion() {
         return SPEC_VERSION;
     }

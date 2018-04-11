@@ -128,6 +128,7 @@ public class AMXImplBase extends MBeanImplBase
     }
 
 
+    @Override
     public MBeanInfo getMBeanInfo() {
         return mMBeanInfo;
     }
@@ -138,6 +139,7 @@ public class AMXImplBase extends MBeanImplBase
     }
     private static final MBeanNotificationInfo[] EMPTY_NOTIFICATIONS = new MBeanNotificationInfo[0];
 
+    @Override
     public MBeanNotificationInfo[] getNotificationInfo() {
         return (EMPTY_NOTIFICATIONS);
     }
@@ -163,6 +165,7 @@ public class AMXImplBase extends MBeanImplBase
     }
 
 
+    @Override
     public final ObjectName getParent() {
         return mParent;
     }
@@ -184,6 +187,7 @@ public class AMXImplBase extends MBeanImplBase
     }
 
 
+    @Override
     public ObjectName[] getChildren() {
         final Set<ObjectName> children = getMBeanTracker().getChildrenOf(getObjectName());
         if (children == null) {
@@ -338,6 +342,7 @@ public class AMXImplBase extends MBeanImplBase
     @param name	name of the Attribute
     @return value of the Attribute
      */
+    @Override
     public final Object getAttribute(final String name)
             throws AttributeNotFoundException {
         Object result = null;
@@ -403,6 +408,7 @@ public class AMXImplBase extends MBeanImplBase
     @param names	array of Attribute names
     @return AttributeList of Attributes successfully fetched
      */
+    @Override
     public AttributeList getAttributes(String[] names) {
         trace("AMXImplBase.getAttributes: " + SmartStringifier.toString(names));
 
@@ -558,6 +564,7 @@ public class AMXImplBase extends MBeanImplBase
     }
 
 
+    @Override
     public void setAttribute(final Attribute attr)
             throws AttributeNotFoundException, InvalidAttributeValueException {
         final String name = attr.getName();
@@ -657,6 +664,7 @@ public class AMXImplBase extends MBeanImplBase
     Note that the default implementation sets attributes one at a time, but that
     MBeans with transactional requirements (eg configuration) may wish to set them as a group.
      */
+    @Override
     public AttributeList setAttributes(final AttributeList attrs) {
         final AttributeList successList = new AttributeList();
 
@@ -800,6 +808,7 @@ public class AMXImplBase extends MBeanImplBase
     to locate a suitable Method.  If a suitable Method is found, it is invoked.
     If not found the subclass is expected to handle it in invokeManually();
      */
+    @Override
     public final Object invoke(
             String operationName,
             Object[] args,
@@ -851,6 +860,7 @@ public class AMXImplBase extends MBeanImplBase
     A subclass might need to override this method if its name contains characters
     that are illegal for the ObjectName.
      */
+    @Override
     public String getName() {
         String name = Util.getNameProp(getObjectName());
 
@@ -876,6 +886,7 @@ public class AMXImplBase extends MBeanImplBase
     Since it's called only once (per instance) for an MBean Registration, it has no performance
     impact on later use, but guarantees visibility of all non-final instance variables.
      */
+    @Override
     public final synchronized ObjectName preRegister(
             final MBeanServer server,
             final ObjectName nameIn)
@@ -915,6 +926,7 @@ public class AMXImplBase extends MBeanImplBase
     /** Important:  must be synchronized so that preDeregisterHook cannot be called prior to 
     existing postRegisterHook()
      */
+    @Override
     protected synchronized void postRegisterHook(final Boolean registrationSucceeded) {
         if (registrationSucceeded.booleanValue()) {
             mMBeanInfo = postRegisterModifyMBeanInfo(mMBeanInfo);
@@ -960,6 +972,7 @@ public class AMXImplBase extends MBeanImplBase
         return (SmartStringifier.toString(o));
     }
 
+    @Override
     public String toString() {
         return java();
     }

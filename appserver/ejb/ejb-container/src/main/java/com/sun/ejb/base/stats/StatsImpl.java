@@ -75,14 +75,17 @@ public abstract class StatsImpl
 	}
     }
 
+    @Override
     public Statistic getStatistic(String statName) {
 	return genericStatsDelegate.getStatistic(statName);
     }
 
+    @Override
     public String[] getStatisticNames() {
 	return genericStatsDelegate.getStatisticNames();
     }
 
+    @Override
     public Statistic[] getStatistics() {
 	return genericStatsDelegate.getStatistics();
     }

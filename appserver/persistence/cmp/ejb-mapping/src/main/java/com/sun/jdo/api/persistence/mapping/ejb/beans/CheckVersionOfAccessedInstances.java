@@ -134,6 +134,7 @@ public class CheckVersionOfAccessedInstances extends org.netbeans.modules.schema
 	}
 
 	// Dump the content of this bean returning it as a String
+        @Override
 	public void dump(StringBuffer str, String indent){
 		String s;
 		Object o;
@@ -153,6 +154,7 @@ public class CheckVersionOfAccessedInstances extends org.netbeans.modules.schema
 		}
 
 	}
+        @Override
 	public String dumpBeanNode(){
 		StringBuffer str = new StringBuffer();
 		str.append("CheckVersionOfAccessedInstances\n");	// NOI18N

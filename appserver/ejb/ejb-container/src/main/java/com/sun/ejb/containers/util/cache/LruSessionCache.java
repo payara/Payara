@@ -163,6 +163,7 @@ public class LruSessionCache
      *
      * This method is called during undeploy of ejb container.
      */
+    @Override
     public void destroy() {
         this.currentCacheState = STATE_DESTROYED;
         this.container = null;
@@ -206,6 +207,7 @@ public class LruSessionCache
      * trim the item from the cache and notify listeners
      * @param item to be trimmed
      */
+    @Override
     protected void trimItem(CacheItem item) {
         LruCacheItem removed = (LruCacheItem) item;
 
@@ -226,6 +228,7 @@ public class LruSessionCache
         }
     }
 
+    @Override
     protected void itemAccessed(CacheItem item) {
         LruCacheItem lc = (LruCacheItem) item;
         synchronized (this) {
@@ -374,6 +377,7 @@ public class LruSessionCache
 
     //Called from StatefulSessionContainer
     //public void deleteEJB(Object sessionKey) 
+    @Override
     public Object remove(Object sessionKey) {
 	return remove(sessionKey, true);
     }
@@ -610,6 +614,7 @@ public class LruSessionCache
      * get an Iterator for the values stored in the cache
      * @returns an Iterator
      */
+    @Override
     public Iterator values() {
         ArrayList valueList = new ArrayList();
 
@@ -832,6 +837,7 @@ public class LruSessionCache
         return numVictimsAccessed;
     }
 
+    @Override
     protected CacheItem createItem(int hashCode, Object sessionKey, 
             Object value, int size)
     {
@@ -867,6 +873,7 @@ public class LruSessionCache
 
     //Implementation of EjbCacheStatsProviderDelegate
 
+    @Override
     public void appendStats(StringBuffer sbuf) {
 	sbuf.append("[Cache: ")
 	    .append("Size=").append(entryCount).append("; ")
@@ -879,36 +886,43 @@ public class LruSessionCache
 	sbuf.append("]");
     }
 
+    @Override
     public int getCacheHits() {
 	return hitCount;
     }
 
+    @Override
     public int getCacheMisses() {
 	return missCount;
     }
 
+    @Override
     public int getNumBeansInCache() {
 	return entryCount;
     }
 
+    @Override
     public int getNumExpiredSessionsRemoved() {
 	/*return (sfsbStoreMonitor == null)
         ? 0 : sfsbStoreMonitor.getNumExpiredSessionsRemoved(); */
         return 0;
     }
 
+    @Override
     public int getNumPassivationErrors() {
 	/* return (sfsbStoreMonitor == null)
         ? 0 : sfsbStoreMonitor.getNumPassivationErrors(); */
         return 0;
     }
 
+    @Override
     public int getNumPassivations() {
 	 /* return (sfsbStoreMonitor == null)
         ? 0 : sfsbStoreMonitor.getNumPassivations(); */
         return 0;
     }
 
+    @Override
     public int getNumPassivationSuccess() {
 	/*return (sfsbStoreMonitor == null)
         ? 0 : sfsbStoreMonitor.getNumPassivationSuccess(); */
@@ -919,6 +933,7 @@ public class LruSessionCache
 	this.confMaxCacheSize = val;
     }
 
+    @Override
     public int getMaxCacheSize() {
 	return confMaxCacheSize;
     }

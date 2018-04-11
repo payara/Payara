@@ -75,6 +75,7 @@ public abstract class JarArchive implements Archive {
      * @param prefix the prefix of entries to be included
      * @return an enumeration of the archive file entries.
      */
+    @Override
     public Enumeration<String> entries(String prefix) {
         Enumeration<String> allEntries = entries();
         Vector<String> entries = new Vector<String>();
@@ -102,6 +103,7 @@ public abstract class JarArchive implements Archive {
      * @return the name of the archive
      * 
      */
+    @Override
     public String getName() {
          return JarArchive.getName(getURI());
     }
@@ -123,6 +125,7 @@ public abstract class JarArchive implements Archive {
      * @param name name is one of the entries returned by {@link #entries()}
      * @return true if the entry denoted by the passed name is a directory
      */
+    @Override
     public boolean isDirectory(String name) {
         JarEntry entry = getJarEntry(name);
         if (entry==null) {

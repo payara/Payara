@@ -95,6 +95,7 @@ public class JavaModuleNamingProxy
 
     private InitialContext ic;
 
+    @Override
     public void postConstruct() {
         try {
             ic = new InitialContext();
@@ -120,6 +121,7 @@ public class JavaModuleNamingProxy
     static final String JAVA_APP_SERVICE_LOCATOR
             = "java:app/hk2/ServiceLocator";
 
+    @Override
     public Object handle(String name) throws NamingException {
 
         // Return null if this proxy is not responsible for processing the name.

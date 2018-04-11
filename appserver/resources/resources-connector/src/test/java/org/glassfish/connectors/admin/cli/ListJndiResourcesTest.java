@@ -69,10 +69,12 @@ public class ListJndiResourcesTest extends ConfigApiTest {
     AdminCommandContext context;
     CommandRunner cr;
 
+    @Override
     public DomDocument getDocument(ServiceLocator habitat) {
         return new TestDocument(habitat);
     }
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }

@@ -111,6 +111,7 @@ public class EJBLocalHomeInvocationHandler
         proxy_ = proxy;
     }
 
+    @Override
     protected EJBLocalHome getEJBLocalHome() {
         return proxy_;
     }
@@ -118,6 +119,7 @@ public class EJBLocalHomeInvocationHandler
     /**
      * Called by EJBLocalHome proxy.
      */
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args) 
         throws Throwable {
 

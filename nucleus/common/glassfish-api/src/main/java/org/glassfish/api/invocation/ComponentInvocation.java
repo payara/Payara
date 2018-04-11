@@ -349,6 +349,7 @@ public class ComponentInvocation implements Cloneable {
         }
     }
 
+    @Override
     public ComponentInvocation clone() {
         ComponentInvocation newInv = null;
         try {

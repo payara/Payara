@@ -372,6 +372,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     }
     )
     @Element
+    @Override
     List<SystemProperty> getSystemProperty();
 
     /**
@@ -380,6 +381,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 
 

@@ -125,6 +125,7 @@ public abstract class BaseHealthCheckNotifierConfigurer<C extends Notifier> impl
             else {
                 config[0] = c;
                 ConfigSupport.apply(new SingleConfigCode<C>() {
+                    @Override
                     public Object run(C cProxy) throws PropertyVetoException, TransactionFailure {
                         applyValues(cProxy);
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);

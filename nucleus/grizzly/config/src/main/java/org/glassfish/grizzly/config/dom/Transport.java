@@ -222,6 +222,7 @@ public interface Transport extends ConfigBeanProxy, PropertyBag {
     List<NetworkListener> findNetworkListeners();
 
     @DuckTyped
+    @Override
     Transports getParent();
 
     class Duck {

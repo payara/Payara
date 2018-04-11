@@ -71,6 +71,7 @@ public class OracleXAResource extends XAResourceWrapper
             com.sun.enterprise.transaction.JavaEETransactionManagerSimplified.class, 
             LogDomains.JTA_LOGGER);
 
+    @Override
     public XAResourceWrapper getInstance() {
         return new OracleXAResource();
     }
@@ -83,6 +84,7 @@ public class OracleXAResource extends XAResourceWrapper
    * @return a <code>Xid[]</code> value
    * @exception XAException if an error occurs
    */
+    @Override
     public Xid[] recover(int flag) throws XAException {
         if(flag==XAResource.TMNOFLAGS)
             return null;
@@ -139,9 +141,11 @@ public class OracleXAResource extends XAResourceWrapper
                 catch(SQLException sqlexception2) { }
         }
     }
+    @Override
     public void commit(Xid xid, boolean flag) throws XAException{
         doRecovery(xid, true);
     }
+    @Override
     public void rollback(Xid xid) throws XAException{
         doRecovery(xid, false);
     }

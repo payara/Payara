@@ -113,6 +113,7 @@ public class CreateConnectorWorkSecurityMap implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
@@ -185,6 +186,7 @@ public class CreateConnectorWorkSecurityMap implements AdminCommand {
         try {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
 
+                @Override
                 public Object run(Resources param) throws PropertyVetoException,
                         TransactionFailure {
 

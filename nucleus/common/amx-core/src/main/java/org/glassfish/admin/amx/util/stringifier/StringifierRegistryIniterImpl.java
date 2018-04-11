@@ -73,12 +73,14 @@ public class StringifierRegistryIniterImpl implements StringifierRegistryIniter
 	}
 
 	
+        @Override
 		public void
 	add( Class theClass, Stringifier theStringifier )
 	{
 		mRegistry.add( theClass, theStringifier );
 	}
 	
+        @Override
 		public StringifierRegistry
 	getRegistry()
 	{

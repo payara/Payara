@@ -90,6 +90,7 @@ public class EjbSniffer  extends GenericSniffer {
             "org.glassfish.ejb.startup.EjbContainerStarter",
     };
         
+    @Override
     public String[] getContainersNames() {
         return containers;
     }
@@ -134,6 +135,7 @@ public class EjbSniffer  extends GenericSniffer {
      * @return whether this sniffer should be visible to user
      *
      */
+    @Override
     public boolean isUserVisible() {
         return true;
     }
@@ -142,6 +144,7 @@ public class EjbSniffer  extends GenericSniffer {
      * @return whether this sniffer represents a Java EE container type
      *
      */
+    @Override
     public boolean isJavaEE() {
         return true;
     }
@@ -154,6 +157,7 @@ public class EjbSniffer  extends GenericSniffer {
      * lists for a certain module
      *
      */
+    @Override
     public String[] getIncompatibleSnifferTypes() {
         return new String[] {"connector"};
     }
@@ -169,6 +173,7 @@ public class EjbSniffer  extends GenericSniffer {
      * @return whether the sniffer supports the archive type
      *
      */
+    @Override
     public boolean supportsArchiveType(ArchiveType archiveType) {
         if (archiveType.equals(ejbType) ||
             archiveType.toString().equals(ModuleType.WAR.toString())) {

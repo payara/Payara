@@ -157,6 +157,7 @@ public class ScheduledTimerDescriptor extends DescribableDescriptor {
         return timeoutMethod_;
     }
 
+    @Override
     public String toString() {
         return "ScheduledTimerDescriptor [second=" + second_
                 + ";minute=" + minute_

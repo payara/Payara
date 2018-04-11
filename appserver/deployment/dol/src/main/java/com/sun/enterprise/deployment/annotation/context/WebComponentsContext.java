@@ -84,6 +84,7 @@ public class WebComponentsContext extends AnnotationContext
         return webCompContexts;
     }
     
+    @Override
     public void endElement(ElementType type, AnnotatedElement element) {
         
         if (ElementType.TYPE.equals(type)) {
@@ -92,6 +93,7 @@ public class WebComponentsContext extends AnnotationContext
         }
     }
 
+    @Override
     public String getComponentClassName() {
         return componentClassName;
     }

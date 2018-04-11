@@ -98,6 +98,7 @@ public class RuntimeModel extends Model
 	 * @return <code>true</code> if this class name represents an interface;
 	 * <code>false</code> otherwise.
 	 */
+        @Override
 	public boolean isInterface (String className)
 	{
 		Class classElement = (Class)getClass(className);
@@ -117,6 +118,7 @@ public class RuntimeModel extends Model
 	 * @return the input stream for the specified resource, <code>null</code> 
 	 * if an error occurs or none exists
 	 */
+        @Override
 	protected BufferedInputStream getInputStreamForResource (String className, 
 		ClassLoader classLoader, String resourceName)
 	{
@@ -149,6 +151,7 @@ public class RuntimeModel extends Model
 	 * @return the top non-Object superclass for className, 
 	 * <code>className</code> if an error occurs or none exists
 	 */
+        @Override
 	protected String findPenultimateSuperclass (String className)
 	{
 		Class classElement = (Class)getClass(className);
@@ -174,6 +177,7 @@ public class RuntimeModel extends Model
 	 * @return the superclass for className, <code>null</code> if an error 
 	 * occurs or none exists
 	 */
+        @Override
 	protected String getSuperclass (String className)
 	{
 		Class classElement = (Class)getClass(className);
@@ -193,6 +197,7 @@ public class RuntimeModel extends Model
 	 * <code>null</code> if an error occurs or none exists
 	 * @see com.sun.jdo.api.persistence.model.mapping.impl.MappingClassElementImpl#forName(String, Model)
 	 */
+        @Override
 	public MappingClassElement getMappingClass (String className, 
 		ClassLoader classLoader)
 	{
@@ -233,6 +238,7 @@ public class RuntimeModel extends Model
 	/** Returns an unmodifiable copy of the ClassLoader cache.
 	 * @return unmodifiable ClassLoader cache
 	 */
+        @Override
 	public Map getClassLoaderCache ()
 	{
 		return Collections.unmodifiableMap(classLoaders);
@@ -246,6 +252,7 @@ public class RuntimeModel extends Model
 	 * are removed from the SchemaElement cache. 
 	 * @param classLoader used to determine the classes to be removed
 	 */
+        @Override
 	public void removeResourcesFromCaches (ClassLoader classLoader)
 	{
 		Collection classNames = new HashSet();
@@ -280,6 +287,7 @@ public class RuntimeModel extends Model
 	 * if an error occurs or none exists
 	 * @exception IOException if there is some error creating the file
 	 */
+        @Override
 	protected BufferedOutputStream createFile (String className, String baseFileName, 
 		String extension) throws IOException
 	{
@@ -314,6 +322,7 @@ public class RuntimeModel extends Model
 	 * @param fileName the name of the file
 	 * @exception IOException if there is some error deleting the file
 	 */
+        @Override
 	protected void deleteFile (String className, String fileName)
 		throws IOException
 	{
@@ -355,6 +364,7 @@ public class RuntimeModel extends Model
 	 * @return the class element for the specified className, <code>null</code> 
 	 * if an error occurs or none exists
 	 */
+        @Override
 	public Object getClass (String className, ClassLoader classLoader)
 	{
 		if (className == null) 
@@ -495,6 +505,7 @@ public class RuntimeModel extends Model
 	 * <code>false</code> otherwise.
 	 * @see #getClass
 	 */
+        @Override
 	public boolean implementsInterface (Object classElement, 
 		String interfaceName)
 	{
@@ -513,15 +524,16 @@ public class RuntimeModel extends Model
 	 * <code>false</code> otherwise.
 	 * @see #getClass
 	 */
+        @Override
 	public boolean hasConstructor (final String className)
 	{
 		final Class classElement = (Class)getClass(className);
 
 		if (classElement != null)
 		{
-			Boolean b = (Boolean)AccessController.doPrivileged(
-				new PrivilegedAction()
+			Boolean b = (Boolean)AccessController.doPrivileged(new PrivilegedAction()
 			{
+                    @Override
 				public Object run ()
 				{
 					return JavaTypeHelper.valueOf(((Class)classElement).
@@ -545,6 +557,7 @@ public class RuntimeModel extends Model
 	 * @return the constructor element
 	 * @see #getClass
 	 */
+        @Override
 	public Object getConstructor (final String className, String[] argTypeNames)
 	{
 		final Class classElement = (Class)getClass(className);
@@ -555,6 +568,7 @@ public class RuntimeModel extends Model
 
 			return AccessController.doPrivileged(new PrivilegedAction()
 			{
+                    @Override
 				public Object run ()
 				{
 					try
@@ -585,6 +599,7 @@ public class RuntimeModel extends Model
 	 * @return the method element
 	 * @see #getClass
 	 */
+        @Override
 	public Object getMethod (final String className, final String methodName,
 		String[] argTypeNames)
 	{
@@ -596,6 +611,7 @@ public class RuntimeModel extends Model
 
 			return AccessController.doPrivileged(new PrivilegedAction()
 			{
+                    @Override
 				public Object run ()
 				{
 					try
@@ -627,6 +643,7 @@ public class RuntimeModel extends Model
 	 * @see #getField
 	 * @see #getMethod
 	 */
+        @Override
 	public String getType (Object element)
 	{
 		return getNameForType(getTypeObject(element));
@@ -637,6 +654,7 @@ public class RuntimeModel extends Model
 	 * @param className the fully qualified name of the class to be checked 
 	 * @return the names of the field elements for the specified class
 	 */
+        @Override
 	public List getFields (String className)
 	{
 		List returnList = new ArrayList();
@@ -644,9 +662,9 @@ public class RuntimeModel extends Model
 		
 		if (classElement != null)
 		{
-			Field[] fields = (Field[]) AccessController.doPrivileged(
-				new PrivilegedAction()
+			Field[] fields = (Field[]) AccessController.doPrivileged(new PrivilegedAction()
 			{
+                    @Override
 				public Object run ()
 				{
 					return classElement.getDeclaredFields();
@@ -668,6 +686,7 @@ public class RuntimeModel extends Model
 	 * @param fieldName the name of the field to be checked 
 	 * @return the field element for the specified fieldName
 	 */
+        @Override
 	public Object getField (String className, final String fieldName)
 	{
 		final Class classElement = (Class)getClass(className);
@@ -676,6 +695,7 @@ public class RuntimeModel extends Model
 		{
 			return AccessController.doPrivileged(new PrivilegedAction()
 			{
+                    @Override
 				public Object run ()
 				{
 					try
@@ -706,6 +726,7 @@ public class RuntimeModel extends Model
 	 * <code>false</code> otherwise.
 	 * @see #getField
 	 */
+        @Override
 	public boolean isSerializable (Object fieldElement)
 	{
 		Class type = getTypeObject(fieldElement);
@@ -728,6 +749,7 @@ public class RuntimeModel extends Model
 	 * field; <code>false</code> otherwise.
 	 * @see #getFieldType
 	 */
+        @Override
 	public boolean isArray (String className, String fieldName)
 	{
 		Object fieldElement = getField(className, fieldName);
@@ -751,6 +773,7 @@ public class RuntimeModel extends Model
 	 * @see #getConstructor
 	 * @see #getMethod
 	 */
+        @Override
 	public String getDeclaringClass (Object memberElement)
 	{
 		Class classElement = null;
@@ -775,6 +798,7 @@ public class RuntimeModel extends Model
 	 * @see #getConstructor
 	 * @see #getMethod
 	 */
+        @Override
 	public int getModifiers (Object memberElement)
 	{
 		int modifiers = 0;

@@ -152,6 +152,7 @@ public class JDOException extends java.lang.RuntimeException {
    * and the String representation of the failed Object array (if any).
    * @return the String.
    */
+  @Override
   public String toString() {
     int len = 0;
     if (failed != null) {
@@ -185,6 +186,7 @@ public class JDOException extends java.lang.RuntimeException {
    * standard error output.
    * Prints nested Throwables' stack trace as well.
    */
+  @Override
   public void printStackTrace() {
     printStackTrace(System.err);
   }
@@ -195,6 +197,7 @@ public class JDOException extends java.lang.RuntimeException {
    * Prints nested Throwable's stack trace as well.
    * @param s <code>PrintStream</code> to use for output
    */
+  @Override
   public void printStackTrace(java.io.PrintStream s) {
     synchronized (s) {
       super.printStackTrace(s);
@@ -211,6 +214,7 @@ public class JDOException extends java.lang.RuntimeException {
    * Prints nested Throwable's stack trace as well.
    * @param s <code>PrintWriter</code> to use for output
    */
+  @Override
   public void printStackTrace(java.io.PrintWriter s) {
     synchronized (s) {
       super.printStackTrace(s);

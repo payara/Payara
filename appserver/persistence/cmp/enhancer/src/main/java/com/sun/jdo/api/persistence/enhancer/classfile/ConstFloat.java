@@ -58,6 +58,7 @@ public class ConstFloat extends ConstValue {
   /**
    * The tag of this constant entry
    */
+  @Override
   public int tag () { return MyTag; }
 
   /**
@@ -70,6 +71,7 @@ public class ConstFloat extends ConstValue {
   /**
    * Return the descriptor string for the constant type.
    */
+  @Override
   public String descriptor() {
       return "F";//NOI18N
   }
@@ -77,6 +79,7 @@ public class ConstFloat extends ConstValue {
   /**
    * A printable representation
    */
+  @Override
   public String toString () {
       return "CONSTANTFloat(" + indexAsString() + "): " + //NOI18N
           "floatValue(" + Float.toString(floatValue) + ")";//NOI18N
@@ -88,6 +91,7 @@ public class ConstFloat extends ConstValue {
     floatValue = f;
   }
 
+  @Override
   void formatData (DataOutputStream b) throws IOException {
     b.writeFloat(floatValue);
   }
@@ -96,6 +100,7 @@ public class ConstFloat extends ConstValue {
     return new ConstFloat (input.readFloat());
   }
 
+  @Override
   void resolve (ConstantPool p) { }
 
 }

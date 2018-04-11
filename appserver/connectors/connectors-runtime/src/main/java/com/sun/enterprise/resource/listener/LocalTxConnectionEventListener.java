@@ -68,6 +68,7 @@ public class LocalTxConnectionEventListener extends ConnectionEventListener {
         this.poolMgr = ConnectorRuntime.getRuntime().getPoolManager();
     }
 
+    @Override
     public void connectionClosed(ConnectionEvent evt) {
         Object connectionHandle = evt.getConnectionHandle();
         ResourceHandle handle = resource;
@@ -77,6 +78,7 @@ public class LocalTxConnectionEventListener extends ConnectionEventListener {
         poolMgr.resourceClosed(handle); 
     }
         
+    @Override
     public void connectionErrorOccurred(ConnectionEvent evt) {
         resource.setConnectionErrorOccurred();
         ManagedConnection mc = (ManagedConnection) evt.getSource();
@@ -95,6 +97,7 @@ public class LocalTxConnectionEventListener extends ConnectionEventListener {
      * Resource adapters will signal that the connection being closed is bad.
      * @param evt ConnectionEvent
      */
+    @Override
     public void badConnectionClosed(ConnectionEvent evt){
         Object connectionHandle = evt.getConnectionHandle();
         ResourceHandle handle = resource;
@@ -107,14 +110,17 @@ public class LocalTxConnectionEventListener extends ConnectionEventListener {
         poolMgr.badResourceClosed(handle); 
     }
 
+    @Override
     public void localTransactionStarted(ConnectionEvent evt) {
             // no-op
     }
 
+    @Override
     public void localTransactionCommitted(ConnectionEvent evt) {
          // no-op
     }
 
+    @Override
     public void localTransactionRolledback(ConnectionEvent evt) {
         // no-op
     }

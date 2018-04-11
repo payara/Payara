@@ -46,9 +46,11 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 public class NetworkAddressValidator implements ConstraintValidator<NetworkAddress, String> {
+    @Override
     public void initialize(final NetworkAddress networkAddress) {
     }
 
+    @Override
     public boolean isValid(final String s, final ConstraintValidatorContext constraintValidatorContext) {
         try {
             //noinspection ResultOfMethodCallIgnored

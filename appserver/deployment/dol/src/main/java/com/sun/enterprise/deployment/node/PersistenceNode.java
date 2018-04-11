@@ -129,10 +129,12 @@ public class PersistenceNode extends AbstractBundleNode {
         return Collections.EMPTY_MAP;
     }
     
+    @Override
     public String getDocType() {
         return null;
     }
 
+    @Override
     public String getSystemID() {
         return SCHEMA_ID;
     }
@@ -144,14 +146,17 @@ public class PersistenceNode extends AbstractBundleNode {
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return ROOT_ELEMENT;
     }
 
+    @Override
     public List<String> getSystemIDs() {
         return systemIDs;
     }
 
+    @Override
     public String getSpecVersion() {
         return SPEC_VERSION;
     }

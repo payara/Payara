@@ -197,6 +197,7 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
     /**
      * sets the display name for this bundle
      */
+    @Override
     public void setDisplayName(String name) {
         super.setName(name);
     }
@@ -204,6 +205,7 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
     /** 
      * @return the display name
      */
+    @Override
     public String getDisplayName() {
         return super.getName();
     }
@@ -213,6 +215,7 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
      * people should use the set/getDisplayName or 
      * the set/getModuleID.
      */
+    @Override
     public void setName(String name) {
         setModuleID(name);
     }
@@ -223,6 +226,7 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
      * the set/getModuleID.
      * note : backward compatibility
      */     
+    @Override
     public String getName() {
         if (getModuleID()!=null) {
             return getModuleID();
@@ -275,6 +279,7 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
     /**
      * print a meaningful string for this object
      */
+    @Override
     public void print(StringBuffer toStringBuffer) {
         super.print(toStringBuffer);
         toStringBuffer.append("\n Module Type = ").append(getModuleType());

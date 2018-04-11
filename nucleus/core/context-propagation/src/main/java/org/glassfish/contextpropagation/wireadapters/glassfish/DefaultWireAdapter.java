@@ -289,6 +289,7 @@ public class DefaultWireAdapter extends AbstractWireAdapter {
     catalog.write(objectOutputStream);   
   }
 
+  @Override
   protected void read(boolean mandatory, ObjectInputStream ois, Catalog catalog) throws IOException {
     if (mandatory) {
       ois.reset();

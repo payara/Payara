@@ -84,6 +84,7 @@ public class MethodHelper extends AbstractMethodHelper
 	 * Reads all known methods and sorts them by name into specific
 	 * Collections for further processing.
 	 */
+        @Override
 	protected void categorizeMethods ()
 	{
 		IASEjbCMPEntityDescriptor cmpDescriptor = 
@@ -109,6 +110,7 @@ public class MethodHelper extends AbstractMethodHelper
 	 * prefetch setting.
 	 * @return a boolean representing the prefetch setting
 	 */
+        @Override
 	public boolean isQueryPrefetchEnabled (Method method) 
 	{
 		boolean enabled = true;
@@ -141,6 +143,7 @@ public class MethodHelper extends AbstractMethodHelper
 	 * query filter
 	 * @return the jdo filter expression
 	 */
+        @Override
 	public String getJDOFilterExpression (Method method)
 	{
 		IASEjbCMPFinder cmpFinder = getFinder(method);
@@ -155,6 +158,7 @@ public class MethodHelper extends AbstractMethodHelper
 	 * parameter declaration
 	 * @return the jdo parameter declaration
 	 */
+        @Override
 	public String getJDOParameterDeclaration (Method method)
 	{
 		IASEjbCMPFinder cmpFinder = getFinder(method);
@@ -170,6 +174,7 @@ public class MethodHelper extends AbstractMethodHelper
 	 * parameter declaration
 	 * @return the jdo variables declaration
 	 */
+        @Override
 	public String getJDOVariableDeclaration (Method method)
 	{
 		IASEjbCMPFinder cmpFinder = getFinder(method);
@@ -184,6 +189,7 @@ public class MethodHelper extends AbstractMethodHelper
 	 * parameter declaration
 	 * @return the jdo ordering specification
 	 */
+        @Override
 	public String getJDOOrderingSpecification (Method method)
         {
 		IASEjbCMPFinder cmpFinder = getFinder(method);

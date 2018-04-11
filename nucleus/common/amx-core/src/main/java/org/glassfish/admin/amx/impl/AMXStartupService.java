@@ -119,6 +119,7 @@ public final class AMXStartupService
 
     private final class ShutdownListener implements EventListener {
 
+        @Override
         public void event(EventListener.Event event) {
             if (event.is(EventTypes.SERVER_SHUTDOWN)) {
                 shutdown();
@@ -145,6 +146,7 @@ public final class AMXStartupService
     }
 
 
+    @Override
     public void postConstruct() {
         final TimingDelta delta = new TimingDelta();
 
@@ -176,12 +178,14 @@ public final class AMXStartupService
     }
 
 
+    @Override
     public void preDestroy() {
         logger.log(Level.INFO,"AMX Startup Service: Destroying service.");
         unloadAMXMBeans();
     }
 
 
+    @Override
     public JMXServiceURL[] getJMXServiceURLs() {
         try {
             return (JMXServiceURL[]) mMBeanServer.getAttribute(AMXGlassfish.DEFAULT.getBootAMXMBeanObjectName(), "JMXServiceURLs");
@@ -205,6 +209,7 @@ public final class AMXStartupService
     }
 
 
+    @Override
     public synchronized ObjectName getDomainRoot() {
         try {
             // might not be ready yet
@@ -221,6 +226,7 @@ public final class AMXStartupService
     }
 
 
+    @Override
     public ObjectName loadAMXMBeans() {
         ObjectName objectName = AMXGlassfish.DEFAULT.domainRoot();
         if (!mMBeanServer.isRegistered(objectName)) {
@@ -283,6 +289,7 @@ public final class AMXStartupService
             mLatch = new CountDownLatch(1);
         }
 
+        @Override
         public void run() {
             try {
                 logger.fine("AMXStartupServiceNew.AMXLoaderThread: loading: " + mLoader.getClass().getName());
@@ -366,6 +373,7 @@ public final class AMXStartupService
     }
     
 
+    @Override
     public synchronized void unloadAMXMBeans() {
         if (getDomainRoot() != null) {
             final Collection<AMXLoader> loaders = mHabitat.getAllServices(AMXLoader.class);

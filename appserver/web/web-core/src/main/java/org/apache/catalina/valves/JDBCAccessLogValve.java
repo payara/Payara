@@ -422,6 +422,7 @@ public final class JDBCAccessLogValve
      * @exception ServletException Database SQLException is wrapped 
      * in a ServletException.
      */    
+    @Override
      public int invoke(Request request, Response response)
          throws IOException, ServletException {
 
@@ -429,6 +430,7 @@ public final class JDBCAccessLogValve
     }
 
 
+    @Override
     public void postInvoke(Request request, Response response)
                                     throws IOException, ServletException{
 
@@ -544,6 +546,7 @@ public final class JDBCAccessLogValve
      * @exception LifecycleException Can be thrown on lifecycle 
      * inconsistencies or on database errors (as a wrapped SQLException).
      */
+    @Override
     public void start() throws LifecycleException {
 
         // START CR 6411114
@@ -595,6 +598,7 @@ public final class JDBCAccessLogValve
      * @exception LifecycleException Can be thrown on lifecycle 
      * inconsistencies or on database errors (as a wrapped SQLException).
      */
+    @Override
     public void stop() throws LifecycleException {
 
         // START CR 6411114

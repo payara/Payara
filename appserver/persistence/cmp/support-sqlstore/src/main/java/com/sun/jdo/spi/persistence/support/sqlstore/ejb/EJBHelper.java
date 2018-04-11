@@ -304,6 +304,7 @@ public class EJBHelper {
         * @see TransactionHelper#getTransaction()
         * @return null;
         */
+       @Override
         public Transaction getTransaction() { return null; }
     
        /** 
@@ -313,11 +314,13 @@ public class EJBHelper {
         * @see TransactionHelper#getUserTransaction()
         * @return the null.
         */
+       @Override
         public UserTransaction getUserTransaction() { return null; }
     
         /** Identifies the non-managed environment behavior.
          * @return false.
          */
+       @Override
         public boolean isManaged() { return false; }
     
        /** 
@@ -327,6 +330,7 @@ public class EJBHelper {
         * @param 	local 	Status value
         * @return 	the status value
         */
+       @Override
         public int translateStatus(int st) { return st; }
     
        /** 
@@ -337,6 +341,7 @@ public class EJBHelper {
         * @param 	pmf 	PersistenceManagerFactory instance to be replaced
         * @return 	the pmf value.
         */
+       @Override
         public PersistenceManagerFactory replaceInternalPersistenceManagerFactory(
                     PersistenceManagerFactory pmf) { return pmf; }
     
@@ -348,6 +353,7 @@ public class EJBHelper {
         * @param 	component 	an array of Objects
         * @throw JDOFatalInternalException if called.
         */
+       @Override
         public Object preInvoke(Object component) { 
             throw new JDOFatalInternalException(I18NHelper.getMessage(
                 messages, "ejb.ejbhelper.nonmanaged", "preInvoke")); //NOI18N
@@ -361,6 +367,7 @@ public class EJBHelper {
         * @param im implementation-specific Object
         * @throw JDOFatalInternalException if called.
         */
+       @Override
         public void postInvoke(Object im) { 
             throw new JDOFatalInternalException(I18NHelper.getMessage(
                 messages, "ejb.ejbhelper.nonmanaged", "postInvoke")); //NOI18N
@@ -378,6 +385,7 @@ public class EJBHelper {
         * @throws javax.transaction.RollbackException.
         * @throws javax.transaction.SystemException.
         */
+       @Override
         public void registerSynchronization(Transaction jta, 
             Synchronization sync) throws RollbackException, SystemException { }
     
@@ -392,6 +400,7 @@ public class EJBHelper {
          * @throw JDOFatalInternalException if called.
          * @throw java.sql.SQLException.
          */
+       @Override
         public java.sql.Connection getConnection(Object resource, 
             String username, char[] password) throws java.sql.SQLException {
             throw new JDOFatalInternalException(I18NHelper.getMessage(
@@ -409,6 +418,7 @@ public class EJBHelper {
          * @throw JDOFatalInternalException if called.
          * @throw java.sql.SQLException.
          */
+       @Override
         public java.sql.Connection getNonTransactionalConnection(
             Object resource, String username, char[] password)
             throws java.sql.SQLException {
@@ -424,6 +434,7 @@ public class EJBHelper {
          * 
          * @return javax.transaction.TransactionManager
          */
+       @Override
         public TransactionManager getLocalTransactionManager() {
             throw new JDOFatalInternalException(I18NHelper.getMessage(
                 messages, "ejb.ejbhelper.nonmanaged", "getLocalTransactionManager")); //NOI18N
@@ -433,6 +444,7 @@ public class EJBHelper {
          * This method unwraps given Statement and return the Statement from
          * JDBC driver if possible.
          */
+       @Override
         public java.sql.Statement unwrapStatement(java.sql.Statement stmt) {
             //Nothing to unwrap in unmanaged environment
             return stmt;
@@ -444,6 +456,7 @@ public class EJBHelper {
          *   
          * @param pmf the PersistenceManagerFactory. 
          */   
+       @Override
         public void setPersistenceManagerFactoryDefaults(PersistenceManagerFactory pmf) {}
 
         /** 
@@ -454,6 +467,7 @@ public class EJBHelper {
          * @param info the instance to use for the name generation. 
          * @return name prefix as String. 
          */   
+       @Override
         public String getDDLNamePrefix(Object info) { 
             throw new JDOFatalInternalException(I18NHelper.getMessage(
                 messages, "ejb.ejbhelper.nonmanaged", "getDDLNamePrefix")); //NOI18N
@@ -462,6 +476,7 @@ public class EJBHelper {
         /**
          * @inheritDoc
          */ 
+       @Override
         public void registerApplicationLifeCycleEventListener(
                 ApplicationLifeCycleEventListener listener) {
             // The default implementation is no-op 
@@ -470,6 +485,7 @@ public class EJBHelper {
         /**
          * @inheritDoc
          */ 
+       @Override
         public void notifyApplicationUnloaded(ClassLoader cl) {
             // The default implementation is no-op 
         }

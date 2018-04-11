@@ -53,6 +53,7 @@ package com.sun.jts.codegen.jtsxa;
 public class _OTSResourceStub extends org.omg.CORBA.portable.ObjectImpl implements com.sun.jts.codegen.jtsxa.OTSResource
 {
 
+  @Override
   public org.omg.CosTransactions.otid_t getGlobalTID ()
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -72,6 +73,7 @@ public class _OTSResourceStub extends org.omg.CORBA.portable.ObjectImpl implemen
     }
   } // getGlobalTID
 
+  @Override
   public org.omg.CosTransactions.Vote prepare () throws org.omg.CosTransactions.HeuristicMixed, org.omg.CosTransactions.HeuristicHazard
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -96,6 +98,7 @@ public class _OTSResourceStub extends org.omg.CORBA.portable.ObjectImpl implemen
     }
   } // prepare
 
+  @Override
   public void rollback () throws org.omg.CosTransactions.HeuristicCommit, org.omg.CosTransactions.HeuristicMixed, org.omg.CosTransactions.HeuristicHazard
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -120,6 +123,7 @@ public class _OTSResourceStub extends org.omg.CORBA.portable.ObjectImpl implemen
     }
   } // rollback
 
+  @Override
   public void commit () throws org.omg.CosTransactions.NotPrepared, org.omg.CosTransactions.HeuristicRollback, org.omg.CosTransactions.HeuristicMixed, org.omg.CosTransactions.HeuristicHazard
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -146,6 +150,7 @@ public class _OTSResourceStub extends org.omg.CORBA.portable.ObjectImpl implemen
     }
   } // commit
 
+  @Override
   public void commit_one_phase () throws org.omg.CosTransactions.HeuristicHazard
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -166,6 +171,7 @@ public class _OTSResourceStub extends org.omg.CORBA.portable.ObjectImpl implemen
     }
   } // commit_one_phase
 
+  @Override
   public void forget ()
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -188,6 +194,7 @@ public class _OTSResourceStub extends org.omg.CORBA.portable.ObjectImpl implemen
     "IDL:jtsxa/OTSResource:1.0", 
     "IDL:omg.org/CosTransactions/Resource:1.0"};
 
+  @Override
   public String[] _ids ()
   {
     return (String[])__ids.clone ();

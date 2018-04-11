@@ -354,6 +354,7 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
         private ClassLoader getParent_() {
             if (System.getSecurityManager() != null) {
                 return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+                    @Override
                     public ClassLoader run() {
                         return getParent();
                     }

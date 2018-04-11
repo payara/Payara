@@ -295,6 +295,7 @@ public class EjbDeployer
         return ejbApp;
     }
 
+    @Override
     public void unload(EjbApplication ejbApplication, DeploymentContext dc) {
 
         EjbBundleDescriptorImpl ejbBundle = ejbApplication.getEjbBundleDescriptor();
@@ -323,6 +324,7 @@ public class EjbDeployer
      *
      * @param dc deployment context
      */
+    @Override
     public void clean(DeploymentContext dc) {
         // Both undeploy and shutdown scenarios are
         // handled directly in EjbApplication.shutdown.

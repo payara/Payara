@@ -61,6 +61,7 @@ public class EventbusNotifierExecutionOptionsFactory extends NotifierExecutionOp
         register(NotifierType.EVENTBUS, this);
     }
 
+    @Override
     public NotifierExecutionOptions build(EventbusNotifier notifier) {
         EventbusNotifierExecutionOptions executionOptions = new EventbusNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));

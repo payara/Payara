@@ -515,6 +515,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				if ((className == null) || 
@@ -549,6 +550,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				Model model = getModel();
@@ -592,6 +594,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				if (!getModel().hasField(getClassName(), fieldName))
@@ -622,6 +625,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				boolean isPersistent = (PersistenceFieldElement.PERSISTENT == 
@@ -648,6 +652,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				String fieldName = field.getName();
@@ -688,6 +693,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				if (field != null)
@@ -719,6 +725,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				String fieldName = field.getName();
@@ -756,6 +763,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				if (isLegalRelationship(field))
@@ -911,6 +919,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				String fieldName = field.getName();
@@ -949,6 +958,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				String className = getClassName();
@@ -1054,6 +1064,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				String className = getClassName();
@@ -1089,6 +1100,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				String className = getClassName();
@@ -1142,6 +1154,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				// only bother to check for classes with version consistency
@@ -1322,6 +1335,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				Model model = getModel();
@@ -1356,6 +1370,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				String inverseName = 
@@ -1398,6 +1413,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				Model model = getModel();
@@ -1501,6 +1517,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				if (field != null)
@@ -1676,6 +1693,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				if (relatedClass != null)
@@ -1718,6 +1736,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				ColumnPairElement pair = getPair(pairName, 
@@ -1772,6 +1791,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				String schemaName = getSchemaForClass(className);
@@ -1805,6 +1825,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				if (primaryTable != null)
@@ -1861,6 +1882,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				if (tableName != null)
@@ -1913,6 +1935,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				if (columnName != null)
@@ -1982,6 +2005,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				MappingClassElement mappingClass = field.getDeclaringClass();
@@ -2052,6 +2076,7 @@ public class ModelValidator
 			/** The fully qualified name of the key class */
 			private String keyClassName;
 
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				// checks the key class name
@@ -2376,6 +2401,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				Model model = getModel();
@@ -2429,6 +2455,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				PersistenceFieldElement[] fields = persistenceClass.getFields();
@@ -2467,6 +2494,7 @@ public class ModelValidator
 	{
 		return new ValidationComponent ()
 		{
+                        @Override
 			public void validate () throws ModelValidationException
 			{
 				String className = getClassName();

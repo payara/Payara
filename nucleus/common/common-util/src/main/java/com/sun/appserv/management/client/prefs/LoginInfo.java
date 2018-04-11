@@ -82,6 +82,7 @@ public final class LoginInfo implements Comparable<LoginInfo> {
     public char[] getPassword() {
         return ( password );
     }
+    @Override
     public boolean equals(final Object other) {
         boolean same = false;
         if (other instanceof LoginInfo) {
@@ -93,6 +94,7 @@ public final class LoginInfo implements Comparable<LoginInfo> {
         }
         return ( same );
     }
+    @Override
     public int hashCode() {
         return ( (int) 31 * host.hashCode() + 23 * port + 53 * user.hashCode() + 13 * Arrays.hashCode(password) );
     }
@@ -103,10 +105,12 @@ public final class LoginInfo implements Comparable<LoginInfo> {
         this.password = password;
     }
     
+    @Override
     public String toString() {
         return ( host + port + user + (password != null ? new String(password) : null));
     }
 
+    @Override
     public int compareTo(final LoginInfo that) {
         final String thisKey = this.user + this.host + this.port;
         final String thatKey = that.user + that.host + that.port;        

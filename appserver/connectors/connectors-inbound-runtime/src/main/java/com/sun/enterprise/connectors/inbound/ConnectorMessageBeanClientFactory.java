@@ -66,6 +66,7 @@ public final class ConnectorMessageBeanClientFactory
      * @param descriptor <code>EjbMessageBeanDescriptor.
      * @return <code>ConnectorMessageBeanClient<code>
      */
+    @Override
     public MessageBeanClient createMessageBeanClient(EjbMessageBeanDescriptor descriptor) {
         return new ConnectorMessageBeanClient(descriptor);
     }

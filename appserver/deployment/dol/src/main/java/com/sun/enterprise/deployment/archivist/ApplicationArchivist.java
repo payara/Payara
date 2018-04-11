@@ -220,6 +220,7 @@ public class ApplicationArchivist extends Archivist<Application> {
         return openWith(appDesc, appArchive);
     }
 
+    @Override
     public Application openWith(Application application, ReadableArchive archive) throws IOException, SAXParseException {
         setManifest(archive.getManifest());
 
@@ -487,6 +488,7 @@ public class ApplicationArchivist extends Archivist<Application> {
             libDir = root + File.separator + "lib" + File.separator;
         }
 
+        @Override
         public boolean accept(File dir, String name) {
 
             File currentFile = new File(dir, name);
@@ -513,6 +515,7 @@ public class ApplicationArchivist extends Archivist<Application> {
         DirectoryIntrospectionFilter() {
         }
 
+        @Override
         public boolean accept(File dir, String name) {
 
             File currentFile = new File(dir, name);
@@ -738,6 +741,7 @@ public class ApplicationArchivist extends Archivist<Application> {
     /**
      * @return the list of the DeploymentDescriptorFile responsible for handling the configuration deployment descriptors
      */
+    @Override
     public List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles() {
         if (confDDFiles == null) {
             confDDFiles = DOLUtils.getConfigurationDeploymentDescriptorFiles(habitat, EarType.ARCHIVE_TYPE);
@@ -779,6 +783,7 @@ public class ApplicationArchivist extends Archivist<Application> {
      * @param target
      *            the new archive to use to copy our contents into
      */
+    @Override
     public void copyInto(ReadableArchive source, WritableArchive target) throws IOException {
         try {
             Application a = readStandardDeploymentDescriptor(source);

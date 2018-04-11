@@ -102,6 +102,7 @@ public class CoyoteOutputStream
     /**
     * Prevent cloning the facade.
     */
+    @Override
     protected Object clone()
         throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
@@ -122,6 +123,7 @@ public class CoyoteOutputStream
     // --------------------------------------------------- OutputStream Methods
 
 
+    @Override
     public void write(int i)
         throws IOException {
         // Disallow operation if the object has gone out of scope
@@ -133,6 +135,7 @@ public class CoyoteOutputStream
     }
 
 
+    @Override
     public void write(byte[] b)
         throws IOException {
         // Disallow operation if the object has gone out of scope
@@ -144,6 +147,7 @@ public class CoyoteOutputStream
     }
 
 
+    @Override
     public void write(byte[] b, int off, int len)
         throws IOException {
         // Disallow operation if the object has gone out of scope
@@ -158,6 +162,7 @@ public class CoyoteOutputStream
     /**
      * Will send the buffer to the client.
      */
+    @Override
     public void flush()
         throws IOException {
         // Disallow operation if the object has gone out of scope
@@ -169,6 +174,7 @@ public class CoyoteOutputStream
     }
 
 
+    @Override
     public void close()
         throws IOException {
         // Disallow operation if the object has gone out of scope
@@ -183,6 +189,7 @@ public class CoyoteOutputStream
     // -------------------------------------------- ServletOutputStream Methods
 
 
+    @Override
     public void print(String s)
         throws IOException {
         // Disallow operation if the object has gone out of scope
@@ -194,6 +201,7 @@ public class CoyoteOutputStream
     }
 
 
+    @Override
     public boolean isReady() {
         // Disallow operation if the object has gone out of scope
         if (ob == null) {
@@ -203,6 +211,7 @@ public class CoyoteOutputStream
     }
 
 
+    @Override
     public void setWriteListener(WriteListener writeListener) {
         // Disallow operation if the object has gone out of scope
         if (ob == null) {

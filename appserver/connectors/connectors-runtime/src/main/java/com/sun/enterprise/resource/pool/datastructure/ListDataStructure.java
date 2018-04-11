@@ -86,6 +86,7 @@ public class ListDataStructure implements DataStructure {
      * to act based on the new configuration.
      * @param newMaxSize
      */
+    @Override
     public synchronized void setMaxSize(int newMaxSize) {
             
         //Find currently open with the current maxsize
@@ -117,6 +118,7 @@ public class ListDataStructure implements DataStructure {
      * @param count     Number (units) of resources to create
      * @return int number of resources added
      */
+    @Override
     public int addResource(ResourceAllocator allocator, int count) throws PoolingException {
         int numResAdded = 0;
         for (int i = 0; i < count && resources.size() < maxSize; i++) {
@@ -147,6 +149,7 @@ public class ListDataStructure implements DataStructure {
      *
      * @return ResourceHandle
      */
+    @Override
     public ResourceHandle getResource() {
         ResourceHandle resource = null;
         if (strategy != null) {
@@ -166,6 +169,7 @@ public class ListDataStructure implements DataStructure {
      *
      * @param resource ResourceHandle
      */
+    @Override
     public void removeResource(ResourceHandle resource) {
         boolean removed = false;
         synchronized (resources) {
@@ -185,6 +189,7 @@ public class ListDataStructure implements DataStructure {
      *
      * @param resource ResourceHandle
      */
+    @Override
     public void returnResource(ResourceHandle resource) {
         synchronized (free) {
             free.add(resource);
@@ -196,6 +201,7 @@ public class ListDataStructure implements DataStructure {
      *
      * @return int count
      */
+    @Override
     public int getFreeListSize() {
         return free.size();
     }
@@ -203,6 +209,7 @@ public class ListDataStructure implements DataStructure {
     /**
      * remove & destroy all resources from the datastructure.
      */
+    @Override
     public void removeAll() {
         synchronized (resources) {
             synchronized (free) {
@@ -223,6 +230,7 @@ public class ListDataStructure implements DataStructure {
      *
      * @return int count
      */
+    @Override
     public int getResourcesSize() {
         return resources.size();
     }

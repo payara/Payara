@@ -140,11 +140,13 @@ public class AppClientContainerBuilder implements AppClientContainer.Builder {
         return container;
     }
     
+    @Override
     public AppClientContainer newContainer(final Class mainClass) throws Exception {
         return newContainer(mainClass, null);
 
     }
 
+    @Override
     public AppClientContainer newContainer(final URI clientURI,
             final CallbackHandler callerSpecifiedCallbackHandler,
             final String callerSpecifiedMainClassName,
@@ -155,6 +157,7 @@ public class AppClientContainerBuilder implements AppClientContainer.Builder {
                 false /* isTextAuth */);
     }
 
+    @Override
     public AppClientContainer newContainer(final URI clientURI,
             final CallbackHandler callerSpecifiedCallbackHandler,
             final String callerSpecifiedMainClassName,
@@ -173,6 +176,7 @@ public class AppClientContainerBuilder implements AppClientContainer.Builder {
         return container;
     }
 
+    @Override
     public AppClientContainer newContainer(final URI clientURI) throws Exception, UserError {
         return newContainer(clientURI, null, null, null);
     }
@@ -327,38 +331,46 @@ public class AppClientContainerBuilder implements AppClientContainer.Builder {
 //        return acc;
 //    }
 
+    @Override
     public AppClientContainerBuilder addMessageSecurityConfig(final MessageSecurityConfig msConfig) {
         messageSecurityConfigs.add(msConfig);
         return this;
     }
 
+    @Override
     public List<MessageSecurityConfig> getMessageSecurityConfig() {
         return this.messageSecurityConfigs;
     }
 
+    @Override
     public AppClientContainerBuilder logger(final Logger logger) {
         this.logger = logger;
         return this;
     }
 
+    @Override
     public Logger getLogger() {
         return logger;
     }
 
 
+    @Override
     public AppClientContainerBuilder authRealm(final String className) {
         authRealm = new AuthRealm(className);
         return this;
     }
 
+    @Override
     public AuthRealm getAuthRealm() {
         return authRealm;
     }
 
+    @Override
     public AppClientContainerBuilder clientCredentials(final String user, final char[] password) {
         return clientCredentials(user, password, null);
     }
 
+    @Override
     public AppClientContainerBuilder clientCredentials(final String user, final char[] password, final String realm) {
 //        this.clientCredential = new ClientCredential()
 //        this.user = user;
@@ -373,29 +385,35 @@ public class AppClientContainerBuilder implements AppClientContainer.Builder {
         return this;
     }
 
+    @Override
     public ClientCredential getClientCredential() {
         return clientCredential;
     }
 
+    @Override
     public AppClientContainerBuilder containerProperties(final Properties props) {
         this.containerProperties = props;
         return this;
     }
 
+    @Override
     public AppClientContainerBuilder containerProperties(final List<Property> props) {
         containerProperties = XML.toProperties(props);
         return this;
     }
 
+    @Override
     public Properties getContainerProperties() {
         return containerProperties;
     }
 
+    @Override
     public AppClientContainerBuilder sendPassword(final boolean sendPassword){
         this.sendPassword = sendPassword;
         return this;
     }
 
+    @Override
     public boolean getSendPassword() {
         return sendPassword;
     }
@@ -409,6 +427,7 @@ public class AppClientContainerBuilder implements AppClientContainer.Builder {
 //        return callbackHandlerClass;
 //    }
 
+    @Override
     public TargetServer[] getTargetServers() {
         return targetServers;
     }

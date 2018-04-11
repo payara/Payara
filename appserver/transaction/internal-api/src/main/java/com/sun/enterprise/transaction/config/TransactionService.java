@@ -241,5 +241,6 @@ public interface TransactionService extends ConfigBeanProxy, PropertyBag, Config
     }
     )
     @Element
+    @Override
     List<Property> getProperty();
 }

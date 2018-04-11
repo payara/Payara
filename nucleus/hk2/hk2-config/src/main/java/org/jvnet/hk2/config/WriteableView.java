@@ -67,12 +67,14 @@ import org.jvnet.hk2.config.ConfigModel.Property;
  */
 public class WriteableView implements InvocationHandler, Transactor, ConfigView {
     private static final TraversableResolver TRAVERSABLE_RESOLVER = new TraversableResolver() {
+        @Override
         public boolean isReachable(Object traversableObject,
                 Path.Node traversableProperty, Class<?> rootBeanType,
                 Path pathToTraversableObject, ElementType elementType) {
                     return true;
         }
 
+        @Override
         public boolean isCascadable(Object traversableObject,
                 Path.Node traversableProperty, Class<?> rootBeanType,
                 Path pathToTraversableObject, ElementType elementType) {
@@ -125,6 +127,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
         changedCollections = new HashMap<String, ProtectedList>();
     }
 
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
         if (method.getName().equals("hashCode"))
@@ -290,6 +293,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
      * @return true if the enlisting with the passed transaction was accepted,
      *         false otherwise
      */
+    @Override
     public synchronized boolean join(Transaction t) {
         if (currentTx==null) {
             currentTx = t;
@@ -306,6 +310,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
      *          one passed during the join(Transaction t) call.
      * @return true if the trsaction commiting would be successful
      */
+    @Override
     public synchronized boolean canCommit(Transaction t) throws TransactionFailure {
         if (!isDeleted) { // HK2-127: validate only if not marked for deletion
 
@@ -361,6 +366,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
      * @throws TransactionFailure
      *          if the transaction commit failed
      */
+    @Override
     public synchronized List<PropertyChangeEvent> commit(Transaction t) throws TransactionFailure {
         if (currentTx==t) {
             currentTx=null;
@@ -455,6 +461,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
      *
      * @param t the aborting transaction
      */
+    @Override
     public synchronized void abort(Transaction t) {
         currentTx=null;
         bean.getLock().unlock();
@@ -483,19 +490,23 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
         return writeableView.getProxy(type);
    }
 
+    @Override
     public ConfigBean getMasterView() {
         return bean;
     }
 
+    @Override
     public void setMasterView(ConfigView view) {
 
     }
 
+    @Override
     public <T extends ConfigBeanProxy> Class<T> getProxyType() {
         return bean.getProxyType();
     }
 
     @SuppressWarnings("unchecked")    
+    @Override
     public <T extends ConfigBeanProxy> T getProxy(final Class<T> type) {
         final ConfigBean sourceBean = getMasterView();
         if (!(type.getName().equals(sourceBean.model.targetTypeName))) {
@@ -590,6 +601,7 @@ private class ProtectedList extends AbstractList {
      *
      * @return the number of elements in this collection.
      */
+    @Override
     public int size() {
         return proxied.size();
     }
@@ -602,6 +614,7 @@ private class ProtectedList extends AbstractList {
      * @throws IndexOutOfBoundsException if the given index is out of range
      *                                   (<tt>index &lt; 0 || index &gt;= size()</tt>).
      */
+    @Override
     public Object get(int index) {
         return proxied.get(index);
     }
@@ -741,6 +754,7 @@ private class ProtectedList extends AbstractList {
         return removed;
     }
 
+    @Override
     public Object set(int index, Object object) {
         Object replaced = proxied.set(index, object);
         PropertyChangeEvent evt = new PropertyChangeEvent(defaultView, id, replaced, object);

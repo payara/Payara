@@ -109,6 +109,7 @@ public class PingService implements PostConstruct {
         final Timer pingTimer = new Timer("PingService", true); //Mark the timer as daemon so that it does not hold up appserver shutdown
 
         TimerTask pingTask = new TimerTask() {
+            @Override
             public void run() {
                 Image img = null;
                 try {

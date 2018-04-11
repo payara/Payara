@@ -85,6 +85,7 @@ public class ConnectorDescriptorProxy implements NamingObjectProxy.Initializatio
         return connectorRuntimeProvider.get();
     }
 
+    @Override
     public Object create(Context ic) throws NamingException {
         //this is a per-lookup object and once we have the descriptor,
         //we remove the proxy and bind the descriptor with same jndi-name

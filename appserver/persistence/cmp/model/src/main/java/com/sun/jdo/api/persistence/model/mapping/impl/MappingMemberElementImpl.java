@@ -89,6 +89,7 @@ public abstract class MappingMemberElementImpl extends MappingElementImpl
 	 * @return the class that owns this member element, or <code>null</code>
 	 * if the element is not attached to any class
 	 */
+        @Override
 	public MappingClassElement getDeclaringClass () { return _declaringClass; }
 
 	/** Overrides MappingElementImpl's <code>equals</code> method to add  
@@ -99,6 +100,7 @@ public abstract class MappingMemberElementImpl extends MappingElementImpl
 	 * <code>false</code> otherwise.
 	 * @param obj the reference object with which to compare.
 	 */
+        @Override
 	public boolean equals (Object obj)
 	{
 		if (super.equals(obj) && (obj instanceof MappingMemberElement))
@@ -118,6 +120,7 @@ public abstract class MappingMemberElementImpl extends MappingElementImpl
 	 * the hashCode of this mapping element's declaring class.
 	 * @return a hash code value for this object.
 	 */
+        @Override
 	public int hashCode ()
 	{
 		MappingClassElement declaringClass = getDeclaringClass();
@@ -133,6 +136,7 @@ public abstract class MappingMemberElementImpl extends MappingElementImpl
 	 * @param o old value
 	 * @param n new value
 	 */
+        @Override
 	protected final void firePropertyChange (String name, Object o, Object n)
 	{
 		// even though o == null and n == null will signify a change, that 
@@ -155,6 +159,7 @@ public abstract class MappingMemberElementImpl extends MappingElementImpl
 	 * @param n new value
 	 * @exception PropertyVetoException when the change is vetoed by a listener
 	 */
+        @Override
 	protected final void fireVetoableChange (String name, Object o, Object n)
 		throws PropertyVetoException
 	{

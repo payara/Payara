@@ -1396,10 +1396,12 @@ public class FileUtils  {
             this.newFile = newFile;
         }
 
+        @Override
         public boolean workComplete() {
             return renameResult;
         }
 
+        @Override
         public void run() {
             renameResult = originalFile.renameTo(newFile);
         }
@@ -1418,10 +1420,12 @@ public class FileUtils  {
             this.out = out;
         }
 
+        @Override
         public boolean workComplete() {
             return fos != null;
         }
 
+        @Override
         public void run() {
             try {
                 fos = new FileOutputStream(out);

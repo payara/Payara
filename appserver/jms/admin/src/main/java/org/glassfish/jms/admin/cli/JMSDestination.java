@@ -151,6 +151,7 @@ public abstract class JMSDestination {
                    MQJMXConnectorInfo mqjmxForServer = (MQJMXConnectorInfo)
                    java.security.AccessController.doPrivileged
                        (new java.security.PrivilegedExceptionAction() {
+                        @Override
                         public java.lang.Object run() throws Exception {
                             if(ctarget == CommandTarget.CLUSTER || ctarget == CommandTarget.CLUSTERED_INSTANCE) {
                                 if (logger.isLoggable(Level.FINE)) {
@@ -491,6 +492,7 @@ public abstract class JMSDestination {
             ActiveJmsResourceAdapter air = (ActiveJmsResourceAdapter)
             java.security.AccessController.doPrivileged
                 (new java.security.PrivilegedExceptionAction() {
+                     @Override
                      public java.lang.Object run() throws Exception {
                           String module = ConnectorConstants.DEFAULT_JMS_ADAPTER;
                           String loc = ConnectorsUtil.getSystemModuleLocation(module);

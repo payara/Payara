@@ -70,6 +70,7 @@ public class EJBTimerTask extends TimerTask {
         timerService_ = timerService;
     }
     
+    @Override
     public void run() {
         // Delegate to Timer Service.
         timerService_.taskExpired(timerId_);

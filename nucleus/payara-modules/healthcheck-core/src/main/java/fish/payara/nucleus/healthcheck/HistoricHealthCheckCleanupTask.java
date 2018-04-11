@@ -55,6 +55,7 @@ final class HistoricHealthCheckCleanupTask implements Runnable {
         this.timeLimit = timeLimit;
     }
 
+    @Override
     public void run() {
         HistoricHealthCheckEventStore store = Globals.getDefaultHabitat().getService(HistoricHealthCheckEventStore.class);
         NavigableSet<HistoricHealthCheckEvent> historicStore = store.getHistoricStore();

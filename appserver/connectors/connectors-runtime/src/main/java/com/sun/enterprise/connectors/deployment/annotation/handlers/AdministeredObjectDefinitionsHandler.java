@@ -102,6 +102,7 @@ public class AdministeredObjectDefinitionsHandler extends AbstractResourceHandle
     }
 
     
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAndWebAnnotationTypes();
     }

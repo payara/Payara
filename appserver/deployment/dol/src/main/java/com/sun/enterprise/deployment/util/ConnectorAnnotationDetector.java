@@ -81,6 +81,7 @@ public class ConnectorAnnotationDetector extends AnnotationDetector {
             // scan classes in top level jars
             File archiveFile = new File(archive.getURI());
             File[] jarFiles = archiveFile.listFiles(new FileFilter() {
+                 @Override
                  public boolean accept(File pathname) {
                      return (pathname.isFile() &&
                             pathname.getAbsolutePath().endsWith(".jar"));

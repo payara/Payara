@@ -96,6 +96,7 @@ public class JndiProxyObjectFactory implements ObjectFactory {
     /**
     * create the object instance from the factory
     */
+    @Override
     public Object getObjectInstance(Object obj,
                     Name name, Context nameCtx, Hashtable environment)
                     throws NamingException {

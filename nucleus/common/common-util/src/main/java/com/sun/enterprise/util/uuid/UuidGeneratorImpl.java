@@ -52,10 +52,12 @@ public class UuidGeneratorImpl implements UuidGenerator {
     public UuidGeneratorImpl() {
     }
     
+    @Override
     public String generateUuid() {
         return UuidUtil.generateUuid();
     }
     
+    @Override
     public String generateUuid(Object obj) {
         return UuidUtil.generateUuid(obj);
     }

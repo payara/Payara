@@ -48,6 +48,7 @@ public class ConnectorTracerVisitor extends DefaultDOLVisitor implements Connect
     public ConnectorTracerVisitor() {
     }
 
+    @Override
     public void accept(BundleDescriptor descriptor) {
         if (descriptor instanceof ConnectorDescriptor) {
             ConnectorDescriptor connectorDesc = (ConnectorDescriptor)descriptor;
@@ -59,6 +60,7 @@ public class ConnectorTracerVisitor extends DefaultDOLVisitor implements Connect
      * visits an connector descriptor
      * @param connector descriptor
      */
+    @Override
     public void accept(ConnectorDescriptor conDesc) {
         DOLUtils.getDefaultLogger().info("==================");
         DOLUtils.getDefaultLogger().info(conDesc.toString());

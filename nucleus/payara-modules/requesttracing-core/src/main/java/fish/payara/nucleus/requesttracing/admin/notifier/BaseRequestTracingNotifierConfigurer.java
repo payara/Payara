@@ -122,6 +122,7 @@ public abstract class BaseRequestTracingNotifierConfigurer<C extends Notifier> i
             }
             else {
                 ConfigSupport.apply(new SingleConfigCode<C>() {
+                    @Override
                     public Object run(C cProxy) throws PropertyVetoException, TransactionFailure {
                         applyValues(cProxy);
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);

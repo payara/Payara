@@ -98,6 +98,7 @@ public class StatusGenerator extends AbstractResource {
 
     private static class SortedProperties extends Properties {
 
+        @Override
         public Enumeration keys() {
             Enumeration keysEnum = super.keys();
             Vector<String> keyList = new Vector<String>();

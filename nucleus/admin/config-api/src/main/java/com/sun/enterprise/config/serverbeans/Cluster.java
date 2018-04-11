@@ -502,6 +502,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
             if (ref != null) {
                 ConfigSupport.apply(new SingleConfigCode<Cluster>() {
 
+                    @Override
                     public Object run(Cluster param) {
                         return param.getResourceRef().remove(ref);
                     }
@@ -513,6 +514,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
 
             ConfigSupport.apply(new SingleConfigCode<Cluster>() {
 
+                @Override
                 public Object run(Cluster param) throws PropertyVetoException, TransactionFailure {
 
                     ResourceRef newResourceRef = param.createChild(ResourceRef.class);

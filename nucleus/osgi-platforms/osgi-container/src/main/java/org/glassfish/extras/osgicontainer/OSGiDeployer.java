@@ -62,13 +62,16 @@ import java.io.File;
 @Service
 public class OSGiDeployer implements Deployer<OSGiContainer, OSGiDeployedBundle> {
 
+    @Override
     public OSGiDeployedBundle load(OSGiContainer container, DeploymentContext context) {
         return new OSGiDeployedBundle(getApplicationBundle(context, true));
     }
 
+    @Override
     public void unload(OSGiDeployedBundle appContainer, DeploymentContext context) {
     }
 
+    @Override
     public void clean(DeploymentContext context) {
         try {
             OpsParams params = context.getCommandParameters(OpsParams.class);
@@ -89,14 +92,17 @@ public class OSGiDeployer implements Deployer<OSGiContainer, OSGiDeployedBundle>
         return (PackageAdmin) context.getService(context.getServiceReference(PackageAdmin.class.getName()));
     }
 
+    @Override
     public MetaData getMetaData() {
         return null;
     }
 
+    @Override
     public <V> V loadMetaData(Class<V> type, DeploymentContext context) {
         return null;
     }
 
+    @Override
     public boolean prepare(DeploymentContext context) {
         File file = context.getSourceDir();
         OpsParams params = context.getCommandParameters(OpsParams.class);

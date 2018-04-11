@@ -54,6 +54,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 public class ParentTest extends ConfigApiTest {
 
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }

@@ -135,6 +135,7 @@ public class WLWebServiceEndpointNode extends DeploymentDescriptorNode {
         return descriptor;
     }
 
+    @Override
     public void addDescriptor(Object childdescriptor) {
         if(childdescriptor instanceof ReliabilityConfig) {
             descriptor.setReliabilityConfig(((ReliabilityConfig)childdescriptor));
@@ -216,14 +217,17 @@ public class WLWebServiceEndpointNode extends DeploymentDescriptorNode {
         }
 
 
+        @Override
         protected XMLElement getXMLRootTag() {
             return tag;
         }
 
+        @Override
         public Object getDescriptor() {
             return descriptor;
         }
 
+        @Override
         protected Map getDispatchTable() {
             Map table = super.getDispatchTable();
             table.put(WLWebServicesTagNames.WSDL_EXPOSED, "setWsdlExposed");
@@ -266,14 +270,17 @@ public class WLWebServiceEndpointNode extends DeploymentDescriptorNode {
         }
 
 
+        @Override
         protected XMLElement getXMLRootTag() {
             return tag;
         }
 
+        @Override
         public Object getDescriptor() {
             return descriptor;
         }
 
+        @Override
         protected Map getDispatchTable() {
             Map table = super.getDispatchTable();
             return table;

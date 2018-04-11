@@ -167,6 +167,7 @@ public class DomDescriptor<T>
         return false;
     }
 
+    @Override
     public int hashCode() {
         return System.identityHashCode(this);
     }

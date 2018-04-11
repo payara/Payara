@@ -75,6 +75,7 @@ public class AdminObjectResourceDeployer extends AbstractConnectorResourceDeploy
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
         final AdminObjectResource aor = (AdminObjectResource) resource;
         String jndiName = aor.getJndiName();
@@ -85,6 +86,7 @@ public class AdminObjectResourceDeployer extends AbstractConnectorResourceDeploy
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void deployResource(Object resource) throws Exception {
 
         final AdminObjectResource aor = (AdminObjectResource) resource;
@@ -124,6 +126,7 @@ public class AdminObjectResourceDeployer extends AbstractConnectorResourceDeploy
     /**
      * {@inheritDoc}
      */
+    @Override
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
         final AdminObjectResource aor = (AdminObjectResource) resource;
         ResourceInfo resourceInfo = new ResourceInfo(aor.getJndiName(), applicationName, moduleName);
@@ -133,6 +136,7 @@ public class AdminObjectResourceDeployer extends AbstractConnectorResourceDeploy
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void undeployResource(Object resource)
             throws Exception {
         final AdminObjectResource aor = (AdminObjectResource) resource;
@@ -162,6 +166,7 @@ public class AdminObjectResourceDeployer extends AbstractConnectorResourceDeploy
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean handles(Object resource) {
         return resource instanceof AdminObjectResource;
     }
@@ -169,6 +174,7 @@ public class AdminObjectResourceDeployer extends AbstractConnectorResourceDeploy
     /**
      * @inheritDoc
      */
+    @Override
     public boolean supportsDynamicReconfiguration() {
         return false;
     }
@@ -176,6 +182,7 @@ public class AdminObjectResourceDeployer extends AbstractConnectorResourceDeploy
     /**
      * @inheritDoc
      */
+    @Override
     public Class[] getProxyClassesForDynamicReconfiguration() {
         return new Class[0];
     }
@@ -183,6 +190,7 @@ public class AdminObjectResourceDeployer extends AbstractConnectorResourceDeploy
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void redeployResource(Object resource)
             throws Exception {
         undeployResource(resource);
@@ -192,6 +200,7 @@ public class AdminObjectResourceDeployer extends AbstractConnectorResourceDeploy
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void disableResource(Object resource)
             throws Exception {
         undeployResource(resource);
@@ -200,6 +209,7 @@ public class AdminObjectResourceDeployer extends AbstractConnectorResourceDeploy
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void enableResource(Object resource)
             throws Exception {
         deployResource(resource);

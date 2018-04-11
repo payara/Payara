@@ -391,6 +391,7 @@ public class StandardClassLoader
      * @exception IllegalArgumentException if the specified repository is
      *  invalid or does not exist
      */
+    @Override
     public void addRepository(String repository) {
 
         if (debug >= 1)
@@ -420,6 +421,7 @@ public class StandardClassLoader
     /**
      * This class loader doesn't check for reloading.
      */
+    @Override
     public boolean modified() {
 
         return (false);
@@ -430,6 +432,7 @@ public class StandardClassLoader
     /**
      * Render a String representation of this object.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("StandardClassLoader\r\n");
@@ -464,6 +467,7 @@ public class StandardClassLoader
      *
      * @exception ClassNotFoundException if the class was not found
      */
+    @Override
     public Class findClass(String name) throws ClassNotFoundException {
 
         if (debug >= 3)
@@ -533,6 +537,7 @@ public class StandardClassLoader
      *
      * @param name Name of the resource to be found
      */
+    @Override
     public URL findResource(String name) {
 
         if (debug >= 3)
@@ -559,6 +564,7 @@ public class StandardClassLoader
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public Enumeration<URL> findResources(String name) throws IOException {
 
         if (debug >= 3)
@@ -590,6 +596,7 @@ public class StandardClassLoader
      *
      * @param name Name of the resource to return a URL for
      */
+    @Override
     public URL getResource(String name) {
 
         if (debug >= 2)
@@ -651,6 +658,7 @@ public class StandardClassLoader
      *
      * @param name Name of the resource to return an input stream for
      */
+    @Override
     public InputStream getResourceAsStream(String name) {
 
         if (debug >= 2)
@@ -730,6 +738,7 @@ public class StandardClassLoader
      *
      * @exception ClassNotFoundException if the class was not found
      */
+    @Override
     public Class loadClass(String name) throws ClassNotFoundException {
 
         return (loadClass(name, false));
@@ -762,6 +771,7 @@ public class StandardClassLoader
      *
      * @exception ClassNotFoundException if the class was not found
      */
+    @Override
     public Class loadClass(String name, boolean resolve)
         throws ClassNotFoundException {
 
@@ -879,6 +889,7 @@ public class StandardClassLoader
      * @param codeSource where the code was loaded from
      * @return PermissionCollection for CodeSource
      */
+    @Override
     protected final PermissionCollection getPermissions(CodeSource codeSource) {
         if (!policy_refresh) {
             // Refresh the security policies

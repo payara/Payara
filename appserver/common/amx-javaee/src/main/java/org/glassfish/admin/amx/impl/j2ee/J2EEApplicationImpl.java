@@ -68,6 +68,7 @@ public final class J2EEApplicationImpl
     }
 
     /** jsr77 StateManageable impl. */
+    @Override
     public boolean isstateManageable() {
         return true;
     }

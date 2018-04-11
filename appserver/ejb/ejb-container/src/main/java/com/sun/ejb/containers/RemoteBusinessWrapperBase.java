@@ -69,10 +69,12 @@ public class RemoteBusinessWrapperBase
         return stub_;
     }
     
+    @Override
     public int hashCode() {
         return hashCode_;
     }
 
+    @Override
     public boolean equals(Object obj) {
         
         boolean result = (obj == this); //Most efficient

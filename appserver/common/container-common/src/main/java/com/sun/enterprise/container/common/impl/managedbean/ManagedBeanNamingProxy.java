@@ -59,6 +59,7 @@ public class ManagedBeanNamingProxy implements org.glassfish.api.naming.NamingOb
         habitat = h;
     }
 
+    @Override
     public Object create(javax.naming.Context ic) throws javax.naming.NamingException {
         Object managedBean = null;
         try {

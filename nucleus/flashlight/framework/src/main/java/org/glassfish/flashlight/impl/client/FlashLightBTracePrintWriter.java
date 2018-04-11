@@ -61,78 +61,97 @@ public class FlashLightBTracePrintWriter extends PrintWriter {
         this.l = l;
     }
 
+    @Override
     public void print(boolean b) {
         this.println(b);
     }
 
+    @Override
     public void print(char c) {
         this.println(c);
     }
 
+    @Override
     public void print(char[] cArr) {
         this.println(cArr);
     }
 
+    @Override
     public void print(double d) {
         this.println(d);
     }
 
+    @Override
     public void print(float f) {
         this.println(f);
     }
 
+    @Override
     public void print(int i) {
         this.println(i);
     }
 
+    @Override
     public void print(long lng) {
         this.println(lng);
     }
 
+    @Override
     public void print(Object o) {
         this.println(o);
     }
 
+    @Override
     public void print(String s) {
         this.println(s);
     }
 
 
+    @Override
     public void println() {
     }
 
+    @Override
     public void println(boolean b) {
         l.log(logLevel, BTRACE_PREFIX + String.valueOf(b));
     }
 
+    @Override
     public void println(char c) {
         l.log(logLevel, BTRACE_PREFIX + String.valueOf(c));
     }
 
+    @Override
     public void println(char[] cArr) {
         l.log(logLevel, BTRACE_PREFIX + String.valueOf(cArr));
     }
 
+    @Override
     public void println(double d) {
         l.log(logLevel, BTRACE_PREFIX + String.valueOf(d));
     }
 
+    @Override
     public void println(float f) {
         l.log(logLevel, BTRACE_PREFIX + String.valueOf(f));
     }
 
+    @Override
     public void println(int i) {
         l.log(logLevel, BTRACE_PREFIX + String.valueOf(i));
     }
 
+    @Override
     public void println(long lng) {
         l.log(logLevel, BTRACE_PREFIX + String.valueOf(lng));
     }
 
+    @Override
     public void println(Object o) {
         l.log(logLevel, BTRACE_PREFIX + o.toString());
     }
 
+    @Override
     public void println(String s) {
         l.log(logLevel, BTRACE_PREFIX + s);
     }

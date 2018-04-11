@@ -61,6 +61,7 @@ public class ConfigBeanClassLoader extends ClassLoader {
         this.deployableObject = deployableObject;
     }
     
+    @Override
     public Class findClass(String name) {
         return deployableObject.getClassFromScope(name);
     }

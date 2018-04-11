@@ -59,6 +59,7 @@ public class LocalizedInfoNode extends LocalizedNode {
     /**
      * we do not create descriptors in this node
      */
+     @Override
      public Object getDescriptor() {
 	 return null;
      }
@@ -66,6 +67,7 @@ public class LocalizedInfoNode extends LocalizedNode {
     /**
      * notification of the end of XML parsing for this node
      */
+     @Override
     public void postParsing() {
         Object o = getParentNode().getDescriptor();
         if (o instanceof Descriptor) {

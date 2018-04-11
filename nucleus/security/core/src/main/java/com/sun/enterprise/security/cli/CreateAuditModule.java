@@ -141,6 +141,7 @@ public class CreateAuditModule implements AdminCommand, AdminCommandSecurity.Pre
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
@@ -163,6 +164,7 @@ public class CreateAuditModule implements AdminCommand, AdminCommandSecurity.Pre
         try {
             ConfigSupport.apply(new SingleConfigCode<SecurityService>() {
 
+                @Override
                 public Object run(SecurityService param) 
                 throws PropertyVetoException, TransactionFailure {
                 AuditModule newAuditModule = param.createChild(AuditModule.class);

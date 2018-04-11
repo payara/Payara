@@ -56,10 +56,12 @@ import java.lang.annotation.Annotation;
  */
 @Service(name="EJB")
 public class EjbAnnotationTypesProvider implements AnnotationTypesProvider {
+    @Override
     public Class<? extends Annotation>[] getAnnotationTypes() {
         return new Class[] {
                 MessageDriven.class, Stateful.class, Stateless.class, Singleton.class };    }
 
+    @Override
     public Class getType(String typename) throws ClassNotFoundException {
         return getClass().getClassLoader().loadClass(typename);
     }

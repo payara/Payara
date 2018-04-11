@@ -67,6 +67,7 @@ public class WorkManagerProxy implements WorkManager, Externalizable {
     /**
      * @see javax.resource.spi.work.WorkManager
      */
+    @Override
     public void doWork(Work work) throws WorkException {
         wm.doWork(work);
     }
@@ -74,6 +75,7 @@ public class WorkManagerProxy implements WorkManager, Externalizable {
     /**
      * @see javax.resource.spi.work.WorkManager
      */
+    @Override
     public void doWork(Work work, long startTimeout, ExecutionContext executionContext,
                        WorkListener workListener) throws WorkException {
         wm.doWork(work, startTimeout, executionContext, workListener);
@@ -82,6 +84,7 @@ public class WorkManagerProxy implements WorkManager, Externalizable {
     /**
      * @see javax.resource.spi.work.WorkManager
      */
+    @Override
     public long startWork(Work work) throws WorkException {
         return wm.startWork(work);
     }
@@ -89,6 +92,7 @@ public class WorkManagerProxy implements WorkManager, Externalizable {
     /**
      * @see javax.resource.spi.work.WorkManager
      */
+    @Override
     public long startWork(Work work, long startTimeout, ExecutionContext executionContext,
                           WorkListener workListener) throws WorkException {
         return wm.startWork(work, startTimeout, executionContext, workListener);
@@ -97,12 +101,14 @@ public class WorkManagerProxy implements WorkManager, Externalizable {
     /**
      * @see javax.resource.spi.work.WorkManager
      */
+    @Override
     public void scheduleWork(Work work) throws WorkException {
         wm.scheduleWork(work);
     }
     /**
      * @see javax.resource.spi.work.WorkManager
      */
+    @Override
     public void scheduleWork(Work work, long startTimeout, ExecutionContext executionContext,
                              WorkListener workListener) throws WorkException {
         wm.scheduleWork(work, startTimeout, executionContext, workListener);
@@ -111,6 +117,7 @@ public class WorkManagerProxy implements WorkManager, Externalizable {
     /**
      * @see java.io.Externalizable
      */
+    @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeUTF(moduleName);
     }
@@ -118,11 +125,13 @@ public class WorkManagerProxy implements WorkManager, Externalizable {
     /**
      * @see java.io.Externalizable
      */
+    @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         moduleName = in.readUTF();
         wm = WorkManagerFactoryImpl.retrieveWorkManager(moduleName);
     }
 
+    @Override
     public boolean equals(Object o){
         boolean equal = false;
         if(o instanceof WorkManagerProxy){
@@ -132,6 +141,7 @@ public class WorkManagerProxy implements WorkManager, Externalizable {
         return equal;
     }
 
+    @Override
     public int hashCode(){
         return wm.hashCode();
     }

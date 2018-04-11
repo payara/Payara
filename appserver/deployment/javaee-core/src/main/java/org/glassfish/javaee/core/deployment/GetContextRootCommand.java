@@ -89,6 +89,7 @@ public class GetContextRootCommand implements AdminCommand {
      * Entry point from the framework into the command execution
      * @param context context for the command.
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 

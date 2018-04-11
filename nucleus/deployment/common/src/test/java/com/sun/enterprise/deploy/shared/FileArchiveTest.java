@@ -540,14 +540,17 @@ public class FileArchiveTest {
     private static class RecordingHandler extends Handler {
         private final List<LogRecord> records = new ArrayList<LogRecord>();
 
+        @Override
         public void close() {
             records.clear();
         }
 
+        @Override
         public void flush() {
             records.clear();
         }
 
+        @Override
         public void publish(LogRecord record) {
             records.add(record);
         }

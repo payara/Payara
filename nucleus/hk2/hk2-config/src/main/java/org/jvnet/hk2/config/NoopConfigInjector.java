@@ -45,12 +45,15 @@ package org.jvnet.hk2.config;
  * @author Kohsuke Kawaguchi
  */
 public class NoopConfigInjector extends ConfigInjector {
+    @Override
     public void inject(Dom dom, Object target) {
     }
 
+    @Override
     public void injectElement(Dom dom, String elementName, Object target) {
     }
 
+    @Override
     public void injectAttribute(Dom dom, String attributeName, Object target) {
     }
 }

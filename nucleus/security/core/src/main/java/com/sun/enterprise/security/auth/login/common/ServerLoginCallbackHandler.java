@@ -95,6 +95,7 @@ public class ServerLoginCallbackHandler implements CallbackHandler
      * data or use text input.
      * @param the callback object instances supported by the login module.
      */
+    @Override
     public void handle(Callback[] callbacks) throws IOException,
 					UnsupportedCallbackException
     {

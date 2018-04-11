@@ -98,6 +98,7 @@ public class DeleteAdminObject implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
@@ -153,6 +154,7 @@ public class DeleteAdminObject implements AdminCommand {
 
             // delete admin-object-resource
             if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     Resource resource = ConnectorsUtil.getResourceByName(domain.getResources(), AdminObjectResource.class, jndiName);
                     return param.getResources().remove(resource);

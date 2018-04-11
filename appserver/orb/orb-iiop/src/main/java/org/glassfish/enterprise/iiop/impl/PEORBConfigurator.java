@@ -111,6 +111,7 @@ public class PEORBConfigurator implements ORBConfigurator {
             GlassFishORBHelper.class);
     }
 
+    @Override
     public void configure(DataCollector dc, ORB orb) {
         try {
             //begin temp fix for bug 6320008

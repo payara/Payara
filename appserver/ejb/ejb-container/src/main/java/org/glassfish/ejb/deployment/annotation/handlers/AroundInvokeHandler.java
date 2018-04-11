@@ -66,6 +66,7 @@ public class AroundInvokeHandler extends AbstractAttributeHandler {
     public AroundInvokeHandler() {
     }
     
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 
@@ -81,6 +82,7 @@ public class AroundInvokeHandler extends AbstractAttributeHandler {
         return getDefaultProcessedResult();
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbInterceptorContext ejbInterceptorContext)
             throws AnnotationProcessorException {
@@ -109,10 +111,12 @@ public class AroundInvokeHandler extends AbstractAttributeHandler {
      * require to be processed (if present) before it processes it's own 
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAnnotationTypes();
     }
 
+    @Override
     protected boolean isDelegatee() {
         return true;
     }

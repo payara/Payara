@@ -43,10 +43,12 @@ package com.sun.enterprise.connectors.work.context;
 
 public class CustomWorkContext_D extends CustomWorkContext_B{
 
+    @Override
     public String getName() {
         return "CustomWorkContext_D";
     }
 
+    @Override
     public String getDescription() {
         return "CustomWorkContext_D";
     }

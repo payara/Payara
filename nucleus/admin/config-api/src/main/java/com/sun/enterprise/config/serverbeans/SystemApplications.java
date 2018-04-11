@@ -70,6 +70,7 @@ public interface SystemApplications extends Applications  {
      * {@link Application }
      */
     @Element("*")
+    @Override
     public List<ApplicationName> getModules();
 
 }

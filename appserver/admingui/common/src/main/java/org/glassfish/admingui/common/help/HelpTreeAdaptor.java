@@ -100,6 +100,7 @@ public class HelpTreeAdaptor extends TreeAdaptorBase {
      *	    It provides a place for post-creation initialization to take
      *	    occur.</p>
      */
+    @Override
     public void init() {
 	// Get the FacesContext
 	FacesContext ctx = FacesContext.getCurrentInstance();
@@ -129,6 +130,7 @@ public class HelpTreeAdaptor extends TreeAdaptorBase {
      *	    any other <code>Object</code> type will result in an
      *	    <code>IllegalArgumentException</code>.</p>
      */
+    @Override
     public List getChildTreeNodeObjects(Object nodeObject) {
 	if (nodeObject == null) {
 	    return null;
@@ -166,6 +168,7 @@ public class HelpTreeAdaptor extends TreeAdaptorBase {
      *
      *	<p> See Tree / TreeNode component documentation for more details.</p>
      */
+    @Override
     public Map<String, Object> getFactoryOptions(Object nodeObject) {
 	if (nodeObject == null) {
 	    return null;
@@ -227,6 +230,7 @@ public class HelpTreeAdaptor extends TreeAdaptorBase {
      *	<p> This method returns the <code>id</code> for the given tree node
      *	    model object.</p>
      */
+    @Override
     public String getId(Object nodeObject) {
 	String id = "invalideNodeObjectType";
 	if (nodeObject == null) {
@@ -276,6 +280,7 @@ public class HelpTreeAdaptor extends TreeAdaptorBase {
      *	@param	comp	    The tree node <code>UIComponent</code>.
      *	@param	nodeObject  The (model) object representing the tree node.
      */
+    @Override
     public Map<String, UIComponent> getFacets(UIComponent comp, Object nodeObject) {
 	// Do nothing
 	return null;
@@ -292,6 +297,7 @@ public class HelpTreeAdaptor extends TreeAdaptorBase {
      *	    to to the "event" in which the <code>Handler</code>s should be
      *	    invoked.</p>
      */
+    @Override
     public Map getHandlersByType(UIComponent comp, Object nodeObject) {
 	// Do nothing
 	return null;
@@ -308,6 +314,7 @@ public class HelpTreeAdaptor extends TreeAdaptorBase {
      *
      *	<p> com.sun.jsftemplating.component.factory.sun.TreeFactory</p>
      */
+    @Override
     public String getFactoryClass(Object nodeObject) {
 	String factory = super.getFactoryClass(nodeObject);
 	if (nodeObject instanceof TOC) {

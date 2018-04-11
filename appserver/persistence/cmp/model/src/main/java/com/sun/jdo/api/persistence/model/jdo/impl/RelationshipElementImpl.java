@@ -129,6 +129,7 @@ public class RelationshipElementImpl extends PersistenceFieldElementImpl
 	 * {@link RelationshipElement#AGGREGATE_ACTION}.  The default is
 	 * NONE_ACTION.
 	 */
+        @Override
 	public int getUpdateAction () { return _updateAction; }
 
 	/** Set the update action for this relationship element.
@@ -140,6 +141,7 @@ public class RelationshipElementImpl extends PersistenceFieldElementImpl
 	 * {@link RelationshipElement#AGGREGATE_ACTION}
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setUpdateAction (int action) throws ModelException
 	{
 		Integer old = new Integer(getUpdateAction());
@@ -166,6 +168,7 @@ public class RelationshipElementImpl extends PersistenceFieldElementImpl
 	 * {@link RelationshipElement#AGGREGATE_ACTION}.  The default is
 	 * NONE_ACTION.
 	 */
+        @Override
 	public int getDeleteAction () { return _deleteAction; }
 
 	/** Set the delete action for this relationship element.
@@ -177,6 +180,7 @@ public class RelationshipElementImpl extends PersistenceFieldElementImpl
 	 * {@link RelationshipElement#AGGREGATE_ACTION}
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setDeleteAction (int action) throws ModelException
 	{
 		Integer old = new Integer(getDeleteAction());
@@ -198,6 +202,7 @@ public class RelationshipElementImpl extends PersistenceFieldElementImpl
 	 * @return <code>true</code> if the relationship should prefetch,
 	 * <code>false</code> otherwise.  The default is <code>false</code>.
 	 */
+        @Override
 	public boolean isPrefetch () { return _isPrefetch; }
 
 	/** Set whether this relationship element should prefetch or not.
@@ -205,6 +210,7 @@ public class RelationshipElementImpl extends PersistenceFieldElementImpl
 	 * prefetch; otherwise, it is not
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setPrefetch (boolean flag) throws ModelException
 	{
 		Boolean old = JavaTypeHelper.valueOf(isPrefetch());
@@ -226,12 +232,14 @@ public class RelationshipElementImpl extends PersistenceFieldElementImpl
 	 * default is 0.
 	 * @return the lower cardinality bound
 	 */
+        @Override
 	public int getLowerBound () { return _lowerBound; }
 
 	/** Set the lower cardinality bound for this relationship element.
 	 * @param lowerBound - an integer indicating the lower cardinality bound
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setLowerBound (int lowerBound) throws ModelException
 	{
 		Integer old = new Integer(getLowerBound());
@@ -254,6 +262,7 @@ public class RelationshipElementImpl extends PersistenceFieldElementImpl
 	 * Returns {@link java.lang.Integer#MAX_VALUE} for <code>n</code>
 	 * @return the upper cardinality bound
 	 */
+        @Override
 	public int getUpperBound () { return _upperBound; }
 
 	/** Set the upper cardinality bound for this relationship element.
@@ -261,6 +270,7 @@ public class RelationshipElementImpl extends PersistenceFieldElementImpl
 	 * (use {@link java.lang.Integer#MAX_VALUE} for <code>n</code>)
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setUpperBound (int upperBound) throws ModelException
 	{
 		Integer old = new Integer(getUpperBound());
@@ -282,6 +292,7 @@ public class RelationshipElementImpl extends PersistenceFieldElementImpl
 	 * for this relationship element.
 	 * @return the collection class
 	 */
+        @Override
 	public String getCollectionClass () { return _collectionClass; }
 
 	/** Set the collection class for this relationship element.
@@ -289,6 +300,7 @@ public class RelationshipElementImpl extends PersistenceFieldElementImpl
 	 * collection (for example Set, List, Vector, etc.)
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setCollectionClass (String collectionClass)
 		throws ModelException
 	{
@@ -311,6 +323,7 @@ public class RelationshipElementImpl extends PersistenceFieldElementImpl
 	 * <code><i>wrapperclass</i>.TYPE.toString()</code> to specify them.
 	 * @return the element class
 	 */
+        @Override
 	public String getElementClass () { return _elementClass; }
 
 	/** Set the element class for this relationship element.
@@ -319,6 +332,7 @@ public class RelationshipElementImpl extends PersistenceFieldElementImpl
 	 * <code><i>wrapperclass</i>.TYPE.toString()</code> to specify them.
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setElementClass (String elementClass) throws ModelException
 	{
 		String old = getElementClass();
@@ -346,6 +360,7 @@ public class RelationshipElementImpl extends PersistenceFieldElementImpl
 	 * @return the relative name of the inverse relationship element
 	 * @see #getInverseRelationship
 	 */
+        @Override
 	public String getInverseRelationshipName ()
 	{
 		return _inverseRelationshipName;
@@ -361,6 +376,7 @@ public class RelationshipElementImpl extends PersistenceFieldElementImpl
 	 * relationship element does not participate in a two-way relationship.
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void changeInverseRelationship (
 		RelationshipElement inverseRelationship) throws ModelException
 	{

@@ -69,6 +69,7 @@ import java.util.Map;
  */
 public class AddPropertyTest extends ConfigApiTest {
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -79,10 +80,12 @@ public class AddPropertyTest extends ConfigApiTest {
     public void transactionEvents() throws TransactionFailure {
         final Domain domain = getHabitat().getService(Domain.class);
         final TransactionListener listener = new TransactionListener() {
+                @Override
                 public void transactionCommited(List<PropertyChangeEvent> changes) {
                     events = changes;
                 }
 
+                @Override
             public void unprocessedTransactedEvents(List<UnprocessedChangeEvents> changes) {
             }
         };
@@ -96,6 +99,7 @@ public class AddPropertyTest extends ConfigApiTest {
 
             ConfigSupport.apply(new SingleConfigCode<Domain>() {
 
+                @Override
                 public Object run(Domain domain) throws PropertyVetoException, TransactionFailure {
                     Property prop = domain.createChild(Property.class);
                     domain.getProperty().add(prop);
@@ -140,6 +144,7 @@ public class AddPropertyTest extends ConfigApiTest {
                  * @param changedType     type of the configuration object
                  * @param changedInstance changed instance.
                  */
+                @Override
                 public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
                     return new NotProcessed("unimplemented by AddPropertyTest");
                 }

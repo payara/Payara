@@ -123,6 +123,7 @@ public class CommandModelData extends CommandModel {
     /**
      * Add the ParamModel to this CommandModel.
      */
+    @Override
     public void add(ParamModel model) {
         if (!params.containsKey(model.getName())) {
             params.put(model.getName(), model);

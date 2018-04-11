@@ -85,6 +85,7 @@ public class ModuleContentLinker extends DefaultDOLVisitor implements ComponentV
     protected ModuleContentLinker() {
     }
 
+    @Override
     public void accept (BundleDescriptor bundle) {
         for (Iterator<WebService> itr = bundle.getWebServices().getWebServices().iterator(); itr.hasNext();) {
             WebService aWebService = itr.next();
@@ -154,6 +155,7 @@ public class ModuleContentLinker extends DefaultDOLVisitor implements ComponentV
         return url;
     }
 
+    @Override
     public void accept(ServiceReferenceDescriptor serviceRef) {
         try {
             ModuleDescriptor moduleDesc = 

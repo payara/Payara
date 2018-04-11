@@ -72,6 +72,7 @@ public class JPACompositeSniffer extends JPASniffer {
     /**
      * Decides whether we have any pu roots at ear level
      */
+    @Override
     public boolean handles(DeploymentContext context) {
         ArchiveType archiveType = habitat.getService(ArchiveType.class, context.getArchiveHandler().getArchiveType());
         if (archiveType != null && !supportsArchiveType(archiveType)) {
@@ -111,6 +112,7 @@ public class JPACompositeSniffer extends JPASniffer {
      * @return whether the sniffer supports the archive type
      *
      */
+    @Override
     public boolean supportsArchiveType(ArchiveType archiveType) {
         if (archiveType.toString().equals(ModuleType.EAR.toString())) {
             return true;

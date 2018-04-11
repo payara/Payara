@@ -72,6 +72,7 @@ public class ScheduleHandler extends AbstractAttributeHandler {
     public ScheduleHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 
@@ -124,12 +125,14 @@ public class ScheduleHandler extends AbstractAttributeHandler {
      * require to be processed (if present) before it processes it's own 
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         
         return new Class[] {Stateless.class, Singleton.class, MessageDriven.class};
                 
     }
 
+    @Override
     protected boolean supportTypeInheritance() {
         return true;
     }

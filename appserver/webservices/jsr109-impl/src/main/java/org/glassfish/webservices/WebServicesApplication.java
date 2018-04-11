@@ -96,10 +96,12 @@ public class WebServicesApplication implements ApplicationContainer {
         this.publishedFiles = publishedFiles;
     }
     
+    @Override
     public Object getDescriptor() {
         return null;
     }
 
+    @Override
     public boolean start(ApplicationContext startupContext) throws Exception {
 
         cl = startupContext.getClassLoader();
@@ -156,6 +158,7 @@ public class WebServicesApplication implements ApplicationContainer {
         }
     }
 
+    @Override
     public boolean stop(ApplicationContext stopContext) {
         try {
             Iterator<EjbEndpoint> iter = ejbendpoints.iterator();
@@ -173,14 +176,17 @@ public class WebServicesApplication implements ApplicationContainer {
         return true;
     }
 
+    @Override
     public boolean suspend() {
         return false;
     }
 
+    @Override
     public boolean resume() throws Exception {
         return false;
     }
 
+    @Override
     public ClassLoader getClassLoader() {
         return cl;
     }

@@ -55,5 +55,6 @@ import java.net.URL;
 @Service
 public class ThemePlugin implements ConsoleProvider {
 
+    @Override
     public URL getConfiguration() { return null; }
 }

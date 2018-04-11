@@ -452,6 +452,7 @@ public class CallMethodRule extends Rule {
      * Set the associated digester.
      * If needed, this class loads the parameter classes from their names.
      */
+    @Override
     public void setDigester(Digester digester)
     {
         // call superclass
@@ -477,6 +478,7 @@ public class CallMethodRule extends Rule {
      *
      * @param attributes The attribute list for this element
      */
+    @Override
     public void begin(Attributes attributes) throws Exception {
 
         // Push an array to capture the parameter values if necessary
@@ -496,6 +498,7 @@ public class CallMethodRule extends Rule {
      *
      * @param bodyText The body text of this element
      */
+    @Override
     public void body(String bodyText) throws Exception {
 
         if (paramCount == 0) {
@@ -508,6 +511,7 @@ public class CallMethodRule extends Rule {
     /**
      * Process the end of this element.
      */
+    @Override
     public void end() throws Exception {
 
         // Retrieve or construct the parameter values array
@@ -621,6 +625,7 @@ public class CallMethodRule extends Rule {
     /**
      * Clean up after parsing is complete.
      */
+    @Override
     public void finish() throws Exception {
 
         bodyText = null;
@@ -640,6 +645,7 @@ public class CallMethodRule extends Rule {
     /**
      * Render a printable version of this Rule.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("CallMethodRule[");

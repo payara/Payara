@@ -59,6 +59,7 @@ import java.util.logging.Logger;
  */
 public class AllModelsImplementingTest extends ConfigApiTest {
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }

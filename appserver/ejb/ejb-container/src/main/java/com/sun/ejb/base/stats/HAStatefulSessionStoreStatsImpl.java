@@ -88,6 +88,7 @@ public class HAStatefulSessionStoreStatsImpl
 	initialize();
     }
 
+    @Override
     protected void initialize() {
 	super.initialize();
 
@@ -120,6 +121,7 @@ public class HAStatefulSessionStoreStatsImpl
     /**
      * Returns the total number of sessions checkpointed into the store
      */
+    @Override
     public CountStatistic getCheckpointCount() {
 	synchronized (checkpointCountLock) {
 	    checkpointCount.setCount(checkpointCountVal);
@@ -130,6 +132,7 @@ public class HAStatefulSessionStoreStatsImpl
     /**
      * Returns the total number of sessions successfully Checkpointed into the store
      */
+    @Override
     public CountStatistic getCheckpointSuccessCount() {
 	synchronized (checkpointCountLock) {
 	    checkpointSuccessCount.setCount(checkpointSuccessCountVal);
@@ -140,6 +143,7 @@ public class HAStatefulSessionStoreStatsImpl
     /**
      * Returns the total number of sessions that couldn't be Checkpointed into the store
      */
+    @Override
     public CountStatistic getCheckpointErrorCount() {
 	synchronized (checkpointCountLock) {
 	    checkpointErrorCount.setCount(checkpointErrorCountVal);
@@ -150,6 +154,7 @@ public class HAStatefulSessionStoreStatsImpl
     /**
      * Returns the number of bytes checkpointed
      */
+    @Override
     public AverageRangeStatistic getCheckpointedBeanSize() {
 	synchronized (checkpointTimeLock) {
 	    return (AverageRangeStatistic) checkpointSize.unmodifiableView();
@@ -159,6 +164,7 @@ public class HAStatefulSessionStoreStatsImpl
     /**
      * Returns the time spent on passivating beans to the store including total, min, max
      */
+    @Override
     public AverageRangeStatistic getCheckpointTime() {
 	synchronized (checkpointTimeLock) {
 	    return (AverageRangeStatistic) checkpointTime.unmodifiableView();
@@ -188,6 +194,7 @@ public class HAStatefulSessionStoreStatsImpl
 	}
     }
 
+    @Override
     protected void appendStats(StringBuffer sbuf) {
 	super.appendStats(sbuf);
 	sbuf.append("CheckpointCount: ").append(checkpointCountVal)

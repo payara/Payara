@@ -57,6 +57,7 @@ public class TimerPrimaryKey implements Serializable
         return  timerId;
     }
 
+    @Override
     public boolean equals(Object other)
     {
 	if ( other instanceof TimerPrimaryKey ) {
@@ -66,11 +67,13 @@ public class TimerPrimaryKey implements Serializable
 	return false;
     }
 
+    @Override
     public int hashCode()
     {
 	return timerId.hashCode();
     }
 
+    @Override
     public String toString()
     {
 	return timerId;

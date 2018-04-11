@@ -355,26 +355,32 @@ public class MailSessionDeployer implements ResourceDeployer {
             this.value = value;
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public void setName(String value) throws PropertyVetoException {
             this.name = value;
         }
 
+        @Override
         public String getValue() {
             return (String) TranslatedConfigView.getTranslatedValue(value);
         }
 
+        @Override
         public void setValue(String value) throws PropertyVetoException {
             this.value = value;
         }
 
+        @Override
         public String getDescription() {
             return description;
         }
 
+        @Override
         public void setDescription(String value) throws PropertyVetoException {
             this.description = value;
         }

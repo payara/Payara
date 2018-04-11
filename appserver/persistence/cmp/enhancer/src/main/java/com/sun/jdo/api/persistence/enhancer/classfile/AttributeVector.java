@@ -94,9 +94,11 @@ public class AttributeVector {
 	attributes = attrs;
       }
 
+      @Override
       public boolean hasMoreElements() {
 	return attributes != null && current < attributes.length;
       }
+      @Override
       public Object nextElement() {
 	if (!hasMoreElements())
 	  throw new NoSuchElementException();

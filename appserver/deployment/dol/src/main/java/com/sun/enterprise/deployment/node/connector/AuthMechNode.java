@@ -70,6 +70,7 @@ public class AuthMechNode extends DeploymentDescriptorNode {
      * @return the map with the element name as a key, the setter method as a value
      */    
 
+    @Override
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
         table.put(ConnectorTagNames.CREDENTIAL_INTF, "setCredentialInterface");
@@ -80,6 +81,7 @@ public class AuthMechNode extends DeploymentDescriptorNode {
     /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
         if (auth == null) {
             auth = (AuthMechanism) DescriptorFactory.getDescriptor(getXMLPath());

@@ -109,6 +109,7 @@ public abstract class BasePasswordLoginModule implements LoginModule
      *    this particular LoginModule.
      *
      */
+    @Override
     public final void initialize(Subject subject, CallbackHandler callbackHandler,
                            Map sharedState, Map options)
     {
@@ -136,6 +137,7 @@ public abstract class BasePasswordLoginModule implements LoginModule
      * @throws LoginException Thrown if login failed, or on other problems.
      *
      */
+    @Override
     public final boolean login() throws LoginException
     {
         //Extract the username and password
@@ -160,6 +162,7 @@ public abstract class BasePasswordLoginModule implements LoginModule
      * @throws LoginException If commit fails.
      *
      */
+    @Override
     public boolean commit() throws LoginException
     {
         if (_succeeded == false) {
@@ -217,6 +220,7 @@ public abstract class BasePasswordLoginModule implements LoginModule
      * Abort the authentication process.
      *
      */
+    @Override
     public final boolean abort() throws LoginException
     {
         if(_logger.isLoggable(Level.FINE)){
@@ -249,6 +253,7 @@ public abstract class BasePasswordLoginModule implements LoginModule
      * Log out the subject.
      *
      */
+    @Override
     public final boolean logout() throws LoginException
     {
         if(_logger.isLoggable(Level.FINE)){

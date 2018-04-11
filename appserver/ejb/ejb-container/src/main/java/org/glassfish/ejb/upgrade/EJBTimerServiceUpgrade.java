@@ -69,6 +69,7 @@ public class EJBTimerServiceUpgrade implements PostConstruct, ConfigurationUpgra
     @Inject
     Configs configs;
 
+    @Override
     public void postConstruct() {
         for (Config config : configs.getConfig()) {
             EjbContainer container = config.getExtensionByType(EjbContainer.class);
@@ -96,6 +97,7 @@ public class EJBTimerServiceUpgrade implements PostConstruct, ConfigurationUpgra
             final String minDelivery = value;
             ConfigSupport.apply(new SingleConfigCode<EjbTimerService>() {
 
+                @Override
                 public Object run(EjbTimerService ts) throws PropertyVetoException, TransactionFailure {
                     Property prop = ts.createChild(Property.class);
                     ts.getProperty().add(prop);

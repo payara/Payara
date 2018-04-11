@@ -74,6 +74,7 @@ static Logger logger = LogDomains.getLogger(ORBLazyServiceInitializer.class, Log
 
     boolean initializedSuccessfully = false;
 
+@Override
     public void postConstruct() {
     }
 
@@ -83,6 +84,7 @@ static Logger logger = LogDomains.getLogger(ORBLazyServiceInitializer.class, Log
     }
 
 
+@Override
     public boolean initializeService() {
 
         try {
@@ -102,6 +104,7 @@ static Logger logger = LogDomains.getLogger(ORBLazyServiceInitializer.class, Log
     }
 
 
+@Override
     public void handleRequest(SelectableChannel channel) {
         if( initializedSuccessfully) {
             orbHelper.getSelectableChannelDelegate().handleRequest(channel);

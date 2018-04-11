@@ -204,6 +204,7 @@ public class GlassFishMain {
 
         private void addShutdownHook() {
             Runtime.getRuntime().addShutdownHook(new Thread("GlassFish Shutdown Hook") {
+                @Override
                 public void run() {
                     try {
                         gfr.shutdown();

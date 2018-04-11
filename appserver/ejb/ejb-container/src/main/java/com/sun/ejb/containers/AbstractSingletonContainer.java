@@ -231,6 +231,7 @@ public abstract class AbstractSingletonContainer
         inv.setResourceHandler(SimpleEjbResourceHandlerImpl.getResourceHandler(transactionManager));
     }
 
+    @Override
     protected void initializeHome()
         throws Exception
     {
@@ -280,20 +281,24 @@ public abstract class AbstractSingletonContainer
                 Container.TX_REQUIRES_NEW, Container.TX_NOT_SUPPORTED);
     }
 
+    @Override
     protected void registerMonitorableComponents() {
         super.registerMonitorableComponents();
         _logger.log(Level.FINE, "[Singleton Container] registered monitorable");
     }
 
+    @Override
     protected EjbMonitoringStatsProvider getMonitoringStatsProvider(
             String appName, String modName, String ejbName) {
         // TODO - which stats provider to use?
         return new SingletonBeanStatsProvider(getContainerId(), appName, modName, ejbName);
     }
 
+    @Override
     public void onReady() {
     }
 
+    @Override
     public EJBObjectImpl createRemoteBusinessObjectImpl()
         throws CreateException, RemoteException
     {
@@ -310,6 +315,7 @@ public abstract class AbstractSingletonContainer
     /**
      *
      */
+    @Override
     public EJBObjectImpl createEJBObjectImpl()
         throws CreateException, RemoteException
     {
@@ -319,6 +325,7 @@ public abstract class AbstractSingletonContainer
     /**
      * Called during client creation request through EJB LocalHome view.
      */
+    @Override
     public EJBLocalObjectImpl createEJBLocalObjectImpl()
         throws CreateException
     {
@@ -328,6 +335,7 @@ public abstract class AbstractSingletonContainer
     /**
      * Called during internal creation of session bean
      */
+    @Override
     public EJBLocalObjectImpl createEJBLocalBusinessObjectImpl(boolean localBeanView)
         throws CreateException
     {
@@ -340,6 +348,7 @@ public abstract class AbstractSingletonContainer
 
 
     // Doesn't apply to Singletons
+    @Override
     protected void removeBean(EJBLocalRemoteObject ejbo, Method removeMethod,
 	    boolean local)
 	throws RemoveException, EJBException, RemoteException
@@ -353,6 +362,7 @@ public abstract class AbstractSingletonContainer
      * during invocations on the Singleton do not result in the instance
      * being destroyed.
      */
+    @Override
     protected void forceDestroyBean(EJBContextImpl sc) {
     }
 
@@ -360,10 +370,12 @@ public abstract class AbstractSingletonContainer
     /**
      * Not applicable to Singletons
      */
+    @Override
     protected EJBObjectImpl getEJBObjectImpl(byte[] instanceKey) {
         return null;
     }
 
+    @Override
     EJBObjectImpl getEJBRemoteBusinessObjectImpl(byte[] instanceKey) {
         return theRemoteBusinessObjectImpl;
     }
@@ -371,6 +383,7 @@ public abstract class AbstractSingletonContainer
     /**
      * Not applicable to Singletons
      */
+    @Override
     protected EJBLocalObjectImpl getEJBLocalObjectImpl(Object key) {
         return null;
     }
@@ -379,6 +392,7 @@ public abstract class AbstractSingletonContainer
     * Called from EJBLocalObjectImpl.getLocalObject() while deserializing
     * a local business object reference.
     */
+    @Override
     EJBLocalObjectImpl getEJBLocalBusinessObjectImpl(Object key) {
         return theEJBLocalBusinessObjectImpl;
     }
@@ -387,6 +401,7 @@ public abstract class AbstractSingletonContainer
     * Called from EJBLocalObjectImpl.getLocalObject() while deserializing
     * a local business object reference.
     */
+    @Override
     EJBLocalObjectImpl getOptionalEJBLocalBusinessObjectImpl(Object key) {
         return theOptionalEJBLocalBusinessObjectImpl;
     }
@@ -594,6 +609,7 @@ public abstract class AbstractSingletonContainer
         return context;
     }
 
+    @Override
     protected void doTimerInvocationInit(EjbInvocation inv, Object primaryKey)
             throws Exception {
         if ( isRemote ) {
@@ -610,6 +626,7 @@ public abstract class AbstractSingletonContainer
         }
     }
 
+    @Override
     public boolean userTransactionMethodsAllowed(ComponentInvocation inv) {
         boolean utMethodsAllowed = false;
         if ( isBeanManagedTran ) {
@@ -630,26 +647,31 @@ public abstract class AbstractSingletonContainer
     * Check if the given EJBObject/LocalObject has been removed.
     * @exception NoSuchObjectLocalException if the object has been removed.
     */
+    @Override
     protected void checkExists(EJBLocalRemoteObject ejbObj)
     {
         // Doesn't apply to Singletons
     }
 
+    @Override
     protected void afterBegin(EJBContextImpl context) {
         // Singleton SessionBeans cannot implement SessionSynchronization!!
         // EJB2.0 Spec 7.8.
     }
 
+    @Override
     protected void beforeCompletion(EJBContextImpl context) {
         // Singleton SessionBeans cannot implement SessionSynchronization!!
         // EJB2.0 Spec 7.8.
     }
 
+    @Override
     protected void afterCompletion(EJBContextImpl ctx, int status) {
         // Singleton SessionBeans cannot implement SessionSynchronization!!
     }
 
     // default
+    @Override
     public boolean passivateEJB(ComponentContext context) {
         return false;
     }
@@ -666,6 +688,7 @@ public abstract class AbstractSingletonContainer
     }
 **/
 
+    @Override
     protected void doConcreteContainerShutdown(boolean appBeingUndeployed) {
 
         ClassLoader originalCCL = null;
@@ -729,6 +752,7 @@ public abstract class AbstractSingletonContainer
         implements ObjectFactory
     {
 
+        @Override
         public Object create(Object param) {
             try {
                     return createSingletonEJB();
@@ -737,6 +761,7 @@ public abstract class AbstractSingletonContainer
             }
         }
 
+        @Override
         public void destroy(Object obj) {
             SingletonContextImpl singletonCtx = (SingletonContextImpl) obj;
             // Note: Singletons cannot have incomplete transactions

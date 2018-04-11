@@ -73,6 +73,7 @@ import org.glassfish.hk2.api.PerLookup;
 })
 public class ListApplicationsCommand extends ListComponentsCommand {
 
+    @Override
     public void execute(AdminCommandContext context) {
         super.execute(context);
     }

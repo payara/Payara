@@ -142,6 +142,7 @@ public class GenericPrincipal implements Principal {
      */
     protected String name = null;
 
+    @Override
     public String getName() {
         return (this.name);
     }
@@ -205,6 +206,7 @@ public class GenericPrincipal implements Principal {
      * Return a String representation of this object, which exposes only
      * information that should be public.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("GenericPrincipal[");

@@ -162,6 +162,7 @@ public class ApplicationInfo extends ModuleInfo {
      * Returns the registration name for this application
      * @return the application registration name
      */
+    @Override
     public String getName() {
         return name;
     }  
@@ -253,6 +254,7 @@ public class ApplicationInfo extends ModuleInfo {
      *
      * @return array of sniffer that loaded the application's module
      */
+    @Override
     public Collection<Sniffer> getSniffers() {
         List<Sniffer> sniffers = new ArrayList<Sniffer>();
         for (EngineRef ref : engines) {
@@ -291,6 +293,7 @@ public class ApplicationInfo extends ModuleInfo {
         return context;
     }
 
+    @Override
     public void load(ExtendedDeploymentContext context, ProgressTracker tracker)
             throws Exception {
         Logger logger = context.getLogger();
@@ -379,6 +382,7 @@ public class ApplicationInfo extends ModuleInfo {
     }
 
 
+    @Override
     public void stop(ExtendedDeploymentContext context, Logger logger) {
 
         ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
@@ -397,6 +401,7 @@ public class ApplicationInfo extends ModuleInfo {
         }
     }
 
+    @Override
     public void unload(ExtendedDeploymentContext context) {
 
         Logger logger = context.getLogger();
@@ -423,6 +428,7 @@ public class ApplicationInfo extends ModuleInfo {
         }
     }
 
+    @Override
     public boolean suspend(Logger logger) {
 
         boolean isSuccess = super.suspend(logger);
@@ -435,6 +441,7 @@ public class ApplicationInfo extends ModuleInfo {
         return isSuccess;
     }
 
+    @Override
     public boolean resume(Logger logger) {
 
         boolean isSuccess = super.resume(logger);
@@ -448,6 +455,7 @@ public class ApplicationInfo extends ModuleInfo {
         return isSuccess;
     }
 
+    @Override
     public void clean(ExtendedDeploymentContext context) throws Exception {
         super.clean(context);
         for (ModuleInfo info : reversedModules) {

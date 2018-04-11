@@ -57,6 +57,7 @@ public class Role extends PrincipalImpl {
     }
 
 
+    @Override
     public boolean equals(Object other) {
 	boolean ret = false;
 	if(other instanceof Role) {
@@ -65,6 +66,7 @@ public class Role extends PrincipalImpl {
 
 	return ret;
     }
+    @Override
     public int hashCode() {
 	return getName().hashCode();
     }

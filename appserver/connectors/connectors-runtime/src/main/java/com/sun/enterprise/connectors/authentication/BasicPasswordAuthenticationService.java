@@ -96,6 +96,7 @@ public class BasicPasswordAuthenticationService
      * @param callerPrincipal Name of the principal to be mapped.
      * @return Mapped Backendprincipal
      */
+    @Override
     public Principal mapPrincipal(Principal callerPrincipal, Set principalSet) {
 
         // If no security maps are associated with this pool, return empty

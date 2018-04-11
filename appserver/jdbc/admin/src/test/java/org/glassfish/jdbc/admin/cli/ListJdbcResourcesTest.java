@@ -94,6 +94,7 @@ public class ListJdbcResourcesTest extends ConfigApiTest {
      *
      * @return the configuration file name
      */
+    @Override
     public String getFileName() {
         return "DomainTest";
     }

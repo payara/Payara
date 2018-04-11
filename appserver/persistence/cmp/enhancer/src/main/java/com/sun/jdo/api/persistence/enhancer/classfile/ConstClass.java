@@ -62,6 +62,7 @@ public class ConstClass extends ConstBasic {
   /**
    * Return the tag for this constant
    */
+  @Override
   public int tag () { return MyTag; }
 
   /**
@@ -81,6 +82,7 @@ public class ConstClass extends ConstBasic {
   /**
    * A printable representation 
    */
+  @Override
   public String toString () {
       return "CONSTANTClass(" + indexAsString() + "): " + //NOI18N
           "className(" + theClassName.toString() + ")";//NOI18N
@@ -107,6 +109,7 @@ public class ConstClass extends ConstBasic {
     theClassNameIndex = cname;
   }
 
+  @Override
   void formatData (DataOutputStream b) throws IOException {
     b.writeShort(theClassName.getIndex());
   }
@@ -115,6 +118,7 @@ public class ConstClass extends ConstBasic {
     return new ConstClass (input.readUnsignedShort());
   }
 
+  @Override
   void resolve (ConstantPool p) {
     theClassName = (ConstUtf8) p.constantAt(theClassNameIndex);
   }

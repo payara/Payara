@@ -379,10 +379,12 @@ public class RuntimeTimerState {
     // java.lang.Object methods.
     //
 
+    @Override
     public int hashCode() {
         return timerId_.hashCode();
     }
 
+    @Override
     public boolean equals(Object other) {
         boolean equal = false;
         if( other instanceof RuntimeTimerState ) {
@@ -391,6 +393,7 @@ public class RuntimeTimerState {
         return equal;
     }
 
+    @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();        
         buffer.append("'" + getTimerId() + "' ");

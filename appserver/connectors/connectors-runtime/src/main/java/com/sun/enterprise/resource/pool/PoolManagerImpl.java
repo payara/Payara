@@ -112,6 +112,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
         lazyEnlistableResourceManager = new LazyEnlistableResourceManagerImpl();
     }
 
+    @Override
     public void createEmptyConnectionPool(PoolInfo poolInfo,
                                           PoolType pt, Hashtable env) throws PoolingException {
         //Create and initialise the connection pool
@@ -157,6 +158,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
 
 
     // invoked by DataSource objects to obtain a connection
+    @Override
     public Object getResource(ResourceSpec spec, ResourceAllocator alloc, ClientSecurityInfo info)
             throws PoolingException, RetryableUnavailableException {
 
@@ -224,6 +226,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
         return handle.getUserConnection();
     }
 
+    @Override
     public void putbackDirectToPool(ResourceHandle h, PoolInfo poolInfo) {
         // notify pool
         if (poolInfo != null) {
@@ -234,6 +237,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
         }
     }
 
+    @Override
     public ResourceHandle getResourceFromPool(ResourceSpec spec, ResourceAllocator alloc, ClientSecurityInfo info,
                                               Transaction tran) throws PoolingException, RetryableUnavailableException {
         ResourcePool pool = getPool(spec.getPoolInfo());
@@ -249,6 +253,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
      *
      * @param poolInfo Name of the pool
      */
+    @Override
     public boolean switchOnMatching(PoolInfo poolInfo) {
         ResourcePool pool = getPool(poolInfo);
 
@@ -303,6 +308,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
     }
 
     // called by EJB Transaction Manager
+    @Override
     public void transactionCompleted(Transaction tran, int status)
             throws IllegalStateException {
 
@@ -316,6 +322,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
         }
     }
 
+    @Override
     public void resourceEnlisted(Transaction tran, com.sun.appserv.connectors.internal.api.ResourceHandle h)
             throws IllegalStateException {
         ResourceHandle res = (ResourceHandle) h;
@@ -341,6 +348,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
      * This method gets called by the LazyEnlistableConnectionManagerImpl when
      * a connection needs enlistment, i.e on use of a Statement etc.
      */
+    @Override
     public void lazyEnlist(ManagedConnection mc) throws ResourceException {
         lazyEnlistableResourceManager.lazyEnlist(mc);
     }
@@ -353,48 +361,57 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
         return runtime;
     }
 
+    @Override
     public void registerResource(com.sun.appserv.connectors.internal.api.ResourceHandle handle) throws PoolingException {
         ResourceHandle h = (ResourceHandle)handle;
         ResourceManager rm = getResourceManager(h.getResourceSpec());
         rm.registerResource(h);
     }
 
+    @Override
     public void registerPoolLifeCycleListener(PoolLifeCycle poolListener) {
         listener = poolListener;
     }
 
+    @Override
     public void unregisterPoolLifeCycleListener() {
         listener = null;
     }
     
+    @Override
     public void unregisterResource(com.sun.appserv.connectors.internal.api.ResourceHandle resource, int xaresFlag) {
         ResourceHandle h = (ResourceHandle)resource;
         ResourceManager rm = getResourceManager(h.getResourceSpec());
         rm.unregisterResource(h, xaresFlag);
     }
 
+    @Override
     public void resourceClosed(ResourceHandle resource) {
         ResourceManager rm = getResourceManager(resource.getResourceSpec());
         rm.delistResource(resource, XAResource.TMSUCCESS);
         putbackResourceToPool(resource, false);
     }
 
+    @Override
     public void badResourceClosed(ResourceHandle resource) {
         ResourceManager rm = getResourceManager(resource.getResourceSpec());
         rm.delistResource(resource, XAResource.TMSUCCESS);
         putbackBadResourceToPool(resource);
     }
 
+    @Override
     public void resourceErrorOccurred(ResourceHandle resource) {
         putbackResourceToPool(resource, true);
     }
 
+    @Override
     public void resourceAbortOccurred(ResourceHandle resource) {
         ResourceManager rm = getResourceManager(resource.getResourceSpec());
         rm.delistResource(resource, XAResource.TMSUCCESS);
         putbackResourceToPool(resource, true);
     }
 
+    @Override
     public void putbackBadResourceToPool(ResourceHandle h) {
 
         // notify pool
@@ -411,6 +428,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
         }
     }
 
+    @Override
     public void putbackResourceToPool(ResourceHandle h,
                                       boolean errorOccurred) {
 
@@ -443,6 +461,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
         }
     }
 
+    @Override
     public ResourcePool getPool(PoolInfo poolInfo) {
         if (poolInfo == null) {
             return null;
@@ -455,6 +474,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
      *
      * @param poolInfo - The name of the pool to kill
      */
+    @Override
     public void killPool(PoolInfo poolInfo) {
 
         //empty the pool
@@ -481,6 +501,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
         }
     }
 
+    @Override
     public void killFreeConnectionsInPools() {
            Iterator pools = poolTable.values().iterator();
            logFine("Killing all free connections in pools");
@@ -508,6 +529,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
            }
        }
     
+    @Override
     public ResourceReferenceDescriptor getResourceReference(String jndiName, String logicalName) {
         Set descriptors = getConnectorRuntime().getResourceReferenceDescriptor();
         List matchingRefs = new ArrayList();
@@ -549,16 +571,19 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
         }
     }
 
+    @Override
     public void beforePreInvoke(ComponentInvocation.ComponentInvocationType invType, ComponentInvocation prevInv,
                                 ComponentInvocation newInv) throws InvocationException {
         //no-op
     }
 
+    @Override
     public void afterPreInvoke(ComponentInvocation.ComponentInvocationType invType, ComponentInvocation prevInv,
                                ComponentInvocation curInv) throws InvocationException {
         //no-op
     }
 
+    @Override
     public void beforePostInvoke(ComponentInvocation.ComponentInvocationType invType, ComponentInvocation prevInv,
                                  ComponentInvocation curInv) throws InvocationException {
         //no-op
@@ -569,6 +594,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
     * will disassociate ManagedConnection instances from Connection
     * handles if the ResourceAdapter supports that.
     */
+    @Override
     public void afterPostInvoke(ComponentInvocation.ComponentInvocationType invType, ComponentInvocation prevInv,
                                 ComponentInvocation curInv) throws InvocationException {
         postInvoke(curInv);
@@ -660,6 +686,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
             this.tran = tran;
         }
 
+        @Override
         public void afterCompletion(int status) {
             try {
                 transactionCompleted(tran, status);
@@ -671,11 +698,13 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
             }
         }
 
+        @Override
         public void beforeCompletion() {
             // do nothing
         }
     }
 
+    @Override
     public void reconfigPoolProperties(ConnectorConnectionPool ccp) throws PoolingException {
         PoolInfo poolInfo = ccp.getPoolInfo();
         ResourcePool pool = getPool( poolInfo );
@@ -690,6 +719,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
      * @param poolInfo
      * @throws com.sun.appserv.connectors.internal.api.PoolingException
      */
+    @Override
     public boolean flushConnectionPool(PoolInfo poolInfo) throws PoolingException {
         boolean result = false;
         ResourcePool pool = getPool( poolInfo );
@@ -709,6 +739,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
      * @param poolInfo
      * @return
      */
+    @Override
     public PoolStatus getPoolStatus(PoolInfo poolInfo) {
         ResourcePool pool = poolTable.get(poolInfo);
         if(pool != null) {

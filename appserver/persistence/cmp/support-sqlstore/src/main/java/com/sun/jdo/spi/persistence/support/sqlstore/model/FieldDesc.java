@@ -192,6 +192,7 @@ public abstract class FieldDesc implements java.io.Serializable {
         this.classDesc = classDesc;
     }
 
+    @Override
     public String toString() {
         return classDesc.getName() + "." + getName(); // NOI18N
     }
@@ -653,6 +654,7 @@ public abstract class FieldDesc implements java.io.Serializable {
 
         Field f = (Field) java.security.AccessController.doPrivileged(
                 new java.security.PrivilegedAction() {
+                    @Override
                     public Object run() {
                         try {
                             return classType.getDeclaredField(name);

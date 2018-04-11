@@ -94,6 +94,7 @@ public interface AuthorizationProviderConfig extends SecurityProviderConfig, Pro
      * Gets the properties of the LoginModule.
      */
     @Element
+    @Override
     List<Property> getProperty();
     
     /**

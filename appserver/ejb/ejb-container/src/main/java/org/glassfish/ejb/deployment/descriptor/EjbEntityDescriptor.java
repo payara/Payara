@@ -105,6 +105,7 @@ public class EjbEntityDescriptor extends EjbDescriptor {
      * Gets the container transaction type for this entity bean. Entity 
      * beans always have CONTAINER_TRANSACTION_TYPE transaction type.
      */
+    @Override
     public String getTransactionType() {
 	return super.transactionType;
     }
@@ -114,6 +115,7 @@ public class EjbEntityDescriptor extends EjbDescriptor {
      * Throws an illegal argument exception if this type is not 
      * CONTAINER_TRANSACTION_TYPE.
      */
+    @Override
     public void setTransactionType(String transactionType) {
 	if (!CONTAINER_TRANSACTION_TYPE.equals(transactionType) 
 		&& this.isBoundsChecking()) {
@@ -218,6 +220,7 @@ public class EjbEntityDescriptor extends EjbDescriptor {
     /**
      * Returns the type of this bean. EjbEntityDescriptor.TYPE
      */
+    @Override
     public String getType() {
 	return TYPE;
     }
@@ -225,6 +228,7 @@ public class EjbEntityDescriptor extends EjbDescriptor {
     /** 
      * Sets my type String.
      */
+    @Override
     public void setType(String type) {
 	throw new IllegalArgumentException(localStrings.getLocalString(
 	       "enterprise.deployment.exceptioncannotsettypeonentitybean",
@@ -234,6 +238,7 @@ public class EjbEntityDescriptor extends EjbDescriptor {
     /**
      * Return my formatted string representation.
      */
+    @Override
     public void print(StringBuffer toStringBuffer) {
 	super.print(toStringBuffer);
 	toStringBuffer.append("\n Entity descriptor");

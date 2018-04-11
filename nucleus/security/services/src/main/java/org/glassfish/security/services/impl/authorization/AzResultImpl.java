@@ -56,14 +56,17 @@ public final class AzResultImpl implements AzResult {
 		obligations = o;
 	}
 
+        @Override
 	public Decision getDecision() {
 		return decision;
 	}
 
+        @Override
 	public Status getStatus() {
 		return status;
 	}
 
+        @Override
 	public AzObligations getObligations() {
 		return obligations;
 	}

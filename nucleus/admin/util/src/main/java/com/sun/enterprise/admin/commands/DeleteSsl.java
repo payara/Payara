@@ -111,6 +111,7 @@ public class DeleteSsl implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         Target targetUtil = habitat.getService(Target.class);
@@ -159,6 +160,7 @@ public class DeleteSsl implements AdminCommand {
                 }
 
                 ConfigSupport.apply(new SingleConfigCode<JmxConnector>() {
+                    @Override
                     public Object run(JmxConnector param)
                     throws PropertyVetoException {
                         param.setSsl(null);

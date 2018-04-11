@@ -172,6 +172,7 @@ public class Catalina extends Embedded {
      *
      * @param server The new server
      */
+    @Override
     public void setServer(Server server) {
         this.server = server;
     }
@@ -590,6 +591,7 @@ public class Catalina extends Embedded {
 
     }
 
+    @Override
     public void destroy() {
 
     }
@@ -597,6 +599,7 @@ public class Catalina extends Embedded {
     /**
      * Start a new server instance.
      */
+    @Override
     public void start() {
 
         if (server == null) {
@@ -640,6 +643,7 @@ public class Catalina extends Embedded {
     /**
      * Stop an existing server instance.
      */
+    @Override
     public void stop() {
 
         try {
@@ -694,6 +698,7 @@ public class Catalina extends Embedded {
      */
     protected class CatalinaShutdownHook extends Thread {
 
+        @Override
         public void run() {
 
             if (server != null) {
@@ -726,6 +731,7 @@ final class SetParentClassLoaderRule extends Rule {
 
     ClassLoader parentClassLoader = null;
 
+    @Override
     public void begin(Attributes attributes) throws Exception {
 
         if (digester.getDebug() >= 1)

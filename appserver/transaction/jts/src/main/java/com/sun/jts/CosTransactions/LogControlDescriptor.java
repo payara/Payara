@@ -146,6 +146,7 @@ class LogControlDescriptor implements Serializable {
      *
      * @see
      */
+    @Override
     public final String toString() {
         return "LCD(head="/*#Frozen*/+headLSN+",tail="/*#Frozen*/+tailLSN+",next="/*#Frozen*/+nextLSN+")"/*#Frozen*/;
     }

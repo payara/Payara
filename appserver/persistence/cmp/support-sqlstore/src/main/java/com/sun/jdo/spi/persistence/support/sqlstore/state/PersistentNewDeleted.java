@@ -83,14 +83,17 @@ public class PersistentNewDeleted extends LifeCycleState {
         stateType = P_NEW_DELETED;
     }
 
+    @Override
     public LifeCycleState transitionCommit(boolean retainValues) {
         return changeState(TRANSIENT);
     }
 
+    @Override
     public LifeCycleState transitionRollback(boolean retainValues) {
         return changeState(TRANSIENT);
     }
 
+    @Override
     public LifeCycleState transitionReadField(boolean optimisitic, boolean nontransactonalRead,
                                               boolean transactionActive) {
         // Cannot read a deleted object
@@ -98,6 +101,7 @@ public class PersistentNewDeleted extends LifeCycleState {
                 "jdo.lifecycle.deleted.accessField")); // NOI18N
     }
 
+    @Override
     public LifeCycleState transitionWriteField(boolean transactionActive) {
         // Cannot update a deleted object
         throw new JDOUserException(I18NHelper.getMessage(messages,
@@ -105,6 +109,7 @@ public class PersistentNewDeleted extends LifeCycleState {
     }
 
 
+    @Override
     public boolean needsRestoreOnRollback(boolean retainValues) {
         //
         // This is a special case where retores doesn't depend on

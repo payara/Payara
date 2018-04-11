@@ -88,6 +88,7 @@ public interface RoleMappingProviderConfig extends SecurityProviderConfig, Prope
 	 * Gets the properties of the provider.
 	 */
 	@Element
+        @Override
 	List<Property> getProperty();
 
 	/**

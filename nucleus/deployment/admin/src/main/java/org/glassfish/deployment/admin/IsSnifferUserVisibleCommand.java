@@ -80,6 +80,7 @@ public class IsSnifferUserVisibleCommand implements AdminCommand {
     @Inject
     SnifferManager snifferManager;
 
+    @Override
     public void execute(AdminCommandContext context) {
         
         final ActionReport report = context.getActionReport();

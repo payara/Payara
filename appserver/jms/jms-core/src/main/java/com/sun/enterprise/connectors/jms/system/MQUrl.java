@@ -107,6 +107,7 @@ public class MQUrl {
      *
      * @return String representation of Url.
      */
+    @Override
     public String toString() {
         if ( host.equals("")) {
             return "";
@@ -129,6 +130,7 @@ public class MQUrl {
      * @param obj another MQUrl object.
      * @return a boolean indicating whether MQUrls are equal.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof MQUrl) {
             return this.id.equals(((MQUrl)obj).id);
@@ -142,6 +144,7 @@ public class MQUrl {
      *
      * @return  hashcode of MQUrl
      */
+    @Override
     public int hashCode() {
         return id.hashCode();
     }

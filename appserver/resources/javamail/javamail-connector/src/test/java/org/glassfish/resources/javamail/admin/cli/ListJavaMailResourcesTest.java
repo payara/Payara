@@ -77,6 +77,7 @@ public class ListJavaMailResourcesTest extends ConfigApiTest {
         return new TestDocument(habitat);
     }
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }

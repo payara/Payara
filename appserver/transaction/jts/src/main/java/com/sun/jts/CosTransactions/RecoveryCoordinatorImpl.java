@@ -162,6 +162,7 @@ class RecoveryCoordinatorImpl extends RecoveryCoordinatorPOA {
      *
      * @see
      */
+    @Override
     public Status replay_completion(Resource res) throws NotPrepared {
 	
 		if(_logger.isLoggable(Level.FINE))
@@ -610,6 +611,7 @@ class OrphanRollbackThread extends Thread {
      *
      * @see
      */
+    @Override
     public void run() {
         recovery.rollbackOrphan(resource);
     }

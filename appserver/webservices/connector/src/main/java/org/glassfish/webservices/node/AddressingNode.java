@@ -66,6 +66,7 @@ public class AddressingNode extends DisplayableComponentNode {
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return tag;
     }
@@ -81,6 +82,7 @@ public class AddressingNode extends DisplayableComponentNode {
      *
      * @return the map with the element name as a key, the setter method as a value
      */
+    @Override
     protected Map getDispatchTable() {
         Map table = super.getDispatchTable();
         table.put(WebServicesTagNames.ADDRESSING_ENABLED, "setEnabled");
@@ -96,6 +98,7 @@ public class AddressingNode extends DisplayableComponentNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         String qname = element.getQName();
         Addressing addressing = (Addressing) getDescriptor();

@@ -59,18 +59,22 @@ public class RarBundleContext extends AnnotationContext {
     public ConnectorDescriptor getDescriptor(){
         return desc;
     }
+    @Override
     public void setProcessingContext(ProcessingContext processingContext) {
         super.setProcessingContext(processingContext);  
     }
 
+    @Override
     public ProcessingContext getProcessingContext() {
         return super.getProcessingContext();    
     }
 
+    @Override
     public void startElement(ElementType type, AnnotatedElement element) throws AnnotationProcessorException {
         getProcessingContext().pushHandler(this);
     }
 
+    @Override
     public void endElement(ElementType type, AnnotatedElement element) throws AnnotationProcessorException {
         getProcessingContext().popHandler();        
     }

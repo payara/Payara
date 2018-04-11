@@ -100,6 +100,7 @@ public class AppClientSecurityInfoImpl implements AppClientSecurityInfo {
     @Inject
     private IIOPSSLUtil appClientSSLUtil;
 
+    @Override
     public void initializeSecurity(
             List<TargetServer> tServers,
             List<MessageSecurityConfig> configs, CallbackHandler handler, 
@@ -171,6 +172,7 @@ public class AppClientSecurityInfoImpl implements AppClientSecurityInfo {
         util.setCallbackHandler(callbackHandler);
     }
 
+    @Override
     public int getCredentialEncoding(CredentialType type) {
         switch(type) {
             case USERNAME_PASSWORD :
@@ -185,6 +187,7 @@ public class AppClientSecurityInfoImpl implements AppClientSecurityInfo {
         
     }
 
+    @Override
     public Subject doClientLogin(CredentialType credType) {
         return LoginContextDriver.doClientLogin(this.getCredentialEncoding(credType), callbackHandler);
     }

@@ -89,6 +89,7 @@ public class LocalVariableTableAttribute extends ClassAttribute {
     return new LocalVariableTableAttribute(attrName, lvarTable);
   }
 
+    @Override
   void write(DataOutputStream out) throws IOException {
     out.writeShort(attrName().getIndex());
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -103,6 +104,7 @@ public class LocalVariableTableAttribute extends ClassAttribute {
     out.write(tmp_bytes, 0, tmp_bytes.length);
   }
 
+    @Override
   void print(PrintStream out, int indent) {
     ClassPrint.spaces(out, indent);
     out.println("LocalVariables: ");//NOI18N

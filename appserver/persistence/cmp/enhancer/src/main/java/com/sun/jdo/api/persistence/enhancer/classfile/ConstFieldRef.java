@@ -52,8 +52,10 @@ public class ConstFieldRef extends ConstBasicMemberRef {
   public static final int MyTag = CONSTANTFieldRef;
 
   /* public accessors */
+  @Override
   public int tag () { return MyTag; }
 
+  @Override
   public String toString () {
       return "CONSTANTFieldRef(" + indexAsString() + "): " + //NOI18N
            super.toString();

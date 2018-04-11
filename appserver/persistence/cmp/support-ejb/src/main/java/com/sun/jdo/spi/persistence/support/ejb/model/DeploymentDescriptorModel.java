@@ -124,6 +124,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 	 * @return the input stream for the specified resource, <code>null</code>
 	 * if an error occurs or none exists
 	 */
+        @Override
 	protected BufferedInputStream getInputStreamForResource (String className, 
 		ClassLoader classLoader, String resourceName)
 	{
@@ -141,6 +142,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 	 * @return the top non-Object superclass for className,
 	 * <code>className</code> if an error occurs or none exists
 	 */
+        @Override
 	protected String findPenultimateSuperclass (String className)
 	{
 		return (isPCClassName(className) ? className : 
@@ -156,6 +158,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 	 * @return the superclass for className, <code>null</code> if an error
 	 * occurs or none exists
 	 */
+        @Override
 	protected String getSuperclass (String className)
 	{
 		return (isPCClassName(className) ? "java.lang.Object" :	// NOI18N
@@ -176,6 +179,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 	 * if an error occurs or none exists
 	 * @exception IOException if there is some error creating the file
 	 */
+        @Override
 	protected BufferedOutputStream createFile (String className, String baseFileName, 
 		String extension) throws IOException
 	{
@@ -195,6 +199,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 	 * @param fileName the name of the file
 	 * @exception IOException if there is some error deleting the file
 	 */
+        @Override
 	protected void deleteFile (String className, String fileName)
 		throws IOException
 	{
@@ -215,6 +220,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 	 * @param classLoader the class loader used to find mapping information
 	 * @return the class element for the specified className
 	 */
+        @Override
 	public Object getClass (final String className, 
 		final ClassLoader classLoader)
 	{
@@ -269,6 +275,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 	 * @return the constructor element
 	 * @see #getClass
 	 */
+        @Override
 	public Object getConstructor (final String className, String[] argTypeNames)
 	{
 		Object returnObject = null;
@@ -311,6 +318,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 	 * @return the method element
 	 * @see #getClass
 	 */
+        @Override
 	public Object getMethod (final String className, final String methodName,
 		String[] argTypeNames)
 	{
@@ -373,6 +381,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 	 * @return the method element
 	 * @see #getClass
 	 */
+        @Override
 	public Object getInheritedMethod (String className, String methodName, 
 		String[] argTypeNames)
 	{
@@ -393,6 +402,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 	 * @param className the fully qualified name of the class to be checked 
 	 * @return the names of the field elements for the specified class
 	 */
+        @Override
 	public List getFields (final String className)
 	{
 		final EjbCMPEntityDescriptor descriptor = getCMPDescriptor(className);
@@ -461,6 +471,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 	 * @param className the fully qualified name of the class to be checked
 	 * @return the names of the field elements for the specified class
 	 */
+        @Override
 	public List getAllFields (String className)
 	{
 		// If the class name corresponds to a pk field (which means that 
@@ -485,6 +496,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 	 * @param fieldName the name of the field to be checked
 	 * @return the wrapped field element for the specified fieldName
 	 */
+        @Override
 	public Object getField (final String className, String fieldName)
 	{
 		String testClass = className;
@@ -580,6 +592,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 	 * @param fieldName the name of the field to be checked
 	 * @return the field type for the specified fieldName
 	 */
+        @Override
 	public String getFieldType (String className, String fieldName)
 	{
 		String returnType = super.getFieldType(className, fieldName);
@@ -627,6 +640,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 	 * @see #getConstructor
 	 * @see #getMethod
 	 */
+        @Override
 	public String getDeclaringClass (Object memberElement)
 	{
 		if ((memberElement != null) && (memberElement instanceof MemberWrapper))
@@ -655,6 +669,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 	 * @see #getConstructor
 	 * @see #getMethod
 	 */
+        @Override
 	public int getModifiers (Object memberElement)
 	{
 		if ((memberElement != null) && (memberElement instanceof MemberWrapper))
@@ -672,6 +687,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 	 * @return the modifier mask for the specified class
 	 * @see java.lang.reflect.Modifier
 	 */
+        @Override
 	public int getModifiersForClass (String className)
 	{
 		int modifiers = super.getModifiersForClass(className);
@@ -701,6 +717,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 	 * @return <code>true</code> if this field name represents a field 
 	 * with a valid type for a key field; <code>false</code> otherwise.
 	 */
+        @Override
 	public boolean isValidKeyType (String className, String fieldName)
 	{
 		return (((NameMapper.PRIMARY_KEY_FIELD == 
@@ -720,6 +737,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 	 * @see #getField
 	 * @see RuntimeModel#getMethod
 	 */
+        @Override
 	protected Class getTypeObject (Object element)
 	{
 		Class type = super.getTypeObject(element);
@@ -740,6 +758,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 	 * @return the class loader used to find mapping information for the 
 	 * specified className
 	 */
+        @Override
 	protected ClassLoader findClassLoader (String className, 
 		ClassLoader classLoader)
 	{
@@ -930,6 +949,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 		/** Returns a string representation of this object.
 		 * @return a string reprentation of the member wrapper object.
 		 */		
+                @Override
 		public String toString () { return getName(); }
 	}
 }

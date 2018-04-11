@@ -67,6 +67,7 @@ public class VerificationSelectPlan extends SelectQueryPlan {
      * There are no real fields to be selected for verification query.
      * This method just adds the tables for the version field.
      */
+    @Override
     protected void processFields() {
         LocalFieldDesc[] versionFields = config.getVersionFields();
         for (int i = 0; i < versionFields.length; i++) {
@@ -75,6 +76,7 @@ public class VerificationSelectPlan extends SelectQueryPlan {
         }
     }
 
+    @Override
     protected Statement newStatement() {
         return new SelectOneStatement(store.getVendorType(), this);
     }
@@ -87,6 +89,7 @@ public class VerificationSelectPlan extends SelectQueryPlan {
      * @return true if the resultset contains atleast one row false otherwise.
      * @throws SQLException
      */
+    @Override
     public Object getResult(PersistenceManager pm, ResultSet resultData)
             throws SQLException{
         boolean verificationSuccessfull = resultData.next();

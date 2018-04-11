@@ -75,6 +75,7 @@ public class ConnectorResourceDeployer extends AbstractConnectorResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
         //deployResource is not synchronized as there is only one caller
         //ResourceProxy which is synchronized
@@ -87,6 +88,7 @@ public class ConnectorResourceDeployer extends AbstractConnectorResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void deployResource(Object resource) throws Exception {
         //deployResource is not synchronized as there is only one caller
         //ResourceProxy which is synchronized
@@ -122,6 +124,7 @@ public class ConnectorResourceDeployer extends AbstractConnectorResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
         ConnectorResource domainResource = (ConnectorResource) resource;
         ResourceInfo resourceInfo = new ResourceInfo(domainResource.getJndiName(), applicationName, moduleName);
@@ -131,6 +134,7 @@ public class ConnectorResourceDeployer extends AbstractConnectorResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void undeployResource(Object resource)
             throws Exception {
         ConnectorResource domainResource = (ConnectorResource) resource;
@@ -159,6 +163,7 @@ public class ConnectorResourceDeployer extends AbstractConnectorResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void redeployResource(Object resource) throws Exception {
         undeployResource(resource);
         deployResource(resource);
@@ -167,6 +172,7 @@ public class ConnectorResourceDeployer extends AbstractConnectorResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void disableResource(Object resource)
             throws Exception {
         undeployResource(resource);
@@ -175,6 +181,7 @@ public class ConnectorResourceDeployer extends AbstractConnectorResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void enableResource(Object resource) throws Exception {
         deployResource(resource);
     }
@@ -182,6 +189,7 @@ public class ConnectorResourceDeployer extends AbstractConnectorResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean handles(Object resource) {
         return resource instanceof ConnectorResource;
     }
@@ -189,6 +197,7 @@ public class ConnectorResourceDeployer extends AbstractConnectorResourceDeployer
     /**
      * @inheritDoc
      */
+    @Override
     public boolean supportsDynamicReconfiguration() {
         return false;
     }
@@ -196,6 +205,7 @@ public class ConnectorResourceDeployer extends AbstractConnectorResourceDeployer
     /**
      * @inheritDoc
      */
+    @Override
     public Class[] getProxyClassesForDynamicReconfiguration() {
         return new Class[0];
     }

@@ -85,6 +85,7 @@ public class RotateLog implements AdminCommand {
 
     private final static LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(RotateLog.class);
 
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();        

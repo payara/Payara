@@ -51,22 +51,27 @@ public class InsnTarget extends Insn {
 
   private boolean branchTarget = false;
 
+  @Override
   public int nStackArgs() {
     return 0;
   }
 
+  @Override
   public int nStackResults() {
     return 0;
   }
 
+  @Override
   public String argTypes() {
       return "";//NOI18N
   }
 
+  @Override
   public String resultTypes() {
       return "";//NOI18N
   }
 
+  @Override
   public boolean branches() {
     return false;
   }
@@ -89,15 +94,18 @@ public class InsnTarget extends Insn {
 
   /* package local methods */
 
+  @Override
   void print (PrintStream out, int indent) {
     ClassPrint.spaces(out, indent);
     out.println(offset() + ":");//NOI18N
   }
 
+  @Override
   int store(byte buf[], int index) {
     return index;
   }
 
+  @Override
   int size() {
     return 0;
   }

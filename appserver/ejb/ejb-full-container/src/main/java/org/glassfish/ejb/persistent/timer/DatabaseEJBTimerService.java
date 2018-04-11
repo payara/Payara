@@ -84,6 +84,7 @@ public class DatabaseEJBTimerService
     @Inject
     RecoveryResourceRegistry recoveryResourceRegistry;
 
+    @Override
     public void postConstruct() {
         if (!ejbContainerUtil.isDas()) {
             if (cluster != null && cluster.isEnabled()) {
@@ -94,6 +95,7 @@ public class DatabaseEJBTimerService
         }
     }
 
+    @Override
     public void initPersistentTimerService(String target) {
         PersistentEJBTimerService.initEJBTimerService(target);
     }

@@ -325,6 +325,7 @@ public class DBVendorType  {
             final ClassLoader loader = DBVendorType.class.getClassLoader();
             Class clz = (Class)java.security.AccessController.doPrivileged(
                 new java.security.PrivilegedAction() {
+                    @Override
                     public Object run() {
                         try {
                             if (loader != null) {

@@ -104,108 +104,126 @@ public class PoolLifeCycleListenerRegistry implements PoolLifeCycleListener {
         //the pool will already be destroyed.
     }
 
+    @Override
     public void toString(StringBuffer stackTrace) {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.toString(stackTrace);
         }
     }
 
+    @Override
     public void connectionAcquired(long resourceHandleId) {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.connectionAcquired(resourceHandleId);
         }
     }
 
+    @Override
     public void connectionRequestServed(long timeTakenInMillis) {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.connectionRequestServed(timeTakenInMillis);
         }
     }
 
+    @Override
     public void connectionTimedOut() {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.connectionTimedOut();
         }
     }
 
+    @Override
     public void connectionNotMatched() {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.connectionNotMatched();
         }
     }
 
+    @Override
     public void connectionMatched() {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.connectionMatched();
         }
     }
 
+    @Override
     public void connectionUsed(long resourceHandleId) {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.connectionUsed(resourceHandleId);
         }
     }
 
+    @Override
     public void connectionDestroyed(long resourceHandleId) {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.connectionDestroyed(resourceHandleId);
         }
     }
 
+    @Override
     public void connectionReleased(long resourceHandleId) {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.connectionReleased(resourceHandleId);
         }
     }
 
+    @Override
     public void connectionCreated() {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.connectionCreated();
         }
     }
 
+    @Override
     public void foundPotentialConnectionLeak() {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.foundPotentialConnectionLeak();
         }
     }
 
+    @Override
     public void connectionValidationFailed(int count) {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.connectionValidationFailed(count);
         }
     }
 
+    @Override
     public void connectionsFreed(int count) {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.connectionsFreed(count);
         }
     }
 
+    @Override
     public void decrementConnectionUsed(long resourceHandleId) {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.decrementConnectionUsed(resourceHandleId);
         }
     }
 
+    @Override
     public void decrementNumConnFree() {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.decrementNumConnFree();
         }
     }
     
+    @Override
     public void incrementNumConnFree(boolean beingDestroyed, int steadyPoolSize) {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.incrementNumConnFree(beingDestroyed, steadyPoolSize);
         }
     }
 
+    @Override
     public void connectionRequestQueued() {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.connectionRequestQueued();
         }        
     }
 
+    @Override
     public void connectionRequestDequeued() {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.connectionRequestDequeued();

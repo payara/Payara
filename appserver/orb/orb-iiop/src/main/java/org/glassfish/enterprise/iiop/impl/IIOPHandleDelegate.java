@@ -66,6 +66,7 @@ public final class IIOPHandleDelegate
         HandleDelegate handleDelegate =
             (HandleDelegate) java.security.AccessController.doPrivileged(
                 new java.security.PrivilegedAction() {
+                    @Override
                     public Object run() {
                         try {
                             ClassLoader cl = new HandleDelegateClassLoader();
@@ -82,6 +83,7 @@ public final class IIOPHandleDelegate
     }
     
     
+    @Override
     public void writeEJBObject(javax.ejb.EJBObject ejbObject,
             java.io.ObjectOutputStream ostream)
         throws java.io.IOException
@@ -89,12 +91,14 @@ public final class IIOPHandleDelegate
         ostream.writeObject(ejbObject); // IIOP stubs are Serializable
     }
     
+    @Override
     public javax.ejb.EJBObject readEJBObject(java.io.ObjectInputStream istream)
         throws java.io.IOException, ClassNotFoundException
     {
         return (EJBObject)getStub(istream, EJBObject.class);
     }
     
+    @Override
     public void writeEJBHome(javax.ejb.EJBHome ejbHome,
             java.io.ObjectOutputStream ostream)
         throws java.io.IOException
@@ -102,6 +106,7 @@ public final class IIOPHandleDelegate
         ostream.writeObject(ejbHome); // IIOP stubs are Serializable
     }
     
+    @Override
     public javax.ejb.EJBHome readEJBHome(java.io.ObjectInputStream istream)
         throws java.io.IOException, ClassNotFoundException
     {

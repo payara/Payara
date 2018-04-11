@@ -131,6 +131,7 @@ public class AnnotatedMethodAttribute extends ClassAttribute {
     return  new AnnotatedMethodAttribute(attrName, version, annFlags, ranges);
   }
 
+    @Override
   void write(DataOutputStream out) throws IOException {
     out.writeShort(attrName().getIndex());
     if (annotationRanges == null)
@@ -148,6 +149,7 @@ public class AnnotatedMethodAttribute extends ClassAttribute {
     }
   }
 
+    @Override
   void print(PrintStream out, int indent) {
     ClassPrint.spaces(out, indent);
     out.println("version: " + attrVersion);//NOI18N

@@ -83,6 +83,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      * @throws SQLException if a database access error occurs
      * @since 1.6
      */
+    @Override
     public RowIdLifetime getRowIdLifetime() throws SQLException {
         return databaseMetaData.getRowIdLifetime();
     }
@@ -110,6 +111,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      * @see #getSearchStringEscape
      * @since 1.6
      */
+    @Override
     public ResultSet getSchemas(String catalog, String schemaPattern) throws SQLException {
         return databaseMetaData.getSchemas(catalog, schemaPattern);
     }
@@ -122,6 +124,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      * @throws SQLException if a database access error occurs
      * @since 1.6
      */
+    @Override
     public boolean supportsStoredFunctionsUsingCallSyntax() throws SQLException {
         return databaseMetaData.supportsStoredFunctionsUsingCallSyntax();
     }
@@ -137,6 +140,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      * @throws SQLException if a database access error occurs
      * @since 1.6
      */
+    @Override
     public boolean autoCommitFailureClosesAllResultSets() throws SQLException {
         return databaseMetaData.autoCommitFailureClosesAllResultSets();
     }
@@ -164,6 +168,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      * <p/>
      * @since 1.6
      */
+    @Override
     public ResultSet getClientInfoProperties() throws SQLException {
         return databaseMetaData.getClientInfoProperties();
     }
@@ -216,6 +221,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      * @see #getSearchStringEscape
      * @since 1.6
      */
+    @Override
     public ResultSet getFunctions(String catalog, String schemaPattern, String functionNamePattern) throws SQLException {
         return databaseMetaData.getFunctions(catalog, schemaPattern, functionNamePattern);
     }
@@ -314,6 +320,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      * @see #getSearchStringEscape
      * @since 1.6
      */
+    @Override
     public ResultSet getFunctionColumns(String catalog, String schemaPattern, String functionNamePattern, String columnNamePattern) throws SQLException {
         return databaseMetaData.getFunctionColumns(catalog, schemaPattern, functionNamePattern, columnNamePattern);
     }
@@ -335,6 +342,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      * @throws java.sql.SQLException If no object found that implements the interface
      * @since 1.6
      */
+    @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
         T result;
         if (iface.isInstance(this)) {
@@ -360,6 +368,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      *                               for an object with the given interface.
      * @since 1.6
      */
+    @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         boolean result;
         if (iface.isInstance(this)) {
@@ -370,6 +379,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
         return result;
     }
 
+    @Override
     public ResultSet getPseudoColumns(String catalog, String schemaPattern,
             String tableNamePattern, String columnNamePattern) throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
@@ -387,6 +397,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
         throw new UnsupportedOperationException("Operation not supported in this runtime.");
     }
 
+    @Override
     public boolean generatedKeyAlwaysReturned() throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
             try {

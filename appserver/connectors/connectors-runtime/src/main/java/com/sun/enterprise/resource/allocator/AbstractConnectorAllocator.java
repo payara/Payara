@@ -105,6 +105,7 @@ public abstract class AbstractConnectorAllocator
 
     }
 
+    @Override
     public Set getInvalidConnections(Set connectionSet)
             throws ResourceException {
         if (mcf instanceof ValidatingManagedConnectionFactory) {
@@ -114,6 +115,7 @@ public abstract class AbstractConnectorAllocator
         return null;
     }
 
+    @Override
     public boolean isConnectionValid(ResourceHandle h) {
         HashSet conn = new HashSet();
         conn.add(h.getResource());
@@ -142,24 +144,29 @@ public abstract class AbstractConnectorAllocator
         return true;
     }
 
+    @Override
     public void destroyResource(ResourceHandle resourceHandle)
             throws PoolingException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void fillInResourceObjects(ResourceHandle resourceHandle)
             throws PoolingException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public boolean supportsReauthentication() {
         return this.desc.supportsReauthentication();
     }
 
+    @Override
     public boolean isTransactional() {
         return true;
     }
 
+    @Override
     public void cleanup(ResourceHandle h) throws PoolingException {
         try {
             ManagedConnection mc = (ManagedConnection) h.getResource();
@@ -170,6 +177,7 @@ public abstract class AbstractConnectorAllocator
         }
     }
 
+    @Override
     public boolean matchConnection(ResourceHandle h) {
         Set set = new HashSet();
         set.add(h.getResource());
@@ -182,6 +190,7 @@ public abstract class AbstractConnectorAllocator
         }
     }
 
+    @Override
     public void closeUserConnection(ResourceHandle resource) throws PoolingException {
 
         try {
@@ -192,10 +201,12 @@ public abstract class AbstractConnectorAllocator
         }
     }
 
+    @Override
     public boolean shareableWithinComponent() {
         return false;
     }
 
+    @Override
     public Object getSharedConnection(ResourceHandle h)
             throws PoolingException {
         throw new UnsupportedOperationException();
@@ -217,6 +228,7 @@ public abstract class AbstractConnectorAllocator
         }
     }
 
+    @Override
     public boolean hasValidatingMCF() {
         return mcf instanceof ValidatingManagedConnectionFactory;
     }

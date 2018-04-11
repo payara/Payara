@@ -69,6 +69,7 @@ public class ApplicationRuntimeDDFile extends ConfigurationDeploymentDescriptorF
      * @return the location of the DeploymentDescriptor file for a
      * particular type of J2EE Archive
      */
+    @Override
     public String getDeploymentDescriptorPath() {
         return DescriptorConstants.S1AS_APPLICATION_JAR_ENTRY;
     }
@@ -79,6 +80,7 @@ public class ApplicationRuntimeDDFile extends ConfigurationDeploymentDescriptorF
      *
      * @param the descriptor for which we need the node
      */
+    @Override
     public RootXMLNode getRootXMLNode(Descriptor descriptor) {
    
         if (descriptor instanceof Application) {
@@ -96,6 +98,7 @@ public class ApplicationRuntimeDDFile extends ConfigurationDeploymentDescriptorF
      * @param publicIDToDTDMap the map for storing public id to dtd mapping
      * @param versionUpgrades The list of upgrades from older versions
      */
+    @Override
     public void registerBundle(final Map<String, Class> rootNodesMap,
                                final Map<String, String> publicIDToDTDMap,
                                final Map<String, List<Class>> versionUpgrades) {

@@ -431,6 +431,7 @@ public class Consistency extends org.netbeans.modules.schema2beans.BaseBean
 	}
 
 	// Dump the content of this bean returning it as a String
+        @Override
 	public void dump(StringBuffer str, String indent){
 		String s;
 		Object o;
@@ -481,6 +482,7 @@ public class Consistency extends org.netbeans.modules.schema2beans.BaseBean
 		this.dumpAttributes(CHECK_VERSION_OF_ACCESSED_INSTANCES, 0, str, indent);
 
 	}
+        @Override
 	public String dumpBeanNode(){
 		StringBuffer str = new StringBuffer();
 		str.append("Consistency\n");	// NOI18N

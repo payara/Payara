@@ -117,6 +117,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * given jdbc connection pool.
      * @param stackTrace
      */
+    @Override
     public void toString(StringBuffer stackTrace) {
         stackTrace.append("\n Monitoring Statistics for \n" + poolName);
         poolProbeProvider.toString(poolName, appName, moduleName, stackTrace);
@@ -126,6 +127,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * Fires probe event that a connection has been acquired by the application 
      * for the given jdbc connection pool.
      */
+    @Override
     public void connectionAcquired(long resourceHandleId) {
         ConnectionPoolAppEmitterImpl appEmitter =
                 detectAppBasedProviders(getAppName(resourceHandleId));
@@ -142,6 +144,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * 
      * @param timeTakenInMillis time taken to serve a connection
      */    
+    @Override
     public void connectionRequestServed(long timeTakenInMillis) {
         poolProbeProvider.connectionRequestServedEvent(poolName, appName, moduleName, timeTakenInMillis);
     }
@@ -150,6 +153,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * Fires probe event related to the fact that the given jdbc connection pool
      * has got a connection timed-out event.
      */
+    @Override
     public void connectionTimedOut() {
         poolProbeProvider.connectionTimedOutEvent(poolName, appName, moduleName);
     }
@@ -158,6 +162,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * Fires probe event that a connection under test does not match the 
      * current request for the given jdbc connection pool.
      */
+    @Override
     public void connectionNotMatched() {
         poolProbeProvider.connectionNotMatchedEvent(poolName, appName, moduleName);        
     }
@@ -166,6 +171,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * Fires probe event that a connection under test matches the current
      * request for the given jdbc connection pool.
      */
+    @Override
     public void connectionMatched() {
         poolProbeProvider.connectionMatchedEvent(poolName, appName, moduleName);        
     }
@@ -174,6 +180,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * Fires probe event that a connection is destroyed for the 
      * given jdbc connection pool.
      */
+    @Override
     public void connectionDestroyed(long resourceHandleId) {
         poolProbeProvider.connectionDestroyedEvent(poolName, appName, moduleName);
         // Clearing the resource handle id appName mappings stored
@@ -186,6 +193,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * Fires probe event that a connection is released for the given jdbc
      * connection pool.
      */
+    @Override
     public void connectionReleased(long resourceHandleId) {
         ConnectionPoolAppEmitterImpl appEmitter =
                 detectAppBasedProviders(getAppName(resourceHandleId));
@@ -201,6 +209,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * Fires probe event that a connection is created for the given jdbc
      * connection pool.
      */
+    @Override
     public void connectionCreated() {
         poolProbeProvider.connectionCreatedEvent(poolName, appName, moduleName);
     }
@@ -210,6 +219,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * has got a connection leak event.
      *
      */
+    @Override
     public void foundPotentialConnectionLeak() {
         poolProbeProvider.potentialConnLeakEvent(poolName, appName, moduleName);
     }
@@ -220,6 +230,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * 
      * @param count number of times the validation failed
      */
+    @Override
     public void connectionValidationFailed(int count) {
         poolProbeProvider.connectionValidationFailedEvent(poolName, appName, moduleName, count);
     }
@@ -228,6 +239,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * Fires probe event related to the fact the given jdbc connection pool has
      * got a connection used event.
      */
+    @Override
     public void connectionUsed(long resourceHandleId) {
         ConnectionPoolAppEmitterImpl appEmitter =
                 detectAppBasedProviders(getAppName(resourceHandleId));
@@ -243,6 +255,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * 
      * @param count number of connections freed to pool
      */
+    @Override
     public void connectionsFreed(int count) {
         poolProbeProvider.connectionsFreedEvent(poolName, appName, moduleName, count);
     }
@@ -252,6 +265,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * got a decrement connection used event.
      * 
      */
+    @Override
     public void decrementConnectionUsed(long resourceHandleId) {
         ConnectionPoolAppEmitterImpl appEmitter =
                 detectAppBasedProviders(getAppName(resourceHandleId));
@@ -266,6 +280,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * got a decrement free connections size event.
      * 
      */
+    @Override
     public void decrementNumConnFree() {
         poolProbeProvider.decrementNumConnFreeEvent(poolName, appName, moduleName);
     }
@@ -277,6 +292,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * @param beingDestroyed if the connection is destroyed due to error
      * @param steadyPoolSize 
      */
+    @Override
     public void incrementNumConnFree(boolean beingDestroyed, int steadyPoolSize) {
         poolProbeProvider.incrementNumConnFreeEvent(poolName, appName, moduleName, beingDestroyed, steadyPoolSize);
     }
@@ -286,6 +302,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * wait queue length has been incremented
      * 
      */
+    @Override
     public void connectionRequestQueued() {
         poolProbeProvider.connectionRequestQueuedEvent(poolName, appName, moduleName);
     }
@@ -295,6 +312,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * wait queue length has been decremented.
      * 
      */
+    @Override
     public void connectionRequestDequeued() {
         poolProbeProvider.connectionRequestDequeuedEvent(poolName, appName, moduleName);
     }

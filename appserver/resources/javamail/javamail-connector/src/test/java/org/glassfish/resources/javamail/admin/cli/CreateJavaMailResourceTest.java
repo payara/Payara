@@ -81,10 +81,12 @@ public class CreateJavaMailResourceTest extends ConfigApiTest {
     private AdminCommandContext context;
     private CommandRunner cr;
 
+    @Override
     public DomDocument getDocument(ServiceLocator habitat) {
         return new TestDocument(habitat);
     }
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }

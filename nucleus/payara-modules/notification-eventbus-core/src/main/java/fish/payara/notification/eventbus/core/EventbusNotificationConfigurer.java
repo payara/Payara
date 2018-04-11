@@ -70,6 +70,7 @@ public class EventbusNotificationConfigurer extends BaseNotificationConfigurer<E
     private String topicName;
 
 
+    @Override
     protected void applyValues(EventbusNotifierConfiguration configuration) throws PropertyVetoException {
         if(this.enabled != null) {
             configuration.enabled(this.enabled);

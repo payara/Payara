@@ -114,6 +114,7 @@ public class MessageDestinationReferenceDescriptor extends EnvironmentProperty
      * @return the usage type of the message destination reference
      * (Consumes, Produces, ConsumesProduces)
      */
+    @Override
     public String getUsage() {
         return usage;
     }
@@ -122,6 +123,7 @@ public class MessageDestinationReferenceDescriptor extends EnvironmentProperty
      * @param usage the usage type of the message destination reference
      * (Consumes, Produces, ConsumesProduces)
      */
+    @Override
     public void setUsage(String destUsage) {
         usage = destUsage;
     }
@@ -148,10 +150,12 @@ public class MessageDestinationReferenceDescriptor extends EnvironmentProperty
         jndiName = physicalDestinationName;
     }
 
+    @Override
     public String getInjectResourceType() {
         return getDestinationType();
     }
 
+    @Override
     public void setInjectResourceType(String resourceType) {
         setDestinationType(resourceType);
     }
@@ -160,6 +164,7 @@ public class MessageDestinationReferenceDescriptor extends EnvironmentProperty
      * Set the referring bundle, i.e. the bundle within which this
      * message destination reference is declared. 
      */
+    @Override
     public void setReferringBundleDescriptor(BundleDescriptor referringBundle)
     {
 	this.referringBundle = referringBundle;
@@ -169,6 +174,7 @@ public class MessageDestinationReferenceDescriptor extends EnvironmentProperty
      * Get the referring bundle, i.e. the bundle within which this
      * message destination reference is declared.  
      */
+    @Override
     public BundleDescriptor getReferringBundleDescriptor()
     {
 	return referringBundle;
@@ -178,6 +184,7 @@ public class MessageDestinationReferenceDescriptor extends EnvironmentProperty
     // Implementations of MessageDestinationReferencer methods.
     //
 
+    @Override
     public boolean isLinkedToMessageDestination() {
         return referencer.isLinkedToMessageDestination();
     }
@@ -185,6 +192,7 @@ public class MessageDestinationReferenceDescriptor extends EnvironmentProperty
     /** 
      * @return the name of the message destination to which I refer 
      */
+    @Override
     public String getMessageDestinationLinkName() {
         return referencer.getMessageDestinationLinkName();
     }
@@ -192,19 +200,23 @@ public class MessageDestinationReferenceDescriptor extends EnvironmentProperty
     /** 
      * Sets the name of the message destination to which I refer.
      */
+    @Override
     public void setMessageDestinationLinkName(String linkName) {
         referencer.setMessageDestinationLinkName(linkName);
     }    
 
+    @Override
     public MessageDestinationDescriptor setMessageDestinationLinkName
         (String linkName, boolean resolveLink) {
         return referencer.setMessageDestinationLinkName(linkName, resolveLink);
     }
 
+    @Override
     public MessageDestinationDescriptor resolveLinkName() {
         return referencer.resolveLinkName();
     }
         
+    @Override
     public boolean ownedByMessageDestinationRef() {
         return true;
     }
@@ -212,6 +224,7 @@ public class MessageDestinationReferenceDescriptor extends EnvironmentProperty
     /**
      * Get the descriptor for the message destination reference owner.
      */ 
+    @Override
     public MessageDestinationReferenceDescriptor getMessageDestinationRefOwner
         () {
         return this;
@@ -220,6 +233,7 @@ public class MessageDestinationReferenceDescriptor extends EnvironmentProperty
     /**
      * True if the owner is a message-driven bean.
      */ 
+    @Override
     public boolean ownedByMessageBean() {
         return false;
     }
@@ -227,6 +241,7 @@ public class MessageDestinationReferenceDescriptor extends EnvironmentProperty
     /**
      * Get the descriptor for the message-driven bean owner.
      */ 
+    @Override
     public EjbMessageBeanDescriptor getMessageBeanOwner() {
         return null;
     }
@@ -234,6 +249,7 @@ public class MessageDestinationReferenceDescriptor extends EnvironmentProperty
     /** 
      * @return the message destination to which I refer. Can be NULL.
     */
+    @Override
     public MessageDestinationDescriptor getMessageDestination() {
         return referencer.getMessageDestination();
     }  
@@ -241,6 +257,7 @@ public class MessageDestinationReferenceDescriptor extends EnvironmentProperty
     /**
      * @param messageDestiation the message destination to which I refer.
      */
+    @Override
     public void setMessageDestination(MessageDestinationDescriptor newMsgDest) {
         referencer.setMessageDestination(newMsgDest);
     }
@@ -248,6 +265,7 @@ public class MessageDestinationReferenceDescriptor extends EnvironmentProperty
     /** returns a formatted string representing me.
     */
     
+    @Override
     public void print(StringBuffer toStringBuffer) {
         if (isLinkedToMessageDestination()) {
 	    toStringBuffer.append("Resolved Message-Destination-Ref ").append(getName()).append( 
@@ -269,6 +287,7 @@ public class MessageDestinationReferenceDescriptor extends EnvironmentProperty
     }
     
     /* Equality on name. */
+    @Override
     public boolean equals(Object object) {
 	if (object instanceof MessageDestinationReference) {
 	    MessageDestinationReference reference = 
@@ -278,6 +297,7 @@ public class MessageDestinationReferenceDescriptor extends EnvironmentProperty
 	return false;
     }
 
+    @Override
     public int hashCode() {
         int result = NULL_HASH_CODE;
         String name = getName();

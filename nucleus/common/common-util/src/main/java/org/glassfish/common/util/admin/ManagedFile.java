@@ -152,6 +152,7 @@ public class ManagedFile {
         FileChannel fc;
         Timer timer;
 
+        @Override
         public synchronized RandomAccessFile getLockedFile() {
             return raf;
         }

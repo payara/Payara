@@ -82,10 +82,12 @@ public class ModuleContentValidator extends ModuleContentLinker implements Compo
     public ModuleContentValidator() {
     }
  
+    @Override
     public void setArchive(ReadableArchive archive) {
         archive_ = archive;
     }
 
+    @Override
     public void accept(ServiceReferenceDescriptor serviceRef) {
         if( serviceRef.hasWsdlFile() ) {
             String wsdlFileUri = serviceRef.getWsdlFileUri();
@@ -156,6 +158,7 @@ public class ModuleContentValidator extends ModuleContentLinker implements Compo
         }
     }
 
+    @Override
     public void accept(WebService webService) {
         
         try {

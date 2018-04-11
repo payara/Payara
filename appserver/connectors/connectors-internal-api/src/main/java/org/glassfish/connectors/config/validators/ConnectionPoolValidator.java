@@ -61,6 +61,7 @@ public class ConnectionPoolValidator
     
     protected ConnectionPoolErrorMessages poolFaults;
     
+    @Override
     public void initialize(final ConnectionPoolConstraint constraint) {
         this.poolFaults = constraint.value();
     }

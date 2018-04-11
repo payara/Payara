@@ -64,11 +64,13 @@ public final class MetadataImpl implements Metadata {
         mData = new ConcurrentHashMap<String,Object>();
     }
 
+    @Override
     public Map<String,Object> getAll()
     {
         return Collections.unmodifiableMap(mData);
     }
 
+    @Override
     public void add( final String key, final Object value)
     {
         mData.put( key, value);
@@ -85,11 +87,13 @@ public final class MetadataImpl implements Metadata {
         add( CORRESPONDING_CONFIG, config);
     }
     
+    @Override
     public ObjectName getCorrespondingConfig()
     {
         return getMetadata( CORRESPONDING_CONFIG, ObjectName.class);
     }
 
+    @Override
     public ObjectName getCorrespondingRef()
     {
         return getMetadata( CORRESPONDING_REF, ObjectName.class);
@@ -100,6 +104,7 @@ public final class MetadataImpl implements Metadata {
         add( CORRESPONDING_REF, config);
     }
     
+    @Override
     public String getDeploymentDescriptor()
     {
         return getMetadata( DEPLOYMENT_DESCRIPTOR, String.class);
@@ -113,6 +118,7 @@ public final class MetadataImpl implements Metadata {
         add( DEPLOYMENT_DESCRIPTOR, desc);
     }
     
+    @Override
     public <T> T getMetadata(final String name, final Class<T> clazz)
     {
         final Object value = mData.get(name);

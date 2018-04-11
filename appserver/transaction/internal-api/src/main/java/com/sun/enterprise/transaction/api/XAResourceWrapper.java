@@ -70,39 +70,49 @@ public abstract class XAResourceWrapper implements XAResource
         this.subject = subject;
     }
 
+    @Override
     public void end(Xid xid, int i) throws XAException{
         throw new XAException(sm.getString("transaction.for_recovery_only"));
     }
 
+    @Override
     public void forget(Xid xid) throws XAException{
         throw new XAException(sm.getString("transaction.for_recovery_only"));
     }
 
+    @Override
     public int getTransactionTimeout() throws XAException{
         throw new XAException(sm.getString("transaction.for_recovery_only"));
     }
 
+    @Override
     public boolean isSameRM(XAResource xaresource) throws XAException
     {
         throw new XAException(sm.getString("transaction.for_recovery_only"));
     }
 
+    @Override
     public int prepare(Xid xid) throws XAException{
         throw new XAException(sm.getString("transaction.for_recovery_only"));
     }
 
+    @Override
     public boolean setTransactionTimeout(int i) throws XAException {
         throw new XAException(sm.getString("transaction.for_recovery_only"));
     }
 
+    @Override
     public void start(Xid xid, int i) throws XAException{
         throw new XAException(sm.getString("transaction.for_recovery_only"));
     }
 
+    @Override
     public abstract Xid[] recover(int flag) throws XAException;
 
+    @Override
     public abstract void commit(Xid xid, boolean flag) throws XAException;
 
+    @Override
     public abstract void rollback(Xid xid) throws XAException;
 
     /**

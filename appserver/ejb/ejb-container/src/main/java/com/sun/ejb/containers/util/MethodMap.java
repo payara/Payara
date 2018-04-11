@@ -103,16 +103,20 @@ public final class MethodMap extends HashMap {
         buildLookupTable(methodMap);
     }
 
+    @Override
     public Object put(Object key, Object value) {
         throw new UnsupportedOperationException();
     }
+    @Override
     public void putAll(Map t) {
         throw new UnsupportedOperationException();
     }
+    @Override
     public Object remove(Object key) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public Object get(Object key) {
        
         if( key instanceof Method ) {
@@ -148,6 +152,7 @@ public final class MethodMap extends HashMap {
 
     }
 
+    @Override
     public void clear() {
 
         if( methodInfo_ != null ) {

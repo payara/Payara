@@ -82,10 +82,12 @@ public class Hollow extends LifeCycleState {
     /**
      * Operations that cause life cycle state transitions
      */
+    @Override
     public LifeCycleState transitionDeletePersistent() {
         return changeState(P_DELETED);
     }
 
+    @Override
     public LifeCycleState transitionReadField(boolean optimistic, boolean nontransactionalRead,
                                               boolean transactionActive) {
         if (!nontransactionalRead) {
@@ -99,11 +101,13 @@ public class Hollow extends LifeCycleState {
         }
     }
 
+    @Override
     public LifeCycleState transitionWriteField(boolean transactionActive) {
         assertTransaction(transactionActive);
         return changeState(P_DIRTY);
     }
 
+    @Override
     public boolean needsReload(boolean optimistic,
                                boolean nontransactionalRead,
                                boolean transactionActive) {

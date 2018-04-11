@@ -70,12 +70,14 @@ import org.osgi.framework.BundleReference;
  */
 public class EmbeddedOSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
 
+    @Override
     public boolean handles(BootstrapProperties bsProps) {
         return EmbeddedOSGiGlassFishRuntimeBuilder.class.getName().
                 equals(bsProps.getProperties().getProperty(BUILDER_NAME_PROPERTY));
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
     public GlassFishRuntime build(BootstrapProperties bootstrapProperties) throws GlassFishException {
         configureBundles(bootstrapProperties);
         provisionBundles(bootstrapProperties);

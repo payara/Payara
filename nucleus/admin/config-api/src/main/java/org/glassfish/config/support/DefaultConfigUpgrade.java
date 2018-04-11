@@ -328,6 +328,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private static class MinDefaultConfigCode implements SingleConfigCode<Configs> {
 
+        @Override
         public Object run(Configs configs) throws PropertyVetoException, TransactionFailure {
             Config defaultConfig = configs.createChild(Config.class);
             defaultConfig.setName(DEFAULT_CONFIG);
@@ -341,6 +342,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
 
     private class DefaultConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException, TransactionFailure {
 
             config.setDynamicReconfigurationEnabled(
@@ -362,6 +364,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private class HttpServiceConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException, TransactionFailure {
 
             HttpService httpService = config.createChild(HttpService.class);
@@ -435,6 +438,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private class AdminServiceConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException, TransactionFailure {
 
             AdminService adminService = config.createChild(AdminService.class);
@@ -493,6 +497,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private class LogServiceConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException {
             LogService ls = null;
             try {
@@ -598,6 +603,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private class SecurityServiceConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException {
             try {
                 SecurityService ss = config.createChild(SecurityService.class);
@@ -978,6 +984,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private static class DiagnosticServiceConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException, TransactionFailure {
             DiagnosticService ds = config.createChild(DiagnosticService.class);
             config.setDiagnosticService(ds);
@@ -992,6 +999,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private class JavaConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException {
             try {
                 JavaConfig jc = config.createChild(JavaConfig.class);
@@ -1046,6 +1054,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private static class AvailabilityServiceConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException {
             try {
                 AvailabilityService as = config.createChild(AvailabilityService.class);
@@ -1065,6 +1074,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private class NetworkConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException {
             try {
                 NetworkConfig nc = config.createChild(NetworkConfig.class);
@@ -1463,6 +1473,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private class ThreadPoolsConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException {
             try {
                 ThreadPools tps = config.createChild(ThreadPools.class);
@@ -1519,6 +1530,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private class SystemPropertyConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException {
 
             createSystemProperty(config);

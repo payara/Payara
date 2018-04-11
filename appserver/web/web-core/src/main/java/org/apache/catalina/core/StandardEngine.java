@@ -142,6 +142,7 @@ public class StandardEngine
      *
      * @return configured realm, or a JAAS realm by default
      */
+    @Override
     public Realm getRealm() {
         Realm configured=super.getRealm();
         // If no set realm has been called - default to JAAS
@@ -157,6 +158,7 @@ public class StandardEngine
     /**
      * Return the default host.
      */
+    @Override
     public String getDefaultHost() {
 
         return (defaultHost);
@@ -169,6 +171,7 @@ public class StandardEngine
      *
      * @param host The new default host
      */
+    @Override
     public void setDefaultHost(String host) {
 
         String oldDefaultHost = this.defaultHost;
@@ -185,6 +188,7 @@ public class StandardEngine
 
     }
     
+    @Override
     public void setName(String name ) {
         if( domain != null ) {
             // keep name==domain, ignore override
@@ -204,6 +208,7 @@ public class StandardEngine
      * <p>
      * This property should not be changed once it is set.
      */
+    @Override
     public void setJvmRoute(String routeId) {
         jvmRouteId = routeId;
     }
@@ -213,6 +218,7 @@ public class StandardEngine
      * Retrieve the cluster-wide unique identifier for this Engine.
      * This value is only useful in a load-balancing scenario.
      */
+    @Override
     public String getJvmRoute() {
         return jvmRouteId;
     }
@@ -221,6 +227,7 @@ public class StandardEngine
     /**
      * Return the <code>Service</code> with which we are associated (if any).
      */
+    @Override
     public Service getService() {
 
         return (this.service);
@@ -233,6 +240,7 @@ public class StandardEngine
      *
      * @param service The service that owns this Engine
      */
+    @Override
     public void setService(Service service) {
         this.service = service;
     }
@@ -260,6 +268,7 @@ public class StandardEngine
      *
      * @param child Child container to be added
      */
+    @Override
     public void addChild(Container child) {
 
         if (!(child instanceof Host))
@@ -274,6 +283,7 @@ public class StandardEngine
      * the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
      */
+    @Override
     public String getInfo() {
 
         return (info);
@@ -286,6 +296,7 @@ public class StandardEngine
      *
      * @param container Proposed parent Container
      */
+    @Override
     public void setParent(Container container) {
 
         throw new IllegalArgumentException
@@ -298,6 +309,7 @@ public class StandardEngine
     private boolean initialized=false;
     */
     
+    @Override
     public void init() {
         if( initialized ) return;
         /* CR 6368085
@@ -342,6 +354,7 @@ public class StandardEngine
     public void destroy() throws LifecycleException {
     */
     // START CR 6368085
+    @Override
     public void destroy() throws Exception {
     // END CR 6368085
         if( ! initialized ) return;
@@ -361,6 +374,7 @@ public class StandardEngine
      *
      * @exception LifecycleException if a startup error occurs
      */
+    @Override
     public void start() throws LifecycleException {
         if( started ) {
             return;
@@ -384,6 +398,7 @@ public class StandardEngine
 
     }
     
+    @Override
     public void stop() throws LifecycleException {
         super.stop();
     }
@@ -392,6 +407,7 @@ public class StandardEngine
     /**
      * Return a String representation of this component.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("StandardEngine[");
@@ -406,6 +422,7 @@ public class StandardEngine
 
 
     // FIXME Remove -- not used 
+    @Override
     public ObjectName getParentName() throws MalformedObjectNameException {
         if (getService()==null) {
             return null;
@@ -416,6 +433,7 @@ public class StandardEngine
         return serviceName;                
     }
     
+    @Override
     public ObjectName createObjectName(String domain, ObjectName parent)
         throws Exception
     {
@@ -424,6 +442,7 @@ public class StandardEngine
         return new ObjectName( domain + ":type=Engine");
     }
     
+    @Override
     public String getDomain() {
         if (domain!=null) {
             return domain;
@@ -432,6 +451,7 @@ public class StandardEngine
         }
     }
     
+    @Override
     public void setDomain(String domain) {
         this.domain = domain;
     }

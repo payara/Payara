@@ -98,6 +98,7 @@ public class PersistenceFieldElementImpl extends PersistenceMemberElementImpl
 	 * {@link PersistenceFieldElement#PERSISTENT} or
 	 * {@link PersistenceFieldElement#DERIVED}.  The default is PERSISTENT.
 	 */
+        @Override
 	public int getPersistenceType() { return _persistenceType; }
 
 	/** Set the persistence type of this field element.
@@ -106,6 +107,7 @@ public class PersistenceFieldElementImpl extends PersistenceMemberElementImpl
 	 * {@link PersistenceFieldElement#DERIVED}
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setPersistenceType (int type) throws ModelException
 	{
 		Integer old = new Integer(getPersistenceType());
@@ -134,6 +136,7 @@ public class PersistenceFieldElementImpl extends PersistenceMemberElementImpl
 	 * @see PersistenceFieldElement#DERIVED
 	 *
 	 */
+        @Override
 	public boolean isReadSensitive ()
 	{
 		return ((PersistenceFieldElement.DERIVED == getPersistenceType()) ? 
@@ -150,6 +153,7 @@ public class PersistenceFieldElementImpl extends PersistenceMemberElementImpl
 	 * @see #setPersistenceType
 	 * @see PersistenceFieldElement#DERIVED
 	 */
+        @Override
 	public void setReadSensitive (boolean flag) throws ModelException
 	{
 		Boolean old = JavaTypeHelper.valueOf(isReadSensitive());
@@ -183,6 +187,7 @@ public class PersistenceFieldElementImpl extends PersistenceMemberElementImpl
 	 * @see PersistenceFieldElement#DERIVED
 	 *
 	 */
+        @Override
 	public boolean isWriteSensitive ()
 	{
 		return ((PersistenceFieldElement.DERIVED == getPersistenceType()) ?
@@ -199,6 +204,7 @@ public class PersistenceFieldElementImpl extends PersistenceMemberElementImpl
 	 * @see #setPersistenceType
 	 * @see PersistenceFieldElement#DERIVED
 	 */
+        @Override
 	public void setWriteSensitive (boolean flag) throws ModelException
 	{
 		Boolean old = JavaTypeHelper.valueOf(isWriteSensitive());
@@ -226,6 +232,7 @@ public class PersistenceFieldElementImpl extends PersistenceMemberElementImpl
 	 * <code>false</code> otherwise
 	 * @see com.sun.jdo.api.persistence.model.jdo.impl.PersistenceClassElementImpl#getKeyClass
 	 */
+        @Override
 	public boolean isKey () { return _isKey; }
 
 	/** Set whether this field element is a key field or not.
@@ -234,6 +241,7 @@ public class PersistenceFieldElementImpl extends PersistenceMemberElementImpl
 	 * @exception ModelException if impossible
 	 * @see com.sun.jdo.api.persistence.model.jdo.impl.PersistenceClassElementImpl#getKeyClass
 	 */
+        @Override
 	public void setKey (boolean flag) throws ModelException
 	{
 		Boolean old = JavaTypeHelper.valueOf(isKey());

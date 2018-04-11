@@ -99,6 +99,7 @@ public abstract class SunConfigBean implements DConfigBean, XpathListener {
      *           A suitably descriptive message is required so the user 
      *           can diagnose the error.
      */    
+    @Override
     public DConfigBean getDConfigBean(DDBean bean) 
                throws ConfigurationException {
                    
@@ -131,6 +132,7 @@ public abstract class SunConfigBean implements DConfigBean, XpathListener {
     * @return The bean class containing the XML text for
     *       this DConfigBean.
     */   
+    @Override
     public DDBean getDDBean() {
         return ddBean;
     }
@@ -154,6 +156,7 @@ public abstract class SunConfigBean implements DConfigBean, XpathListener {
      * @param event an event containing a reference to the
      *        DDBean which has changed.
      */
+    @Override
     public void notifyDDChange(XpathEvent xpathEvent) {
     }
     
@@ -164,6 +167,7 @@ public abstract class SunConfigBean implements DConfigBean, XpathListener {
      * @throws BeanNotFoundException the bean provided
      *         is not in the child list of this bean.
      */
+    @Override
     public void removeDConfigBean(DConfigBean dConfigBean) throws javax.enterprise.deploy.spi.exceptions.BeanNotFoundException {
     }
     
@@ -171,6 +175,7 @@ public abstract class SunConfigBean implements DConfigBean, XpathListener {
      * Register a property listener for this bean.
      * @param pcl PropertyChangeListener to add
      */
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
     }
     
@@ -178,6 +183,7 @@ public abstract class SunConfigBean implements DConfigBean, XpathListener {
     * Unregister a property listener for this bean.
     * @param pcl Listener to remove.
     */
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener propertyChangeListener) {
     }
     
@@ -186,6 +192,7 @@ public abstract class SunConfigBean implements DConfigBean, XpathListener {
      *
      * @param the change event 
      */
+    @Override
     public void fireXpathEvent(XpathEvent xpe) {
         if (getParent()!=null) {
             getParent().fireXpathEvent(xpe);
@@ -205,6 +212,7 @@ public abstract class SunConfigBean implements DConfigBean, XpathListener {
      * @return a list of XPath Strings representing XML data to be retrieved
      *        or 'null' if there are none.
      */
+    @Override
     public String[] getXpaths() {
         Map mapping = getXPathToBeanMapping();
         if (mapping==null) {
@@ -283,6 +291,7 @@ public abstract class SunConfigBean implements DConfigBean, XpathListener {
     /**
      * @return a meaningful string about myself
      */
+    @Override
     public String toString() {
         String s = "DConfigBean";
         s = s + "\nDConfigBeanRoot = " + getDConfigBeanRoot();

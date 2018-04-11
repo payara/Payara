@@ -84,6 +84,7 @@ public class CacheProperties implements PostConstruct {
     public CacheProperties() {
     }
 
+    @Override
     public void postConstruct() {
         ejbContainer = serverConfig.getExtensionByType(EjbContainer.class);
     }
@@ -126,6 +127,7 @@ public class CacheProperties implements PostConstruct {
         return ejbContainer.getSessionStore();
     }
 
+    @Override
     public String toString() {
         StringBuffer sbuf = new StringBuffer();
         sbuf.append("maxSize: ").append(maxCacheSize)

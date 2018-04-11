@@ -297,10 +297,12 @@ public class TimerSchedule implements Serializable {
         return s.toString();
     }
 
+    @Override
     public int hashCode() {
         return getScheduleAsString().hashCode();
     }
 
+    @Override
     public boolean equals(Object o) {
         if (o == this)
             return true;

@@ -110,6 +110,7 @@ public class RemoveLibraryCommand implements AdminCommand, AdminCommandSecurity.
     }
     
     
+    @Override
     public void execute(AdminCommandContext context) {
         
         final ActionReport report = context.getActionReport();

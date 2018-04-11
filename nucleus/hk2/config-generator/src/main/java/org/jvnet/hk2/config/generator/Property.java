@@ -123,10 +123,12 @@ abstract class Property {
             getter = !method.getReturnType().toString().equals("void");
         }
 
+        @Override
         javax.lang.model.element.Element decl() {
             return method;
         }
 
+        @Override
         TypeMirror type() {
             if(getter)
                 return method.getReturnType();
@@ -134,6 +136,7 @@ abstract class Property {
                 return method.getParameters().iterator().next().asType();
         }
 
+        @Override
         void assign(JVar $target, JBlock block, JExpression rhs) {
             block.invoke($target, method.getSimpleName().toString()).arg(rhs);
         }
@@ -149,14 +152,17 @@ abstract class Property {
             this.field = field;
         }
 
+        @Override
         javax.lang.model.element.Element decl() {
             return field;
         }
 
+        @Override
         TypeMirror type() {
             return field.asType();
         }
 
+        @Override
         void assign(JVar $target, JBlock block, JExpression rhs) {
             block.assign($target.ref(field.getSimpleName().toString()), rhs);
         }

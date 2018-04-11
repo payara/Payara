@@ -90,6 +90,7 @@ public class
         this.preferValidateOverRecreate = preferValidateOverRecreate;
     }
 
+    @Override
     public void run() {
         debug("Resizer for pool " + poolInfo);
         try {

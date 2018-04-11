@@ -275,6 +275,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     public void doFinalize() {
 
         // Set the flag to indicate that the coordinator is being destroyed.
@@ -330,6 +331,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized public Status get_status() {
 
         Status result = Status.StatusUnknown;
@@ -408,6 +410,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized public Status get_parent_status() throws SystemException {
 
         Status result = Status.StatusNoTransaction;
@@ -442,6 +445,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized public Status get_top_level_status() throws SystemException {
 
         // Return the top-level status.  If there is none, this is an error;
@@ -481,6 +485,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized public boolean is_same_transaction(Coordinator other)
             throws SystemException {
 
@@ -516,6 +521,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized public boolean is_related_transaction(Coordinator other)
             throws SystemException {
 
@@ -551,6 +557,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     public boolean is_ancestor_transaction(Coordinator other)
             throws SystemException {
 
@@ -580,6 +587,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized public boolean is_descendant_transaction(Coordinator other)
             throws SystemException {
 
@@ -619,6 +627,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     public boolean is_top_level_transaction() {
 
         boolean result = false;
@@ -641,6 +650,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized public int hash_transaction() {
 
         int result =  hash;
@@ -666,6 +676,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized public int hash_top_level_tran() throws SystemException {
 
         int result = 0;
@@ -706,6 +717,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      *  @see
      */
+    @Override
     synchronized public RecoveryCoordinator register_resource(Resource res)
             throws SystemException, Inactive, TRANSACTION_ROLLEDBACK {
 
@@ -851,6 +863,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized public void register_subtran_aware(
             SubtransactionAwareResource sares)
             throws SystemException, Inactive, TRANSACTION_ROLLEDBACK {
@@ -952,6 +965,7 @@ class SubCoordinator extends CoordinatorImpl {
      *                      transaction.
      * @see
      */
+    @Override
     synchronized public void rollback_only() throws Inactive {
 
         if (tranState.state != TransactionState.STATE_ACTIVE) {
@@ -974,6 +988,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized public String get_transaction_name() {
 
         String result = null;
@@ -1003,6 +1018,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized public Control create_subtransaction() throws Inactive {
 
         Control result = null;
@@ -1080,6 +1096,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     public otid_t getGlobalTID() {
 
         otid_t result = null;
@@ -1099,6 +1116,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     public long getLocalTID() {
 
         long result = superInfo.localTID.longValue();
@@ -1123,6 +1141,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized CoordinatorImpl replyAction(int[/*1*/] action)
             throws SystemException {
 
@@ -1180,6 +1199,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized Long setPermanent() {
 
         Long result = superInfo.localTID;
@@ -1197,6 +1217,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized public boolean isRollbackOnly() {
 
         boolean result = rollbackOnly;
@@ -1212,6 +1233,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized boolean isActive() {
 
         boolean result = (tranState.state == TransactionState.STATE_ACTIVE);
@@ -1227,6 +1249,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized boolean hasRegistered() {
 
         boolean result = registered;
@@ -1242,6 +1265,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized public TransIdentity[] getAncestors() {
 
         CoordinatorImpl[] coords = nestingInfo.getAncestors();
@@ -1267,6 +1291,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized boolean addChild(CoordinatorImpl child) {
 
         boolean result = nestingInfo.addChild(child);
@@ -1285,6 +1310,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized boolean removeChild(CoordinatorImpl child) {
 
         boolean result = false;
@@ -1332,6 +1358,7 @@ class SubCoordinator extends CoordinatorImpl {
      */
     static String[] resultName = { "Commit"/*#Frozen*/, "Rollback"/*#Frozen*/, "Read-only"/*#Frozen*/ };
 
+    @Override
     synchronized Vote prepare() throws INVALID_TRANSACTION {
 
         Vote result = Vote.VoteRollback;
@@ -1391,6 +1418,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     void commit() {
 
         Coordinator parent = null;
@@ -1503,6 +1531,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     void rollback(boolean force) {
 
         // Until we actually distribute rollback flows, synchronize the method.
@@ -1629,6 +1658,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized public void register_synchronization(Synchronization sync)
             throws Inactive, SynchronizationUnavailable {
 
@@ -1662,6 +1692,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized void setTerminator(CompletionHandler term) {
         terminator = term;
     }
@@ -1675,6 +1706,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     Coordinator getParent() {
 
         Coordinator result = nestingInfo.getParent(false).object();
@@ -1690,6 +1722,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     Coordinator getSuperior() {
 
         Coordinator result = superInfo.superior;
@@ -1738,6 +1771,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     CompletionHandler getTerminator() {
 
         CompletionHandler result = terminator;
@@ -1759,6 +1793,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     synchronized public PropagationContext get_txcontext() throws Unavailable {
 
         // First check the state of the transaction. If it is not active,
@@ -1825,6 +1860,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     void cleanUpEmpty(CoordinatorImpl parent) {
 
         // Roll the transaction back, ignoring any exceptions.
@@ -1854,6 +1890,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     boolean commitOnePhase() {
 
         // The commit of a subtransaction is always a one phase commit.
@@ -1887,6 +1924,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     public int hashCode() {
         return hash;
     }
@@ -1912,6 +1950,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     public boolean equals(java.lang.Object other) throws INVALID_TRANSACTION {
 
         // Do a quick check on the object references.

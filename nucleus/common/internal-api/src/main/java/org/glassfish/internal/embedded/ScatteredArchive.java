@@ -264,6 +264,7 @@ public class ScatteredArchive extends ReadableArchiveAdapter {
      * @return the InputStream for the given entry name or null if not found.
      */
 
+    @Override
     public InputStream getEntry(String arg) throws IOException {
         File f = getFile(arg);
         if (f!=null && f.exists()) return new FileInputStream(f);
@@ -300,6 +301,7 @@ public class ScatteredArchive extends ReadableArchiveAdapter {
      */
 
 
+    @Override
     public boolean exists(String name) throws IOException {
         if ("WEB-INF".equals(name) && type == Builder.type.war) {
             return true;
@@ -315,6 +317,7 @@ public class ScatteredArchive extends ReadableArchiveAdapter {
      *
      * @return an enumeration of the archive file entries.
      */
+    @Override
     public Enumeration<String> entries() {
         // TODO: abstraction breakage. We need file-level abstraction for archive
         // and then more structured abstraction.
@@ -375,6 +378,7 @@ public class ScatteredArchive extends ReadableArchiveAdapter {
      *
      * @return the manifest info
      */
+    @Override
     public Manifest getManifest() throws IOException {
         InputStream is = getEntry(JarFile.MANIFEST_NAME);
         if (is != null) {
@@ -401,6 +405,7 @@ public class ScatteredArchive extends ReadableArchiveAdapter {
      *
      * @return the path for this archive.
      */
+    @Override
     public URI getURI() {
         if (topDir != null) {
             return topDir.toURI();
@@ -431,6 +436,7 @@ public class ScatteredArchive extends ReadableArchiveAdapter {
      *
      * @return the name of the archive
      */
+    @Override
     public String getName() {
         return name;
     }
@@ -454,6 +460,7 @@ public class ScatteredArchive extends ReadableArchiveAdapter {
      * @return an enumeration of the archive file entries.
      */
 
+    @Override
     public Enumeration<String> entries(String s) {
         Enumeration <String> entries = entries();
         Vector<String> prefixedEntries = new Vector();
@@ -470,6 +477,7 @@ public class ScatteredArchive extends ReadableArchiveAdapter {
         return new ArrayList<String>();
     }
 
+    @Override
     public String toString() {
         return super.toString() + " located at " + (topDir == null ? resources : topDir);
     }

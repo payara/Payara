@@ -83,6 +83,7 @@ public class GetRestartRequiredCommand implements AdminCommand {
     @Inject
     private UnprocessedConfigListener ucl;
 
+    @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);

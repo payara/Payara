@@ -95,6 +95,7 @@ public class DeploymentStatusImplWithError extends DeploymentStatusImpl {
      *Displays the status as a string, including stack trace information if error is present.
      *@return String describing the status, including stack trace info from the error (if present).
      */
+    @Override
     public String toString() {
         StringBuffer result = new StringBuffer(super.toString());
         if (cause != null) {

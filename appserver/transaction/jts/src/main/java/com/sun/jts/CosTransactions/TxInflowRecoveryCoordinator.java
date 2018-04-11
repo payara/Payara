@@ -61,6 +61,7 @@ class TxInflowRecoveryCoordinator extends org.omg.CORBA.LocalObject
      *
      * @return unknown status
      */
+    @Override
     public Status replay_completion(Resource res) {        
         return Status.StatusUnknown;
     }   

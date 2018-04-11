@@ -74,6 +74,7 @@ public class ClassMethod extends ClassMember {
   /**
    * Return the access flags for the method - see VMConstants
    */
+    @Override
   public int access() {
     return accessFlags;
   }
@@ -81,6 +82,7 @@ public class ClassMethod extends ClassMember {
   /**
    * Update the access flags for the field - see VMConstants
    */
+    @Override
   public void setAccess(int newFlags) {
     accessFlags = newFlags;
   }
@@ -102,6 +104,7 @@ public class ClassMethod extends ClassMember {
   /**
    * Return the name of the method
    */
+    @Override
   public ConstUtf8 name() {
     return methodName;
   }
@@ -116,6 +119,7 @@ public class ClassMethod extends ClassMember {
   /**
    * Return the type signature of the method
    */
+    @Override
   public ConstUtf8 signature() {
     return methodSignature;
   }
@@ -130,6 +134,7 @@ public class ClassMethod extends ClassMember {
   /**
    * Return the attributes associated with the method
    */
+    @Override
   public AttributeVector attributes() {
     return methodAttributes;
   }

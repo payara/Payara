@@ -1510,6 +1510,7 @@ public class ConnectionManager {
      * or rolledback.
      *
      */
+    @Override
     protected void finalize() {
         try {
             shutDown();
@@ -1970,6 +1971,7 @@ public class ConnectionManager {
      * @return  A <code>String</code> decribing the contents of the current
      * ConnectionManager object.
      */
+    @Override
     public synchronized String toString() {
         /*
 		TraceLogger lgr = ThreadContext.lgr();

@@ -131,6 +131,7 @@ abstract class ThresholdingOutputStream
      *
      * @exception IOException if an error occurs.
      */
+    @Override
     public void write(int b) throws IOException
     {
         checkThreshold(1);
@@ -147,6 +148,7 @@ abstract class ThresholdingOutputStream
      *
      * @exception IOException if an error occurs.
      */
+    @Override
     public void write(byte b[]) throws IOException
     {
         checkThreshold(b.length);
@@ -165,6 +167,7 @@ abstract class ThresholdingOutputStream
      *
      * @exception IOException if an error occurs.
      */
+    @Override
     public void write(byte b[], int off, int len) throws IOException
     {
         checkThreshold(len);
@@ -179,6 +182,7 @@ abstract class ThresholdingOutputStream
      *
      * @exception IOException if an error occurs.
      */
+    @Override
     public void flush() throws IOException
     {
         getStream().flush();
@@ -191,6 +195,7 @@ abstract class ThresholdingOutputStream
      *
      * @exception IOException if an error occurs.
      */
+    @Override
     public void close() throws IOException
     {
         try

@@ -100,6 +100,7 @@ public final class EJBMetaDataImpl implements javax.ejb.EJBMetaData, Serializabl
     /**
      * 
      */
+    @Override
     public Class getHomeInterfaceClass() 
     {
 	return homeClass;
@@ -108,6 +109,7 @@ public final class EJBMetaDataImpl implements javax.ejb.EJBMetaData, Serializabl
     /**
      * 
      */
+    @Override
     public Class getRemoteInterfaceClass() 
     {
 	return remoteClass;
@@ -116,6 +118,7 @@ public final class EJBMetaDataImpl implements javax.ejb.EJBMetaData, Serializabl
     /**
      *
      */
+    @Override
     public EJBHome getEJBHome() 
     {
 	return ejbHomeStub;
@@ -124,6 +127,7 @@ public final class EJBMetaDataImpl implements javax.ejb.EJBMetaData, Serializabl
     /**
      *
      */
+    @Override
     public Class getPrimaryKeyClass() 
     {
 	if ( keyClass == null ) {
@@ -136,12 +140,14 @@ public final class EJBMetaDataImpl implements javax.ejb.EJBMetaData, Serializabl
     /**
      * 
      */
+    @Override
     public boolean isSession() 
     {
 	return isSessionBean;
     }
 
 
+    @Override
     public boolean isStatelessSession()
     {
 	return isStatelessSessionBean;

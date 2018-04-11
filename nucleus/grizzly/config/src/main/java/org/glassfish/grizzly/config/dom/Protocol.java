@@ -119,6 +119,7 @@ public interface Protocol extends ConfigBeanProxy, PropertyBag {
     List<NetworkListener> findNetworkListeners();
 
     @DuckTyped
+    @Override
     Protocols getParent();
 
     class Duck {

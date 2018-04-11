@@ -89,6 +89,7 @@ public class SunDeploymentConfiguration implements DeploymentConfiguration {
      * @throws ConfigurationException reports errors in generating 
      *           a configuration bean
      */        
+    @Override
     public DConfigBeanRoot getDConfigBeanRoot(DDBeanRoot dDBeanRoot) throws ConfigurationException {
         
         return null;
@@ -100,6 +101,7 @@ public class SunDeploymentConfiguration implements DeploymentConfiguration {
      * of a J2EE module.
      * @return DeployableObject
      */
+    @Override
     public DeployableObject getDeployableObject() {
         return deployObject;
     }
@@ -111,6 +113,7 @@ public class SunDeploymentConfiguration implements DeploymentConfiguration {
      * @throws BeanNotFoundException  the bean provides is
      *      not in this beans child list.
      */    
+    @Override
     public void removeDConfigBean(DConfigBeanRoot dConfigBeanRoot) throws BeanNotFoundException {
     }
     
@@ -122,6 +125,7 @@ public class SunDeploymentConfiguration implements DeploymentConfiguration {
      * @throws ConfigurationException reports errors in generating 
      *           a configuration bean
      */    
+    @Override
     public void restore(InputStream inputStream) throws ConfigurationException {
     }
     
@@ -137,6 +141,7 @@ public class SunDeploymentConfiguration implements DeploymentConfiguration {
      * @throws ConfigurationException reports errors in generating 
      *           a configuration bean
      */    
+    @Override
     public DConfigBeanRoot restoreDConfigBean(InputStream inputStream, DDBeanRoot dDBeanRoot) throws ConfigurationException {
         return null;
     }
@@ -150,6 +155,7 @@ public class SunDeploymentConfiguration implements DeploymentConfiguration {
      *        Configuration.
      * @throws ConfigurationException
      */    
+    @Override
     public void save(OutputStream outputStream) throws ConfigurationException {
     }
     
@@ -164,6 +170,7 @@ public class SunDeploymentConfiguration implements DeploymentConfiguration {
      * @throws ConfigurationException reports errors in generating 
      *           a configuration bean
      */    
+    @Override
     public void saveDConfigBean(OutputStream outputStream, DConfigBeanRoot dConfigBeanRoot) throws ConfigurationException {
     }
            

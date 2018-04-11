@@ -73,6 +73,7 @@ public final class ClassField extends ClassMember {
   /**
    * Return the access flags for the field - see VMConstants
    */
+  @Override
   public int access() {
     return accessFlags;
   }
@@ -80,6 +81,7 @@ public final class ClassField extends ClassMember {
   /**
    * Update the access flags for the field - see VMConstants
    */
+  @Override
   public void setAccess(int newFlags) {
     accessFlags = newFlags;
   }
@@ -87,6 +89,7 @@ public final class ClassField extends ClassMember {
   /**
    * Return the name of the field
    */
+  @Override
   public ConstUtf8 name() {
     return fieldName;
   }
@@ -101,6 +104,7 @@ public final class ClassField extends ClassMember {
   /**
    * Return the type signature of the field
    */
+  @Override
   public ConstUtf8 signature() {
     return fieldSignature;
   }
@@ -115,6 +119,7 @@ public final class ClassField extends ClassMember {
   /**
    * Return the attributes associated with the field
    */
+  @Override
   public AttributeVector attributes() {
     return fieldAttributes;
   }

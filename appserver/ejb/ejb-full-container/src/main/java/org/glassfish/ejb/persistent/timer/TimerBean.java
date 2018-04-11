@@ -101,6 +101,7 @@ public class TimerBean implements TimerLocal {
     private EntityManager em;
 
     // Find Timer by Id
+    @Override
     public TimerState findTimer(TimerPrimaryKey timerId) {
         return em.find(TimerState.class, timerId);
     }
@@ -109,6 +110,7 @@ public class TimerBean implements TimerLocal {
     // Query methods for timer ids
     //
 
+    @Override
     public Set findTimerIdsByContainer(long containerId) {
         Query q = em.createNamedQuery("findTimerIdsByContainer");
         q.setParameter(1, containerId);
@@ -167,6 +169,7 @@ public class TimerBean implements TimerLocal {
     // XXX These methods return Sets XXX
     //
 
+    @Override
     public Set findTimersByContainer(long containerId) {
         Query q = em.createNamedQuery("findTimersByContainer");
         q.setParameter(1, containerId);
@@ -217,12 +220,14 @@ public class TimerBean implements TimerLocal {
     // Query methods for timer counts
     //
 
+    @Override
     public int countTimersByApplication(long applicationId) {
         Query q = em.createNamedQuery("countTimersByApplication");
         q.setParameter(1, applicationId);
         return ((Number)q.getSingleResult()).intValue();
     }
 
+    @Override
     public int countTimersByContainer(long containerId) {
         Query q = em.createNamedQuery("countTimersByContainer");
         q.setParameter(1, containerId);
@@ -278,6 +283,7 @@ public class TimerBean implements TimerLocal {
     private Object timedObjectPrimaryKey_;
     private transient Serializable info_;
 
+    @Override
     public TimerState createTimer
         (String timerId, long containerId, long applicationId, String ownerId,
          Object timedObjectPrimaryKey,
@@ -342,6 +348,7 @@ public class TimerBean implements TimerLocal {
         return EJBTimerService.getEJBTimerService().getOwnerIdOfThisServer();
     }
 
+    @Override
     public void remove(TimerPrimaryKey timerId) {
         TimerState timer = em.find(TimerState.class, timerId);
         if (timer != null) {
@@ -349,6 +356,7 @@ public class TimerBean implements TimerLocal {
         }
     }
 
+    @Override
     public void remove(Set<TimerPrimaryKey> timerIds) {
         for(TimerPrimaryKey timerId: timerIds) {
             try {
@@ -360,6 +368,7 @@ public class TimerBean implements TimerLocal {
         }
     }
 
+    @Override
     public void cancel(TimerPrimaryKey timerId)
             throws FinderException, Exception {
 
@@ -390,6 +399,7 @@ public class TimerBean implements TimerLocal {
         return;
     }
 
+    @Override
     public void cancelTimers(Collection<TimerState> timers) {
         for(TimerState timer : timers) {
             try {
@@ -414,27 +424,32 @@ public class TimerBean implements TimerLocal {
     // Other query methods for timer ids
     //
 
+    @Override
     public Set findActiveTimerIdsByContainer(long containerId) {
         return findTimerIdsByContainerAndState(containerId,
                                EJBTimerService.STATE_ACTIVE);
     }
 
+    @Override
     public Set findActiveTimerIdsByContainers(Collection<Long> containerIds) {
         return findTimerIdsByContainersAndState(containerIds,
                 EJBTimerService.STATE_ACTIVE);
     }
 
+    @Override
     public Set findCancelledTimerIdsByContainer(long containerId) {
         return findTimerIdsByContainerAndState(containerId,
                                 EJBTimerService.STATE_CANCELLED);
     }
 
+    @Override
     public Set findTimerIdsOwnedByThisServerByContainer
         (long containerId) {
         return findTimerIdsByContainerAndOwner
                          (containerId, getOwnerIdOfThisServer());
     }
 
+    @Override
     public Set findActiveTimerIdsOwnedByThisServerByContainer
         (long containerId) {
         return findTimerIdsByContainerAndOwnerAndState
@@ -442,6 +457,7 @@ public class TimerBean implements TimerLocal {
                                EJBTimerService.STATE_ACTIVE);
     }
 
+    @Override
     public Set findCancelledTimerIdsOwnedByThisServerByContainer
         (long containerId) {
         return findTimerIdsByContainerAndOwnerAndState
@@ -450,31 +466,37 @@ public class TimerBean implements TimerLocal {
     }
 
 
+    @Override
     public Set findTimerIdsOwnedByThisServer() {
         return findTimerIdsByOwner(getOwnerIdOfThisServer());
     }
 
+    @Override
     public Set findActiveTimerIdsOwnedByThisServer() {
         return findTimerIdsByOwnerAndState
                        (getOwnerIdOfThisServer(),
                                EJBTimerService.STATE_ACTIVE);
     }
 
+    @Override
     public Set findCancelledTimerIdsOwnedByThisServer() {
         return findTimerIdsByOwnerAndState
                        (getOwnerIdOfThisServer(),
                                 EJBTimerService.STATE_CANCELLED);
     }
 
+    @Override
     public Set findTimerIdsOwnedBy(String ownerId) {
         return findTimerIdsByOwner(ownerId);
     }
 
+    @Override
     public Set findActiveTimerIdsOwnedBy(String ownerId) {
         return findTimerIdsByOwnerAndState(ownerId,
                                EJBTimerService.STATE_ACTIVE);
     }
 
+    @Override
     public Set findCancelledTimerIdsOwnedBy(String ownerId) {
         return findTimerIdsByOwnerAndState(ownerId,
                                 EJBTimerService.STATE_CANCELLED);
@@ -484,22 +506,26 @@ public class TimerBean implements TimerLocal {
     // Helper query methods for timer beans
     //
 
+    @Override
     public Set findActiveTimersByContainer(long containerId) {
         return findTimersByContainerAndState(containerId,
                                EJBTimerService.STATE_ACTIVE);
     }
 
+    @Override
     public Set findCancelledTimersByContainer(long containerId) {
         return findTimersByContainerAndState
                        (containerId, EJBTimerService.STATE_CANCELLED);
     }
 
+    @Override
     public Set findTimersOwnedByThisServerByContainer
         (long containerId) {
         return findTimersByContainerAndOwner
                          (containerId, getOwnerIdOfThisServer());
     }
 
+    @Override
     public Set findActiveTimersOwnedByThisServerByContainer
         (long containerId) {
         return findTimersByContainerAndOwnerAndState
@@ -507,6 +533,7 @@ public class TimerBean implements TimerLocal {
                                 EJBTimerService.STATE_ACTIVE);
     }
 
+    @Override
     public Set findCancelledTimersOwnedByThisServerByContainer
         (long containerId) {
         return findTimersByContainerAndOwnerAndState
@@ -515,31 +542,37 @@ public class TimerBean implements TimerLocal {
     }
 
 
+    @Override
     public Set findTimersOwnedByThisServer() {
         return findTimersByOwner(getOwnerIdOfThisServer());
     }
 
+    @Override
     public Set findActiveTimersOwnedByThisServer() {
         return findTimersByOwnerAndState
                        (getOwnerIdOfThisServer(),
                                 EJBTimerService.STATE_ACTIVE);
     }
 
+    @Override
     public Set findCancelledTimersOwnedByThisServer() {
         return findTimersByOwnerAndState
                        (getOwnerIdOfThisServer(),
                                 EJBTimerService.STATE_CANCELLED);
     }
 
+    @Override
     public Set findTimersOwnedBy(String ownerId) {
         return findTimersByOwner(ownerId);
     }
 
+    @Override
     public Set findActiveTimersOwnedBy(String ownerId) {
         return findTimersByOwnerAndState(ownerId,
                                 EJBTimerService.STATE_ACTIVE);
     }
 
+    @Override
     public Set findCancelledTimersOwnedBy(String ownerId) {
         return findTimersByOwnerAndState(ownerId,
                                 EJBTimerService.STATE_CANCELLED);
@@ -550,22 +583,26 @@ public class TimerBean implements TimerLocal {
     // Helper query methods for timer counts
     //
 
+    @Override
     public int countActiveTimersByContainer(long containerId) {
         return countTimersByContainerAndState(containerId,
                                 EJBTimerService.STATE_ACTIVE);
     }
 
+    @Override
     public int countCancelledTimersByContainer(long containerId) {
         return countTimersByContainerAndState(containerId,
                                 EJBTimerService.STATE_CANCELLED);
     }
 
+    @Override
     public int countTimersOwnedByThisServerByContainer
         (long containerId) {
         return countTimersByContainerAndOwner
                          (containerId, getOwnerIdOfThisServer());
     }
 
+    @Override
     public int countActiveTimersOwnedByThisServerByContainer
         (long containerId) {
         return countTimersByContainerAndOwnerAndState
@@ -573,6 +610,7 @@ public class TimerBean implements TimerLocal {
                                 EJBTimerService.STATE_ACTIVE);
     }
 
+    @Override
     public int countCancelledTimersOwnedByThisServerByContainer
         (long containerId) {
         return countTimersByContainerAndOwnerAndState
@@ -581,10 +619,12 @@ public class TimerBean implements TimerLocal {
     }
 
 
+    @Override
     public int countTimersOwnedByThisServer() {
         return countTimersByOwner(getOwnerIdOfThisServer());
     }
 
+    @Override
     public String[] countTimersOwnedByServerIds(String[] serverIds) {
         String[] totalTimers = new String[ serverIds.length ];
         int i = 0;
@@ -597,32 +637,38 @@ public class TimerBean implements TimerLocal {
         return totalTimers;
     }
 
+    @Override
     public int countActiveTimersOwnedByThisServer() {
         return countTimersByOwnerAndState
                        (getOwnerIdOfThisServer(),
                                 EJBTimerService.STATE_ACTIVE);
     }
 
+    @Override
     public int countCancelledTimersOwnedByThisServer() {
         return countTimersByOwnerAndState
                        (getOwnerIdOfThisServer(),
                                 EJBTimerService.STATE_CANCELLED);
     }
 
+    @Override
     public int countTimersOwnedBy(String ownerId) {
         return countTimersByOwner(ownerId);
     }
 
+    @Override
     public int countActiveTimersOwnedBy(String ownerId) {
         return countTimersByOwnerAndState(ownerId,
                                 EJBTimerService.STATE_ACTIVE);
     }
 
+    @Override
     public int countCancelledTimersOwnedBy(String ownerId) {
         return countTimersByOwnerAndState(ownerId,
                                 EJBTimerService.STATE_CANCELLED);
     }
 
+    @Override
     public boolean checkStatus(String resourceJndiName,
                                       boolean checkDatabase) {
 
@@ -674,6 +720,7 @@ public class TimerBean implements TimerLocal {
         return success;
     }
 
+    @Override
     public int migrateTimers(String fromOwnerId, String toOwnerId) {
         Query q = em.createNamedQuery("updateTimersFromOwnerToNewOwner");
         q.setParameter("fromOwner", fromOwnerId);
@@ -681,12 +728,14 @@ public class TimerBean implements TimerLocal {
         return q.executeUpdate();
     }
 
+    @Override
     public int deleteTimersByContainer(long containerId) {
         Query q = em.createNamedQuery("deleteTimersByContainer");
         q.setParameter("containerId", containerId);
         return q.executeUpdate();
     }
 
+    @Override
     public int deleteTimersByApplication(long applicationId) {
         Query q = em.createNamedQuery("deleteTimersByApplication");
         q.setParameter("applicationId", applicationId);

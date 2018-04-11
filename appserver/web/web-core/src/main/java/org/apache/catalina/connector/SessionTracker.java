@@ -104,6 +104,7 @@ public class SessionTracker implements SessionListener {
      *
      * @param event The session event
      */
+    @Override
     public void sessionEvent(SessionEvent event) {
 
         if (!Session.SESSION_DESTROYED_EVENT.equals(event.getType())) {

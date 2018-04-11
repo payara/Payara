@@ -56,26 +56,32 @@ public class GenericApplicationContainer implements ApplicationContainer {
         this.cl = cl;
     }
 
+    @Override
     public Object getDescriptor() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public boolean start(ApplicationContext startupContext) throws Exception {
         return true;
     }
 
+    @Override
     public boolean stop(ApplicationContext stopContext) {
         return true;
     }
 
+    @Override
     public boolean suspend() {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public boolean resume() throws Exception {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public ClassLoader getClassLoader() {
         return cl;
     }

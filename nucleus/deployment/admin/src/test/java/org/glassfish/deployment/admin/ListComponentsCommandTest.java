@@ -126,11 +126,13 @@ public class ListComponentsCommandTest {
     public class RandomConfig implements ConfigBeanProxy {
 
         @DuckTyped
+        @Override
         public ConfigBeanProxy getParent() {
             // TODO
             throw new UnsupportedOperationException();
         }
         @DuckTyped
+        @Override
         public <T extends ConfigBeanProxy> T getParent(Class<T> type) {
             // TODO
             throw new UnsupportedOperationException();
@@ -154,6 +156,7 @@ public class ListComponentsCommandTest {
         }
 
         @DuckTyped
+        @Override
         public <T extends ConfigBeanProxy> T createChild(Class<T> type) throws TransactionFailure {
             throw new UnsupportedOperationException();
         }
@@ -169,23 +172,28 @@ public class ListComponentsCommandTest {
 
     public class ModuleTest extends RandomConfig implements Module {
 
+        @Override
         public String getName() {
             return null;
         }
 
+        @Override
         public void setName(String value) throws PropertyVetoException {}
 
         private List<Engine> engineList = null;
 
+        @Override
         public List<Engine> getEngines() {
             return engineList;
         }
+        @Override
         public Engine getEngine(String snifferType) {return null;}
 
         public void setEngines(List<Engine> engines) {
             this.engineList = engines;
         }
 
+        @Override
        public List<Property> getProperty() {return null;}
 
         @Override
@@ -208,7 +216,9 @@ public class ListComponentsCommandTest {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public void setResources(Resources res){}
+        @Override
         public Resources getResources(){return null;}
 
 
@@ -217,37 +227,67 @@ public class ListComponentsCommandTest {
     public class ApplicationTest extends RandomConfig implements Application {
         private List<Module> modules = null;
         
+        @Override
         public String getName() {
             return "hello";
         }
+        @Override
         public void setResources(Resources res){}
+        @Override
         public Resources getResources(){return null;}
+        @Override
         public void setName(String value) throws PropertyVetoException {}
+        @Override
         public String getContextRoot() { return "hello";}
+        @Override
         public void setContextRoot(String value) throws PropertyVetoException {}
+        @Override
         public String getLocation(){ return "";}
+        @Override
         public void setLocation(String value) throws PropertyVetoException{}
+        @Override
         public String getObjectType(){ return "";}
+        @Override
         public void setObjectType(String value) throws PropertyVetoException{}
+        @Override
         public String getEnabled(){ return "";}
+        @Override
         public void setEnabled(String value) throws PropertyVetoException{}
+        @Override
         public String getLibraries(){ return "";}
+        @Override
         public void setLibraries(String value) throws PropertyVetoException{}
+        @Override
         public String getAvailabilityEnabled(){ return "";}
+        @Override
         public void setAvailabilityEnabled(String value) throws PropertyVetoException{}
+        @Override
         public String getAsyncReplication() { return "";}
+        @Override
         public void setAsyncReplication (String value) throws PropertyVetoException {}
+        @Override
         public String getDirectoryDeployed(){ return "";}
+        @Override
         public void setDirectoryDeployed(String value) throws PropertyVetoException{}
+        @Override
         public String getDescription(){ return "";}
+        @Override
         public void setDescription(String value) throws PropertyVetoException{}
+        @Override
         public String getDeploymentOrder() { return "100"; }
+        @Override
         public void setDeploymentOrder(String value) throws PropertyVetoException {}
+        @Override
         public String getDeploymentTime() { return "0"; }
+        @Override
         public void setDeploymentTime(String value) throws PropertyVetoException {}
+        @Override
         public String getTimeDeployed() { return "0"; }
+        @Override
         public void setTimeDeployed(String value) throws PropertyVetoException {}
+        @Override
         public List<Engine> getEngine(){ return null;}
+        @Override
         public List<Property> getProperty(){ return null;}
 
 
@@ -274,12 +314,18 @@ public class ListComponentsCommandTest {
         public <T extends ApplicationConfig> T getApplicationConfig(Class<T> type) {return null;}
 
         public List<ApplicationConfig> getApplicationConfigs() {return null;}
+        @Override
         public Map<String, Properties> getModulePropertiesMap() {return null;}
 
+        @Override
         public Module getModule(String moduleName) {return null;}
+        @Override
         public boolean isStandaloneModule() {return false;}
+        @Override
         public boolean isLifecycleModule() {return false;}
+        @Override
         public boolean containsSnifferType(String snifferType) {return false;}
+        @Override
         public List<Module> getModule() {
             return modules;
         }
@@ -288,17 +334,23 @@ public class ListComponentsCommandTest {
         this.modules = modules;
         }
 
+        @Override
             public Properties getDeployProperties() {
                 return new Properties();
             }
 
+        @Override
             public DeployCommandParameters getDeployParameters(ApplicationRef appRef) {
                 return new DeployCommandParameters();
             }
         
+        @Override
         public File application() {return null;}
+        @Override
         public File deploymentPlan() {return null;}
+        @Override
         public String archiveType() {return null;}
+        @Override
         public void recordFileLocations(File appFile, File deploymentPlanFile) {}
 
         @Override
@@ -327,12 +379,17 @@ public class ListComponentsCommandTest {
             //mock-up Engine object
     public class EngineTest extends RandomConfig implements Engine {
         private String sniffer = "";
+        @Override
         public String getSniffer() {return sniffer;}
+        @Override
         public void setSniffer(String value) throws PropertyVetoException {
             sniffer = value;
         }
+        @Override
         public String getDescription() {return "";}
+        @Override
         public void setDescription(String value) {}
+        @Override
         public List<Property> getProperty() {return null;}
 
 
@@ -369,18 +426,22 @@ public class ListComponentsCommandTest {
 
         public void setConfig(ApplicationConfig config) throws PropertyVetoException {}
 
+        @Override
         public List<ApplicationConfig> getApplicationConfigs() {
             return Collections.EMPTY_LIST;
         }
 
+        @Override
         public ApplicationConfig getApplicationConfig() {
             return null;
         }
 
+        @Override
         public void setApplicationConfig(ApplicationConfig config) {
             // no-op for this test
         }
 
+        @Override
         public <T extends ApplicationConfig> T newApplicationConfig(Class<T> configType) throws TransactionFailure {
             return null;
         }

@@ -505,6 +505,7 @@ public class MQAddressList {
      * @return AddressList String
      * @see MQUrl
      */
+    @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
 

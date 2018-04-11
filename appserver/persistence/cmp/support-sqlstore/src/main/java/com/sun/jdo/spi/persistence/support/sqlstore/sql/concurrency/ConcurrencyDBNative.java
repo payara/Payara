@@ -67,30 +67,37 @@ public class ConcurrencyDBNative implements Concurrency {
     /** The logger */
     protected static final Logger logger = LogHelperSQLStore.getLogger();
 
+    @Override
     public void commit(UpdateObjectDesc updateDesc,
                        SQLStateManager beforeImage,
                        SQLStateManager afterImage,
                        int logReason) {
     }
 
+    @Override
     public void configPersistence(ClassDesc config) {
         // RESOLVE:  Need to check field properties so that we get the before
         // images at update time.
     }
 
+    @Override
     public Transaction suspend() {
         return null;
     }
 
+    @Override
     public void resume(Transaction t) {
     }
 
+    @Override
     public void select(SelectQueryPlan plan) {
     }
 
+    @Override
     public void update(UpdateQueryPlan plan) {
     }
 
+    @Override
     public Object clone() {
         return this;
     }

@@ -63,6 +63,7 @@ public class UserTransactionFactory implements ObjectFactory {
      * @exception java.lang.Exception if this object factory encountered
      * 	an exception while attempting to create an object.
      */
+         @Override
  	public Object getObjectInstance(Object refObj, Name name,
     	Context nameCtx, java.util.Hashtable env)
         throws Exception {

@@ -54,6 +54,7 @@ public class DistributedEJBServiceFactory
         return distributedEJBService;
     }
 
+    @Override
     public DistributedReadOnlyBeanService getDistributedReadOnlyBeanService() {
         return _distributedReadOnlyBeanService;
     }

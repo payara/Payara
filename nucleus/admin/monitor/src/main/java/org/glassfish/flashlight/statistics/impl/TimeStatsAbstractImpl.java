@@ -64,10 +64,12 @@ public abstract class TimeStatsAbstractImpl extends AbstractTreeNode
 
         private TimeStatData tsd;
 
+        @Override
         protected TimeStatData initialValue (){
             tsd = new TimeStatData ();
             return tsd;
         }
+        @Override
         public TimeStatData get (){
             if (tsd == null)
                 tsd = new TimeStatData();
@@ -78,12 +80,15 @@ public abstract class TimeStatsAbstractImpl extends AbstractTreeNode
 
     protected static final String NEWLINE = System.getProperty("line.separator");
 
+    @Override
     public double getTime() {
         return average.getAverage();
     }
 
+    @Override
     public abstract void entry();
 
+    @Override
     public abstract void exit();
 
     protected void postEntry(long entryTime) {
@@ -100,50 +105,61 @@ public abstract class TimeStatsAbstractImpl extends AbstractTreeNode
         average.addDataPoint(tsd.getTotalTime());
     }
 
+    @Override
     public long getMinimumTime() {
         return average.getMin();
     }
 
+    @Override
     public long getMaximumTime() {
         return average.getMax();
     }
 
     // only for testing purposes.
+    @Override
     public void setTime(long time) {
         //  System.err.println ("setTime only for Testing purposes");
         individualData.get().setTotalTime(time);
         average.addDataPoint(time);
     }
 
+    @Override
     public void setReset(boolean reset) {
         average.setReset();
         individualData.get().setReset();
     }
 
+    @Override
     public long getTimesCalled() {
         return average.getSize();
     }
     // Implementations for TimeStatistic
+    @Override
     public long getCount() {
         return getTimesCalled();
     }
 
+    @Override
     public long getMaxTime() {
         return getMaximumTime();
     }
 
+    @Override
     public long getMinTime() {
         return getMinimumTime();
     }
 
+    @Override
     public long getTotalTime() {
         return average.getTotal();
     }
 
+    @Override
     public long getLastSampleTime() {
         return this.lastSampleTime.get();
     }
 
+    @Override
     public long getStartTime() {
         return this.startTime;
     }

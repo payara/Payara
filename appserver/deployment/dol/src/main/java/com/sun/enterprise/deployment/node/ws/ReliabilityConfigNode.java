@@ -65,14 +65,17 @@ public class ReliabilityConfigNode extends DeploymentDescriptorNode {
         this.endpoint = endpoint;
     }
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return tag;
     }
 
+    @Override
     public Object getDescriptor() {
         return rmConfig;
     }
 
+    @Override
     protected Map getDispatchTable() {
         Map table = super.getDispatchTable();
         table.put(WLWebServicesTagNames.INACTIVITY_TIMEOUT, "setInactivityTimeout");

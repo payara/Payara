@@ -63,6 +63,7 @@ public class J2EEModuleImplBase extends J2EEDeployedObjectImplBase {
     }
 
     /** jsr77 StateManageable impl. */
+    @Override
     public boolean isstateManageable() {
         return isStandAlone();
     }

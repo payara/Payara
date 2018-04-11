@@ -63,6 +63,7 @@ public class ConstUnicode extends ConstBasic {
   /**
    * The tag of this constant entry
    */
+  @Override
   public int tag () { return MyTag; }
 
   /**
@@ -75,6 +76,7 @@ public class ConstUnicode extends ConstBasic {
   /**
    * A printable representation
    */
+  @Override
   public String toString () {
       return "CONSTANTUnicode(" + indexAsString() + "): " + stringValue;//NOI18N
   }
@@ -85,6 +87,7 @@ public class ConstUnicode extends ConstBasic {
     stringValue = s;
   }
 
+  @Override
   void formatData (DataOutputStream b) throws IOException {
     b.writeBytes(stringValue);
   }
@@ -98,6 +101,7 @@ public class ConstUnicode extends ConstBasic {
     return new ConstUnicode (b.toString());
   }
 
+  @Override
   void resolve (ConstantPool p) {
   }
 }

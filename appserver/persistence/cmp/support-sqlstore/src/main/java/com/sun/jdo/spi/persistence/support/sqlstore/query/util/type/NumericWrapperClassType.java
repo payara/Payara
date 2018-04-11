@@ -67,6 +67,7 @@ public class NumericWrapperClassType
     /**
      * A numeric wrapper class type defines an ordering.
      */
+    @Override
     public boolean isOrderable()
     {
         return true;
@@ -79,6 +80,7 @@ public class NumericWrapperClassType
      * @param value value to be converted
      * @return converted value
      */
+    @Override
     public Number getValue(Number value)
     {
         return ((NumericType)primitiveType).getValue(value);
@@ -89,6 +91,7 @@ public class NumericWrapperClassType
      * @param value value to be negated
      * @return -value
      */
+    @Override
     public Number negate(Number value)
     {
         return ((NumericType)primitiveType).negate(value);

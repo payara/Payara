@@ -73,6 +73,7 @@ public class Rejar {
                 jos = new JarOutputStream(fos, getManifest());
                 processDirectory(jos, modules, names, metadata);
                 for (File directory : modules.listFiles(new FileFilter() {
+                    @Override
                     public boolean accept(File pathname) {
                         return pathname.isDirectory();
                     }
@@ -115,6 +116,7 @@ public class Rejar {
     protected void processDirectory(JarOutputStream jos, File directory, Set<String> names, Map<String, ByteArrayOutputStream> metadata ) throws IOException {
 
             for (File module : directory.listFiles(new FileFilter() {
+                @Override
                 public boolean accept(File pathname) {
                     if (pathname.getName().endsWith("jar")) {
                         return true;

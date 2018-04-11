@@ -1213,6 +1213,7 @@ public abstract class Statement extends Object implements Cloneable {
         return action;
     }
 
+    @Override
     public Object clone() {
         try {
             return super.clone();

@@ -1047,6 +1047,7 @@ public class Request
      * Return an Iterator containing the String names of all notes bindings
      * that exist for this request.
      */
+    @Override
     public Iterator<String> getNoteNames() {
         return notes.keySet().iterator();
     }

@@ -57,6 +57,7 @@ public class DummyPopulator
 
     private boolean populateCalled;
 
+    @Override
     public void run(ConfigParser p) {
         populateCalled = true;
     }

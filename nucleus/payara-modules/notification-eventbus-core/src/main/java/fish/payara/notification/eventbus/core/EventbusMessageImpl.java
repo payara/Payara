@@ -83,6 +83,7 @@ public class EventbusMessageImpl extends Message implements EventbusMessage {
         return instance;
     }
 
+    @Override
     public NotificationData getData() {
         return data;
     }

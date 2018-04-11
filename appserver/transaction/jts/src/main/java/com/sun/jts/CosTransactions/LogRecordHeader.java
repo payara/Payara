@@ -172,6 +172,7 @@ class LogRecordHeader implements Serializable {
      *
      * @see
      */
+    @Override
     public final String toString() {
         return "LRH(type="/*#Frozen*/ + recordType + ",curr="/*#Frozen*/ + currentLSN +
                ",prev="/*#Frozen*/ + previousLSN + ",next="/*#Frozen*/ + nextLSN +

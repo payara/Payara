@@ -73,6 +73,7 @@ public class ResourceProxy implements NamingObjectProxy.InitializationNamingObje
     private Object result = null;
     private org.glassfish.resourcebase.resources.api.ResourceInfo resourceInfo = null;
 
+    @Override
     public Object create(Context ic) throws NamingException {
         //this is a per-lookup object and once we have the resource,
         //we remove the proxy and bind the resource (ref) with same jndi-name

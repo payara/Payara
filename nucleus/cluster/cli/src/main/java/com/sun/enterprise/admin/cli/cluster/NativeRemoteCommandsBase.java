@@ -317,6 +317,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
 
             //get the list of domains
             File[] files = domainsDirFile.listFiles(new FileFilter() {
+                @Override
                 public boolean accept(File f) {
                     return f.isDirectory();
                 }

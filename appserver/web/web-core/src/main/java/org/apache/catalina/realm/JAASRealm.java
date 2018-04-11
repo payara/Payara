@@ -185,6 +185,7 @@ public class JAASRealm
         return appName;
     }
 
+    @Override
     public void setContainer(Container container) {
         super.setContainer(container);
         String name=container.getName();
@@ -276,6 +277,7 @@ public class JAASRealm
      * @param credentials Password or other credentials to use in
      *  authenticating this username
      */
+    @Override
     public Principal authenticate(String username, char[] credentials) {
 
         // Establish a LoginContext to use for authentication
@@ -377,6 +379,7 @@ public class JAASRealm
     /**
      * Return a short name for this Realm implementation.
      */
+    @Override
     protected String getName() {
 
         return (this.name);
@@ -387,6 +390,7 @@ public class JAASRealm
     /**
      * Return the password associated with the given principal's user name.
      */
+    @Override
     protected char[] getPassword(String username) {
 
         return (null);
@@ -397,6 +401,7 @@ public class JAASRealm
     /**
      * Return the Principal associated with the given user name.
      */
+    @Override
     protected Principal getPrincipal(String username) {
 
         return (null);
@@ -470,6 +475,7 @@ public class JAASRealm
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents it from being started
      */
+    @Override
     public void start() throws LifecycleException {
 
         // Perform normal superclass initialization
@@ -484,6 +490,7 @@ public class JAASRealm
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
     public void stop() throws LifecycleException {
 
         // Perform normal superclass finalization

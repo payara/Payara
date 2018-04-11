@@ -142,6 +142,7 @@ public abstract class ValveBase
     /**
      * Return the Container with which this Valve is associated, if any.
      */
+    @Override
     public Container getContainer() {
 
         return (container);
@@ -153,6 +154,7 @@ public abstract class ValveBase
      *
      * @param container The new associated container
      */
+    @Override
     public void setContainer(Container container) {
 
         this.container = container;
@@ -182,6 +184,7 @@ public abstract class ValveBase
     /**
      * Return descriptive information about this Valve implementation.
      */
+    @Override
     public String getInfo() {
 
         return (info);
@@ -192,6 +195,7 @@ public abstract class ValveBase
      * Return the next Valve in this pipeline, or <code>null</code> if this
      * is the last Valve in the pipeline.
      */
+    @Override
     public Valve getNext() {
 
         return next;
@@ -203,6 +207,7 @@ public abstract class ValveBase
      *
      * @param valve The new next valve
      */
+    @Override
     public void setNext(Valve valve) {
 
         this.next = valve;
@@ -216,6 +221,7 @@ public abstract class ValveBase
      * invoked inside the classloading context of this container. Unexpected
      * throwables will be caught and logged.
      */
+    @Override
     public void backgroundProcess() {
         // Deliberate no-op
     }
@@ -233,6 +239,7 @@ public abstract class ValveBase
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet error occurs
      */
+    @Override
     public abstract int invoke(Request request, Response response)
         throws IOException, ServletException;
 
@@ -243,6 +250,7 @@ public abstract class ValveBase
      * Very few Valves override this behaviour as most Valve logic
      * is used for request processing.
      */
+    @Override
     public void postInvoke(Request request, Response response)
             throws IOException, ServletException {
         // Deliberate no-op
@@ -252,6 +260,7 @@ public abstract class ValveBase
     /**
      * Tomcat-style invocation.
      */
+    @Override
     public void invoke(org.apache.catalina.connector.Request request,
                        org.apache.catalina.connector.Response response)
             throws IOException, ServletException {
@@ -272,6 +281,7 @@ public abstract class ValveBase
      * @exception ServletException if a servlet error occurs, or is thrown
      *  by a subsequently invoked Valve, Filter, or Servlet
      */
+    @Override
     public void event(org.apache.catalina.connector.Request request,
                       org.apache.catalina.connector.Response response,
                       CometEvent event)
@@ -301,6 +311,7 @@ public abstract class ValveBase
      *
      * @param listener The listener to add
      */
+    @Override
     public void addLifecycleListener(LifecycleListener listener) {
 
         lifecycle.addLifecycleListener(listener);
@@ -311,6 +322,7 @@ public abstract class ValveBase
      * Gets the (possibly empty) list of lifecycle listeners associated
      * with this Valve.
      */
+    @Override
     public List<LifecycleListener> findLifecycleListeners() {
         return lifecycle.findLifecycleListeners();
     }
@@ -321,6 +333,7 @@ public abstract class ValveBase
      *
      * @param listener The listener to add
      */
+    @Override
     public void removeLifecycleListener(LifecycleListener listener) {
 
         lifecycle.removeLifecycleListener(listener);
@@ -335,6 +348,7 @@ public abstract class ValveBase
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
 
         // Validate and update our current component state
@@ -353,6 +367,7 @@ public abstract class ValveBase
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
     public void stop() throws LifecycleException {
 
         // Validate and update our current component state

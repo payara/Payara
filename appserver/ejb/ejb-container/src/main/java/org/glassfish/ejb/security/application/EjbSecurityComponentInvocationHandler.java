@@ -67,6 +67,7 @@ public class EjbSecurityComponentInvocationHandler implements  RegisteredCompone
 
     private ComponentInvocationHandler ejbSecurityCompInvHandler = new ComponentInvocationHandler() {
 
+        @Override
         public void beforePreInvoke(ComponentInvocationType invType,
                 ComponentInvocation prevInv, ComponentInvocation newInv) throws InvocationException {
             if (invType == ComponentInvocationType.EJB_INVOCATION) {
@@ -82,14 +83,17 @@ public class EjbSecurityComponentInvocationHandler implements  RegisteredCompone
             }
         }
 
+        @Override
         public void afterPreInvoke(ComponentInvocationType invType,
                 ComponentInvocation prevInv, ComponentInvocation curInv) throws InvocationException {
         }
 
+        @Override
         public void beforePostInvoke(ComponentInvocationType invType,
                 ComponentInvocation prevInv, ComponentInvocation curInv) throws InvocationException {
         }
 
+        @Override
         public void afterPostInvoke(ComponentInvocationType invType,
                 ComponentInvocation prevInv, ComponentInvocation curInv) throws InvocationException {
             if (invType == ComponentInvocationType.EJB_INVOCATION) {
@@ -104,10 +108,12 @@ public class EjbSecurityComponentInvocationHandler implements  RegisteredCompone
         }
     };
 
+    @Override
     public ComponentInvocationHandler getComponentInvocationHandler() {
         return ejbSecurityCompInvHandler;
     }
 
+    @Override
     public void register() {
         invManager.registerComponentInvocationHandler(ComponentInvocationType.EJB_INVOCATION, this);
     }

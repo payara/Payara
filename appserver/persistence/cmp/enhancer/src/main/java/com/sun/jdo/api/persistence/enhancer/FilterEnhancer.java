@@ -228,6 +228,7 @@ public class FilterEnhancer
     /**
      * Enhances a given class according to the JDO meta-data.
      */
+    @Override
     public boolean enhanceClassFile(InputStream         inByteCode,
                                     OutputStreamWrapper outByteCode)
         throws EnhancerUserException, EnhancerFatalError
@@ -361,6 +362,7 @@ public class FilterEnhancer
      *
      *********************************************************************/
 
+    @Override
     public boolean enhanceClassFile (InputStream  in,
                                      OutputStream out)
                    throws EnhancerUserException,

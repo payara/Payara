@@ -112,6 +112,7 @@ public final class MessageEndpointInvocationHandler
      * @param args   Arguments
      * @throws Throwable.
      */
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args)
             throws Throwable {
 

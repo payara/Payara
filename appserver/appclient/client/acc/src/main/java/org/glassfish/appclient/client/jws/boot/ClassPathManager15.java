@@ -60,10 +60,12 @@ public class ClassPathManager15 extends ClassPathManager {
         super(loader, keepJWSClassLoader);
     }
     
+    @Override
     public ClassLoader getParentClassLoader() {
         return (keepJWSClassLoader() ? getJnlpClassLoader() : null);
     }
 
+    @Override
     public File findContainingJar(URL resourceURL) throws IllegalArgumentException, URISyntaxException {
         File result = null;
         if (resourceURL != null) {

@@ -75,6 +75,7 @@ public interface ManagedScheduledExecutorService extends ConfigBeanProxy,
         Resource, BindableResource, Payload, ConcurrencyResource, ManagedExecutorServiceBase {
 
     @DuckTyped
+    @Override
     String getIdentity();
 
     class Duck {

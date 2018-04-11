@@ -68,6 +68,7 @@ public class NoTxResourceManagerImpl implements ResourceManager {
      *
      * @throws PoolingException when unable to get current transaction
      */
+    @Override
     public Transaction getTransaction() throws PoolingException {
         return null;
     }
@@ -77,6 +78,7 @@ public class NoTxResourceManagerImpl implements ResourceManager {
      *
      * @return Handle to the component
      */
+    @Override
     public Object getComponent() {
         return null;
     }
@@ -88,6 +90,7 @@ public class NoTxResourceManagerImpl implements ResourceManager {
      * @param h <code>ResourceHandle</code> object
      * @throws PoolingException when unable to enlist resource
      */
+    @Override
     public void enlistResource(ResourceHandle h) throws PoolingException {
         logFine("NoTxResourceManagerImpl :: enlistResource called");
     }
@@ -99,6 +102,7 @@ public class NoTxResourceManagerImpl implements ResourceManager {
      * @param handle <code>ResourceHandle</code> object
      * @throws PoolingException when unable to register resource
      */
+    @Override
     public void registerResource(ResourceHandle handle)
             throws PoolingException {
         logFine("NoTxResourceManagerImpl :: registerResource called");
@@ -108,6 +112,7 @@ public class NoTxResourceManagerImpl implements ResourceManager {
      * Get's the component's transaction and marks it for rolling back.
      * This implementation of the method is expected to be a no-op
      */
+    @Override
     public void rollBackTransaction() {
         logFine("rollBackTransaction called in NoTxResourceManagerImpl");
     }
@@ -120,6 +125,7 @@ public class NoTxResourceManagerImpl implements ResourceManager {
      * @param xaresFlag flag indicating transaction success. This can
      *                  be XAResource.TMSUCCESS or XAResource.TMFAIL
      */
+    @Override
     public void delistResource(ResourceHandle resource, int xaresFlag) {
         logFine("NoTxResourceManagerImpl :: delistResource called");
     }
@@ -132,6 +138,7 @@ public class NoTxResourceManagerImpl implements ResourceManager {
      * @param xaresFlag flag indicating transaction success. This can
      *                  be XAResource.TMSUCCESS or XAResource.TMFAIL
      */
+    @Override
     public void unregisterResource(ResourceHandle resource, int xaresFlag) {
         logFine("NoTxResourceManagerImpl :: unregisterResource called");
     }

@@ -81,6 +81,7 @@ public final class MD5Encoder extends DigestEncoderBase {
      * @param binaryData Array containing the digest
      * @return Encoded MD5, or null if encoding failed
      */
+    @Override
     public char[] encode( byte[] binaryData ) {
 
         if (binaryData.length != 16)

@@ -122,6 +122,7 @@ public abstract class AbstractAttributeHandler extends AbstractHandler {
      *
      * @param ainfo the annotation information
      */
+    @Override
     public HandlerProcessingResult processAnnotation(AnnotationInfo ainfo) 
             throws AnnotationProcessorException {
         

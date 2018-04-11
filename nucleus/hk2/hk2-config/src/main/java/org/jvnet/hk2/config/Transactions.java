@@ -82,6 +82,7 @@ public final class Transactions implements PostConstruct, PreDestroy {
             private final ConfigListenerNotifier configListenerNotifier = new ConfigListenerNotifier();
             private final CountDownLatch initialized = new CountDownLatch(1);
 
+            @Override
             public ConfigListenerNotifier get() {
                 //synchronized(initialized) {
                     if (initialized.getCount()>0) {
@@ -94,12 +95,14 @@ public final class Transactions implements PostConstruct, PreDestroy {
         }
     };
 
+    @Override
     public void postConstruct() {
         if (executor==null) {
             executor = Executors.newCachedThreadPool();
         }
     }
 
+    @Override
     public void preDestroy() {
        for (Provider<ListenerNotifier<TransactionListener,  ?, Void>> listener : listeners) {
            listener.get().stop();
@@ -157,6 +160,7 @@ public final class Transactions implements PostConstruct, PreDestroy {
 
             executor.submit(new Runnable() {
 
+                @Override
                 public void run() {
                     while (latch.getCount()>0) {
                         try {
@@ -164,6 +168,7 @@ public final class Transactions implements PostConstruct, PreDestroy {
                             // when listeners start a transaction themselves, several jobs try to get published
                             // simultaneously so we cannot block the pump while delivering the messages. 
                             executor.submit(new Runnable() {
+                                @Override
                                 public void run() {
                                     job.run();
                                 }
@@ -183,6 +188,7 @@ public final class Transactions implements PostConstruct, PreDestroy {
             latch.countDown();
             // last event to force the close
             pendingJobs.add(prepare(new Job<T, U, V>(null, null) {
+                @Override
                 public V process(T target) {
                     return null;
                 }
@@ -206,8 +212,10 @@ public final class Transactions implements PostConstruct, PreDestroy {
             this.listener = listener;
         }
 
+        @Override
         protected FutureTask<V> prepare(final Job<T, U, V> job) {
             return new FutureTask<V>(new Callable<V>() {
+                @Override
                     public V call() throws Exception {
                         try {
                             if ( job.mEvents.size() != 0 ) {
@@ -230,6 +238,7 @@ public final class Transactions implements PostConstruct, PreDestroy {
      */
     private class ConfigListenerNotifier extends Notifier<ConfigListener,PropertyChangeEvent,UnprocessedChangeEvents> {
 
+        @Override
         protected FutureTask<UnprocessedChangeEvents>
             prepare(final Job<ConfigListener, PropertyChangeEvent, UnprocessedChangeEvents> job) {
 
@@ -267,6 +276,7 @@ public final class Transactions implements PostConstruct, PreDestroy {
             }
 
             return new FutureTask<UnprocessedChangeEvents>(new Callable<UnprocessedChangeEvents>() {
+                @Override
             public UnprocessedChangeEvents call() throws Exception {
 
                 try {
@@ -277,6 +287,7 @@ public final class Transactions implements PostConstruct, PreDestroy {
                     for (final ConfigListener listener : configListeners) {
                         // each listener is notified in it's own thread.
                         futures.put(executor.submit(new Callable<UnprocessedChangeEvents>() {
+                                @Override
                             public UnprocessedChangeEvents call() throws Exception {
                                 UnprocessedChangeEvents e = job.process(listener);
                                 return e;
@@ -398,6 +409,7 @@ public final class Transactions implements PostConstruct, PreDestroy {
             eventsArray = mEvents.toArray(new PropertyChangeEvent[mEvents.size()]);            
         }
 
+        @Override
         public UnprocessedChangeEvents process(ConfigListener target) {
             return target.changed(eventsArray);
         }
@@ -445,6 +457,7 @@ public final class Transactions implements PostConstruct, PreDestroy {
                 final ListenerNotifier<TransactionListener, PropertyChangeEvent, Void> tsListener = new ListenerNotifier<TransactionListener, PropertyChangeEvent, Void>(listener);
                 final CountDownLatch initialized = new CountDownLatch(1);
 
+                @Override
                 public ListenerNotifier<TransactionListener, PropertyChangeEvent, Void> get() {
                     //synchronized(initialized) {
                         if (initialized.getCount()>0) {

@@ -65,19 +65,23 @@ public class EjbContainerStarter
     @Inject
     EjbContainerUtil ejbContainerUtilImpl;
 
+    @Override
     public void postConstruct() {
     }    
     
+    @Override
     public void preDestroy() {
         if (ejbContainerUtilImpl instanceof PreDestroy) {
             ((PreDestroy)ejbContainerUtilImpl).preDestroy();
         }
     }
 
+    @Override
     public String getName() {
         return "EjbContainer";
     }
 
+    @Override
     public Class<? extends org.glassfish.api.deployment.Deployer> getDeployer() {
         return EjbDeployer.class;
     }

@@ -262,6 +262,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * @exception NotSupportedException Thrown if the thread is already
      *    associated with a transaction.
      */
+    @Override
     public void begin()
         throws NotSupportedException, SystemException {
 
@@ -323,6 +324,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * @exception IllegalStateException Thrown if the current thread is
      *    not associated with a transaction.
      */
+    @Override
     public void commit() throws RollbackException,
 	HeuristicMixedException, HeuristicRollbackException, SecurityException,
 	IllegalStateException, SystemException {
@@ -365,6 +367,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * @exception IllegalStateException Thrown if the current thread is
      *    not associated with a transaction.
      */
+    @Override
     public void rollback()
         throws IllegalStateException, SecurityException, SystemException {
 
@@ -393,6 +396,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * @exception IllegalStateException Thrown if the current thread is
      *    not associated with a transaction.
      */
+    @Override
     public void setRollbackOnly()
         throws IllegalStateException, SystemException {
 
@@ -412,6 +416,7 @@ public class TransactionManagerImpl implements TransactionManager {
      *    the current thread, this method returns the Status.NoTransaction
      *    value.
      */
+    @Override
     public int getStatus() throws SystemException {
         try {
             Status status = current.get_status();
@@ -436,6 +441,7 @@ public class TransactionManagerImpl implements TransactionManager {
      *    encounters an unexpected error condition.
      *
      */
+    @Override
     public synchronized void setTransactionTimeout(int seconds)
         throws SystemException {
 
@@ -455,6 +461,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * Get the transaction object that represents the transaction
      * context of the calling thread
      */
+    @Override
     public Transaction getTransaction()
         throws SystemException {
 
@@ -478,6 +485,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * When this method returns, the calling thread is associated with the
      * transaction context specified.
      */
+    @Override
     public void resume(Transaction suspended) throws
         InvalidTransactionException, IllegalStateException, SystemException {
         // thread is already associated with a transaction?
@@ -507,6 +515,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * object reference. When this method returns, the calling thread
      * is associated with no transaction.
      */
+    @Override
     public Transaction suspend() throws SystemException {
         try {
             Control control = current.suspend();

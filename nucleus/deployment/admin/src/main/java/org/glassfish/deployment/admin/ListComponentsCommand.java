@@ -162,6 +162,7 @@ public class ListComponentsCommand implements AdminCommand, AdminCommandSecurity
 
     private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListComponentsCommand.class);    
 
+    @Override
     public void execute(AdminCommandContext context) {
         
         final ActionReport report = context.getActionReport();

@@ -64,6 +64,7 @@ public class ThirdPartyRecoveryResourceHandler implements RecoveryResourceHandle
     /**
      * {@inheritDoc}
      */
+    @Override
     public void loadXAResourcesAndItsConnections(List xaresList, List connList) {
         Set<RecoveryResourceListener> listeners =
                 rrr.getListeners();
@@ -79,6 +80,7 @@ public class ThirdPartyRecoveryResourceHandler implements RecoveryResourceHandle
     /**
      * {@inheritDoc}
      */
+    @Override
     public void closeConnections(List connList) {
         //do nothing
     }

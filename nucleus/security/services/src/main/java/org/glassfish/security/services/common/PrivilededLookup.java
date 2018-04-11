@@ -72,6 +72,7 @@ public class PrivilededLookup<T> implements PrivilegedAction<T> {
         this(serviceLocator, serviceClass, null);
     }
 
+    @Override
     public T run() {
         if (serviceName != null)
             return serviceLocator.getService(serviceClass, serviceName);

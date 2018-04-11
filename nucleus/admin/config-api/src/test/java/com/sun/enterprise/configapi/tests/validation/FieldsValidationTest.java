@@ -56,6 +56,7 @@ import java.beans.PropertyVetoException;
 
 public class FieldsValidationTest extends ConfigApiTest {
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }    

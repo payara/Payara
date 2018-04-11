@@ -50,132 +50,154 @@ package	com.sun.enterprise.admin.monitor.callflow;
 public enum EntityManagerMethod {
 
     PERSIST {
+        @Override
         public String toString() {
             return "persist(Object entity)";
         }
     },
     
     MERGE {
+        @Override
         public String toString() {
             return "merge(<T> entity)";
         }
     },
     
     REMOVE {
+        @Override
         public String toString() {
             return "remove(Object entity)";
         }
     },
     
     FIND {
+        @Override
         public String toString() {
             return "find(Class<T> entityClass, Object primaryKey)";
         }
     },
 
     GET_REFERENCE {
+        @Override
         public String toString() {
             return "getReference(Class<T> entityClass, Object primaryKey)";
         }
     },
     
     FLUSH {
+        @Override
         public String toString() {
             return "flush()";
         }
     },
   
     SET_FLUSH_MODE {
+        @Override
         public String toString() {
             return "setFlushMode(FlushModeType flushMode)";
         }
     },
     
     GET_FLUSH_MODE {
+        @Override
         public String toString() {
             return "getFlushMode()";
         }
     },
 
     LOCK {
+        @Override
         public String toString() {
             return "lock(Object entity, LockModeType lockMode)";
         }
     },
 
     REFRESH {
+        @Override
         public String toString() {
             return "refresh(Object entity)";
         }
     },
     
     CLEAR {
+        @Override
         public String toString() {
             return "clear()";
         }
     },
 
     CONTAINS {
+        @Override
         public String toString() {
             return "contains(Object entity)";
         }
     },
     
     CREATE_QUERY {
+        @Override
         public String toString() {
             return "createQuery(String qlString)";
         }
     },
     
     CREATE_NAMED_QUERY {
+        @Override
         public String toString() {
             return "createNamedQuery(String name)";
         }
     },
     
     CREATE_NATIVE_QUERY_STRING {
+        @Override
         public String toString() {
             return "createNativeQuery(String sqlString)";
         }
     },
     
     CREATE_NATIVE_QUERY_STRING_CLASS {
+        @Override
         public String toString() {
             return "createNativeQuery(String sqlString, Class resultClass)";
         }
     },
     
     CREATE_NATIVE_QUERY_STRING_STRING {
+        @Override
         public String toString() {
             return "createNativeQuery(String sqlString, String resultSetMapping)";
         }
     },
     
     JOIN_TRANSACTION {
+        @Override
         public String toString() {
             return "joinTransaction()";
         }
     },
 
     GET_DELEGATE {
+        @Override
         public String toString() {
             return "getDelegate()";
         }
     },
 
     CLOSE {
+        @Override
         public String toString() {
             return "close()";
         }
     },
     
     IS_OPEN {
+        @Override
         public String toString() {
             return "isOpen()";
         }
     },
     
     GET_TRANSACTION {
+        @Override
         public String toString() {
             return "getTransaction()";
         }

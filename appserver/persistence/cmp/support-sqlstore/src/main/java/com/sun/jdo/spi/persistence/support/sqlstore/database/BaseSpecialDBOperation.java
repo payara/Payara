@@ -56,6 +56,7 @@ public class BaseSpecialDBOperation implements SpecialDBOperation {
     /**
      * @inheritDoc
      */
+    @Override
     public void initialize(DatabaseMetaData metaData,
         String identifier) throws SQLException {
     }
@@ -63,6 +64,7 @@ public class BaseSpecialDBOperation implements SpecialDBOperation {
     /**
      * @inheritDoc
      */
+    @Override
     public void defineColumnTypeForResult(
         PreparedStatement ps, List columns) throws SQLException {
     }
@@ -70,6 +72,7 @@ public class BaseSpecialDBOperation implements SpecialDBOperation {
     /**
      * @inheritDoc
      */
+    @Override
     public void bindFixedCharColumn(PreparedStatement ps,
          int index, String strVal, int length) throws SQLException {
          ps.setString(index, strVal);

@@ -63,6 +63,7 @@ public class MailSessionNode extends DeploymentDescriptorNode<MailSessionDescrip
                 "addMailSessionPropertyDescriptor");
     }
 
+    @Override
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
@@ -79,6 +80,7 @@ public class MailSessionNode extends DeploymentDescriptorNode<MailSessionDescrip
     }
 
 
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, MailSessionDescriptor mailSessionDesc) {
 
         Node node = appendChild(parent, nodeName);
@@ -96,6 +98,7 @@ public class MailSessionNode extends DeploymentDescriptorNode<MailSessionDescrip
         return node;
     }
 
+    @Override
     public MailSessionDescriptor getDescriptor() {
         if (descriptor == null) {
             descriptor = new MailSessionDescriptor();

@@ -51,6 +51,7 @@ public interface ResourceReference extends ContextParameter {
 	* - e.g. javax.sql.DataSource. */
     public String getType();
     public void setType(String type);
+    @Override
     public void setDescription(String description);
     
     public String getAuthorization();

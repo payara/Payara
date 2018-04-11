@@ -121,6 +121,7 @@ public final class CertificateRealm extends IASRealm
      *     specify a realm which doesn't exist.
      *
      */
+    @Override
     protected void init(Properties props)
         throws BadRealmException, NoSuchRealmException
     {
@@ -177,6 +178,7 @@ public final class CertificateRealm extends IASRealm
      * @return Description of the kind of authentication that is directly
      *     supported by this realm.
      */
+    @Override
     public String getAuthType()
     {
         return AUTH_TYPE;
@@ -194,6 +196,7 @@ public final class CertificateRealm extends IASRealm
      *     this operation.
      *
      */
+    @Override
     public Enumeration getGroupNames(String username)
         throws NoSuchUserException, InvalidOperationException
     {

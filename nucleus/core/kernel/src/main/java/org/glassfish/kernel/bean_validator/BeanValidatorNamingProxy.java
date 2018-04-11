@@ -66,6 +66,7 @@ public class BeanValidatorNamingProxy implements NamedNamingObjectProxy {
     @Inject @Named("ValidationNamingProxy") @Optional
     private NamedNamingObjectProxy cdiNamingProxy;
 
+    @Override
     public Object handle(String name) throws NamingException {
         Object result = null;
 

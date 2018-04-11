@@ -89,6 +89,7 @@ public class RarHandler extends AbstractArchiveHandler {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getArchiveType() {
         return RarDetector.ARCHIVE_TYPE;
     }
@@ -96,6 +97,7 @@ public class RarHandler extends AbstractArchiveHandler {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean handles(ReadableArchive archive) throws IOException {
         return detector.handles(archive);
     }
@@ -103,6 +105,7 @@ public class RarHandler extends AbstractArchiveHandler {
     /**
      * {@inheritDoc}
      */
+    @Override
     public ClassLoader getClassLoader(ClassLoader parent, DeploymentContext context) {
         try {
             String moduleDir = context.getSource().getURI().getPath();

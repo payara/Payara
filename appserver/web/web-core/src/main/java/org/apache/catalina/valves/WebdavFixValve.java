@@ -91,6 +91,7 @@ public class WebdavFixValve
      * Check for the broken MS WebDAV client and if detected issue a re-direct
      * that hopefully will cause the non-broken client to be used.
      */
+    @Override
     public int invoke(Request request, Response response)
         throws IOException, ServletException {
 

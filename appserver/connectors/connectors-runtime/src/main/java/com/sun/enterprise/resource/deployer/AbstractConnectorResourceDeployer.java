@@ -61,6 +61,7 @@ public abstract class AbstractConnectorResourceDeployer extends GlobalResourceDe
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource){
         if(handles(resource)){
             if(postApplicationDeployment &&
@@ -80,6 +81,7 @@ public abstract class AbstractConnectorResourceDeployer extends GlobalResourceDe
     /**
      * {@inheritDoc}
      */
+    @Override
     public void validatePreservedResource(Application oldApp, Application newApp, Resource resource,
                                           Resources allResources)
             throws ResourceConflictException {

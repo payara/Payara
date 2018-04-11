@@ -77,6 +77,7 @@ public class PersistenceManagerServiceImpl implements CMPService {
         forceInit("com.sun.jdo.spi.persistence.support.ejb.ejbc.DeploymentEventListenerImpl");
 **/
 
+    @Override
     public boolean isReady() {
         // Checks that SunContainerHelper regeistered with CMPHelper
         return CMPHelper.isContainerReady();

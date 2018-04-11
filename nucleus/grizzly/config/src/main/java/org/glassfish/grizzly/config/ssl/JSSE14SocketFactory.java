@@ -112,6 +112,7 @@ public class JSSE14SocketFactory extends JSSESocketFactory {
     /**
      * Reads the keystore and initializes the SSL socket factory.
      */
+    @Override
     public void init() throws IOException {
         try {
             clientAuthNeed = Boolean.valueOf((String) attributes.get("clientAuthNeed"));
@@ -268,12 +269,14 @@ public class JSSE14SocketFactory extends JSSESocketFactory {
         return crls;
     }
 
+    @Override
     protected void setEnabledProtocols(SSLServerSocket socket, String[] protocols) {
         if (protocols != null) {
             socket.setEnabledProtocols(protocols);
         }
     }
 
+    @Override
     protected String[] getEnabledProtocols(SSLServerSocket socket, String requestedProtocols) {
         String[] supportedProtocols = socket.getSupportedProtocols();
         String[] enabledProtocols = null;

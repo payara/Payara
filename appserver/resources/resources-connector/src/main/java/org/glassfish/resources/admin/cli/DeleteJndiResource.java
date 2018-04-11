@@ -103,6 +103,7 @@ public class DeleteJndiResource implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
@@ -155,6 +156,7 @@ public class DeleteJndiResource implements AdminCommand {
             // delete external-jndi-resource
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
 
+                @Override
                 public Object run(Resources param) throws PropertyVetoException,
                         TransactionFailure {
                     ExternalJndiResource resource = (ExternalJndiResource)

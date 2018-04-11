@@ -80,6 +80,7 @@ public class StringifierRegistryImpl implements StringifierRegistry
 		mNextRegistry	= registry;
 	}
 	
+        @Override
 		public void
 	add( final Class<?> theClass, final Stringifier stringifier )
 	{
@@ -93,6 +94,7 @@ public class StringifierRegistryImpl implements StringifierRegistry
 	}
 	
 	
+        @Override
 		public Stringifier
 	lookup( final Class<?> theClass )
 	{

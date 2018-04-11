@@ -81,6 +81,7 @@ public class MutableCountStatisticImpl implements CountStatistic, MutableCountSt
      * </ul>
      * The remaining meta data in the statistic is unchanged.
     */
+    @Override
     public void reset() {
         this.count          = initial.getCount();
         this.lastSampleTime = System.currentTimeMillis();
@@ -97,6 +98,7 @@ public class MutableCountStatisticImpl implements CountStatistic, MutableCountSt
      * could be different from the instant when this method is called, but that is deemed insignificant.
      * @param count         long that represents the current value of the Statistic.
      */
+    @Override
     public void setCount(long count) {
         this.count = count;
         this.lastSampleTime = System.currentTimeMillis();
@@ -112,6 +114,7 @@ public class MutableCountStatisticImpl implements CountStatistic, MutableCountSt
      * @see #setCount
      * @return      instance of CountStatistic
      */
+    @Override
     public Statistic unmodifiableView() {
         return ( new CountStatisticImpl(
             this.count,                 // this is the actual changing statistic
@@ -123,30 +126,37 @@ public class MutableCountStatisticImpl implements CountStatistic, MutableCountSt
         ));
     }  
     
+    @Override
     public long getLastSampleTime() {
 	return ( this.lastSampleTime );
     }
     
+    @Override
     public long getStartTime() {
 	return ( this.startTime );
     }
 
+    @Override
     public String getName() {
 	return ( initial.getName() );
     }
     
+    @Override
     public String getDescription() {
 	return ( initial.getDescription() );
     }
 
+    @Override
     public String getUnit() {
 	return ( initial.getUnit());
     }
     
+    @Override
     public Statistic modifiableView() {
 	return ( this );
     }
     
+    @Override
     public long getCount() {
 	return ( this.count );
     }

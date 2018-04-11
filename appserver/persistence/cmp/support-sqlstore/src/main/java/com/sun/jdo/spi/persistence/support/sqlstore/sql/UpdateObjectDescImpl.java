@@ -104,6 +104,7 @@ public class UpdateObjectDescImpl implements UpdateObjectDesc {
         updatedFields = new ArrayList();
     }
 
+    @Override
     public Class getPersistenceCapableClass() {
         return pcClass;
     }
@@ -361,6 +362,7 @@ public class UpdateObjectDescImpl implements UpdateObjectDesc {
      * (except that we won't have an AfterImage for Deletes and we won't have
      * a BeforeImage for updates).
      */
+    @Override
     public void setObjectInfo(StateManager biStateManager,
                               StateManager aiStateManager,
                               int action) {

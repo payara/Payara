@@ -60,6 +60,7 @@ import org.junit.Test;
 public class DGTest extends ConfigApiTest {
     ServiceLocator habitat;
 
+    @Override
     public String getFileName() {
         return "DGDomain";
     }

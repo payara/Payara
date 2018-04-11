@@ -59,6 +59,7 @@ public class TypedVetoableChangeSupport extends VetoableChangeSupport {
         source = sourceBean;
     }
 
+    @Override
     public void fireVetoableChange(String propertyName, Object oldValue, Object newValue)
         throws PropertyVetoException {
 

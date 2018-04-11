@@ -80,6 +80,7 @@ public class AdminObjectNode extends DeploymentDescriptorNode {
      * @return the map with the element name as a key, the setter method as a value
      */    
 
+    @Override
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
         table.put(ConnectorTagNames.ADMIN_OBJECT_INTERFACE, "setAdminObjectInterface");
@@ -93,6 +94,7 @@ public class AdminObjectNode extends DeploymentDescriptorNode {
      *
      * @param descriptor the new descriptor
      */
+    @Override
     public void addDescriptor(Object obj) {
         if (obj instanceof ConnectorConfigProperty) {
             adminObject.addConfigProperty((ConnectorConfigProperty)obj);
@@ -102,6 +104,7 @@ public class AdminObjectNode extends DeploymentDescriptorNode {
     /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
         if (adminObject == null) {
             adminObject = (AdminObject) DescriptorFactory.getDescriptor(getXMLPath());

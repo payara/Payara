@@ -89,6 +89,7 @@ public class XATerminatorImpl implements XATerminator {
      *  one of the XA_RB* exceptions. Upon return, the resource manager has
      *  rolled back the branch's work and has released all held resources.
      */
+    @Override
     public void commit(Xid xid, boolean onePhase) throws XAException {
         
         check(xid); // check if xid is valid
@@ -194,6 +195,7 @@ public class XATerminatorImpl implements XATerminator {
      * values are XAER_RMERR, XAER_RMFAIL, XAER_NOTA, XAER_INVAL, or
      * XAER_PROTO.
      */
+    @Override
     public void forget(Xid xid) throws XAException {}
     
     /** 
@@ -214,6 +216,7 @@ public class XATerminatorImpl implements XATerminator {
      * transaction, it should do so by raising an appropriate XAException
      * in the prepare method.
      */
+    @Override
     public int prepare(Xid xid) throws XAException {
         
         check(xid); // check if xid is valid
@@ -302,6 +305,7 @@ public class XATerminatorImpl implements XATerminator {
      * operation, the resource manager should throw the appropriate
      * XAException.
      */
+    @Override
     public Xid[] recover(int flag) throws XAException {
         
         // wait for recovery to be completed.
@@ -325,6 +329,7 @@ public class XATerminatorImpl implements XATerminator {
      * the resource manager has rolled back the branch's work and has released
      * all held resources.
      */
+    @Override
     public void rollback(Xid xid) throws XAException {
         
         check(xid); // check if xid is valid

@@ -548,6 +548,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 		//System.setProperty("imq.jmsra.direct.clustered", "true");
                 AccessController.doPrivileged
                         (new java.security.PrivilegedExceptionAction() {
+                            @Override
                             public Object run() throws
                                     ResourceAdapterInternalException {
                                 //set the JMSRA system property to enable XA JOINS

@@ -90,6 +90,7 @@ public class ConnectorConnectionPoolDeployer extends AbstractConnectorResourceDe
     /**
      * {@inheritDoc}
      */
+    @Override
     public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
         //deployResource is not synchronized as there is only one caller
         //ResourceProxy which is synchronized
@@ -151,6 +152,7 @@ public class ConnectorConnectionPoolDeployer extends AbstractConnectorResourceDe
     /**
      * {@inheritDoc}
      */
+    @Override
     public void deployResource(Object resource) throws Exception {
         org.glassfish.connectors.config.ConnectorConnectionPool ccp =
                 (org.glassfish.connectors.config.ConnectorConnectionPool)resource;
@@ -161,6 +163,7 @@ public class ConnectorConnectionPoolDeployer extends AbstractConnectorResourceDe
     /**
      * {@inheritDoc}
      */
+    @Override
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception{
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ConnectorConnectionPoolDeployer : undeployResource : ");
@@ -175,6 +178,7 @@ public class ConnectorConnectionPoolDeployer extends AbstractConnectorResourceDe
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void undeployResource(Object resource)
             throws Exception {
         if(_logger.isLoggable(Level.FINE)) {
@@ -210,6 +214,7 @@ public class ConnectorConnectionPoolDeployer extends AbstractConnectorResourceDe
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void redeployResource(Object resource)
             throws Exception {
         //Connector connection pool reconfiguration or
@@ -265,6 +270,7 @@ public class ConnectorConnectionPoolDeployer extends AbstractConnectorResourceDe
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean handles(Object resource){
         return resource instanceof org.glassfish.connectors.config.ConnectorConnectionPool;
     }
@@ -272,6 +278,7 @@ public class ConnectorConnectionPoolDeployer extends AbstractConnectorResourceDe
     /**
      * @inheritDoc
      */
+    @Override
     public boolean supportsDynamicReconfiguration() {
         return false;
     }
@@ -279,6 +286,7 @@ public class ConnectorConnectionPoolDeployer extends AbstractConnectorResourceDe
     /**
      * @inheritDoc
      */
+    @Override
     public Class[] getProxyClassesForDynamicReconfiguration() {
         return new Class[0];
     }
@@ -286,6 +294,7 @@ public class ConnectorConnectionPoolDeployer extends AbstractConnectorResourceDe
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void disableResource(Object resource)
             throws Exception {
     }
@@ -293,6 +302,7 @@ public class ConnectorConnectionPoolDeployer extends AbstractConnectorResourceDe
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void enableResource(Object resource)
             throws Exception {
     }

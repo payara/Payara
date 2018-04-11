@@ -192,42 +192,52 @@ public class ServiceTag implements RegistrationDescriptor {
         return "";            
     }
     
+    @Override
     public String getInstanceURN() {
         return svcTag.getInstanceURN();
     }
 
+    @Override
     public String getProductName() {
         return svcTag.getProductName();
     }
     
+    @Override
     public String getProductURN() {
         return svcTag.getProductURN();
     }
         
+    @Override
     public String getProductVersion() {
         return svcTag.getProductVersion();
     }
     
+    @Override
     public String getProductParentURN() {
         return svcTag.getProductParentURN();
     }
         
+    @Override
     public String getProductDefinedInstID() {
         return svcTag.getProductDefinedInstID();
     }    
     
+    @Override
     public String getContainer() {
         return svcTag.getContainer();
     }
     
+    @Override
     public String getSource() {
         return svcTag.getSource();
     }
     
+    @Override
     public String getProductVendor() { 
         return svcTag.getProductVendor();
     }
     
+    @Override
     public String getPlatformArch() { 
         if (platformArch == null || platformArch.length() == 0) {
             platformArch = System.getProperty("os.arch");
@@ -235,6 +245,7 @@ public class ServiceTag implements RegistrationDescriptor {
         return platformArch;
     }
 
+    @Override
     public String getProductParent() { 
         return productParent;
     }

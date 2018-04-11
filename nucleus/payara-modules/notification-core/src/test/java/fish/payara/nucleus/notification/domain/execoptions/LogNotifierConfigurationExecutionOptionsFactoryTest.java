@@ -81,6 +81,7 @@ public class LogNotifierConfigurationExecutionOptionsFactoryTest {
 
 class LogNotifierConfigurationExecutionOptionsFactoryMock extends LogNotifierConfigurationExecutionOptionsFactory {
 
+    @Override
     public NotifierConfigurationExecutionOptionsFactoryStore getStore() {
         return mock(NotifierConfigurationExecutionOptionsFactoryStore.class);
     }

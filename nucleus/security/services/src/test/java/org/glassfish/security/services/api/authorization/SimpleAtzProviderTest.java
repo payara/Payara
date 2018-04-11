@@ -64,6 +64,7 @@ public class SimpleAtzProviderTest extends HK2Runner {
     
     
     @Before
+    @Override
     public void before() {
         super.before();
         

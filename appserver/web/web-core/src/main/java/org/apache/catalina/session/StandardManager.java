@@ -103,6 +103,7 @@ public class StandardManager
             // NOOP
         }
 
+        @Override
         public Void run() throws Exception{
            doLoadFromFile();
            return null;
@@ -120,6 +121,7 @@ public class StandardManager
             isShutdown = shutDown;
         }
 
+        @Override
         public Void run() throws Exception{
             doUnload(expire, isShutdown);
             return null;
@@ -374,6 +376,7 @@ public class StandardManager
      * found during the reload
      * @exception IOException if a read error occurs
      */
+    @Override
     public void load() throws ClassNotFoundException, IOException {
         if (SecurityUtil.isPackageProtectionEnabled()){   
             try{
@@ -543,6 +546,7 @@ public class StandardManager
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public void unload() throws IOException {
         unload(true, false);
     }
@@ -771,6 +775,7 @@ public class StandardManager
      *
      * @param listener The listener to add
      */
+    @Override
     public void addLifecycleListener(LifecycleListener listener) {
         lifecycle.addLifecycleListener(listener);
     }
@@ -780,6 +785,7 @@ public class StandardManager
      * Gets the (possibly empty) list of lifecycle listeners
      * associated with this StandardManager.
      */
+    @Override
     public List<LifecycleListener> findLifecycleListeners() {
         return lifecycle.findLifecycleListeners();
     }
@@ -790,6 +796,7 @@ public class StandardManager
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removeLifecycleListener(LifecycleListener listener) {
         lifecycle.removeLifecycleListener(listener);
     }
@@ -802,6 +809,7 @@ public class StandardManager
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
 
         if( ! initialized )
@@ -842,6 +850,7 @@ public class StandardManager
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
     public void stop() throws LifecycleException {
         stop(false);
     }
@@ -912,6 +921,7 @@ public class StandardManager
      *
      * @param event The property change event that has occurred
      */
+    @Override
     public void propertyChange(PropertyChangeEvent event) {
 
         // Validate the source of this event

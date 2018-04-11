@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import java.net.URL;
 
 public class URLObjectFactory implements Serializable, ObjectFactory {
+    @Override
     public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
         Reference ref = (Reference)obj;
 

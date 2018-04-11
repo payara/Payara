@@ -65,6 +65,7 @@ public class CompositeArchive extends AbstractReadableArchive {
         this.filter = filter;
     }
 
+    @Override
     public InputStream getEntry(String name) throws IOException {
         if (filter.accept(delegate, name)) {
             return delegate.getEntry(name);
@@ -72,6 +73,7 @@ public class CompositeArchive extends AbstractReadableArchive {
         return null;
     }
 
+    @Override
     public boolean exists(String name) throws IOException {
         if (filter.accept(delegate, name)) {
             return delegate.exists(name);                                    
@@ -79,6 +81,7 @@ public class CompositeArchive extends AbstractReadableArchive {
         return false;
     }
 
+    @Override
     public long getEntrySize(String name) {
         if (filter.accept(delegate, name)) {
             return delegate.getEntrySize(name);
@@ -86,10 +89,12 @@ public class CompositeArchive extends AbstractReadableArchive {
         return 0;
     }
 
+    @Override
     public void open(URI uri) throws IOException {
         delegate.open(uri);
     }
 
+    @Override
     public ReadableArchive getSubArchive(String name) throws IOException {
         if (filter.accept(delegate, name)) {
             return delegate.getSubArchive(name);
@@ -97,22 +102,27 @@ public class CompositeArchive extends AbstractReadableArchive {
         return null;
     }
 
+    @Override
     public boolean exists() {
         return delegate.exists();
     }
 
+    @Override
     public boolean delete() {
         return delegate.delete();
     }
 
+    @Override
     public boolean renameTo(String name) {
         return delegate.renameTo(name);
     }
 
+    @Override
     public void close() throws IOException {
         delegate.close();
     }
 
+    @Override
     public Enumeration<String> entries() {
 
         Enumeration<String> original = delegate.entries();
@@ -126,6 +136,7 @@ public class CompositeArchive extends AbstractReadableArchive {
         return results.elements();
     }
 
+    @Override
     public Enumeration<String> entries(String prefix) {
 
         Enumeration<String> original = delegate.entries(prefix);
@@ -139,6 +150,7 @@ public class CompositeArchive extends AbstractReadableArchive {
         return results.elements();
     }
 
+    @Override
     public boolean isDirectory(String name) {
         if (filter.accept(delegate, name)) {
             return delegate.isDirectory(name);
@@ -146,18 +158,22 @@ public class CompositeArchive extends AbstractReadableArchive {
         return false;
     }
 
+    @Override
     public Manifest getManifest() throws IOException {
         return delegate.getManifest();
     }
 
+    @Override
     public URI getURI() {
         return delegate.getURI();
     }
 
+    @Override
     public long getArchiveSize() throws SecurityException {
         return delegate.getArchiveSize();
     }
 
+    @Override
     public String getName() {
         return delegate.getName();
     }
@@ -165,6 +181,7 @@ public class CompositeArchive extends AbstractReadableArchive {
     // we don't hide the top level directories as we need to use them
     // to figure out whether the EarSniffer can handle it in the 
     // case of optional application.xml
+    @Override
     public Collection<String> getDirectories() throws IOException {
         return delegate.getDirectories();
     }

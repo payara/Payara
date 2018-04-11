@@ -68,6 +68,7 @@ public class PoolInfo implements org.glassfish.resourcebase.resources.api.Generi
     /**
      * @inheritDoc
      */
+    @Override
     public String getName() {
         return name;
     }
@@ -75,6 +76,7 @@ public class PoolInfo implements org.glassfish.resourcebase.resources.api.Generi
     /**
      * @inheritDoc
      */
+    @Override
     public String getApplicationName() {
         return applicationName;
     }
@@ -82,10 +84,12 @@ public class PoolInfo implements org.glassfish.resourcebase.resources.api.Generi
     /**
      * @inheritDoc
      */
+    @Override
     public String getModuleName() {
         return moduleName;
     }
 
+    @Override
         public String toString(){
             if(applicationName != null && moduleName != null){
                 return "{ PoolInfo : (name="+name+"), (applicationName="+applicationName+"), (moduleName="+moduleName+")}";
@@ -96,6 +100,7 @@ public class PoolInfo implements org.glassfish.resourcebase.resources.api.Generi
             }
     }
 
+    @Override
     public boolean equals(Object o){
         boolean result = false;
         if(o == this){
@@ -122,6 +127,7 @@ public class PoolInfo implements org.glassfish.resourcebase.resources.api.Generi
         return result;
     }
 
+    @Override
     public int hashCode(){
         int result = 67;
         if (name != null)

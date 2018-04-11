@@ -100,6 +100,7 @@ public class RestartDomainCommand extends RestartServer implements AdminCommand 
      *
      * Client code that started us should notice the return value of 10 and restart us.
      */
+    @Override
     public void execute(AdminCommandContext context) {
         setRegistry(registry);
         setServerName(env.getInstanceRoot().getName());

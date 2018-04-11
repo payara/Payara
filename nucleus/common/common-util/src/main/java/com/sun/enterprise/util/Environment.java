@@ -61,6 +61,7 @@ public class Environment {
         try {
             Object obj = java.security.AccessController.doPrivileged
                 (new java.security.PrivilegedExceptionAction() {
+                @Override
                 public java.lang.Object run() throws Exception {
                     return Class.forName(ENV_CLASS_NAME).newInstance();
                 }

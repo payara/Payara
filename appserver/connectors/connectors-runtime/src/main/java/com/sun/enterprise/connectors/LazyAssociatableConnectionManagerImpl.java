@@ -57,6 +57,7 @@ public class LazyAssociatableConnectionManagerImpl extends ConnectionManagerImpl
         super(poolInfo, resourceInfo);
     }
 
+    @Override
     public void associateConnection(Object connection,
                                     javax.resource.spi.ManagedConnectionFactory mcf,
                                     javax.resource.spi.ConnectionRequestInfo info)
@@ -66,6 +67,7 @@ public class LazyAssociatableConnectionManagerImpl extends ConnectionManagerImpl
         allocateConnection(mcf, info, jndiName, connection);
     }
 
+    @Override
     public void inactiveConnectionClosed(Object connection, ManagedConnectionFactory mcf) {
         //do nothing as application server does not keep track of dissociated connection's connection handles
     }

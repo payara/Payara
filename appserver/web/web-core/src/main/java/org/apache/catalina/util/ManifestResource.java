@@ -183,6 +183,7 @@ public class ManifestResource {
         return true;
     }
     
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("ManifestResource[");

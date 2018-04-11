@@ -98,6 +98,7 @@ public class JMSDestinationDefinitionsHandler extends AbstractResourceHandler {
     }
 
 
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAndWebAnnotationTypes();
     }

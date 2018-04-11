@@ -78,6 +78,7 @@ public abstract class ConstBasicMemberRef extends ConstBasic {
     return theNameAndType;
   }
 
+  @Override
   public String toString () {
       return "className(" + theClassName.toString() + ")" +//NOI18N
           " nameAndType(" + theNameAndType.toString() + ")";//NOI18N
@@ -101,10 +102,12 @@ public abstract class ConstBasicMemberRef extends ConstBasic {
     theNameAndTypeIndex = NT_index;
   }
 
+  @Override
   void formatData (DataOutputStream b) throws IOException {
     b.writeShort(theClassName.getIndex());
     b.writeShort(theNameAndType.getIndex());
   }
+  @Override
   void resolve (ConstantPool p) {
     theClassName = (ConstClass) p.constantAt(theClassNameIndex);
     theNameAndType = (ConstNameAndType) p.constantAt(theNameAndTypeIndex);

@@ -193,6 +193,7 @@ public class ClassDesc
         fetchGroups = new ArrayList();
     }
 
+    @Override
     public String toString() {
         return getName();
     }
@@ -1084,14 +1085,17 @@ public class ClassDesc
         }
     }
 
+    @Override
     public Constructor getConstructor() {
         return constructor;
     }
 
+    @Override
     public Class getPersistenceCapableClass() {
         return pcClass;
     }
 
+    @Override
     public Class getOidClass() {
         return oidClass;
     }
@@ -1112,6 +1116,7 @@ public class ClassDesc
         return mdConfig.isNavigable();
     }
 
+    @Override
     public boolean hasVersionConsistency() {
         return mdConfig.getConsistencyLevel() == MappingClassElement.VERSION_CONSISTENCY;
     }
@@ -1200,6 +1205,7 @@ public class ClassDesc
      * Return the key fields as array of java.lang.reflect.Field instances.
      * @return The key fields as array of java.lang.reflect.Field instances.
      */
+    @Override
     public Field[] getKeyFields() {
         return keyFields;
     }
@@ -1208,6 +1214,7 @@ public class ClassDesc
      * Returns the key field names as array of String.
      * @return The key field names as array of String.
      */
+    @Override
     public String[] getKeyFieldNames() {
         return keyFieldNames;
     }
@@ -1421,6 +1428,7 @@ public class ClassDesc
      * fetch group.
      * @see SQLStateManager#requiresImmediateFlush
      */
+    @Override
     public boolean hasLocalNonDFGFields() {
         // All instances with modified DFG fields can be batched with
         // the same statement. If there's a primitive field outside

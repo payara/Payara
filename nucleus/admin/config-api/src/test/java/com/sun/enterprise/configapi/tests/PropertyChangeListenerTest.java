@@ -64,6 +64,7 @@ public class PropertyChangeListenerTest  extends ConfigApiTest implements Config
     ServiceLocator habitat;
     boolean result = false;
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -95,6 +96,7 @@ public class PropertyChangeListenerTest  extends ConfigApiTest implements Config
 
         ConfigSupport.apply(new SingleConfigCode<Property>() {
 
+            @Override
             public Object run(Property param) throws PropertyVetoException, TransactionFailure {
                 // first one is fine...
                 param.setValue(prop.getValue().toUpperCase());
@@ -107,6 +109,7 @@ public class PropertyChangeListenerTest  extends ConfigApiTest implements Config
         ((ObservableBean) ConfigSupport.getImpl(target)).removeListener(this);
     }
 
+    @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         result = true;
         return null;

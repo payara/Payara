@@ -158,6 +158,7 @@ public interface Host extends Container {
      * Return the canonical, fully qualified, name of the virtual host
      * this Container represents.
      */
+    @Override
     public String getName();
 
 
@@ -169,6 +170,7 @@ public interface Host extends Container {
      *
      * @exception IllegalArgumentException if name is null
      */
+    @Override
     public void setName(String name);
 
 

@@ -142,10 +142,12 @@ public class FacadeLaunchable implements Launchable {
         this.anchorDir = anchorDir;
     }
 
+    @Override
     public URI getURI() {
         return facadeClientRA.getURI();
     }
 
+    @Override
     public String getAnchorDir() {
         return anchorDir;
     }
@@ -179,6 +181,7 @@ public class FacadeLaunchable implements Launchable {
         return facadeArchivist;
     }
 
+    @Override
     public void validateDescriptor() {
         getArchivist().validate(classLoader);
     }
@@ -260,6 +263,7 @@ public class FacadeLaunchable implements Launchable {
         return new File(fileURI).getAbsolutePath();
     }
 
+    @Override
     public Class getMainClass() throws ClassNotFoundException {
         return Class.forName(mainClassNameToLaunch, true, Thread.currentThread().getContextClassLoader());
     }
@@ -272,6 +276,7 @@ public class FacadeLaunchable implements Launchable {
      * @throws java.io.IOException
      * @throws org.xml.sax.SAXParseException
      */
+    @Override
     public ApplicationClientDescriptor getDescriptor(final URLClassLoader loader) throws IOException, SAXParseException {
         if (acDesc == null) {
             /*

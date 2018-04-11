@@ -748,6 +748,7 @@ public class Connector
      * @param maxPostSize The new maximum size in bytes of a POST which will 
      * be automatically parsed by the container
      */
+    @Override
     public void setMaxPostSize(int maxPostSize) {
         this.maxPostSize = maxPostSize;
         setProperty("maxPostSize", String.valueOf(maxPostSize));
@@ -757,6 +758,7 @@ public class Connector
      * Return the maximum size of a POST which will be saved by the container
      * during authentication.
      */
+    @Override
     public int getMaxSavePostSize() {
 
         return (maxSavePostSize);
@@ -1269,10 +1271,12 @@ public class Connector
     }
     // END SJSAS 6331392
 
+    @Override
     public void setJvmRoute(String jvmRoute) {
         this.jvmRoute = jvmRoute;
     }
 
+    @Override
     public String getJvmRoute() {
         return jvmRoute;
     }

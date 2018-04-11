@@ -92,22 +92,27 @@ public class PersistenceUnitsDescriptor extends RootDeploymentDescriptor {
         this.puRoot = puRoot;
     }
 
+    @Override
     public String getDefaultSpecVersion() {
         return JPA_1_0;
     }
 
+    @Override
     public String getModuleID() {
         throw new RuntimeException();
     }
 
+    @Override
     public ArchiveType getModuleType() {
         throw new RuntimeException();
     }
 
+    @Override
     public ClassLoader getClassLoader() {
         return parent.getClassLoader();
     }
 
+    @Override
     public boolean isApplication() {
         return false;
     }
@@ -155,6 +160,7 @@ public class PersistenceUnitsDescriptor extends RootDeploymentDescriptor {
     }
 
 
+    @Override
     public boolean isEmpty() {
         return persistenceUnitDescriptors.isEmpty();
     }

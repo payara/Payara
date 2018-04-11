@@ -77,6 +77,7 @@ public class OSGiSniffer extends GenericSniffer  {
         return false;
     }
 
+    @Override
     public String[] getContainersNames() {
         return new String[]{CONTAINER_NAME};
     }
@@ -107,6 +108,7 @@ public class OSGiSniffer extends GenericSniffer  {
      * @return whether the sniffer supports the archive type
      *
      */
+    @Override
     public boolean supportsArchiveType(ArchiveType archiveType) {
         if (archiveType.toString().equals(osgiArchiveType.toString())) {
             return true;

@@ -147,6 +147,7 @@ class RequestItemIterator {
                     }
                 } else {
                     stream = new LimitedInputStream(stream, fileSizeMax) {
+                        @Override
                         protected void raiseError(long pSizeMax, long pCount)
                                 throws SizeException {
                             throw new SizeException(
@@ -164,6 +165,7 @@ class RequestItemIterator {
          * Returns the items content type, or null.
          * @return Content type, if known, or null.
          */
+        @Override
         public String getContentType() {
             return contentType;
         }
@@ -172,6 +174,7 @@ class RequestItemIterator {
          * Returns the items field name.
          * @return Field name.
          */
+        @Override
         public String getFieldName() {
             return fieldName;
         }
@@ -180,6 +183,7 @@ class RequestItemIterator {
          * Returns the items file name.
          * @return File name, if known, or null.
          */
+        @Override
         public String getSubmittedFileName() {
             return submittedFileName;
         }
@@ -189,6 +193,7 @@ class RequestItemIterator {
          * @return True, if the item is a form field,
          *   otherwise false.
          */
+        @Override
         public boolean isFormField() {
             return formField;
         }
@@ -199,6 +204,7 @@ class RequestItemIterator {
          * @return Opened input stream.
          * @throws IOException An I/O error occurred.
          */
+        @Override
         public InputStream openStream() throws IOException {
             return stream;
         }
@@ -207,6 +213,7 @@ class RequestItemIterator {
          * Closes the file item.
          * @throws IOException An I/O error occurred.
          */
+        @Override
         public void close() throws IOException {
             stream.close();
         }
@@ -215,6 +222,7 @@ class RequestItemIterator {
          * Returns the file item headers.
          * @return The items header object
          */
+        @Override
         public PartHeaders getHeaders() {
             return headers;
         }
@@ -293,6 +301,7 @@ class RequestItemIterator {
             int requestSize = request.getContentLength();
             if (requestSize == -1) {
                 input = new LimitedInputStream(input, sizeMax) {
+                    @Override
                     protected void raiseError(long pSizeMax, long pCount)
                                 throws SizeException {
                         throw new SizeException(

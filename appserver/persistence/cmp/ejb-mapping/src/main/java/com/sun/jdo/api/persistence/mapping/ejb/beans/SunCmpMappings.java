@@ -322,6 +322,7 @@ public class SunCmpMappings extends org.netbeans.modules.schema2beans.BaseBean
 	}
 
 	// Dump the content of this bean returning it as a String
+        @Override
 	public void dump(StringBuffer str, String indent){
 		String s;
 		Object o;
@@ -341,6 +342,7 @@ public class SunCmpMappings extends org.netbeans.modules.schema2beans.BaseBean
 		}
 
 	}
+        @Override
 	public String dumpBeanNode(){
 		StringBuffer str = new StringBuffer();
 		str.append("SunCmpMappings\n");	// NOI18N

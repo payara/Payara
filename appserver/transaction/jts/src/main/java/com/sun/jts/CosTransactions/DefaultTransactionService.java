@@ -363,6 +363,7 @@ public class DefaultTransactionService implements ProxyChecker {
      *
      * @see
      */
+    @Override
     public final boolean isProxy( org.omg.CORBA.Object obj ) {
 
         // TN  POA changes
@@ -540,6 +541,7 @@ class RecoveryCoordinatorServantActivator extends LocalObject implements Servant
      *
      * @see
      */
+    @Override
     public Servant incarnate( byte[] oid, POA adapter )
         throws org.omg.PortableServer.ForwardRequest {
 
@@ -556,6 +558,7 @@ class RecoveryCoordinatorServantActivator extends LocalObject implements Servant
      *
      * @see
      */
+    @Override
     public void etherealize( byte[] oid,
                              POA adapter,
                              Servant servant,
@@ -626,6 +629,7 @@ class CoordinatorResourceServantActivator extends LocalObject implements Servant
      *
      * @see
      */
+    @Override
     public Servant incarnate( byte[] oid, POA adapter )
         throws org.omg.PortableServer.ForwardRequest {
         Servant servant = new CoordinatorResourceImpl(oid);
@@ -640,6 +644,7 @@ class CoordinatorResourceServantActivator extends LocalObject implements Servant
      *
      * @see
      */
+    @Override
     public void etherealize( byte[] oid,
                              POA adapter,
                              Servant servant,
@@ -674,6 +679,7 @@ class JTSAdapterActivator extends LocalObject implements AdapterActivator {
         this.orb = orb;
     }
 
+    @Override
     public boolean unknown_adapter(POA parent, String name) {
 
         try {

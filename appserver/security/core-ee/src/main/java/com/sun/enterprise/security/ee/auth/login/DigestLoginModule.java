@@ -81,6 +81,7 @@ public abstract class DigestLoginModule implements LoginModule {
     public DigestLoginModule() {
     }
 
+    @Override
     public final void initialize(Subject subject, CallbackHandler handler, Map<String, ?> sharedState, Map<String, ?> options) {
         this.subject = subject;
         this.handler = handler;
@@ -91,6 +92,7 @@ public abstract class DigestLoginModule implements LoginModule {
         }
     }
 
+    @Override
     public final boolean login() throws LoginException {
         Set<Object> creds = this.subject.getPrivateCredentials();
         Iterator<Object> itr = creds.iterator();
@@ -130,6 +132,7 @@ public abstract class DigestLoginModule implements LoginModule {
         return _succeeded;
     }
 
+    @Override
     public final boolean commit() throws LoginException {
         
             if (!_succeeded) {
@@ -158,6 +161,7 @@ public abstract class DigestLoginModule implements LoginModule {
 	
     }
 
+    @Override
     public final boolean abort() throws LoginException {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "JAAS authentication aborted.");
@@ -179,6 +183,7 @@ public abstract class DigestLoginModule implements LoginModule {
         return true;
     }
 
+    @Override
     public final boolean logout() throws LoginException {
         subject.getPrincipals().clear();
         subject.getPublicCredentials().clear();

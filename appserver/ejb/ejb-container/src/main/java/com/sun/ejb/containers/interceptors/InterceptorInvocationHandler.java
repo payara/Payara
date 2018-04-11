@@ -86,18 +86,22 @@ public final class InterceptorInvocationHandler
 
     }
 
+    @Override
     public Object getProxy() {
         return clientProxy;
     }
 
+    @Override
     public Object getTargetInstance() {
         return targetInstance;
     }
 
+    @Override
     public Object[] getInterceptorInstances() {
         return interceptorInstances;
     }
 
+    @Override
     public void invokeAroundConstruct() throws Exception {
 
          invokeCallback(CallbackType.AROUND_CONSTRUCT);
@@ -105,12 +109,14 @@ public final class InterceptorInvocationHandler
 
     }
 
+    @Override
     public void invokePostConstruct() throws Exception {
 
          invokeCallback(CallbackType.POST_CONSTRUCT);
 
     }
 
+    @Override
     public void invokePreDestroy() throws Exception {
 
          invokeCallback(CallbackType.PRE_DESTROY);
@@ -130,6 +136,7 @@ public final class InterceptorInvocationHandler
     }
 
 
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args) 
         throws Throwable {
 

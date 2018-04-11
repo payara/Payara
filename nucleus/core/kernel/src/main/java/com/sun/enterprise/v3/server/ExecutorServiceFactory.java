@@ -68,6 +68,7 @@ public class ExecutorServiceFactory implements Factory<ExecutorService> {
        
         if (service == null) {
             service = Executors.newCachedThreadPool(new ThreadFactory() {
+            @Override
             public Thread newThread(Runnable r) {
                 Thread t = Executors.defaultThreadFactory().newThread(r);
                 t.setDaemon(true);

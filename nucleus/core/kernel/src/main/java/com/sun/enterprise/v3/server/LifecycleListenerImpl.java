@@ -70,6 +70,7 @@ public class LifecycleListenerImpl implements LifecycleListener {
      *  Set<code>is-failure-fatal</code>in server.xml to <code>true</code> for 
      *  fatal conditions.
      */
+    @Override
     public void handleEvent(LifecycleEvent event) throws ServerLifecycleException {
         LifecycleEventContext ctx = event.getLifecycleEventContext();
 

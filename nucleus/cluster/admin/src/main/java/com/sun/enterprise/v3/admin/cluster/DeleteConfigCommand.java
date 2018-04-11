@@ -95,6 +95,7 @@ public final class DeleteConfigCommand implements AdminCommand {
     private final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteConfigCommand.class);
 
+    @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);

@@ -60,6 +60,7 @@ public class PrincipalNameDescriptor extends Descriptor {
 
     public PrincipalNameDescriptor() {}
 
+    @Override
     public String getName() {
         return principalName;
     }
@@ -71,6 +72,7 @@ public class PrincipalNameDescriptor extends Descriptor {
         return className;
     }
 
+    @Override
     public void setName(String name) {
         principalName = name;
     }
@@ -100,6 +102,7 @@ public class PrincipalNameDescriptor extends Descriptor {
         }
     }
 
+    @Override
     public String toString() {
         return "principal-name " + principalName + "; className " + getClassName();
     }

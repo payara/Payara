@@ -49,26 +49,32 @@ import com.sun.gjc.spi.base.CacheObjectKey;
 public class SynchronizedCache implements Cache {
     private Cache cacheImpl;
 
+    @Override
     public synchronized Object checkAndUpdateCache(CacheObjectKey key) {
         return cacheImpl.checkAndUpdateCache(key);
     }
 
+    @Override
     public synchronized void addToCache(CacheObjectKey key, Object entry, boolean force) {
         cacheImpl.addToCache(key, entry, force);
     }
 
+    @Override
     public synchronized void clearCache() {
         cacheImpl.clearCache();
     }
 
+    @Override
     public synchronized void purge() {
         cacheImpl.purge();
     }
 
+    @Override
     public synchronized int getSize() {
         return cacheImpl.getSize();
     }
 
+    @Override
     public boolean isSynchronized() {
         return true;
     }
@@ -77,10 +83,12 @@ public class SynchronizedCache implements Cache {
         this.cacheImpl = cacheImpl;
     }
 
+    @Override
     public void flushCache() {
         cacheImpl.flushCache();
     }
 
+    @Override
     public void purge(Object entry) {
         cacheImpl.purge(entry);
     }

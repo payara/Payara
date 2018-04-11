@@ -68,6 +68,7 @@ public class HAStatefulSessionStoreMonitor
 	super.setDelegate(delegate);
     }
 
+    @Override
     public final void incrementCheckpointCount(boolean success) {
 	HAStatefulSessionStoreStatsImpl delegate = haStatsImpl;
 	if (delegate != null) {
@@ -75,6 +76,7 @@ public class HAStatefulSessionStoreMonitor
 	}
     }
 
+    @Override
     public final void setCheckpointSize(long val) {
 	HAStatefulSessionStoreStatsImpl delegate = haStatsImpl;
 	if (delegate != null) {
@@ -82,6 +84,7 @@ public class HAStatefulSessionStoreMonitor
 	}
     }
 
+    @Override
     public final void setCheckpointTime(long val) {
 	HAStatefulSessionStoreStatsImpl delegate = haStatsImpl;
 	if (delegate != null) {

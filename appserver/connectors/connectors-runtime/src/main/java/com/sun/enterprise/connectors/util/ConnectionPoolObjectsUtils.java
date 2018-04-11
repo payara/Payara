@@ -331,6 +331,7 @@ public final class ConnectionPoolObjectsUtils {
                                 password.toCharArray());
                 pc.setManagedConnectionFactory(mcf);
                 AccessController.doPrivileged(new PrivilegedAction() {
+                    @Override
                     public Object run() {
                         tempSubject.getPrincipals().add(prin);
                         tempSubject.getPrivateCredentials().add(pc);

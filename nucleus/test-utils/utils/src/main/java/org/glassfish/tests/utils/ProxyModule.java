@@ -64,96 +64,120 @@ public class ProxyModule implements Module {
         this.modulesRegistry = registry;
     }
 
+    @Override
     public ModuleDefinition getModuleDefinition() {
         return moduleDef;
     }
 
+    @Override
     public String getName() {
         return moduleDef.getName();
     }
 
+    @Override
     public ModulesRegistry getRegistry() {
         return modulesRegistry;
     }
 
+    @Override
     public ModuleState getState() {
         return ModuleState.READY;
     }
 
+    @Override
     public void resolve() throws ResolveError {
 
     }
 
+    @Override
     public void start() throws ResolveError {
 
     }
 
+    @Override
     public boolean stop() {
         return false;
     }
 
+    @Override
     public void detach() {
     }
 
+    @Override
     public void refresh() {
     }
 
+    @Override
     public ModuleMetadata getMetadata() {
         return moduleDef.getMetadata();
     }
 
+    @Override
     public void addListener(ModuleChangeListener listener) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public void removeListener(ModuleChangeListener listener) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public ClassLoader getClassLoader() {
         return classLoader;
     }
 
+    @Override
     public List<Module> getImports() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public void addImport(Module module) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public Module addImport(ModuleDependency dependency) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public boolean isShared() {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public boolean isSticky() {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public void setSticky(boolean sticky) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public <T> Iterable<Class<? extends T>> getProvidersClass(Class<T> serviceClass) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public Iterable<Class> getProvidersClass(String name) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public boolean hasProvider(Class serviceClass) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public void dumpState(PrintStream writer) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public void uninstall() {
         //To change body of implemented methods use File | Settings | File Templates.
     }

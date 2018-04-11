@@ -549,15 +549,18 @@ class InterfaceArraySorter extends ArraySorter {
   }
 
   /* return the size of the array being sorted */
+  @Override
   int size() { return theArray.length; }
 
   /* return -1 if o1 < o2, 0 if o1 == o2, 1 if o1 > o2 */
+  @Override
   int compare(int o1Index, int o2Index) {
     return theArray[o1Index].asString().compareTo(
 	theArray[o2Index].asString());
   }
 
   /* Swap the elements at index o1Index and o2Index */
+  @Override
   void swap(int o1Index, int o2Index) {
     ConstClass tmp = theArray[o1Index];
     theArray[o1Index] = theArray[o2Index];
@@ -573,15 +576,18 @@ class FieldArraySorter extends ArraySorter {
   }
 
   /* return the size of the array being sorted */
+  @Override
   int size() { return theArray.length; }
 
   /* return -1 if o1 < o2, 0 if o1 == o2, 1 if o1 > o2 */
+  @Override
   int compare(int o1Index, int o2Index) {
     return theArray[o1Index].name().asString().compareTo(
 	theArray[o2Index].name().asString());
   }
 
   /* Swap the elements at index o1Index and o2Index */
+  @Override
   void swap(int o1Index, int o2Index) {
     ClassField tmp = theArray[o1Index];
     theArray[o1Index] = theArray[o2Index];
@@ -597,9 +603,11 @@ class MethodArraySorter extends ArraySorter {
   }
 
   /* return the size of the array being sorted */
+  @Override
   int size() { return theArray.length; }
 
   /* return -1 if o1 < o2, 0 if o1 == o2, 1 if o1 > o2 */
+  @Override
   int compare(int o1Index, int o2Index) {
     int cmp = theArray[o1Index].name().asString().compareTo(
 	theArray[o2Index].name().asString());
@@ -611,6 +619,7 @@ class MethodArraySorter extends ArraySorter {
   }
 
   /* Swap the elements at index o1Index and o2Index */
+  @Override
   void swap(int o1Index, int o2Index) {
     ClassMethod tmp = theArray[o1Index];
     theArray[o1Index] = theArray[o2Index];

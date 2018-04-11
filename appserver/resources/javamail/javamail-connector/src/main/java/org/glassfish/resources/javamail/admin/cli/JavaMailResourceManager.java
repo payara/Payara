@@ -95,10 +95,12 @@ public class JavaMailResourceManager implements org.glassfish.resources.admin.cl
     @Inject
     private BindableResourcesHelper resourcesHelper;
 
+    @Override
     public String getResourceType() {
         return ServerTags.MAIL_RESOURCE;
     }
 
+    @Override
     public ResourceStatus create(Resources resources, HashMap attributes, final Properties properties,
                                  String target) throws Exception {
         setAttributes(attributes, target);
@@ -120,6 +122,7 @@ public class JavaMailResourceManager implements org.glassfish.resources.admin.cl
         try {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
 
+                @Override
                 public Object run(Resources param) throws PropertyVetoException,
                         TransactionFailure {
                     MailResource newResource = createConfigBean(param, properties);
@@ -224,6 +227,7 @@ public class JavaMailResourceManager implements org.glassfish.resources.admin.cl
         description = (String) attributes.get(DESCRIPTION);
     }
 
+    @Override
     public Resource createConfigBean(Resources resources, HashMap attributes, Properties properties, boolean validate)
             throws Exception {
         setAttributes(attributes, null);

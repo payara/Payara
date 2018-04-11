@@ -174,6 +174,7 @@ public final class SMFService extends ServiceAdapter {
     /** Returns timeout in seconds before the master boot restarter should
      * give up starting this service.
      */
+    @Override
     public int getTimeoutSeconds() {
         final int to = Integer.parseInt(getTokenMap().get(TIMEOUT_SECONDS_TN));
         return (to);
@@ -183,6 +184,7 @@ public final class SMFService extends ServiceAdapter {
      * give up starting this service.
      * @param number a non-negative integer representing timeout. A value of zero implies infinite timeout.
      */
+    @Override
     public void setTimeoutSeconds(final int number) {
         Integer to = Integer.valueOf(number);
         if (to < 0) {
@@ -215,6 +217,7 @@ public final class SMFService extends ServiceAdapter {
     /** Returns the additional properties of the Service.
      * @return String representing addtional properties of the service. May return default properties as well.
      */
+    @Override
     public String getServiceProperties() {
         return (getTokenMap().get(PRIVILEGES_TN));
     }
@@ -222,6 +225,7 @@ public final class SMFService extends ServiceAdapter {
     /** Sets the additional service properties that are specific to it.
      * @param must be a colon separated String, if not null. No effect, if null is passed.
      */
+    @Override
     public void setServiceProperties(final String cds) {
         /* For now, we have to take care of only net_privaddr privilege property.
          * Additional properties will result in additional tokens being replaced.
@@ -248,6 +252,7 @@ public final class SMFService extends ServiceAdapter {
      * @throws RuntimeException if the configuration is not valid
      * @return true if the configuration is valid, an exception is thrown otherwise
      */
+    @Override
     public boolean isConfigValid() {
         final Set<String> keys = getTokenMap().keySet();
         for (final String k : keys) {
@@ -276,6 +281,7 @@ public final class SMFService extends ServiceAdapter {
      * Note that a copy is returned.
      * @return a copy of tokens and values
      */
+    @Override
     public Map<String, String> tokensAndValues() {
         return (new HashMap<String, String>(getTokenMap())); //send only copy
     }
@@ -285,6 +291,7 @@ public final class SMFService extends ServiceAdapter {
      * service. It is expected that these are set before calling this method.
      * If the <b> Fully Qualified Service Name </b> is invalid, a RuntimeException results.
      */
+    @Override
     public String getManifestFilePath() {
         final String fn = new StringBuilder().append(MANIFEST_HOME).append(info.fqsn).append("/").append(MANIFEST_FILE_SUFFIX).toString();
         return (fn);
@@ -296,6 +303,7 @@ public final class SMFService extends ServiceAdapter {
      * The type of the service must be set before calling this method, otherwise
      * a runtime exception results.
      */
+    @Override
     public String getManifestFileTemplatePath() {
         String ir = System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
         if (!ok(ir))
@@ -322,6 +330,7 @@ public final class SMFService extends ServiceAdapter {
     of the tokens that were set in the service.
     @return a String according to above description, never returns null
      */
+    @Override
     public String toString() {
         /* toString method useful for debugging */
         final StringBuilder sb = new StringBuilder();
@@ -336,6 +345,7 @@ public final class SMFService extends ServiceAdapter {
     /** For safety -- this is similar to the subversion dry-run command.
      * It does everything except create the service.
      */
+    @Override
     public String getSuccessMessage() {
         String msg = Strings.get("SMFServiceCreated", info.smfFullServiceName, info.type.toString(),
                 info.serverDirs.getServerParentDir(), getManifestFilePath(), info.serviceName);
@@ -515,6 +525,7 @@ public final class SMFService extends ServiceAdapter {
     // todo -- fix the filename!!
     // todo
     // todo
+    @Override
     public void writeReadmeFile(String msg) {
         File f = new File(getServerDirs().getServerDir(), README);
         ServicesUtils.appendTextToFile(f, msg);

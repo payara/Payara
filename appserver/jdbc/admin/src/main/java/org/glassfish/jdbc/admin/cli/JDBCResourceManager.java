@@ -101,10 +101,12 @@ public class JDBCResourceManager implements ResourceManager {
     @Inject
     private BindableResourcesHelper resourcesHelper;
 
+    @Override
     public String getResourceType () {
         return ServerTags.JDBC_RESOURCE;
     }
 
+    @Override
     public ResourceStatus create(Resources resources, HashMap attributes, final Properties properties,
                                  String target) throws Exception {
 
@@ -118,6 +120,7 @@ public class JDBCResourceManager implements ResourceManager {
         try {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
 
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     return createResource(param, properties);
                 }
@@ -200,6 +203,7 @@ public class JDBCResourceManager implements ResourceManager {
         return jdbcResource;
     }
 
+    @Override
     public Resource createConfigBean(final Resources resources, HashMap attributes, final Properties properties,
                                      boolean validate) throws Exception{
         setAttributes(attributes, null);
@@ -275,6 +279,7 @@ public class JDBCResourceManager implements ResourceManager {
             
             // delete jdbc-resource
             if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     JdbcResource resource = (JdbcResource) ConnectorsUtil.getResourceByName(resources, JdbcResource.class, jndiName);
                     return param.getResources().remove(resource);

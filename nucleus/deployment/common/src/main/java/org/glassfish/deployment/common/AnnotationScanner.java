@@ -73,6 +73,7 @@ public class AnnotationScanner extends ClassVisitor {
         super(Opcodes.ASM5);
     }
 
+    @Override
     public void visit(int version,
            int access,
            String name,
@@ -81,32 +82,40 @@ public class AnnotationScanner extends ClassVisitor {
            String[] interfaces) {
     }
 
+    @Override
     public void visitSource(String s, String s1) {}
 
+    @Override
     public void visitOuterClass(String s, String s1, String s2) {
 
     }
 
+    @Override
     public AnnotationVisitor visitAnnotation(String s, boolean b) {
         return null;
     }
 
+    @Override
     public void visitAttribute(Attribute attribute) {
 
     }
 
+    @Override
     public void visitInnerClass(String s, String s1, String s2, int i) {
 
     }
 
+    @Override
     public FieldVisitor visitField(int i, String s, String s1, String s2, Object o) {
         return null;
     }
 
+    @Override
     public MethodVisitor visitMethod(int i, String s, String s1, String s2, String[] strings) {
         return null;
     }
 
+    @Override
     public void visitEnd() {
         
     }

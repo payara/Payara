@@ -75,10 +75,12 @@ public class ConnectorWorkSecurityMapResourceManager implements ResourceManager 
     private String description;
     private String mapName;
 
+    @Override
     public String getResourceType() {
         return ResourceConstants.WORK_SECURITY_MAP;
     }
 
+    @Override
     public ResourceStatus create(Resources resources, HashMap attributes, final Properties properties,
                                  String target) throws Exception {
 
@@ -91,6 +93,7 @@ public class ConnectorWorkSecurityMapResourceManager implements ResourceManager 
 
         try {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                @Override
                 public Object run(Resources param) throws PropertyVetoException,
                         TransactionFailure {
                     return createResource(param, properties);
@@ -196,6 +199,7 @@ public class ConnectorWorkSecurityMapResourceManager implements ResourceManager 
         groupsMap = (Properties) attrList.get(ResourceConstants.WORK_SECURITY_MAP_GROUP_MAP);
     }
 
+    @Override
     public Resource createConfigBean(Resources resources, HashMap attributes, Properties properties, boolean validate)
             throws Exception{
         setAttributes(attributes);

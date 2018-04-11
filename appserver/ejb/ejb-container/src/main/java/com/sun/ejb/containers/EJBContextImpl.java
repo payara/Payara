@@ -134,6 +134,7 @@ public abstract class EJBContextImpl
         isLocalInterfaceSupported  = container.isLocalInterfaceSupported();
     }
     
+    @Override
     public Transaction getTransaction() {
         return transaction;
     }
@@ -237,11 +238,13 @@ public abstract class EJBContextImpl
     /**
      *
      */
+    @Override
     public Object getEJB() {
         return ejb;
     }
     
     
+    @Override
     public Container getContainer() {
         return container;
     }
@@ -268,6 +271,7 @@ public abstract class EJBContextImpl
     /**
      * Get all the resources associated with the context
      */
+    @Override
     public List getResourceList() {
         if (resources == null)
             resources = new ArrayList(0);
@@ -344,6 +348,7 @@ public abstract class EJBContextImpl
     /**
      *
      */
+    @Override
     public EJBHome getEJBHome() {
         if (! isRemoteInterfaceSupported) {
             throw new IllegalStateException("EJBHome not available");
@@ -356,6 +361,7 @@ public abstract class EJBContextImpl
     /**
      *
      */
+    @Override
     public EJBLocalHome getEJBLocalHome() {
         if (! isLocalInterfaceSupported) {
             throw new IllegalStateException("EJBLocalHome not available");
@@ -368,6 +374,7 @@ public abstract class EJBContextImpl
     /**
      *
      */
+    @Override
     public Properties getEnvironment() {
         // This is deprecated, see EJB2.0 section 20.6.
         return container.getEnvironmentProperties();
@@ -376,6 +383,7 @@ public abstract class EJBContextImpl
     /**
      * @deprecated
      */
+    @Override
     public Identity getCallerIdentity() {
         // This method is deprecated.
         // see EJB2.0 section 21.2.5
@@ -384,6 +392,7 @@ public abstract class EJBContextImpl
     }
 
 
+    @Override
     public Object lookup(String name) {
         Object o = null;
 
@@ -409,6 +418,7 @@ public abstract class EJBContextImpl
     /**
      *
      */
+    @Override
     public Principal getCallerPrincipal() {
 
         checkAccessToCallerSecurity();
@@ -421,6 +431,7 @@ public abstract class EJBContextImpl
      /**
      * @return Returns the contextMetaData.
      */
+    @Override
     public Map<String, Object> getContextData() {
         Map<String, Object> contextData = (Map<String, Object>) Collections.EMPTY_MAP;
         ComponentInvocation inv = EjbContainerUtilImpl.getInstance().getCurrentInvocation();
@@ -435,6 +446,7 @@ public abstract class EJBContextImpl
     /**
      * @deprecated
      */
+    @Override
     public boolean isCallerInRole(Identity identity) {
         // THis method is deprecated.
         // This implementation is as in EJB2.0 section 21.2.5
@@ -445,6 +457,7 @@ public abstract class EJBContextImpl
     /**
      *
      */
+    @Override
     public boolean isCallerInRole(String roleRef) {
         if ( roleRef == null )
             throw new IllegalStateException("Argument is null");
@@ -468,6 +481,7 @@ public abstract class EJBContextImpl
     /**
      *
      */
+    @Override
     public UserTransaction getUserTransaction()
         throws IllegalStateException
     {
@@ -477,6 +491,7 @@ public abstract class EJBContextImpl
     /**
      *
      */
+    @Override
     public void setRollbackOnly()
         throws IllegalStateException
     {
@@ -518,6 +533,7 @@ public abstract class EJBContextImpl
     /**
      *
      */
+    @Override
     public boolean getRollbackOnly()
         throws IllegalStateException
     {
@@ -595,6 +611,7 @@ public abstract class EJBContextImpl
      * is covered by this check.  It is overridden in the applicable concrete
      * context impl subclasses.
      */
+    @Override
     public void checkTimerServiceMethodAccess()
         throws IllegalStateException
     {

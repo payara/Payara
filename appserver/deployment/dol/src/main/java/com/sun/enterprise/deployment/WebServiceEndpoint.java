@@ -627,6 +627,7 @@ public class WebServiceEndpoint extends Descriptor
     /**
      * Get ordered list of WebServiceHandler handler chains for this endpoint.
      */
+    @Override
     public LinkedList<WebServiceHandlerChain> getHandlerChain() {
         return handlerChains;
     }
@@ -634,6 +635,7 @@ public class WebServiceEndpoint extends Descriptor
     /**
      *@return true if this endpoint has at least one handler chain
      */
+    @Override
     public boolean hasHandlerChain() {
         return ( handlerChains.size() > 0 );
     }
@@ -641,6 +643,7 @@ public class WebServiceEndpoint extends Descriptor
     /**
      * Append handlerchain to end of handlerchain for this endpoint.
      */
+    @Override
     public void addHandlerChain(WebServiceHandlerChain handlerChain) {
         handlerChains.addLast(handlerChain);
 
@@ -1055,6 +1058,7 @@ public class WebServiceEndpoint extends Descriptor
         return "so`ap";
     }
 
+    @Override
     public void print(StringBuffer toStringBuffer) {
         super.print(toStringBuffer);
         toStringBuffer.append("\n endpoint name = ").append(endpointName);

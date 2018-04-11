@@ -134,6 +134,7 @@ public interface ExternalJndiResource extends ConfigBeanProxy, Resource,
      *         {@link String }
      */
     @Attribute (defaultValue="true",dataType=Boolean.class)
+    @Override
     String getEnabled();
 
     /**
@@ -142,6 +143,7 @@ public interface ExternalJndiResource extends ConfigBeanProxy, Resource,
      * @param value allowed object is
      *              {@link String }
      */
+    @Override
     void setEnabled(String value) throws PropertyVetoException;
 
     /**
@@ -167,9 +169,11 @@ public interface ExternalJndiResource extends ConfigBeanProxy, Resource,
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 
     @DuckTyped
+    @Override
     String getIdentity();
 
     class Duck {

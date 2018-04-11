@@ -122,6 +122,7 @@ public class BaseCache implements Cache {
      * @param props opaque list of properties for a given cache implementation
      * @throws a generic Exception if the initialization failed
      */
+    @Override
     public void init(int maxEntries, Properties props) throws Exception {
         init(maxEntries, DEFAULT_LOAD_FACTOR, props);
     }
@@ -133,6 +134,7 @@ public class BaseCache implements Cache {
      * @param props opaque list of properties for a given cache implementation
      * @throws a generic Exception if the initialization failed
      */
+    @Override
     public void init(int maxEntries, float loadFactor, Properties props) {
 
         if (maxEntries <= 0) {
@@ -183,6 +185,7 @@ public class BaseCache implements Cache {
      * add the cache module listener
      * @param listener <code>CacheListener</code> implementation
      */
+    @Override
     public void addCacheListener(CacheListener listener) {
         listeners.add(listener);
     }
@@ -303,6 +306,7 @@ public class BaseCache implements Cache {
      * @param key of the entry
      * @return the index to be used in the cache
      */
+    @Override
     public final int getIndex(Object key) {
         return getIndex(hash(key));
     }
@@ -312,6 +316,7 @@ public class BaseCache implements Cache {
      * @param key lookup key
      * @returns the item stored at the key; null if not found.
      */
+    @Override
     public Object get(Object key) {
         int hashCode = hash(key);
 
@@ -360,6 +365,7 @@ public class BaseCache implements Cache {
      * @param key lookup key
      * @returns true if there is an item stored at the key; false if not.
      */
+    @Override
     public boolean contains(Object key) {
     	return (get(key) != null);
     }
@@ -369,6 +375,7 @@ public class BaseCache implements Cache {
      * @param key lookup key
      * @returns an Iterator over the items with the given key.
      */
+    @Override
     public Iterator getAll(Object key) {
         int hashCode = hash(key);
 		int index = getIndex(hashCode);
@@ -393,6 +400,7 @@ public class BaseCache implements Cache {
      * get an Iterator for the keys stored in the cache
      * @returns an Iterator
      */
+    @Override
     public Iterator keys() {
         ArrayList keyList = new ArrayList(entryCount);
 
@@ -413,6 +421,7 @@ public class BaseCache implements Cache {
      * @returns an Enumeration
      * XXX: should use Iterator which is based on Collections
      */
+    @Override
     public Enumeration elements() {
         Vector keyList = new Vector();
 
@@ -432,6 +441,7 @@ public class BaseCache implements Cache {
      * get an Iterator for the values stored in the cache
      * @returns an Iterator
      */
+    @Override
     public Iterator values() {
         ArrayList valueList = new ArrayList(entryCount);
 
@@ -454,6 +464,7 @@ public class BaseCache implements Cache {
      * @param object item value to be stored
      * @returns the previous item stored at the key; null if not found.
      */
+    @Override
     public Object put(Object key, Object value) {
         int hashCode = hash(key);
 
@@ -467,6 +478,7 @@ public class BaseCache implements Cache {
      * @param size in bytes of the value being cached
      * @returns the previous item stored at the key; null if not found.
      */
+    @Override
     public Object put(Object key, Object value, int size) {
         int hashCode = hash(key);
 
@@ -478,6 +490,7 @@ public class BaseCache implements Cache {
      * @param key lookup key
      * @param object item value to be stored
      */
+    @Override
     public void add(Object key, Object value) {
         int hashCode = hash(key);
 
@@ -492,6 +505,7 @@ public class BaseCache implements Cache {
      *
      * This function is suitable for multi-valued keys.
      */
+    @Override
     public void add(Object key, Object value, int size) {
         int hashCode = hash(key);
 
@@ -566,6 +580,7 @@ public class BaseCache implements Cache {
      * @param key lookup key
      * @returns the item stored at the key; null if not found.
      */
+    @Override
     public Object remove(Object key) {
         int hashCode = hash(key);
 
@@ -598,6 +613,7 @@ public class BaseCache implements Cache {
      * @param value to match (for a multi-valued keys)
      * @returns the item stored at the key; null if not found.
      */
+    @Override
     public Object remove(Object key, Object value) {
         int hashCode = hash(key);
 
@@ -690,6 +706,7 @@ public class BaseCache implements Cache {
      * remove all the item with the given key.
      * @param key lookup key
      */
+    @Override
     public void removeAll(Object key) {
         int hashCode = hash(key);
 		int index = getIndex(hashCode);
@@ -744,6 +761,7 @@ public class BaseCache implements Cache {
      * @returns true on successful notification, or false if there is
      *  no thread refreshing this entry.
      */
+    @Override
     public boolean waitRefresh(int index) {
 		synchronized (bucketLocks[index]) {
             if (refreshFlags[index] == false) {
@@ -764,6 +782,7 @@ public class BaseCache implements Cache {
      * notify threads waiting for a refresh on the object associated with the key
      * @param key lookup key
      */
+    @Override
     public void notifyRefresh(int index) {
         // notify other threads waiting for refresh
 		synchronized (bucketLocks[index]) {
@@ -776,6 +795,7 @@ public class BaseCache implements Cache {
      * clear all the entries from the cache.
      * @returns the number of entries cleared from the cache
      */
+    @Override
     public int clear() {
         
 		CacheItem item=null, next=null;
@@ -810,12 +830,14 @@ public class BaseCache implements Cache {
      *
      * This call is to be scheduled by a thread managed by the container.
      */
+    @Override
     public void trimExpiredEntries(int maxCount) {}
 
     /**
      * get the number of entries in the cache
      * @return the number of entries the cache currently holds
      */
+    @Override
     public int getEntryCount() {
         return entryCount;
     }
@@ -826,6 +848,7 @@ public class BaseCache implements Cache {
      * is this cache empty?
      * @returns true if the cache is empty; false otherwise.
      */
+    @Override
     public boolean isEmpty() {
         return (entryCount == 0);
     }
@@ -891,6 +914,7 @@ public class BaseCache implements Cache {
      * @return an Object corresponding to the stat
      * See also: Constant.java for the key
      */
+    @Override
     public Object getStatByName(String key) {
         Object stat = null;
 
@@ -926,6 +950,7 @@ public class BaseCache implements Cache {
      * @return a Map of stats
      * See also: Constant.java for the keys
      */
+    @Override
     public Map getStats() {
         HashMap stats = new HashMap();
 
@@ -957,6 +982,7 @@ public class BaseCache implements Cache {
      * Sets all references to null. This method should be called 
      * at the end of this object's life cycle.
      */
+    @Override
     public void destroy() {
         if ((listeners != null) && (buckets != null) && (bucketLocks != null)) {
             clear();
@@ -979,6 +1005,7 @@ public class BaseCache implements Cache {
     /**
      * clear the stats
      */
+    @Override
     public void clearStats() {
         hitCount = 0;
         missCount = 0;
@@ -1060,6 +1087,7 @@ public class BaseCache implements Cache {
             return oldValue;
         }
     
+        @Override
         public String toString() {
             return "key: " + key + "; value: " + value.toString();
         }

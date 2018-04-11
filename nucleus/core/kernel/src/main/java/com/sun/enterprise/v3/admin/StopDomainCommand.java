@@ -80,6 +80,7 @@ public class StopDomainCommand extends StopServer implements AdminCommand {
      * All running services are stopped. 
      * LookupManager is flushed.
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         if (!env.isDas()) {

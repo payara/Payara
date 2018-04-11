@@ -73,6 +73,7 @@ public class JVMStatsProviderBootstrap implements PostConstruct {
     private ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
     public static final String JVM = "jvm";
 
+    @Override
     public void postConstruct(){
 
         /* register with monitoring */

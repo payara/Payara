@@ -1028,9 +1028,11 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
     }
     )
     @Element
+    @Override
     List<Property> getProperty();
 
     @DuckTyped
+    @Override
     String getIdentity();
 
     class Duck {

@@ -548,6 +548,7 @@ public class GFLauncherInfo {
 
         File[] files = domainParentDir.listFiles(new FileFilter() {
 
+            @Override
             public boolean accept(File f) {
                 return GFLauncherUtils.safeIsDirectory(f);
             }

@@ -60,14 +60,17 @@ public class LongWorkContext implements PrimitiveWorkContext, Serializable
     longValue = l;
   }
 
+  @Override
   public Object get() {
     return new Long(longValue());
   }
   
+  @Override
   public String toString() {
     return "" + longValue;
   }
 
+  @Override
   public boolean equals(Object obj) {
     if (obj instanceof LongWorkContext) {
       return ((LongWorkContext)obj).longValue == longValue;
@@ -79,10 +82,12 @@ public class LongWorkContext implements PrimitiveWorkContext, Serializable
     return longValue;
   }
   
+  @Override
   public void writeContext(WorkContextOutput out) throws IOException {
     out.writeLong(longValue);
   }
   
+  @Override
   public void readContext(WorkContextInput in) throws IOException {
     longValue = in.readLong();
   }

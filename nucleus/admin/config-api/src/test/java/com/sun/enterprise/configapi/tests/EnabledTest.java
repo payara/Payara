@@ -55,6 +55,7 @@ import java.util.List;
  * User: Jerome Dochez Date: Feb 21, 2008 Time: 2:06:44 PM
  */
 public class EnabledTest extends ConfigApiTest {
+    @Override
     public String getFileName() {
         return "DomainTest";
     }

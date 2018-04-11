@@ -94,10 +94,11 @@ public class LoggerFactoryJDK14 extends AbstractLoggerFactory {
      * @param loader the class loader used to load the resource bundle, or null
      * @return the logger
      */
+    @Override
     protected Logger createLogger (final String absoluteLoggerName,
         final String bundleName, final ClassLoader loader) {
-        return (Logger) AccessController.doPrivileged ( 
-            new PrivilegedAction () { 
+        return (Logger) AccessController.doPrivileged (new PrivilegedAction () { 
+            @Override 
                 public Object run () { 
                     LoggerJDK14 logger = null;
                     ClassLoader pushed = Thread.currentThread().getContextClassLoader();

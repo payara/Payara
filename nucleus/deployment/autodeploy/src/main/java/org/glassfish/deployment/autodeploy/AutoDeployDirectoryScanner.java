@@ -145,6 +145,7 @@ public class AutoDeployDirectoryScanner implements DirectoryScanner{
      * @param autodeployDir
      * @param includeSubDir
      * @return  */
+    @Override
     public File[] getAllDeployableModules(File autodeployDir, boolean includeSubDir) {
         
         AutoDeployedFilesManager adfm = null;

@@ -98,6 +98,7 @@ class GlassFishObjectOutputStream extends java.io.ObjectOutputStream {
 	 * This code is needed to serialize non-Serializable objects that can be
 	 * part of a bean's state. See EJB2.0 section 7.4.1.
 	 */
+        @Override
 	protected Object replaceObject(Object obj) throws IOException {
 		Object result = obj;
 

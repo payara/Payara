@@ -128,14 +128,17 @@ public class EarDeployer implements Deployer {
 
     private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EarDeployer.class);
 
+    @Override
     public MetaData getMetaData() {
         return new MetaData(false, null, new Class[] { Application.class});
     }
 
+    @Override
     public Object loadMetaData(Class type, DeploymentContext context) {
         return null;
     }
 
+    @Override
     public boolean prepare(final DeploymentContext context) {
 
         final Application application = context.getModuleMetaData(Application.class);
@@ -150,6 +153,7 @@ public class EarDeployer implements Deployer {
 
         try {
             doOnAllBundles(application, new BundleBlock<ModuleInfo>() {
+                @Override
                 public ModuleInfo doBundle(ModuleDescriptor bundle) throws Exception {
                     ExtendedDeploymentContext sContext = subContext(application, context, bundle.getArchiveUri());
                     ModuleInfo info = prepareBundle(bundle, application, 
@@ -309,15 +313,18 @@ public class EarDeployer implements Deployer {
         return deployment.prepareModule(orderedContainers, md.getArchiveUri(), bundleContext, tracker);
     }
 
+    @Override
     public ApplicationContainer load(Container container, DeploymentContext context) {
 
         return new DummyApplication();
     }
 
+    @Override
     public void unload(ApplicationContainer appContainer, DeploymentContext context) {
         // nothing to do
     }
 
+    @Override
     public void clean(DeploymentContext context) {
         // nothing to do
     }

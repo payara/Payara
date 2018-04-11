@@ -102,6 +102,7 @@ public class EjbBundleContext extends ResourceContainerContextImpl {
         return aeHandler;
     }
             
+    @Override
     public HandlerChainContainer[] 
             getHandlerChainContainers(boolean serviceSideHandlerChain, Class declaringClass) {
         if(serviceSideHandlerChain) {
@@ -123,6 +124,7 @@ public class EjbBundleContext extends ResourceContainerContextImpl {
         }
     }
     
+    @Override
     public ServiceReferenceContainer[] getServiceRefContainers() {
         ServiceReferenceContainer[] container = 
                 new ServiceReferenceContainer[getDescriptor().getEjbs().size()];

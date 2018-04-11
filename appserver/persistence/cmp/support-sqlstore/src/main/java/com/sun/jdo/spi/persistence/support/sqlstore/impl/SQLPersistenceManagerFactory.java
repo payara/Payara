@@ -195,6 +195,7 @@ public class SQLPersistenceManagerFactory
      * Sets database user name
      * @param userName	 user name
      */
+    @Override
     public void setConnectionUserName(String userName) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -204,6 +205,7 @@ public class SQLPersistenceManagerFactory
      * Returns database user name
      * @return	current database user name
      */
+    @Override
     public String getConnectionUserName() {
         return _persistenceManagerFactory.getConnectionUserName();
     }
@@ -212,6 +214,7 @@ public class SQLPersistenceManagerFactory
      * Sets database user password
      * @param       password user password
      */
+    @Override
     public void setConnectionPassword(char[] password) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -221,6 +224,7 @@ public class SQLPersistenceManagerFactory
      * Sets connection URL
      * @param	url connection URL
      */
+    @Override
     public void setConnectionURL(String url) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -230,6 +234,7 @@ public class SQLPersistenceManagerFactory
      * Returns connection URL
      * @return	connection URL
      */
+    @Override
     public String getConnectionURL() {
         return _persistenceManagerFactory.getConnectionURL();
 
@@ -239,6 +244,7 @@ public class SQLPersistenceManagerFactory
      * Sets JDBC driver name
      * @param	driverName driver name
      */
+    @Override
     public void setConnectionDriverName(String driverName) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -248,6 +254,7 @@ public class SQLPersistenceManagerFactory
      * Returns JDBC driver name
      * @return	driver name
      */
+    @Override
     public String getConnectionDriverName() {
         return _persistenceManagerFactory.getConnectionDriverName();
 
@@ -257,6 +264,7 @@ public class SQLPersistenceManagerFactory
      * Sets ConnectionFactory
      * @param	cf as java.lang.Object
      */
+    @Override
     public void setConnectionFactory(Object cf) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -266,6 +274,7 @@ public class SQLPersistenceManagerFactory
      * Returns ConnectionFactory
      * @return	Connection Factory as java.lang.Object
      */
+    @Override
     public Object getConnectionFactory() {
         if (_dataSource != null)
             return _dataSource;
@@ -277,6 +286,7 @@ public class SQLPersistenceManagerFactory
      * Sets the optimistic flag for all PersistenceManagers
      * @param flag          boolean optimistic flag
      */
+    @Override
     public void setOptimistic(boolean flag) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -286,6 +296,7 @@ public class SQLPersistenceManagerFactory
      * Returns the boolean value of the optimistic flag for all PersistenceManagers
      * @return      boolean optimistic flag
      */
+    @Override
     public boolean getOptimistic() {
         return _persistenceManagerFactory.getOptimistic();
     }
@@ -294,6 +305,7 @@ public class SQLPersistenceManagerFactory
      * Sets flag that will not cause the eviction of persistent instances after transaction completion.
      * @param flag          boolean flag passed
      */
+    @Override
     public void setRetainValues(boolean flag) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -304,6 +316,7 @@ public class SQLPersistenceManagerFactory
      * instances after transaction completion.
      * @return      boolean setting for the flag
      */
+    @Override
     public boolean getRetainValues() {
         return _persistenceManagerFactory.getRetainValues();
     }
@@ -312,6 +325,7 @@ public class SQLPersistenceManagerFactory
      * Sets the flag that allows non-transactional instances to be managed in the cache.
      * @param flag          boolean flag passed
      */
+    @Override
     public void setNontransactionalRead(boolean flag) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -322,6 +336,7 @@ public class SQLPersistenceManagerFactory
      * managed in the cache.
      * @return      boolean setting for the flag
      */
+    @Override
     public boolean getNontransactionalRead() {
         return _persistenceManagerFactory.getNontransactionalRead();
     }
@@ -332,6 +347,7 @@ public class SQLPersistenceManagerFactory
      * approximate results by ignoring changed values in the cache.
      * @param flag          boolean flag passed
      */
+    @Override
     public void setIgnoreCache(boolean flag) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -342,6 +358,7 @@ public class SQLPersistenceManagerFactory
      * be optimized to return approximate results by ignoring changed values in the cache.
      * @return      boolean setting for the flag
      */
+    @Override
     public boolean getIgnoreCache() {
         return _persistenceManagerFactory.getIgnoreCache();
     }
@@ -351,6 +368,7 @@ public class SQLPersistenceManagerFactory
      * to execute in the datastore associated with this PersistenceManagerFactory.
      * @param timeout          new timout value in seconds; zero means unlimited
      */
+    @Override
     public void setQueryTimeout(int timeout) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -361,6 +379,7 @@ public class SQLPersistenceManagerFactory
      * to execute in the datastore associated with this PersistenceManagerFactory.
      * @return      timout value in seconds; zero means unlimited
      */
+    @Override
     public int getQueryTimeout() {
         return _persistenceManagerFactory.getQueryTimeout();
     }
@@ -369,6 +388,7 @@ public class SQLPersistenceManagerFactory
      * Sets maximum number of connections in the connection pool
      * @param MaxPool       maximum number of connections
      */
+    @Override
     public void setConnectionMaxPool(int MaxPool) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -378,6 +398,7 @@ public class SQLPersistenceManagerFactory
      * Returns maximum number of connections in the connection pool
      * @return      connectionMaxPool
      */
+    @Override
     public int getConnectionMaxPool() {
         return _persistenceManagerFactory.getConnectionMaxPool();
     }
@@ -386,6 +407,7 @@ public class SQLPersistenceManagerFactory
      * Sets minimum number of connections in the connection pool
      * @param MinPool       minimum number of connections
      */
+    @Override
     public void setConnectionMinPool(int MinPool) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -395,6 +417,7 @@ public class SQLPersistenceManagerFactory
      * Returns minimum number of connections in the connection pool
      * @return      connectionMinPool
      */
+    @Override
     public int getConnectionMinPool() {
         return _persistenceManagerFactory.getConnectionMinPool();
     }
@@ -404,6 +427,7 @@ public class SQLPersistenceManagerFactory
      * from the connection pool before throwing an exception
      * @param MsWait        number in milliseconds
      */
+    @Override
     public void setConnectionMsWait(int MsWait) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -414,6 +438,7 @@ public class SQLPersistenceManagerFactory
      * from the connection pool before throwing an exception
      * @return      number in milliseconds
      */
+    @Override
     public int getConnectionMsWait() {
         return _persistenceManagerFactory.getConnectionMsWait();
     }
@@ -425,6 +450,7 @@ public class SQLPersistenceManagerFactory
      *                      connection, in milliseconds.
      *
      */
+    @Override
     public void setConnectionMsInterval(int MsInterval) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -435,6 +461,7 @@ public class SQLPersistenceManagerFactory
      * manager's attempts to get a pooled connection.
      * @return      the length of the interval between tries in milliseconds
      */
+    @Override
     public int getConnectionMsInterval() {
         return _persistenceManagerFactory.getConnectionMsInterval();
     }
@@ -444,6 +471,7 @@ public class SQLPersistenceManagerFactory
      * established to the data source
      * @param LoginTimeout           wait time in seconds
      */
+    @Override
     public void setConnectionLoginTimeout(int LoginTimeout) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -454,6 +482,7 @@ public class SQLPersistenceManagerFactory
      * established to the data source
      * @return      wait time in seconds
      */
+    @Override
     public int getConnectionLoginTimeout() {
         return _persistenceManagerFactory.getConnectionLoginTimeout();
     }
@@ -462,6 +491,7 @@ public class SQLPersistenceManagerFactory
      * Sets the LogWriter to which messages should be sent
      * @param pw            LogWriter
      */
+    @Override
     public void setConnectionLogWriter(PrintWriter pw) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -471,6 +501,7 @@ public class SQLPersistenceManagerFactory
      * Returns the LogWriter to which messages should be sent
      * @return      LogWriter
      */
+    @Override
     public PrintWriter getConnectionLogWriter() {
         return _persistenceManagerFactory.getConnectionLogWriter();
     }
@@ -483,6 +514,7 @@ public class SQLPersistenceManagerFactory
      *
      * @param level - one of the java.sql.Connection.TRANSACTION_* isolation values
      */
+    @Override
     public void setConnectionTransactionIsolation(int level) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -492,6 +524,7 @@ public class SQLPersistenceManagerFactory
      * Returns current transaction isolation level for connections of this PersistenceManagerFactory.
      * @return      the current transaction isolation mode value as java.sql.Connection.TRANSACTION_*
      */
+    @Override
     public int getConnectionTransactionIsolation() {
         return _persistenceManagerFactory.getConnectionTransactionIsolation();
     }
@@ -500,6 +533,7 @@ public class SQLPersistenceManagerFactory
      * Sets ConnectionFactory name
      * @param connectionFactoryName     ConnectionFactory name
      */
+    @Override
     public void setConnectionFactoryName(String connectionFactoryName) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -509,6 +543,7 @@ public class SQLPersistenceManagerFactory
      * Returns ConnectionFactory name
      * @return      ConnectionFactoryName
      */
+    @Override
     public String getConnectionFactoryName() {
         return _persistenceManagerFactory.getConnectionFactoryName();
     }
@@ -517,6 +552,7 @@ public class SQLPersistenceManagerFactory
      * Sets Identifier.
      * @param identifier
      */
+    @Override
     public void setIdentifier(String identifier) {
 		throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
 				"jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -526,6 +562,7 @@ public class SQLPersistenceManagerFactory
      * Gets Identifier.
      * @return identifier
      */
+    @Override
     public String getIdentifier() {
         return _persistenceManagerFactory.getIdentifier();
     }
@@ -534,6 +571,7 @@ public class SQLPersistenceManagerFactory
      * Returns maximum number of PersistenceManager instances in the pool
      * @return maxPool
      */
+    @Override
     public int getMaxPool() {
         return maxPool;
     }
@@ -543,6 +581,7 @@ public class SQLPersistenceManagerFactory
      * Sets maximum number of PersistenceManager instances in the pool
      * @param MaxPool       maximum number of PersistenceManager instances
      */
+    @Override
     public void setMaxPool(int MaxPool) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -552,6 +591,7 @@ public class SQLPersistenceManagerFactory
      * Returns minimum number of PersistenceManager instances in the pool
      * @return minPool
      */
+    @Override
     public int getMinPool() {
         return minPool;
     }
@@ -561,6 +601,7 @@ public class SQLPersistenceManagerFactory
      * Sets minimum number of PersistenceManager instances in the pool
      * @param MinPool       minimum number of PersistenceManager instances
      */
+    @Override
     public void setMinPool(int MinPool) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -572,6 +613,7 @@ public class SQLPersistenceManagerFactory
      * to execute in the datastore associated with this PersistenceManagerFactory.
      * @param timeout          new timout value in seconds; zero means unlimited
      */
+    @Override
     public void setUpdateTimeout(int timeout) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -582,6 +624,7 @@ public class SQLPersistenceManagerFactory
      * to execute in the datastore associated with this PersistenceManagerFactory.
      * @return      timout value in seconds; zero means unlimited
      */
+    @Override
     public int getUpdateTimeout() {
         return _persistenceManagerFactory.getUpdateTimeout();
     }
@@ -593,6 +636,7 @@ public class SQLPersistenceManagerFactory
      * Object Id.
      * @return      boolean supersedeDeletedInstance flag
      */
+    @Override
     public boolean getSupersedeDeletedInstance () {
         return _persistenceManagerFactory.getSupersedeDeletedInstance();
     }
@@ -602,6 +646,7 @@ public class SQLPersistenceManagerFactory
      * Sets the supersedeDeletedInstance flag for all PersistenceManagers.
      * @param flag          boolean supersedeDeletedInstance flag
      */
+    @Override
     public void setSupersedeDeletedInstance (boolean flag) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -616,6 +661,7 @@ public class SQLPersistenceManagerFactory
       * @see PersistenceManager#getObjectById(Object oid)
       * @return      boolean requireCopyObjectId flag
       */
+    @Override
      public boolean getRequireCopyObjectId() {
          return _persistenceManagerFactory.getRequireCopyObjectId();
      }
@@ -631,6 +677,7 @@ public class SQLPersistenceManagerFactory
       * @see PersistenceManager#getObjectById(Object oid)
       * @param flag          boolean requireCopyObjectId flag
       */
+    @Override
      public void setRequireCopyObjectId (boolean flag) {
          throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -645,6 +692,7 @@ public class SQLPersistenceManagerFactory
      *
      * @return      boolean requireTrackedSCO flag
      */
+    @Override
     public boolean getRequireTrackedSCO() {
         return _persistenceManagerFactory.getRequireTrackedSCO();
     }
@@ -657,6 +705,7 @@ public class SQLPersistenceManagerFactory
      *
      * @param flag          boolean requireTrackedSCO flag
      */
+    @Override
     public void setRequireTrackedSCO (boolean flag) {
         throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                 "jdo.persistencemanagerfactoryimpl.notsupported")); //NOI18N
@@ -668,6 +717,7 @@ public class SQLPersistenceManagerFactory
      * @return      the persistence manager
      * @exception JDOUserException if data source info is not set
      */
+    @Override
     public PersistenceManager getPersistenceManager() {
         return getPersistenceManager(null, null);
     }
@@ -680,6 +730,7 @@ public class SQLPersistenceManagerFactory
      * @return	the persistence manager
      * @exception JDOUserException if data source info is not set
      */
+    @Override
     public PersistenceManager getPersistenceManager(String username, char[] password) {
         boolean debug = logger.isLoggable(Logger.FINEST);
 
@@ -760,6 +811,7 @@ public class SQLPersistenceManagerFactory
      * Returns non-operational properties to be available to the application via a Properties instance.
      * @return      Properties object
      */
+    @Override
     public Properties getProperties() {
         return _persistenceManagerFactory.getProperties();
     }
@@ -777,6 +829,7 @@ public class SQLPersistenceManagerFactory
      * There is no javax.transaction.Transaction
      * available before the user starts the transaction.
      */
+    @Override
     public void registerPersistenceManager(
             com.sun.jdo.spi.persistence.support.sqlstore.PersistenceManager pm,
             javax.transaction.Transaction t) {
@@ -844,6 +897,7 @@ public class SQLPersistenceManagerFactory
 
     /** Releases closed PersistenceManager that is not in use
      */
+    @Override
     public void releasePersistenceManager(com.sun.jdo.spi.persistence.support.sqlstore.PersistenceManager pm,
                                           javax.transaction.Transaction t) {
 
@@ -942,6 +996,7 @@ public class SQLPersistenceManagerFactory
      * @param obj The possibly null object to check.
      * @return true if obj is equal to this SQLPersistenceManagerFactory; false otherwise.
      */
+    @Override
     public boolean equals(Object obj) {
         if ((obj != null) && (obj instanceof SQLPersistenceManagerFactory)) {
             SQLPersistenceManagerFactory pmf = (SQLPersistenceManagerFactory) obj;
@@ -956,6 +1011,7 @@ public class SQLPersistenceManagerFactory
      *
      * @return A hash code of the owning PersistenceManagerFactory as an int.
      */
+    @Override
     public int hashCode() {
         return this._persistenceManagerFactory.hashCode();
     }
@@ -965,6 +1021,7 @@ public class SQLPersistenceManagerFactory
      * VersionConsistencyCache.
      * @return This PMF's VersionConsistencyCache.
      */
+    @Override
     public VersionConsistencyCache getVersionConsistencyCache() {
         if (null == vcCache) {
             if (_store == null) {

@@ -61,6 +61,7 @@ public final class AttributeStringifier implements Stringifier
 	AttributeStringifier()
 	{
 	}
+        @Override
 		public String
 	stringify( Object o )
 	{

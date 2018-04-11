@@ -66,6 +66,7 @@ public class AdministeredObjectDefinitionNode extends DeploymentDescriptorNode<A
                 "addAdministeredObjectPropertyDescriptor");
     }
 
+    @Override
     protected Map<String, String> getDispatchTable() {
         // no need to be synchronized for now
         Map<String, String> table = super.getDispatchTable();
@@ -85,6 +86,7 @@ public class AdministeredObjectDefinitionNode extends DeploymentDescriptorNode<A
             )
     private static final String RESOURCE_ADAPTER_NAME_INVALID = "AS-DEPLOYMENT-00022";
 
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, AdministeredObjectDefinitionDescriptor desc) {
         Node node = appendChild(parent, nodeName);
         appendTextChild(node, TagNames.ADMINISTERED_OBJECT_DESCRIPTION, desc.getDescription());
@@ -114,6 +116,7 @@ public class AdministeredObjectDefinitionNode extends DeploymentDescriptorNode<A
         return node;
     }
     
+    @Override
     public AdministeredObjectDefinitionDescriptor getDescriptor() {
         if(descriptor == null){
             descriptor = new AdministeredObjectDefinitionDescriptor();

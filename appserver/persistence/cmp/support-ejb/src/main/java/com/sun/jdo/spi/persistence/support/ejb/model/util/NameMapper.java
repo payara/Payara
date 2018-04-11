@@ -157,10 +157,12 @@ public abstract class NameMapper extends AbstractNameMapper
 		}
 	}
 
+        @Override
 	protected Map getGeneratedFieldsMap ()
 	{
 		return _generatedRelToInverseRelMap;
 	}
+        @Override
 	protected Map getInverseFieldsMap () { return _relToInverseGeneratedRelMap; }
 
 	// isCMPField does not return true for relationships, so we use getTypeFor
@@ -203,6 +205,7 @@ public abstract class NameMapper extends AbstractNameMapper
 	 * @return the key class type, one of {@link #USER_DEFINED_KEY_CLASS}, 
 	 * {@link #PRIMARY_KEY_FIELD}, or {@link #UNKNOWN_KEY_CLASS}
 	 */
+        @Override
 	public int getKeyClassTypeForEjbName (String name)
 	{
 		String keyClass = getKeyClassForEjbName(name);

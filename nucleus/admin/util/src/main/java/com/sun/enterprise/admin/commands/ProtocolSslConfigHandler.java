@@ -74,6 +74,7 @@ public class ProtocolSslConfigHandler implements SslConfigHandler {
                 return;
             } else {
                 ConfigSupport.apply(new SingleConfigCode<Protocol>() {
+                                    @Override
                                     public Object run(Protocol param) throws TransactionFailure {
                                         Ssl newSsl = param.createChild(Ssl.class);
                                         param.setSecurityEnabled("true");
@@ -98,6 +99,7 @@ public class ProtocolSslConfigHandler implements SslConfigHandler {
             if (protocol != null) {
 
                 ConfigSupport.apply(new SingleConfigCode<Protocol>() {
+                    @Override
                     public Object run(Protocol param) {
                         param.setSecurityEnabled("false");
                         param.setSsl(null);

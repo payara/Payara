@@ -73,6 +73,7 @@ public class SingletonHandler extends AbstractEjbHandler {
      * @param annotation
      * @return name
      */
+    @Override
     protected String getAnnotatedName(Annotation annotation) {
         Singleton slAn = (Singleton) annotation;
         return slAn.name();
@@ -84,6 +85,7 @@ public class SingletonHandler extends AbstractEjbHandler {
      * @param annotation
      * @return boolean check for validity of EjbDescriptor
      */
+    @Override
     protected boolean isValidEjbDescriptor(EjbDescriptor ejbDesc,
             Annotation annotation) {
         boolean isValid = EjbSessionDescriptor.TYPE.equals(ejbDesc.getType());
@@ -107,6 +109,7 @@ public class SingletonHandler extends AbstractEjbHandler {
      * @param ainfo
      * @return a new EjbDescriptor
      */
+    @Override
     protected EjbDescriptor createEjbDescriptor(String elementName,
             AnnotationInfo ainfo) throws AnnotationProcessorException {
 
@@ -130,6 +133,7 @@ public class SingletonHandler extends AbstractEjbHandler {
      * @param ainfo
      * @return HandlerProcessingResult
      */
+    @Override
     protected HandlerProcessingResult setEjbDescriptorInfo(
             EjbDescriptor ejbDesc, AnnotationInfo ainfo)
             throws AnnotationProcessorException {

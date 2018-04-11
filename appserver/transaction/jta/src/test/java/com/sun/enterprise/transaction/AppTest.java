@@ -78,6 +78,7 @@ public class AppTest extends TestCase {
         return new TestSuite(AppTest.class);
     }
 
+    @Override
     public void setUp() {
         try {
             t = new JavaEETransactionManagerSimplified();
@@ -863,6 +864,7 @@ public class AppTest extends TestCase {
             this.t = t;
         }
 
+        @Override
         public void beforeCompletion() {
             System.out.println("**Called beforeCompletion  **");
             called_beforeCompletion = true;
@@ -882,6 +884,7 @@ public class AppTest extends TestCase {
             }
         }
 
+        @Override
         public void afterCompletion(int status) {
             System.out.println("**Called afterCompletion with status:  "
                     + JavaEETransactionManagerSimplified.getStatusAsString(status));
@@ -897,15 +900,25 @@ public class AppTest extends TestCase {
 
     static class TestResource implements XAResource {
 
+      @Override
       public void commit(Xid xid, boolean onePhase) throws XAException{}
+      @Override
       public boolean isSameRM(XAResource xaresource) throws XAException { return false; }
+      @Override
       public void rollback(Xid xid) throws XAException {}
+      @Override
       public int prepare(Xid xid) throws XAException { return XAResource.XA_OK; }
+      @Override
       public boolean setTransactionTimeout(int i) throws XAException { return true; }
+      @Override
       public int getTransactionTimeout() throws XAException { return 0; }
+      @Override
       public void forget(Xid xid) throws XAException { }
+      @Override
       public void start(Xid xid, int flags) throws XAException { }
+      @Override
       public void end(Xid xid, int flags) throws XAException { }
+      @Override
       public Xid[] recover(int flags) throws XAException { return null; }
 
     }

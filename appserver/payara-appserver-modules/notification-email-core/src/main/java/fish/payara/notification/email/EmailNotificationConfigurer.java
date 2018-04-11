@@ -76,6 +76,7 @@ public class EmailNotificationConfigurer extends BaseNotificationConfigurer<Emai
     @Pattern(regexp = "\\S+@\\S+")
     private String to;
 
+    @Override
     protected void applyValues(EmailNotifierConfiguration configuration) throws PropertyVetoException {
         if(this.enabled != null) {
             configuration.enabled(this.enabled);

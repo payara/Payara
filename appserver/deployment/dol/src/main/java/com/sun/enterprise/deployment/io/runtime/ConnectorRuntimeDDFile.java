@@ -59,6 +59,7 @@ public class ConnectorRuntimeDDFile extends ConfigurationDeploymentDescriptorFil
      * @return the location of the DeploymentDescriptor file for a
      * particular type of J2EE Archive
      */
+    @Override
     public String getDeploymentDescriptorPath() {
         return DescriptorConstants.S1AS_RAR_JAR_ENTRY; 
     }
@@ -69,6 +70,7 @@ public class ConnectorRuntimeDDFile extends ConfigurationDeploymentDescriptorFil
      *
      * @param the descriptor for which we need the node
      */
+    @Override
     public RootXMLNode getRootXMLNode(Descriptor descriptor) {
    
         if (descriptor instanceof ConnectorDescriptor) {

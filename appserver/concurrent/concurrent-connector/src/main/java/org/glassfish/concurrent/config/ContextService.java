@@ -75,6 +75,7 @@ public interface ContextService extends ConfigBeanProxy, Resource,
         BindableResource, ConcurrencyResource, Payload  {
 
     @DuckTyped
+    @Override
     String getIdentity();
 
     class Duck {

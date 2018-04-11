@@ -55,6 +55,7 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name="EJB")
 public class EJBPolicyContextDelegate implements PolicyContextDelegate {
 
+    @Override
     public Object getEnterpriseBean(ComponentInvocation inv) {
         if (inv instanceof EJBInvocation) {
             return ((EJBInvocation)inv).getJaccEjb();
@@ -62,6 +63,7 @@ public class EJBPolicyContextDelegate implements PolicyContextDelegate {
         return null;
     }
     
+    @Override
     public Object getEJbArguments(ComponentInvocation inv) {
         if (inv instanceof EJBInvocation) {
             EJBInvocation eInv = (EJBInvocation) inv;
@@ -74,6 +76,7 @@ public class EJBPolicyContextDelegate implements PolicyContextDelegate {
         return null;
     }
     
+    @Override
     public Object getSOAPMessage(ComponentInvocation inv) {
         if (inv instanceof EJBInvocation) {
             EJBInvocation eInv = (EJBInvocation) inv;
@@ -86,6 +89,7 @@ public class EJBPolicyContextDelegate implements PolicyContextDelegate {
         return null;
     }
 
+    @Override
     public void setSOAPMessage(Object message, ComponentInvocation inv) {
          if (inv instanceof EJBInvocation) {
             EJBInvocation eInv = (EJBInvocation) inv;
@@ -95,6 +99,7 @@ public class EJBPolicyContextDelegate implements PolicyContextDelegate {
         }
     }
 
+    @Override
     public boolean authorize(ComponentInvocation inv, Method m) throws Exception {
          Exception ie = null;
          if (inv instanceof EJBInvocation) {

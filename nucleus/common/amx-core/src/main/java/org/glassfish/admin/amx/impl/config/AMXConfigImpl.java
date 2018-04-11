@@ -459,6 +459,7 @@ public class AMXConfigImpl extends AMXImplBase
             
             return buf.toString();
         }
+        @Override
         public String toString()
         {
             return toString("");
@@ -569,6 +570,7 @@ public class AMXConfigImpl extends AMXImplBase
             mNewConfigBeans    = ListUtil.newList();
         }
 
+        @Override
         public Object run(final ConfigBeanProxy... params)
                 throws PropertyVetoException, TransactionFailure
         {
@@ -737,6 +739,7 @@ public class AMXConfigImpl extends AMXImplBase
             mSubs = subs;
         }
 
+        @Override
         public void performOn(final WriteableView item) throws TransactionFailure
         {
             final ConfigBeanJMXSupport sptRoot = ConfigBeanJMXSupportRegistry.getInstance( com.sun.enterprise.config.serverbeans.Domain.class );
@@ -1173,6 +1176,7 @@ public class AMXConfigImpl extends AMXImplBase
             mTarget = target;
         }
 
+        @Override
         public void transactionCommited(List<PropertyChangeEvent> changes)
         {
             // include only events that match the desired config bean; other transactions
@@ -1195,6 +1199,7 @@ public class AMXConfigImpl extends AMXImplBase
             }
         }
 
+        @Override
         public void unprocessedTransactedEvents(List<UnprocessedChangeEvents> changes)
         {
             // amx probably does not care that some changes were not processed successfully
@@ -1359,6 +1364,7 @@ public class AMXConfigImpl extends AMXImplBase
             mChanges = changes;
         }
 
+        @Override
         protected void makeChanges()
                 throws TransactionFailure
         {

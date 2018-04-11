@@ -65,6 +65,7 @@ public final class UnprocessedChangeEvent {
             ", NewValue = " + e.getNewValue() + ", Source = " + e.getSource();
     }
     
+    @Override
     public String toString() {
         return "UnprocessedChangeEvent{" + toString(mEvent) +
                 "}, reason = " + mReason +

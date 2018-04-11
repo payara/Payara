@@ -89,6 +89,7 @@ public class ListJndiEntries implements AdminCommand {
     @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     String target;
 
+   @Override
     public void execute(AdminCommandContext context) {
         List<String> names = null;
         final ActionReport report = context.getActionReport();

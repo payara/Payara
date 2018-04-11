@@ -54,6 +54,7 @@ import org.jvnet.hk2.annotations.Service;
 @Visibility(Private.class)
 public class SimplePrivateCommand implements AdminCommand {
 
+    @Override
     public void execute(AdminCommandContext context) {
         context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }

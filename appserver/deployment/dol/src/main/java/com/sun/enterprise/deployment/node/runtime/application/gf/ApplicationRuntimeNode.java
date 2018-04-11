@@ -87,6 +87,7 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
     /**
      * Initialize the child handlers
      */    
+    @Override
     protected void init() {     
         super.init();                          
         registerElementHandler(new XMLElement(RuntimeTagNames.SECURITY_ROLE_MAPPING), 
@@ -129,6 +130,7 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return new XMLElement(RuntimeTagNames.S1AS_APPLICATION_RUNTIME_TAG);
     } 
@@ -136,6 +138,7 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
     /** 
      * @return the DOCTYPE that should be written to the XML file
      */
+    @Override
     public String getDocType() {
 	return DTDRegistry.SUN_APPLICATION_600_DTD_PUBLIC_ID;
     }
@@ -143,6 +146,7 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
     /**
      * @return the SystemID of the XML file
      */
+    @Override
     public String getSystemID() {
 	return DTDRegistry.SUN_APPLICATION_600_DTD_SYSTEM_ID;
     }
@@ -150,6 +154,7 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
     /**
      * @return NULL for all runtime nodes.
      */
+    @Override
     public List<String> getSystemIDs() {
         return null;
     }
@@ -160,6 +165,7 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */    
+    @Override
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
         table.put(RuntimeTagNames.REALM, "setRealm");
@@ -172,6 +178,7 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
 	if (element.getQName().equals(RuntimeTagNames.PASS_BY_REFERENCE)) {
 	    descriptor.setPassByReference("true".equalsIgnoreCase(value));
@@ -231,6 +238,7 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
      *
      * @param newDescriptor the new descriptor
      */
+    @Override
     public void addDescriptor(Object newDescriptor) {
         if (newDescriptor instanceof SecurityRoleMapping) {
             SecurityRoleMapping roleMap = (SecurityRoleMapping) newDescriptor;
@@ -268,6 +276,7 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
      * @param application the descriptor to write
      * @return the DOM tree top node
      */    
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, Application application) {    
         Node appNode = super.writeDescriptor(parent, nodeName, application);
 	

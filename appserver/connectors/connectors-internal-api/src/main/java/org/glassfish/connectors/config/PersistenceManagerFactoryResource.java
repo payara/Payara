@@ -113,6 +113,7 @@ public interface PersistenceManagerFactoryResource extends ConfigBeanProxy, Reso
      *         {@link String }
      */
     @Attribute (defaultValue="true",dataType=Boolean.class)
+    @Override
     public String getEnabled();
 
     /**
@@ -121,6 +122,7 @@ public interface PersistenceManagerFactoryResource extends ConfigBeanProxy, Reso
      * @param value allowed object is
      *              {@link String }
      */
+    @Override
     public void setEnabled(String value) throws PropertyVetoException;
 
     /**
@@ -146,9 +148,11 @@ public interface PersistenceManagerFactoryResource extends ConfigBeanProxy, Reso
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 
     @DuckTyped
+    @Override
     String getIdentity();
 
     class Duck {

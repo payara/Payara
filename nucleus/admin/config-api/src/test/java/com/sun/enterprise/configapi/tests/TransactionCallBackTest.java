@@ -71,6 +71,7 @@ public class TransactionCallBackTest extends ConfigPersistence {
      *
      * @return the configuration file name
      */
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -85,6 +86,7 @@ public class TransactionCallBackTest extends ConfigPersistence {
     	return getBaseServiceLocator();
     }
     
+    @Override
     public void doTest() throws TransactionFailure {
         ConfigBean serviceBean = (ConfigBean) ConfigBean.unwrap(habitat.<NetworkListeners>getService(NetworkListeners.class));
         Map<String, String> configChanges = new HashMap<String, String>();
@@ -93,6 +95,7 @@ public class TransactionCallBackTest extends ConfigPersistence {
         ConfigSupport.createAndSet(serviceBean, NetworkListener.class, configChanges,
                 new TransactionCallBack<WriteableView>() {
                     @SuppressWarnings({"unchecked"})
+            @Override
                     public void performOn(WriteableView param) throws TransactionFailure {
                         // if you know the type...
                         NetworkListener listener = param.getProxy(NetworkListener.class);
@@ -113,6 +116,7 @@ public class TransactionCallBackTest extends ConfigPersistence {
                 });
     }
 
+    @Override
     public boolean assertResult(String s) {
         return s.contains("Aleksey") && s.contains("localhost");
     }    

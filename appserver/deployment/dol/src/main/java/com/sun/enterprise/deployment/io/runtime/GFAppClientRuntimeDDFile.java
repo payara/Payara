@@ -56,6 +56,7 @@ public class GFAppClientRuntimeDDFile extends ConfigurationDeploymentDescriptorF
      * @return the location of the DeploymentDescriptor file for a
      * particular type of J2EE Archive
      */
+    @Override
     public String getDeploymentDescriptorPath() {
         return DescriptorConstants.GF_APP_CLIENT_JAR_ENTRY;        
     }
@@ -66,6 +67,7 @@ public class GFAppClientRuntimeDDFile extends ConfigurationDeploymentDescriptorF
      *
      * @param the descriptor for which we need the node
      */
+    @Override
     public RootXMLNode getRootXMLNode(Descriptor descriptor) {
    
         if (descriptor instanceof ApplicationClientDescriptor) {

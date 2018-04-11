@@ -151,6 +151,7 @@ public class ArrayList
      * @exception IllegalArgumentException fromIndex &gt; toIndex.
      * @see java.util.ArrayList 
      */  
+    @Override
     public Object set(int index, Object element) {
 
 	throwUnsupportedOption();
@@ -199,6 +200,7 @@ public class ArrayList
      * @return true (as per the general contract of Collection.add).
      * @see java.util.ArrayList
      */  
+    @Override
     public boolean add(Object o) {
 	if (allowNulls == false && o == null)
         {
@@ -236,6 +238,7 @@ public class ArrayList
      * @return true if the ArrayList contained the specified element.
      * @see java.util.ArrayList 
      */   
+    @Override
     public boolean remove(Object o) {
 
 	// Because java.util.AbstractCollection.remove(Object) delegates remove() to remove(int)
@@ -268,6 +271,7 @@ public class ArrayList
      *            (index &lt; 0 || index &gt; size()).
      * @see java.util.ArrayList
      */  
+    @Override
     public void add(int index, Object element) {
 	if (allowNulls == false && element == null)
         {
@@ -305,6 +309,7 @@ public class ArrayList
      *            &lt; 0 || index &gt;= size()).
      * @see java.util.ArrayList 
      */   
+    @Override
     public Object remove(int index) {
 
 	throwUnsupportedOption();
@@ -329,6 +334,7 @@ public class ArrayList
      *   
      * @see java.util.ArrayList
      */ 
+    @Override
     public void clear() {
 	// Mark the field as dirty
 	StateManager stateManager = this.makeDirty();
@@ -355,6 +361,7 @@ public class ArrayList
      *            &lt; 0 || index &gt; size()).
      * @see java.util.ArrayList
      */  
+    @Override
     public boolean addAll(Collection c) {
 	if (allowNulls == false && c.contains(null))
         {
@@ -402,6 +409,7 @@ public class ArrayList
      * @return true if this ArrayList changed as a result of the call.
      * @see java.util.ArrayList 
      */   
+    @Override
     public boolean removeAll(Collection c) {
 	boolean modified = false;
 	// Mark the field as dirty
@@ -439,6 +447,7 @@ public class ArrayList
      *            &lt; 0 || index &gt; size()).
      * @see java.util.ArrayList  
      */   
+    @Override
     public boolean addAll(int index, Collection c) {
 	if (allowNulls == false && c.contains(null))
         {
@@ -486,6 +495,7 @@ public class ArrayList
      * @return true if this ArrayList changed as a result of the call.
      * @see java.util.ArrayList   
      */    
+    @Override
     public boolean retainAll(Collection c) 
     {
 	boolean modified = false;
@@ -527,6 +537,7 @@ public class ArrayList
      * objects. In contrast to Object.clone(), this method must not throw a
      * CloneNotSupportedException.
      */
+    @Override
     public Object clone()
     {
         ArrayList obj = (ArrayList)super.clone();
@@ -539,6 +550,7 @@ public class ArrayList
      * Creates and returns a copy of this object without resetting the owner and field value.
      *
      */
+    @Override
     public Object cloneInternal()
     {
         return super.clone();
@@ -547,21 +559,25 @@ public class ArrayList
     /**
      * Cleans removed and added lists     
      */  
+    @Override
     public void reset()
     {
         added.clear();
         removed.clear();
     }
 
+    @Override
 	public void markDeferred()
 	{
 	}
 
+    @Override
 	public boolean isDeferred()
 	{
 		return false;
 	}
 
+    @Override
 	public void applyDeferredUpdates(Collection c)
 	{
 		super.addAll(c);
@@ -570,6 +586,7 @@ public class ArrayList
     /**
      * Adds an object to the list without recording changes
      */
+    @Override
     public void addInternal(Object o)
     {
         super.add(o);
@@ -578,6 +595,7 @@ public class ArrayList
     /** 
      * Adds a Collection to the list without recording changes 
      */ 
+    @Override
     public void addAllInternal(Collection c) 
     { 
         super.addAll(c); 
@@ -586,6 +604,7 @@ public class ArrayList
     /**
      * @inheritDoc
      */
+    @Override
     public void addToBaseCollection(Object o)
     {
         super.add(o);
@@ -594,6 +613,7 @@ public class ArrayList
     /**
      * Removes from this collection without recording changes
      */ 
+    @Override
     public void removeAllInternal(Collection c) 
     { 
         super.removeAll(c); 
@@ -604,6 +624,7 @@ public class ArrayList
      * 
      * @return added	collection of added elements
      */ 
+    @Override
     public Collection getAdded()
     {
         return (Collection)added;
@@ -614,6 +635,7 @@ public class ArrayList
      *  
      * @return removed	collection of removed elements 
      */ 
+    @Override
     public Collection getRemoved() 
     { 
         return (Collection)removed; 
@@ -623,6 +645,7 @@ public class ArrayList
     /** 
      * Clears Collection without notifing the owner 
      */   
+    @Override
     public void clearInternal() 
     {    
         super.clear(); 
@@ -632,6 +655,7 @@ public class ArrayList
     /** 
      * Removes an element without notifing the owner 
      */   
+    @Override
     public void removeInternal(Object o) 
     {    
 	int i = super.indexOf(o);
@@ -641,6 +665,7 @@ public class ArrayList
     /**
      * Nullifies references to the owner Object and Field
      */
+    @Override
     public void unsetOwner()
     {
 	this.owner = null;
@@ -655,6 +680,7 @@ public class ArrayList
      *
      * @return owner object
      */
+    @Override
     public Object getOwner()
     {
 	return this.owner;
@@ -665,6 +691,7 @@ public class ArrayList
      *
      * @return field name as java.lang.String
      */
+    @Override
     public String getFieldName()
     {
 	return this.fieldName;
@@ -673,6 +700,7 @@ public class ArrayList
     /**
      * Marks object dirty
      */
+    @Override
     public StateManager makeDirty()
     {
 	if (owner != null) 
@@ -690,6 +718,7 @@ public class ArrayList
     /**
      * Apply changes (can be a no-op)
      */
+    @Override
     public void applyUpdates(StateManager sm, boolean modified)
     {
 
@@ -718,6 +747,7 @@ public class ArrayList
      * @param elementType the new element type as Class, or null if type
      * is not to be checked.
      */
+    @Override
     public void setOwner(Object owner, String fieldName, Class elementType) {
 
         if (this.owner != null) {

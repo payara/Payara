@@ -81,6 +81,7 @@ public class TargetImpl implements Target {
      * Returns the name of the Target.
      * @return
      */
+    @Override
     public String getName() {
         return name;
     }
@@ -89,6 +90,7 @@ public class TargetImpl implements Target {
      * Returns the description of the Target.
      * @return
      */
+    @Override
     public String getDescription() {
         return description;
     }

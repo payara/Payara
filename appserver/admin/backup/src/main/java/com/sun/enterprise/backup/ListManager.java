@@ -182,6 +182,7 @@ public class ListManager extends BackupRestoreManager
      * @throws BackupWarningException for non-fatal errors - these are errors
      * where we can not continue execution.
      */    
+    @Override
     void init() throws BackupException, BackupWarningException {
         super.init();
         
@@ -246,6 +247,7 @@ public class ListManager extends BackupRestoreManager
     private static class FileNameComparator implements Comparator<Status>,
         Serializable {
 
+        @Override
         public int compare(Status s1, Status s2) {
 
             if (s1.getBackupConfigName().equals(s2.getBackupConfigName())) {

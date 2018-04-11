@@ -69,6 +69,7 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
     public JMSDestinationDefinitionHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
         JMSDestinationDefinition jmsDestinationDefnAn =

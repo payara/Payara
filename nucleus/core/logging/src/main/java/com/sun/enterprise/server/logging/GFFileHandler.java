@@ -354,6 +354,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
                 if (rotationTimeLimitValue > 0) {
 
                     Task rotationTask = new Task() {
+                        @Override
                         public Object run() {
                             rotate();
                             return null;

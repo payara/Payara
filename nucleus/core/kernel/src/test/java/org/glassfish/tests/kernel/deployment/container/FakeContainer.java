@@ -53,10 +53,12 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name="FakeContainer")
 public class FakeContainer implements Container {
 
+    @Override
     public Class<? extends Deployer> getDeployer() {
         return GenericDeployer.class;
     }
 
+    @Override
     public String getName() {
         return "Fake";
     }

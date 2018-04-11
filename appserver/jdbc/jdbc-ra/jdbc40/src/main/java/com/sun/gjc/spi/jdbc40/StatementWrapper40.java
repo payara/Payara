@@ -73,6 +73,7 @@ public class StatementWrapper40 extends StatementWrapper {
      * @throws SQLException if a database access error occurs
      * @since 1.6
      */
+    @Override
     public boolean isClosed() throws SQLException {
         return jdbcStatement.isClosed();
     }
@@ -100,6 +101,7 @@ public class StatementWrapper40 extends StatementWrapper {
      *                      <p/>
      * @since 1.6
      */
+    @Override
     public void setPoolable(boolean poolable) throws SQLException {
         jdbcStatement.setPoolable(poolable);
     }
@@ -119,6 +121,7 @@ public class StatementWrapper40 extends StatementWrapper {
      * @since 1.6
      *        <p/>
      */
+    @Override
     public boolean isPoolable() throws SQLException {
         return jdbcStatement.isPoolable();
     }
@@ -140,6 +143,7 @@ public class StatementWrapper40 extends StatementWrapper {
      * @throws java.sql.SQLException If no object found that implements the interface
      * @since 1.6
      */
+    @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
         T result;
         if (iface.isInstance(this)) {
@@ -165,6 +169,7 @@ public class StatementWrapper40 extends StatementWrapper {
      *                               for an object with the given interface.
      * @since 1.6
      */
+    @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
 
         boolean result;
@@ -193,6 +198,7 @@ public class StatementWrapper40 extends StatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.4
      */
+    @Override
     public java.sql.ResultSet getGeneratedKeys() throws java.sql.SQLException {
         ResultSet rs = jdbcStatement.getGeneratedKeys();
         if (rs == null)
@@ -210,6 +216,7 @@ public class StatementWrapper40 extends StatementWrapper {
      *                      this method is called on a closed <code>Statement</code>
      * @see #execute
      */
+    @Override
     public java.sql.ResultSet getResultSet() throws java.sql.SQLException {
         ResultSet rs = jdbcStatement.getResultSet();
         if (rs == null)
@@ -230,6 +237,7 @@ public class StatementWrapper40 extends StatementWrapper {
      *                      SQL statement produces anything other than a single
      *                      <code>ResultSet</code> object
      */
+    @Override
     public java.sql.ResultSet executeQuery(final String sql) throws
             java.sql.SQLException {
         ResultSet rs = jdbcStatement.executeQuery(sql);

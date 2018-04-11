@@ -149,6 +149,7 @@ public final class ConnectorMessageBeanClient
      *
      * @param messageBeanPM <code>MessageBeanProtocolManager</code> object.
      */
+    @Override
     public void setup(MessageBeanProtocolManager messageBeanPM) throws Exception {
 
         ClassLoader loader = descriptor_.getEjbBundleDescriptor().getClassLoader();
@@ -333,6 +334,7 @@ public final class ConnectorMessageBeanClient
      *
      * @throws Exception
      */
+    @Override
     public void start() throws Exception {
         logger.logp(Level.FINEST,
                 "ConnectorMessageBeanClient", "start", "called...");
@@ -348,6 +350,7 @@ public final class ConnectorMessageBeanClient
      * Also remove sthe <code>MessageEndpointFactoryInfo</code>
      * from house keeping.
      */
+    @Override
     public void close() {
         logger.logp(Level.FINEST,
                 "ConnectorMessageBeanClient", "close", "called...");
@@ -398,6 +401,7 @@ public final class ConnectorMessageBeanClient
      *          In case of any failure. This
      *          should change.
      */
+    @Override
     public MessageEndpoint
     createEndpoint(XAResource xa) throws UnavailableException {
         // This is a temporary workaround for blocking the the create enpoint
@@ -411,6 +415,7 @@ public final class ConnectorMessageBeanClient
      *
      * @return true or false.
      */
+    @Override
     public boolean isDeliveryTransacted(Method method) {
         return messageBeanPM_.isDeliveryTransacted(method);
     }
@@ -418,6 +423,7 @@ public final class ConnectorMessageBeanClient
     /**
      * @return beanID of the message bean client
      */
+    @Override
     public String toString() {
         return beanID_;
     }
@@ -425,6 +431,7 @@ public final class ConnectorMessageBeanClient
     /**
      * {@inheritDoc}
      */
+    @Override
     public MessageEndpoint createEndpoint(XAResource xaResource, long timeout) throws UnavailableException {
         synchronized (this) {
             while (myState == BLOCKED) {
@@ -468,6 +475,7 @@ public final class ConnectorMessageBeanClient
      * {@inheritDoc}
      * @Override
      */
+    @Override
     public String getActivationName(){
       if(activationName == null){
         

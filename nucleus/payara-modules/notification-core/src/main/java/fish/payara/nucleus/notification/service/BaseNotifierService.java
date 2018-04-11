@@ -81,6 +81,7 @@ public abstract class BaseNotifierService<E extends NotificationEvent,
     public abstract void bootstrap();
     public abstract void shutdown();
 
+    @Override
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_READY)) {
             bootstrap();

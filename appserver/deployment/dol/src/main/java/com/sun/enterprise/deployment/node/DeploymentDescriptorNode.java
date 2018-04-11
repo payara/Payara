@@ -131,6 +131,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
     * @return the descriptor instance to associate with this XMLNode
     */
    @SuppressWarnings("unchecked")
+    @Override
     public T getDescriptor() {
         
         if (abstractDescriptor==null) {
@@ -149,6 +150,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      *
      * @param descriptor the new descriptor
      */
+    @Override
     public void addDescriptor(Object descriptor) {
             if (getParentNode()==null) {
             DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.addDescriptorFailure",
@@ -222,6 +224,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
     /** 
      * @return the parent node of the current instance
      */
+    @Override
     public XMLNode getParentNode() {
         return parentNode;
     }
@@ -229,6 +232,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
     /**
      * @return the root node of the current instance
      */
+    @Override
     public XMLNode getRootNode() {
        XMLNode parent = this;
 
@@ -286,6 +290,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
     /**
      * @return the handler registered for the subtag element of the curent  XMLNode
      */
+    @Override
     public  XMLNode getHandlerFor(XMLElement element) {
         if (handlers==null) {
             DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING,
@@ -328,6 +333,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
     /**
      * SAX Parser API implementation, we don't really care for now.
      */
+    @Override
     public void startElement(XMLElement element, Attributes attributes) {
         //DOLUtils.getDefaultLogger().finer("STARTELEMENT : " + "in " + getXMLRootTag() + "  Node, startElement " + element.getQName());
         if (!this.getXMLRootTag().equals(element))
@@ -372,6 +378,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      * @param element the xml tag identification
      * @return true if this node is done processing the XML sub tree
      */
+    @Override
     public boolean endElement(XMLElement element) {
 	//DOLUtils.getDefaultLogger().finer("ENDELEMENT : " + "in " + getXMLRootTag() + "  Node, endElement " + element.getQName());
         boolean allDone = element.equals(getXMLRootTag());
@@ -394,6 +401,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      *  @return true if the element tag can be handled by any registered sub nodes of the
      * current XMLNode
      */
+    @Override
     public boolean handlesElement(XMLElement element) {
 
         // Let's iterator over all the statically registered handlers to 
@@ -543,6 +551,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
     /**
      * @return the XPath this XML Node is handling
      */
+    @Override
     public String getXMLPath() {
         if (getParentNode()!=null) {
             return getParentNode().getXMLPath() + "/" + getXMLRootTag().getQName();
@@ -558,6 +567,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
+    @Override
     public Node writeDescriptor(Node parent, T descriptor) {
        return writeDescriptor(parent, getXMLRootTag().getQName(), descriptor);
     }
@@ -1108,6 +1118,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
     /**
      * notify of a new prefix mapping used in this document
      */
+    @Override
     public void addPrefixMapping(String prefix, String uri) {
         Object o = getDescriptor();
         if (o instanceof Descriptor) {
@@ -1120,6 +1131,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      * Resolve a QName prefix to its corresponding Namespace URI by
      * searching up node chain starting with child.
      */
+    @Override
     public String resolvePrefix(XMLElement element, String prefix) {
         // If prefix is empty string, returned namespace URI 
         // is the default namespace.

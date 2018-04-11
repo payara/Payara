@@ -68,6 +68,7 @@ public class NoTxConnectorAllocator extends AbstractConnectorAllocator {
             this.resource = resource;
         }
 
+        @Override
         public void connectionClosed(ConnectionEvent evt) {
             poolMgr.putbackResourceToPool(resource, false);
         }
@@ -77,12 +78,14 @@ public class NoTxConnectorAllocator extends AbstractConnectorAllocator {
          *
          * @param evt ConnectionEvent
          */
+        @Override
         public void badConnectionClosed(ConnectionEvent evt) {
             ManagedConnection mc = (ManagedConnection) evt.getSource();
             mc.removeConnectionEventListener(this);
             poolMgr.badResourceClosed(resource);
         }
 
+        @Override
         public void connectionErrorOccurred(ConnectionEvent evt) {
             ManagedConnection mc = (ManagedConnection) evt.getSource();
             mc.removeConnectionEventListener(this);
@@ -98,14 +101,17 @@ public class NoTxConnectorAllocator extends AbstractConnectorAllocator {
             resource.setConnectionErrorOccurred();
         }
 
+        @Override
         public void localTransactionStarted(ConnectionEvent evt) {
             throw new IllegalStateException("local transaction not supported");
         }
 
+        @Override
         public void localTransactionCommitted(ConnectionEvent evt) {
             throw new IllegalStateException("local transaction not supported");
         }
 
+        @Override
         public void localTransactionRolledback(ConnectionEvent evt) {
             throw new IllegalStateException("local transaction not supported");
         }
@@ -122,6 +128,7 @@ public class NoTxConnectorAllocator extends AbstractConnectorAllocator {
     }
 
 
+    @Override
     public ResourceHandle createResource()
             throws PoolingException {
         try {
@@ -149,6 +156,7 @@ public class NoTxConnectorAllocator extends AbstractConnectorAllocator {
         }
     }
 
+    @Override
     public void fillInResourceObjects(ResourceHandle resource)
             throws PoolingException {
         try {
@@ -160,6 +168,7 @@ public class NoTxConnectorAllocator extends AbstractConnectorAllocator {
         }
     }
 
+    @Override
     public void destroyResource(ResourceHandle resource)
             throws PoolingException {
 
@@ -171,6 +180,7 @@ public class NoTxConnectorAllocator extends AbstractConnectorAllocator {
         }
     }
 
+    @Override
     public boolean isTransactional() {
         return false;
     }

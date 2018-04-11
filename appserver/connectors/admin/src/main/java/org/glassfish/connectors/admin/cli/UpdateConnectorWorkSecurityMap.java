@@ -104,6 +104,7 @@ public class UpdateConnectorWorkSecurityMap implements AdminCommand {
     Domain domain;
 
 
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
@@ -290,6 +291,7 @@ public class UpdateConnectorWorkSecurityMap implements AdminCommand {
 
         try {
             ConfigSupport.apply(new SingleConfigCode<WorkSecurityMap>() {
+                @Override
                 public Object run(WorkSecurityMap wsm) throws PropertyVetoException, TransactionFailure {
                     if (addGroups != null) {
                         for (Map.Entry e : addGroups.entrySet()) {

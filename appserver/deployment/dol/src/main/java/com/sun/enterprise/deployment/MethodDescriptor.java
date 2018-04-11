@@ -554,6 +554,7 @@ public final class MethodDescriptor extends Descriptor {
     }
     
     /** Equlity iff the parameter names match and the name matches.*/
+    @Override
     public boolean equals(Object other) {
 	if (other instanceof MethodDescriptor) {
 	    MethodDescriptor otherMethodDescriptor = (MethodDescriptor) other;
@@ -594,11 +595,13 @@ public final class MethodDescriptor extends Descriptor {
     }
 
     
+    @Override
     public int hashCode() {
 	return this.getPrettyParameterString().hashCode() + this.getName().hashCode();
     }
 
     /** My pretty format. */
+    @Override
     public void print(StringBuffer toStringBuffer) {
 	toStringBuffer.append("Method Descriptor").append((ejbName==null?"":" for ejb " + ejbName)).append(
                 " name: ").append(this.getName()).append(" params: ").append(this.getPrettyParameterString()).append( 

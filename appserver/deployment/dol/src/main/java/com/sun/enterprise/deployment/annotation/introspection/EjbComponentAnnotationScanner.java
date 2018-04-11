@@ -71,6 +71,7 @@ public class EjbComponentAnnotationScanner implements AnnotationScanner {
      * @String the constant pool info string 
      * @return true if it is a J2EE annotation reference
      */
+    @Override
     public boolean isAnnotation(String value) {
         if (annotations==null) {
             synchronized(EjbComponentAnnotationScanner.class) {

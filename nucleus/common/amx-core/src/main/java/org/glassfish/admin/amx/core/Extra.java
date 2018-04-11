@@ -66,6 +66,7 @@ public interface Extra extends StdAttributesAccess, MetaGetters, AMXProxy
 	public ProxyFactory		proxyFactory();
     
     /** return a compilable Java interface representing this MBean */
+        @Override
     public String java();
 }
 

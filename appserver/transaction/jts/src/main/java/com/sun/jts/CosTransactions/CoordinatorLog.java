@@ -1698,6 +1698,7 @@ class CoordinatorLog extends java.lang.Object implements LogUpcallTarget {
      * @see
      */
 
+    @Override
     public void upcall( int reason ){
 
         // Just perform a keypoint.

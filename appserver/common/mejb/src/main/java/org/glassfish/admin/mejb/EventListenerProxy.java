@@ -108,6 +108,7 @@ public class EventListenerProxy extends UnicastRemoteObject implements RemoteEve
         proxyAddress = "//"+ hostName + ":" + portnum + "/" + rmiName;
     }
 
+    @Override
 	public void handleNotification(Notification n, Object h) throws RemoteException {
         if (debug) System.out.println("EventListenerProxy:handleNotification(" + n + ")");
         NotificationListener listener = (NotificationListener)listenerTable.get((String)h);

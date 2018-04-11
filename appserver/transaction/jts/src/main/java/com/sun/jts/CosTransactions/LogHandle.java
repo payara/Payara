@@ -977,6 +977,7 @@ class LogHandle {
                 final LogExtent tmplogEDP =  logEDP;
                 Boolean isdeleted = (Boolean) java.security.AccessController.doPrivileged(
                     new java.security.PrivilegedAction() {
+                        @Override
                         public Object run(){
                             return tmplogEDP.file.delete();
                         }
@@ -1020,6 +1021,7 @@ class LogHandle {
             //if( !logControl.controlFile.delete() )
             Boolean isdeleted = (Boolean) java.security.AccessController.doPrivileged(
                 new java.security.PrivilegedAction() {
+                    @Override
                     public Object run(){
                         return logControl.controlFile.delete();
                     }
@@ -1035,6 +1037,7 @@ class LogHandle {
             //LogControl.directory(logFileName,logControl.directoryPath).delete();
             java.security.AccessController.doPrivileged(
                 new java.security.PrivilegedAction() {
+                    @Override
                     public Object run(){
                         return LogControl.directory(logFileName,logControl.directoryPath).delete();
                     }
@@ -1275,6 +1278,7 @@ class LogHandle {
             final LogExtent tmplogEDP = logEDP;
             Boolean isdeleted = (Boolean) java.security.AccessController.doPrivileged(
 		new java.security.PrivilegedAction() {
+                    @Override
 		    public Object run(){
                         return tmplogEDP.file.delete();
                     }
@@ -1621,6 +1625,7 @@ class LogHandle {
             //logControl.cushionFile.delete();
             java.security.AccessController.doPrivileged(
                 new java.security.PrivilegedAction() {
+                    @Override
                     public Object run(){
                         return logControl.cushionFile.delete();
                     }
@@ -1696,6 +1701,7 @@ class LogHandle {
                     //logControl.cushionFile.delete();
                     java.security.AccessController.doPrivileged(
                         new java.security.PrivilegedAction() {
+                            @Override
                             public Object run(){
                                 return logControl.cushionFile.delete();
                             }

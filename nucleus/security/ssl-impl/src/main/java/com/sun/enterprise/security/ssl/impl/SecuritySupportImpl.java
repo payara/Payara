@@ -313,10 +313,12 @@ public class SecuritySupportImpl extends SecuritySupport {
      * This method returns an array of keystores containing keys and
      * certificates.
      */
+    @Override
     public KeyStore[] getKeyStores() {
         return keyStores.toArray(new KeyStore[keyStores.size()]);
     }
 
+    @Override
     public KeyStore loadNullStore(String type, int index) throws KeyStoreException,
             IOException, NoSuchAlgorithmException, CertificateException {
         KeyStore ret = KeyStore.getInstance(type);
@@ -324,6 +326,7 @@ public class SecuritySupportImpl extends SecuritySupport {
         return ret;
     }
 
+    @Override
     public KeyManager[] getKeyManagers(String algorithm) throws IOException,
             KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
         KeyStore[] kstores = getKeyStores();
@@ -345,6 +348,7 @@ public class SecuritySupportImpl extends SecuritySupport {
         return new KeyManager[]{keyManager};
     }
 
+    @Override
     public TrustManager[] getTrustManagers(String algorithm) throws IOException,
             KeyStoreException, NoSuchAlgorithmException {
         KeyStore[] tstores = getTrustStores();
@@ -388,10 +392,12 @@ public class SecuritySupportImpl extends SecuritySupport {
     /**
      * This method returns an array of truststores containing certificates.
      */
+    @Override
     public KeyStore[] getTrustStores() {
         return trustStores.toArray(new KeyStore[trustStores.size()]);
     }
 
+    @Override
     public boolean verifyMasterPassword(final char[] masterPass) {
         return Arrays.equals(masterPass, keyStorePasswords.get(0));
     }
@@ -400,6 +406,7 @@ public class SecuritySupportImpl extends SecuritySupport {
      * This method returns an array of token names in order corresponding to
      * array of keystores.
      */
+    @Override
     public String[] getTokenNames() {
         return tokenNames.toArray(new String[tokenNames.size()]);
     }
@@ -408,6 +415,7 @@ public class SecuritySupportImpl extends SecuritySupport {
      * @param  token 
      * @return a keystore
      */
+    @Override
     public KeyStore getKeyStore(String token) {
         int idx = getTokenIndex(token);
         if (idx < 0) {
@@ -420,6 +428,7 @@ public class SecuritySupportImpl extends SecuritySupport {
      * @param  token 
      * @return a truststore
      */
+    @Override
     public KeyStore getTrustStore(String token) {
         int idx = getTokenIndex(token);
         if (idx < 0) {
@@ -442,10 +451,12 @@ public class SecuritySupportImpl extends SecuritySupport {
         return idx;
     }
 
+    @Override
     public void synchronizeKeyFile(Object configContext, String fileRealmName) throws Exception {
         //throw new UnsupportedOperationException("Not supported yet in V3.");
     }
 
+    @Override
     public void checkPermission(String key) {
         try {
             // Checking a random permission to check if it is server.
@@ -473,6 +484,7 @@ public class SecuritySupportImpl extends SecuritySupport {
         return penv.getProcessType().equals(ProcessType.Other);
     }
 
+    @Override
     public PrivateKey getPrivateKeyForAlias(String alias, int keystoreIndex) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
         checkPermission(KEYSTORE_PASS_PROP);
         Key key = keyStores.get(keystoreIndex).getKey(alias, keyStorePasswords.get(keystoreIndex));

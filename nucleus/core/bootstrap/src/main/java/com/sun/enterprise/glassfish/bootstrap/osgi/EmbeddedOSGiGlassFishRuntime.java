@@ -104,6 +104,7 @@ public class EmbeddedOSGiGlassFishRuntime extends GlassFishRuntime {
         }
     }
 
+    @Override
     public synchronized void shutdown() throws GlassFishException {
         // make a copy to avoid ConcurrentModificationException
         for (GlassFish gf : new ArrayList<GlassFish>(gfs)) {

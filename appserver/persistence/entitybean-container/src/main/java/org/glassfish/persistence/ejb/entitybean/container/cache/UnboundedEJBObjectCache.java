@@ -72,32 +72,39 @@ public class UnboundedEJBObjectCache
         super();
     }
     
+    @Override
     public void init(int maxEntries, int numberOfVictimsToSelect,
             long timeout, float loadFactor, Properties props)
     {
         super.init(maxEntries, loadFactor, props);
     }
     
+    @Override
     public Object get(Object key, boolean incrementRefCount) {
         return super.get(key);
     }
     
+    @Override
     public Object put(Object key, Object value, boolean linkWithLru) {
         return super.put(key, value);
     }
     
+    @Override
     public Object remove(Object key, boolean decrementRefCount) {
         return super.remove(key);
     }
     
+    @Override
     public void setEJBObjectCacheListener(EJBObjectCacheListener listener) {
         //do nothing
     }
     
+    @Override
     protected void trimItem(CacheItem item) {
         
     }
     
+    @Override
     public Map getStats() {
         Map map = new HashMap();
         StringBuffer sbuf = new StringBuffer();

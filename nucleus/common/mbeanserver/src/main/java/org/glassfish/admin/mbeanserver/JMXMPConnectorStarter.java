@@ -65,6 +65,7 @@ final class JMXMPConnectorStarter extends ConnectorStarter {
         super(mbeanServer, address, port, securityEnabled, habitat, bootListener);
     }
 
+    @Override
     public synchronized JMXConnectorServer start() {
         if (mConnectorServer != null) {
             return mConnectorServer;

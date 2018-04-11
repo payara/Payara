@@ -222,6 +222,7 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
 
     // XXX - many of these methods should be on ServerEnvironment
 
+    @Override
     public String getDomainName() {
         return domainName;
     }
@@ -324,6 +325,7 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
      * Gets the directory to store external alternate deployment descriptors
      * Normally {@code ROOT/generated/altdd}
      */
+    @Override
     public File getApplicationAltDDPath() {
         return new File(getApplicationStubPath(), kAppAltDDDirName);
     }

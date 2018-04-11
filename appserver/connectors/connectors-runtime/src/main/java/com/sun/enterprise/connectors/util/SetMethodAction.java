@@ -76,6 +76,7 @@ public final class SetMethodAction implements PrivilegedExceptionAction {
     /**
      * Executes the setter methods in the java bean.
      */
+    @Override
     public Object run() throws Exception {
         Iterator it = props.iterator();
         methods = bean.getClass().getMethods();

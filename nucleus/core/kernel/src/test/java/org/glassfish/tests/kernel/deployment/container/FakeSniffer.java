@@ -63,60 +63,74 @@ import com.sun.enterprise.module.Module;
 @Service
 public class FakeSniffer implements Sniffer {
 
+    @Override
     public boolean handles(ReadableArchive source) {
         // I handle everything
         return true;
     }
 
+    @Override
     public boolean handles(DeploymentContext context) {
         // I handle everything
         return true;
     }
 
+    @Override
     public String[] getURLPatterns() {
         return new String[0];  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public Class<? extends Annotation>[] getAnnotationTypes() {
         return null;
     }
 
+    @Override
     public String[] getAnnotationNames(DeploymentContext context) {
         return null;
     }
 
+    @Override
     public String getModuleType() {
         return "fake";
     }
 
+    @Override
     public Module[] setup(String containerHome, Logger logger) throws IOException {
         return null;
     }
 
+    @Override
     public void tearDown() {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public String[] getContainersNames() {
         return new String[] { "FakeContainer" };
     }
 
+    @Override
     public boolean isUserVisible() {
         return false;
     }
 
+    @Override
    public boolean isJavaEE() {
         return false;
     }
 
+    @Override
     public Map<String, String> getDeploymentConfigurations(ReadableArchive source) throws IOException {
         return null;
     }
 
+    @Override
     public String[] getIncompatibleSnifferTypes() {
         return new String[0];
     }
 
+    @Override
     public boolean supportsArchiveType(ArchiveType archiveType) {
         return true;
     }

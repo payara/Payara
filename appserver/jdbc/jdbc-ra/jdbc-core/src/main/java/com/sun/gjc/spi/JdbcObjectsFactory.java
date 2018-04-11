@@ -131,6 +131,7 @@ public abstract class JdbcObjectsFactory implements Serializable {
         T result;
         InvocationHandler ih = new InvocationHandler() {
 
+            @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 SQLTraceRecord record = new SQLTraceRecord();
                 record.setMethodName(method.getName());

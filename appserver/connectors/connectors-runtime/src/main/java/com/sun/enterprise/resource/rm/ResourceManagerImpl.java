@@ -72,6 +72,7 @@ public class ResourceManagerImpl implements ResourceManager {
      * @return Handle to the <code>Transaction</code> object.
      * @exception <code>PoolingException<code>
      */
+    @Override
     public Transaction getTransaction() throws PoolingException {
         InvocationManager invmgr = ConnectorRuntime.getRuntime().getInvocationManager();
 
@@ -91,6 +92,7 @@ public class ResourceManagerImpl implements ResourceManager {
      *
      * @return Handle to the component.
      */
+    @Override
     public Object getComponent(){
         
         InvocationManager invmgr = ConnectorRuntime.getRuntime().getInvocationManager();
@@ -108,6 +110,7 @@ public class ResourceManagerImpl implements ResourceManager {
      * @param h	<code>ResourceHandle</code> object
      * @exception <code>PoolingException</code>
      */
+    @Override
     public void enlistResource(ResourceHandle h) throws PoolingException{
         registerResource(h);
     }
@@ -118,6 +121,7 @@ public class ResourceManagerImpl implements ResourceManager {
      * @param handle	<code>ResourceHandle</code> object
      * @exception <code>PoolingException</code>
      */
+    @Override
     public void registerResource(ResourceHandle handle)
             throws PoolingException {
         try {
@@ -189,6 +193,7 @@ public class ResourceManagerImpl implements ResourceManager {
     /**
      * Get's the component's transaction and marks it for rolling back.
      */
+    @Override
     public void rollBackTransaction() {
         InvocationManager invmgr = ConnectorRuntime.getRuntime().getInvocationManager();
 
@@ -231,6 +236,7 @@ public class ResourceManagerImpl implements ResourceManager {
      *        be XAResource.TMSUCCESS or XAResource.TMFAIL
      * @exception <code>PoolingException</code>
      */
+    @Override
     public void delistResource(ResourceHandle resource, int xaresFlag) {
         unregisterResource(resource,xaresFlag);
     }
@@ -243,6 +249,7 @@ public class ResourceManagerImpl implements ResourceManager {
      *        be XAResource.TMSUCCESS or XAResource.TMFAIL
      * @exception <code>PoolingException</code>
      */
+    @Override
     public void unregisterResource(ResourceHandle resource,
                                    int xaresFlag) {
 

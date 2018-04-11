@@ -74,6 +74,7 @@ public final class IteratorStringifier extends IteratorStringifierBase
 	}
 	
 	
+                @Override
 		public void
 	stringifyElement(
 		Object			elem,

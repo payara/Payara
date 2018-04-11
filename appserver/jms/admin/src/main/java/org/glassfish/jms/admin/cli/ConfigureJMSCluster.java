@@ -160,6 +160,7 @@ public class ConfigureJMSCluster implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
        // Server targetServer = domain.getServerNamed(target);
@@ -250,6 +251,7 @@ public class ConfigureJMSCluster implements AdminCommand {
         if(EMBEDDED.equalsIgnoreCase(integrationMode) && ENHANCED.equalsIgnoreCase(clusterType)) {
             try {
                 ConfigSupport.apply(new SingleConfigCode<JmsService>() {
+                    @Override
                     public Object run(JmsService param) throws PropertyVetoException, TransactionFailure {
                         param.setType(LOCAL);
                         return param;
@@ -313,6 +315,7 @@ public class ConfigureJMSCluster implements AdminCommand {
 
         try {
             ConfigSupport.apply(new SingleConfigCode<JmsAvailability>() {
+                @Override
                 public Object run(JmsAvailability param) throws PropertyVetoException, TransactionFailure {
                     param.setAvailabilityEnabled(availabilityEnabled.toString());
                     if(availabilityEnabled.booleanValue()){

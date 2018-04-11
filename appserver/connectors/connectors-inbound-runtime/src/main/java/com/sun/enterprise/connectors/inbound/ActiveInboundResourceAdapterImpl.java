@@ -85,6 +85,7 @@ public class ActiveInboundResourceAdapterImpl extends ActiveOutboundResourceAdap
      *          If there is a failure in loading
      *          or starting the resource adapter.
      */
+    @Override
     public void init(ResourceAdapter ra, ConnectorDescriptor desc, String moduleName, ClassLoader jcl)
             throws ConnectorRuntimeException {
         super.init(ra, desc, moduleName, jcl);
@@ -98,6 +99,7 @@ public class ActiveInboundResourceAdapterImpl extends ActiveOutboundResourceAdap
      * Destroys default pools and resources. Stops the Resource adapter
      * java bean.
      */
+    @Override
     public void destroy() {
         deactivateEndPoints();
         super.destroy();
@@ -137,15 +139,18 @@ public class ActiveInboundResourceAdapterImpl extends ActiveOutboundResourceAdap
      * @param id Id of the endpoint factory.
      * @return <code>MessageEndpointFactoryIndo</code> object.
      */
+    @Override
     public MessageEndpointFactoryInfo getEndpointFactoryInfo(String id) {
         return factories_.get(id);
     }
 
+    @Override
     public void updateMDBRuntimeInfo(EjbMessageBeanDescriptor descriptor_, BeanPoolDescriptor poolDescriptor)
             throws ConnectorRuntimeException {
         //do nothing
     }
 
+    @Override
     public void validateActivationSpec(ActivationSpec spec) {
         //do nothing
     }
@@ -163,6 +168,7 @@ public class ActiveInboundResourceAdapterImpl extends ActiveOutboundResourceAdap
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean handles(ConnectorDescriptor cd, String moduleName) {
         return (cd.getInBoundDefined() && !ConnectorsUtil.isJMSRA(moduleName));
      }
@@ -174,6 +180,7 @@ public class ActiveInboundResourceAdapterImpl extends ActiveOutboundResourceAdap
      * @param id   Unique identifier of the endpoint factory.
      * @param info <code>MessageEndpointFactoryInfo</code> object.
      */
+    @Override
     public void addEndpointFactoryInfo(
             String id, MessageEndpointFactoryInfo info) {
         factories_.put(id, info);
@@ -185,6 +192,7 @@ public class ActiveInboundResourceAdapterImpl extends ActiveOutboundResourceAdap
      * @param id Unique identifier of the endpoint factory to be
      *           removed.
      */
+    @Override
     public void removeEndpointFactoryInfo(String id) {
         factories_.remove(id);
     }

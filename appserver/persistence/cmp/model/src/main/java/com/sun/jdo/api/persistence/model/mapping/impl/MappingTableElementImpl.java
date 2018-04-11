@@ -114,12 +114,14 @@ public class MappingTableElementImpl extends MappingMemberElementImpl
 	/** Returns the name of the table element used by this mapping table.
 	 * @return the table name for this mapping table
 	 */
+        @Override
 	public String getTable () { return _table; }
 
 	/** Set the table element for this mapping table to the supplied table.
 	 * @param table table element to be used by the mapping table.
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setTable (TableElement table) throws ModelException
 	{
 		String old = getTable();
@@ -147,6 +149,7 @@ public class MappingTableElementImpl extends MappingMemberElementImpl
 	 * @param name the name
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setName (String name) throws ModelException
 	{
 		super.setName(name);
@@ -160,6 +163,7 @@ public class MappingTableElementImpl extends MappingMemberElementImpl
 	 * @return <code>true</code> if table elements are equal,
 	 * <code>false</code> otherwise.
 	 */
+        @Override
 	public boolean isEqual (TableElement table)
 	{
 		return ((table != null) ? getTable().equals(table.toString()) : false);
@@ -172,6 +176,7 @@ public class MappingTableElementImpl extends MappingMemberElementImpl
 	 * @return the names of the columns in the primary key for this mapping 
 	 * table
 	 */
+        @Override
 	public ArrayList getKey ()
 	{
 		if (_key == null)
@@ -187,6 +192,7 @@ public class MappingTableElementImpl extends MappingMemberElementImpl
 	 * @param column column element to be added
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void addKeyColumn (ColumnElement column) throws ModelException
 	{
 		if (column != null)
@@ -246,6 +252,7 @@ public class MappingTableElementImpl extends MappingMemberElementImpl
 	 * @param columnName the relative name of the column to be removed
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void removeKeyColumn (String columnName) throws ModelException
 	{
 		if (columnName != null)
@@ -283,6 +290,7 @@ public class MappingTableElementImpl extends MappingMemberElementImpl
 	 * keys.
 	 * @return the reference key elements for this mapping table
 	 */
+        @Override
 	public ArrayList getReferencingKeys ()
 	{
 		if (_referencingKeys == null)
@@ -295,6 +303,7 @@ public class MappingTableElementImpl extends MappingMemberElementImpl
 	 * @param referencingKey referencing key element to be added
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void addReferencingKey (MappingReferenceKeyElement referencingKey)
 		throws ModelException
 	{
@@ -315,6 +324,7 @@ public class MappingTableElementImpl extends MappingMemberElementImpl
 	 * @param table mapping table element for which to remove referencing keys
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void removeReference (MappingTableElement table)
 		throws ModelException
 	{

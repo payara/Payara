@@ -235,6 +235,7 @@ public class StatementLeakDetector {
             this.statement = stmt;
         }
 
+        @Override
         public void run() {
             potentialStatementLeakFound(statement);
         }

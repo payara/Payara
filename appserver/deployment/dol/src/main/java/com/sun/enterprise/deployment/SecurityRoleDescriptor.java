@@ -76,6 +76,7 @@ public class SecurityRoleDescriptor extends Descriptor implements SecurityRole {
     * Equality on rolename.
     */
     
+    @Override
     public boolean equals(Object other) {
 	if (other instanceof SecurityRoleDescriptor &&
 	    this.getName().equals( ((SecurityRoleDescriptor) other).getName() )) {
@@ -88,6 +89,7 @@ public class SecurityRoleDescriptor extends Descriptor implements SecurityRole {
     * My hashcode.
     */
     
+    @Override
     public int hashCode() {
 	return this.getName().hashCode();
     }
@@ -95,6 +97,7 @@ public class SecurityRoleDescriptor extends Descriptor implements SecurityRole {
     /**
     * Formatted string representing my state.
     */    
+    @Override
     public void print(StringBuffer toStringBuffer) {
 	toStringBuffer.append("SecurityRole ");
 	super.print(toStringBuffer);

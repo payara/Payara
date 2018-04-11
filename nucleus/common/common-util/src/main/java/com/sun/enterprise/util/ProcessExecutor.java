@@ -652,6 +652,7 @@ class FlusherThread extends Thread {
         mOutStream = out;
     }
 
+    @Override
     public void run() {
         // check for null stream
         if (mInStream == null)

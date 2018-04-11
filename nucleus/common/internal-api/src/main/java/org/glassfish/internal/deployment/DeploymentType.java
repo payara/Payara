@@ -89,6 +89,7 @@ public class DeploymentType implements Comparator {
 
   public final static DeploymentType INTERNAL_APP = 
     new DeploymentType(INTERNAL_APP_NAME, ApplicationOrderInfo.class) {
+      @Override
       public boolean isInstance(Object obj) {
         if (super.isInstance(obj)) {
           ApplicationOrderInfo appOrderInfo = (ApplicationOrderInfo)obj;
@@ -102,6 +103,7 @@ public class DeploymentType implements Comparator {
 
   public final static DeploymentType DEFAULT_APP = 
     new DeploymentType(DEFAULT_APP_NAME, ApplicationOrderInfo.class) {
+      @Override
       public boolean isInstance(Object obj) {
         if (super.isInstance(obj)) {
           ApplicationOrderInfo appOrderInfo = (ApplicationOrderInfo)obj;
@@ -115,6 +117,7 @@ public class DeploymentType implements Comparator {
 
   public final static DeploymentType CONNECTOR = 
     new DeploymentType(CONNECTOR_NAME, ApplicationOrderInfo.class) {
+      @Override
       public boolean isInstance(Object obj) {
         if (super.isInstance(obj)) {
           ApplicationOrderInfo appOrderInfo = (ApplicationOrderInfo)obj;
@@ -132,11 +135,13 @@ public class DeploymentType implements Comparator {
     this.cls = cls;
   }
 
+  @Override
   public String toString() { return name; }
   public boolean isInstance(Object obj) { return cls.isInstance(obj); }
   public Comparator getComparator() { return this; }
 
   // Compares two instances of the current type
+  @Override
   public int compare(Object o1, Object o2) {
     if ((o1 instanceof ApplicationOrderInfo) && (o2 instanceof ApplicationOrderInfo)) {
       return compare((ApplicationOrderInfo)o1, (ApplicationOrderInfo)o2);

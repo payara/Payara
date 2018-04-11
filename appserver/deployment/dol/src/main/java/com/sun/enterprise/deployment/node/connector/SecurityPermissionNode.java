@@ -64,6 +64,7 @@ public class SecurityPermissionNode extends DeploymentDescriptorNode {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */    
+    @Override
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
         table.put(ConnectorTagNames.SECURITY_PERMISSION_SPEC, "setPermission");

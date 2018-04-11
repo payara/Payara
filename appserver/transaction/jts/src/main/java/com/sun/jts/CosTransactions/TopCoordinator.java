@@ -358,6 +358,7 @@ public class TopCoordinator extends CoordinatorImpl {
      *
      * @see
      */
+    @Override
     public void doFinalize() {
         writeLock.lock();
         try {

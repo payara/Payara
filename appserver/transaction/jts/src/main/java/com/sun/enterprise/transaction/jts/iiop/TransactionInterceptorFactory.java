@@ -73,6 +73,7 @@ public class TransactionInterceptorFactory implements IIOPInterceptorFactory{
 
     @Inject private ServiceLocator habitat;
 
+    @Override
     public ClientRequestInterceptor createClientRequestInterceptor(ORBInitInfo info, Codec codec) {
         if (tci == null) {
             tci = new TransactionClientInterceptor("TransactionClientInterceptor", 1, habitat);
@@ -81,6 +82,7 @@ public class TransactionInterceptorFactory implements IIOPInterceptorFactory{
         return tci;
     }
 
+    @Override
     public ServerRequestInterceptor createServerRequestInterceptor(ORBInitInfo info, Codec codec) {
         if (tsi == null) {
             tsi = new TransactionServerInterceptor(2, habitat);

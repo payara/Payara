@@ -125,6 +125,7 @@ public class AnnotationInfo {
         return type;
     }
 
+    @Override
     public String toString() {
         return localStrings.getLocalString("annotatedinfo.string", "annotation [{0}] on annotated element [{1}] of type [{2}]", annotation, annotatedElement, type); 
     }

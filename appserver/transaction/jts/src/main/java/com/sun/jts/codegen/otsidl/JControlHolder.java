@@ -62,16 +62,19 @@ public final class JControlHolder implements org.omg.CORBA.portable.Streamable
     value = initialValue;
   }
 
+  @Override
   public void _read (org.omg.CORBA.portable.InputStream i)
   {
     value = com.sun.jts.codegen.otsidl.JControlHelper.read (i);
   }
 
+  @Override
   public void _write (org.omg.CORBA.portable.OutputStream o)
   {
     com.sun.jts.codegen.otsidl.JControlHelper.write (o, value);
   }
 
+  @Override
   public org.omg.CORBA.TypeCode _type ()
   {
     return com.sun.jts.codegen.otsidl.JControlHelper.type ();

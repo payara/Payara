@@ -93,6 +93,7 @@ public final class ClassPathBuilder {
             throw new IOException("Not a directory "+folder);
 
         File[] children = folder.listFiles(new FileFilter() {
+            @Override
             public boolean accept(File pathname) {
                 for (String name : excludes) {
                     if(pathname.getName().equals(name))

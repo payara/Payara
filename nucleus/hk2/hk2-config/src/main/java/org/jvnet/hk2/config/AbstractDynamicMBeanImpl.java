@@ -55,6 +55,7 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 abstract class AbstractDynamicMBeanImpl implements DynamicMBean {
+    @Override
     public final AttributeList getAttributes(String[] attributes) {
         AttributeList r = new AttributeList(attributes.length);
         for (String name : attributes) {
@@ -73,6 +74,7 @@ abstract class AbstractDynamicMBeanImpl implements DynamicMBean {
         return r;
     }
 
+    @Override
     public final AttributeList setAttributes(AttributeList attributes) {
         AttributeList r = new AttributeList(attributes.size());
         for (Object a : attributes) {

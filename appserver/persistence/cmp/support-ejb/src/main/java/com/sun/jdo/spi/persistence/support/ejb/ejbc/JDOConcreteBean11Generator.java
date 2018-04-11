@@ -89,6 +89,7 @@ class JDOConcreteBean11Generator extends JDOConcreteBeanGenerator {
 
     /** Add interfaces to the class declarations.
      */
+    @Override
     void addInterfaces() throws IOException {
         super.addInterfaces();
         jdoHelperWriter.addInterface(CMP11TemplateFormatter.helper11Interface_);
@@ -96,12 +97,14 @@ class JDOConcreteBean11Generator extends JDOConcreteBeanGenerator {
 
     /** Set super class for the helper class.
      */
+    @Override
     void setHelperSuperclass() throws IOException {
         jdoHelperWriter.setSuperclass(CMP11TemplateFormatter.helper11Impl_);
     }
 
     /** Generate CMP1.1 specific methods.
      */
+    @Override
     void generateTypeSpecificMethods(PersistenceFieldElement[] allFields,
             AbstractMethodHelper methodHelper) throws IOException {
 
@@ -112,6 +115,7 @@ class JDOConcreteBean11Generator extends JDOConcreteBeanGenerator {
     /**
      * Generates required internal variables.
      */
+    @Override
     void generateFields() throws IOException {
 
         super.generateFields();
@@ -252,6 +256,7 @@ class JDOConcreteBean11Generator extends JDOConcreteBeanGenerator {
      * all categorized methods and some other convenience methods for this bean.
      * @return JDOQLElements instance.
      */
+    @Override
     JDOQLElements getJDOQLElements(Method m,
             AbstractMethodHelper methodHelper) throws IOException{
       
@@ -267,6 +272,7 @@ class JDOConcreteBean11Generator extends JDOConcreteBeanGenerator {
      * parameters to be passed to another method as String.
      * @return method body as String.
      */
+    @Override
     String getEJBCreateMethodBody(String createName,
             String[] exc, String parametersList,
             String parametersListWithSeparator) {
@@ -310,6 +316,7 @@ class JDOConcreteBean11Generator extends JDOConcreteBeanGenerator {
      * parameters to be passed to another method as String.
      * @return method body as String.
      */
+    @Override
     String getEJBPostCreateMethodBody(String postCreateName,
             String parametersList, String parametersListWithSeparator) {
 
@@ -329,6 +336,7 @@ class JDOConcreteBean11Generator extends JDOConcreteBeanGenerator {
     /** Returns method body for EJBRemove method.
      * @return method body as String.
      */
+    @Override
     String getEJBRemoveMethodBody() {
 
         // For read-only beans it will throw an exception on access. 
@@ -347,6 +355,7 @@ class JDOConcreteBean11Generator extends JDOConcreteBeanGenerator {
      * not need formatting but differ between CMP types.
      * CMP11TemplateFormatter.otherPublicMethods_ differ between CMP types.
      */
+    @Override
     void generateKnownMethods(AbstractMethodHelper methodHelper)
                        throws IOException {
 
@@ -384,6 +393,7 @@ class JDOConcreteBean11Generator extends JDOConcreteBeanGenerator {
      * @param finder Methodobject of the finder
      * @return <code>true</code> if the finder returns a Enumeration
      */
+    @Override
     boolean isFinderReturningEnumeration(Method finder) {
         return (finder.getReturnType().equals(java.util.Enumeration.class));
     }
@@ -393,6 +403,7 @@ class JDOConcreteBean11Generator extends JDOConcreteBeanGenerator {
      * in the case of a EJB 1.1 finder.
      * @return the codefragment to set the ignoreCache flag of a JDOQL query.
      */
+    @Override
     String generateQueryIgnoreCache()
     {
         oneParam[0] =  CMP11TemplateFormatter.true_;
@@ -438,6 +449,7 @@ class JDOConcreteBean11Generator extends JDOConcreteBeanGenerator {
      * involved in the codegen.
      * @return The signatures as a string.
      */
+    @Override
     String getSignaturesOfGeneratorClasses()
     {
         StringBuffer signatures = new StringBuffer().

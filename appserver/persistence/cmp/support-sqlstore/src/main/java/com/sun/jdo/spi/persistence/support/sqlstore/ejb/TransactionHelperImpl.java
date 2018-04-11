@@ -89,6 +89,7 @@ public abstract class TransactionHelperImpl
     /** Identifies the managed environment behavior.
      * @return true as this implementation represents the managed environment.
      */  
+    @Override
     public boolean isManaged() {
         return true;
     }
@@ -105,12 +106,14 @@ public abstract class TransactionHelperImpl
      * associated with the current thread, this method returns null.
      * @return the Transaction instance for the calling thread
      */ 
+    @Override
     public abstract Transaction getTransaction();
 
     /** Returns the UserTransaction associated with the calling thread.  If there
      * is no transaction currently in progress, this method returns null.
      * @return the UserTransaction instance for the calling thread
      */
+    @Override
     public abstract UserTransaction getUserTransaction();
 
     /** Translate local representation of the Transaction Status to
@@ -124,6 +127,7 @@ public abstract class TransactionHelperImpl
      * @param   st      local Status value
      * @return the javax.transaction.Status value of the status
      */
+    @Override
     public int translateStatus(int st) {
         return st;
     }
@@ -143,6 +147,7 @@ public abstract class TransactionHelperImpl
      * @param   pmf     PersistenceManagerFactory instance to be replaced
      * @return  the PersistenceManagerFactory known to the runtime
      */
+    @Override
     public PersistenceManagerFactory replaceInternalPersistenceManagerFactory(
 	PersistenceManagerFactory pmf) {
 
@@ -164,6 +169,7 @@ public abstract class TransactionHelperImpl
      * @param   component       an array of Objects
      * @return  implementation-specific Object
      */
+    @Override
     public Object preInvoke(Object component) {
         return null;
     }
@@ -175,6 +181,7 @@ public abstract class TransactionHelperImpl
      *   
      * @param   im      implementation-specific Object
      */
+    @Override
     public void postInvoke(Object im) {
     }
 
@@ -188,6 +195,7 @@ public abstract class TransactionHelperImpl
     * @throws javax.transaction.RollbackException.
     * @throws javax.transaction.SystemException
     */
+    @Override
     public void registerSynchronization(Transaction jta, Synchronization sync) 
         throws RollbackException, SystemException {
 
@@ -207,6 +215,7 @@ public abstract class TransactionHelperImpl
      * @return a Connection. 
      * @throws java.sql.SQLException.
      */  
+    @Override
     public java.sql.Connection getConnection(Object resource, String username, 
                 char[] password) throws java.sql.SQLException {
         java.sql.Connection rc = null;
@@ -231,6 +240,7 @@ public abstract class TransactionHelperImpl
      * @return a Connection.
      * @throws java.sql.SQLException.
      */
+    @Override
     public abstract java.sql.Connection getNonTransactionalConnection(
         Object resource, String username, char[] password)
         throws java.sql.SQLException;
@@ -241,12 +251,14 @@ public abstract class TransactionHelperImpl
      * 
      * @return javax.transaction.TransactionManager
      */
+    @Override
     public abstract TransactionManager getLocalTransactionManager();
 
     /**
      * This method unwraps given Statement and return the Statement from
      * JDBC driver if possible.
      */
+    @Override
     public java.sql.Statement unwrapStatement(java.sql.Statement stmt) {
         return stmt;
     }
@@ -258,6 +270,7 @@ public abstract class TransactionHelperImpl
      *  
      * @param pmf the PersistenceManagerFactory. 
      */ 
+    @Override
     public void setPersistenceManagerFactoryDefaults(PersistenceManagerFactory pmf) {
         pmf.setOptimistic(false);
         pmf.setRetainValues(false);
@@ -270,6 +283,7 @@ public abstract class TransactionHelperImpl
      * @param info the instance to use for the name generation.
      * @return name prefix as String. 
      */   
+    @Override
     public String getDDLNamePrefix(Object info) { 
         return DEFAULT_STRING;
     }
@@ -277,6 +291,7 @@ public abstract class TransactionHelperImpl
     /**
      * @inheritDoc 
      */ 
+    @Override
     public void registerApplicationLifeCycleEventListener(
             ApplicationLifeCycleEventListener listener) {
         
@@ -285,6 +300,7 @@ public abstract class TransactionHelperImpl
     /**
      * @inheritDoc 
      */ 
+    @Override
     public void notifyApplicationUnloaded(ClassLoader cl) {
         
     }

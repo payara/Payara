@@ -112,6 +112,7 @@ public class ListLifecycleModulesCommand implements AdminCommand {
     
     private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListLifecycleModulesCommand.class);
    
+    @Override
     public void execute(AdminCommandContext context) {
         
         ActionReport report = context.getActionReport();

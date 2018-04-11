@@ -60,6 +60,7 @@ public final class MBeanParameterInfoStringifier
         super(options);
     }
 
+    @Override
     public String stringify(Object o)
     {
         final MBeanParameterInfo info = (MBeanParameterInfo) o;

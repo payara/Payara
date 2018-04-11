@@ -46,6 +46,7 @@ import javax.ejb.spi.HandleDelegate;
 
 @Service
 public class HandleDelegateFacadeImpl implements HandleDelegateFacade {
+    @Override
     public HandleDelegate getHandleDelegate() {
         return IIOPHandleDelegate.getHandleDelegate();
     }

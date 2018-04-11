@@ -92,6 +92,7 @@ public class TransactionIIOPInterceptorFactory implements IIOPInterceptorFactory
     @Inject private ServiceLocator serviceLocator;
     @Inject private ProcessEnvironment processEnv;
 
+    @Override
     public ClientRequestInterceptor createClientRequestInterceptor(ORBInitInfo info, Codec codec) {
         if (!txServiceInitialized) {
             createInterceptor(info, codec);
@@ -100,6 +101,7 @@ public class TransactionIIOPInterceptorFactory implements IIOPInterceptorFactory
         return interceptor;
     }
 
+    @Override
     public ServerRequestInterceptor createServerRequestInterceptor(ORBInitInfo info, Codec codec) {
         if (!txServiceInitialized) {
             createInterceptor(info, codec);

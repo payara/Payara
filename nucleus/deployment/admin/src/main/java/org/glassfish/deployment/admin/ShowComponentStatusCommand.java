@@ -156,6 +156,7 @@ public class ShowComponentStatusCommand implements AdminCommand, AdminCommandSec
         return accessChecks;
     }
     
+    @Override
     public void execute(AdminCommandContext context) {
         
         ActionReport.MessagePart part;

@@ -111,6 +111,7 @@ public class SunDeploymentFactory implements DeploymentFactory {
      *        DeploymentManager could not be returned (server down,
      *        unable to authenticate, etc).
      */
+    @Override
     public DeploymentManager getDeploymentManager(String uri, String username, String password) throws DeploymentManagerCreationException {
         
         if (handlesURI(uri)) {
@@ -151,6 +152,7 @@ public class SunDeploymentFactory implements DeploymentFactory {
      * @throws DeploymentManagerCreationException occurs if the
      *         DeploymentManager could not be created.
      */
+    @Override
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
         if (handlesURI(uri)) {
             return new SunDeploymentManager();
@@ -162,6 +164,7 @@ public class SunDeploymentFactory implements DeploymentFactory {
     /** Provide a string with the name of this vendor's DeploymentManager.
      * @return the name of the vendor's DeploymentManager.
      */
+    @Override
     public String getDisplayName() {
         return xlocalStrings.getLocalString(
                 "enterprise.deployapi.spi.DisplayName",
@@ -172,6 +175,7 @@ public class SunDeploymentFactory implements DeploymentFactory {
      * DeploymentManager.
      * @return the name of the vendor's DeploymentManager.
      */
+    @Override
     public String getProductVersion() {
         return xlocalStrings.getLocalString(
                 "enterprise.deployapi.spi.ProductVersion", "9.0");
@@ -184,6 +188,7 @@ public class SunDeploymentFactory implements DeploymentFactory {
      * @param uri The uri to check
      * @return <tt>true</tt> if the factory can handle the uri.
      */
+    @Override
     public boolean handlesURI(String uri) {
         if (deplLogger.isLoggable(Level.FINE)) {
             deplLogger.fine("handlesURI: URI ["+uri+"]");// NOI18N

@@ -69,6 +69,7 @@ public class PrincipalImpl implements Principal, java.io.Serializable {
      * @return true if the Principal passed is the same as that 
      * encapsulated in this object, false otherwise
      */
+    @Override
     public boolean equals(Object another) {
         // XXX for bug 4889642: if groupA and userA have
         // the same name, then groupA.equals(userA) return false
@@ -104,6 +105,7 @@ public class PrincipalImpl implements Principal, java.io.Serializable {
      * Gets the name of the Principal as a java.lang.String
      * @return the name of the principal.
      */
+    @Override
     public String getName() {
 	return name;
     }

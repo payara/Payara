@@ -102,6 +102,7 @@ public class DeleteCustomResource implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
@@ -154,6 +155,7 @@ public class DeleteCustomResource implements AdminCommand {
             // delete custom-resource
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
 
+                @Override
                 public Object run(Resources param) throws PropertyVetoException,
                         TransactionFailure {
                     CustomResource resource = (CustomResource)

@@ -75,6 +75,7 @@ public class ActivationSpecNode extends DeploymentDescriptorNode {
      * @return the map with the element name as a key, the setter method as a value
      */    
 
+    @Override
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
 	table.put(ConnectorTagNames.ACTIVATION_SPEC_CLASS, "setActivationSpecClass");
@@ -84,6 +85,7 @@ public class ActivationSpecNode extends DeploymentDescriptorNode {
     /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
         if (msgListener == null) {
             msgListener = (MessageListener) getParentNode().getDescriptor();
@@ -97,6 +99,7 @@ public class ActivationSpecNode extends DeploymentDescriptorNode {
      *
      * @param descriptor the new descriptor
      */
+    @Override
     public void addDescriptor(Object obj) {
         if (obj instanceof ConnectorConfigProperty) {
             msgListener.addConfigProperty((ConnectorConfigProperty)obj);

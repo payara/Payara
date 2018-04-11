@@ -171,6 +171,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
 
     // START: local transaction timeout
     // TimerTask run() method implementation
+    @Override
     public void run() {
         timedOut = true;
         try {
@@ -180,10 +181,12 @@ public final class JavaEETransactionImpl extends TimerTask implements
         }
     }
 
+    @Override
     public Object getContainerData() {
         return containerData;
     }
 
+    @Override
     public void setContainerData(Object data) {
         containerData = data;
     }
@@ -205,6 +208,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
         return timeout;
     }
 
+    @Override
     public boolean isTimedOut() {
         return timedOut;
     }
@@ -215,6 +219,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
         return newTxId;
     }
 
+    @Override
     public boolean equals(Object other) {
         if ( other == this )
             return true;
@@ -225,6 +230,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
         return false;
     }
 
+    @Override
     public int hashCode() {
         return (int)txId;
     }
@@ -234,6 +240,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
         return xid;
     }
 
+    @Override
     public TransactionalResource getNonXAResource() {
         return nonXAResource;
     }
@@ -242,10 +249,12 @@ public final class JavaEETransactionImpl extends TimerTask implements
         nonXAResource = h;
     }
 
+    @Override
     public TransactionalResource getLAOResource() {
         return laoResource;
     }
 
+    @Override
     public void setLAOResource(TransactionalResource h) {
         laoResource = h;
     }
@@ -295,11 +304,13 @@ public final class JavaEETransactionImpl extends TimerTask implements
     }
 
 
+    @Override
     public void addTxEntityManagerMapping(EntityManagerFactory emf,
                                           SimpleResource em) {
         getTxEntityManagerMap().put(emf, em);
     }
 
+    @Override
     public SimpleResource getTxEntityManagerResource(EntityManagerFactory emf) {
         return getTxEntityManagerMap().get(emf);
     }
@@ -334,15 +345,18 @@ public final class JavaEETransactionImpl extends TimerTask implements
         }
     }
 
+    @Override
     public void addExtendedEntityManagerMapping(EntityManagerFactory emf,
                                                 SimpleResource em) {
         getExtendedEntityManagerMap().put(emf, em);
     }
 
+    @Override
     public void removeExtendedEntityManagerMapping(EntityManagerFactory emf) {
         getExtendedEntityManagerMap().remove(emf);
     }
 
+    @Override
     public SimpleResource getExtendedEntityManagerResource(EntityManagerFactory emf) {
         return getExtendedEntityManagerMap().get(emf);
     }
@@ -356,6 +370,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
         return extendedEntityManagerMap;
     }
 
+    @Override
     public boolean isLocalTx() {
         return (jtsTx==null);
     }
@@ -387,6 +402,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
     }
 
 
+    @Override
     public void commit() throws RollbackException,
                 HeuristicMixedException, HeuristicRollbackException,
                 SecurityException, IllegalStateException, SystemException {
@@ -566,6 +582,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
         }
     }
 
+    @Override
     public void rollback() throws IllegalStateException, SystemException {
 
         // START local transaction timeout
@@ -631,6 +648,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
         }
     }
 
+    @Override
     public boolean delistResource(XAResource xaRes, int flag)
             throws IllegalStateException, SystemException {
         // START OF IASRI 4660742
@@ -647,6 +665,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
             throw new IllegalStateException(sm.getString("enterprise_distributedtx.deleteresource_for_localtx"));
     }
 
+    @Override
     public boolean enlistResource(XAResource xaRes)
             throws RollbackException, IllegalStateException,
             SystemException {
@@ -672,6 +691,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
         // IASRI END 4723068
     }
 
+    @Override
     public int getStatus() throws SystemException {
         if ( jtsTx != null )
             return jtsTx.getStatus();
@@ -679,6 +699,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
             return localTxStatus;
     }
 
+    @Override
     public void registerSynchronization(Synchronization sync)
                 throws RollbackException, IllegalStateException,
                 SystemException {
@@ -696,6 +717,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
             syncs.add(sync);
     }
 
+    @Override
     public void setRollbackOnly() throws IllegalStateException, SystemException {
         checkTransationActive();
         if ( jtsTx != null )
@@ -724,6 +746,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
         }
     }
 
+    @Override
     public String toString() {
         return "JavaEETransactionImpl: txId="+txId+" nonXAResource="+nonXAResource
                 +" jtsTx="+jtsTx+" localTxStatus="+localTxStatus
@@ -747,10 +770,12 @@ public final class JavaEETransactionImpl extends TimerTask implements
     }
     // END IASRI 4662745
 
+    @Override
     public void setResources(Set resources, Object poolInfo) {
         resourceTable.put(poolInfo, resources);
     }
 
+    @Override
     public Set getResources(Object poolInfo) {
         return (Set) resourceTable.get(poolInfo);
     }
@@ -761,6 +786,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
      * is called by the PoolManagerImpl. This method will return
      * only those pools that have ever participated in a tx
      */
+    @Override
     public Set getAllParticipatingPools() {
         return (Set) resourceTable.keySet();
     }
@@ -782,14 +808,17 @@ public final class JavaEETransactionImpl extends TimerTask implements
             Utility.longToBytes(txId, gtrId, 0);
         }
     
+        @Override
         public int getFormatId() {
             return formatId;
         }
     
+        @Override
         public byte[] getGlobalTransactionId() {
             return gtrId;
         }
     
+        @Override
         public byte[] getBranchQualifier() {
             return bqual; // V2-XXX check if its ok to always have same bqual
         }
@@ -798,6 +827,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
         /*
          * returens the Transaction id of this transaction
          */
+        @Override
         public String toString(){
     
             // If we have a cached copy of the string form of the global identifier, return

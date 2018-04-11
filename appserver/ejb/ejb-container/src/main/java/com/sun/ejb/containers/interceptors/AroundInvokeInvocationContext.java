@@ -122,6 +122,7 @@ public class AroundInvokeInvocationContext extends CallbackInvocationContext
       * interceptor code, so it must not be changed in order for any exception
       * handling logic in that code to function properly.
       */
+    @Override
     public  Object invokeBeanMethod() throws Throwable {
 
         try {

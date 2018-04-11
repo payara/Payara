@@ -117,6 +117,7 @@ public class JAXWSServiceDelegate extends Service {
         } 
     }
 
+    @Override
     public void addPort(QName q, String id, String addr) {
         checkUnsupportedMethods(ADD_PORT);
         serviceDelegate.addPort(q, id, addr);
@@ -124,38 +125,45 @@ public class JAXWSServiceDelegate extends Service {
     }
     
     // TODO : To be implemented
+    @Override
     public <T> Dispatch<T> createDispatch(QName qName, Class<T> aClass, Service.Mode mode) {
         checkUnsupportedMethods(CREATE_DISPATCH_CLASS);
         return null;
     }
                                                                                 
     // TODO : To be implemented
+    @Override
     public Dispatch<Object> createDispatch(QName qName, JAXBContext jaxbContext, Service.Mode mode) {
         checkUnsupportedMethods(CREATE_DISPATCH_CONTEXT);
         return null;
     }
 
+    @Override
     public Executor getExecutor() {
         checkUnsupportedMethods(GET_EXECUTOR);
         return serviceDelegate.getExecutor();
     }
     
+    @Override
     public void setExecutor(Executor obj) {
         checkUnsupportedMethods(SET_EXECUTOR);
         serviceDelegate.setExecutor(obj);
         return;
     }
     
+    @Override
     public HandlerResolver getHandlerResolver() {
         checkUnsupportedMethods(GET_HANDLER_RESOLVER);
         return serviceDelegate.getHandlerResolver();
     }
        
+    @Override
     public Object getPort(QName q, Class sei) {
         checkUnsupportedMethods(GET_PORT_CLIENT_MANAGED);
         return serviceDelegate.getPort(q, sei);
     }
     
+    @Override
     public Object getPort(Class sei) {
         checkUnsupportedMethods(GET_PORT_CONTAINER_MANAGED);
         String serviceEndpointInterface = sei.getName();
@@ -170,22 +178,26 @@ public class JAXWSServiceDelegate extends Service {
         return retVal;
     }
     
+    @Override
     public Iterator getPorts() {
         checkUnsupportedMethods(GET_PORTS);
         return serviceDelegate.getPorts();
     }
     
+    @Override
     public QName getServiceName() {
         checkUnsupportedMethods(GET_SERVICE_NAME);
         return serviceRef.getServiceName();
     }
     
+    @Override
     public void setHandlerResolver(HandlerResolver resolver) {
         checkUnsupportedMethods(SET_HANDLER_RESOLVER);
         serviceDelegate.setHandlerResolver(resolver);
         return;
     }
     
+    @Override
     public URL getWSDLDocumentLocation() {
         checkUnsupportedMethods(SET_HANDLER_RESOLVER);
         return wsdlLocation;

@@ -104,6 +104,7 @@ public class SecurityServiceImpl implements SecurityService {
 
     private static ThreadLocal<WeakReference<SOAPMessage>> req = new ThreadLocal<WeakReference<SOAPMessage>>();
  
+    @Override
     public Object mergeSOAPMessageSecurityPolicies(MessageSecurityBindingDescriptor desc) {
         try {
 	    // merge message security policy from domain.xml and sun-specific
@@ -121,6 +122,7 @@ public class SecurityServiceImpl implements SecurityService {
         return null;
     }
 
+    @Override
     public boolean doSecurity(HttpServletRequest hreq, EjbRuntimeEndpointInfo epInfo, String realmName, WebServiceContextImpl context) {
         //BUG2263 - Clear the value of UserPrincipal from previous request
         //If authentication succeeds, the proper value will be set later in
@@ -252,16 +254,19 @@ public class SecurityServiceImpl implements SecurityService {
         }
     }    
         
+    @Override
     public void resetSecurityContext() {
         SecurityContext.setUnauthenticatedContext();
     }
 
+    @Override
     public void resetPolicyContext() {
        ((PolicyContextHandlerImpl)PolicyContextHandlerImpl.getInstance()).reset();
        PolicyContext.setContextID(null);
     }
 
 
+    @Override
     public SystemHandlerDelegate getSecurityHandler(WebServiceEndpoint endpoint) {
 
         if (!endpoint.hasAuthMethod()) {
@@ -279,6 +284,7 @@ public class SecurityServiceImpl implements SecurityService {
         return null;
     }
 
+    @Override
     public boolean validateRequest(Object serverAuthConfig, StreamingHandler implementor, SOAPMessageContext context) {
         ServerAuthConfig authConfig = (ServerAuthConfig) serverAuthConfig;
         if (authConfig != null) {
@@ -300,6 +306,7 @@ public class SecurityServiceImpl implements SecurityService {
         return true;
     }
 
+    @Override
     public void secureResponse(Object serverAuthConfig, StreamingHandler implementor,SOAPMessageContext msgContext) {
         if (serverAuthConfig != null) {
             ServerAuthConfig config = (ServerAuthConfig)serverAuthConfig;
@@ -324,6 +331,7 @@ public class SecurityServiceImpl implements SecurityService {
         }
     }
 
+    @Override
     public HandlerInfo getMessageSecurityHandler(MessageSecurityBindingDescriptor binding, QName serviceName) {
         HandlerInfo rvalue = null;
         try {
@@ -349,6 +357,7 @@ public class SecurityServiceImpl implements SecurityService {
         return new ClientPipeCreator(ref);
     }
 
+    @Override
       public Principal getUserPrincipal(boolean isWeb) {
          //This is a servlet endpoint
         SecurityContext ctx = SecurityContext.getCurrent();
@@ -363,6 +372,7 @@ public class SecurityServiceImpl implements SecurityService {
         return ctx.getCallerPrincipal();
     }
 
+    @Override
     public boolean isUserInRole(WebModule webModule, Principal principal, String servletName, String role) {
             if (webModule.getRealm() instanceof RealmAdapter) {
                 RealmAdapter realmAdapter = (RealmAdapter)webModule.getRealm();

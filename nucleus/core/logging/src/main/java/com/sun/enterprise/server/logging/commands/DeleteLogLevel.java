@@ -98,6 +98,7 @@ public class DeleteLogLevel implements AdminCommand {
 
     private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteLogLevel.class);
 
+    @Override
     public void execute(AdminCommandContext context) {
 
 

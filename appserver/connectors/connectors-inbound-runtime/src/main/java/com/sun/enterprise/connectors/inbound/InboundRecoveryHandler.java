@@ -103,6 +103,7 @@ public class InboundRecoveryHandler implements RecoveryResourceHandler {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void loadXAResourcesAndItsConnections(List xaresList, List connList) {
         Vector<XAResource> xaResources = new Vector<XAResource>();
         recoverInboundTransactions(xaResources);
@@ -111,6 +112,7 @@ public class InboundRecoveryHandler implements RecoveryResourceHandler {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void closeConnections(List connList) {
         // do nothing
     }

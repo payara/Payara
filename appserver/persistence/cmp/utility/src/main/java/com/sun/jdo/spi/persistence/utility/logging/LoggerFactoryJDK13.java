@@ -61,6 +61,7 @@ public class LoggerFactoryJDK13 extends AbstractLoggerFactory
 	 * @param loader the class loader used to load the resource bundle, or null
 	 * @return the logger
 	 */
+        @Override
 	protected Logger createLogger (String absoluteLoggerName, 
 		String bundleName, ClassLoader loader)
 	{

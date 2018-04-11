@@ -80,6 +80,7 @@ public class ListLibrariesCommand implements AdminCommand {
 
     private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListLibrariesCommand.class);    
 
+    @Override
     public void execute(AdminCommandContext context) {
         
         final ActionReport report = context.getActionReport();

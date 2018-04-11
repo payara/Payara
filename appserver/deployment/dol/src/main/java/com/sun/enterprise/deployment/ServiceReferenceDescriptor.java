@@ -257,10 +257,12 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
         callProperties = new HashSet();
     }
 
+    @Override
     public String getMappedName() {
         return mappedName;
     }
     
+    @Override
     public void setMappedName(String value) {
         mappedName = value;
     }
@@ -576,6 +578,7 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
     /**
      * HandlerChain related setters, getters, adders, finders
      */
+    @Override
     public void addHandlerChain(WebServiceHandlerChain handler) {
         handlerChain.addLast(handler);
 
@@ -586,10 +589,12 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
 
     }
 
+    @Override
     public boolean hasHandlerChain() {
         return (handlerChain.size() > 0);
     }
 
+    @Override
     public LinkedList getHandlerChain() {
         return handlerChain;
     }
@@ -677,6 +682,7 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
     }
 
     /* Equality on name. */
+    @Override
     public boolean equals(Object object) {
         if (object instanceof ServiceReferenceDescriptor) {
             ServiceReferenceDescriptor thatReference = 
@@ -686,6 +692,7 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
         return false;
     }
 
+    @Override
     public int hashCode() {
         int result = NULL_HASH_CODE;
         String name = getName();

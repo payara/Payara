@@ -572,10 +572,12 @@ public class ConfigInjectorGenerator extends AbstractProcessor {
                     this.arrayT = componentT.array();
                 }
 
+                @Override
                 TypeMirror itemType() {
                     return at.getComponentType();
                 }
 
+                @Override
                 void start(JExpression $valueSize) {
                     // [RESULT]
                     // T[] x = new T[values.size()];
@@ -583,12 +585,14 @@ public class ConfigInjectorGenerator extends AbstractProcessor {
                     $index = var(int.class,JExpr.lit(0));
                 }
 
+                @Override
                 void pack(JBlock block, JExpression item, JExpression sourceValue) {
                     // [RESULT]
                     // x[i++] = <rhs>;
                     block.assign($array.component($index.incr()),item);
                 }
 
+                @Override
                 JExpression end() {
                     return $array;
                 }
@@ -605,10 +609,12 @@ public class ConfigInjectorGenerator extends AbstractProcessor {
                     this.itemT = itemType;
                 }
 
+                @Override
                 TypeMirror itemType() {
                     return itemT;
                 }
 
+                @Override
                 void start(JExpression $valueSize) {
                     // [RESULT]
                     // T x = new ArrayList<T>(values.size());
@@ -624,12 +630,14 @@ public class ConfigInjectorGenerator extends AbstractProcessor {
                     return cm.ref(ArrayList.class).narrow(itemType);
                 }
 
+                @Override
                 void pack(JBlock block, JExpression item, JExpression sourceValue) {
                     // [RESULT]
                     // x.add(<rhs>);
                     block.invoke($list,"add").arg(item);
                 }
 
+                @Override
                 JExpression end() {
                     return $list;
                 }
@@ -643,22 +651,26 @@ public class ConfigInjectorGenerator extends AbstractProcessor {
                     this.itemT = itemType;
                 }
 
+                @Override
                 TypeMirror itemType() {
                     return itemT;
                 }
 
+                @Override
                 void start(JExpression $valueSize) {
                     // [RESULT]
                     // T x = new HashMap<T>();
                     $map = var(Map.class,JExpr._new(cm.ref(HashMap.class)).arg($valueSize));
                 }
 
+                @Override
                 void pack(JBlock block, JExpression item, JExpression itemDom) {
                     // [RESULT]
                     // x.put(dom.getKey(),<rhs>);
                     block.invoke($map,"put").arg(itemDom.invoke("getKey")).arg(item);
                 }
 
+                @Override
                 JExpression end() {
                     return $map;
                 }
@@ -726,34 +738,42 @@ public class ConfigInjectorGenerator extends AbstractProcessor {
             }
 
             class LeafConverter extends Converter {
+                @Override
                 JExpression as(JExpression rhs, TypeMirror targetType) {
                     return math.simpleValueConverter.visit(targetType, rhs);
                 }
+                @Override
                 JClass sourceType() {
                     return cm.ref(String.class);
                 }
 
+                @Override
                 boolean isLeaf() {
                     return true;
                 }
 
+                @Override
                 void addMetadata(String key,TypeMirror itemType) {
                     addToMetadata(metadata, key,makeCollectionIfNecessary("leaf"));
                 }
             }
 
             class NodeConverter extends Converter {
+                @Override
                 JExpression as(JExpression rhs, TypeMirror targetType) {
                     return JExpr.cast(toJtype.visit(targetType, null), rhs.invoke("get"));
                 }
+                @Override
                 JClass sourceType() {
                     return cm.ref(Dom.class);
                 }
 
+                @Override
                 boolean isLeaf() {
                     return false;
                 }
 
+                @Override
                 void addMetadata(String key,TypeMirror itemType) {
                    String typeName;
                     if (itemType.getKind() == TypeKind.DECLARED) {
@@ -774,32 +794,40 @@ public class ConfigInjectorGenerator extends AbstractProcessor {
                     this.sourceType = toJtype.visit(sourceType, null).boxify();
                 }
 
+                @Override
                 JExpression as(JExpression rhs, TypeMirror targetType) {
                     return rhs;
                 }
+                @Override
                 JClass sourceType() {
                     return sourceType;
                 }
+                @Override
                 boolean isLeaf() {
                     return false;
                 }
+                @Override
                 void addMetadata(String key,TypeMirror itemType) {
                     // TODO: we need to indicate that there's open-ended match here
                 }
             }
 
             class ReferenceConverter extends Converter {
+                @Override
                 JExpression as(JExpression rhs, TypeMirror targetType) {
                     return JExpr.invoke("reference").arg($dom).arg(rhs).arg(toJtype.visit(targetType, null).boxify().dotclass());
                 }
+                @Override
                 JClass sourceType() {
                     return cm.ref(String.class);
                 }
 
+                @Override
                 boolean isLeaf() {
                     return true;
                 }
 
+                @Override
                 void addMetadata(String key,TypeMirror itemType) {
                     addToMetadata(metadata, key,makeCollectionIfNecessary("leaf"));
                     addToMetadata(metadata, key, "reference");
@@ -816,22 +844,27 @@ public class ConfigInjectorGenerator extends AbstractProcessor {
                 this.a = a;
             }
 
+            @Override
             protected String xmlTokenName() {
                 return '@'+xmlName;
             }
 
+            @Override
             protected boolean isRequired() {
                 return a.required();
             }
 
+            @Override
             protected boolean isReference() {
                 return a.reference();
             }
 
+            @Override
             protected boolean isVariableExpansion() {
                 return a.variableExpansion();
             }
 
+            @Override
             protected boolean isAllElementMatch() {
                 return false;
             }
@@ -870,6 +903,7 @@ public class ConfigInjectorGenerator extends AbstractProcessor {
                 super.generate();
             }
 
+            @Override
             protected JExpression getXmlValue() {
                 if(!isVariableExpansion() && packer!=null) {
                     printError("collection attribute property is inconsistent with variableExpansion=false", p.decl());
@@ -885,10 +919,12 @@ public class ConfigInjectorGenerator extends AbstractProcessor {
                 this.e = e;
             }
 
+            @Override
             protected String xmlTokenName() {
                 return '<'+xmlName+'>';
             }
 
+            @Override
             protected JExpression getXmlValue() {
                 String name;
                 if(conv.isLeaf()) {
@@ -918,18 +954,22 @@ public class ConfigInjectorGenerator extends AbstractProcessor {
                 }
             }
 
+            @Override
             protected boolean isRequired() {
                 return e.required();
             }
 
+            @Override
             protected boolean isReference() {
                 return e.reference();
             }
 
+            @Override
             protected boolean isVariableExpansion() {
                 return e.variableExpansion();
             }
 
+            @Override
             protected boolean isAllElementMatch() {
                 return e.value().equals("*");
             }
@@ -1010,6 +1050,7 @@ public class ConfigInjectorGenerator extends AbstractProcessor {
             this.filer = filer;
         }
 
+        @Override
         public OutputStream openBinary(JPackage pkg, String fileName) throws IOException {
             StandardLocation loc;
             if(fileName.endsWith(".java")) {
@@ -1023,6 +1064,7 @@ public class ConfigInjectorGenerator extends AbstractProcessor {
             return filer.createResource(loc, pkg.name(), fileName).openOutputStream();
         }
 
+        @Override
         public Writer openSource(JPackage pkg, String fileName) throws IOException {
             String name;
             if(pkg.isUnnamed())
@@ -1035,6 +1077,7 @@ public class ConfigInjectorGenerator extends AbstractProcessor {
             return filer.createSourceFile(name).openWriter();
         }
 
+        @Override
         public void close() {}
     }
 

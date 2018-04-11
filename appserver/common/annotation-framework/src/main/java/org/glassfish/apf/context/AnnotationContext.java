@@ -70,10 +70,12 @@ public class AnnotationContext implements AnnotatedElementHandler {
         return processingContext;
     }
     
+    @Override
     public void startElement(ElementType type, AnnotatedElement element) 
         throws AnnotationProcessorException {
     }
    
+    @Override
     public void endElement(ElementType type, AnnotatedElement element)
         throws AnnotationProcessorException {
     }     

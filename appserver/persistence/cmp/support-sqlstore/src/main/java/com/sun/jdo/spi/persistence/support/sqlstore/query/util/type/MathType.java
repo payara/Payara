@@ -71,6 +71,7 @@ public class MathType
     /**
      * A numeric wrapper class type defines an ordering.
      */
+    @Override
     public boolean isOrderable()
     {
         return true;
@@ -83,6 +84,7 @@ public class MathType
      * @param value value to be converted
      * @return converted value
      */
+    @Override
     public Number getValue(Number value)
     {
         Number ret = null;
@@ -122,6 +124,7 @@ public class MathType
      * @param value value to be negated
      * @return -value
      */
+    @Override
     public Number negate(Number value)
     {
         Number ret = null;

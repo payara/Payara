@@ -786,6 +786,7 @@ public class RemoteCommand extends CLICommand {
      * available, e.g., because the server is down, try to find
      * it locally by looking in the modules directory.
      */
+    @Override
     public BufferedReader getManPage() {
         try {
             initializeRemoteAdminCommand();

@@ -53,6 +53,7 @@ public class DistinguishedPrincipalCredential {
         return prin;
     }
 
+    @Override
     public String toString() {
         return "DistingushedPrincipal: " + prin;
     }

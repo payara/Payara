@@ -86,6 +86,7 @@ public class RepositoryNameValidator extends StringValidator
      * its superclass's validate method and then performs additional validations.
      * @throws InvalidConfigException
      */
+    @Override
     public void validate(Object str) throws InvalidConfigException
     {
         super.validate(str);

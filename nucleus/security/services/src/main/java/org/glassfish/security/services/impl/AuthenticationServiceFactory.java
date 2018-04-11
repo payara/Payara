@@ -70,6 +70,7 @@ public class AuthenticationServiceFactory extends ServiceFactory implements Fact
     private ServiceLocator serviceLocator;
 
     @SecurityScope
+    @Override
     public AuthenticationService provide() {
         String currentState = manager.getCurrent();
 

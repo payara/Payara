@@ -53,20 +53,24 @@ public final class WebServiceDeploymentNotifierImpl implements WebServiceDeploym
     private final Collection<WebServiceDeploymentListener> listeners =
             new CopyOnWriteArraySet<WebServiceDeploymentListener>();
 
+    @Override
     public void addListener(WebServiceDeploymentListener listener) {
         listeners.add(listener);
     }
 
+    @Override
     public void removeListener(WebServiceDeploymentListener listener) {
         listeners.remove(listener);
     }
 
+    @Override
     public void notifyDeployed(WebServiceEndpoint nextEndpoint) {
         for(WebServiceDeploymentListener listener : listeners) {
             listener.onDeployed(nextEndpoint);
         }
     }
 
+    @Override
     public void notifyUndeployed(WebServiceEndpoint nextEndpoint) {
         for(WebServiceDeploymentListener listener : listeners) {
             listener.onUndeployed(nextEndpoint);

@@ -150,6 +150,7 @@ public class PropertyHelper {
         try {
             return (InputStream) AccessController.doPrivileged(
                 new PrivilegedExceptionAction() {
+                    @Override
                     public Object run() throws FileNotFoundException {
                             return new FileInputStream(fileName);
                     }
@@ -171,6 +172,7 @@ public class PropertyHelper {
                                                                         throws java.io.FileNotFoundException  {
         return (InputStream) AccessController.doPrivileged(
             new PrivilegedAction() {
+                @Override
                 public Object run() {
                     if (classLoader != null) {
                         return classLoader.getResourceAsStream(resourceName);

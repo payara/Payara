@@ -88,6 +88,7 @@ public class CacheFactory {
     private static Cache initCustomCacheStructurePrivileged(
             final String className, final int cacheSize) throws ResourceException {
         Object result = AccessController.doPrivileged(new PrivilegedAction() {
+            @Override
             public Object run() {
 
                 Object result = null;

@@ -94,6 +94,7 @@ public class IOJavaFileWriter implements JavaFileWriter
 	 * by the implementation.  Note that not all implementations will choose
 	 * to make use of this comment.
 	 */	
+        @Override
 	public void setPackage (final String packageName, final String[] comments) 
 	{
 		final FormattedWriter writerHelper =  new FormattedWriter();
@@ -116,6 +117,7 @@ public class IOJavaFileWriter implements JavaFileWriter
 	 * by the implementation.  Note that not all implementations will choose
 	 * to make use of this comment.
 	 */	
+        @Override
 	public void addImport (final String importName, final String[] comments)
 	{
 		final FormattedWriter writerHelper =  new FormattedWriter();
@@ -130,6 +132,7 @@ public class IOJavaFileWriter implements JavaFileWriter
 	/** Adds a class to this source file.
 	 * @param classWriter The definition of the class.
 	 */	
+        @Override
 	public void addClass (final JavaClassWriter classWriter)
 	{
 		if (classWriter != null)
@@ -141,6 +144,7 @@ public class IOJavaFileWriter implements JavaFileWriter
 	 * constructor of the implementation class.
 	 * @throws IOException If the file cannot be saved.
 	 */	
+        @Override
 	public void save () throws IOException
 	{
 		if (_file != null)
@@ -174,6 +178,7 @@ public class IOJavaFileWriter implements JavaFileWriter
 	/** Returns a string representation of this object.
 	 * @return The string representation of the generated file.
 	 */	
+        @Override
 	public String toString ()
 	{
 		final FormattedWriter writerHelper =  new FormattedWriter();

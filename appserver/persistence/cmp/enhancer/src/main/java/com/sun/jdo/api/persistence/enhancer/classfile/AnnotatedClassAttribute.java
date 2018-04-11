@@ -137,6 +137,7 @@ public class AnnotatedClassAttribute extends ClassAttribute {
 					modTime, annTime);
   }
 
+    @Override
   void write(DataOutputStream out) throws IOException {
     out.writeShort(attrName().getIndex());
     out.writeShort(20);
@@ -146,6 +147,7 @@ public class AnnotatedClassAttribute extends ClassAttribute {
     out.writeLong(classAnnotationTime);
   }
 
+    @Override
   void print(PrintStream out, int indent) {
     ClassPrint.spaces(out, indent);
     out.println("version: " + attrVersion);//NOI18N

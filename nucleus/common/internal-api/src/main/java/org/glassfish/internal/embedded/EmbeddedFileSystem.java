@@ -195,6 +195,7 @@ public class EmbeddedFileSystem implements PreDestroy {
         cookedMode = builder.cookedMode;
     }
 
+    @Override
     public void preDestroy() {
         Logger.getAnonymousLogger().finer("delete " + instanceRoot + " = " + autoDelete);
         if (autoDelete && instanceRoot != null) {

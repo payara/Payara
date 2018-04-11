@@ -51,7 +51,9 @@ import com.sun.enterprise.deployment.web.ContextParameter;
 public interface ResourceEnvReference extends ContextParameter {
 
     /* Gets the logical name of the destination reference */
+    @Override
     public String getName();
+    @Override
     public void setName(String refName);
 
     /* Gets the type(javax.jms.Queue, javax.jms.Topic) of the destination */

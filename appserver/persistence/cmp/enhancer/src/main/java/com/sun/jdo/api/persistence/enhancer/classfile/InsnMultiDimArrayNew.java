@@ -59,10 +59,12 @@ public class InsnMultiDimArrayNew extends Insn {
     return false;
   }
 
+  @Override
   public int nStackArgs() {
     return nDimsOp;
   }
 
+  @Override
   public int nStackResults() {
     return 1;
   }
@@ -70,6 +72,7 @@ public class InsnMultiDimArrayNew extends Insn {
   /**
    * What are the types of the stack operands ?
    */
+  @Override
   public String argTypes() {
     StringBuffer buf = new StringBuffer();
     for (int i=0; i<nDimsOp; i++) {
@@ -81,10 +84,12 @@ public class InsnMultiDimArrayNew extends Insn {
   /**
    * What are the types of the stack results?
    */
+  @Override
   public String resultTypes() {
       return "A";//NOI18N
   }
 
+  @Override
   public boolean branches() {
     return false;
   }
@@ -134,12 +139,14 @@ public class InsnMultiDimArrayNew extends Insn {
 
   
 
+  @Override
   void print (PrintStream out, int indent) {
     ClassPrint.spaces(out, indent);
     out.println(offset() + "  opc_multianewarray  pool(" +//NOI18N
 		classOp.getIndex() + ")," + nDimsOp);//NOI18N
   }
 
+  @Override
   int store(byte[] buf, int index) {
     buf[index++] = (byte) opcode();
     index = storeShort(buf, index, (short) classOp.getIndex());
@@ -147,6 +154,7 @@ public class InsnMultiDimArrayNew extends Insn {
     return index;
   }
 
+  @Override
   int size() {
     return 4;
   }

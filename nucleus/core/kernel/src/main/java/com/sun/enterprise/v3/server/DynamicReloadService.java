@@ -103,6 +103,7 @@ public class DynamicReloadService implements ConfigListener, PostConstruct, PreD
     public DynamicReloadService() {
     }
 
+    @Override
     public void postConstruct() {
         logger = KernelLoggerInfo.getLogger();
         /*
@@ -130,6 +131,7 @@ public class DynamicReloadService implements ConfigListener, PostConstruct, PreD
 
     }
 
+    @Override
     public void preDestroy() {
         stop();
     }
@@ -204,6 +206,7 @@ public class DynamicReloadService implements ConfigListener, PostConstruct, PreD
         start(pollIntervalInSeconds);
     }
 
+    @Override
     public synchronized UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         /*
          * Deal with any changes to the DasConfig that might affect whether

@@ -79,6 +79,7 @@ public class EjbRemoteFutureTask<V>
 
     }
 
+    @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
 
         if( !cancelCalled ) {
@@ -116,6 +117,7 @@ public class EjbRemoteFutureTask<V>
     }
 
 
+    @Override
     public V get() throws ExecutionException {
 
         // If get() has already been called, produce the same behavior
@@ -152,6 +154,7 @@ public class EjbRemoteFutureTask<V>
         return resultValue;
     }
 
+    @Override
     public V get(long timeout, TimeUnit unit)
             throws InterruptedException, ExecutionException, TimeoutException {
 
@@ -191,6 +194,7 @@ public class EjbRemoteFutureTask<V>
     }
 
 
+    @Override
     public boolean isCancelled() {
         // For now, we don't ever actually forcibly cancel a task
         // that hasn't executed.
@@ -198,6 +202,7 @@ public class EjbRemoteFutureTask<V>
     }
 
 
+    @Override
     public boolean isDone() {
 
         // Per the Future javadoc.  It's a little odd that isDone()

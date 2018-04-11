@@ -99,6 +99,7 @@ public class ExceptionsAttribute extends ClassAttribute {
     return new ExceptionsAttribute(attrName, excTable);
   }
 
+    @Override
   void write(DataOutputStream out) throws IOException {
     out.writeShort(attrName().getIndex());
     out.writeInt(2+2*exceptionTable.size());
@@ -107,6 +108,7 @@ public class ExceptionsAttribute extends ClassAttribute {
       out.writeShort(((ConstClass) exceptionTable.elementAt(i)).getIndex());
   }
 
+    @Override
   void print(PrintStream out, int indent) {
     ClassPrint.spaces(out, indent);
     out.print("Exceptions:");//NOI18N

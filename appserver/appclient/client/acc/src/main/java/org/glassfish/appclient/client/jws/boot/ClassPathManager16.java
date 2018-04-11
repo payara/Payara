@@ -87,10 +87,12 @@ public class ClassPathManager16 extends ClassPathManager {
         getJarFileMethod.setAccessible(true);
     }
 
+    @Override
     public ClassLoader getParentClassLoader() {
         return (keepJWSClassLoader() ? getJnlpClassLoader() : getJNLPClassLoader().getParent());
     }
 
+    @Override
     public File findContainingJar(URL resourceURL) throws IllegalArgumentException, URISyntaxException, MalformedURLException, IllegalAccessException, InvocationTargetException {
         File result = null;
         if (resourceURL != null) {

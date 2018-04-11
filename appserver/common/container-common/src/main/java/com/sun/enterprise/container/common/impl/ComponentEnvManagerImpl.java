@@ -157,6 +157,7 @@ public class ComponentEnvManagerImpl
             compId2Env.remove(componentId);
     }
 
+    @Override
     public JndiNameEnvironment getJndiNameEnvironment(String componentId) {
         RefCountJndiNameEnvironment rj = compId2Env.get(componentId);
         if (componentId != null && _logger.isLoggable(Level.FINEST)) {
@@ -167,6 +168,7 @@ public class ComponentEnvManagerImpl
         return rj == null ? null : rj.env;
     }
 
+    @Override
     public JndiNameEnvironment getCurrentJndiNameEnvironment() {
         JndiNameEnvironment desc = null;
         ComponentInvocation inv = invMgr.getCurrentInvocation();
@@ -185,6 +187,7 @@ public class ComponentEnvManagerImpl
     }
 
 
+    @Override
     public String bindToComponentNamespace(JndiNameEnvironment env)
         throws NamingException {
 
@@ -272,6 +275,7 @@ public class ComponentEnvManagerImpl
     }
 
 
+    @Override
     public void addToComponentNamespace(JndiNameEnvironment origEnv,
                                         Collection<EnvironmentProperty> envProps,
                                         Collection<ResourceReferenceDescriptor> resRefs)
@@ -370,6 +374,7 @@ public class ComponentEnvManagerImpl
     }
 
 
+    @Override
     public void unbindFromComponentNamespace(JndiNameEnvironment env)
         throws NamingException {
 
@@ -707,10 +712,12 @@ public class ComponentEnvManagerImpl
                     // It might be mapped to a managed bean, so turn off caching to ensure that a
                     // new instance is created each time.
                     NamingObjectFactory delegate = namingUtils.createLazyNamingObjectFactory(name, next.getJndiName(), false);
+                    @Override
                     public boolean isCreateResultCacheable() {
                         return false;
                     }
 
+                    @Override
                     public Object create(Context ic) throws NamingException {
                         return delegate.create(ic);
                     }
@@ -783,6 +790,7 @@ public class ComponentEnvManagerImpl
     /**
      * Generate a unique id name for each J2EE component.
      */
+    @Override
     public String getComponentEnvId(JndiNameEnvironment env) {
     String id = DOLUtils.getComponentEnvId(env);
 
@@ -816,6 +824,7 @@ public class ComponentEnvManagerImpl
             this.compEnvMgr = compEnvMgr;
         }
 
+        @Override
         public Object create(Context ctx) {
             EntityManagerWrapper emWrapper = new EntityManagerWrapper(txManager, invMgr, compEnvMgr, callFlowAgent);
             emWrapper.initializeEMWrapper(refDesc.getUnitName(),
@@ -837,6 +846,7 @@ public class ComponentEnvManagerImpl
             this.contextType = contextType;
         }
 
+        @Override
         public Object create(Context ctx)
                 throws NamingException {
             Object result = null;
@@ -945,6 +955,7 @@ public class ComponentEnvManagerImpl
             this.serviceRef = servRef;
         }
 
+        @Override
         public Object create(Context ctx)
                 throws NamingException {
             Object result = null;
@@ -991,6 +1002,7 @@ public class ComponentEnvManagerImpl
             this.ejbRef = ejbRef;
         }
 
+        @Override
         public Object create(Context ctx)
                 throws NamingException {
 
@@ -1036,10 +1048,12 @@ public class ComponentEnvManagerImpl
             this.value = value;
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public Object getValue() {
             return value;
         }

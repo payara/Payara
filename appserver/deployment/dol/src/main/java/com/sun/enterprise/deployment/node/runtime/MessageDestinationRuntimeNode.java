@@ -65,6 +65,7 @@ public class MessageDestinationRuntimeNode extends DeploymentDescriptorNode {
     /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
         return descriptor;
     }   
@@ -75,6 +76,7 @@ public class MessageDestinationRuntimeNode extends DeploymentDescriptorNode {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */    
+    @Override
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
         table.put(RuntimeTagNames.JNDI_NAME, "setJndiName");
@@ -87,6 +89,7 @@ public class MessageDestinationRuntimeNode extends DeploymentDescriptorNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         if (RuntimeTagNames.MESSAGE_DESTINATION_NAME.equals(element.getQName())) {
             // this is a hack but not much choice

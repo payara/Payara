@@ -57,6 +57,7 @@ public class DataSourceDefinitionNode extends DeploymentDescriptorNode<DataSourc
                 "addDataSourcePropertyDescriptor");
     }
 
+    @Override
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
@@ -84,6 +85,7 @@ public class DataSourceDefinitionNode extends DeploymentDescriptorNode<DataSourc
     }
 
 
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, DataSourceDefinitionDescriptor dataSourceDesc) {
 
         Node node = appendChild(parent, nodeName);
@@ -117,6 +119,7 @@ public class DataSourceDefinitionNode extends DeploymentDescriptorNode<DataSourc
         return node;
     }
 
+    @Override
     public DataSourceDefinitionDescriptor getDescriptor() {
         if(descriptor == null){
             descriptor = new DataSourceDefinitionDescriptor();

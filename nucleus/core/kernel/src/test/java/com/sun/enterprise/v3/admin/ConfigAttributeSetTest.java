@@ -71,6 +71,7 @@ public class ConfigAttributeSetTest  extends ConfigApiTest implements ConfigList
     ServiceLocator habitat = Utils.instance.getHabitat(this);
     PropertyChangeEvent event = null;
 
+    @Override
     public DomDocument getDocument(ServiceLocator habitat) {
         return new TestDocument(habitat);
     }
@@ -81,6 +82,7 @@ public class ConfigAttributeSetTest  extends ConfigApiTest implements ConfigList
      *
      * @return the configuration file name
      */
+    @Override
     public String getFileName() {
         return "DomainTest";
     }     
@@ -132,6 +134,7 @@ public class ConfigAttributeSetTest  extends ConfigApiTest implements ConfigList
         
     }
 
+    @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
         assertEquals("Array size", propertyChangeEvents.length, 1 );
         event = propertyChangeEvents[0];

@@ -138,6 +138,7 @@ public abstract class Type
     /**
      * Representation of this type as a string.
      */
+    @Override
     public String toString()
     {
         return getName();
@@ -148,6 +149,7 @@ public abstract class Type
      *
      * Two types are equal if their names are equal.
      */
+    @Override
     public boolean equals(Object obj)
     {
         if (obj == this)

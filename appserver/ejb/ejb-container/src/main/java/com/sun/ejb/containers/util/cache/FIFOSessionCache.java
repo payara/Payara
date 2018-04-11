@@ -52,6 +52,7 @@ public class FIFOSessionCache
     	super("FIFO-" + cacheName, container, cacheIdleTime, removalTime);
     }
 
+    @Override
     protected void itemAccessed(CacheItem item) {
         LruCacheItem lc = (LruCacheItem) item;
         synchronized (this) {
@@ -65,9 +66,11 @@ public class FIFOSessionCache
         }
     }
     
+    @Override
     protected void itemRefreshed(CacheItem item, int oldSize) {
     }
     
+    @Override
     public void trimTimedoutItems(int  maxCount) {
         trimUnSortedTimedoutItems(maxCount);
     }

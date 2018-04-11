@@ -461,6 +461,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
 	return false;
     }
 
+    @Override
     public int hashCode() {
         int result = NULL_HASH_CODE;
         String name = getName();

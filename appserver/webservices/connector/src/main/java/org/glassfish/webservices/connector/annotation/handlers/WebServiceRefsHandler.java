@@ -64,6 +64,7 @@ public class WebServiceRefsHandler extends WebServiceRefHandler {
     public WebServiceRefsHandler() {
     }
     
+    @Override
     public HandlerProcessingResult processAnnotation(AnnotationInfo ainfo)
             throws AnnotationProcessorException {
 

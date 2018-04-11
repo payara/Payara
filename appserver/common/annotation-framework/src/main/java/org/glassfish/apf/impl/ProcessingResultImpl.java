@@ -90,10 +90,12 @@ public class ProcessingResultImpl implements ProcessingResult {
         }
     }
     
+    @Override
     public Map<AnnotatedElement,HandlerProcessingResult> getResults() {
         return results;
     }
     
+    @Override
     public ResultType getOverallResult(){
         return overallResult;
     }

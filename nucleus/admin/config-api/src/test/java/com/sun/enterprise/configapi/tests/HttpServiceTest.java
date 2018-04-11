@@ -59,6 +59,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  * @author Jerome Dochez
  */
 public class HttpServiceTest extends ConfigApiTest {
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -83,6 +84,7 @@ public class HttpServiceTest extends ConfigApiTest {
         final String max = listener.findHttpProtocol().getHttp().getMaxConnections();
 
         ConfigSupport.apply(new SingleConfigCode<NetworkListener>() {
+            @Override
             public Object run(NetworkListener okToChange) throws TransactionFailure {
                 final Http http = okToChange.createChild(Http.class);
                 http.setMaxConnections("100");
@@ -108,6 +110,7 @@ public class HttpServiceTest extends ConfigApiTest {
         }, listener.findHttpProtocol().getHttp());
         try {
             ConfigSupport.apply(new SingleConfigCode<Http>() {
+                @Override
                 public Object run(Http param) throws TransactionFailure {
                     param.setMaxConnections("7");
                     throw new TransactionFailure("Sorry, changed my mind", null);

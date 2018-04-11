@@ -64,6 +64,7 @@ public class LogRotationTimerTask extends TimerTask {
         return timerValue/60000;
     }
 
+    @Override
     public void run( ) {
         task.run();
     }

@@ -169,6 +169,7 @@ public abstract class ProxyImpl implements Proxy {
             this.host = host;
         }
 
+        @Override
         public boolean verify(String s, SSLSession sslSession) {
             return host.equals(s);
         }

@@ -101,6 +101,7 @@ public abstract class PersistenceElementImpl extends Object
 	 *
 	 * @param element the element to attach to
 	 */
+        @Override
 	public void attachToElement (PersistenceElement element)
 	{
 		_element = element;
@@ -120,6 +121,7 @@ public abstract class PersistenceElementImpl extends Object
 	/** Add a property change listener.
 	 * @param l the listener to add
 	 */
+        @Override
 	public synchronized void addPropertyChangeListener 
 		(PropertyChangeListener l)
 	{
@@ -134,6 +136,7 @@ public abstract class PersistenceElementImpl extends Object
 	/** Remove a property change listener.
 	 * @param l the listener to remove
 	 */
+        @Override
 	public synchronized void removePropertyChangeListener (
 		PropertyChangeListener l)
 	{
@@ -157,6 +160,7 @@ public abstract class PersistenceElementImpl extends Object
 	/** Add a vetoable change listener.
 	 * @param l the listener to add
 	 */
+        @Override
 	public synchronized void addVetoableChangeListener 
 		(VetoableChangeListener l)
 	{
@@ -169,6 +173,7 @@ public abstract class PersistenceElementImpl extends Object
 	/** Remove a vetoable change listener.
 	 * @param l the listener to remove
 	 */
+        @Override
 	public synchronized void removeVetoableChangeListener (
 		VetoableChangeListener l)
 	{
@@ -179,12 +184,14 @@ public abstract class PersistenceElementImpl extends Object
 	/** Get the name of this persistence element.
 	 * @return the name
 	 */
+        @Override
 	public String getName () { return _name; }
 
 	/** Set the name of this persistence element.
 	 * @param name the name
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setName (String name) throws ModelException
 	{
 		String old = getName();

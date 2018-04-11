@@ -56,6 +56,7 @@ class StringBuilderNewLineAppender {
         sb.append(SEP);
         return ( this );
     }
+    @Override
     public String toString() {
         return ( sb.toString() );
     }

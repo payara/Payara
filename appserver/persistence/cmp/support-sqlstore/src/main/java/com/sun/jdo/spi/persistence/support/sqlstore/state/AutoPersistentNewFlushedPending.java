@@ -64,6 +64,7 @@ public class AutoPersistentNewFlushedPending extends AutoPersistentNewFlushed {
         stateType = AP_NEW_FLUSHED_PENDING;
     }
 
+    @Override
     public LifeCycleState transitionDeletePersistent() {
         throw new JDOUserException(I18NHelper.getMessage(messages,
                 "jdo.lifecycle.deleted.accessField")); // NOI18N

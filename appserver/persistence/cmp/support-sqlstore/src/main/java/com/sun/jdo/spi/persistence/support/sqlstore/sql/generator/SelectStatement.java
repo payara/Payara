@@ -126,6 +126,7 @@ public class SelectStatement extends Statement {
                 && table.getTableDesc().isUpdateLockRequired();
     }
 
+    @Override
     public void appendTableText(StringBuffer text, QueryTable table) {
         super.appendTableText(text, table);
 
@@ -156,6 +157,7 @@ public class SelectStatement extends Statement {
      }
 
     /** @inheritDoc */
+    @Override
     public QueryPlan getQueryPlan() {
         return plan;
     }
@@ -163,6 +165,7 @@ public class SelectStatement extends Statement {
     /**
      * @inheritDoc
      */
+    @Override
     protected void generateStatementText() {
         // Because join conditions for ANSI outer joins end up in the
         // from clause, the constraint stack has to be processed before we
@@ -441,6 +444,7 @@ public class SelectStatement extends Statement {
      * Processes Order By constraints and calls the super class
      * method for all other constrains.
      */
+    @Override
     protected void processRootConstraint(ConstraintOperation opNode,
                                          List stack,
                                          StringBuffer whereText) {
@@ -463,6 +467,7 @@ public class SelectStatement extends Statement {
         }
     }
 
+    @Override
     protected void processIrregularOperation(ConstraintOperation opNode,
                                              int opCode,
                                              List stack,

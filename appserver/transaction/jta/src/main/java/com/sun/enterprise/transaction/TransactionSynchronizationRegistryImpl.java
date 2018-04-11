@@ -97,6 +97,7 @@ public class TransactionSynchronizationRegistryImpl
      * @return    An object representing the current transaction,
      *            or null if no transaction is active.
      */
+    @Override
     public Object getTransactionKey() {
         try {
             return transactionManager.getTransaction();
@@ -120,6 +121,7 @@ public class TransactionSynchronizationRegistryImpl
      * @exception IllegalStateException Thrown if the current thread
      * is not associated with a transaction.
      */
+    @Override
     public void putResource(Object key, Object value) {
         try {
             JavaEETransactionImpl tran = 
@@ -147,6 +149,7 @@ public class TransactionSynchronizationRegistryImpl
      * @exception IllegalStateException Thrown if the current thread
      * is not associated with a transaction.
      */
+    @Override
     public Object getResource(Object key){
         try {
             JavaEETransactionImpl tran = 
@@ -196,6 +199,7 @@ public class TransactionSynchronizationRegistryImpl
      * @exception IllegalStateException Thrown if the current thread
      * is not associated with a transaction.
      */
+    @Override
     public void registerInterposedSynchronization(Synchronization sync) {
         try {
             JavaEETransactionImpl tran = 
@@ -220,6 +224,7 @@ public class TransactionSynchronizationRegistryImpl
      *
      * @return The status of the current transaction.
      */
+    @Override
     public int getTransactionStatus() {
         try {
             return transactionManager.getStatus();    
@@ -235,6 +240,7 @@ public class TransactionSynchronizationRegistryImpl
      * @exception IllegalStateException Thrown if the current thread
      * is not associated with a transaction.
      */
+    @Override
     public void setRollbackOnly() {
         try {
             transactionManager.setRollbackOnly();    
@@ -253,6 +259,7 @@ public class TransactionSynchronizationRegistryImpl
      * @exception IllegalStateException Thrown if the current thread
      * is not associated with a transaction.
      */
+    @Override
     public boolean getRollbackOnly() {
     {
         int status = getTransactionStatus();

@@ -81,6 +81,7 @@ public final class ReadOnlyEJBHomeImpl
     /** Implementation of ReadOnlyEJBHome methods **/
     /***********************************************/
 
+    @Override
     public void _refresh_com_sun_ejb_containers_read_only_bean_(Object primaryKey)
         throws java.rmi.RemoteException
     {
@@ -89,6 +90,7 @@ public final class ReadOnlyEJBHomeImpl
         }
     }
 
+    @Override
     public void _refresh_All() throws java.rmi.RemoteException
     {
         if (robContainer != null) {

@@ -127,10 +127,12 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     //ee permissions for all types
     private Map<SMGlobalPolicyUtil.CommponentType, PermissionCollection> eeGarntsMap;
     
+    @Override
     public String getArchiveType() {
         return EarDetector.ARCHIVE_TYPE;
     }
 
+    @Override
     public String getVersionIdentifier(ReadableArchive archive) {
         String versionIdentifier = null;
         try {
@@ -144,6 +146,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
         return versionIdentifier;
     }
 
+    @Override
     public boolean handles(ReadableArchive archive) throws IOException {
         return detector.handles(archive);
     }
@@ -300,6 +303,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
                 || (arch1 instanceof JarArchive && arch2 instanceof JarArchive));
     }
 
+    @Override
     public ClassLoader getClassLoader(final ClassLoader parent, DeploymentContext context) {
         final ReadableArchive archive  = context.getSource();
         
@@ -534,6 +538,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
         try {
             AccessController.doPrivileged(
                   new PrivilegedExceptionAction<Object>() {
+                    @Override
                     public Object run() throws SecurityException {
                         if (isEEPermission)
                             ddpl.addEEPermissions(pc);
@@ -549,6 +554,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     }
     
     
+    @Override
     public boolean accept(ReadableArchive source, String entryName) {
         // I am hiding everything but the metadata.
         return entryName.startsWith("META-INF");
@@ -556,6 +562,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     }
 
     // do any necessary meta data initialization for composite handler
+    @Override
     public void initCompositeMetaData(DeploymentContext context) {
         // populate ear level metadata
         getApplicationHolder(context.getSource(), context, true);

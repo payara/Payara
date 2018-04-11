@@ -134,6 +134,7 @@ public class ChangeMasterBrokerCommand extends JMSDestination implements AdminCo
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         final String newMB = newMasterBroker;
@@ -242,6 +243,7 @@ public class ChangeMasterBrokerCommand extends JMSDestination implements AdminCo
               }*/
 
             ConfigSupport.apply(new SingleConfigCode<JmsService>() {
+                @Override
                 public Object run(JmsService param) throws PropertyVetoException, TransactionFailure {
 
                     param.setMasterBroker(newMB);

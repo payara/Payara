@@ -79,6 +79,7 @@ public class DynamicResourceReconfigurator implements InvocationHandler, Dynamic
         this.resourceInfo = resourceInfo;
     }
 
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
         if (invalid) {
@@ -152,10 +153,12 @@ public class DynamicResourceReconfigurator implements InvocationHandler, Dynamic
             throw actualException;
     }
 
+    @Override
     public void setDelegate(Object o) {
         actualObject = o;
     }
 
+    @Override
     public void setInvalid() {
         invalid = true;
     }

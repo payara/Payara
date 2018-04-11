@@ -53,6 +53,7 @@ public class Group extends PrincipalImpl {
 	super(name);
     }
 
+    @Override
     public boolean equals(Object other) {
 	if(other instanceof Group) {
 	    return getName().equals(((Group)other).getName());
@@ -60,6 +61,7 @@ public class Group extends PrincipalImpl {
 	    return false;
 	}
     }
+    @Override
     public int hashCode() {
 	return getName().hashCode();
     }

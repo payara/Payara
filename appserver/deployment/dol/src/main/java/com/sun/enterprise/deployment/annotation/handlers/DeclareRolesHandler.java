@@ -67,6 +67,7 @@ public class DeclareRolesHandler extends AbstractCommonAttributeHandler {
     public DeclareRolesHandler() {
     }
     
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
         
@@ -90,6 +91,7 @@ public class DeclareRolesHandler extends AbstractCommonAttributeHandler {
         return getDefaultProcessedResult();
     }   
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             WebComponentContext[] webCompContexts)
             throws AnnotationProcessorException { 
@@ -98,6 +100,7 @@ public class DeclareRolesHandler extends AbstractCommonAttributeHandler {
         return processAnnotation(ainfo, webBundleDesc);
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
              WebBundleContext webBundleContext)
              throws AnnotationProcessorException {
@@ -120,10 +123,12 @@ public class DeclareRolesHandler extends AbstractCommonAttributeHandler {
      * require to be processed (if present) before it processes it's own 
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAnnotationTypes();
     }
 
+    @Override
     protected boolean supportTypeInheritance() {
         return true;
     }

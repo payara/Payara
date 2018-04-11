@@ -44,10 +44,12 @@ import javax.resource.spi.work.WorkContext;
 
 
 public class CustomWorkContext_A implements WorkContext {
+    @Override
     public String getName() {
         return "CustomWorkContext_A";
     }
 
+    @Override
     public String getDescription() {
         return "CustomWorkContext_A";
     }

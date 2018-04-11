@@ -76,6 +76,7 @@ public class QueryWrapper <T extends Query> implements Query {
     }
 
 
+    @Override
     public List getResultList() {
         try {
             if(callFlowAgent.isEnabled()) {
@@ -91,6 +92,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public Object getSingleResult() {
         try {
             if(callFlowAgent.isEnabled()) {
@@ -106,6 +108,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public int executeUpdate() {
         if(callFlowAgent.isEnabled()) {
             callFlowAgent.entityManagerQueryStart(EntityManagerQueryMethod.EXECUTE_UPDATE);
@@ -114,6 +117,7 @@ public class QueryWrapper <T extends Query> implements Query {
         throw new TransactionRequiredException("executeUpdate is not supported for a Query object obtained through non-transactional access of a container-managed transactional EntityManager");
     }
 
+    @Override
     public Query setMaxResults(int maxResults) {
         
         try {
@@ -135,6 +139,7 @@ public class QueryWrapper <T extends Query> implements Query {
         return this;
     }
 
+    @Override
     public int getMaxResults() {
 
         try {
@@ -151,6 +156,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public Query setFirstResult(int startPosition) {
         
         try {
@@ -173,6 +179,7 @@ public class QueryWrapper <T extends Query> implements Query {
         return this;
     }
 
+    @Override
     public int getFirstResult() {
 
         try {
@@ -189,6 +196,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public Query setHint(String hintName, Object value) {
         
         try {
@@ -206,6 +214,7 @@ public class QueryWrapper <T extends Query> implements Query {
         return this;
     }
 
+    @Override
     public Map<String, Object> getHints() {
 
         try {
@@ -222,6 +231,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public <T> Query setParameter(Parameter<T> param, T value) {
 
         try {
@@ -239,6 +249,7 @@ public class QueryWrapper <T extends Query> implements Query {
         return this;
     }
 
+    @Override
     public Query setParameter(Parameter<Date> param, Date value,  TemporalType temporalType) {
 
         try {
@@ -256,6 +267,7 @@ public class QueryWrapper <T extends Query> implements Query {
         return this;
     }
 
+    @Override
     public Query setParameter(Parameter<Calendar> param, Calendar value,  TemporalType temporalType) {
 
         try {
@@ -275,6 +287,7 @@ public class QueryWrapper <T extends Query> implements Query {
 
 
 
+    @Override
     public Query setParameter(String name, Object value) {
         
         try {
@@ -292,6 +305,7 @@ public class QueryWrapper <T extends Query> implements Query {
         return this;
     }
 
+    @Override
     public Query setParameter(String name, Date value, 
                               TemporalType temporalType) {
         
@@ -309,6 +323,7 @@ public class QueryWrapper <T extends Query> implements Query {
         return this;
     }
 
+    @Override
     public Query setParameter(String name, Calendar value, 
                               TemporalType temporalType) {
         try {
@@ -324,6 +339,7 @@ public class QueryWrapper <T extends Query> implements Query {
         return this;
     }
 
+    @Override
     public Query setParameter(int position, Object value) {
         
         try {
@@ -340,6 +356,7 @@ public class QueryWrapper <T extends Query> implements Query {
         return this;
     }
 
+    @Override
     public Query setParameter(int position, Date value, 
                               TemporalType temporalType) {
         
@@ -357,6 +374,7 @@ public class QueryWrapper <T extends Query> implements Query {
         return this;
     }
 
+    @Override
     public Query setParameter(int position, Calendar value, 
                               TemporalType temporalType) {
         
@@ -374,6 +392,7 @@ public class QueryWrapper <T extends Query> implements Query {
         return this;
     }
 
+    @Override
     public Set<Parameter<?>> getParameters() {
 
         try {
@@ -390,6 +409,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public Parameter<?> getParameter(String name) {
 
         try {
@@ -406,6 +426,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public <T> Parameter<T> getParameter(String name, Class<T> type) {
 
         try {
@@ -422,6 +443,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public Parameter<?> getParameter(int position) {
 
         try {
@@ -438,6 +460,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public <T> Parameter<T> getParameter(int position, Class<T> type)  {
 
         try {
@@ -454,6 +477,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public boolean isBound(Parameter<?> param) {
 
         try {
@@ -470,6 +494,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public <T> T getParameterValue(Parameter<T> param) {
 
         try {
@@ -486,6 +511,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public Object getParameterValue(String name) {
 
         try {
@@ -502,6 +528,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public Object getParameterValue(int position) {
 
         try {
@@ -518,6 +545,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public Query setFlushMode(FlushModeType flushMode) {
         
         try {
@@ -535,6 +563,7 @@ public class QueryWrapper <T extends Query> implements Query {
         return this;
     }
 
+    @Override
     public FlushModeType getFlushMode() {
 
         try {
@@ -551,6 +580,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public Query setLockMode(LockModeType lockModeType) {
         try {
             if(callFlowAgent.isEnabled()) {
@@ -567,6 +597,7 @@ public class QueryWrapper <T extends Query> implements Query {
         return this;
     }
 
+    @Override
     public LockModeType getLockMode() {
 
         try {
@@ -583,6 +614,7 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
     public <T> T unwrap(Class<T> tClass) {
 
         try {

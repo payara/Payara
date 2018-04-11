@@ -97,6 +97,7 @@ public class MBeanOperationInfoStringifier
         return (sOperationDelimiter + "\"" + info.getDescription() + "\"");
     }
 
+    @Override
     public String stringify(Object o)
     {
         assert (o != null);

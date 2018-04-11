@@ -84,6 +84,7 @@ public class DownloadServlet extends HttpServlet {
     /**
      *	<p> Servlet initialization method.</p>
      */
+    @Override
     public void init(ServletConfig config) throws ServletException {
 	super.init(config);
 
@@ -151,6 +152,7 @@ public class DownloadServlet extends HttpServlet {
     /**
      *	<p> This method delegates to the {@link #doPost()} method.</p>
      */
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	doPost(request, response);
     }
@@ -163,6 +165,7 @@ public class DownloadServlet extends HttpServlet {
      *	    output of the {@link DownloadServlet#ContentSource} to the
      *	    <code>ServletResponse</code>'s <code>OutputStream</code>.</p>
      */
+    @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	// Get the Download Context
 	DownloadServlet.Context context = getDownloadContext(request, response);
@@ -514,6 +517,7 @@ public class DownloadServlet extends HttpServlet {
      *	    However, we do not have the <code>HttpServletResponse</code> yet,
      *	    so it will be null.</p>
      */
+    @Override
     protected long getLastModified(HttpServletRequest request) {
 	// Get the DownloadServlet Context
 	DownloadServlet.Context context = getDownloadContext(request, null);

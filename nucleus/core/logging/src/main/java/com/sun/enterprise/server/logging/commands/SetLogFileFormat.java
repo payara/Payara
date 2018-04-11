@@ -117,6 +117,7 @@ public class SetLogFileFormat implements AdminCommand {
     private final static LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(
             SetLogFileFormat.class);
 
+    @Override
     public void execute(AdminCommandContext context) {
         
         String formatterClassName = null;

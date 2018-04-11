@@ -302,6 +302,7 @@ public class BatchRuntimeHelper
                         } else {
                             java.security.AccessController.doPrivileged(
                                     new java.security.PrivilegedAction() {
+                                        @Override
                                         public java.lang.Object run() {
                                             executorService = lookupExecutorService();
                                             return null;

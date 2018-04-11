@@ -111,6 +111,7 @@ public final class DeleteJvmOptions implements AdminCommand, AdminCommandSecurit
         return true;
     }
 
+    @Override
     public void execute(AdminCommandContext context) {
         //validate the target first
         final ActionReport report = context.getActionReport();
@@ -160,6 +161,7 @@ public final class DeleteJvmOptions implements AdminCommand, AdminCommandSecurit
     //@ForTimeBeing :)
     private void deleteX(final JvmOptionBag bag, final List<String> toRemove, final ActionReport.MessagePart part) throws Exception {
         SingleConfigCode<JvmOptionBag> scc = new SingleConfigCode<JvmOptionBag> () {
+            @Override
             public Object run(JvmOptionBag bag) throws PropertyVetoException, TransactionFailure {
                 List<String> jvmopts = new ArrayList<String>(bag.getJvmOptions());
                 int orig = jvmopts.size();

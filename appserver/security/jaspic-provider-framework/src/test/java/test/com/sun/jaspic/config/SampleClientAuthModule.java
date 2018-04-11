@@ -55,22 +55,27 @@ import javax.security.auth.message.module.ClientAuthModule;
  */
 public class SampleClientAuthModule implements ClientAuthModule {
 
+    @Override
     public void initialize(MessagePolicy mp, MessagePolicy mp1, CallbackHandler ch, Map map) throws AuthException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public Class[] getSupportedMessageTypes() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public AuthStatus secureRequest(MessageInfo mi, Subject sbjct) throws AuthException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public AuthStatus validateResponse(MessageInfo mi, Subject sbjct, Subject sbjct1) throws AuthException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void cleanSubject(MessageInfo mi, Subject sbjct) throws AuthException {
         throw new UnsupportedOperationException("Not supported yet.");
     }

@@ -116,6 +116,7 @@ public class ConnectorConfigProperty extends EnvironmentProperty {
         setSetIgnoreCalled(true);
     }
 
+    @Override
     public String getValue() {
         String value = super.getValue();
         if(confidential){

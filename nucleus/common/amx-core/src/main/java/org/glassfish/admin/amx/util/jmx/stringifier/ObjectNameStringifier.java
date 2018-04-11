@@ -127,6 +127,7 @@ public final class ObjectNameStringifier implements Stringifier
         return (name + "=" + value);
     }
 
+    @Override
     public String stringify(Object o)
     {
         if (o == null)

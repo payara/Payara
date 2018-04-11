@@ -69,6 +69,7 @@ public class TranslatedViewCreationTest extends ConfigApiTest {
 
     static final String propName = "com.sun.my.chosen.docroot";
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -93,10 +94,12 @@ public class TranslatedViewCreationTest extends ConfigApiTest {
     public void createVirtualServerTest() throws TransactionFailure {
         httpService = getHabitat().getService(HttpService.class);
         final TransactionListener listener = new TransactionListener() {
+                @Override
                 public void transactionCommited(List<PropertyChangeEvent> changes) {
                     events = changes;
                 }
 
+                @Override
             public void unprocessedTransactedEvents(List<UnprocessedChangeEvents> changes) {
             }
         };
@@ -108,6 +111,7 @@ public class TranslatedViewCreationTest extends ConfigApiTest {
             assertTrue(httpService!=null);
             ConfigSupport.apply(new SingleConfigCode<HttpService>() {
 
+                @Override
                 public Object run(HttpService param) throws PropertyVetoException, TransactionFailure {
                     VirtualServer newVirtualServer = param.createChild(VirtualServer.class);
                     newVirtualServer.setDocroot("${"+propName+"}");

@@ -121,6 +121,7 @@ public class UpdateConnectorSecurityMap extends ConnectorSecurityMap implements 
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
@@ -339,6 +340,7 @@ public class UpdateConnectorSecurityMap extends ConnectorSecurityMap implements 
         try {
             ConfigSupport.apply(new ConfigCode() {
 
+                @Override
                 public Object run(ConfigBeanProxy... params) throws PropertyVetoException, TransactionFailure {
                     SecurityMap sm = (SecurityMap) params[0];
                     BackendPrincipal bp = (BackendPrincipal) params[1];

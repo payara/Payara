@@ -114,6 +114,7 @@ public class UpgradeService implements ConfigurationUpgrade, PostConstruct {
                 // we can safely assume this was a single module application
                 try {
                     ConfigSupport.apply(new SingleConfigCode<Application>() {
+                        @Override
                         public Object run(Application application) throws PropertyVetoException, TransactionFailure {
                             Module module = application.createChild(Module.class);
                             module.setName(application.getName());

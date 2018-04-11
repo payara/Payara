@@ -131,10 +131,12 @@ public class SerializableWorkContext implements PrimitiveWorkContext,
     }
   }
 
+  @Override
   public String toString() {
     return "Serializable";
   }
 
+  @Override
   public Object get() {
     try {
       return getSerializable();
@@ -205,6 +207,7 @@ public class SerializableWorkContext implements PrimitiveWorkContext,
     return object;
   }
 
+  @Override
   public boolean equals(Object obj) {
     if (obj instanceof SerializableWorkContext) {
       if(!mutable && !((SerializableWorkContext)obj).mutable) {
@@ -215,6 +218,7 @@ public class SerializableWorkContext implements PrimitiveWorkContext,
     return false;
   }
 
+  @Override
   public void writeContext(WorkContextOutput out) throws IOException {
     if(mutable) {
       Carrier carrier = new Carrier(object);
@@ -225,6 +229,7 @@ public class SerializableWorkContext implements PrimitiveWorkContext,
     out.write(data);
   }
 
+  @Override
   public void readContext(WorkContextInput in) throws IOException {
     data = new byte[in.readInt()];
     in.readFully(data);

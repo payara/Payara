@@ -103,6 +103,7 @@ public class MailSessionDefinitionsHandler extends AbstractResourceHandler {
         return getDefaultProcessedResult();
     }
 
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAndWebAnnotationTypes();
     }

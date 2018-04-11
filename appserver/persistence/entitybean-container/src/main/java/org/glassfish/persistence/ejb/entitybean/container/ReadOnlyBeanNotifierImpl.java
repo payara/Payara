@@ -68,16 +68,19 @@ public final class ReadOnlyBeanNotifierImpl
         super();
     }
 
+    @Override
     public void setHome(ReadOnlyEJBHome home) throws java.rmi.RemoteException {
         this.readOnlyBeanHome = home;
     }
 
+    @Override
     public void refresh (Object primaryKey) 
         throws java.rmi.RemoteException
     {
         readOnlyBeanHome._refresh_com_sun_ejb_containers_read_only_bean_(primaryKey);
     }
 
+    @Override
     public void refreshAll() throws java.rmi.RemoteException
     {
         readOnlyBeanHome._refresh_All();

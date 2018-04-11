@@ -50,6 +50,7 @@ public class HandleDelegateClassLoader
         super();
     }
     
+    @Override
     protected Class findClass(String name)
         throws ClassNotFoundException
     {
@@ -62,6 +63,7 @@ public class HandleDelegateClassLoader
         return c;
     }
     
+    @Override
     protected Class loadClass(String name, boolean resolve)
         throws ClassNotFoundException
     {

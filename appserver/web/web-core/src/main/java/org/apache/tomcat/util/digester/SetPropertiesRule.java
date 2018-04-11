@@ -192,6 +192,7 @@ public class SetPropertiesRule extends Rule {
      *
      * @param attributes The attribute list of this element
      */
+    @Override
     public void begin(Attributes attributes) throws Exception {
         
         // Populate the corresponding properties of the top object
@@ -295,6 +296,7 @@ public class SetPropertiesRule extends Rule {
     /**
      * Render a printable version of this Rule.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("SetPropertiesRule[");

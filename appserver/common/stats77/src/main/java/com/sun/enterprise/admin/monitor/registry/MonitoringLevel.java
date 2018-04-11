@@ -61,6 +61,7 @@ public class MonitoringLevel {
         this.name = name;
     }
     
+    @Override
     public String toString() {
         return ( name );
     }
@@ -97,6 +98,7 @@ public class MonitoringLevel {
      * @return true if obj is a MonitoringLevel, and has the same name as this
      * MonitoringLevel object.
      */
+    @Override
     public boolean equals(Object obj) {
 	if (obj == this)
 	    return true;
@@ -117,6 +119,7 @@ public class MonitoringLevel {
      *
      * @return Hash code value for this object.
      */
+    @Override
     public int hashCode() {
 	return this.name.hashCode();
     }

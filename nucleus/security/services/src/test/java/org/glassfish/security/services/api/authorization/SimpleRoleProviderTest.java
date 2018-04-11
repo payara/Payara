@@ -60,6 +60,7 @@ public class SimpleRoleProviderTest extends HK2Runner {
 	private RoleMappingProvider simpleRoleProvider = null;
 
 	@Before
+        @Override
 	public void before() {
 		super.before();
 

@@ -66,6 +66,7 @@ public interface NetworkListeners extends ConfigBeanProxy, PropertyBag {
     List<NetworkListener> getNetworkListener();
 
     @DuckTyped
+    @Override
     NetworkConfig getParent();
     
     class Duck {

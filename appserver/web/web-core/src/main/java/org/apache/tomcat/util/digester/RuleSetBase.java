@@ -85,6 +85,7 @@ public abstract class RuleSetBase implements RuleSet {
      * Return the namespace URI that will be applied to all Rule instances
      * created from this RuleSet.
      */
+    @Override
     public String getNamespaceURI() {
 
         return (this.namespaceURI);
@@ -104,6 +105,7 @@ public abstract class RuleSetBase implements RuleSet {
      * @param digester Digester instance to which the new Rule instances
      *  should be added.
      */
+    @Override
     public abstract void addRuleInstances(Digester digester);
 
 

@@ -77,6 +77,7 @@ public interface WireAdapter {
   public static final WireAdapterHelper HELPER = new WireAdapterHelper() {   
     Map<String, SerializableContextFactory> contextFactoriesByContextName = new HashMap<String, SerializableContextFactory>();
     Map<String, String> wireClassNameByContextName = new HashMap<String, String>();
+    @Override
     public void registerContextFactoryForContextNamed(String contextName, 
         String wireClassName, SerializableContextFactory factory) {
       Utils.validateFactoryRegistrationArgs("contextName", 
@@ -88,6 +89,7 @@ public interface WireAdapter {
 
     Map<String, SerializableContextFactory> contextFactoriesByClassName = new HashMap<String, SerializableContextFactory>();
     Map<String, String> wireClassNameByClassName = new HashMap<String, String>();
+    @Override
     public void registerContextFactoryForClass(Class<?> contextClass, 
         String wireClassName, SerializableContextFactory factory) {
       Utils.validateFactoryRegistrationArgs("Context class name", 

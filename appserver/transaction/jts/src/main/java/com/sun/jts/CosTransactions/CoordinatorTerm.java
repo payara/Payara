@@ -583,6 +583,7 @@ class CoordinatorTerm implements CompletionHandler {
      * @see
      */
 
+    @Override
     public void setCompleted( boolean aborted,
                               boolean heuristicDamage ) {
 

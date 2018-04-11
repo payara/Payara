@@ -71,14 +71,17 @@ public class PoolException
     	return this.throwable;
     }
     
+    @Override
     public void printStackTrace() {
     	printStackTrace(new PrintWriter(System.err));
     }
     
+    @Override
     public void printStackTrace(PrintStream ps) {
     	printStackTrace(new PrintWriter(ps));
     }
     
+    @Override
     public void printStackTrace(PrintWriter pw) {
     	if (throwable != null) {
             pw.println("PoolException: " + getMessage());

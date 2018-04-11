@@ -84,6 +84,7 @@ public class SimpleProgressObjectImpl implements ProgressObject {
      *Registers a listener for progress events.
      *@param new progress listener
      */
+    @Override
     public void addProgressListener(javax.enterprise.deploy.spi.status.ProgressListener progressListener) {
 	synchronized (listeners) {
             listeners.add(progressListener);
@@ -95,26 +96,32 @@ public class SimpleProgressObjectImpl implements ProgressObject {
 	}
     }    
     
+    @Override
     public void cancel() throws javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException {
         throw new OperationUnsupportedException("cancel not supported");
     }
     
+    @Override
     public javax.enterprise.deploy.spi.status.ClientConfiguration getClientConfiguration(javax.enterprise.deploy.spi.TargetModuleID targetModuleID) {
         return null;
     }
     
+    @Override
     public javax.enterprise.deploy.spi.status.DeploymentStatus getDeploymentStatus() {
         return deploymentStatus;
     }
     
+    @Override
     public javax.enterprise.deploy.spi.TargetModuleID[] getResultTargetModuleIDs() {
         return new javax.enterprise.deploy.spi.TargetModuleID[0];
     }
     
+    @Override
     public boolean isCancelSupported() {
         return false;
     }
     
+    @Override
     public boolean isStopSupported() {
         return false;
     }
@@ -123,12 +130,14 @@ public class SimpleProgressObjectImpl implements ProgressObject {
      *Unregister a previously-registered event listener.
      *@param the listener to unregister
      */
+    @Override
     public void removeProgressListener(javax.enterprise.deploy.spi.status.ProgressListener progressListener) {
 	synchronized (listeners) {
             listeners.remove(progressListener);
 	}
     }
     
+    @Override
     public void stop() throws javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException {
         throw new OperationUnsupportedException("stop not supported");
     }

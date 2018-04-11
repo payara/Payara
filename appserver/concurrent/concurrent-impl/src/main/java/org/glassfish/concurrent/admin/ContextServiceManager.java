@@ -98,10 +98,12 @@ public class ContextServiceManager implements ResourceManager {
     @Inject
     private BindableResourcesHelper resourcesHelper;
 
+    @Override
     public String getResourceType () {
         return ServerTags.CONTEXT_SERVICE;
     }
 
+    @Override
     public ResourceStatus create(Resources resources, HashMap attributes, final Properties properties,
                                  String target) throws Exception {
 
@@ -115,6 +117,7 @@ public class ContextServiceManager implements ResourceManager {
         try {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
 
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     return createResource(param, properties);
                 }
@@ -186,6 +189,7 @@ public class ContextServiceManager implements ResourceManager {
         return contextService;
     }
 
+    @Override
     public Resource createConfigBean(final Resources resources, HashMap attributes, final Properties properties, boolean validate) throws Exception{
         setAttributes(attributes, null);
         ResourceStatus status = null;
@@ -248,6 +252,7 @@ public class ContextServiceManager implements ResourceManager {
             
             // delete context-service
             if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     ContextService resource = (ContextService) ConnectorsUtil.getResourceByName(resources, ContextService.class, jndiName);
                     return param.getResources().remove(resource);

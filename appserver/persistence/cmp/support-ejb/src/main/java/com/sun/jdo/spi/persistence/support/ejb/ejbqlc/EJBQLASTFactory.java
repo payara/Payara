@@ -87,12 +87,14 @@ public class EJBQLASTFactory
     }
     
     /** Overwrites superclass method to create the correct AST instance. */
+    @Override
     public AST create() 
     {
         return new EJBQLAST();
     }
 
     /** Overwrites superclass method to create the correct AST instance. */
+    @Override
     public AST create(AST tr) 
     { 
         return create((EJBQLAST)tr);

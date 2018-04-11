@@ -108,6 +108,7 @@ public class ConnectionFactoryDefinitionsHandler extends AbstractResourceHandler
     }
 
     
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAndWebAnnotationTypes();
     }

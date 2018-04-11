@@ -99,6 +99,7 @@ public class SQLStoreManager implements PersistenceStore {
      * a new instance is created, initialized and put into the cache.
      * The access to the model cache is synchronized.
      */
+    @Override
     public PersistenceConfig getPersistenceConfig(Class classType) {
         if (logger.isLoggable(Logger.FINER)) {
             logger.finer("sqlstore.sqlstoremanager.getpersistenceconfig",
@@ -110,6 +111,7 @@ public class SQLStoreManager implements PersistenceStore {
     /**  
      * @inheritDoc
      */  
+    @Override
     public ConfigCache getConfigCache() {
         return configCache;
     }
@@ -122,6 +124,7 @@ public class SQLStoreManager implements PersistenceStore {
      *         Will be thrown in case of errors or if the affected rows are
      *         less than the minimum rows required.
      */
+    @Override
     public void execute(PersistenceManager pm, Collection actions) {
         Iterator iter = actions.iterator();
 
@@ -244,6 +247,7 @@ public class SQLStoreManager implements PersistenceStore {
     /**
      *
      */
+    @Override
     public Class getClassByOidClass(Class oidType) {
         return configCache.getClassByOidClass(oidType);
     }
@@ -251,6 +255,7 @@ public class SQLStoreManager implements PersistenceStore {
     /**
      *
      */
+    @Override
     public StateManager getStateManager(Class classType) {
         ClassDesc c = (ClassDesc) getPersistenceConfig(classType);
 
@@ -267,6 +272,7 @@ public class SQLStoreManager implements PersistenceStore {
      * @param classType Type of the persistence capable class to be queried.
      * @return A new retrieve descriptor for anexternal (user) query.
      */
+    @Override
     public RetrieveDesc getRetrieveDesc(Class classType) {
         return new RetrieveDescImpl(classType, (ClassDesc) getPersistenceConfig(classType));
     }
@@ -280,6 +286,7 @@ public class SQLStoreManager implements PersistenceStore {
      * @param classType Persistence capable class including <code>fieldName</code>.
      * @return A new retrieve descriptor for anexternal (user) query.
      */
+    @Override
     public RetrieveDesc getRetrieveDesc(String fieldName, Class classType) {
         ClassDesc c = (ClassDesc) getPersistenceConfig(classType);
 
@@ -297,6 +304,7 @@ public class SQLStoreManager implements PersistenceStore {
 
     /**
      */
+    @Override
     public UpdateObjectDesc getUpdateObjectDesc(Class classType) {
           return new UpdateObjectDescImpl(classType);
     }
@@ -355,6 +363,7 @@ public class SQLStoreManager implements PersistenceStore {
      * @param parameters
      *     Query parameters.
      */
+    @Override
     public Object retrieve(PersistenceManager pm, RetrieveDesc action, ValueFetcher parameters) {
 
         if (action == null) {
@@ -506,6 +515,7 @@ public class SQLStoreManager implements PersistenceStore {
      * @param request the request corresponding with the current state manager
      * @param forceFlush all in the update query plan must be executed
      */
+    @Override
     public void executeBatch(PersistenceManager pm,
                              UpdateObjectDesc request,
                              boolean forceFlush)
