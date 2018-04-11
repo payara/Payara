@@ -69,6 +69,7 @@ public class ConstraintOperation extends ConstraintNode {
     }
 
 
+    @Override
     public int hasProperty(int propertyKey) {
         // RESOLVE:  We should probably get rid of this and standardize on the
         // SqlRetrieveDesc.GetOperationInfo method.

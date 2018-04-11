@@ -84,20 +84,25 @@ public class FlashlightProbeProvider implements ProbeProviderInfo{
 
     }
 
+     @Override
 	public String toString() {
 		return ObjectAnalyzer.toString(this);
 	}
+     @Override
     public Class getProviderClass() {
         return providerClazz;
     }
+     @Override
     public String getModuleProviderName() {
         return moduleProviderName;
     }
 
+     @Override
     public String getModuleName() {
         return moduleName;
     }
 
+     @Override
     public String getProbeProviderName() {
         return probeProviderName;
     }
@@ -114,6 +119,7 @@ public class FlashlightProbeProvider implements ProbeProviderInfo{
         return probes.values();
     }
 
+     @Override
     public ProbeInfo[] getProbesInfo() {
         // confusing -- the *map* of the probes is named "probes"
         Collection<FlashlightProbe> fprobes = getProbes();
@@ -126,9 +132,11 @@ public class FlashlightProbeProvider implements ProbeProviderInfo{
         return infos;
     }
 
+     @Override
     public boolean isDTraceInstrumented() {
         return dtraceIsInstrumented;
     }
+     @Override
     public void setDTraceInstrumented(boolean b) {
         dtraceIsInstrumented = b;
     }

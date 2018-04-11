@@ -78,6 +78,7 @@ public class DeleteCustomResourceTest extends ConfigApiTest {
         return new TestDocument(habitat);
     }
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -97,6 +98,7 @@ public class DeleteCustomResourceTest extends ConfigApiTest {
     @After
     public void tearDown() throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode<Resources>() {
+            @Override
             public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                 Resource target = null;
                 for (Resource resource : param.getResources()) {

@@ -90,6 +90,7 @@ public class JMSDestinationInfo implements Serializable
         return (attrs);
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append(destName);

@@ -59,6 +59,7 @@ public class AttributeChangeNotificationStringifier
         super(options);
     }
 
+    @Override
     public String stringify(Object o)
     {
         final AttributeChangeNotification notif = (AttributeChangeNotification) o;

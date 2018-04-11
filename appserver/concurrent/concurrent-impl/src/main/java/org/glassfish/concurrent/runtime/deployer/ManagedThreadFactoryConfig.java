@@ -58,6 +58,7 @@ public class ManagedThreadFactoryConfig extends BaseConfig {
         return threadPriority;
     }
 
+    @Override
     public TYPE getType() {
         return TYPE.MANAGED_THREAD_FACTORY;
     }

@@ -88,6 +88,7 @@ public class SaxParserHandlerBundled extends SaxParserHandler {
      * @return InputSource for the requested entity; null if not available
      * @throws SAXException in case of errors resolving the entity
      */
+    @Override
     public InputSource resolveEntity(String publicID, String systemID) throws SAXException {
         InputSource result = null;
         

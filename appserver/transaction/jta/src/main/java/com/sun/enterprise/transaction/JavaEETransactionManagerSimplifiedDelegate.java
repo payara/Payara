@@ -94,14 +94,17 @@ public class JavaEETransactionManagerSimplifiedDelegate
     public JavaEETransactionManagerSimplifiedDelegate() {
     }
 
+    @Override
     public void postConstruct() {
         // tm.setDelegate(this);
     }
 
+    @Override
     public boolean useLAO() {
          return lao;
     }
 
+    @Override
     public void setUseLAO(boolean b) {
         lao = b;
     }
@@ -109,6 +112,7 @@ public class JavaEETransactionManagerSimplifiedDelegate
     /** Throws an exception if called as it means that there is
      *  no active local transaction to commit.
      */
+    @Override
     public void commitDistributedTransaction() throws 
             RollbackException, HeuristicMixedException, 
             HeuristicRollbackException, SecurityException, 
@@ -121,6 +125,7 @@ public class JavaEETransactionManagerSimplifiedDelegate
     /** Throws an exception if called as it means that there is
      *  no active local transaction to rollback.
      */
+    @Override
     public void rollbackDistributedTransaction() throws IllegalStateException, 
             SecurityException, SystemException {
 
@@ -128,6 +133,7 @@ public class JavaEETransactionManagerSimplifiedDelegate
                 "enterprise_distributedtx.transaction_notactive"));
     } 
 
+    @Override
     public int getStatus() throws SystemException {
         JavaEETransaction tx = tm.getCurrentTransaction();
         if ( tx != null && tx.isLocalTx())
@@ -136,10 +142,12 @@ public class JavaEETransactionManagerSimplifiedDelegate
             return javax.transaction.Status.STATUS_NO_TRANSACTION;
     }
 
+    @Override
     public Transaction getTransaction() throws SystemException {
         return  tm.getCurrentTransaction();
     }
 
+    @Override
     public JavaEETransaction getJavaEETransaction(Transaction t) {
         if(t instanceof JavaEETransaction){
             return  (JavaEETransaction)t;
@@ -149,11 +157,13 @@ public class JavaEETransactionManagerSimplifiedDelegate
         
     }
 
+    @Override
     public boolean enlistDistributedNonXAResource(Transaction tran, TransactionalResource h)
            throws RollbackException, IllegalStateException, SystemException {
         throw new IllegalStateException(sm.getString("enterprise_distributedtx.nonxa_usein_jts"));
     }
 
+    @Override
     public boolean enlistLAOResource(Transaction tran, TransactionalResource h)
            throws RollbackException, IllegalStateException, SystemException {
 
@@ -163,6 +173,7 @@ public class JavaEETransactionManagerSimplifiedDelegate
     /** Throws an exception if called as it means that there is
      *  no active local transaction.
      */
+    @Override
     public void setRollbackOnlyDistributedTransaction()
             throws IllegalStateException, SystemException {
 
@@ -170,6 +181,7 @@ public class JavaEETransactionManagerSimplifiedDelegate
                 "enterprise_distributedtx.transaction_notactive"));
     }
 
+    @Override
     public Transaction suspend(JavaEETransaction tx) throws SystemException {
         if ( tx != null ) {
             tm.setCurrentTransaction(null);
@@ -178,72 +190,89 @@ public class JavaEETransactionManagerSimplifiedDelegate
         return tx;
     }
 
+    @Override
     public void resume(Transaction tx)
         throws InvalidTransactionException, IllegalStateException,
         SystemException {
         /** XXX Throw an exception ??? The process should happen in the caller. XXX **/
     }
 
+    @Override
     public void removeTransaction(Transaction tx) {}
 
+    @Override
     public int getOrder() {
         return 1;
     }
 
+    @Override
     public void setTransactionManager(JavaEETransactionManager tm) {
         this.tm = (JavaEETransactionManagerSimplified)tm;
         _logger = ((JavaEETransactionManagerSimplified)tm).getLogger();
     }
 
+    @Override
     public TransactionInternal startJTSTx(JavaEETransaction t, boolean isAssociatedTimeout) 
             throws RollbackException, IllegalStateException, SystemException {
         throw new UnsupportedOperationException("startJTSTx");
     }
 
+    @Override
     public boolean supportsXAResource() {
         return false;
     }
 
+    @Override
     public void initRecovery(boolean force) {
         // No-op. Always called on server startup
     }
 
+    @Override
     public void recover(XAResource[] resourceList) {
         throw new UnsupportedOperationException("recover");
     }
 
+    @Override
     public XATerminator getXATerminator() {
         throw new UnsupportedOperationException("getXATerminator");
     }
 
+    @Override
     public void release(Xid xid) throws WorkException {
         throw new UnsupportedOperationException("release");
     }
 
+    @Override
     public void recreate(Xid xid, long timeout) throws WorkException {
         throw new UnsupportedOperationException("recreate");
     }
 
+    @Override
     public boolean recoverIncompleteTx(boolean delegated, String logPath, 
             XAResource[] xaresArray) throws Exception {
         throw new UnsupportedOperationException("recoverIncompleteTx");
     }
 
 
+    @Override
     public XAResourceWrapper getXAResourceWrapper(String clName) {
         return null;
     }
 
+    @Override
     public void handlePropertyUpdate(String name, Object value) {}
 
+    @Override
     public Lock getReadLock() {
         return readLock;
     }
 
+    @Override
     public boolean isWriteLocked() {
         return (writeLock.availablePermits() == 0);
     }
 
+    @Override
     public void acquireWriteLock() {
         try {
             writeLock.acquire();
@@ -252,6 +281,7 @@ public class JavaEETransactionManagerSimplifiedDelegate
         }
     }
 
+    @Override
     public void releaseWriteLock() {
         writeLock.release();
     }
@@ -259,10 +289,12 @@ public class JavaEETransactionManagerSimplifiedDelegate
     /**
      * Return false as this delegate doesn't support tx interop.
      */
+    @Override
     public boolean isNullTransaction() {
         return false;
     }
 
+    @Override
     public TransactionAdminBean getTransactionAdminBean(Transaction tran) 
             throws javax.transaction.SystemException {
         return ((JavaEETransactionManagerSimplified)tm).getTransactionAdminBean(tran);
@@ -270,12 +302,14 @@ public class JavaEETransactionManagerSimplifiedDelegate
 
     /** {@inheritDoc}
     */
+    @Override
     public String getTxLogLocation() {
         throw new UnsupportedOperationException("getTxLogLocation");
     }
 
     /** {@inheritDoc}
     */
+    @Override
     public void registerRecoveryResourceHandler(XAResource xaResource) {
         throw new UnsupportedOperationException("registerRecoveryResourceHandler");
     }

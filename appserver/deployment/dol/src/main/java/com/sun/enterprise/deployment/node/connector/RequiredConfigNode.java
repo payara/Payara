@@ -67,6 +67,7 @@ public class RequiredConfigNode extends DeploymentDescriptorNode {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */    
+    @Override
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
         table.put(ConnectorTagNames.CONFIG_PROPERTY_NAME, "setName");
@@ -76,6 +77,7 @@ public class RequiredConfigNode extends DeploymentDescriptorNode {
     /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
         if (config == null) {
             config = (EnvironmentProperty) DescriptorFactory.getDescriptor(getXMLPath());

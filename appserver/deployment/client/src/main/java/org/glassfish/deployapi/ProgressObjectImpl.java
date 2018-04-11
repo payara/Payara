@@ -69,7 +69,7 @@ import org.glassfish.deployment.client.DFProgressObject;
  */
 public class ProgressObjectImpl extends DFProgressObject {
 
-    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ProgressObjectImpl.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ProgressObjectImpl.class);
     
     protected CommandType commandType;
     protected Object[] args;
@@ -85,17 +85,17 @@ public class ProgressObjectImpl extends DFProgressObject {
     protected boolean deployActionCompleted;
     protected String warningMessages;
     
-    private final static String MODULE_ID = 
+    private static final String MODULE_ID = 
         DFDeploymentStatus.MODULE_ID;
-    private final static String MODULE_TYPE = 
+    private static final String MODULE_TYPE = 
         DFDeploymentStatus.MODULE_TYPE;
-    private final static String KEY_SEPARATOR = 
+    private static final String KEY_SEPARATOR = 
         DFDeploymentStatus.KEY_SEPARATOR;
-    private final static String SUBMODULE_COUNT = 
+    private static final String SUBMODULE_COUNT = 
         DFDeploymentStatus.SUBMODULE_COUNT;
-    private final static String CONTEXT_ROOT = 
+    private static final String CONTEXT_ROOT = 
         DFDeploymentStatus.CONTEXT_ROOT;
-    private final static String WARNING_PREFIX = "WARNING: ";
+    private static final String WARNING_PREFIX = "WARNING: ";
 
     /** Creates a new instance of ProgressObjectImpl */
     public ProgressObjectImpl(TargetImpl target) {
@@ -152,6 +152,7 @@ public class ProgressObjectImpl extends DFProgressObject {
      * @param The listener to receive events
      * @see ProgressEvent
      */
+    @Override
     public void addProgressListener(ProgressListener pol) {
 	synchronized (listeners) {
             listeners.add(pol);
@@ -173,6 +174,7 @@ public class ProgressObjectImpl extends DFProgressObject {
      * @throws OperationUnsupportedException this optional command
      *         is not supported by this implementation.
      */
+    @Override
     public void cancel() throws OperationUnsupportedException {
         throw new OperationUnsupportedException("cancel not supported");
     }
@@ -183,6 +185,7 @@ public class ProgressObjectImpl extends DFProgressObject {
      * @return ClientConfiguration for a given TargetModuleID or
      *         null if none exists.
      */
+    @Override
     public ClientConfiguration getClientConfiguration(TargetModuleID id) {
         return null;
     }
@@ -192,6 +195,7 @@ public class ProgressObjectImpl extends DFProgressObject {
      * @return An object containing the status
      *          information.
      */
+    @Override
     public DeploymentStatus getDeploymentStatus() {
         DeploymentStatusImpl result = new DeploymentStatusImpl(this);
         result.setState(deploymentStatus.getState());
@@ -203,6 +207,7 @@ public class ProgressObjectImpl extends DFProgressObject {
     /**
      * Retrieve the final deployment status which has complete details for each stage
      */
+    @Override
     public DFDeploymentStatus getCompletedStatus() {
         if(deployActionCompleted) {
             return finalDeploymentStatus;
@@ -216,6 +221,7 @@ public class ProgressObjectImpl extends DFProgressObject {
      *
      * @return a list of TargetModuleIDs.
      */
+    @Override
     public TargetModuleID[] getResultTargetModuleIDs() {
 
         /**
@@ -348,6 +354,7 @@ public class ProgressObjectImpl extends DFProgressObject {
      * @return <code>true</code> if canceling an
      *         activity is supported by this platform.
      */
+    @Override
     public boolean isCancelSupported() {
         return false;
     }
@@ -358,6 +365,7 @@ public class ProgressObjectImpl extends DFProgressObject {
      * @return <code>true</code> if canceling an
      *         activity is supported by this platform.
      */
+    @Override
     public boolean isStopSupported() {
         return false;
     }
@@ -367,6 +375,7 @@ public class ProgressObjectImpl extends DFProgressObject {
      * @param The listener being removed
      * @see ProgressEvent
      */
+    @Override
     public void removeProgressListener(ProgressListener pol) {
 	synchronized (listeners) {
             listeners.remove(pol);
@@ -383,6 +392,7 @@ public class ProgressObjectImpl extends DFProgressObject {
      * @throws OperationUnsupportedException this optional command
      *         is not supported by this implementation.
      */
+    @Override
     public void stop() throws OperationUnsupportedException {
         throw new OperationUnsupportedException("stop not supported");
     }

@@ -63,29 +63,35 @@ public class EntityManagerFactoryReferenceDescriptor extends
 
     public EntityManagerFactoryReferenceDescriptor() {}
 
+    @Override
     public void setUnitName(String unitName) {
         
         this.unitName = unitName;
     }
 
+    @Override
     public String getUnitName() {
 
         return unitName;
 
     }
 
+    @Override
     public String getInjectResourceType() {
         return "javax.persistence.EntityManagerFactory";
     }
 
+    @Override
     public void setInjectResourceType(String resourceType) {
     }
 
+    @Override
     public void setReferringBundleDescriptor(BundleDescriptor referringBundle)
     {
 	this.referringBundle = referringBundle;
     }
 
+    @Override
     public BundleDescriptor getReferringBundleDescriptor()
     {
 	return referringBundle;

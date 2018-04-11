@@ -118,6 +118,7 @@ public final class LogQueryEntryImpl
         mNameValuePairs = (String)values[ NAME_VALUE_PAIRS_INDEX ];
     }
     
+    @Override
         public Object[]
     getFields()
     {
@@ -159,48 +160,56 @@ public final class LogQueryEntryImpl
     */
 
 
+    @Override
         public long
     getRecordNumber()
     {
         return mRecordNumber;
     }
     
+    @Override
         public Date
     getDate()
     {
         return mDate;
     }
     
+    @Override
         public String
     getModule()
     {
         return mModule;
     }
     
+    @Override
         public String
     getLevel()
     {
         return mLevel;
     }
     
+    @Override
         public String
     getProductName()
     {
         return mProductName;
     }
     
+    @Override
         public String
     getMessage()
     {
         return mMessage;
     }
     
+    @Override
         public String
     getMessageID()
     {
         return mMessageID;
     }
     
+    @Override
         public String
     getNameValuePairs()
     {
@@ -236,6 +245,7 @@ public final class LogQueryEntryImpl
         return m;
     }
     
+    @Override
         public Map<String,String>
     getNameValuePairsMap()
     {
@@ -247,6 +257,7 @@ public final class LogQueryEntryImpl
         return mNameValuePairsMap;
     }
     
+    @Override
         public String
     getThreadID()
     {
@@ -259,6 +270,7 @@ public final class LogQueryEntryImpl
         return getNameValuePairsMap().get( OBJECTNAME_KEY );
     }
     
+    @Override
         public String
     toString()
     {
@@ -277,6 +289,7 @@ public final class LogQueryEntryImpl
             "]";
     }
     
+    @Override
  	    public int
  	hashCode()
  	{
@@ -285,6 +298,7 @@ public final class LogQueryEntryImpl
  	        ObjectUtil.hashCode( mRecordNumber );
  	}
     
+    @Override
         public boolean
     equals( final Object rhs )
     {

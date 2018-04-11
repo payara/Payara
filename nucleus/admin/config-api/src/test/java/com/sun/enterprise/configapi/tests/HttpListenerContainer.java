@@ -68,6 +68,7 @@ public class HttpListenerContainer implements ConfigListener {
 
     volatile boolean received=false;
     
+    @Override
     public synchronized UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         if (received) {
             // I am alredy happy

@@ -63,6 +63,7 @@ public class SchedulesHandler extends ScheduleHandler {
     public SchedulesHandler() {
     }
     
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 

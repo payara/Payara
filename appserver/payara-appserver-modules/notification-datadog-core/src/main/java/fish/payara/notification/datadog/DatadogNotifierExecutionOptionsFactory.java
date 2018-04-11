@@ -61,6 +61,7 @@ public class DatadogNotifierExecutionOptionsFactory extends NotifierExecutionOpt
         register(NotifierType.DATADOG, this);
     }
 
+    @Override
     public NotifierExecutionOptions build(DatadogNotifier notifier) {
         DatadogNotifierExecutionOptions executionOptions = new DatadogNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));

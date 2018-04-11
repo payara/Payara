@@ -105,6 +105,7 @@ public class ActiveOutboundResourceAdapter extends ActiveResourceAdapterImpl {
      * @throws ConnectorRuntimeException If there is a failure in loading
      *                                   or starting the resource adapter.
      */
+    @Override
     public void init(
             ResourceAdapter ra, ConnectorDescriptor desc, String moduleName,
             ClassLoader jcl) throws ConnectorRuntimeException {
@@ -186,6 +187,7 @@ public class ActiveOutboundResourceAdapter extends ActiveResourceAdapterImpl {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean handles(ConnectorDescriptor cd, String moduleName) {
         boolean adminObjectsDefined = false;
         Set adminObjects = cd.getAdminObjects();
@@ -221,6 +223,7 @@ public class ActiveOutboundResourceAdapter extends ActiveResourceAdapterImpl {
      *
      * @return <code>ResourceAdapter</code>
      */
+    @Override
     public ResourceAdapter getResourceAdapter() {
         return this.resourceadapter_;
     }
@@ -231,6 +234,7 @@ public class ActiveOutboundResourceAdapter extends ActiveResourceAdapterImpl {
      *
      * @throws ConnectorRuntimeException If there is a failure
      */
+    @Override
     public void setup() throws ConnectorRuntimeException {
         if (connectionDefs_ == null || connectionDefs_.length == 0) {
             return;
@@ -247,6 +251,7 @@ public class ActiveOutboundResourceAdapter extends ActiveResourceAdapterImpl {
      * Destroys default pools and resources. Stops the Resource adapter
      * java bean.
      */
+    @Override
     public void destroy() {
         //it is possible that a 1.5 ra may not have connection-definition at all
         if ((connectionDefs_ != null) && (connectionDefs_.length != 0)) {
@@ -294,6 +299,7 @@ public class ActiveOutboundResourceAdapter extends ActiveResourceAdapterImpl {
      * @param pool <code>ConnectorConnectionPool</code> properties.
      * @param jcl  <code>ClassLoader</code>
      */
+    @Override
     public ManagedConnectionFactory createManagedConnectionFactory(
             ConnectorConnectionPool pool, ClassLoader jcl) {
         ManagedConnectionFactory mcf;

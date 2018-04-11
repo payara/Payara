@@ -62,6 +62,7 @@ public class JavaEEObjectStreamHandlerForJNDIContext
     @Inject
     GlassfishNamingManager gfNM;
 
+    @Override
     public Object replaceObject(Object obj)
             throws IOException {
         Object result = obj;
@@ -86,6 +87,7 @@ public class JavaEEObjectStreamHandlerForJNDIContext
         return result;
     }
 
+    @Override
     public Object resolveObject(Object obj)
         throws IOException {
         Object result = obj;

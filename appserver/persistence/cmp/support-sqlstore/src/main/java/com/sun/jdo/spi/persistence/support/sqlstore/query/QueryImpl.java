@@ -150,7 +150,7 @@ public class QueryImpl
     /**
      * I18N support
      */
-    protected final static ResourceBundle messages =
+    protected static final ResourceBundle messages =
         I18NHelper.loadBundle(QueryImpl.class);
 
     /** The logger */
@@ -285,6 +285,7 @@ public class QueryImpl
      *
      * @param candidateClass the Class of the candidate instances.
      */
+    @Override
     public void setClass(Class candidateClass)
     {
         synchronized (this.paramtab)
@@ -299,6 +300,7 @@ public class QueryImpl
      *
      * @param candidateCollection the Candidate collection.
      */
+    @Override
     public void setCandidates(Collection candidateCollection)
     {
         synchronized (this.paramtab)
@@ -317,6 +319,7 @@ public class QueryImpl
      *
      * @param filter the query filter.
      */
+    @Override
     public void setFilter(String filter)
     {
         synchronized (this.paramtab)
@@ -338,6 +341,7 @@ public class QueryImpl
      *
      * @param imports import statements separated by semicolons.
      */
+    @Override
     public void declareImports(String imports)
     {
         synchronized (this.paramtab)
@@ -360,6 +364,7 @@ public class QueryImpl
      *
      * @param parameters the list of parameters separated by commas.
      */
+    @Override
     public void declareParameters(String parameters)
     {
         synchronized (this.paramtab)
@@ -381,6 +386,7 @@ public class QueryImpl
      *
      * @param variables the variables separated by semicolons.
      */
+    @Override
     public void declareVariables(String variables)
     {
         synchronized (this.paramtab)
@@ -396,6 +402,7 @@ public class QueryImpl
      * The ordering specification includes a list of expressions
      * with the ascending/descending indicator.
      */
+    @Override
     public void setOrdering(String ordering)
     {
         synchronized (this.paramtab)
@@ -414,6 +421,7 @@ public class QueryImpl
      * which has the effect of returning the elements of the candidates
      * that match the filter.
      */
+    @Override
     public void setResult(String result)
     {
         synchronized (this.paramtab)
@@ -430,6 +438,7 @@ public class QueryImpl
      * entirely in the back end, instead of in the cache.
      * @param ignoreCache the setting of the ignoreCache option.
      */
+    @Override
     public void setIgnoreCache(boolean ignoreCache)
     {
         synchronized (this.paramtab)
@@ -443,6 +452,7 @@ public class QueryImpl
      * @return the ignoreCache option setting.
      * @see #setIgnoreCache
      */
+    @Override
     public boolean getIgnoreCache()
     {
         return ignoreCache;
@@ -458,6 +468,7 @@ public class QueryImpl
      *
      * @param prefetchEnabled the setting of the prefetchEnabled option.
      */  
+    @Override
     public void setPrefetchEnabled(boolean prefetchEnabled) 
     {
         synchronized (this.paramtab)
@@ -471,6 +482,7 @@ public class QueryImpl
      * Verify the elements of the query and provide a hint to the query to
      * prepare and optimize an execution plan.
      */
+    @Override
     public void compile()
     {
         synchronized (this.paramtab)
@@ -503,6 +515,7 @@ public class QueryImpl
      * @return the filtered Collection.
      * @see #executeWithArray (Object[] parameters)
      */
+    @Override
     public Object execute()
     {
         synchronized (this.paramtab)
@@ -521,6 +534,7 @@ public class QueryImpl
      * @see #executeWithArray (Object[] parameters)
      * @param p1 the value of the first parameter declared.
      */
+    @Override
     public Object execute(Object p1)
     {
         Object [] params = new Object[1];
@@ -535,6 +549,7 @@ public class QueryImpl
      * @param p1 the value of the first parameter declared.
      * @param p2 the value of the second parameter declared.
      */
+    @Override
     public Object execute(Object p1, Object p2)
     {
         Object [] params = new Object[2];
@@ -551,6 +566,7 @@ public class QueryImpl
      * @param p2 the value of the second parameter declared.
      * @param p3 the value of the third parameter declared.
      */
+    @Override
     public Object execute(Object p1, Object p2, Object p3)
     {
         Object [] params = new Object[3];
@@ -566,6 +582,7 @@ public class QueryImpl
      * @see #executeWithArray (Object[] parameters)
      * @param parameters the Map containing all of the parameters.
      */
+    @Override
     public Object executeWithMap (Map parameters)
     {
         synchronized (this.paramtab)
@@ -599,6 +616,7 @@ public class QueryImpl
      * @return the filtered Collection.
      * @param parameters the Object array with all of the parameters.
      */
+    @Override
     public Object executeWithArray (Object[] parameters)
     {
         synchronized (this.paramtab)
@@ -619,6 +637,7 @@ public class QueryImpl
      * <P>If this Query has no PersistenceManager return null.
      * @return the PersistenceManager associated with this Query.
      */
+    @Override
     public com.sun.jdo.api.persistence.support.PersistenceManager getPersistenceManager()
     {
         return (pm == null)? null : pm.getCurrentWrapper();
@@ -739,6 +758,7 @@ public class QueryImpl
     }
 
     /**  Returns a string representation of the object. */
+    @Override
     public String toString()
     {
         StringBuffer repr = new StringBuffer();

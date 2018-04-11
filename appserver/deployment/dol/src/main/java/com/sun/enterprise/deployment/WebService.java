@@ -286,6 +286,7 @@ public class WebService extends Descriptor {
     /**
      * Returns a formatted String of the attributes of this object.
      */
+    @Override
     public void print(StringBuffer toStringBuffer) {
         super.print(toStringBuffer);
         toStringBuffer.append( "\n wsdl file : ").append( wsdlFileUri);

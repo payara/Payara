@@ -79,6 +79,7 @@ public class SolarisLoginModule extends PasswordLoginModule
      * @throws LoginException If login fails (JAAS login() behavior).
      *
      */
+    @Override
     protected void authenticate()
         throws LoginException
     {

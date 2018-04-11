@@ -113,6 +113,7 @@ public class TransactionImpl implements TransactionInternal {
     /**
      * Complete the transaction represented by this Transaction object
      */
+    @Override
     public void commit() throws HeuristicMixedException,
         RollbackException, HeuristicRollbackException, IllegalStateException,
         SecurityException, SystemException
@@ -154,6 +155,7 @@ public class TransactionImpl implements TransactionInternal {
     /**
      * Rollback the transaction represented by this Transaction object.
      */
+    @Override
     public void rollback()
         throws IllegalStateException, SystemException {
 
@@ -186,6 +188,7 @@ public class TransactionImpl implements TransactionInternal {
      * enlistment will fail. In both cases, a RollbackException will
      * be thrown.
      */
+    @Override
     public boolean enlistResource(XAResource res)
         throws RollbackException, IllegalStateException,
             SystemException {
@@ -226,6 +229,7 @@ public class TransactionImpl implements TransactionInternal {
 
     }
 
+    @Override
     public boolean delistResource(XAResource res, int flags)
         throws IllegalStateException, SystemException {
 
@@ -260,6 +264,7 @@ public class TransactionImpl implements TransactionInternal {
         }
     }
 
+    @Override
     public int getStatus() throws SystemException {
         // XXX what should getStatus return on exception?
         Status  status;
@@ -282,6 +287,7 @@ public class TransactionImpl implements TransactionInternal {
         }
     }
 
+    @Override
     public boolean equals(Object object) {
         if ((object instanceof TransactionImpl) == false) {
             return false;
@@ -292,10 +298,12 @@ public class TransactionImpl implements TransactionInternal {
         }
     }
 
+    @Override
     public int hashCode() {
         return gtid.hashCode();
     }
 
+    @Override
     public void registerSynchronization(Synchronization sync)
         throws RollbackException, IllegalStateException,
         SystemException {
@@ -313,6 +321,7 @@ public class TransactionImpl implements TransactionInternal {
         tranState.registerSynchronization(sync, control, false);
     }
 
+    @Override
     public void registerInterposedSynchronization(Synchronization sync)
         throws RollbackException, IllegalStateException,
         SystemException {
@@ -330,6 +339,7 @@ public class TransactionImpl implements TransactionInternal {
         tranState.registerSynchronization(sync, control, true);
     }
 
+    @Override
     public void setRollbackOnly()
         throws IllegalStateException, SystemException {
 

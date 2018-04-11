@@ -154,6 +154,7 @@ public class WLSWireAdapter extends AbstractWireAdapter {
     oos.write(bytes);
   }
 
+  @Override
   protected void writeFooter(ObjectOutputStream objectOutputStream) throws IOException {
     objectOutputStream.writeUTF("");
     ContextBootstrap.debug(MessageID.WRITE_FOOTER);

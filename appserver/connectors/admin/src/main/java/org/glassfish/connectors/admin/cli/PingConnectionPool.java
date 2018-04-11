@@ -79,7 +79,7 @@ import javax.inject.Inject;
 })
 public class PingConnectionPool implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private static final LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(PingConnectionPool.class);
                                                     
     @Param(name="pool_name", primary=true)
@@ -112,6 +112,7 @@ public class PingConnectionPool implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         boolean status = false;

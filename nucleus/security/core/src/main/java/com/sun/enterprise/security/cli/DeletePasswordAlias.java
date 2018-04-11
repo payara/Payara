@@ -90,7 +90,7 @@ import org.glassfish.hk2.api.PerLookup;
 @AccessRequired(resource="domain/passwordAliases/passwordAlias/$aliasName", action="delete")
 public class DeletePasswordAlias implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
-    final private static LocalStringManagerImpl localStrings =
+    private final static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(DeletePasswordAlias.class);
 
     @Param(name="aliasname", primary=true)
@@ -126,6 +126,7 @@ public class DeletePasswordAlias implements AdminCommand, AdminCommandSecurity.P
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 

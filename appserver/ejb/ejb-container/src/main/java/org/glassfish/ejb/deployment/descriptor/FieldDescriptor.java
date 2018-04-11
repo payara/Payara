@@ -85,6 +85,7 @@ public class FieldDescriptor extends Descriptor {
     /** Equality iff the other objects is a field descriptor with the same name.
     */
     
+    @Override
     public boolean equals(Object object) {
 	if (object instanceof FieldDescriptor) {
 	    FieldDescriptor otherFieldDescriptor = (FieldDescriptor) object;
@@ -96,6 +97,7 @@ public class FieldDescriptor extends Descriptor {
     /** My hashcode.
     */
     
+    @Override
     public int hashCode() {
 	return this.getName().hashCode();
     }
@@ -104,6 +106,7 @@ public class FieldDescriptor extends Descriptor {
     * Returns a formatted version of me as a String.
     */
     
+    @Override
     public void print(StringBuffer toStringBuffer) {
 	toStringBuffer.append("Field: ").append(super.getName()).append("@").append(super.getDescription());
     }

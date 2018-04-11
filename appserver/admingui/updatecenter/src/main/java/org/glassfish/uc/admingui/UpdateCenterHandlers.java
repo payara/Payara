@@ -652,13 +652,13 @@ public class UpdateCenterHandlers {
     }
 
     
-    final private static String CATEGORY = "info.classification";
-    final private static String DESC_LONG = "description_long";
-    final private static String PKG_DESC = "pkg.description";
-    final private static String PKG_SUMMARY = "pkg.summary";
-    final private static String DESC = "description";
-    final private static String CATALOG_REFRESHED = "__gui_uc_catalog_refreshed";
-    final public static String BUNDLE = "org.glassfish.updatecenter.admingui.Strings";
-    final private static int MB = 1024*1024;
+    private static final String CATEGORY = "info.classification";
+    private static final String DESC_LONG = "description_long";
+    private static final String PKG_DESC = "pkg.description";
+    private static final String PKG_SUMMARY = "pkg.summary";
+    private static final String DESC = "description";
+    private static final String CATALOG_REFRESHED = "__gui_uc_catalog_refreshed";
+    public static final String BUNDLE = "org.glassfish.updatecenter.admingui.Strings";
+    private static final int MB = 1024*1024;
 
 }

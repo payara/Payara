@@ -75,14 +75,17 @@ public class ReadOnlyEJBLocalHomeImpl
         this.robNotifier = new ReadOnlyBeanLocalNotifierImpl(robContainer);
     }
 
+    @Override
     public ReadOnlyBeanLocalNotifier getReadOnlyBeanLocalNotifier() {
         return robNotifier;
     }
 
+    @Override
     protected boolean handleSpecialEJBLocalHomeMethod(Method method, Class methodClass) {
         return (methodClass == ReadOnlyEJBLocalHome.class);
     }
 
+    @Override
     protected Object invokeSpecialEJBLocalHomeMethod(Method method, Class methodClass, 
             Object[] args) throws Throwable {
         return getReadOnlyBeanLocalNotifier();

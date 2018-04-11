@@ -242,6 +242,7 @@ class PartItem
      *
      * @throws IOException if an error occurs.
      */
+    @Override
     public InputStream getInputStream()
         throws IOException {
         if (!isInMemory()) {
@@ -262,6 +263,7 @@ class PartItem
      * @return The content type passed by the agent or <code>null</code> if
      *         not defined.
      */
+    @Override
     public String getContentType() {
         return contentType;
     }
@@ -288,6 +290,7 @@ class PartItem
      *
      * @return The original filename in the client's filesystem.
      */
+    @Override
     public String getSubmittedFileName() {
         return fileName;
     }
@@ -316,6 +319,7 @@ class PartItem
      *
      * @return The size of the file, in bytes.
      */
+    @Override
     public long getSize() {
         if (size >= 0) {
             return size;
@@ -494,6 +498,7 @@ class PartItem
         }
     }
 
+    @Override
     public void write (String file) throws IOException {
        write(new File(repository, file));
     }
@@ -506,6 +511,7 @@ class PartItem
      * collected, this method can be used to ensure that this is done at an
      * earlier time, thus preserving system resources.
      */
+    @Override
     public void delete() {
         cachedContent = null;
         File outputFile = getStoreLocation();
@@ -524,6 +530,7 @@ class PartItem
      * @see #setName(java.lang.String)
      *
      */
+    @Override
     public String getName() {
         return fieldName;
     }
@@ -618,6 +625,7 @@ class PartItem
     /**
      * Removes the file contents from the temporary storage.
      */
+    @Override
     protected void finalize() {
         File outputFile = dfos.getFile();
 
@@ -684,6 +692,7 @@ class PartItem
      *
      * @return a string representation of this object.
      */
+    @Override
     public String toString() {
         return "File name=" + this.getSubmittedFileName()
             + ", StoreLocation="
@@ -771,6 +780,7 @@ class PartItem
      * @return a String containing the value of the requested header,
      *     or null  if the part does not have a header of that name
      */
+    @Override
     public String getHeader(String name) {
         return headers.getHeader(name);
     }
@@ -784,6 +794,7 @@ class PartItem
      *     empty Collection. If the container does not allow access to header
      *     information, return null
      */
+    @Override
     public Collection<String> getHeaders(String name) {
         List<String> values = headers.getHeaders(name);
         if (values != Collections.EMPTY_LIST) {
@@ -800,6 +811,7 @@ class PartItem
      *     if the servlet container does not allow servlets to use this
      *     method, null
      */
+    @Override
     public Collection<String> getHeaderNames() {
         return headers.getHeaderNames();
     }

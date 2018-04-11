@@ -76,7 +76,7 @@ import java.util.List;
  * @since 1.5
  */
 
-abstract public class AbstractRulesImpl implements Rules {
+public abstract class AbstractRulesImpl implements Rules {
 
     // ------------------------------------------------------------- Fields
     
@@ -91,6 +91,7 @@ abstract public class AbstractRulesImpl implements Rules {
      * Return the Digester instance with which this Rules instance is
      * associated.
      */
+    @Override
     public Digester getDigester() {
         return digester;
     }
@@ -100,6 +101,7 @@ abstract public class AbstractRulesImpl implements Rules {
      *
      * @param digester The newly associated Digester instance
      */
+    @Override
     public void setDigester(Digester digester) {
         this.digester = digester;
     }
@@ -108,6 +110,7 @@ abstract public class AbstractRulesImpl implements Rules {
      * Return the namespace URI that will be applied to all subsequently
      * added <code>Rule</code> objects.
      */
+    @Override
     public String getNamespaceURI() {
         return namespaceURI;
     }
@@ -120,6 +123,7 @@ abstract public class AbstractRulesImpl implements Rules {
      *  subsequently added rules, or <code>null</code> for matching
      *  regardless of the current namespace URI
      */
+    @Override
     public void setNamespaceURI(String namespaceURI) {
         this.namespaceURI = namespaceURI;
     }
@@ -134,6 +138,7 @@ abstract public class AbstractRulesImpl implements Rules {
      * @param pattern Nesting pattern to be matched for this Rule
      * @param rule Rule instance to be registered
      */
+    @Override
     public void add(String pattern, Rule rule) {
         // set up rule
         if (this.digester != null) {
@@ -156,12 +161,13 @@ abstract public class AbstractRulesImpl implements Rules {
      * @param pattern Nesting pattern to be matched for this Rule
      * @param rule Rule instance to be registered
      */ 
-    abstract protected void registerRule(String pattern, Rule rule);
+    protected abstract void registerRule(String pattern, Rule rule);
 
     /**
      * Clear all existing Rule instance registrations.
      */
-    abstract public void clear();
+    @Override
+    public abstract void clear();
 
 
     /**
@@ -175,7 +181,8 @@ abstract public class AbstractRulesImpl implements Rules {
      *  or <code>null</code> to match regardless of namespace URI
      * @param pattern Nesting pattern to be matched
      */
-    abstract public List<Rule> match(String namespaceURI, String pattern);
+    @Override
+    public abstract List<Rule> match(String namespaceURI, String pattern);
 
 
     /**
@@ -185,6 +192,7 @@ abstract public class AbstractRulesImpl implements Rules {
      * in the order originally registered through the <code>add()</code>
      * method.
      */
-    abstract public List<Rule> rules();
+    @Override
+    public abstract List<Rule> rules();
 
 }

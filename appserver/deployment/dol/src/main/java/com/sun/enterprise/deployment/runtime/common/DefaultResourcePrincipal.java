@@ -52,16 +52,18 @@ import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 public class DefaultResourcePrincipal extends RuntimeDescriptor
 {
     
-    static public final String NAME = "Name";	// NOI18N
-    static public final String PASSWORD = "Password";	// NOI18N
+    public static final String NAME = "Name";	// NOI18N
+    public static final String PASSWORD = "Password";	// NOI18N
     
     // This attribute is mandatory
+    @Override
     public void setName(String value)
     {
 	this.setValue(NAME, value);
     }
     
     //
+    @Override
     public String getName()
     {
 	return (String)this.getValue(NAME);

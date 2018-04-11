@@ -74,7 +74,7 @@ import org.glassfish.hk2.api.PerLookup;
 })
 public class GetContextRootCommand implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GetContextRootCommand.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GetContextRootCommand.class);
 
     @Param(primary=true)
     private String modulename = null;
@@ -89,6 +89,7 @@ public class GetContextRootCommand implements AdminCommand {
      * Entry point from the framework into the command execution
      * @param context context for the command.
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 

@@ -82,18 +82,22 @@ public class MessageDestinationDescriptor extends Descriptor implements NamedDes
         return (msgDestName != null);
     }
 
+    @Override
     public void setName(String name) {
         msgDestName = name;
     }
 
+    @Override
     public String getName() {
         return msgDestName;
     }
 
+    @Override
     public void setDisplayName(String displayName) {
         setLocalizedDisplayName(null, displayName);
     }
 
+    @Override
     public String getDisplayName() {
         return getLocalizedDisplayName(null);
     }
@@ -126,6 +130,7 @@ public class MessageDestinationDescriptor extends Descriptor implements NamedDes
         bundleDescriptor = bundleDesc;
     }
 
+    @Override
     public String getJndiName() {
         if (jndiName != null  && ! jndiName.equals("")) {
             return jndiName;
@@ -136,6 +141,7 @@ public class MessageDestinationDescriptor extends Descriptor implements NamedDes
         return lookupName;
     }
 
+    @Override
     public void setJndiName(String physicalDestinationName) {
         jndiName = physicalDestinationName;
     }

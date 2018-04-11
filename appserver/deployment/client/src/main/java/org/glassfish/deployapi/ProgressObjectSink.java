@@ -105,6 +105,7 @@ public class ProgressObjectSink extends DFProgressObject implements ProgressList
      * receives notification of a progress event from one of our 
      * registered interface.
      */
+    @Override
     public void handleProgressEvent(ProgressEvent progressEvent) {
         
         ProgressEvent forwardedEvent;
@@ -218,6 +219,7 @@ public class ProgressObjectSink extends DFProgressObject implements ProgressList
      * Register a new ProgressListener
      * @param the new listener instance
      */
+    @Override
     public void addProgressListener(ProgressListener progressListener) {
         
 	Collection clone;
@@ -238,17 +240,20 @@ public class ProgressObjectSink extends DFProgressObject implements ProgressList
      * removes a ProgressListener from our list of listeners
      * @param the ProgressListener to remove
      */
+    @Override
     public void removeProgressListener(ProgressListener progressListener) {
         registeredPL.remove(progressListener);
     }
     
     
+    @Override
     public javax.enterprise.deploy.spi.status.ClientConfiguration getClientConfiguration(TargetModuleID targetModuleID) {
         // since we are never called upon deploying, I don't 
         // have to deal with this at this time.
         return null;
     }
     
+    @Override
     public DeploymentStatus getDeploymentStatus() {
         DeploymentStatusImpl status = new DeploymentStatusImpl();
         if (sources.isEmpty()) {
@@ -260,6 +265,7 @@ public class ProgressObjectSink extends DFProgressObject implements ProgressList
         return status;        
     }
     
+    @Override
     public TargetModuleID[] getResultTargetModuleIDs() {
         
         TargetModuleID[] ids = new TargetModuleID[targetModuleIDs.size()];
@@ -267,6 +273,7 @@ public class ProgressObjectSink extends DFProgressObject implements ProgressList
         return ids;
     }
     
+    @Override
     public boolean isCancelSupported() {
         
         // if only one of our sources does not support cancel, we don't
@@ -279,6 +286,7 @@ public class ProgressObjectSink extends DFProgressObject implements ProgressList
         return true;
     }
     
+    @Override
     public boolean isStopSupported() {
         
         // if only one of our sources does not support stop, we don't
@@ -291,6 +299,7 @@ public class ProgressObjectSink extends DFProgressObject implements ProgressList
         return true;
     }
     
+    @Override
     public void cancel() throws OperationUnsupportedException {
         if (!isCancelSupported()) {
             throw new OperationUnsupportedException("cancel");
@@ -301,6 +310,7 @@ public class ProgressObjectSink extends DFProgressObject implements ProgressList
         }        
     }
     
+    @Override
     public void stop() throws OperationUnsupportedException {
         if (!isStopSupported()) {
             throw new OperationUnsupportedException("stop");
@@ -367,6 +377,7 @@ public class ProgressObjectSink extends DFProgressObject implements ProgressList
      *Report completed status for deploytool.
      *@return null if not completed, or the DFDeploymentStatus set to reflect the completion
      */
+    @Override
     public DFDeploymentStatus getCompletedStatus() {
 	DFDeploymentStatus answer = null;
         if (completedStatusReady) {

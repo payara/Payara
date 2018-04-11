@@ -72,10 +72,12 @@ public class DeleteIiopListenerTest extends org.glassfish.tests.utils.ConfigApiT
     private CommandRunner cr;
     private AdminCommandContext context;
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
 
+    @Override
     public DomDocument getDocument(ServiceLocator services) {
         return new TestDocument(services);
     }
@@ -94,6 +96,7 @@ public class DeleteIiopListenerTest extends org.glassfish.tests.utils.ConfigApiT
     @After
     public void tearDown() throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode<IiopService>() {
+            @Override
             public Object run(IiopService param) throws PropertyVetoException,
                     TransactionFailure {
                 List<IiopListener> listenerList = param.getIiopListener();

@@ -53,6 +53,7 @@ package com.sun.jts.codegen.otsidl;
 public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl implements com.sun.jts.codegen.otsidl.JCoordinator
 {
 
+  @Override
   public org.omg.CosTransactions.otid_t getGlobalTID ()
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -74,6 +75,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
 
 
   // Returns the global identifier that represents the Coordinator's transaction.
+  @Override
   public long getLocalTID ()
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -95,6 +97,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
 
 
   // Returns the local identifier that represents the Coordinator's transaction.
+  @Override
   public org.omg.CosTransactions.TransIdentity[] getAncestors ()
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -116,6 +119,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
 
 
   // freeing the sequence storage.
+  @Override
   public boolean isRollbackOnly ()
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -135,6 +139,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
     }
   } // isRollbackOnly
 
+  @Override
   public org.omg.CosTransactions.Status get_status ()
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -154,6 +159,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
     }
   } // get_status
 
+  @Override
   public org.omg.CosTransactions.Status get_parent_status ()
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -173,6 +179,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
     }
   } // get_parent_status
 
+  @Override
   public org.omg.CosTransactions.Status get_top_level_status ()
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -192,6 +199,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
     }
   } // get_top_level_status
 
+  @Override
   public boolean is_same_transaction (org.omg.CosTransactions.Coordinator tc)
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -212,6 +220,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
     }
   } // is_same_transaction
 
+  @Override
   public boolean is_related_transaction (org.omg.CosTransactions.Coordinator tc)
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -232,6 +241,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
     }
   } // is_related_transaction
 
+  @Override
   public boolean is_ancestor_transaction (org.omg.CosTransactions.Coordinator tc)
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -252,6 +262,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
     }
   } // is_ancestor_transaction
 
+  @Override
   public boolean is_descendant_transaction (org.omg.CosTransactions.Coordinator tc)
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -272,6 +283,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
     }
   } // is_descendant_transaction
 
+  @Override
   public boolean is_top_level_transaction ()
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -291,6 +303,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
     }
   } // is_top_level_transaction
 
+  @Override
   public int hash_transaction ()
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -310,6 +323,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
     }
   } // hash_transaction
 
+  @Override
   public int hash_top_level_tran ()
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -329,6 +343,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
     }
   } // hash_top_level_tran
 
+  @Override
   public org.omg.CosTransactions.RecoveryCoordinator register_resource (org.omg.CosTransactions.Resource r) throws org.omg.CosTransactions.Inactive
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -352,6 +367,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
     }
   } // register_resource
 
+  @Override
   public void register_synchronization (org.omg.CosTransactions.Synchronization sync) throws org.omg.CosTransactions.Inactive, org.omg.CosTransactions.SynchronizationUnavailable
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -375,6 +391,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
     }
   } // register_synchronization
 
+  @Override
   public void register_subtran_aware (org.omg.CosTransactions.SubtransactionAwareResource r) throws org.omg.CosTransactions.Inactive, org.omg.CosTransactions.NotSubtransaction
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -398,6 +415,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
     }
   } // register_subtran_aware
 
+  @Override
   public void rollback_only () throws org.omg.CosTransactions.Inactive
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -418,6 +436,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
     }
   } // rollback_only
 
+  @Override
   public String get_transaction_name ()
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -437,6 +456,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
     }
   } // get_transaction_name
 
+  @Override
   public org.omg.CosTransactions.Control create_subtransaction () throws org.omg.CosTransactions.SubtransactionsUnavailable, org.omg.CosTransactions.Inactive
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -461,6 +481,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
     }
   } // create_subtransaction
 
+  @Override
   public org.omg.CosTransactions.PropagationContext get_txcontext () throws org.omg.CosTransactions.Unavailable
   {
     org.omg.CORBA.portable.InputStream $in = null;
@@ -488,6 +509,7 @@ public class _JCoordinatorStub extends org.omg.CORBA.portable.ObjectImpl impleme
     "IDL:otsidl/JCoordinator:1.0", 
     "IDL:omg.org/CosTransactions/Coordinator:1.0"};
 
+  @Override
   public String[] _ids ()
   {
     return (String[])__ids.clone ();

@@ -53,6 +53,7 @@ public class AppServerMBeanServerBuilder extends javax.management.MBeanServerBui
     private static final MBeanServerBuilder defaultBuilder = new MBeanServerBuilder();
     private static MBeanServer _defaultMBeanServer = null;
     
+    @Override
      public MBeanServer newMBeanServer(String defaultDomain,
                                     MBeanServer outer, 
                                     MBeanServerDelegate delegate) {
@@ -80,6 +81,7 @@ public class AppServerMBeanServerBuilder extends javax.management.MBeanServerBui
         return result;
      }
           
+    @Override
     public MBeanServerDelegate newMBeanServerDelegate()  {
         return defaultBuilder.newMBeanServerDelegate();
      }

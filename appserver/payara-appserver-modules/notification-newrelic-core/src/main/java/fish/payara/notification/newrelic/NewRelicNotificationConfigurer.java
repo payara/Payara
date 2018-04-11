@@ -72,6 +72,7 @@ public class NewRelicNotificationConfigurer extends BaseNotificationConfigurer<N
     @Param(name = "accountId", alias = "accountid")
     private String accountId;
 
+    @Override
     protected void applyValues(NewRelicNotifierConfiguration configuration) throws PropertyVetoException {
         if (this.enabled != null) {
             configuration.enabled(this.enabled);

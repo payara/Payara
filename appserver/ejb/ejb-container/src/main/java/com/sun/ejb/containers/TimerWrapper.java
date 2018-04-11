@@ -81,6 +81,7 @@ public class TimerWrapper
     /*
      * Implementations of javax.ejb.Timer methods
      */
+    @Override
     public void cancel() 
         throws IllegalStateException, NoSuchObjectLocalException, EJBException {
 
@@ -96,6 +97,7 @@ public class TimerWrapper
 
     }
     
+    @Override
     public long getTimeRemaining() 
         throws IllegalStateException, NoMoreTimeoutsException, NoSuchObjectLocalException {
 
@@ -107,6 +109,7 @@ public class TimerWrapper
         return (timeRemaining > 0) ? timeRemaining : 0;
     }
     
+    @Override
     public Date getNextTimeout() 
         throws IllegalStateException, NoMoreTimeoutsException, NoSuchObjectLocalException {
 
@@ -127,6 +130,7 @@ public class TimerWrapper
         return nextTimeout;
     }
     
+    @Override
     public Serializable getInfo() 
         throws IllegalStateException, NoSuchObjectLocalException {
 
@@ -143,6 +147,7 @@ public class TimerWrapper
         return info;
     }
     
+    @Override
     public TimerHandle getHandle() 
         throws IllegalStateException, NoSuchObjectLocalException {
 
@@ -159,6 +164,7 @@ public class TimerWrapper
         return new TimerHandleImpl(timerId_);
     }
 
+    @Override
     public ScheduleExpression getSchedule() throws java.lang.IllegalStateException, 
             javax.ejb.NoSuchObjectLocalException, javax.ejb.EJBException {
 
@@ -178,6 +184,7 @@ public class TimerWrapper
         return schedule;
     }
 
+    @Override
     public boolean isCalendarTimer() throws java.lang.IllegalStateException,
             javax.ejb.NoSuchObjectLocalException, javax.ejb.EJBException {
 
@@ -191,6 +198,7 @@ public class TimerWrapper
     }
 
 
+    @Override
     public boolean isPersistent() throws java.lang.IllegalStateException, 
             javax.ejb.NoSuchObjectLocalException, javax.ejb.EJBException {
 
@@ -202,6 +210,7 @@ public class TimerWrapper
         } 
     }
 
+    @Override
     public boolean equals(Object o) {
         boolean equal = false;
         if(o instanceof TimerWrapper) {
@@ -211,10 +220,12 @@ public class TimerWrapper
         return equal;
     }
 
+    @Override
     public int hashCode() {
         return timerId_.hashCode();
     }
 
+    @Override
     public String toString() {
         return "Timer " + timerId_;
     }
@@ -251,6 +262,7 @@ public class TimerWrapper
         }
     }
 
+    @Override
     public SerializableObjectFactory getSerializableObjectFactory() {
         return new SerializedTimerWrapper(timerId_);
     }
@@ -275,6 +287,7 @@ public class TimerWrapper
          * When deserializing the timer wrapper create a TimerWrapper object.
          * Check if the record is valid only when making calls on the object.
          */
+        @Override
         public Object createObject(long appUniqueId) throws EJBException {
             // Can't store a static ref because in embedded container it can be 
             // changed by server restart
@@ -298,6 +311,7 @@ public class TimerWrapper
          * very defensively, since handle use might be attempted from 
          * outside of EJB container.  
          */
+        @Override
         public Timer getTimer() throws IllegalStateException, 
             NoSuchObjectLocalException, EJBException {
             TimerWrapper timer = null;

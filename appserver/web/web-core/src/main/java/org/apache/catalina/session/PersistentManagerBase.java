@@ -102,6 +102,7 @@ public abstract class PersistentManagerBase
             // NOOP
         }
 
+        @Override
         public Void run() throws Exception{
            store.clear();
            return null;
@@ -117,6 +118,7 @@ public abstract class PersistentManagerBase
             this.id = id;
         }
 
+        @Override
         public Void run() throws Exception{
            store.remove(id);
            return null;
@@ -132,6 +134,7 @@ public abstract class PersistentManagerBase
             this.id = id;
         }
 
+        @Override
         public Session run() throws Exception{
            return store.load(id);
         }                       
@@ -146,6 +149,7 @@ public abstract class PersistentManagerBase
             this.session = session;
         }
 
+        @Override
         public Void run() throws Exception{
            store.save(session);
            return null;
@@ -159,6 +163,7 @@ public abstract class PersistentManagerBase
             // NOOP
         }
 
+        @Override
         public String[] run() throws Exception{
            return store.keys();
         }                       
@@ -371,6 +376,7 @@ public abstract class PersistentManagerBase
      *
      * @param container The associated Container
      */
+    @Override
     public void setContainer(Container container) {
 
         // De-register from the old Container (if any)
@@ -409,6 +415,7 @@ public abstract class PersistentManagerBase
      * the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
      */
+    @Override
     public String getInfo() {
 
         return (this.info);
@@ -468,6 +475,7 @@ public abstract class PersistentManagerBase
     /**
      * Return the descriptive short name of this Manager implementation.
      */
+    @Override
     public String getName() {
         return (name);
     }
@@ -553,6 +561,7 @@ public abstract class PersistentManagerBase
     /*
      * Releases any resources held by this session manager.
      */
+    @Override
     public void release() {
         super.release();
         clearStore();
@@ -662,6 +671,7 @@ public abstract class PersistentManagerBase
      * @exception IllegalStateException if a new session cannot be
      *  instantiated for any reason
      */
+    @Override
     public Session createSession() {
 
         if ((maxActiveSessions >= 0) &&
@@ -691,6 +701,7 @@ public abstract class PersistentManagerBase
      * @return the new session, or <code>null</code> if a session with the
      * requested id already exists
      */
+    @Override
     public Session createSession(String sessionId) {
 
         if ((maxActiveSessions >= 0) &&
@@ -716,6 +727,7 @@ public abstract class PersistentManagerBase
      * @exception IOException if an input/output error occurs while
      *  processing this request
      */
+    @Override
     public Session findSession(String id) throws IOException {
         
         //6406580 START
@@ -800,6 +812,7 @@ public abstract class PersistentManagerBase
      * class. In order to use it, a subclass must specifically call it,
      * for example in the start() and/or processPersistenceChecks() methods.
      */
+    @Override
     public void load() {
 
         // Initialize our internal data structures
@@ -848,6 +861,7 @@ public abstract class PersistentManagerBase
      *
      * @param session Session to be removed
      */
+    @Override
     public void remove(Session session) {
         remove(session, true);
     }
@@ -934,6 +948,7 @@ public abstract class PersistentManagerBase
      * class. In order to use it, a subclass must specifically call it,
      * for example in the stop() and/or processPersistenceChecks() methods.
      */
+    @Override
     public void unload() {
 
         if (store == null)
@@ -1150,6 +1165,7 @@ public abstract class PersistentManagerBase
      *
      * @param listener The listener to add
      */
+    @Override
     public void addLifecycleListener(LifecycleListener listener) {
 
         lifecycle.addLifecycleListener(listener);
@@ -1161,6 +1177,7 @@ public abstract class PersistentManagerBase
      * Gets the (possibly empty) list of lifecycle listeners associated
      * with this session manager.
      */
+    @Override
     public List<LifecycleListener> findLifecycleListeners() {
         return lifecycle.findLifecycleListeners();
     }
@@ -1171,6 +1188,7 @@ public abstract class PersistentManagerBase
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removeLifecycleListener(LifecycleListener listener) {
 
         lifecycle.removeLifecycleListener(listener);
@@ -1186,6 +1204,7 @@ public abstract class PersistentManagerBase
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
 
         // Validate and update our current component state
@@ -1224,6 +1243,7 @@ public abstract class PersistentManagerBase
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
    public void stop() throws LifecycleException {
 
         if (log.isLoggable(Level.FINE))
@@ -1273,6 +1293,7 @@ public abstract class PersistentManagerBase
      *
      * @param event The property change event that has occurred
      */
+    @Override
     public void propertyChange(PropertyChangeEvent event) {
 
         // Validate the source of this event

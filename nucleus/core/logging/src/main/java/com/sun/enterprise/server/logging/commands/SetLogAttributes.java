@@ -166,7 +166,7 @@ public class SetLogAttributes implements AdminCommand {
         "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation",
         "fish.payara.deprecated.jsonlogformatter.underscoreprefix"};
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SetLogLevel.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SetLogLevel.class);
 
     @Override
     public void execute(AdminCommandContext context) {

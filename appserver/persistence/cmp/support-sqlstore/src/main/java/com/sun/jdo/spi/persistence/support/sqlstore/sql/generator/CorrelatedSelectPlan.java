@@ -77,6 +77,7 @@ public abstract class CorrelatedSelectPlan extends SelectQueryPlan {
      * <li>A join constraint if the parent field uses join table</li>
      * </ul>
      */
+    @Override
     protected void processConstraints() {
 
         // Process the constraint on the stack.`

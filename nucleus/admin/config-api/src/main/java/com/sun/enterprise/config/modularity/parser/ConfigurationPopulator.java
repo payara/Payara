@@ -67,7 +67,7 @@ import java.util.logging.Logger;
  */
 public class ConfigurationPopulator {
 
-    private final static Logger LOG = ConfigApiLoggerInfo.getLogger();
+    private static final Logger LOG = ConfigApiLoggerInfo.getLogger();
     private final DomDocument doc;
     private final ConfigBeanProxy parent;
     private final String xmlContent;

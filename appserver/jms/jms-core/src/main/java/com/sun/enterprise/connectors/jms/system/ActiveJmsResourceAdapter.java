@@ -165,7 +165,7 @@ import org.jvnet.hk2.config.types.Property;
 public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl implements LazyServiceInitializer, PostConstruct {
 
     private static final Logger _logger = JMSLoggerInfo.getLogger();
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ActiveJmsResourceAdapter.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ActiveJmsResourceAdapter.class);
     
     private final String SETTER = "setProperty";
     private static final String SEPARATOR = "#";
@@ -548,6 +548,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 		//System.setProperty("imq.jmsra.direct.clustered", "true");
                 AccessController.doPrivileged
                         (new java.security.PrivilegedExceptionAction() {
+                            @Override
                             public Object run() throws
                                     ResourceAdapterInternalException {
                                 //set the JMSRA system property to enable XA JOINS

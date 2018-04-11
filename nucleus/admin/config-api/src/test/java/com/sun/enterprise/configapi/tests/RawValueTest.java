@@ -55,6 +55,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
  */
 public class RawValueTest extends ConfigApiTest {
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }

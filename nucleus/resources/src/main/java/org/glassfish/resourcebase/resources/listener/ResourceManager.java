@@ -124,6 +124,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
     @Inject
     private ResourceTypeOrderProcessor resourceTypeOrderProcessor;
 
+    @Override
     public void postConstruct() {
         notifyListeners(ResourceManagerLifecycleListener.EVENT.STARTUP);
         deployResources(resourceTypeOrderProcessor.getOrderedResources(domain.getResources().getResources()));
@@ -203,6 +204,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
     /**
      * Do cleanup of system-resource-adapter, resources, pools
      */
+    @Override
     public void preDestroy() {
         removeListenerForAllResources();
         removeListenerForResources();
@@ -255,6 +257,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
      *
      * @param events list of changes
      */
+    @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         return ConfigSupport.sortAndDispatch(events, new PropertyChangeHandler(events), logger);
     }
@@ -276,6 +279,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
          * @param changedType     type of the configuration object
          * @param changedInstance changed instance.
          */
+        @Override
         public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
 	    NotProcessed np = null;
             ClassLoader contextCL = Thread.currentThread().getContextClassLoader();

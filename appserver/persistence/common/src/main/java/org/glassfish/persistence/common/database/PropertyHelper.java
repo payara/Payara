@@ -68,11 +68,11 @@ import com.sun.logging.LogDomains;
 public class PropertyHelper {
 
     /** The logger */
-    private final static Logger logger = LogDomains.getLogger(
+    private static final Logger logger = LogDomains.getLogger(
             PropertyHelper.class, LogDomains.JDO_LOGGER);
 
     /** I18N message handler */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
         "org.glassfish.persistence.common.LogStrings", //NOI18N
          PropertyHelper.class.getClassLoader());
 
@@ -150,6 +150,7 @@ public class PropertyHelper {
         try {
             return (InputStream) AccessController.doPrivileged(
                 new PrivilegedExceptionAction() {
+                    @Override
                     public Object run() throws FileNotFoundException {
                             return new FileInputStream(fileName);
                     }
@@ -171,6 +172,7 @@ public class PropertyHelper {
                                                                         throws java.io.FileNotFoundException  {
         return (InputStream) AccessController.doPrivileged(
             new PrivilegedAction() {
+                @Override
                 public Object run() {
                     if (classLoader != null) {
                         return classLoader.getResourceAsStream(resourceName);

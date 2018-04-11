@@ -59,6 +59,7 @@ public class JAXRPCServlet extends HttpServlet {
     private volatile ServletDelegate delegate_;
     private volatile ServletWebServiceDelegate myDelegate_=null;
 
+    @Override
     public void init(ServletConfig servletConfig) throws ServletException {
         try {
             super.init(servletConfig);
@@ -75,6 +76,7 @@ public class JAXRPCServlet extends HttpServlet {
         }
     }
 
+    @Override
     public void destroy() {
         if (delegate_ != null) {
             delegate_.destroy();
@@ -84,6 +86,7 @@ public class JAXRPCServlet extends HttpServlet {
         }
     }
 
+    @Override
     protected void doPost(HttpServletRequest request,
                           HttpServletResponse response)
         throws ServletException {
@@ -120,6 +123,7 @@ public class JAXRPCServlet extends HttpServlet {
         }
     }
 
+    @Override
     protected void doGet(HttpServletRequest request, 
                          HttpServletResponse response)
         throws ServletException {

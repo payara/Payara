@@ -229,7 +229,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     private boolean contextEvaluated;
     private String loginPage;
     private String errorPage;
-    private final static SecurityConstraint[] emptyConstraints = new SecurityConstraint[] {};
+    private static final SecurityConstraint[] emptyConstraints = new SecurityConstraint[] {};
 
     /**
      * The default provider id for system apps if one has been established. the default provider for system apps is

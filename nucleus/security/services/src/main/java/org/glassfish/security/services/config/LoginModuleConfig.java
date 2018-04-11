@@ -82,6 +82,7 @@ public interface LoginModuleConfig extends SecurityProviderConfig, PropertyBag {
      * Gets the properties of the LoginModule.
      */
     @Element
+    @Override
     List<Property> getProperty();
 
     /**

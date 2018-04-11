@@ -86,6 +86,7 @@ public class AssocWithThreadResourcePool extends ConnectionPool {
      * @param tran Transaction
      * @return ResourceHandle resource associated with the thread, if any
      */
+    @Override
     protected ResourceHandle prefetch(ResourceSpec spec,
                                       ResourceAllocator alloc, Transaction tran) {
         AssocWithThreadResourceHandle ar = localResource.get();
@@ -180,6 +181,7 @@ public class AssocWithThreadResourcePool extends ConnectionPool {
      * @param h ResourceHandle
      * @return boolean representing resource usefullness
      */
+    @Override
     protected boolean isResourceUnused(ResourceHandle h) {
         if(h instanceof AssocWithThreadResourceHandle){
             return h.getResourceState().isFree() && !((AssocWithThreadResourceHandle) h).isAssociated();
@@ -193,6 +195,7 @@ public class AssocWithThreadResourcePool extends ConnectionPool {
     /**
      * return resource in free list. If none is found, returns null
      */
+    @Override
     protected ResourceHandle getUnenlistedResource(ResourceSpec spec,
                                                    ResourceAllocator alloc, Transaction tran) throws PoolingException {
 
@@ -262,6 +265,7 @@ public class AssocWithThreadResourcePool extends ConnectionPool {
      * return the resource back to pool only if it is not associated with the thread.
      * @param h ResourceHandle
      */
+    @Override
     protected synchronized void freeUnenlistedResource(ResourceHandle h) {
         if (this.cleanupResource(h)) {
             if (h instanceof AssocWithThreadResourceHandle) {
@@ -291,6 +295,7 @@ public class AssocWithThreadResourcePool extends ConnectionPool {
      * destroys the resource
      * @param resourceHandle resource to be destroyed
      */
+    @Override
     public void deleteResource(ResourceHandle resourceHandle) {
         try {
             super.deleteResource(resourceHandle);

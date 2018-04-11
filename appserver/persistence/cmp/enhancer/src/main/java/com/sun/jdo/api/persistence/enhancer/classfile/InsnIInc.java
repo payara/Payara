@@ -57,10 +57,12 @@ public class InsnIInc extends Insn {
 
   /* public accessors */
 
+  @Override
   public int nStackArgs() {
     return 0;
   }
 
+  @Override
   public int nStackResults() {
     return 0;
   }
@@ -68,6 +70,7 @@ public class InsnIInc extends Insn {
   /**
    * What are the types of the stack operands ?
    */
+  @Override
   public String argTypes() {
       return "";//NOI18N
   }
@@ -75,10 +78,12 @@ public class InsnIInc extends Insn {
   /**
    * What are the types of the stack results?
    */
+  @Override
   public String resultTypes() {
       return "";//NOI18N
   }
 
+  @Override
   public boolean branches() {
     return false;
   }
@@ -113,12 +118,14 @@ public class InsnIInc extends Insn {
     this.value =value;
   }
 
+  @Override
   void print (PrintStream out, int indent) {
     ClassPrint.spaces(out, indent);
     out.println(offset() + "  opc_iinc  " + //NOI18N
 		localVarIndex + "," + value);//NOI18N
   }
 
+  @Override
   int store(byte[] buf, int index) {
     if (isWide())
       buf[index++] = (byte) opc_wide;
@@ -133,6 +140,7 @@ public class InsnIInc extends Insn {
     return index;
   }
 
+  @Override
   int size() {
     return isWide() ? 6 : 3;
   }

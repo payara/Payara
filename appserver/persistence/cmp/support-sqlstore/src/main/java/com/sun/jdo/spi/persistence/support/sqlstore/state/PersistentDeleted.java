@@ -54,7 +54,7 @@ public class PersistentDeleted extends LifeCycleState {
     /**
      * I18N message handler
      */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
             "com.sun.jdo.spi.persistence.support.sqlstore.Bundle", // NOI18N
             PersistentDeleted.class.getClassLoader());
 
@@ -83,18 +83,22 @@ public class PersistentDeleted extends LifeCycleState {
         stateType = P_DELETED;
     }
 
+    @Override
     public LifeCycleState transitionCommit(boolean retainValues) {
         return changeState(TRANSIENT);
     }
 
+    @Override
     public LifeCycleState transitionFlushed() {
         return changeState(P_DELETED_FLUSHED);
     }
 
+    @Override
     public LifeCycleState transitionRefreshPersistent() {
         return changeState(P_CLEAN);
     }
 
+    @Override
     public LifeCycleState transitionRollback(boolean retainValues) {
         if (retainValues) {
             return changeState(P_NON_TX);
@@ -103,6 +107,7 @@ public class PersistentDeleted extends LifeCycleState {
         }
     }
 
+    @Override
     public LifeCycleState transitionReadField(boolean optimisitic, boolean nontransactionalRead,
                                               boolean transactionActive) {
         // Cannot read a deleted object
@@ -110,6 +115,7 @@ public class PersistentDeleted extends LifeCycleState {
                 "jdo.lifecycle.deleted.accessField")); // NOI18N
     }
 
+    @Override
     public LifeCycleState transitionWriteField(boolean transactionActive) {
         // Cannot update a deleted object
         throw new JDOUserException(I18NHelper.getMessage(messages,

@@ -26,7 +26,9 @@ import java.beans.PropertyVetoException;
 public interface HoggingThreadsChecker extends Checker {
 
     @Attribute(defaultValue = "HOGT")
+    @Override
     String getName();
+    @Override
     void setName(String value) throws PropertyVetoException;
 
     @Attribute(defaultValue = "95", dataType = Long.class)

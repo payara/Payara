@@ -1023,6 +1023,7 @@ public final class JDOMetaDataProperties
          *  @return  The string-representation of this object.
          *****************************************************************/
 
+        @Override
         public final String toString ()
         {
 
@@ -1372,6 +1373,7 @@ public final class JDOMetaDataProperties
             Collections.sort (this.fields,
                               new Comparator ()
                                   {
+                                      @Override
                                       public final int compare (Object f1, Object f2)
                                       {
                                           JDOField field1 = (JDOField) f1;
@@ -1425,6 +1427,7 @@ public final class JDOMetaDataProperties
          *  @return  The string-representation of this object.
          *****************************************************************/
 
+        @Override
         public final String toString ()
         {
 
@@ -1670,6 +1673,7 @@ public final class JDOMetaDataProperties
          *  @return  The string-representation of the object.
          *****************************************************************/
 
+        @Override
         public final String toString ()
         {
 

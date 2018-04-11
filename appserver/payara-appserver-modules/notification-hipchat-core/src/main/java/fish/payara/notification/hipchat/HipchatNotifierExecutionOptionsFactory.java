@@ -61,6 +61,7 @@ public class HipchatNotifierExecutionOptionsFactory extends NotifierExecutionOpt
         register(NotifierType.HIPCHAT, this);
     }
 
+    @Override
     public NotifierExecutionOptions build(HipchatNotifier notifier) {
         HipchatNotifierExecutionOptions executionOptions = new HipchatNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));

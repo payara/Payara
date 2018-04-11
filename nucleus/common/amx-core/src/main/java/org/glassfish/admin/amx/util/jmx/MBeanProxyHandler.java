@@ -349,6 +349,7 @@ public class MBeanProxyHandler extends MBeanServerInvocationHandler
     <p>
     For anything else, the behavior of MBeanServerInvocationHandler is used.
      */
+    @Override
     public Object invoke(
             Object proxy,
             Method method,

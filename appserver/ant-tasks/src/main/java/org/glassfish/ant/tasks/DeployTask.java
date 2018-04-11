@@ -143,6 +143,7 @@ public class DeployTask extends AdminTask {
         return component;
     }
 
+    @Override
     public void execute() throws BuildException {
         if (components.size() == 0 && file == null ) {
             log("File attributes or component must be specified", Project.MSG_WARN);

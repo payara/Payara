@@ -143,5 +143,6 @@ public interface HttpResponse
      *
      * @exception java.io.IOException if an input/output error occurs
      */
+    @Override
     public void sendAcknowledgement() throws IOException;
 }

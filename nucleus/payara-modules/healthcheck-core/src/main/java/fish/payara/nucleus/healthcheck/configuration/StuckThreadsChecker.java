@@ -52,7 +52,9 @@ import org.jvnet.hk2.config.Configured;
 public interface StuckThreadsChecker extends Checker {
     
     @Attribute(defaultValue = "STUCK")
+    @Override
     String getName();
+    @Override
     void setName(String value) throws PropertyVetoException;
     
     @Attribute(defaultValue = "5", dataType = Long.class)

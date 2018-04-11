@@ -116,6 +116,7 @@ public class ManagedBeanContext extends ResourceContainerContextImpl {
     }
 
 
+    @Override
     public void endElement(ElementType type, AnnotatedElement element) {
         
         if (ElementType.TYPE.equals(type)) {

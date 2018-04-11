@@ -49,38 +49,38 @@ package com.sun.enterprise.deployment.xml;
 
 public interface RuntimeTagNames extends TagNames {
 
-    public final static String S1AS_EJB_RUNTIME_TAG = "sun-ejb-jar";
-    public final static String S1AS_APPCLIENT_RUNTIME_TAG = "sun-application-client";
-    public final static String S1AS_APPLICATION_RUNTIME_TAG = "sun-application";
-    public final static String S1AS_WEB_RUNTIME_TAG = "sun-web-app";
-    public final static String S1AS_CONNECTOR_RUNTIME_TAG = "sun-connector";
+    public static final String S1AS_EJB_RUNTIME_TAG = "sun-ejb-jar";
+    public static final String S1AS_APPCLIENT_RUNTIME_TAG = "sun-application-client";
+    public static final String S1AS_APPLICATION_RUNTIME_TAG = "sun-application";
+    public static final String S1AS_WEB_RUNTIME_TAG = "sun-web-app";
+    public static final String S1AS_CONNECTOR_RUNTIME_TAG = "sun-connector";
 
-    public final static String WLS_EJB_RUNTIME_TAG = "weblogic-ejb-jar";
-    public final static String WLS_APPCLIENT_RUNTIME_TAG = "weblogic-application-client";
-    public final static String WLS_APPLICATION_RUNTIME_TAG = "weblogic-application";
-    public final static String WLS_WEB_RUNTIME_TAG = "weblogic-web-app";
-    public final static String WLS_CONNECTOR_RUNTIME_TAG = "weblogic-connector";
+    public static final String WLS_EJB_RUNTIME_TAG = "weblogic-ejb-jar";
+    public static final String WLS_APPCLIENT_RUNTIME_TAG = "weblogic-application-client";
+    public static final String WLS_APPLICATION_RUNTIME_TAG = "weblogic-application";
+    public static final String WLS_WEB_RUNTIME_TAG = "weblogic-web-app";
+    public static final String WLS_CONNECTOR_RUNTIME_TAG = "weblogic-connector";
 
-    public final static String GF_EJB_RUNTIME_TAG = "glassfish-ejb-jar";
-    public final static String GF_APPCLIENT_RUNTIME_TAG = "glassfish-application-client";
-    public final static String GF_APPLICATION_RUNTIME_TAG = "glassfish-application";
-    public final static String GF_WEB_RUNTIME_TAG = "glassfish-web-app";
+    public static final String GF_EJB_RUNTIME_TAG = "glassfish-ejb-jar";
+    public static final String GF_APPCLIENT_RUNTIME_TAG = "glassfish-application-client";
+    public static final String GF_APPLICATION_RUNTIME_TAG = "glassfish-application";
+    public static final String GF_WEB_RUNTIME_TAG = "glassfish-web-app";
 
-    public final static String PAYARA_CLASSLOADING_DELEGATE = "classloading-delegate";
-    public final static String PAYARA_ENABLE_IMPLICIT_CDI = "enable-implicit-cdi";
-    public final static String PAYARA_SCANNING_EXCLUDE = "scanning-exclude";
-    public final static String PAYARA_SCANNING_INCLUDE = "scanning-include";
-    public final static String PAYARA_WHITELIST_PACKAGE = "whitelist-package";
-    public final static String PAYARA_JAXRS_ROLES_ALLOWED_ENABLED = "jaxrs-roles-allowed-enabled";
+    public static final String PAYARA_CLASSLOADING_DELEGATE = "classloading-delegate";
+    public static final String PAYARA_ENABLE_IMPLICIT_CDI = "enable-implicit-cdi";
+    public static final String PAYARA_SCANNING_EXCLUDE = "scanning-exclude";
+    public static final String PAYARA_SCANNING_INCLUDE = "scanning-include";
+    public static final String PAYARA_WHITELIST_PACKAGE = "whitelist-package";
+    public static final String PAYARA_JAXRS_ROLES_ALLOWED_ENABLED = "jaxrs-roles-allowed-enabled";
 
     // The name of the deployment context property used to disable implicit bean discovery for a
     // particular application deployment.
-    public final static String IMPLICIT_CDI_ENABLED_PROP = "implicitCdiEnabled";
-    public final static String PAYARA_CLUSTERED_BEAN = "clustered-bean";
-    public final static String PAYARA_CLUSTERED_KEY_NAME = "clustered-key-name";
-    public final static String PAYARA_CLUSTERED_LOCK_TYPE = "clustered-lock-type";
-    public final static String PAYARA_CLUSTERED_POSTCONSTRUCT_ON_ATTACH = "clustered-attach-postconstruct";
-    public final static String PAYARA_CLUSTERED_PREDESTROY_ON_DETTACH = "clustered-detach-predestroy";
+    public static final String IMPLICIT_CDI_ENABLED_PROP = "implicitCdiEnabled";
+    public static final String PAYARA_CLUSTERED_BEAN = "clustered-bean";
+    public static final String PAYARA_CLUSTERED_KEY_NAME = "clustered-key-name";
+    public static final String PAYARA_CLUSTERED_LOCK_TYPE = "clustered-lock-type";
+    public static final String PAYARA_CLUSTERED_POSTCONSTRUCT_ON_ATTACH = "clustered-attach-postconstruct";
+    public static final String PAYARA_CLUSTERED_PREDESTROY_ON_DETTACH = "clustered-detach-predestroy";
 
     String AS_CONTEXT = "as-context";
     String AUTH_METHOD = "auth-method";
@@ -274,16 +274,16 @@ public interface RuntimeTagNames extends TagNames {
     // application related
     public static final String WEB_URI = "web-uri";
     public static final String CONTEXT_ROOT = "context-root"; // also used in java web start support
-    public final static String ARCHIVE_NAME = "archive-name";
-    public final static String COMPATIBILITY = "compatibility";
-    public final static String KEEP_STATE = "keep-state";
+    public static final String ARCHIVE_NAME = "archive-name";
+    public static final String COMPATIBILITY = "compatibility";
+    public static final String KEEP_STATE = "keep-state";
     public static final String VERSION_IDENTIFIER = "version-identifier";
-    public final static String APPLICATION_PARAM = "application-param";
+    public static final String APPLICATION_PARAM = "application-param";
     public static final String PARAM_NAME = "param-name";
     public static final String PARAM_VALUE = "param-value";
-    public final static String MODULE = "module";
-    public final static String TYPE = "type";
-    public final static String PATH = "path";
+    public static final String MODULE = "module";
+    public static final String TYPE = "type";
+    public static final String PATH = "path";
 
     // Web
     public static final String CACHE_MAPPING = "cache-mapping";
@@ -336,16 +336,16 @@ public interface RuntimeTagNames extends TagNames {
     public static final String NUM_OF_RETRIES = "num-of-retries";
 
     public static final String JAVA_METHOD = "java-method";
-    public final static String METHOD_PARAMS = "method-params";
-    public final static String METHOD_PARAM = "method-param";
+    public static final String METHOD_PARAMS = "method-params";
+    public static final String METHOD_PARAM = "method-param";
 
-    public final static String VALVE = "valve";
+    public static final String VALVE = "valve";
 
     // Java Web Start-support related
-    public final static String JAVA_WEB_START_ACCESS = "java-web-start-access";
-    public final static String ELIGIBLE = "eligible";
-    public final static String VENDOR = "vendor";
-    public final static String JNLP_DOC = "jnlp-doc";
+    public static final String JAVA_WEB_START_ACCESS = "java-web-start-access";
+    public static final String ELIGIBLE = "eligible";
+    public static final String VENDOR = "vendor";
+    public static final String JNLP_DOC = "jnlp-doc";
     // also uses CONTEXT_ROOT defined above in the application-related section
 
 

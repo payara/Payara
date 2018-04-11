@@ -75,10 +75,12 @@ public final class EntityContainerFactory extends BaseContainerFactory
     private static final Logger _logger = 
     	LogDomains.getLogger(EntityContainerFactory.class, LogDomains.EJB_LOGGER);
     
+  @Override
     public void postConstruct() {
         ejbContainerDesc = serverConfig.getExtensionByType(EjbContainer.class);
     }
 
+  @Override
     public Container createContainer(EjbDescriptor ejbDescriptor,
 				     ClassLoader loader,
                      DeploymentContext deployContext)

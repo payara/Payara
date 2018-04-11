@@ -52,17 +52,17 @@ import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 public class CacheMapping extends RuntimeDescriptor
 {
     
-    static public final String SERVLET_NAME = "ServletName";	// NOI18N
-    static public final String URL_PATTERN = "UrlPattern";	// NOI18N
-    static public final String CACHE_HELPER_REF = "CacheHelperRef";	// NOI18N
-    static public final String TIMEOUT = "Timeout";	// NOI18N
-    static public final String NAME = "Name";
-    static public final String SCOPE = "Scope";
-    static public final String REFRESH_FIELD = "RefreshField";	// NOI18N
-    static public final String HTTP_METHOD = "HttpMethod";	// NOI18N
-    static public final String DISPATCHER = "Dispatcher";	// NOI18N
-    static public final String KEY_FIELD = "KeyField";	// NOI18N
-    static public final String CONSTRAINT_FIELD = "ConstraintField";	// NOI18N
+    public static final String SERVLET_NAME = "ServletName";	// NOI18N
+    public static final String URL_PATTERN = "UrlPattern";	// NOI18N
+    public static final String CACHE_HELPER_REF = "CacheHelperRef";	// NOI18N
+    public static final String TIMEOUT = "Timeout";	// NOI18N
+    public static final String NAME = "Name";
+    public static final String SCOPE = "Scope";
+    public static final String REFRESH_FIELD = "RefreshField";	// NOI18N
+    public static final String HTTP_METHOD = "HttpMethod";	// NOI18N
+    public static final String DISPATCHER = "Dispatcher";	// NOI18N
+    public static final String KEY_FIELD = "KeyField";	// NOI18N
+    public static final String CONSTRAINT_FIELD = "ConstraintField";	// NOI18N
         
     public CacheMapping(CacheMapping other) {
 	super(other);

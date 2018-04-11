@@ -82,11 +82,11 @@ public class Vector
     /**
      * I18N message handler
      */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
                              "com.sun.jdo.spi.persistence.support.sqlstore.impl.Bundle", // NOI18N
                              Vector.class.getClassLoader());
 
-    private final static ResourceBundle messages1 = I18NHelper.loadBundle(
+    private static final ResourceBundle messages1 = I18NHelper.loadBundle(
                              "com.sun.jdo.spi.persistence.support.sqlstore.Bundle", // NOI18N
                              Vector.class.getClassLoader());
 
@@ -148,6 +148,7 @@ public class Vector
      * @exception  ArrayIndexOutOfBoundsException  if the index was invalid.
      * @see java.util.Vector
      */  
+    @Override
     public synchronized void setElementAt(Object obj, int index) {
 
 	throwUnsupportedOption();
@@ -196,6 +197,7 @@ public class Vector
      * @exception  ArrayIndexOutOfBoundsException  if the index was invalid.
      * @see java.util.Vector
      */  
+    @Override
     public synchronized void removeElementAt(int index) {
 
 	throwUnsupportedOption();
@@ -222,6 +224,7 @@ public class Vector
      * @exception  ArrayIndexOutOfBoundsException  if the index was invalid.
      * @see java.util.Vector
      */  
+    @Override
     public synchronized void insertElementAt(Object obj, int index) {
 	if (allowNulls == false && obj == null)
         {
@@ -256,6 +259,7 @@ public class Vector
      * @param   obj   the component to be added.
      * @see java.util.Vector 
      */  
+    @Override
     public synchronized void addElement(Object obj) {
 	if (allowNulls == false && obj == null)
         {
@@ -292,6 +296,7 @@ public class Vector
      *          vector; <code>false</code> otherwise.
      * @see java.util.Vector
      */   
+    @Override
     public synchronized boolean removeElement(Object obj) {
 	
         // Because java.util.Vector.removeElement(Object) calls internally removeElementAt(int)
@@ -320,6 +325,7 @@ public class Vector
      *
      * @see java.util.Vector
      */ 
+    @Override
     public synchronized void removeAllElements() {
 	// Mark the field as dirty
 	StateManager stateManager = this.makeDirty();
@@ -352,6 +358,7 @@ public class Vector
      * @exception IllegalArgumentException fromIndex &gt; toIndex.
      * @see java.util.Vector 
      */  
+    @Override
     public synchronized Object set(int index, Object element) {
 
 	throwUnsupportedOption();
@@ -399,6 +406,7 @@ public class Vector
      * @return true (as per the general contract of Collection.add).
      * @see java.util.Vector
      */  
+    @Override
     public synchronized boolean add(Object o) {
 	if (allowNulls == false && o == null)
         {
@@ -437,6 +445,7 @@ public class Vector
      * @return true if the Vector contained the specified element.
      * @see java.util.Vector 
      */   
+    @Override
     public boolean remove(Object o) {
         return this.removeElement(o);
     }
@@ -450,6 +459,7 @@ public class Vector
      *            (index &lt; 0 || index &gt; size()).
      * @see java.util.Vector
      */  
+    @Override
     public void add(int index, Object element) {
         this.insertElementAt(element, index);
     }
@@ -464,6 +474,7 @@ public class Vector
      *            &lt; 0 || index &gt;= size()).
      * @see java.util.Vector 
      */   
+    @Override
     public synchronized Object remove(int index) {
 
 	throwUnsupportedOption();
@@ -488,6 +499,7 @@ public class Vector
      *   
      * @see java.util.Vector
      */ 
+    @Override
     public void clear() {
         this.removeAllElements();
     }
@@ -500,6 +512,7 @@ public class Vector
      * @param c elements to be inserted into this Vector.
      * @see java.util.Vector
      */  
+    @Override
     public synchronized boolean addAll(Collection c) {
 	if (allowNulls == false && c.contains(null))
         {
@@ -547,6 +560,7 @@ public class Vector
      * @return true if this Vector changed as a result of the call.
      * @see java.util.Vector 
      */   
+    @Override
     public synchronized boolean removeAll(Collection c) {
         boolean modified = false;
 	// Mark the field as dirty
@@ -584,6 +598,7 @@ public class Vector
      *            &lt; 0 || index &gt; size()).
      * @see java.util.Vector  
      */   
+    @Override
     public synchronized boolean addAll(int index, Collection c) {
 	if (allowNulls == false && c.contains(null))
         {
@@ -631,6 +646,7 @@ public class Vector
      * @return true if this Vector changed as a result of the call.
      * @see java.util.Vector   
      */    
+    @Override
     public synchronized boolean retainAll(Collection c)  {
 	boolean modified = false;
         java.util.Vector v = new java.util.Vector();
@@ -672,6 +688,7 @@ public class Vector
      * objects. In contrast to Object.clone(), this method must not throw a
      * CloneNotSupportedException.
      */
+    @Override
     public Object clone()
     {
         Vector obj = (Vector)super.clone();
@@ -684,6 +701,7 @@ public class Vector
      * Creates and returns a copy of this object without resetting the owner and field value.
      *   
      */  
+    @Override
     public Object cloneInternal()
     {
         return super.clone();
@@ -692,6 +710,7 @@ public class Vector
     /**
      * Cleans removed and added lists     
      */  
+    @Override
     public void reset()
     {
         added.clear();
@@ -699,15 +718,18 @@ public class Vector
     }
 
 
+    @Override
 	public void markDeferred()
 	{
 	}
 
+    @Override
 	public boolean isDeferred()
 	{
 		return false;
 	}
 
+    @Override
 	public void applyDeferredUpdates(Collection c)
 	{
 		super.addAll(c);
@@ -716,6 +738,7 @@ public class Vector
     /**
      * Adds an object to the list without recording changes
      */
+    @Override
     public void addInternal(Object o)
     {
         super.addElement(o);
@@ -725,6 +748,7 @@ public class Vector
     /** 
      * Adds a Collection to the list without recording changes 
      */ 
+    @Override
     public void addAllInternal(Collection c) 
     { 
         super.addAll(c); 
@@ -733,6 +757,7 @@ public class Vector
     /**
      * @inheritDoc
      */
+    @Override
     public void addToBaseCollection(Object o)
     {
         super.add(o);
@@ -741,6 +766,7 @@ public class Vector
     /**
      * Removes from this collection without recording changes
      */ 
+    @Override
     public void removeAllInternal(Collection c) 
     { 
         super.removeAll(c); 
@@ -751,6 +777,7 @@ public class Vector
      * 
      * @return added	collection of added elements
      */ 
+    @Override
     public Collection getAdded()
     {
         return (Collection)added;
@@ -761,6 +788,7 @@ public class Vector
      *  
      * @return removed	collection of removed elements 
      */ 
+    @Override
     public Collection getRemoved() 
     { 
         return (Collection)removed; 
@@ -769,6 +797,7 @@ public class Vector
     /**
      * Clears Collection without notifing the owner
      */  
+    @Override
     public void clearInternal()
     {
 	//Cannot call super.clear() as it internally calls removeAllElements()
@@ -789,6 +818,7 @@ public class Vector
     /**
      * Removes an element without notifing the owner
      */  
+    @Override
     public void removeInternal(Object o)
     {
         int i = super.indexOf(o);
@@ -798,6 +828,7 @@ public class Vector
     /**
      * Nullifies references to the owner Object and Field 
      */
+    @Override
     public void unsetOwner() 
     { 
         this.owner = null; 
@@ -812,6 +843,7 @@ public class Vector
      * 
      * @return owner object 
      */ 
+    @Override
     public Object getOwner()
     {    
         return this.owner; 
@@ -822,6 +854,7 @@ public class Vector
      *   
      * @return field name as java.lang.String
      */  
+    @Override
     public String getFieldName()
     {
         return this.fieldName;
@@ -830,6 +863,7 @@ public class Vector
     /**
      * Marks object dirty
      */
+    @Override
     public StateManager makeDirty()
     {
 	if (owner != null)
@@ -847,6 +881,7 @@ public class Vector
     /**
      * Apply changes (can be a no-op)
      */  
+    @Override
     public void applyUpdates(StateManager sm, boolean modified)
     {
  
@@ -875,6 +910,7 @@ public class Vector
      * @param elementType the new element type as Class, or null if type
      * is not to be checked.
      */
+    @Override
     public void setOwner(Object owner, String fieldName, Class elementType) {
 
         if (this.owner != null) {

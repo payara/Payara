@@ -85,7 +85,7 @@ import org.glassfish.hk2.api.PerLookup;
 })
 public class ListTimers implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ListTimers.class);
 
     @Param(primary=true, optional=true,

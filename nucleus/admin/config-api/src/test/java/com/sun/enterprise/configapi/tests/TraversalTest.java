@@ -59,6 +59,7 @@ public class TraversalTest extends ConfigApiTest {
 
     static Logger logger = Logger.getAnonymousLogger();
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }

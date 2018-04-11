@@ -151,6 +151,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * the last save, NOT the version number of the memory representation.
 	 * @return version number
 	 */
+        @Override
 	public int getVersionNumber () { return versionNo; }
 
 	/** Set the version number of this MappingClassElement.
@@ -163,6 +164,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * @see #getVersionNumber
 	 * @return true if it is in need of updating, false otherwise
 	 */
+        @Override
 	public boolean hasOldVersionNumber ()
 	{
 		return (getVersionNumber() < CURRENT_VERSION_NO);
@@ -186,6 +188,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * @param o old value
 	 * @param n new value
 	 */
+        @Override
 	protected final void firePropertyChange (String name, Object o, Object n)
 	{
 		// even though o == null and n == null will signify a change, that 
@@ -207,6 +210,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * @param n new value
 	 * @exception PropertyVetoException when the change is vetoed by a listener
 	 */
+        @Override
 	protected final void fireVetoableChange (String name, Object o, Object n)
 		throws PropertyVetoException
 	{
@@ -253,6 +257,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * @return <code>true</code> if there have been (property) changes to this 
 	 * class, <code>false</code> otherwise.
 	 */
+        @Override
 	public boolean isModified () { return _isModified; }
 
 	/** Set the modified flag for this mapping class to flag.  This is usually 
@@ -261,6 +266,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * @param flag if <code>true</code>, this class is marked as modified;
 	 * if <code>false</code>, it is marked as unmodified.
 	 */
+        @Override
 	public void setModified (boolean flag)
 	{
 		boolean oldFlag = isModified();
@@ -283,6 +289,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * {@link #VERSION_CONSISTENCY}.
 	 * The default is {@link #NONE_CONSISTENCY}.
 	 */
+        @Override
 	public int getConsistencyLevel () { return _consistencyLevel; }
 
 	/** Set the consistency level of this mapping class.
@@ -295,6 +302,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * {@link #VERSION_CONSISTENCY}.
 	 * @exception ModelException if impossible.
 	 */
+        @Override
 	public void setConsistencyLevel (int level)  throws ModelException
 	{
 		Integer old = new Integer(getConsistencyLevel());
@@ -316,6 +324,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * database used by the tables mapped to this mapping class.
 	 * @return the name of the database root for this mapping class
 	 */
+        @Override
 	public String getDatabaseRoot () { return _databaseRoot; }
 
 	/** Set the database root for this MappingClassElement.
@@ -324,6 +333,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * @param root the new database root
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setDatabaseRoot (SchemaElement root) throws ModelException
 	{
 		String old = getDatabaseRoot();
@@ -345,6 +355,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * class.
 	 * @return the meta data tables for this mapping class
 	 */
+        @Override
 	public ArrayList getTables ()
 	{
 		if (_tables == null)
@@ -358,6 +369,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * @param name name of the table to find.
 	 * @return the meta data table whose name matches the name parameter
 	 */
+        @Override
 	public MappingTableElement getTable (String name)
 	{
 		Iterator tableIterator = getTables().iterator();
@@ -381,6 +393,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * table.
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void addTable (TableElement table) throws ModelException
 	{
 		if (table != null)
@@ -466,6 +479,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * @param table table element to be used as the primary table.
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setPrimaryTable (TableElement table) throws ModelException
 	{
 		ArrayList tables = getTables();
@@ -538,6 +552,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * @param table table element to be used as a secondary table.
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public MappingReferenceKeyElement addSecondaryTable (MappingTableElement 
 		parentTable, TableElement table) throws ModelException
 	{
@@ -601,6 +616,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * @param table mapping table element to be removed from this mapping class.
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void removeTable (MappingTableElement table) throws ModelException
 	{
 		if (table != null)
@@ -681,6 +697,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * class.  This list includes both local and relationship fields.
 	 * @return the mapping fields in this mapping class
 	 */
+        @Override
 	public ArrayList getFields ()
 	{
 		if (_fields == null)
@@ -694,6 +711,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * @param name name of the field to find.
 	 * @return the mapping field whose name matches the name parameter
 	 */
+        @Override
 	public MappingFieldElement getField (String name)
 	{
 		Iterator fieldIterator = getFields().iterator();
@@ -714,6 +732,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * @param field field element to be added
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void addField (MappingFieldElement field) throws ModelException
 	{
 		ArrayList fields = getFields();
@@ -737,6 +756,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * @param field field element to be removed
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void removeField (MappingFieldElement field) throws ModelException
 	{
 		try
@@ -762,6 +782,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * level is {@link #VERSION_CONSISTENCY}.
 	 * @return the version fields in this mapping class
 	 */
+        @Override
 	public List getVersionFields ()
 	{
 		List versionFields = new ArrayList();
@@ -788,6 +809,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * <code>false</code> if access to a non-fetched field will result in an
 	 * exception.  The default is <code>true</code>.
 	 */
+        @Override
 	public boolean isNavigable () { return ((_properties & NAVIGABLE) > 0); }
 
 	/** Set the navigable flag for this mapping class to flag.
@@ -796,6 +818,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * exception.
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setNavigable (boolean flag) throws ModelException
 	{
 		Boolean old = JavaTypeHelper.valueOf(isNavigable());
@@ -1058,6 +1081,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * (version number checking) and conversion after unarchiving.
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void postUnarchive () throws ModelException
 	{
 		// check version number
@@ -1089,6 +1113,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	 * includes a throws clause (ModelException), but the actual implementation
 	 * does not throw an exception.
 	 */
+        @Override
 	public void preArchive ()
 	{
 		// update version number

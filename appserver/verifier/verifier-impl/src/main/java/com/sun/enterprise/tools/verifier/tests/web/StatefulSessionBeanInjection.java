@@ -59,7 +59,7 @@ import java.util.Set;
  */
 public class StatefulSessionBeanInjection extends WebTest implements WebCheck  {
     
-    final static String className = StatefulSessionBeanInjection.class.getName();
+    static final String className = StatefulSessionBeanInjection.class.getName();
     
     public Result check(WebBundleDescriptor descriptor) {
         // initialize the result object

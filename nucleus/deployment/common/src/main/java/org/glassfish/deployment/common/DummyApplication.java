@@ -56,10 +56,12 @@ public class DummyApplication implements ApplicationContainer<Object> {
     public DummyApplication() {
     }
 
+    @Override
     public boolean start(ApplicationContext startupContext) {
         return true;
     }
 
+    @Override
     public boolean stop(ApplicationContext stopContext) {
         return true;
     }
@@ -69,6 +71,7 @@ public class DummyApplication implements ApplicationContainer<Object> {
      *
      * @return true if suspending was successful, false otherwise.
      */
+    @Override
     public boolean suspend() {
         return false;
     }
@@ -78,6 +81,7 @@ public class DummyApplication implements ApplicationContainer<Object> {
      *
      * @return true if resumption was successful, false otherwise.
      */
+    @Override
     public boolean resume() {
         return false;
     }
@@ -87,6 +91,7 @@ public class DummyApplication implements ApplicationContainer<Object> {
      *
      * @return ClassLoader for this app
      */
+    @Override
     public ClassLoader getClassLoader() {
         return null;
     }
@@ -100,6 +105,7 @@ public class DummyApplication implements ApplicationContainer<Object> {
      *
      * @return deployment descriptor if they exist or null if not
      */
+    @Override
     public Object getDescriptor() {
         return null;
     }

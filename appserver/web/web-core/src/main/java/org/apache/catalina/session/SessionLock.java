@@ -286,6 +286,7 @@ public class SessionLock {
     /**
      * returns String representation of the state of the lock
      */     
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(50);
         sb.append("_lockType= " + _lockType);

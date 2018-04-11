@@ -26,6 +26,8 @@ import java.beans.PropertyVetoException;
 public interface HeapMemoryUsageChecker extends Checker, ThresholdDiagnosticsChecker {
 
     @Attribute(defaultValue = "HEAP")
+    @Override
     String getName();
+    @Override
     void setName(String value) throws PropertyVetoException;
 }

@@ -56,6 +56,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 public class JmsHostWrapper implements JmsHost {
     private String name;
+    @Override
     public String getName(){
         return name;
     }
@@ -66,6 +67,7 @@ public class JmsHostWrapper implements JmsHost {
      * @param value allowed object is
      *              {@link String }
      */
+    @Override
     public void setName(String value) throws PropertyVetoException
     {
         name = value;
@@ -78,6 +80,7 @@ public class JmsHostWrapper implements JmsHost {
      *         {@link String }
      */
     private String host;
+    @Override
     public String getHost(){
         return host;
     }
@@ -90,6 +93,7 @@ public class JmsHostWrapper implements JmsHost {
      * @param value allowed object is
      *              {@link String }
      */
+    @Override
     public void setHost(String value) throws PropertyVetoException{
         host = value;
     }
@@ -103,6 +107,7 @@ public class JmsHostWrapper implements JmsHost {
      *         {@link String }
      */
     private String port = "7676";
+    @Override
     public String getPort()
     {
         return port;
@@ -114,6 +119,7 @@ public class JmsHostWrapper implements JmsHost {
      * @param value allowed object is
      *              {@link String }
      */
+    @Override
     public void setPort(String value) throws PropertyVetoException{
         //only set the value if it is not null. Incase it is null, use the default value
         if (value != null)
@@ -128,6 +134,7 @@ public class JmsHostWrapper implements JmsHost {
      * @return true or false
      */
     private String lazyInit;
+    @Override
     public String getLazyInit(){
         return lazyInit;
     }
@@ -139,6 +146,7 @@ public class JmsHostWrapper implements JmsHost {
      *
      * @param value true if the listener is to be started lazily; false otherwise
      */
+    @Override
     public void setLazyInit(String value){
         lazyInit = value;
     }
@@ -153,6 +161,7 @@ public class JmsHostWrapper implements JmsHost {
      */
 
     private String adminUserName;
+    @Override
     public String getAdminUserName(){
         return adminUserName;
     }
@@ -163,6 +172,7 @@ public class JmsHostWrapper implements JmsHost {
      * @param value allowed object is
      *              {@link String }
      */
+    @Override
     public void setAdminUserName(String value) throws PropertyVetoException
     {
         adminUserName = value;
@@ -177,15 +187,18 @@ public class JmsHostWrapper implements JmsHost {
      *         {@link String }
      */
      private String adminPassword;
+    @Override
     public String getAdminPassword(){
            return  adminPassword;
     }
 
+    @Override
     public void setAdminPassword(String value) throws PropertyVetoException
     {
         adminPassword = value;
     }
 
+    @Override
     public List<Property> getProperty()
     {
           return null;
@@ -211,6 +224,7 @@ public class JmsHostWrapper implements JmsHost {
             throw new UnsupportedOperationException();
     }
 
+    @Override
     public ConfigBeanProxy deepCopy(ConfigBeanProxy proxy)
     {
 
@@ -233,26 +247,32 @@ public class JmsHostWrapper implements JmsHost {
     }
     /* The following methods are dummy methods required as part of the interface implentation.*/
 
+    @Override
     public <T extends ConfigBeanProxy> T createChild(Class<T> type) throws TransactionFailure
     {
         return null;
     }
+    @Override
     public ConfigBeanProxy getParent()
     {
         return null;
     }
+    @Override
     public <T extends ConfigBeanProxy> T getParent(Class<T> type){
         return null;
     }
     public void injectedInto(Object target)    {
         //do nothing
     }
+    @Override
     public String getPropertyValue (String str, String str2){
         return null;
     }
+    @Override
     public String getPropertyValue (String str){
         return null;
     }
+    @Override
      public Property getProperty (String str){
         return null;
     }

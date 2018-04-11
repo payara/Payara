@@ -84,17 +84,17 @@ public class FilterEnhancer
     extends Support
     implements ByteCodeEnhancer
 {
-    static public final String DO_SIMPLE_TIMING
+    public static final String DO_SIMPLE_TIMING
     = "ByteCodeEnhancer.doSimpleTiming";//NOI18N
-    static public final String VERBOSE_LEVEL
+    public static final String VERBOSE_LEVEL
     = "ByteCodeEnhancer.verboseLevel";//NOI18N
-    static public final String VERBOSE_LEVEL_QUIET
+    public static final String VERBOSE_LEVEL_QUIET
     = "quiet";//NOI18N
-    static public final String VERBOSE_LEVEL_WARN
+    public static final String VERBOSE_LEVEL_WARN
     = "warn";//NOI18N
-    static public final String VERBOSE_LEVEL_VERBOSE
+    public static final String VERBOSE_LEVEL_VERBOSE
     = "verbose";//NOI18N
-    static public final String VERBOSE_LEVEL_DEBUG
+    public static final String VERBOSE_LEVEL_DEBUG
     = "debug";//NOI18N
 
     /* Central repository for the options selected by
@@ -228,6 +228,7 @@ public class FilterEnhancer
     /**
      * Enhances a given class according to the JDO meta-data.
      */
+    @Override
     public boolean enhanceClassFile(InputStream         inByteCode,
                                     OutputStreamWrapper outByteCode)
         throws EnhancerUserException, EnhancerFatalError
@@ -361,6 +362,7 @@ public class FilterEnhancer
      *
      *********************************************************************/
 
+    @Override
     public boolean enhanceClassFile (InputStream  in,
                                      OutputStream out)
                    throws EnhancerUserException,

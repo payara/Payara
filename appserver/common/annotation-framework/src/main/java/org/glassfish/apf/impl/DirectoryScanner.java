@@ -67,6 +67,7 @@ public class DirectoryScanner extends JavaEEScanner implements Scanner {
     Set<String> entries = new HashSet<String>();
     ClassLoader classLoader = null;
 
+    @Override
     public void process(File directory, Object bundleDesc, ClassLoader classLoader)
             throws IOException {
         AnnotationUtils.getLogger().finer("dir is " + directory);
@@ -84,6 +85,7 @@ public class DirectoryScanner extends JavaEEScanner implements Scanner {
     private void init(File top, File directory) throws java.io.IOException {
         
         File[] dirFiles = directory.listFiles(new FileFilter() {
+                @Override
                 public boolean accept(File pathname) {
                     return pathname.getAbsolutePath().endsWith(".class");
                 }
@@ -93,6 +95,7 @@ public class DirectoryScanner extends JavaEEScanner implements Scanner {
         }
         
         File[] subDirs = directory.listFiles(new FileFilter() {
+                @Override
                 public boolean accept(File pathname) {
                     return pathname.isDirectory();
                 }
@@ -106,6 +109,7 @@ public class DirectoryScanner extends JavaEEScanner implements Scanner {
         return entries;
     }
 
+    @Override
     public ClassLoader getClassLoader() {
         if (classLoader==null) {
             final URL[] urls = new URL[1];
@@ -125,6 +129,7 @@ public class DirectoryScanner extends JavaEEScanner implements Scanner {
         return classLoader;
     }
 
+    @Override
     public Set<Class> getElements() {
         
         

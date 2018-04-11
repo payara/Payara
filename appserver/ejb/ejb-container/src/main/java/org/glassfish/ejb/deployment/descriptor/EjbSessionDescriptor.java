@@ -144,6 +144,7 @@ public class EjbSessionDescriptor extends EjbDescriptor
         }
     }
 
+    @Override
     public boolean isPassivationCapable() {
         return isPassivationCapable;
     }
@@ -160,6 +161,7 @@ public class EjbSessionDescriptor extends EjbDescriptor
     /**
 	* Returns the type of this bean - always "Session".
 	*/
+    @Override
     public String getType() {
 	    return TYPE;
     }
@@ -169,6 +171,7 @@ public class EjbSessionDescriptor extends EjbDescriptor
     * the bean is stateless or stateful.
     **/
     
+    @Override
     public String getSessionType() {
 	    if (this.isStateless()) {
 	        return STATELESS;
@@ -257,6 +260,7 @@ public class EjbSessionDescriptor extends EjbDescriptor
 	/**
 	* Sets my type
 	*/
+    @Override
     public void setType(String type) {
 	    throw new IllegalArgumentException(localStrings.getLocalString(
 								   "enterprise.deployment.exceptioncannotsettypeofsessionbean",
@@ -268,6 +272,7 @@ public class EjbSessionDescriptor extends EjbDescriptor
 	/**
 	*  Sets the transaction type for this bean. Must be either BEAN_TRANSACTION_TYPE or CONTAINER_TRANSACTION_TYPE.
 	*/
+    @Override
     public void setTransactionType(String transactionType) {
 	    boolean isValidType = (BEAN_TRANSACTION_TYPE.equals(transactionType) ||
 				CONTAINER_TRANSACTION_TYPE.equals(transactionType));
@@ -286,14 +291,17 @@ public class EjbSessionDescriptor extends EjbDescriptor
 	/**
 	* Returns true if I am describing a stateless session bean.
 	*/
+    @Override
     public boolean isStateless() {
 	    return isStateless;
     }
     
+    @Override
     public boolean isStateful() {
         return isStateful;
     }
 
+    @Override
     public boolean isSingleton() {
         return isSingleton;
     }
@@ -346,6 +354,7 @@ public class EjbSessionDescriptor extends EjbDescriptor
         return statefulTimeoutUnit;
     }
 
+    @Override
     public boolean hasRemoveMethods() {
         return (!removeMethods.isEmpty());
     }
@@ -478,6 +487,7 @@ public class EjbSessionDescriptor extends EjbDescriptor
         return (getPrePassivateDescriptors().size() > 0);
     }
 
+    @Override
     public Vector getPossibleTransactionAttributes() {
         Vector txAttributes = super.getPossibleTransactionAttributes();
 
@@ -709,6 +719,7 @@ public class EjbSessionDescriptor extends EjbDescriptor
 	/**
 	* Returns a formatted String of the attributes of this object.
 	*/
+    @Override
     public void print(StringBuffer toStringBuffer) {
 	    toStringBuffer.append("Session descriptor");
 	    toStringBuffer.append("\n sessionType ").append(getSessionType());
@@ -719,6 +730,7 @@ public class EjbSessionDescriptor extends EjbDescriptor
      * Return the fully-qualified portable JNDI name for a given
      * client view (Remote, Local, or no-interface).  
      */
+    @Override
     public String getPortableJndiName(String clientViewType) {
         String appName = null;
 

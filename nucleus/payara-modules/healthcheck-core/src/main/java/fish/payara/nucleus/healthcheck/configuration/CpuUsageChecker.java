@@ -26,6 +26,8 @@ import java.beans.PropertyVetoException;
 public interface CpuUsageChecker extends Checker, ThresholdDiagnosticsChecker {
 
     @Attribute(defaultValue = "CPUC")
+    @Override
     String getName();
+    @Override
     void setName(String value) throws PropertyVetoException;
 }

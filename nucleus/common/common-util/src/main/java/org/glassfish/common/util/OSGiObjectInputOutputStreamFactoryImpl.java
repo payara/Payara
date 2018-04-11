@@ -129,6 +129,7 @@ public class OSGiObjectInputOutputStreamFactoryImpl
         return bundle.getSymbolicName() + ":" + bundle.getVersion();
     }
 
+    @Override
     public ObjectInputStream createObjectInputStream(InputStream in)
             throws IOException
     {
@@ -136,6 +137,7 @@ public class OSGiObjectInputOutputStreamFactoryImpl
         return new OSGiObjectInputStream(in, loader);
     }
 
+    @Override
     public ObjectOutputStream createObjectOutputStream(OutputStream out)
             throws IOException
     {
@@ -181,6 +183,7 @@ public class OSGiObjectInputOutputStreamFactoryImpl
         }
     }
 
+    @Override
     public Class<?> resolveClass(ObjectInputStream in, final ObjectStreamClass desc)
             throws IOException, ClassNotFoundException
     {
@@ -206,6 +209,7 @@ public class OSGiObjectInputOutputStreamFactoryImpl
         return null;
     }
 
+    @Override
     public void annotateClass(ObjectOutputStream out, Class<?> cl) throws IOException
     {
         String key = NOT_A_BUNDLE_KEY;
@@ -239,6 +243,7 @@ public class OSGiObjectInputOutputStreamFactoryImpl
             try {
                 return (Class) java.security.AccessController.doPrivileged(
                         new java.security.PrivilegedExceptionAction() {
+                            @Override
                             public java.lang.Object run() throws ClassNotFoundException {
                                 return b.loadClass(cname);
                             }

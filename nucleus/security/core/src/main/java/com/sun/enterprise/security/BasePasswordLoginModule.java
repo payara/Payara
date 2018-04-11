@@ -109,7 +109,8 @@ public abstract class BasePasswordLoginModule implements LoginModule
      *    this particular LoginModule.
      *
      */
-    final public void initialize(Subject subject, CallbackHandler callbackHandler,
+    @Override
+    public final void initialize(Subject subject, CallbackHandler callbackHandler,
                            Map sharedState, Map options)
     {
         _subject = subject;
@@ -136,7 +137,8 @@ public abstract class BasePasswordLoginModule implements LoginModule
      * @throws LoginException Thrown if login failed, or on other problems.
      *
      */
-    final public boolean login() throws LoginException
+    @Override
+    public final boolean login() throws LoginException
     {
         //Extract the username and password
         extractCredentials();
@@ -160,6 +162,7 @@ public abstract class BasePasswordLoginModule implements LoginModule
      * @throws LoginException If commit fails.
      *
      */
+    @Override
     public boolean commit() throws LoginException
     {
         if (_succeeded == false) {
@@ -217,7 +220,8 @@ public abstract class BasePasswordLoginModule implements LoginModule
      * Abort the authentication process.
      *
      */
-    final public boolean abort() throws LoginException
+    @Override
+    public final boolean abort() throws LoginException
     {
         if(_logger.isLoggable(Level.FINE)){
             _logger.log(Level.FINE,"JAAS authentication aborted.");
@@ -249,7 +253,8 @@ public abstract class BasePasswordLoginModule implements LoginModule
      * Log out the subject.
      *
      */
-    final public boolean logout() throws LoginException
+    @Override
+    public final boolean logout() throws LoginException
     {
         if(_logger.isLoggable(Level.FINE)){
             _logger.log(Level.FINE, "JAAS logout for: " + _subject.toString());
@@ -314,7 +319,7 @@ public abstract class BasePasswordLoginModule implements LoginModule
      * Method to extract container-provided username and password
      * @throws javax.security.auth.login.LoginException
      */
-    final public void extractCredentials() throws LoginException {
+    public final void extractCredentials() throws LoginException {
 
         if (_subject == null) {
             String msg = sm.getString("pwdlm.noinfo");

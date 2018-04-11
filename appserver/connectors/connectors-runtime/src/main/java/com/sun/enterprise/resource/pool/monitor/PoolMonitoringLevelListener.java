@@ -72,6 +72,7 @@ public class PoolMonitoringLevelListener implements PostConstruct, PreDestroy, C
 
     private static final Logger _logger = LogDomains.getLogger(PoolMonitoringLevelListener.class, LogDomains.RSR_LOGGER);
 
+    @Override
     public void postConstruct() {
         String instanceName = serverEnvironment.getInstanceName();
         Server server = domain.getServerNamed(instanceName);
@@ -91,6 +92,7 @@ public class PoolMonitoringLevelListener implements PostConstruct, PreDestroy, C
         }
     }
 
+    @Override
     public void preDestroy() {
         if(monitoringLevel != null){
             ObservableBean bean = (ObservableBean) ConfigSupport.getImpl((ConfigBeanProxy)monitoringLevel);
@@ -98,6 +100,7 @@ public class PoolMonitoringLevelListener implements PostConstruct, PreDestroy, C
         }
     }
 
+    @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         return ConfigSupport.sortAndDispatch(events, new PropertyChangeHandler(events), _logger);
     }
@@ -116,6 +119,7 @@ public class PoolMonitoringLevelListener implements PostConstruct, PreDestroy, C
              * @param changedType     type of the configuration object
              * @param changedInstance changed instance.
              */
+            @Override
             public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
                 NotProcessed np = null;
 

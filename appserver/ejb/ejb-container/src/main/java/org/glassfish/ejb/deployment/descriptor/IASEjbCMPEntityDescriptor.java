@@ -523,6 +523,7 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
      * getEjbClassName() and the method is redefined in IASEjbCMPDescriptor.
      *
      */
+    @Override
     public String getEjbImplClassName() {
         if (ejbImplClassName == null) {
             String packageName = getPackageName(getEjbClassName());

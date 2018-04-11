@@ -52,10 +52,12 @@ import javax.resource.spi.ConnectionEvent;
 public abstract class ConnectionEventListener implements javax.resource.spi.ConnectionEventListener,
         BadConnectionEventListener {
 
+    @Override
     public void badConnectionClosed(ConnectionEvent ce) {
         //do nothing as of now
     }
 
+    @Override
     public void connectionAbortOccurred(ConnectionEvent ce) {
         //Do nothing.
     }

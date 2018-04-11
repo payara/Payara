@@ -42,7 +42,7 @@ package org.glassfish.web.deployment.runtime;
 
 public class Valve extends WebPropertyContainer {
 
-    static public final String CLASS_NAME = "ClassName";
+    public static final String CLASS_NAME = "ClassName";
 
 }
 

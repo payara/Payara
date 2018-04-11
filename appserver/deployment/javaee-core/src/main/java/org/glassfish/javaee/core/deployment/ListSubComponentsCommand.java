@@ -133,6 +133,7 @@ public class ListSubComponentsCommand implements AdminCommand {
 
     private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListSubComponentsCommand.class);    
 
+    @Override
     public void execute(AdminCommandContext context) {
         
         final ActionReport report = context.getActionReport();

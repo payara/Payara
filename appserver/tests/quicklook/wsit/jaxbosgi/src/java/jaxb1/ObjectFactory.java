@@ -61,8 +61,8 @@ public class ObjectFactory
 
     private static java.util.HashMap defaultImplementations = new java.util.HashMap(16, 0.75F);
     private static java.util.HashMap rootTagMap = new java.util.HashMap();
-    public final static jaxb1.impl.runtime.GrammarInfo grammarInfo = new jaxb1.impl.runtime.GrammarInfoImpl(rootTagMap, defaultImplementations, (jaxb1.ObjectFactory.class));
-    public final static java.lang.Class version = (jaxb1.impl.JAXBVersion.class);
+    public static final jaxb1.impl.runtime.GrammarInfo grammarInfo = new jaxb1.impl.runtime.GrammarInfoImpl(rootTagMap, defaultImplementations, (jaxb1.ObjectFactory.class));
+    public static final java.lang.Class version = (jaxb1.impl.JAXBVersion.class);
 
     static {
         defaultImplementations.put((jaxb1.Catalog.class), "jaxb1.impl.CatalogImpl");

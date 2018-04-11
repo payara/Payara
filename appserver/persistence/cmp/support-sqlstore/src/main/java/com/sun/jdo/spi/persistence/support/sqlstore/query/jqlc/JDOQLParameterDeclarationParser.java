@@ -61,7 +61,7 @@ public class JDOQLParameterDeclarationParser
     /**
      * I18N support
      */
-    protected final static ResourceBundle messages = I18NHelper.loadBundle(
+    protected static final ResourceBundle messages = I18NHelper.loadBundle(
         JDOQLParameterDeclarationParser.class);
 
     /**
@@ -72,6 +72,7 @@ public class JDOQLParameterDeclarationParser
      * @return an iterator over parameter types
      * @exception JDOQueryException indicates a parse error
      */
+    @Override
     public Iterator parameterTypeIterator(String text)
     {
         return new ParameterTypeIterator(parse(text));
@@ -138,6 +139,7 @@ public class JDOQLParameterDeclarationParser
          * Returns <code>true</code> if the iteration has more elements.
          * @return <code>true</code> if the iterator has more elements.
          */
+        @Override
         public boolean hasNext()
         {
             return (current != null);
@@ -150,6 +152,7 @@ public class JDOQLParameterDeclarationParser
          * @return the type of the next parameter declaration.
          * @exception NoSuchElementException iteration has no more elements.
          */
+        @Override
         public Object next()
         {
             // check whether iteration has no more elements
@@ -178,6 +181,7 @@ public class JDOQLParameterDeclarationParser
          * @exception UnsupportedOperationException remove is not supported
          * by this Iterator
          */
+        @Override
         public void remove() { throw new UnsupportedOperationException(); }
 
         /**

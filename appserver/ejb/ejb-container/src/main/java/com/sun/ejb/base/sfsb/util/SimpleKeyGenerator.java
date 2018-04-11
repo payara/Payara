@@ -87,6 +87,7 @@ public class SimpleKeyGenerator
      * Create and return the sessionKey.
      * @return the sessionKey object
      */
+    @Override
     public SimpleSessionKey createSessionKey() {
         int id = 0;
         synchronized (this) {
@@ -107,6 +108,7 @@ public class SimpleKeyGenerator
      * @return A byte[] representation of the key. The byte[] 
      * could be created using serialization.
      */
+    @Override
     public byte[] keyToByteArray(SimpleSessionKey key) {
         byte[] array = new byte[20];
 
@@ -125,6 +127,7 @@ public class SimpleKeyGenerator
       * o1.hashCode() == o2.hashCode()
       * @return the sessionKey object
       */
+    @Override
     public SimpleSessionKey byteArrayToKey(byte[] array, int startIndex, int len) {
         long myPrefix = Utility.bytesToLong(array, startIndex);
         long mySuffix = Utility.bytesToLong(array, startIndex+8);
@@ -181,10 +184,12 @@ public class SimpleKeyGenerator
 	    this.id = id;
 	}
 
+        @Override
 	public int hashCode() {
 	    return (int) id;
 	}
 
+        @Override
 	public boolean equals(Object otherObj) {
 	    if (otherObj instanceof SimpleSessionKey) {
 		SimpleSessionKey other = (SimpleSessionKey) otherObj;
@@ -197,6 +202,7 @@ public class SimpleKeyGenerator
 	    return false;
 	}
 
+        @Override
 	public String toString() {
 	    StringBuffer sbuf = new StringBuffer();
 	    sbuf.append(Long.toHexString(prefix)).append("-")

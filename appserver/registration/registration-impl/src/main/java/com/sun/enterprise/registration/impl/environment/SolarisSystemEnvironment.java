@@ -182,6 +182,7 @@ class SolarisSystemEnvironment extends SystemEnvironment {
         // reuse the output
         if (kstatCpuInfo == null) {
             Thread thread = new Thread() {
+                @Override
                 public void run() {
                     kstatCpuInfo = getCommandOutput("/usr/bin/kstat", "cpu_info");
                 }

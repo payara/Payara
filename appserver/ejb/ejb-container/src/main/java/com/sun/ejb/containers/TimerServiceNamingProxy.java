@@ -65,6 +65,7 @@ public class TimerServiceNamingProxy
     static final String EJB_TIMER_SERVICE
             = "java:comp/TimerService";
 
+    @Override
     public Object handle(String name) throws NamingException {
 
         if (EJB_TIMER_SERVICE.equals(name)) {

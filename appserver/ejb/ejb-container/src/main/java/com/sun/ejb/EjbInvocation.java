@@ -329,6 +329,7 @@ public class EjbInvocation
         this.doTxProcessingInPostInvoke = doTxProcessingInPostInvoke;
     }
 
+    @Override
     public EjbInvocation clone() {
         EjbInvocation newInv = (EjbInvocation) super.clone();
 
@@ -365,6 +366,7 @@ public class EjbInvocation
      * implementation should use this method rather than directly
      * accessing the ejb field.
      */
+    @Override
     public Object getJaccEjb() {
         Object bean = null;
         if( container != null ) {
@@ -402,6 +404,7 @@ public class EjbInvocation
     /**
      * @return Returns the ejbCtx.
      */
+    @Override
     public EJBContext getEJBContext() {
         return (EJBContext) this.context;
     }
@@ -448,6 +451,7 @@ public class EjbInvocation
      * Called by the UserTransaction implementation to verify 
      * access to the UserTransaction methods.
      */
+    @Override
     public boolean userTransactionMethodsAllowed() {
         return ((Container) container).userTransactionMethodsAllowed(this);
     }
@@ -456,6 +460,7 @@ public class EjbInvocation
      * Called by the UserTransaction lookup to verify 
      * access to the UserTransaction itself.
      */
+    @Override
     public void userTransactionLookupAllowed() throws NameNotFoundException {
         ((BaseContainer) container).checkUserTransactionLookup(this);
     }
@@ -463,6 +468,7 @@ public class EjbInvocation
     /**
      * Called by the UserTransaction when transaction is started.
      */
+    @Override
     public void doAfterUtxBegin() {
         ((Container) container).doAfterBegin(this);
     }
@@ -492,6 +498,7 @@ public class EjbInvocation
     /**
      * @return Returns the bean instance.
      */
+    @Override
     public Object getTarget() {
         return this.ejb;
     }
@@ -499,6 +506,7 @@ public class EjbInvocation
     /**
      * @return Returns the timer instance.
      */
+    @Override
     public Object getTimer() {
         return timer;
     }
@@ -509,6 +517,7 @@ public class EjbInvocation
      *         method being invoked.  For lifecycle callback methods, 
      *         returns null.
      */
+    @Override
     public Method getMethod() {
         return getBeanMethod();
     }
@@ -516,6 +525,7 @@ public class EjbInvocation
         return this.beanMethod;
     }
 
+    @Override
     public Constructor getConstructor() {
         return null;
     }
@@ -526,6 +536,7 @@ public class EjbInvocation
      * getParameters() returns the values to which the parameters 
      * have been set.
      */
+    @Override
     public Object[] getParameters() {
         return this.methodParams;
     }
@@ -534,6 +545,7 @@ public class EjbInvocation
      * Set the parameters that will be used to invoke the business method.
      *
      */
+    @Override
     public void setParameters(Object[] params) {
         InterceptorUtil.checkSetParameters(params, getMethod());
         this.methodParams = params;
@@ -543,6 +555,7 @@ public class EjbInvocation
      * Method takes Object to decouple EJBInvocation interface
      * from jaxws (which isn't available in all profiles).
      */
+    @Override
     public void setWebServiceContext(Object webServiceContext) {
         // shouldn't be necessary, but to be safe
         if (webServiceContext instanceof WebServiceContext) {
@@ -553,6 +566,7 @@ public class EjbInvocation
     /**
      * @return Returns the contextMetaData.
      */
+    @Override
     public Map<String, Object> getContextData() {
         if (this.contextData == null) {
             if (webServiceContext != null)
@@ -567,6 +581,7 @@ public class EjbInvocation
      * This is for EJB JAXWS only.
      * @param message  an unconsumed message
      */
+    @Override
     public <T> void setMessage(T message) {
         this.message = message;
     }
@@ -575,6 +590,7 @@ public class EjbInvocation
      * This is for EJB JAXWS only.
      * @return the JAXWS message
      */
+    @Override
     public Object getMessage() {
         return this.message;
     }
@@ -599,6 +615,7 @@ public class EjbInvocation
     /* (non-Javadoc)
      * @see javax.interceptor.InvocationContext#proceed()
      */
+    @Override
     public Object proceed()
         throws Exception
     {
@@ -624,6 +641,7 @@ public class EjbInvocation
      * are a large number. 
      * @return
      */
+    @Override
     public String toString() {
 
         StringBuffer sbuf = new StringBuffer();
@@ -648,10 +666,12 @@ public class EjbInvocation
     }
 
     // Implementation of AroundInvokeContext
+    @Override
     public Object[] getInterceptorInstances() {
         return  ((EJBContextImpl)context).getInterceptorInstances();
     }
 
+    @Override
     public  Object invokeBeanMethod() throws Throwable {
         return ((BaseContainer) container).invokeBeanMethod(this);
     }
@@ -664,14 +684,17 @@ public class EjbInvocation
         return ((BaseContainer)container).getSecurityManager();
     }
 
+    @Override
     public boolean isAWebService() {
         return this.isWebService;
     }
 
+    @Override
     public Object[] getMethodParams() {
         return this.methodParams;
     }
 
+    @Override
     public boolean authorizeWebService(Method m) throws Exception {
         Exception ie = null;
         if (isAWebService()) {
@@ -704,30 +727,37 @@ public class EjbInvocation
     * Implements the  method in org.glassfish.ejb.api.EJBInvocation
     * @return true if the SecurityManager reports that the caller is in role
     */
+    @Override
    public boolean isCallerInRole(String role) {
        return getEjbSecurityManager().isCallerInRole(role);
    } 
 
+    @Override
     public void setWebServiceTie(Object tie) {
         webServiceTie = tie;
     }
 
+    @Override
     public Object getWebServiceTie() {
         return webServiceTie;
     }
 
+    @Override
     public void setWebServiceMethod(Method method) {
         webServiceMethod = method;
     }
 
+    @Override
     public Method getWebServiceMethod() {
         return webServiceMethod;
     }
 
+    @Override
     public void setMessageContext(MessageContext msgContext) {
        messageContext = msgContext;
     }
 
+    @Override
    public ResourceHandler getResourceHandler() {
        ResourceHandler rh = super.getResourceHandler();
        if (rh == null) {

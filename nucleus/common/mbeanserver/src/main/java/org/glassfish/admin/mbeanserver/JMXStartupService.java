@@ -158,6 +158,7 @@ public final class JMXStartupService implements PostConstruct {
 
     private final class ShutdownListener implements EventListener {
 
+        @Override
         public void event(EventListener.Event event) {
             if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
                 shutdown();
@@ -175,6 +176,7 @@ public final class JMXStartupService implements PostConstruct {
         }
     }
 
+    @Override
     public void postConstruct() {
         mBootAMX = BootAMX.create(mHabitat, mMBeanServer);
 
@@ -222,6 +224,7 @@ public final class JMXStartupService implements PostConstruct {
             mBooter = booter;
         }
 
+        @Override
         public void run() {
             mBooter.bootAMX();
         }
@@ -338,6 +341,7 @@ public final class JMXStartupService implements PostConstruct {
 
         private final List<JMXConnectorServer> mConnectorServers = new ArrayList<JMXConnectorServer>();
 
+        @Override
         public void run() {
             synchronized (service.lock) {
                 for (final JmxConnector c : mConfiguredConnectors) {

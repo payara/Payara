@@ -114,6 +114,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
         this.factory = factory;
     }
 
+    @Override
     public BackingStoreFactory getBackingStoreFactory() {
         return factory;
     }
@@ -147,6 +148,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
         return value;
     }
 
+    @Override
     public void remove(K sessionKey) {
         remove(sessionKey.toString());
     }
@@ -194,11 +196,13 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
         }
     }
 
+    @Override
     public int removeExpired() {
         return removeExpired(defaultMaxIdleTimeoutInSeconds * 1000L);
     }
 
     //TODO: deprecate after next shoal integration   
+    @Override
     public int removeExpired(long idleForMillis) {
         long threshold = System.currentTimeMillis() - idleForMillis;
         int expiredSessions = 0;
@@ -272,6 +276,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
         updateTimestamp(k, timeStamp);
     }
     
+    @Override
     public void updateTimestamp(K sessionKey, long time)
             throws BackingStoreException {
         if (logger.isLoggable(TRACE_LEVEL)) {
@@ -316,6 +321,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
         } else {
             success = (Boolean) java.security.AccessController.doPrivileged(
                     new java.security.PrivilegedAction() {
+                        @Override
                         public java.lang.Object run() {
                             return Boolean.valueOf(file.delete());
                         }

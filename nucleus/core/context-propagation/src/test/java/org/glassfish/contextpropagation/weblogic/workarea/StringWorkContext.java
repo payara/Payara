@@ -60,9 +60,12 @@ public class StringWorkContext implements PrimitiveWorkContext, Serializable
     this.str = str;
   }
 
+  @Override
   public String toString() { return str; }
+  @Override
   public Object get() { return str; }
 
+  @Override
   public boolean equals(Object obj) {
     if (obj instanceof StringWorkContext) {
       return ((StringWorkContext)obj).str.equals(str);
@@ -70,10 +73,12 @@ public class StringWorkContext implements PrimitiveWorkContext, Serializable
     return false;
   }
   
+  @Override
   public void writeContext(WorkContextOutput out) throws IOException {
     out.writeUTF(str);
   }
   
+  @Override
   public void readContext(WorkContextInput in) throws IOException {
     str = in.readUTF();
   }

@@ -66,19 +66,19 @@ import org.w3c.dom.Node;
 @Service
 public class EjbBundleNode extends AbstractBundleNode<EjbBundleDescriptorImpl> {
 
-    public final static XMLElement tag = new XMLElement(EjbTagNames.EJB_BUNDLE_TAG);
-    public final static String PUBLIC_DTD_ID = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN";
-    public final static String PUBLIC_DTD_ID_12 = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 1.1//EN";
+    public static final XMLElement tag = new XMLElement(EjbTagNames.EJB_BUNDLE_TAG);
+    public static final String PUBLIC_DTD_ID = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN";
+    public static final String PUBLIC_DTD_ID_12 = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 1.1//EN";
     
     /** The system ID of an ejb-jar document.*/
-    public final static String SYSTEM_ID = "http://java.sun.com/dtd/ejb-jar_2_0.dtd";
-    public final static String SYSTEM_ID_12 = "http://java.sun.com/dtd/ejb-jar_1_1.dtd";
-    public final static String SCHEMA_ID_21 = "ejb-jar_2_1.xsd";
-    public final static String SCHEMA_ID_30 = "ejb-jar_3_0.xsd";
-    public final static String SCHEMA_ID_31 = "ejb-jar_3_1.xsd";
-    public final static String SCHEMA_ID = "ejb-jar_3_2.xsd";
-    public final static String SPEC_VERSION = "3.2";
-    private final static List<String> systemIDs = initSystemIDs();
+    public static final String SYSTEM_ID = "http://java.sun.com/dtd/ejb-jar_2_0.dtd";
+    public static final String SYSTEM_ID_12 = "http://java.sun.com/dtd/ejb-jar_1_1.dtd";
+    public static final String SCHEMA_ID_21 = "ejb-jar_2_1.xsd";
+    public static final String SCHEMA_ID_30 = "ejb-jar_3_0.xsd";
+    public static final String SCHEMA_ID_31 = "ejb-jar_3_1.xsd";
+    public static final String SCHEMA_ID = "ejb-jar_3_2.xsd";
+    public static final String SPEC_VERSION = "3.2";
+    private static final List<String> systemIDs = initSystemIDs();
 
    /**
     * register this node as a root node capable of loading entire DD files

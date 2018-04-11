@@ -99,6 +99,7 @@ public class ResourceAdapterImpl implements javax.resource.spi.ResourceAdapter {
      * @throws <code>NotSupportedException</code>
      *
      */
+    @Override
     public void endpointActivation(MessageEndpointFactory mef, ActivationSpec as) throws NotSupportedException {
         throw new NotSupportedException("This method is not supported for this JDBC connector");
     }
@@ -109,6 +110,7 @@ public class ResourceAdapterImpl implements javax.resource.spi.ResourceAdapter {
      * @param mef <code>MessageEndpointFactory</code>
      * @param as  <code>ActivationSpec</code>
      */
+    @Override
     public void endpointDeactivation(MessageEndpointFactory mef, ActivationSpec as) {
 
     }
@@ -121,6 +123,7 @@ public class ResourceAdapterImpl implements javax.resource.spi.ResourceAdapter {
      * @throws <code>NotSupportedException</code>
      *
      */
+    @Override
     public XAResource[] getXAResources(ActivationSpec[] specs) throws NotSupportedException {
         throw new NotSupportedException("This method is not supported for this JDBC connector");
     }
@@ -130,6 +133,7 @@ public class ResourceAdapterImpl implements javax.resource.spi.ResourceAdapter {
      *
      * @param ctx <code>BootstrapContext</code>
      */
+    @Override
     public void start(BootstrapContext ctx) {
         this.bootstrapContext = ctx;
     }
@@ -137,6 +141,7 @@ public class ResourceAdapterImpl implements javax.resource.spi.ResourceAdapter {
     /**
      * Empty implementation of stop method
      */
+    @Override
     public void stop() {
         if(_logger.isLoggable(Level.FINEST)) {
             _logger.finest("Cancelling the timer");

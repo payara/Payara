@@ -70,6 +70,7 @@ public class BootstrapTest extends ConfigApiTest {
 
     @Service
     public static class RandomService implements RandomContract {
+        @Override
         public int add(int i, int j) {
             return i + j;
         }

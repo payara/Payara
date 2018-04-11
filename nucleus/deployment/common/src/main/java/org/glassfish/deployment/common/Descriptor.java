@@ -600,6 +600,7 @@ public class Descriptor extends DynamicAttributesDescriptor {
     /**
      * A String representation of this object.
      */
+    @Override
     public void print(StringBuffer sb) {
 
         if (displayNames != null) {

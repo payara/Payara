@@ -79,7 +79,7 @@ import javax.inject.Inject;
 })
 public class ListConnectorConnectionPools implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListConnectorConnectionPools.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListConnectorConnectionPools.class);    
 
     @Inject
     private Domain domain;
@@ -93,6 +93,7 @@ public class ListConnectorConnectionPools implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 

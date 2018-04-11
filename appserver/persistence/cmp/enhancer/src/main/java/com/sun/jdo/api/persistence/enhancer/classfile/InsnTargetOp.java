@@ -54,22 +54,27 @@ public class InsnTargetOp extends Insn {
 
   /* public accessors */
 
+  @Override
   public int nStackArgs() {
     return VMOp.ops[opcode()].nStackArgs();
   }
 
+  @Override
   public int nStackResults() {
     return VMOp.ops[opcode()].nStackResults();
   }
 
+  @Override
   public String argTypes() {
     return VMOp.ops[opcode()].argTypes();
   }
 
+  @Override
   public String resultTypes() {
     return VMOp.ops[opcode()].resultTypes();
   }
 
+  @Override
   public boolean branches() {
     return true;
   }
@@ -77,6 +82,7 @@ public class InsnTargetOp extends Insn {
   /**
    * Mark possible branch targets
    */
+  @Override
   public void markTargets() {
     targetOp.setBranchTarget();
   }
@@ -90,6 +96,7 @@ public class InsnTargetOp extends Insn {
     
   /* package local methods */
 
+  @Override
   void print (PrintStream out, int indent) {
     ClassPrint.spaces(out, indent);
     /* print offset in non-relative form for readability */
@@ -97,6 +104,7 @@ public class InsnTargetOp extends Insn {
 		targetOp.offset());
   }
 
+  @Override
   int store(byte[] buf, int index) {
     buf[index++] = (byte) opcode();
     int off = targetOp.offset() - offset();
@@ -106,6 +114,7 @@ public class InsnTargetOp extends Insn {
       return storeShort(buf, index, (short)off);
   }
 
+  @Override
   int size() {
     if (opcode() == opc_goto_w || opcode() == opc_jsr_w)
       return 5;

@@ -50,13 +50,14 @@ import java.util.Map;
 
 public class DataSourceDefinitionNode extends DeploymentDescriptorNode<DataSourceDefinitionDescriptor> {
 
-    public final static XMLElement tag = new XMLElement(TagNames.DATA_SOURCE);
+    public static final XMLElement tag = new XMLElement(TagNames.DATA_SOURCE);
     private DataSourceDefinitionDescriptor descriptor = null;
     public DataSourceDefinitionNode() {
         registerElementHandler(new XMLElement(TagNames.RESOURCE_PROPERTY), ResourcePropertyNode.class,
                 "addDataSourcePropertyDescriptor");
     }
 
+    @Override
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
@@ -84,6 +85,7 @@ public class DataSourceDefinitionNode extends DeploymentDescriptorNode<DataSourc
     }
 
 
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, DataSourceDefinitionDescriptor dataSourceDesc) {
 
         Node node = appendChild(parent, nodeName);
@@ -117,6 +119,7 @@ public class DataSourceDefinitionNode extends DeploymentDescriptorNode<DataSourc
         return node;
     }
 
+    @Override
     public DataSourceDefinitionDescriptor getDescriptor() {
         if(descriptor == null){
             descriptor = new DataSourceDefinitionDescriptor();

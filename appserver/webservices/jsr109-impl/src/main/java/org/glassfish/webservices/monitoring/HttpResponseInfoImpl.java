@@ -61,6 +61,7 @@ public class HttpResponseInfoImpl extends HttpTransportInfo
     /**
      * @return the http servlet response
      */
+    @Override
     public HttpServletResponse getResponse() {
         return response;
     }

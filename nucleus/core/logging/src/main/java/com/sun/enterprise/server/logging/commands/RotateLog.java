@@ -83,8 +83,9 @@ public class RotateLog implements AdminCommand {
     @Param(optional = true)
     String target = SystemPropertyConstants.DAS_SERVER_NAME;
 
-    final private static LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(RotateLog.class);
+    private final static LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(RotateLog.class);
 
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();        

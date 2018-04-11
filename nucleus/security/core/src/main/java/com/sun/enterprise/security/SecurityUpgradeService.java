@@ -88,6 +88,7 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
     private static final Logger _logger = SecurityLoggerInfo.getLogger();
 
     
+    @Override
     public void postConstruct()  {
         for (Config config : configs.getConfig()) {
             SecurityService service = config.getSecurityService();
@@ -126,6 +127,7 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
                             }
                         } else {
                             ConfigSupport.apply(new SingleConfigCode<AuthRealm>() {
+                                @Override
                                 public Object run(AuthRealm updatedAuthRealm) throws PropertyVetoException, TransactionFailure {
                                     Property prop1 = updatedAuthRealm.createChild(Property.class);
                                     prop1.setName(PARAM_DIGEST_ALGORITHM);

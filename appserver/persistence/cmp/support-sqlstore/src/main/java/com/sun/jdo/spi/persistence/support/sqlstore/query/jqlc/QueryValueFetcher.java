@@ -60,7 +60,7 @@ import org.glassfish.persistence.common.I18NHelper;
 public class QueryValueFetcher implements ValueFetcher 
 {
     /** I18N support */
-    protected final static ResourceBundle messages =
+    protected static final ResourceBundle messages =
         I18NHelper.loadBundle(QueryValueFetcher.class);
 
     /** The actual parameter values. */
@@ -80,6 +80,7 @@ public class QueryValueFetcher implements ValueFetcher
      * @param whichOne the parameter index
      * @return the parameter value
      */
+    @Override
     public Object getValue(int whichOne) 
     {
         if (parameters == null || whichOne >= parameters.length) 

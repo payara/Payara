@@ -180,15 +180,18 @@ public final class ClientSecurityContext extends AbstractSecurityContext {
      * 
      * @return The caller Principal. 
      */
+    @Override
     public Principal getCallerPrincipal() {
 	return initiator;
     }
 
     
+    @Override
     public Subject getSubject() {
 	return subject;
     }
 
+    @Override
     public String toString() {
 	return "ClientSecurityContext[ " + "Initiator: " + initiator +
 	    "Subject " + subject + " ]";
@@ -209,15 +212,18 @@ public final class ClientSecurityContext extends AbstractSecurityContext {
         return false;
     }
 
+    @Override
     public AppServSecurityContext newInstance(String userName, Subject subject, String realm) {
         //TODO:V3 ignoring realm in this case
         return new ClientSecurityContext(userName, subject);
     }
 
+    @Override
     public AppServSecurityContext newInstance(String userName, Subject subject) {
         return new ClientSecurityContext(userName, subject);
     }
 
+    @Override
     public void setCurrentSecurityContext(AppServSecurityContext context) {
         if (context instanceof ClientSecurityContext) {
             setCurrent((ClientSecurityContext)context);
@@ -226,14 +232,17 @@ public final class ClientSecurityContext extends AbstractSecurityContext {
         throw new IllegalArgumentException("Expected ClientSecurityContext, found " + context);
     }
 
+    @Override
     public AppServSecurityContext getCurrentSecurityContext() {
          return getCurrent();
     }
 
+    @Override
     public void setUnauthenticatedSecurityContext() {
         throw new UnsupportedOperationException("Not supported yet in V3.");
     }
 
+    @Override
     public void setSecurityContextWithPrincipal(Principal principal) {
         throw new UnsupportedOperationException("Not supported yet in V3.");
     }

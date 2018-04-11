@@ -89,6 +89,7 @@ public class TransactionNamingProxy
     static final String APPSERVER_TRANSACTION_MGR
             = "java:appserver/TransactionManager";
 
+    @Override
     public Object handle(String name) throws NamingException {
 
         if (USER_TX.equals(name)) {

@@ -92,10 +92,12 @@ public abstract class AbstractSessionContextImpl
         this.instanceKey = instanceKey;
     }
 
+    @Override
     public String toString() {
         return ejbName + "; id: " + instanceKey;
     }
 
+    @Override
     public TimerService getTimerService() throws IllegalStateException {
 
         // Instance key is first set between after setSessionContext and
@@ -108,6 +110,7 @@ public abstract class AbstractSessionContextImpl
         return new EJBTimerServiceWrapper(timerService, this);
     }
 
+    @Override
     public UserTransaction getUserTransaction()
             throws IllegalStateException {
         // The state check ensures that an exception is thrown if this
@@ -120,6 +123,7 @@ public abstract class AbstractSessionContextImpl
         return ((BaseContainer) getContainer()).getUserTransaction();
     }
 
+    @Override
     public MessageContext getMessageContext() {
         InvocationManager invManager = EjbContainerUtilImpl.getInstance().getInvocationManager();
         try {
@@ -138,6 +142,7 @@ public abstract class AbstractSessionContextImpl
         }
     }
 
+    @Override
     public <T> T getBusinessObject(Class<T> businessInterface)
             throws IllegalStateException {
 
@@ -202,6 +207,7 @@ public abstract class AbstractSessionContextImpl
         return businessObject;
     }
 
+    @Override
     public Class getInvokedBusinessInterface()
             throws IllegalStateException {
 
@@ -235,6 +241,7 @@ public abstract class AbstractSessionContextImpl
         return businessInterface;
     }
 
+    @Override
     public boolean wasCancelCalled() {
 
         try {
@@ -262,6 +269,7 @@ public abstract class AbstractSessionContextImpl
                                         "outside an ejb invocation");
     }
 
+    @Override
     protected void checkAccessToCallerSecurity()
             throws IllegalStateException {
         if (state == BeanState.CREATED) {
@@ -270,6 +278,7 @@ public abstract class AbstractSessionContextImpl
 
     }
 
+    @Override
     public void checkTimerServiceMethodAccess()
             throws IllegalStateException {
         // checks that apply to both stateful AND stateless

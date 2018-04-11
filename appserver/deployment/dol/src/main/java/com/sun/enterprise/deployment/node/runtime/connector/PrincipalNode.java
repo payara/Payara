@@ -62,6 +62,7 @@ public class PrincipalNode extends RuntimeDescriptorNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {    
 	RuntimeDescriptor descriptor = (RuntimeDescriptor) getDescriptor();
 	if (descriptor==null) {

@@ -71,6 +71,7 @@ public class IntegralType
      * @param value value to be converted
      * @return converted value
      */
+    @Override
     public Number getValue(Number value)
     {
         Number ret = null;
@@ -94,6 +95,7 @@ public class IntegralType
      * @param value value to be negated
      * @return -value
      */
+    @Override
     public Number negate(Number value)
     {
         Number ret = null;

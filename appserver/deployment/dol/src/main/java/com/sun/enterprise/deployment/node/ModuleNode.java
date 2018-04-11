@@ -68,6 +68,7 @@ public class ModuleNode extends DeploymentDescriptorNode {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */    
+    @Override
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
         table.put(ApplicationTagNames.ALTERNATIVE_DD, "setAlternateDescriptor");
@@ -81,6 +82,7 @@ public class ModuleNode extends DeploymentDescriptorNode {
      * @param element the xml element
      * @param value it's associated value
      */    
+    @Override
     public void setElementValue(XMLElement element, String value) {
         ModuleDescriptor descriptor = (ModuleDescriptor) getDescriptor();
          if (element.getQName().equals(ApplicationTagNames.WEB_URI)) {            

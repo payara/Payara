@@ -152,6 +152,7 @@ public class AContextImplContextPropagationIntegrationTest {
 
         for (int i = 0; i < 17; i++) {
             Thread thread = new Thread(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         String threadName = currentThread().getName();

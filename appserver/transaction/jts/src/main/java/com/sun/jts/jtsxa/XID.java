@@ -118,19 +118,19 @@ public class XID implements Xid {
     /**
      * The size of <b>data</b>.
      */
-    static private final int XIDDATASIZE= 128; // Size in bytes
+    private static final int XIDDATASIZE= 128; // Size in bytes
 
     /**
      * The maximum size of the global transaction identifier.
      */
-    static public  final int MAXGTRIDSIZE= 64; // Maximum size (in bytes) of gtrid
+    public static  final int MAXGTRIDSIZE= 64; // Maximum size (in bytes) of gtrid
 
     /**
      * The maximum size of the branch qualifier.
      */
-    static public  final int MAXBQUALSIZE= 64; // Maximum size (in bytes) of bqual
+    public static  final int MAXBQUALSIZE= 64; // Maximum size (in bytes) of bqual
 
-    static private final String hextab= "0123456789ABCDEF"/*#Frozen*/;
+    private static final String hextab= "0123456789ABCDEF"/*#Frozen*/;
 
     static Logger _logger = LogDomains.getLogger(XID.class, LogDomains.TRANSACTION_LOGGER);
 
@@ -230,6 +230,7 @@ public class XID implements Xid {
      * @return Returns true of the supplied object represents the same
      *                 global transaction as this, otherwise returns false.
      */
+    @Override
     public boolean equals(Object o) {
         XID               other;   // The "other" XID
         int               L;       // Combined gtrid_length + bqual_length
@@ -273,6 +274,7 @@ public class XID implements Xid {
      *
      * @return the computed hashcode
      */
+    @Override
     public int hashCode() {
         if (formatID == (-1)) {
             return (-1);
@@ -293,6 +295,7 @@ public class XID implements Xid {
      *
      * @return the string representation of this XID
      */
+    @Override
     public String toString() {
         /* toString() method is slightly expensive and this needs to be done because 
 	 * some of the drivers XAResource methods have the "trace("some thing " + xid)" 
@@ -341,6 +344,7 @@ public class XID implements Xid {
      *
      * @return the branch qualifier
      */
+    @Override
     public byte[] getBranchQualifier() {
         if (cachedBqual != null) {
             return cachedBqual;
@@ -456,10 +460,12 @@ public class XID implements Xid {
     // Addition by Tony Ng to make this class implements
     // javax.transaction.xa.Xid
 
+    @Override
     public int getFormatId() {
         return getFormatID();
     }
 
+    @Override
     public byte[] getGlobalTransactionId() {
         return getGlobalTransactionIdentifier();
     }

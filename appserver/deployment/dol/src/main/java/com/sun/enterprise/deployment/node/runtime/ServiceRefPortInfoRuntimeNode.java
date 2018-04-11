@@ -83,6 +83,7 @@ public class ServiceRefPortInfoRuntimeNode extends DeploymentDescriptorNode {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */    
+    @Override
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
         table.put(WebServicesTagNames.SERVICE_ENDPOINT_INTERFACE, 
@@ -97,6 +98,7 @@ public class ServiceRefPortInfoRuntimeNode extends DeploymentDescriptorNode {
      * @param value it's associated value
      */
 
+    @Override
     public void setElementValue(XMLElement element, String value) {
         String name = element.getQName();
         if (WebServicesTagNames.NAMESPACE_URI.equals(name)) {

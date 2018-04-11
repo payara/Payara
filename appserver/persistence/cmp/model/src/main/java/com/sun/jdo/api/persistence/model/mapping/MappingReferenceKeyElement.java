@@ -119,12 +119,14 @@ public interface MappingReferenceKeyElement
 	 * @param pair the pair to add
 	 * @throws ModelException if impossible
 	 */
+        @Override
 	public void addColumnPair (ColumnPairElement pair) throws ModelException;
 
 	/** Add some new column pairs to the holder.
 	 * @param pairs the column pairs to add
 	 * @throws ModelException if impossible
 	 */
+        @Override
 	public void addColumnPairs (ColumnPairElement[] pairs)
 		throws ModelException;
 
@@ -132,6 +134,7 @@ public interface MappingReferenceKeyElement
 	 * @param pair the column pair to remove
 	 * @throws ModelException if impossible
 	 */
+        @Override
 	public void removeColumnPair (ColumnPairElement pair)
 		throws ModelException;
 
@@ -139,6 +142,7 @@ public interface MappingReferenceKeyElement
 	 * @param pairs the column pairs to remove
 	 * @throws ModelException if impossible
 	 */
+        @Override
 	public void removeColumnPairs (ColumnPairElement[] pairs)
 		throws ModelException;
 
@@ -147,6 +151,7 @@ public interface MappingReferenceKeyElement
 	 * @param pairs the new column pairs
 	 * @throws ModelException if impossible
 	 */
+        @Override
 	public void setColumnPairs (ColumnPairElement[] pairs)
 		throws ModelException;
 }

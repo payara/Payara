@@ -56,6 +56,7 @@ public interface DebugState
             mStatus = status;
         }
 
+        @Override
         public boolean getDebug()
         {
             return (mStatus);

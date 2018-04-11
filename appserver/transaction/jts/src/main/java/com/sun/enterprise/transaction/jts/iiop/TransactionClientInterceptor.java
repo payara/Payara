@@ -67,6 +67,7 @@ public class TransactionClientInterceptor extends LocalObject
         tm = habitat.getService(JavaEETransactionManager.class);
     }
 
+    @Override
     public int compareTo(TransactionClientInterceptor o) {
 	int otherOrder = o.order;
 	
@@ -82,11 +83,13 @@ public class TransactionClientInterceptor extends LocalObject
      * Return the name of the interceptor.
      * @return the name of the interceptor.
      */
+    @Override
     public String name() { 
 	return name; 
     }
 
 
+    @Override
     public void send_request(ClientRequestInfo cri) {
 	// Check if there is an exportable transaction on current thread
 	Object target = cri.effective_target();
@@ -95,18 +98,23 @@ public class TransactionClientInterceptor extends LocalObject
 
     }
 
+    @Override
     public void destroy() {
     }
 
+    @Override
     public void send_poll(ClientRequestInfo cri) {
     }
 
+    @Override
     public void receive_reply(ClientRequestInfo cri) {
     }
 
+    @Override
     public void receive_exception(ClientRequestInfo cri) {
     }
 
+    @Override
     public void receive_other(ClientRequestInfo cri) {
     }
 }

@@ -163,6 +163,7 @@ public class ModelValidationException extends ModelException
 	* if the type is {@link #WARNING}
 	*
 	*/
+        @Override
 	public String getMessage ()
 	{
 		String message = super.getMessage();

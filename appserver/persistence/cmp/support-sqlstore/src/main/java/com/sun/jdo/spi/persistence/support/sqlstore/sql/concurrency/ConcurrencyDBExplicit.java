@@ -54,6 +54,7 @@ import com.sun.jdo.spi.persistence.support.sqlstore.sql.generator.SelectQueryPla
  */
 public class ConcurrencyDBExplicit extends ConcurrencyDBNative {
 
+    @Override
     public void select(SelectQueryPlan plan) {
         // Save the info that update lock is required in the queryplan.
         // This info would be used by SQLStoreManger::retrieve()

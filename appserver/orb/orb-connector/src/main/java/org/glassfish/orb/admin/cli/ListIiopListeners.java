@@ -90,7 +90,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 })
 public class ListIiopListeners implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ListIiopListeners.class);
 
     @Param( primary=true, name="target", optional=true,

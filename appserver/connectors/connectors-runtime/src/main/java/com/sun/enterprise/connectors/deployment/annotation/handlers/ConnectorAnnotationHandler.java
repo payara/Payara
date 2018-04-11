@@ -70,9 +70,10 @@ import org.jvnet.hk2.annotations.Service;
 @AnnotationHandlerFor(Connector.class)
 public class ConnectorAnnotationHandler extends AbstractHandler {
 
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ConnectorAnnotationHandler.class);
 
+    @Override
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();
         Connector connector = (Connector) element.getAnnotation();
@@ -298,6 +299,7 @@ public class ConnectorAnnotationHandler extends AbstractHandler {
     }
 
 
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return null;
     }

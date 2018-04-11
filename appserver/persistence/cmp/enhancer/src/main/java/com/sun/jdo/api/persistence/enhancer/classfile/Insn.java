@@ -47,12 +47,12 @@ import java.io.PrintStream;
  * sequence of instructions.
  */
 
-abstract public class Insn implements VMConstants {
+public abstract class Insn implements VMConstants {
   /* An instruction with no pc defined yet */
-  final static int NO_OFFSET = -1;
+  static final int NO_OFFSET = -1;
 
   /* A special magic opcode for branch target pseudo instructions */
-  final public static int opc_target = -1;
+  public static final int opc_target = -1;
 
   /* The opcode of this instruction */
   private int insnOpcode;
@@ -164,27 +164,27 @@ abstract public class Insn implements VMConstants {
   /**
    * How many words of stack operands does this instruction take?
    */
-  abstract public int nStackArgs();
+  public abstract int nStackArgs();
 
   /**
    * How many words of stack results does this instruction deposit?
    */
-  abstract public int nStackResults();
+  public abstract int nStackResults();
 
   /**
    * What are the types of the stack operands ?
    */
-  abstract public String argTypes();
+  public abstract String argTypes();
 
   /**
    * What are the types of the stack results?
    */
-  abstract public String resultTypes();
+  public abstract String resultTypes();
 
   /**
    * Does this instruction branch?
    */
-  abstract public boolean branches();
+  public abstract boolean branches();
 
   /**
    * Mark possible branch targets

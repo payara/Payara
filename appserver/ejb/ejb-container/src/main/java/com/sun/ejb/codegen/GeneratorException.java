@@ -59,6 +59,7 @@ public class GeneratorException extends java.lang.Exception {
      * Return the string representation of the exception.
      * @return the string representation of the exception.
      */
+    @Override
     public String toString() {
 	return reason;
     }

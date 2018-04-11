@@ -103,6 +103,7 @@ public class ObjectInputStreamWithLoader extends ObjectInputStream {
      *
      * @throws ClassNotFoundException if class can not be loaded
      */
+    @Override
     protected Class resolveClass(ObjectStreamClass classDesc)
             throws IOException, ClassNotFoundException {
 

@@ -67,7 +67,7 @@ class ASMClassFileLoader implements ClassFileLoader {
     private ClassLoader cl;
     private static String resourceBundleName = "com.sun.enterprise.tools.verifier.apiscan.LocalStrings";
     private static Logger logger = Logger.getLogger("apiscan.classfile", resourceBundleName); // NOI18N
-    private final static String myClassName = "ASMClassFileLoader"; // NOI18N
+    private static final String myClassName = "ASMClassFileLoader"; // NOI18N
     // cache of already loaded classes
     private Map<String, WeakReference<ClassFile>> loadedClassesCache =
             new HashMap<String, WeakReference<ClassFile>>();

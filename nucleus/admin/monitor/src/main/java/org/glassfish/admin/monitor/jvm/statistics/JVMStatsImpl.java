@@ -90,10 +90,12 @@ public class JVMStatsImpl implements MonitorContract {
 
     private final String name = "jvm";
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public ActionReport process(final ActionReport report, final String filter) {
 
         if (monitoringService != null) {

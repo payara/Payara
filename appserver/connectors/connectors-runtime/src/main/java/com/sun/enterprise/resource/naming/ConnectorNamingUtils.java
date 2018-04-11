@@ -92,7 +92,7 @@ public class ConnectorNamingUtils {
         return runtime;
     }
 
-    static private ServiceLocator getHabitat() {
+    private static ServiceLocator getHabitat() {
         ServiceLocator habitat = Globals.getStaticHabitat();
         StartupContext startupContext = new StartupContext();
         ServiceLocatorUtilities.addOneConstant(habitat, startupContext);

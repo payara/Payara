@@ -97,6 +97,7 @@ public final class AMXConfigStartupService
         //debug( "AMXStartupService.AMXStartupService()" );
     }
 
+    @Override
     public void postConstruct() {
         final TimingDelta delta = new TimingDelta();
 
@@ -111,6 +112,7 @@ public final class AMXConfigStartupService
         AMXLoggerInfo.getLogger().log(Level.FINE, "Initialized AMXConfig Startup service in {0} ms", delta.elapsedMillis());
     }
 
+    @Override
     public void preDestroy() {
         AMXLoggerInfo.getLogger().info(AMXLoggerInfo.stoppingAMX);
         unloadAMXMBeans();
@@ -132,6 +134,7 @@ public final class AMXConfigStartupService
         return ProxyFactory.getInstance(mMBeanServer).getProxy(getDomainConfig(), AMXProxy.class);
     }
     
+    @Override
     public synchronized ObjectName loadAMXMBeans() {
         if (mLoader == null) {
             //getDomainRootProxy().waitAMXReady();
@@ -145,6 +148,7 @@ public final class AMXConfigStartupService
         return getDomainConfig();
     }
 
+    @Override
     public synchronized void unloadAMXMBeans() {
         final AMXProxy domainConfigProxy = getDomainConfigProxy();
         if (domainConfigProxy != null) {

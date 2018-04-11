@@ -55,6 +55,7 @@ public class PersistentNewFlushed extends PersistentNew {
         stateType = P_NEW_FLUSHED;
     }
 
+    @Override
     public LifeCycleState transitionDeletePersistent() {
         return changeState(P_NEW_FLUSHED_DELETED);
     }

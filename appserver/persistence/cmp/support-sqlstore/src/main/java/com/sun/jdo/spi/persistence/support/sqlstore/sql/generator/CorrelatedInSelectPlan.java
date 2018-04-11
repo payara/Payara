@@ -67,6 +67,7 @@ public class CorrelatedInSelectPlan extends CorrelatedSelectPlan {
      * Add the fields joining the subquery to the list of selected fields.
      * The joined table is added as a side-effect.
      */
+    @Override
     protected void processFields() {
         List subqueryFieldsToSelect;
 
@@ -86,6 +87,7 @@ public class CorrelatedInSelectPlan extends CorrelatedSelectPlan {
      * No-Op. No join condition is added for correlated in selects,
      * as the queries are joined on the selected fields.
      */
+    @Override
     protected void doCorrelatedJoin() {}
 
 }

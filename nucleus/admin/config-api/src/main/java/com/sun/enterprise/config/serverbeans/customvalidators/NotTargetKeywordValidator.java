@@ -52,7 +52,7 @@ import java.util.HashSet;
  */
 public class NotTargetKeywordValidator implements ConstraintValidator<NotTargetKeyword, String> {
 
-    static private final HashSet<String> keywords = new HashSet<String>(5);
+    private static final HashSet<String> keywords = new HashSet<String>(5);
     static {
         // Add keywords here
         keywords.add("domain");

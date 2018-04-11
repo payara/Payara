@@ -79,21 +79,26 @@ public class ContainerUtilImpl
         return _util;
     }
 
+    @Override
     public InvocationManager getInvocationManager() {
         return invMgr;
     }
 
+    @Override
     public ComponentEnvManager getComponentEnvManager() {
         return compEnvMgr;
     }
 
+    @Override
     public CallFlowAgent getCallFlowAgent() {
         return callFlowAgent;
     }
+    @Override
     public Timer getTimer() {
         return _timer;
     }
 
+    @Override
     public void scheduleTask(Runnable runnable) {
         //TODO: Get hold of a worker threadpool and run this runnable
         //TODO: Should we take the ContextClassLoader as parameter
@@ -102,6 +107,7 @@ public class ContainerUtilImpl
     /**
      * The component is about to be removed from commission
      */
+    @Override
     public void preDestroy() {
         _timer.cancel();
     }

@@ -57,7 +57,7 @@ import java.lang.*;
  */
 public class ResourceAdapterConfigParserImpl implements ConnectorConfigParser {
 
-    //private final static Logger _logger = LogDomains.getLogger(ResourceAdapterConfigParserImpl.class, LogDomains.RSR_LOGGER);
+    //private static final Logger _logger = LogDomains.getLogger(ResourceAdapterConfigParserImpl.class, LogDomains.RSR_LOGGER);
 
     /**
      * Default constructor.
@@ -84,6 +84,7 @@ public class ResourceAdapterConfigParserImpl implements ConnectorConfigParser {
      * @throws ConnectorRuntimeException if moduleDir is null .
      *                                   If corresponding rar is not deployed i.e moduleDir is invalid.
      */
+    @Override
     public Properties getJavaBeanProps(ConnectorDescriptor desc,
                                        String connectionDefName, String rarName) throws ConnectorRuntimeException {
 
@@ -111,6 +112,7 @@ public class ResourceAdapterConfigParserImpl implements ConnectorConfigParser {
         return mergedVals;
     }
 
+    @Override
     public List<String> getConfidentialProperties(ConnectorDescriptor desc, String rarName, String... keyFields)
             throws ConnectorRuntimeException {
 

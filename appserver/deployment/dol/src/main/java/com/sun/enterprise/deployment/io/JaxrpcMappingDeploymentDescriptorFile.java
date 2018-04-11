@@ -63,6 +63,7 @@ public class JaxrpcMappingDeploymentDescriptorFile extends
      * @return the location of the DeploymentDescriptor file for a 
      * particular type of J2EE Archive
      */
+    @Override
     public String getDeploymentDescriptorPath() {
         // writing not supported.  always copied from input jar.
         return mappingFilePath;
@@ -81,6 +82,7 @@ public class JaxrpcMappingDeploymentDescriptorFile extends
      *
      * @param descriptor ignored
      */
+    @Override
     public RootXMLNode getRootXMLNode(JaxrpcMappingDescriptor descriptor) {
         return new JaxrpcMappingDescriptorNode();
     }    

@@ -63,18 +63,22 @@ public class PortInfoImpl implements PortInfo {
         this.serviceName = serviceName;
     }
 
+    @Override
     public String getBindingID() {
         return bindingId.toString();
     }
 
+    @Override
     public QName getPortName() {
         return portName;
     }
 
+    @Override
     public QName getServiceName() {
         return serviceName;
     }
     
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof PortInfo) {
             PortInfo info = (PortInfo) obj;
@@ -90,6 +94,7 @@ public class PortInfoImpl implements PortInfo {
     /**
      * Needed by JAXWS so PortInfoImpl can be used as a key in a map..
      */
+    @Override
     public int hashCode() {
         return bindingId.toString().hashCode();
     }    

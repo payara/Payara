@@ -80,12 +80,13 @@ import org.jvnet.hk2.annotations.Service;
 public class TransactionAttributeHandler extends AbstractAttributeHandler
         implements PostProcessor<EjbContext> {
 
-    private final static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
              new LocalStringManagerImpl(TransactionAttributeHandler.class);
     
     public TransactionAttributeHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
         
@@ -201,6 +202,7 @@ public class TransactionAttributeHandler extends AbstractAttributeHandler
      * require to be processed (if present) before it processes it's own 
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         
         return new Class[] {
@@ -209,6 +211,7 @@ public class TransactionAttributeHandler extends AbstractAttributeHandler
                 
     }
 
+    @Override
     protected boolean supportTypeInheritance() {
         return true;
     }
@@ -217,6 +220,7 @@ public class TransactionAttributeHandler extends AbstractAttributeHandler
      * Set the default value (from class type annotation) on all
      * methods that don't have a value.
      */
+    @Override
     public void postProcessAnnotation(AnnotationInfo ainfo, EjbContext ejbContext)
             throws AnnotationProcessorException {
         EjbDescriptor ejbDesc = (EjbDescriptor) ejbContext.getDescriptor();

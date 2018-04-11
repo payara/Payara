@@ -101,42 +101,51 @@ public class InstanceStats implements com.sun.enterprise.admin.monitor.stats.lb.
 	}
 
 	// This attribute is mandatory
+        @Override
 	public void setId(java.lang.String value) {
 		_Id = value;
 	}
 
+        @Override
 	public java.lang.String getId() {
 		return _Id;
 	}
 
 	// This attribute is mandatory
+        @Override
 	public void setHealth(java.lang.String value) {
 		_Health = value;
 	}
 
+        @Override
 	public java.lang.String getHealth() {
 		return _Health;
 	}
 
 	// This attribute is mandatory
+        @Override
 	public void setNumTotalRequests(java.lang.String value) {
 		_NumTotalRequests = value;
 	}
 
+        @Override
 	public java.lang.String getNumTotalRequests() {
 		return _NumTotalRequests;
 	}
 
 	// This attribute is mandatory
+        @Override
 	public void setNumActiveRequests(java.lang.String value) {
 		_NumActiveRequests = value;
 	}
 
+        @Override
 	public java.lang.String getNumActiveRequests() {
 		return _NumActiveRequests;
 	}
 
 	// This attribute is an array, possibly empty
+        @Override
 	public void setApplicationStats(boolean[] value) {
 		if (value == null)
 			value = new boolean[0];
@@ -146,10 +155,12 @@ public class InstanceStats implements com.sun.enterprise.admin.monitor.stats.lb.
 		}
 	}
 
+        @Override
 	public void setApplicationStats(int index, boolean value) {
 		_ApplicationStats.set(index, (value ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE));
 	}
 
+        @Override
 	public boolean[] getApplicationStats() {
 		boolean[] arr = new boolean[_ApplicationStats.size()];
 		for (int i = 0; i < arr.length; ++i) {
@@ -158,25 +169,30 @@ public class InstanceStats implements com.sun.enterprise.admin.monitor.stats.lb.
 		return arr;
 	}
 
+        @Override
 	public java.util.List fetchApplicationStatsList() {
 		return _ApplicationStats;
 	}
 
+        @Override
 	public boolean isApplicationStats(int index) {
 		return ((java.lang.Boolean)_ApplicationStats.get(index)).booleanValue();
 	}
 
 	// Return the number of applicationStats
+        @Override
 	public int sizeApplicationStats() {
 		return _ApplicationStats.size();
 	}
 
+        @Override
 	public int addApplicationStats(boolean value) {
 		_ApplicationStats.add((value ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE));
 		return _ApplicationStats.size()-1;
 	}
 
 	// Search from the end looking for @param value, and then remove it.
+        @Override
 	public int removeApplicationStats(boolean value) {
 		int pos = _ApplicationStats.indexOf((value ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE));
 		if (pos >= 0) {
@@ -186,86 +202,105 @@ public class InstanceStats implements com.sun.enterprise.admin.monitor.stats.lb.
 	}
 
 	// This attribute is mandatory
+        @Override
 	public void setApplicationStatsId(java.lang.String value) {
 		_ApplicationStatsId = value;
 	}
 
+        @Override
 	public java.lang.String getApplicationStatsId() {
 		return _ApplicationStatsId;
 	}
 
 	// This attribute is mandatory
+        @Override
 	public void setApplicationStatsAverageResponseTime(java.lang.String value) {
 		_ApplicationStatsAverageResponseTime = value;
 	}
 
+        @Override
 	public java.lang.String getApplicationStatsAverageResponseTime() {
 		return _ApplicationStatsAverageResponseTime;
 	}
 
 	// This attribute is mandatory
+        @Override
 	public void setApplicationStatsMinResponseTime(java.lang.String value) {
 		_ApplicationStatsMinResponseTime = value;
 	}
 
+        @Override
 	public java.lang.String getApplicationStatsMinResponseTime() {
 		return _ApplicationStatsMinResponseTime;
 	}
 
 	// This attribute is mandatory
+        @Override
 	public void setApplicationStatsMaxResponseTime(java.lang.String value) {
 		_ApplicationStatsMaxResponseTime = value;
 	}
 
+        @Override
 	public java.lang.String getApplicationStatsMaxResponseTime() {
 		return _ApplicationStatsMaxResponseTime;
 	}
 
 	// This attribute is mandatory
+        @Override
 	public void setApplicationStatsNumFailoverRequests(java.lang.String value) {
 		_ApplicationStatsNumFailoverRequests = value;
 	}
 
+        @Override
 	public java.lang.String getApplicationStatsNumFailoverRequests() {
 		return _ApplicationStatsNumFailoverRequests;
 	}
 
 	// This attribute is mandatory
+        @Override
 	public void setApplicationStatsNumErrorRequests(java.lang.String value) {
 		_ApplicationStatsNumErrorRequests = value;
 	}
 
+        @Override
 	public java.lang.String getApplicationStatsNumErrorRequests() {
 		return _ApplicationStatsNumErrorRequests;
 	}
 
 	// This attribute is mandatory
+        @Override
 	public void setApplicationStatsNumActiveRequests(java.lang.String value) {
 		_ApplicationStatsNumActiveRequests = value;
 	}
 
+        @Override
 	public java.lang.String getApplicationStatsNumActiveRequests() {
 		return _ApplicationStatsNumActiveRequests;
 	}
 
 	// This attribute is mandatory
+        @Override
 	public void setApplicationStatsNumIdempotentUrlRequests(java.lang.String value) {
 		_ApplicationStatsNumIdempotentUrlRequests = value;
 	}
 
+        @Override
 	public java.lang.String getApplicationStatsNumIdempotentUrlRequests() {
 		return _ApplicationStatsNumIdempotentUrlRequests;
 	}
 
 	// This attribute is mandatory
+        @Override
 	public void setApplicationStatsNumTotalRequests(java.lang.String value) {
 		_ApplicationStatsNumTotalRequests = value;
 	}
 
+        @Override
 	public java.lang.String getApplicationStatsNumTotalRequests() {
 		return _ApplicationStatsNumTotalRequests;
 	}
 
+        @Override
 	public void writeNode(java.io.Writer out, String nodeName, String indent) throws java.io.IOException {
 		out.write(indent);
 		out.write("<");
@@ -376,6 +411,7 @@ public class InstanceStats implements com.sun.enterprise.admin.monitor.stats.lb.
 		out.write("</"+nodeName+">\n");
 	}
 
+        @Override
 	public void readNode(org.w3c.dom.Node node) {
 		if (node.hasAttributes()) {
 			org.w3c.dom.NamedNodeMap attrs = node.getAttributes();
@@ -461,6 +497,7 @@ public class InstanceStats implements com.sun.enterprise.admin.monitor.stats.lb.
 		}
 	}
 
+        @Override
 	public void validate() throws com.sun.enterprise.admin.monitor.stats.lb.LoadBalancerStats.ValidateException {
 		boolean restrictionFailure = false;
 		// Validating property id
@@ -517,6 +554,7 @@ public class InstanceStats implements com.sun.enterprise.admin.monitor.stats.lb.
 		}
 	}
 
+        @Override
 	public void changePropertyByName(final String nameIn, Object value) {
 		if (nameIn == null) return;
         
@@ -558,6 +596,7 @@ public class InstanceStats implements com.sun.enterprise.admin.monitor.stats.lb.
 			throw new IllegalArgumentException(name+" is not a valid property name for InstanceStats");
 	}
 
+        @Override
 	public Object fetchPropertyByName(final String nameIn) {
         if ( nameIn == null ) {
             throw new IllegalArgumentException();
@@ -599,6 +638,7 @@ public class InstanceStats implements com.sun.enterprise.admin.monitor.stats.lb.
 	}
 
 	// Return an array of all of the properties that are beans and are set.
+        @Override
 	public com.sun.enterprise.admin.monitor.stats.lb.CommonBean[] childBeans(boolean recursive) {
 		java.util.List children = new java.util.LinkedList();
 		childBeans(recursive, children);
@@ -607,6 +647,7 @@ public class InstanceStats implements com.sun.enterprise.admin.monitor.stats.lb.
 	}
 
 	// Put all child beans into the beans list.
+        @Override
 	public void childBeans(boolean recursive, java.util.List beans) {
 	}
 

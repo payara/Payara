@@ -53,7 +53,7 @@ public class AutoPersistentNew extends LifeCycleState {
     /**
      * I18N message handler
      */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
             "com.sun.jdo.spi.persistence.support.sqlstore.Bundle", // NOI18N
             AutoPersistentNew.class.getClassLoader());
 
@@ -80,30 +80,37 @@ public class AutoPersistentNew extends LifeCycleState {
         stateType = AP_NEW;
     }
 
+    @Override
     public LifeCycleState transitionMakePersistent() {
         return changeState(P_NEW);
     }
 
+    @Override
     public LifeCycleState transitionDeletePersistent() {
         return changeState(AP_NEW_DELETED);
     }
 
+    @Override
     public LifeCycleState transitionFlushed() {
         return changeState(AP_NEW_FLUSHED);
     }
 
+    @Override
     public LifeCycleState transitionCommit(boolean retainValues) {
         return changeState(TRANSIENT);
     }
 
+    @Override
     public LifeCycleState transitionRollback(boolean retainValues) {
         return changeState(TRANSIENT);
     }
 
+    @Override
     public LifeCycleState transitionMakePending() {
         return changeState(AP_NEW_PENDING);
     }
 
+    @Override
     public boolean needsRestoreOnRollback(boolean retainValues) {
         //
         // This is a special case where retores doesn't depend on

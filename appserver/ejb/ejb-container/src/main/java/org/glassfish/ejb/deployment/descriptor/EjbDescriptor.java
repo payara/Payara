@@ -132,8 +132,8 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     private boolean localBean = false;
 
     // Used in <transaction-scope> element in XML
-    final public static String LOCAL_TRANSACTION_SCOPE = "Local";
-    final public static String DISTRIBUTED_TRANSACTION_SCOPE = "Distributed";
+    public static final String LOCAL_TRANSACTION_SCOPE = "Local";
+    public static final String DISTRIBUTED_TRANSACTION_SCOPE = "Distributed";
 
     protected String transactionType = null;
     protected boolean usesDefaultTransaction = false;
@@ -2791,7 +2791,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
          return methods;
     }
 
-    abstract public String getContainerFactoryQualifier();
+    public abstract String getContainerFactoryQualifier();
 
     /**
      * Return the set of method objects on my home and remote interfaces.

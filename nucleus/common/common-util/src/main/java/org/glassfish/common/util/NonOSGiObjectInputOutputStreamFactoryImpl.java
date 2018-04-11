@@ -48,6 +48,7 @@ import java.io.*;
 public class NonOSGiObjectInputOutputStreamFactoryImpl
         implements ObjectInputOutputStreamFactory
 {
+    @Override
     public ObjectInputStream createObjectInputStream(InputStream in)
             throws IOException
     {
@@ -55,18 +56,21 @@ public class NonOSGiObjectInputOutputStreamFactoryImpl
         return new ObjectInputStreamWithLoader(in, loader);
     }
 
+    @Override
     public ObjectOutputStream createObjectOutputStream(OutputStream out)
             throws IOException
     {
         return new ObjectOutputStream(out);
     }
 
+    @Override
     public Class<?> resolveClass(ObjectInputStream in, ObjectStreamClass desc)
             throws IOException, ClassNotFoundException
     {        
         return null;
     }
 
+    @Override
     public void annotateClass(ObjectOutputStream out, Class<?> cl) throws IOException
     {
         return;

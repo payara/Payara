@@ -78,7 +78,7 @@ public final class NotificationEmitterServiceTest
     }
 
 
-    private final static class testEmitListener
+    private static final class testEmitListener
             implements NotificationListener {
         static final String TEST_TYPE = "unittests.testEmitListener";
         private Notification mNotification;

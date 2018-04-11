@@ -50,7 +50,7 @@ import java.util.Enumeration;
  */
 
 public class ExceptionsAttribute extends ClassAttribute {
-    public final static String expectedAttrName = "Exceptions";//NOI18N
+    public static final String expectedAttrName = "Exceptions";//NOI18N
 
   /* The list of checked exceptions */
   private Vector exceptionTable;
@@ -99,6 +99,7 @@ public class ExceptionsAttribute extends ClassAttribute {
     return new ExceptionsAttribute(attrName, excTable);
   }
 
+    @Override
   void write(DataOutputStream out) throws IOException {
     out.writeShort(attrName().getIndex());
     out.writeInt(2+2*exceptionTable.size());
@@ -107,6 +108,7 @@ public class ExceptionsAttribute extends ClassAttribute {
       out.writeShort(((ConstClass) exceptionTable.elementAt(i)).getIndex());
   }
 
+    @Override
   void print(PrintStream out, int indent) {
     ClassPrint.spaces(out, indent);
     out.print("Exceptions:");//NOI18N

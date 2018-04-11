@@ -58,9 +58,11 @@ public class JDBCRealmPropertyCheckValidator
         "com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm";
     private static final String DEFAULT_DIGEST_ALGORITHM = "MD5";
 
+    @Override
     public void initialize(final JDBCRealmPropertyCheck fqcn) {
     }
 
+    @Override
     public boolean isValid(final AuthRealm realm,
         final ConstraintValidatorContext constraintValidatorContext) {
 

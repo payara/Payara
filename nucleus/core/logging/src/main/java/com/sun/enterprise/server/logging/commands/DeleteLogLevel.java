@@ -96,8 +96,9 @@ public class DeleteLogLevel implements AdminCommand {
     @Inject
     Domain domain;
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteLogLevel.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteLogLevel.class);
 
+    @Override
     public void execute(AdminCommandContext context) {
 
 

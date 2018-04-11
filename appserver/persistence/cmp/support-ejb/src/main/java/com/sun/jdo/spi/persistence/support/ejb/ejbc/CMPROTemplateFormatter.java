@@ -65,15 +65,15 @@ import java.util.StringTokenizer;
  */
 public class CMPROTemplateFormatter {
 
-    private final static String templateFile =
+    private static final String templateFile =
         "com/sun/jdo/spi/persistence/support/ejb/ejbc/CMPROTemplates.properties"; // NOI18N
 
     // Strings for CMP code generation:
-    public final static String updateNotAllowed_    = "updateNotAllowed"; // NOI18N
-    public final static String accessNotAllowed_    = "accessNotAllowed"; // NOI18N
-    public final static String loadNonDFG_          = "loadNonDFG"; // NOI18N
+    public static final String updateNotAllowed_    = "updateNotAllowed"; // NOI18N
+    public static final String accessNotAllowed_    = "accessNotAllowed"; // NOI18N
+    public static final String loadNonDFG_          = "loadNonDFG"; // NOI18N
 
-    public final static String jdoGetPersistenceManagerByPK_ = "jdoGetPersistenceManagerByPK"; // NOI18N
+    public static final String jdoGetPersistenceManagerByPK_ = "jdoGetPersistenceManagerByPK"; // NOI18N
 
     // Code generator templates.
     public static Properties helpers = null;

@@ -96,6 +96,7 @@ public class EjbOptionalIntfGenerator
 
                 clz = (Class) java.security.AccessController.doPrivileged(
                         new java.security.PrivilegedAction() {
+                            @Override
                             public java.lang.Object run() {
                                 return makeClass(name, classData, protectionDomain, loader);
                             }
@@ -451,6 +452,7 @@ public class EjbOptionalIntfGenerator
     // using reflection.  This requires the supressAccessChecks permission.
     private static final java.lang.reflect.Method defineClassMethod = AccessController.doPrivileged(
 	new PrivilegedAction<java.lang.reflect.Method>() {
+            @Override
 	    public java.lang.reflect.Method run() {
 		try {
 		    java.lang.reflect.Method meth = ClassLoader.class.getDeclaredMethod(

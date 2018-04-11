@@ -158,6 +158,7 @@ public class LoggerInfoMetadataService implements LoggerInfoMetadata, ModuleChan
     
     // If a module changed in any way, reset the valid flag so meta-data will be
     // recomputed when subsequently requested.
+    @Override
     public synchronized void changed(Module sender)  {
         valid = false;
     }
@@ -249,18 +250,23 @@ public class LoggerInfoMetadataService implements LoggerInfoMetadata, ModuleChan
     
     // Null classloader to avoid delegation to parent classloader(s)
     private static class NullClassLoader extends ClassLoader {
+        @Override
         protected URL findResource(String name) {
             return null;
         }
+        @Override
         protected Enumeration findResources(java.lang.String name) throws IOException {
             return null;
         }
+        @Override
         public URL getResource(String name) {
             return null;
         }
+        @Override
         protected Class findClass(java.lang.String name) throws ClassNotFoundException {
             throw new ClassNotFoundException("Class not found: " + name);
         }
+        @Override
         protected Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
             throw new ClassNotFoundException("Class not found: " + name);
         }

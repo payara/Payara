@@ -84,7 +84,7 @@ public class SQLStoreManager implements PersistenceStore {
     private static Logger sqlLogger = LogHelperSQLStore.getSqlLogger();
 
     /** I18N message handler. */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
             SQLStoreManager.class);
 
     /** Fetch size for query statements. */
@@ -99,6 +99,7 @@ public class SQLStoreManager implements PersistenceStore {
      * a new instance is created, initialized and put into the cache.
      * The access to the model cache is synchronized.
      */
+    @Override
     public PersistenceConfig getPersistenceConfig(Class classType) {
         if (logger.isLoggable(Logger.FINER)) {
             logger.finer("sqlstore.sqlstoremanager.getpersistenceconfig",
@@ -110,6 +111,7 @@ public class SQLStoreManager implements PersistenceStore {
     /**  
      * @inheritDoc
      */  
+    @Override
     public ConfigCache getConfigCache() {
         return configCache;
     }
@@ -122,6 +124,7 @@ public class SQLStoreManager implements PersistenceStore {
      *         Will be thrown in case of errors or if the affected rows are
      *         less than the minimum rows required.
      */
+    @Override
     public void execute(PersistenceManager pm, Collection actions) {
         Iterator iter = actions.iterator();
 
@@ -244,6 +247,7 @@ public class SQLStoreManager implements PersistenceStore {
     /**
      *
      */
+    @Override
     public Class getClassByOidClass(Class oidType) {
         return configCache.getClassByOidClass(oidType);
     }
@@ -251,6 +255,7 @@ public class SQLStoreManager implements PersistenceStore {
     /**
      *
      */
+    @Override
     public StateManager getStateManager(Class classType) {
         ClassDesc c = (ClassDesc) getPersistenceConfig(classType);
 
@@ -267,6 +272,7 @@ public class SQLStoreManager implements PersistenceStore {
      * @param classType Type of the persistence capable class to be queried.
      * @return A new retrieve descriptor for anexternal (user) query.
      */
+    @Override
     public RetrieveDesc getRetrieveDesc(Class classType) {
         return new RetrieveDescImpl(classType, (ClassDesc) getPersistenceConfig(classType));
     }
@@ -280,6 +286,7 @@ public class SQLStoreManager implements PersistenceStore {
      * @param classType Persistence capable class including <code>fieldName</code>.
      * @return A new retrieve descriptor for anexternal (user) query.
      */
+    @Override
     public RetrieveDesc getRetrieveDesc(String fieldName, Class classType) {
         ClassDesc c = (ClassDesc) getPersistenceConfig(classType);
 
@@ -297,6 +304,7 @@ public class SQLStoreManager implements PersistenceStore {
 
     /**
      */
+    @Override
     public UpdateObjectDesc getUpdateObjectDesc(Class classType) {
           return new UpdateObjectDescImpl(classType);
     }
@@ -355,6 +363,7 @@ public class SQLStoreManager implements PersistenceStore {
      * @param parameters
      *     Query parameters.
      */
+    @Override
     public Object retrieve(PersistenceManager pm, RetrieveDesc action, ValueFetcher parameters) {
 
         if (action == null) {
@@ -506,6 +515,7 @@ public class SQLStoreManager implements PersistenceStore {
      * @param request the request corresponding with the current state manager
      * @param forceFlush all in the update query plan must be executed
      */
+    @Override
     public void executeBatch(PersistenceManager pm,
                              UpdateObjectDesc request,
                              boolean forceFlush)
@@ -641,7 +651,7 @@ public class SQLStoreManager implements PersistenceStore {
      * @param e Exception from the data store.
      * @param sqlText Executed SQL statement.
      */
-    static private void throwJDOSqlException(SQLException e, String sqlText) {
+    private static void throwJDOSqlException(SQLException e, String sqlText) {
 
         String exceptionMessage = I18NHelper.getMessage(messages,
             "core.persistencestore.jdbcerror", sqlText); // NOI18N
@@ -655,7 +665,7 @@ public class SQLStoreManager implements PersistenceStore {
      *
      * @param sqlText Executed SQL statement.
      */
-    static private void throwJDOConcurrentAccessException(String sqlText) {
+    private static void throwJDOConcurrentAccessException(String sqlText) {
         String operation = sqlText.substring(0, sqlText.indexOf(' ')); // NOI18N
 
         throw new JDODataStoreException(I18NHelper.getMessage(messages,
@@ -666,7 +676,7 @@ public class SQLStoreManager implements PersistenceStore {
      * Closes the JDBC ResultSet <code>r</code>.
      * SQLExceptions are catched and logged.
      */
-    static private void close(ResultSet r) {
+    private static void close(ResultSet r) {
         if (r != null) {
             try {
                 r.close();
@@ -683,7 +693,7 @@ public class SQLStoreManager implements PersistenceStore {
      * Closes the JDBC Statement <code>s</code>.
      * SQLExceptions are catched and logged.
      */
-    static private void close(DBStatement s) {
+    private static void close(DBStatement s) {
         if (s != null) {
             try {
                 s.close();
@@ -700,7 +710,7 @@ public class SQLStoreManager implements PersistenceStore {
      * Delegates the closure of the JDBC connection <code>c</code>
      * to the transaction <code>t</code>.
      */
-    static private void closeConnection(Transaction t, Connection c) {
+    private static void closeConnection(Transaction t, Connection c) {
         if (t != null && c != null) {
             t.releaseConnection();
         }
@@ -710,7 +720,7 @@ public class SQLStoreManager implements PersistenceStore {
      * Removes all DBStatements for specified plan and closes the JDBC Statement
      * wrapped by the DBStatement.
      */
-    static private void closeDBStatements(UpdateQueryPlan plan, Transaction tran) {
+    private static void closeDBStatements(UpdateQueryPlan plan, Transaction tran) {
         if ((plan != null) && (tran != null)) {
             for (Iterator i = plan.getStatements().iterator(); i.hasNext(); ) {
                 UpdateStatement updateStmt = (UpdateStatement)i.next();

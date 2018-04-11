@@ -117,7 +117,7 @@ public final class DeleteHTTPHealthCheckerCommand implements AdminCommand {
 
     private ActionReport report;
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(DeleteHTTPHealthCheckerCommand.class);
 
     @Override

@@ -52,35 +52,43 @@ import javax.inject.Singleton;
 @Singleton
 public class ConnectorWorkSecurityMapDeployer  extends AbstractConnectorResourceDeployer {
 
+    @Override
     public synchronized void deployResource(Object resource, String applicationName, String moduleName)
             throws Exception {
         //no-op
     }
     
+    @Override
     public void deployResource(Object resoure) throws Exception {
         //no-op
     }
 
+    @Override
     public void undeployResource(Object resoure) throws Exception {
         //no-op
     }
 
+    @Override
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception{
         //no-op
     }
 
+    @Override
     public void redeployResource(Object resource) throws Exception {
         //no-op
     }
 
+    @Override
     public void enableResource(Object resoure) throws Exception {
         //no-op
     }
 
+    @Override
     public void disableResource(Object resoure) throws Exception {
         //no-op
     }
 
+    @Override
     public boolean handles(Object resource) {
         return resource instanceof WorkSecurityMap;
     }
@@ -88,6 +96,7 @@ public class ConnectorWorkSecurityMapDeployer  extends AbstractConnectorResource
     /**
      * @inheritDoc
      */
+    @Override
     public boolean supportsDynamicReconfiguration() {
         return false;
     }
@@ -95,6 +104,7 @@ public class ConnectorWorkSecurityMapDeployer  extends AbstractConnectorResource
     /**
      * @inheritDoc
      */
+    @Override
     public Class[] getProxyClassesForDynamicReconfiguration() {
         return new Class[0];
     }

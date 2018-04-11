@@ -105,31 +105,38 @@ public final class ParsedLogRecord implements LogEvent {
         fields.put(SUPP_ATTRS, new Properties());
     }
 
+    @Override
     public String getTimestamp() {
         return (String) fields.get(DATE_TIME);
     }
 
+    @Override
     public String getMessage() {
         return (String) fields.get(LOG_MESSAGE);
     }
     
+    @Override
     public String getLevel() {
         return (String) fields.get(LOG_LEVEL_NAME);
     }    
 
+    @Override
     public String getLogger() {
         return (String) fields.get(LOGGER_NAME);
     }    
 
+    @Override
     public int getLevelValue() {
         String val = (String) fields.get(LOG_LEVEL_VALUE); 
         return Integer.parseInt(val) ;
     }
 
+    @Override
     public String getComponentId() {
         return (String) fields.get(PRODUCT_ID);
     }
 
+    @Override
     public long getTimeMillis() {
         String val = (String) fields.get(TIME_MILLIS);
         if (val == null || val.isEmpty()) {
@@ -139,27 +146,33 @@ public final class ParsedLogRecord implements LogEvent {
         }
     }
     
+    @Override
     public String getMessageId() {
         return (String) fields.get(MESSAGE_ID);
     }
 
+    @Override
     public long getThreadId() {
         String val = (String) fields.get(THREAD_ID);
         return Long.parseLong(val) ;
     }
 
+    @Override
     public String getThreadName() {
         return (String) fields.get(THREAD_NAME);
     }
 
+    @Override
     public String getUser() {
         return (String) fields.get(USER_ID);
     }
 
+    @Override
     public String getECId() {
         return (String) fields.get(EC_ID);
     }
 
+    @Override
     public Map<String,Object> getSupplementalAttributes() {
         return (Map<String,Object>) fields.get(SUPP_ATTRS);
     }
@@ -207,6 +220,7 @@ public final class ParsedLogRecord implements LogEvent {
         fields.put(name, value);
     }    
     
+    @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append("Log record: <"+fields + ">" + LogParserFactory.NEWLINE);

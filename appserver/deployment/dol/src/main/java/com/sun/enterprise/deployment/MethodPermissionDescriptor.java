@@ -90,6 +90,7 @@ public class MethodPermissionDescriptor extends DescribableDescriptor {
         return array;        
     }
         
+    @Override
     public void print(StringBuffer toStringBuffer) {
         StringBuffer buffer = toStringBuffer;
         buffer.append("Method Permission " + (getDescription()==null?"":getDescription()) );

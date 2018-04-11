@@ -50,8 +50,10 @@ import javax.validation.ConstraintValidatorContext;
 public class JavaClassNameValidator
 implements ConstraintValidator<JavaClassName, String> {
 
+    @Override
     public void initialize(final JavaClassName fqcn) {}
 
+    @Override
     public boolean isValid(final String fullyQualifiedClassName,                
         final ConstraintValidatorContext constraintValidatorContext) {
 

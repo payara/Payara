@@ -338,6 +338,7 @@ public final class StandardServer
     /**
      * Return the global naming resources.
      */
+     @Override
     public NamingResources getGlobalNamingResources() {
 
         return (this.globalNamingResources);
@@ -350,6 +351,7 @@ public final class StandardServer
      *
      * @param globalNamingResources The new global naming resources
      */
+     @Override
     public void setGlobalNamingResources
         (NamingResources globalNamingResources) {
 
@@ -369,6 +371,7 @@ public final class StandardServer
      * the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
      */
+     @Override
     public String getInfo() {
 
         return (info);
@@ -379,6 +382,7 @@ public final class StandardServer
     /**
      * Return the port number we listen to for shutdown commands.
      */
+     @Override
     public int getPort() {
 
         return (this.port);
@@ -391,6 +395,7 @@ public final class StandardServer
      *
      * @param port The new port number
      */
+     @Override
     public void setPort(int port) {
 
         this.port = port;
@@ -401,6 +406,7 @@ public final class StandardServer
     /**
      * Return the shutdown command string we are waiting for.
      */
+     @Override
     public String getShutdown() {
 
         return (this.shutdown);
@@ -413,6 +419,7 @@ public final class StandardServer
      *
      * @param shutdown The new shutdown command
      */
+     @Override
     public void setShutdown(String shutdown) {
 
         this.shutdown = shutdown;
@@ -428,6 +435,7 @@ public final class StandardServer
      *
      * @param service The Service to be added
      */
+     @Override
     public void addService(Service service) {
 
         service.setServer(this);
@@ -466,6 +474,7 @@ public final class StandardServer
     /**
      * Wait until a proper shutdown command is received, then return.
      */
+     @Override
     public void await() {
 
         // Set up a server socket to wait on
@@ -564,6 +573,7 @@ public final class StandardServer
      *
      * @param name Name of the Service to be returned
      */
+     @Override
     public Service findService(String name) {
 
         if (name == null) {
@@ -584,6 +594,7 @@ public final class StandardServer
     /**
      * Return the set of Services defined within this Server.
      */
+     @Override
     public Service[] findServices() {
 
         return (services);
@@ -608,6 +619,7 @@ public final class StandardServer
      *
      * @param service The Service to be removed
      */
+     @Override
     public void removeService(Service service) {
 
         synchronized (servicesMonitor) {
@@ -672,6 +684,7 @@ public final class StandardServer
     /**
      * Return a String representation of this component.
      */
+     @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("StandardServer[");
@@ -708,6 +721,7 @@ public final class StandardServer
      *
      * @param listener The listener to add
      */
+     @Override
     public void addLifecycleListener(LifecycleListener listener) {
         lifecycle.addLifecycleListener(listener);
     }
@@ -717,6 +731,7 @@ public final class StandardServer
      * Gets the (possibly empty) list of lifecycle listeners
      * associated with this StandardServer.
      */
+     @Override
     public List<LifecycleListener> findLifecycleListeners() {
         return lifecycle.findLifecycleListeners();
     }
@@ -727,6 +742,7 @@ public final class StandardServer
      *
      * @param listener The listener to remove
      */
+     @Override
     public void removeLifecycleListener(LifecycleListener listener) {
         lifecycle.removeLifecycleListener(listener);
     }
@@ -741,6 +757,7 @@ public final class StandardServer
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+     @Override
     public void start() throws LifecycleException {
 
         // Validate and update our current component state
@@ -780,6 +797,7 @@ public final class StandardServer
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+     @Override
     public void stop() throws LifecycleException {
 
         // Validate and update our current component state
@@ -811,6 +829,7 @@ public final class StandardServer
      * Invoke a pre-startup initialization. This is used to allow connectors
      * to bind to restricted ports under Unix operating environments.
      */
+     @Override
     public void initialize()
         throws LifecycleException 
     {

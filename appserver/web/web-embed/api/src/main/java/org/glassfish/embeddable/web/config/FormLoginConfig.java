@@ -89,6 +89,7 @@ public class FormLoginConfig {
     /**
      * Returns a formatted string of the state.
      */
+    @Override
     public String toString() {
         StringBuffer toStringBuffer = new StringBuffer();
         toStringBuffer.append("FormLoginConfig: ");

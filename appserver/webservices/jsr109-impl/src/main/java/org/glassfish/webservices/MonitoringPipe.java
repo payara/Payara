@@ -91,10 +91,12 @@ public class MonitoringPipe extends AbstractFilterPipeImpl {
         wsEngine = WebServiceEngineImpl.getInstance();
     }
 
+    @Override
     public final Pipe copy(PipeCloner cloner) {
         return new MonitoringPipe(this, cloner);
     }
 
+    @Override
     public Packet process(Packet request) {
         // if it is a JBI request then skip the monitoring logic. This is done 
         // as HTTPServletRequest/Response is not available when the invocation 

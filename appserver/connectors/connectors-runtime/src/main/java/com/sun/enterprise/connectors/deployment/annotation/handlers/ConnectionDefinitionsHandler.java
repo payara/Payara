@@ -63,9 +63,10 @@ import org.jvnet.hk2.annotations.Service;
 @AnnotationHandlerFor(ConnectionDefinitions.class)
 public class ConnectionDefinitionsHandler extends AbstractHandler  {
 
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ConnectionDefinitionsHandler.class);
 
+    @Override
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();
         ConnectionDefinitions connDefns = (ConnectionDefinitions) element.getAnnotation();
@@ -90,12 +91,14 @@ public class ConnectionDefinitionsHandler extends AbstractHandler  {
     /**
      * @return a default processed result
      */
+    @Override
     protected HandlerProcessingResult getDefaultProcessedResult() {
         return HandlerProcessingResultImpl.getDefaultResult(
                 getAnnotationType(), ResultType.PROCESSED);
     }
 
 
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return null;
     }

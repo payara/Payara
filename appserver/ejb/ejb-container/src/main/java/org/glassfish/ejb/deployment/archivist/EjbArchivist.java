@@ -121,6 +121,7 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptorImpl> {
      * @return the list of the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
+    @Override
     public List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles() {
         if (confDDFiles == null) {
             confDDFiles = DOLUtils.getConfigurationDeploymentDescriptorFiles(habitat, EjbContainerUtil.EJB_CONTAINER_NAME);

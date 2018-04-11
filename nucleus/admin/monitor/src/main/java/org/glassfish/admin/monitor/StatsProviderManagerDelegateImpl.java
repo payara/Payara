@@ -153,6 +153,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
         register(spInfo);
     }
 
+    @Override
     public void register(StatsProviderInfo spInfo) {
         try {
             tryToRegister(spInfo);
@@ -216,6 +217,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
     private void createConfigElement(final String configElement) {
         try {
             ConfigSupport.apply(new SingleConfigCode<MonitoringService>() {
+                @Override
                 public Object run(MonitoringService param)
                         throws PropertyVetoException, TransactionFailure {
                     ContainerMonitoring newItem = param.createChild(ContainerMonitoring.class);
@@ -232,6 +234,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
         }
     }
 
+    @Override
     public void unregister(Object statsProvider) {
         // Unregisters the statsProvider
         try {
@@ -714,6 +717,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
         return childNode;
     }
 
+    @Override
     public boolean hasListeners(String probeStr) {
         boolean hasListeners = false;
         FlashlightProbe probe = probeRegistry.getProbe(probeStr);

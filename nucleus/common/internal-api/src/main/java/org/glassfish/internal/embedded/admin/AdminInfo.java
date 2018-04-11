@@ -59,6 +59,7 @@ public class AdminInfo implements ContainerBuilder<EmbeddedAdminContainer> {
     @Inject
     EmbeddedAdminContainer ctr;
 
+    @Override
     public EmbeddedAdminContainer create(Server server) {
         return ctr;
     }

@@ -69,7 +69,7 @@ import org.glassfish.persistence.common.I18NHelper;
  *
  * @author Marina Vatkina
  */
-abstract public class JDOEJB20HelperImpl extends JDOEJB11HelperImpl
+public abstract class JDOEJB20HelperImpl extends JDOEJB11HelperImpl
     implements JDOEJB20Helper {
 
     /**
@@ -78,6 +78,7 @@ abstract public class JDOEJB20HelperImpl extends JDOEJB11HelperImpl
      * @param pm the associated instance of PersistenceManager.
      * @return instance of EJBLocalObject.
      */
+    @Override
     public EJBLocalObject convertPCToEJBLocalObject (Object pc, PersistenceManager pm) {
         if (pc == null) return null;
         Object jdoObjectId = pm.getObjectId(pc);
@@ -100,6 +101,7 @@ abstract public class JDOEJB20HelperImpl extends JDOEJB11HelperImpl
      * @param context the EJBContext of the calling bean.
      * @return instance of EJBLocalObject.
      */
+    @Override
     public EJBLocalObject convertPCToEJBLocalObject (Object pc, PersistenceManager pm,
         EJBContext context) {
         if (pc == null) return null;
@@ -124,6 +126,7 @@ abstract public class JDOEJB20HelperImpl extends JDOEJB11HelperImpl
      * @throws IllegalArgumentException if validate is true and instance does
      * not exist in the database or is deleted.
      */
+    @Override
     public Object convertEJBLocalObjectToPC(EJBLocalObject o, PersistenceManager pm, boolean validate) {
         Object key = null; 
         try {
@@ -144,6 +147,7 @@ abstract public class JDOEJB20HelperImpl extends JDOEJB11HelperImpl
      * @param pm the associated instance of PersistenceManager.
      * @return Collection of EJBLocalObjects.
      */
+    @Override
     public Collection convertCollectionPCToEJBLocalObject (Collection pcs, PersistenceManager pm){
         Collection rc = new java.util.ArrayList();
         Object o = null;
@@ -167,6 +171,7 @@ abstract public class JDOEJB20HelperImpl extends JDOEJB11HelperImpl
      * @param pm the associated instance of PersistenceManager.
      * @return Set of EJBLocalObjects.
      */
+    @Override
     public Set convertCollectionPCToEJBLocalObjectSet (Collection pcs, PersistenceManager pm) {
         java.util.Set rc = new java.util.HashSet();
         Object o = null;
@@ -194,6 +199,7 @@ abstract public class JDOEJB20HelperImpl extends JDOEJB11HelperImpl
      * @throws IllegalArgumentException if validate is true and at least one instance does
      * not exist in the database or is deleted.
      */
+    @Override
     public Collection convertCollectionEJBLocalObjectToPC (Collection coll, PersistenceManager pm,
                                                            boolean validate) {
         Collection rc = new java.util.ArrayList();
@@ -219,7 +225,8 @@ abstract public class JDOEJB20HelperImpl extends JDOEJB11HelperImpl
      * @param o the instance to validate.
      * @throws IllegalArgumentException if validation fails.
      */
-    abstract public void assertInstanceOfLocalInterfaceImpl(Object o);
+    @Override
+    public abstract void assertInstanceOfLocalInterfaceImpl(Object o);
 
    /**
      * Validates that this instance is of the correct implementation class

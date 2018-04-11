@@ -83,7 +83,7 @@ import org.glassfish.apf.HandlerProcessingResult;
  */
 public abstract class AbstractAttributeHandler extends AbstractHandler {
 
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(AbstractAttributeHandler.class);
     
     /**
@@ -122,6 +122,7 @@ public abstract class AbstractAttributeHandler extends AbstractHandler {
      *
      * @param ainfo the annotation information
      */
+    @Override
     public HandlerProcessingResult processAnnotation(AnnotationInfo ainfo) 
             throws AnnotationProcessorException {
         

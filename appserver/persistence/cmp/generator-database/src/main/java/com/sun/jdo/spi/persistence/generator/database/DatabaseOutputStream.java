@@ -65,7 +65,7 @@ public class DatabaseOutputStream extends OutputStream {
             LogHelperDatabaseGenerator.getLogger();
 
     /** I18N message handler */
-    private final static ResourceBundle messages =
+    private static final ResourceBundle messages =
             I18NHelper.loadBundle(DatabaseOutputStream.class);
 
     /** Connection to the database. */
@@ -87,6 +87,7 @@ public class DatabaseOutputStream extends OutputStream {
     /**
      * Closes the database connection.
      */
+    @Override
     public void close() {
         try {
             // XXX test is not necessary once we assert not null in constructor
@@ -105,6 +106,7 @@ public class DatabaseOutputStream extends OutputStream {
     /**
      * Commits the database connection.
      */
+    @Override
     public void flush() {
         try {
             // XXX test is not necessary once we assert not null in constructor
@@ -123,6 +125,7 @@ public class DatabaseOutputStream extends OutputStream {
      * always throws UnsupportedOperationException.
      * @throws UnsupportedOperationException
      */ 
+    @Override
     public void write(int b) {
         throw new UnsupportedOperationException(); 
     }

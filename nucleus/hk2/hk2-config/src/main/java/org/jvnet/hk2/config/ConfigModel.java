@@ -399,6 +399,7 @@ public final class ConfigModel {
             this.model = model;
         }
 
+        @Override
         public boolean isLeaf() {
             return false;
         }
@@ -432,10 +433,12 @@ public final class ConfigModel {
             super(model, xmlName);
         }
 
+        @Override
         public boolean isCollection() {
             return true;
         }
 
+        @Override
         public Object get(final Dom dom, Type returnType) {
             // TODO: perhaps support more collection types?
 
@@ -452,10 +455,12 @@ public final class ConfigModel {
             if(ConfigBeanProxy.class.isAssignableFrom(itemType)) {
                 // return a live list
                 return new AbstractList<Object>() {
+                    @Override
                     public Object get(int index) {
                         return v.get(index).createProxy();
                     }
 
+                    @Override
                     public void add(int index, Object element) {
                         // update the master children list, as well as this view 'v'
                         Dom child = Dom.unwrap((ConfigBeanProxy) element);
@@ -463,6 +468,7 @@ public final class ConfigModel {
                         v.add(index,child);
                     }
 
+                    @Override
                     public Object remove(int index) {
                         Dom child = v.get(index);
                         dom.removeChild(child);
@@ -470,6 +476,7 @@ public final class ConfigModel {
                         return child.createProxy();
                     }
 
+                    @Override
                     public Object set(int index, Object element) {
                         Dom child = Dom.unwrap((ConfigBeanProxy) element);
                         String name = "*".equals(xmlName) ? child.model.injector.getName() : xmlName;
@@ -477,6 +484,7 @@ public final class ConfigModel {
                         return v.set(index,child).createProxy();
                     }
 
+                    @Override
                     public int size() {
                         return v.size();
                     }
@@ -486,16 +494,19 @@ public final class ConfigModel {
             // TODO: error check needs to be improved,
             // as itemType might be inconsistent with the actual type
             return new AbstractList() {
+                @Override
                 public Object get(int index) {
                     return v.get(index).get();
                 }
 
+                @Override
                 public int size() {
                     return v.size();
                 }
             };
         }
 
+        @Override
         public void set(Dom dom, Object _arg) {
             if(!(_arg instanceof List))
                 throw new IllegalArgumentException("Expecting a list but found "+_arg);
@@ -515,10 +526,12 @@ public final class ConfigModel {
             super(model, xmlName);
         }
 
+        @Override
         public boolean isCollection() {
             return false;
         }
 
+        @Override
         public Object get(Dom dom, Type returnType) {
             Dom v = dom.nodeElement(xmlName);
             if(v==null)     return null;
@@ -533,6 +546,7 @@ public final class ConfigModel {
             throw new IllegalArgumentException("Invalid type "+returnType+" for "+xmlName);
         }
 
+        @Override
         public void set(Dom dom, Object arg) {
             Dom child = toDom(arg);
 
@@ -548,6 +562,7 @@ public final class ConfigModel {
             super(xmlName);
         }
 
+        @Override
         public boolean isLeaf() {
             return true;
         }
@@ -587,6 +602,7 @@ public final class ConfigModel {
             super(xmlName);
         }
 
+        @Override
         public boolean isCollection() {
             return true;
         }
@@ -595,6 +611,7 @@ public final class ConfigModel {
             return element.toString();
         }
 
+        @Override
         public Object get(final Dom dom, Type returnType) {
             // TODO: perhaps support more collection types?
             final List<String> v = dom.leafElements(xmlName);
@@ -604,32 +621,38 @@ public final class ConfigModel {
 
             // return a live list
             return new AbstractList<Object>() {
+                @Override
                 public Object get(int index) {
                     return convertLeafValue(dom, itemType, v.get(index));
                 }
 
+                @Override
                 public void add(int index, Object element) {
                     // update the master children list, as well as this view 'v'
                     dom.addLeafElement(xmlName, elementValue(element));
                     v.add(index, element.toString());
                 }
 
+                @Override
                 public Object remove(int index) {
                     dom.removeLeafElement(xmlName, v.get(index));
                     return v.remove(index);
                 }
 
+                @Override
                 public Object set(int index, Object element) {
                     dom.changeLeafElement(xmlName, v.get(index), elementValue(element));
                     return v.set(index, element.toString());
                 }
 
+                @Override
                 public int size() {
                     return v.size();
                 }
             };
         }
 
+        @Override
         public void set(Dom dom, Object arg) {
             if (arg instanceof List) {
                 String[] strings = new String[((List) arg).size()];
@@ -645,6 +668,7 @@ public final class ConfigModel {
         ReferenceCollectionLeaf(String xmlName) {
             super(xmlName);
         }
+        @Override
         protected Object convertLeafValue(Dom parent, Class<?> returnType, String v) {
             // let's look first the fast way.
             Object candidate = parent.getHabitat().getService(returnType, v);
@@ -679,6 +703,7 @@ public final class ConfigModel {
         /**
          * Is multiple values allowed?
          */
+        @Override
         public boolean isCollection() {
             return false;
         }
@@ -698,6 +723,7 @@ public final class ConfigModel {
          *                   Valid types are (1) primitive and 'leaf' Java types, such as {@link String},
          *                   (2) {@link ConfigBeanProxy}, (3) and its collections.
          */
+        @Override
         public Object get(Dom dom, Type returnType) {
             String v = dom.attribute(xmlName);
             return convertLeafValue(dom, Types.erasure(returnType), v);
@@ -706,6 +732,7 @@ public final class ConfigModel {
         /**
          * Sets the value to {@link Dom}.
          */
+        @Override
         public void set(Dom dom, Object arg) {
             dom.attribute(xmlName, arg==null?null:arg.toString());
         }
@@ -728,6 +755,7 @@ public final class ConfigModel {
                 return (dv);
             return value;
         }
+        @Override
         public String getDefaultValue() {
             return dv;
         }
@@ -775,16 +803,19 @@ public final class ConfigModel {
             super(xmlName);
         }
 
+        @Override
         public boolean isCollection() {
             return false;
         }
 
+        @Override
         public Object get(Dom dom, Type returnType) {
             // leaf types
             String v = dom.leafElement(xmlName);
             return convertLeafValue(dom, Types.erasure(returnType), v);
         }
 
+        @Override
         public void set(Dom dom, Object arg) {
             if(arg==null) {
                 dom.removeLeafElement(xmlName, dom.leafElement(xmlName));

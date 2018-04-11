@@ -162,6 +162,7 @@ public class ACCLogger extends Logger {
             final Handler handler) {
             AccessController.doPrivileged(
                     new PrivilegedAction() {
+                        @Override
                         public Object run() {
                             if ( ! logger.isLoggable(level)) {
                                 logger.setLevel(level);

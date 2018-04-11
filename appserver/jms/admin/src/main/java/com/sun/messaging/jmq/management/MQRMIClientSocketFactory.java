@@ -73,6 +73,7 @@ public class MQRMIClientSocketFactory extends SslRMIClientSocketFactory {
 	this.useSSL = useSSL;
     }
 
+    @Override
     public Socket createSocket(String host, int port) throws IOException {
 	Socket s = null;
 	String socketHost = hostname;
@@ -104,6 +105,7 @@ public class MQRMIClientSocketFactory extends SslRMIClientSocketFactory {
 	return (s);
     }
 
+    @Override
     public String toString()  {
         return ("hostname="
 		+ hostname 
@@ -113,6 +115,7 @@ public class MQRMIClientSocketFactory extends SslRMIClientSocketFactory {
 		+ useSSL);
     }
 
+    @Override
     public boolean equals(Object obj)  {
         if (!(obj instanceof MQRMIClientSocketFactory))  {
             return (false);
@@ -141,6 +144,7 @@ public class MQRMIClientSocketFactory extends SslRMIClientSocketFactory {
         return (true);
     }
 
+    @Override
     public int hashCode()  {
         return toString().hashCode();
     }

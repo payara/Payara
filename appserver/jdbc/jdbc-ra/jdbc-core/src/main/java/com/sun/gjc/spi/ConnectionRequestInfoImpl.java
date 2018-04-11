@@ -87,6 +87,7 @@ public class ConnectionRequestInfoImpl implements javax.resource.spi.ConnectionR
      *
      * @return True, if they are equal and false otherwise.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj == null) return false;
         if (obj instanceof ConnectionRequestInfoImpl) {
@@ -103,6 +104,7 @@ public class ConnectionRequestInfoImpl implements javax.resource.spi.ConnectionR
      *
      * @return hashCode.
      */
+    @Override
     public int hashCode() {
         String result = "" + user + new String(password);
         return result.hashCode();

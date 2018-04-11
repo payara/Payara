@@ -61,6 +61,7 @@ public abstract class ConfigApiTest extends org.glassfish.tests.utils.ConfigApiT
         if (doc==null) {
             return new GlassFishDocument(habitat, Executors.newCachedThreadPool(new ThreadFactory() {
 
+                        @Override
                         public Thread newThread(Runnable r) {
                             Thread t = Executors.defaultThreadFactory().newThread(r);
                             t.setDaemon(true);

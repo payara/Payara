@@ -472,6 +472,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
             java.security.AccessController.doPrivileged(
                     new java.security.PrivilegedExceptionAction() {
 
+                        @Override
                         public java.lang.Object run() throws Exception {
                             if (!clM.isAccessible()) {
                                 clM.setAccessible(true);

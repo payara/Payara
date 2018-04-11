@@ -95,6 +95,7 @@ public class JmsProviderLifecycle implements PostConstruct{
     private ActiveJmsResourceAdapter activeJmsResourceAdapter;
     
 
+    @Override
     public void postConstruct() 
     {
        final JmsService jmsService = config.getExtensionByType(JmsService.class);

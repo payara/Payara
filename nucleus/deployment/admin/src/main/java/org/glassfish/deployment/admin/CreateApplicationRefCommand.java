@@ -116,7 +116,7 @@ import org.glassfish.deployment.versioning.VersioningService;
 })
 public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateApplicationRefCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateApplicationRefCommand.class);
 
     @Param(primary=true)
     public String name = null;
@@ -171,6 +171,7 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
      * Entry point from the framework into the command execution
      * @param context context for the command.
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         final Logger logger = context.getLogger();

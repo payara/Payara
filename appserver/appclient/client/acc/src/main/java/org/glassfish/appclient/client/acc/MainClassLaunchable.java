@@ -81,10 +81,12 @@ public class
         this.mainClass = mainClass;
     }
 
+    @Override
     public Class getMainClass() throws ClassNotFoundException {
         return mainClass;
     }
 
+    @Override
     public ApplicationClientDescriptor getDescriptor(final URLClassLoader loader) throws IOException, SAXParseException {
         /*
          * There is no developer-provided descriptor possible so just
@@ -201,14 +203,17 @@ public class
             return arch;
     }
 
+    @Override
     public void validateDescriptor() {
         archivist.validate(classLoader);
     }
 
+    @Override
     public URI getURI() {
         return null;
     }
 
+    @Override
     public String getAnchorDir() {
         return null;
     }

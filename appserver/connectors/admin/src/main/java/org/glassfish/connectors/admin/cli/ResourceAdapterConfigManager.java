@@ -82,7 +82,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.THREAD_POOL_ID
 @I18n("create.resource.adapter.config")
 public class ResourceAdapterConfigManager implements ResourceManager {
 
-    final private static LocalStringManagerImpl localStrings = 
+    private static final LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(ResourceAdapterConfigManager.class);
 
     private String raName = null;
@@ -90,10 +90,12 @@ public class ResourceAdapterConfigManager implements ResourceManager {
     private String objectType = "user";
     private String name = null;
 
+    @Override
     public String getResourceType() {
         return ServerTags.RESOURCE_ADAPTER_CONFIG;
     }
 
+    @Override
     public ResourceStatus create(Resources resources, HashMap attributes, final Properties properties,
                                  String target) throws Exception {
         setParams(attributes);
@@ -105,6 +107,7 @@ public class ResourceAdapterConfigManager implements ResourceManager {
 
         try {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     ResourceAdapterConfig newResource = createConfigBean(param, properties);
                     param.getResources().add(newResource);
@@ -171,6 +174,7 @@ public class ResourceAdapterConfigManager implements ResourceManager {
         threadPoolIds = (String) attributes.get(THREAD_POOL_IDS);
         objectType = (String) attributes.get(ServerTags.OBJECT_TYPE);
     }
+    @Override
     public Resource createConfigBean(Resources resources, HashMap attributes, Properties properties, boolean validate)
             throws Exception{
         setParams(attributes);

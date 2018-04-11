@@ -59,6 +59,7 @@ public class MBeanAttributeInfoStringifier extends MBeanFeatureInfoStringifier i
         super(options);
     }
 
+    @Override
     public String stringify(Object o)
     {
         MBeanAttributeInfo attr = (MBeanAttributeInfo) o;

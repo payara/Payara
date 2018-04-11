@@ -118,7 +118,7 @@ import org.glassfish.deployment.versioning.VersioningException;
 public class UndeployCommand extends UndeployCommandParameters implements AdminCommand, DeploymentTargetResolver, 
     AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(UndeployCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(UndeployCommand.class);
    
     @Inject
     Deployment deployment;

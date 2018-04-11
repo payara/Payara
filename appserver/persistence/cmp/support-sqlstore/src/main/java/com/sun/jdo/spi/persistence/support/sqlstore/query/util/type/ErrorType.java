@@ -66,6 +66,7 @@ public class ErrorType
     /**
      *
      */
+    @Override
     public boolean isCompatibleWith(Type type)
     {
         return true;
@@ -74,6 +75,7 @@ public class ErrorType
     /**
      *
      */
+    @Override
         public boolean isOrderable()
         {
                 return true;

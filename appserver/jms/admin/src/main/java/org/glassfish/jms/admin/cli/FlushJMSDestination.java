@@ -101,7 +101,7 @@ import org.glassfish.config.support.TargetType;
 public class FlushJMSDestination extends JMSDestination implements AdminCommand {
 
         private static final Logger logger = Logger.getLogger(LogUtils.JMS_ADMIN_LOGGER);
-        final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(FlushJMSDestination.class);
+        private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(FlushJMSDestination.class);
          private static final String DESTINATION_CONFIG_DOMAIN_TYPE
     			= MBEAN_DOMAIN_NAME
 				+ ":type=" + "Destination"
@@ -129,6 +129,7 @@ public class FlushJMSDestination extends JMSDestination implements AdminCommand 
         ServerContext serverContext;
 
 
+        @Override
         public void execute(AdminCommandContext context) {
 
             final ActionReport report = context.getActionReport();

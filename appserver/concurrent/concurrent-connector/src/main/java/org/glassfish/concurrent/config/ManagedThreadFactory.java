@@ -95,6 +95,7 @@ public interface ManagedThreadFactory extends ConfigBeanProxy, Resource,
     void setThreadPriority(String value) throws PropertyVetoException;
     
     @DuckTyped
+    @Override
     String getIdentity();
 
     class Duck {

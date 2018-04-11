@@ -47,6 +47,7 @@ import org.glassfish.api.naming.ComponentNamingUtil;
 public class ComponentNamingUtilImpl
     implements ComponentNamingUtil {
 
+    @Override
     public String composeInternalGlobalJavaAppName(String appName, String origJavaAppName) {
 
 

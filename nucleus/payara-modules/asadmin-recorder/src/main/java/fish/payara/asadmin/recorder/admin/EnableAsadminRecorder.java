@@ -85,6 +85,7 @@ public class EnableAsadminRecorder implements AdminCommand {
         try {
             ConfigSupport.apply(new 
                     SingleConfigCode<AsadminRecorderConfiguration>() {
+                @Override
                 public Object run(AsadminRecorderConfiguration 
                         asadminRecorderConfigurationProxy) 
                         throws PropertyVetoException, TransactionFailure {

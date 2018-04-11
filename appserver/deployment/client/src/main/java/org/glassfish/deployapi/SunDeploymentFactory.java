@@ -70,24 +70,24 @@ public class SunDeploymentFactory implements DeploymentFactory {
     
     //The following URISTRING is what we supported in PE Beta.  Keeping it for
     //backward compatibility
-    private final static String PE_BETA_URISTRING = "deployer:Sun:S1AS::"; // NOI18N
+    private static final String PE_BETA_URISTRING = "deployer:Sun:S1AS::"; // NOI18N
     
     //The following URISTRINNG is what we use for PE FCS and in the future
-    private final static String DEFAULT_URISTRING = "deployer:Sun:AppServer::"; // NOI18N
-    private final static String HTTPS = "https";
-    private final static String URI_SEPARATOR = ":";// NOI18N
-    private final static String LOCAL_HOST = "localhost";// NOI18N
-    private final static int HOST_PORT = 4848; // default DAS port
+    private static final String DEFAULT_URISTRING = "deployer:Sun:AppServer::"; // NOI18N
+    private static final String HTTPS = "https";
+    private static final String URI_SEPARATOR = ":";// NOI18N
+    private static final String LOCAL_HOST = "localhost";// NOI18N
+    private static final int HOST_PORT = 4848; // default DAS port
     
-    private final static String[] supportedURIs = { PE_BETA_URISTRING,
+    private static final String[] supportedURIs = { PE_BETA_URISTRING,
         DEFAULT_URISTRING };
     
     // All the registered mangers are shared by all instances of the Factory
     private static Hashtable connectedDeploymentManagers;
     private static Hashtable disconnectedDeploymentManagers;
 
-    private final static String HTTPS_PROTOCOL = "s1ashttps";
-    private final static String HTTP_PROTOCOL = "s1ashttp";
+    private static final String HTTPS_PROTOCOL = "s1ashttps";
+    private static final String HTTP_PROTOCOL = "s1ashttp";
 
     public static final Logger deplLogger = org.glassfish.deployment.client.AbstractDeploymentFacility.deplLogger;
 
@@ -111,6 +111,7 @@ public class SunDeploymentFactory implements DeploymentFactory {
      *        DeploymentManager could not be returned (server down,
      *        unable to authenticate, etc).
      */
+    @Override
     public DeploymentManager getDeploymentManager(String uri, String username, String password) throws DeploymentManagerCreationException {
         
         if (handlesURI(uri)) {
@@ -151,6 +152,7 @@ public class SunDeploymentFactory implements DeploymentFactory {
      * @throws DeploymentManagerCreationException occurs if the
      *         DeploymentManager could not be created.
      */
+    @Override
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
         if (handlesURI(uri)) {
             return new SunDeploymentManager();
@@ -162,6 +164,7 @@ public class SunDeploymentFactory implements DeploymentFactory {
     /** Provide a string with the name of this vendor's DeploymentManager.
      * @return the name of the vendor's DeploymentManager.
      */
+    @Override
     public String getDisplayName() {
         return xlocalStrings.getLocalString(
                 "enterprise.deployapi.spi.DisplayName",
@@ -172,6 +175,7 @@ public class SunDeploymentFactory implements DeploymentFactory {
      * DeploymentManager.
      * @return the name of the vendor's DeploymentManager.
      */
+    @Override
     public String getProductVersion() {
         return xlocalStrings.getLocalString(
                 "enterprise.deployapi.spi.ProductVersion", "9.0");
@@ -184,6 +188,7 @@ public class SunDeploymentFactory implements DeploymentFactory {
      * @param uri The uri to check
      * @return <tt>true</tt> if the factory can handle the uri.
      */
+    @Override
     public boolean handlesURI(String uri) {
         if (deplLogger.isLoggable(Level.FINE)) {
             deplLogger.fine("handlesURI: URI ["+uri+"]");// NOI18N

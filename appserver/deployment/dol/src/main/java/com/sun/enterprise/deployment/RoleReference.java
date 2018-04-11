@@ -100,6 +100,7 @@ public class RoleReference extends EnvironmentProperty implements
      * Return the rolename.
      * @return the role name.
      */
+    @Override
     public SecurityRole getSecurityRoleLink() {
 	return new SecurityRoleDescriptor(super.getValue(), "");
     }
@@ -108,6 +109,7 @@ public class RoleReference extends EnvironmentProperty implements
      * Sets the rolename.
      * @param the rolename.
      */
+    @Override
     public void setSecurityRoleLink(SecurityRole securityRole) {
 	super.setValue(securityRole.getName());
     }
@@ -116,6 +118,7 @@ public class RoleReference extends EnvironmentProperty implements
      * Return the coded name. 
      * @return the role name used in the bean code.
      */
+    @Override
     public String getRoleName() {
 	return this.getName();
     }
@@ -124,6 +127,7 @@ public class RoleReference extends EnvironmentProperty implements
      * Sets the coded name.
      * @param the role name used in the bean code.
      */
+    @Override
     public void setRoleName(String rolename) {
 	this.setName(rolename);
     }
@@ -131,6 +135,7 @@ public class RoleReference extends EnvironmentProperty implements
     /**
      * Returns a formatted version of this object as a String.
      */
+    @Override
     public void print(StringBuffer toStringBuffer) {
 	toStringBuffer.append("Role-Ref-Env-Prop: ").append(super.getName()).append("@").append( 
 	    this.getRole()).append("@").append(super.getDescription());

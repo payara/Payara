@@ -77,6 +77,7 @@ public class TypeName
     /**
      *
      */
+    @Override
 	public String getName()
 	{
 		return I18NHelper.getMessage(messages, "scope.classname.getname.name"); //NOI18N
@@ -93,6 +94,7 @@ public class TypeName
     /**
      *
      */
+    @Override
     public String toString()
     {
         StringBuffer buf = new StringBuffer();

@@ -101,6 +101,7 @@ public class NotificationStringifier implements Stringifier
         b.append(SmartStringifier.toString(o));
     }
 
+    @Override
     public String stringify(Object o)
     {
         final Notification notif = (Notification) o;

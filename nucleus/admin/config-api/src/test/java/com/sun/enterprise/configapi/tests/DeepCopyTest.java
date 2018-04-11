@@ -63,6 +63,7 @@ import java.util.logging.Level;
  */
 public class DeepCopyTest extends ConfigApiTest {
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }

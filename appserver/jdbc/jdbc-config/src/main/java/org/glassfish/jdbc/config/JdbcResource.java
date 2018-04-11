@@ -93,6 +93,7 @@ public interface JdbcResource extends ConfigBeanProxy, Resource,
     @NotNull
     @Param(name=name)
     @ReferenceConstraint.RemoteKey(message="{resourceref.invalid.poolname}", type=JdbcConnectionPool.class)
+    @Override
     String getPoolName();
 
     public String name = "connectionpoolid";
@@ -105,6 +106,7 @@ public interface JdbcResource extends ConfigBeanProxy, Resource,
      */
     @Attribute (defaultValue="true",dataType=Boolean.class)
     @Param
+    @Override
     String getEnabled();
 
     /**
@@ -113,6 +115,7 @@ public interface JdbcResource extends ConfigBeanProxy, Resource,
      * @param value allowed object is
      *              {@link String }
      */
+    @Override
     void setEnabled(String value) throws PropertyVetoException;
 
     /**
@@ -139,10 +142,12 @@ public interface JdbcResource extends ConfigBeanProxy, Resource,
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 
 
     @DuckTyped
+    @Override
     String getIdentity();
 
     class Duck {

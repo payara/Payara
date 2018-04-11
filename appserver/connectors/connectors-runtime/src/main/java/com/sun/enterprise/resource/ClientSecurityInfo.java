@@ -56,7 +56,7 @@ public class ClientSecurityInfo {
     private ResourcePrincipal prin;
     private ConnectionRequestInfo info;
 
-    static private final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
+    private static final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
 
     public ClientSecurityInfo(ResourcePrincipal prin) {
         if (prin == null) {
@@ -81,6 +81,7 @@ public class ClientSecurityInfo {
         return info;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null) return false;
@@ -92,6 +93,7 @@ public class ClientSecurityInfo {
         return false;
     }
 
+    @Override
     public int hashCode() {
         int result = NULL_HASH_CODE;
         if (prin != null) {
@@ -111,6 +113,7 @@ public class ClientSecurityInfo {
         }
     }
 
+    @Override
     public String toString() {
         return "ClientSecurityInfo: prin=" + prin + " info=" + info;
     }

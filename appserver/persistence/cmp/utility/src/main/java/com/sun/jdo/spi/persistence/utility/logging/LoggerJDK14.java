@@ -78,6 +78,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * java.util.logging.Level class.
      * @return whether logging is enabled at the fine level.
      */
+    @Override
     public boolean isLoggable() {
         return isLoggable(Level.FINE);
     }
@@ -92,6 +93,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * @param   msg	The string message (or a key in the message catalog)
      * @param   o      Objects to be inserted into the message
      */
+    @Override
     public void fine(String msg, Object[] o) {
         if (isLoggable(Level.FINE)) {
             inferCaller();
@@ -109,6 +111,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * @param   msg	The string message (or a key in the message catalog)
      * @param   o1      A parameter to be inserted into the message
      */
+    @Override
     public void fine(String msg, Object o1) {
         if (isLoggable(Level.FINE)) {
             inferCaller();
@@ -128,6 +131,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * @param   o1      A parameter to be inserted into the message
      * @param   o2      A parameter to be inserted into the message
      */
+    @Override
     public void fine(String msg, Object o1, Object o2) {
         if (isLoggable(Level.FINE)) {
             inferCaller();
@@ -147,6 +151,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * @param   o2      A parameter to be inserted into the message
      * @param   o3      A parameter to be inserted into the message
      */
+    @Override
     public void fine(String msg, Object o1, Object o2, Object o3) {
         if (isLoggable(Level.FINE)) {
             inferCaller();
@@ -164,6 +169,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * @param   msg	The string message (or a key in the message catalog)
      * @param   o      Objects to be inserted into the message
      */
+    @Override
     public void finer(String msg, Object[] o) {
         if (isLoggable(Level.FINER)) {
             inferCaller();
@@ -181,6 +187,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * @param   msg	The string message (or a key in the message catalog)
      * @param   o1      A parameter to be inserted into the message
      */
+    @Override
     public void finer(String msg, Object o1) {
         if (isLoggable(Level.FINER)) {
             inferCaller();
@@ -200,6 +207,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * @param   o1      A parameter to be inserted into the message
      * @param   o2      A parameter to be inserted into the message
      */
+    @Override
     public void finer(String msg, Object o1, Object o2) {
         if (isLoggable(Level.FINER)) {
             inferCaller();
@@ -220,6 +228,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * @param   o2      A parameter to be inserted into the message
      * @param   o3      A parameter to be inserted into the message
      */
+    @Override
     public void finer(String msg, Object o1, Object o2, Object o3) {
         if (isLoggable(Level.FINER)) {
             inferCaller();
@@ -239,6 +248,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * @param   msg	The string message (or a key in the message catalog)
      * @param   o      Objects to be inserted into the message
      */
+    @Override
     public void finest(String msg, Object[] o) {
         if (isLoggable(Level.FINEST)) {
             inferCaller();
@@ -256,6 +266,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * @param   msg	The string message (or a key in the message catalog)
      * @param   o1      A parameter to be inserted into the message
      */
+    @Override
     public void finest(String msg, Object o1) {
         if (isLoggable(Level.FINEST)) {
             inferCaller();
@@ -274,6 +285,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * @param   o1      A parameter to be inserted into the message
      * @param   o2      A parameter to be inserted into the message
      */
+    @Override
     public void finest(String msg, Object o1, Object o2) {
         if (isLoggable(Level.FINEST)) {
             inferCaller();
@@ -294,6 +306,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * @param   o2      A parameter to be inserted into the message
      * @param   o3      A parameter to be inserted into the message
      */
+    @Override
     public void finest(String msg, Object o1, Object o2, Object o3) {
         if (isLoggable(Level.FINEST)) {
             inferCaller();
@@ -305,6 +318,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
     /** Prepare a printable version of this instance.
      * @return the String representation of this object
      */    
+    @Override
     public String toString() {
         StringBuffer buf = new StringBuffer ("LoggerJDK14: ");  //NOI18N
         buf.append (" name: "); buf.append (getName()); //NOI18N
@@ -324,6 +338,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * @param   msg	The string message (or a key in the message catalog)
      * @param   o1      A parameter to be inserted into the message
      */
+    @Override
     public void log(int level, String msg, Object o1) {
         Level lvl = convertLevel(level);
         if (isLoggable(lvl)) {
@@ -344,6 +359,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * @param   o1      A parameter to be inserted into the message
      * @param   o2      A parameter to be inserted into the message
      */
+    @Override
     public void log(int level, String msg, Object o1, Object o2) {
         Level lvl = convertLevel(level);
         if (isLoggable(lvl)) {
@@ -365,6 +381,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * @param   o2      A parameter to be inserted into the message
      * @param   o3      A parameter to be inserted into the message
      */
+    @Override
     public void log(int level, String msg, Object o1, Object o2, Object o3) {
         Level lvl = convertLevel(level);
         if (isLoggable(lvl)) {
@@ -385,6 +402,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * @param   msg	The string message (or a key in the message catalog)
      * @param   o      Objects to be inserted into the message
      */
+    @Override
     public void log(int level, String msg, Object[] o) {
         Level lvl = convertLevel(level);
         if (isLoggable(lvl)) {
@@ -403,6 +421,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * @param   level   The level for this message
      * @param   msg	The string message (or a key in the message catalog)
      */
+    @Override
     public void log(int level, String msg) {
         Level lvl = convertLevel(level);
         if (isLoggable(lvl)) {
@@ -424,6 +443,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * @param   msg	The string message (or a key in the message catalog)
      * @param   thrown	The exception to log
      */
+    @Override
     public void log(int level, String msg, Throwable thrown ){
         Level lvl = convertLevel(level);
         if (isLoggable(lvl)) {
@@ -440,6 +460,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
      * @return true if the given message level is currently being logged.
      * @param levelValue  the level to check
      */
+    @Override
     public boolean isLoggable(int levelValue) {
         return isLoggable(convertLevel(levelValue));
     }

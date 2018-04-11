@@ -60,9 +60,12 @@ public class AsciiWorkContext implements PrimitiveWorkContext, Serializable
     this.str = str;
   }
 
+  @Override
   public String toString() { return str; }
+  @Override
   public Object get() { return str; }
   
+  @Override
   public boolean equals(Object obj) {
     if (obj instanceof AsciiWorkContext) {
       return ((AsciiWorkContext)obj).str.equals(str);
@@ -70,10 +73,12 @@ public class AsciiWorkContext implements PrimitiveWorkContext, Serializable
     return false;
   }
 
+  @Override
   public void writeContext(WorkContextOutput out) throws IOException {
     out.writeASCII(str);
   }
   
+  @Override
   public void readContext(WorkContextInput in) throws IOException {
     str = in.readASCII();
   }

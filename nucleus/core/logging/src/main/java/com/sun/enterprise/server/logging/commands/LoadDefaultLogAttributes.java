@@ -66,8 +66,9 @@ public class LoadDefaultLogAttributes implements AdminCommand {
     @Inject
     LoggingConfigImpl loggingConfig;
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LoadDefaultLogAttributes.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LoadDefaultLogAttributes.class);
 
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         final String target = "default template";

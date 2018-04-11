@@ -66,6 +66,7 @@ public class ORBNamingProxy implements NamedNamingObjectProxy {
     @Inject
     private GlassFishORBHelper orbHelper;
 
+    @Override
     public Object handle(String name) throws NamingException {
 
         ORB orb = null;

@@ -59,7 +59,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Service(name="monitoring-config")
 public class MonitoringConfig {
 
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(MonitoringConfig.class);
 
     private static AtomicBoolean valueUpdated = new AtomicBoolean(false);
@@ -69,6 +69,7 @@ public class MonitoringConfig {
 
         try {
             ConfigSupport.apply(new SingleConfigCode<MonitoringService>() {
+                @Override
                 public Object run(MonitoringService param)
                 throws PropertyVetoException, TransactionFailure {
                     param.setMonitoringEnabled(enabled);
@@ -88,6 +89,7 @@ public class MonitoringConfig {
 
         try {
             ConfigSupport.apply(new SingleConfigCode<MonitoringService>() {
+                @Override
                 public Object run(MonitoringService param)
                 throws PropertyVetoException, TransactionFailure {
                     param.setMbeanEnabled(enabled);
@@ -107,6 +109,7 @@ public class MonitoringConfig {
 
         try {
             ConfigSupport.apply(new SingleConfigCode<MonitoringService>() {
+                @Override
                 public Object run(MonitoringService param)
                 throws PropertyVetoException, TransactionFailure {
                     param.setDtraceEnabled(enabled);
@@ -133,6 +136,7 @@ public class MonitoringConfig {
         try {
             ConfigSupport.apply(new SingleConfigCode<MonitoringService>() {
 
+                @Override
                 public Object run(MonitoringService param)
                         throws PropertyVetoException, TransactionFailure {
                     param.setMonitoringLevel(moduleName, level);
@@ -154,6 +158,7 @@ public class MonitoringConfig {
         //TODO: synchronize
         try {
             ConfigSupport.apply(new SingleConfigCode<ModuleMonitoringLevels>() {
+                @Override
                 public Object run(ModuleMonitoringLevels param)
                 throws PropertyVetoException, TransactionFailure {
                     Dom dom = Dom.unwrap(param);
@@ -194,6 +199,7 @@ public class MonitoringConfig {
         }
         try {
             ConfigSupport.apply(new SingleConfigCode<ContainerMonitoring>() {
+                @Override
                 public Object run(ContainerMonitoring param)
                 throws PropertyVetoException, TransactionFailure {
                     param.setLevel(level);

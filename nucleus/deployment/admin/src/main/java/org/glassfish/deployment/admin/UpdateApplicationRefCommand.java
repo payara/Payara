@@ -86,7 +86,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 })
 public class UpdateApplicationRefCommand implements AdminCommand {
 
-    final private static LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(UpdateApplicationRefCommand.class);
+    private final static LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(UpdateApplicationRefCommand.class);
 
     @Param(primary = true)
     private String name;

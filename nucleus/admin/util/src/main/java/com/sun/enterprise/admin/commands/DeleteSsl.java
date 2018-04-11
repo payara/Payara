@@ -81,7 +81,7 @@ import java.beans.PropertyVetoException;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class DeleteSsl implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteSsl.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteSsl.class);
 
     @Param(name="type", acceptableValues="network-listener, http-listener, iiop-listener, iiop-service, jmx-connector, protocol")
     public String type;
@@ -111,6 +111,7 @@ public class DeleteSsl implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         Target targetUtil = habitat.getService(Target.class);
@@ -159,6 +160,7 @@ public class DeleteSsl implements AdminCommand {
                 }
 
                 ConfigSupport.apply(new SingleConfigCode<JmxConnector>() {
+                    @Override
                     public Object run(JmxConnector param)
                     throws PropertyVetoException {
                         param.setSsl(null);

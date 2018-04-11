@@ -56,7 +56,7 @@ import java.io.PrintWriter;
 //@olsen: added class
 public final class Timer {
     // a method's timing descriptor
-    static private class MethodDescriptor {
+    private static class MethodDescriptor {
         final String name;
         int instantiations;
         int calls;
@@ -69,7 +69,7 @@ public final class Timer {
     }
 
     // a method call's timing descriptor
-    static private class MethodCall {
+    private static class MethodCall {
         final MethodDescriptor method;
         final String message;
         long self;
@@ -159,7 +159,7 @@ public final class Timer {
         }
     }
 
-    static private final String pad(String s, int i)
+    private static final String pad(String s, int i)
     {
         StringBuffer b = new StringBuffer();
         for (i -= s.length(); i > 0; i--)
@@ -175,11 +175,13 @@ public final class Timer {
 
         Arrays.sort(calls,
                     new Comparator() {
+                            @Override
                             public int compare(Object o1,
                                                Object o2) {
                                 return (int)(((MethodDescriptor)o2).total
                                              - ((MethodDescriptor)o1).total);
                             }
+                            @Override
                             public boolean equals(Object obj) {
                                 return (obj != null && compare(this, obj) == 0);
                             }

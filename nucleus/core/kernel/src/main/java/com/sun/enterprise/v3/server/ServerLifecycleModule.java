@@ -80,7 +80,7 @@ public final class ServerLifecycleModule {
 
     private final static String LIFECYCLE_PREFIX = "lifecycle_"; 
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ServerLifecycleModule.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ServerLifecycleModule.class);
 
     ServerLifecycleModule(ServerContext ctx, String name, String className) {
         this.name = name;
@@ -229,6 +229,7 @@ public final class ServerLifecycleModule {
          // set the url class loader as the thread context class loader
         java.security.AccessController.doPrivileged(
             new java.security.PrivilegedAction() {
+                @Override
                 public Object run() {
                     Thread.currentThread().setContextClassLoader(urlClassLoader);
                     return null;
@@ -244,6 +245,7 @@ public final class ServerLifecycleModule {
         return statusMsg;
     }
 
+    @Override
     public String toString() {
         return "Server LifecycleListener support";
     }

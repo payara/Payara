@@ -89,12 +89,14 @@ public class SourceFileAttribute extends ClassAttribute {
 				   (ConstUtf8) pool.constantAt(index));
   }
 
+    @Override
   void write(DataOutputStream out) throws IOException {
     out.writeShort(attrName().getIndex());
     out.writeInt(2);
     out.writeShort(sourceFileName.getIndex());
   }
 
+    @Override
   void print(PrintStream out, int indent) {
     ClassPrint.spaces(out, indent);
     out.println("SourceFile: " + sourceFileName.asString());//NOI18N

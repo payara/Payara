@@ -74,6 +74,7 @@ public class IntegrationPointComparator implements Comparator<IntegrationPoint>,
      *	    the <code>parentId</code>s are equal.  If the priorities happen to
      *	    be equal as well, it will compare the <code>id</code>s.</p>
      */
+    @Override
     public int compare(IntegrationPoint ip1, IntegrationPoint ip2) {
 	// First check parentIds
 	String left = "" + ip1.getParentId();

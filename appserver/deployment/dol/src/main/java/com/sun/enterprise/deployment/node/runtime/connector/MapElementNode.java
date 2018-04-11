@@ -70,6 +70,7 @@ public class MapElementNode extends RuntimeDescriptorNode {
      *
      * @param descriptor the new descriptor
      */
+    @Override
     public void addDescriptor(Object newDescriptor) {
 	MapElement descriptor = (MapElement) getDescriptor();
 	if (descriptor==null) {

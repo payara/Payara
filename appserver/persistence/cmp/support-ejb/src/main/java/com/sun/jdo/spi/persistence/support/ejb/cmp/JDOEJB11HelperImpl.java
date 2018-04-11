@@ -77,12 +77,12 @@ import org.glassfish.persistence.common.I18NHelper;
  *
  * @author Marina Vatkina
  */
-abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
+public abstract class JDOEJB11HelperImpl implements JDOEJB11Helper {
 
     /**
      * I18N message handler
      */
-    protected final static ResourceBundle messages = I18NHelper.loadBundle(
+    protected static final ResourceBundle messages = I18NHelper.loadBundle(
         JDOEJB11HelperImpl.class);
 
     //The logger
@@ -94,6 +94,7 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * @param pm the associated instance of PersistenceManager.
      * @return instance of EJBObject.
      */
+    @Override
     public EJBObject convertPCToEJBObject (Object pc, PersistenceManager pm) {
         if (pc == null) return null;
         Object jdoObjectId = pm.getObjectId(pc);
@@ -117,6 +118,7 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * @throws IllegalArgumentException if validate is true and instance does
      * not exist in the database or is deleted.
      */
+    @Override
     public Object convertEJBObjectToPC(EJBObject o, PersistenceManager pm, boolean validate) {
         Object key = null;
         try {
@@ -168,6 +170,7 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * @param pm the associated instance of PersistenceManager.
      * @return Collection of EJBObjects.
      */
+    @Override
     public Collection convertCollectionPCToEJBObject (Collection pcs, PersistenceManager pm) {
         Collection rc = new java.util.ArrayList();
 
@@ -190,6 +193,7 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * @param pm the associated instance of PersistenceManager.
      * @return Set of EJBObjects.
      */
+    @Override
     public Set convertCollectionPCToEJBObjectSet (Collection pcs, PersistenceManager pm) {
         java.util.Set rc = new java.util.HashSet();
 
@@ -215,6 +219,7 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * @throws IllegalArgumentException if validate is true and at least one instance does
      * not exist in the database or is deleted.
      */
+    @Override
     public Collection convertCollectionEJBObjectToPC (Collection coll, PersistenceManager pm, 
                                                       boolean validate) {
         Collection rc = new java.util.ArrayList();
@@ -237,6 +242,7 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * @param pm the associated instance of PersistenceManager.
      * @return instance of the PrimaryKey Class.
      */
+    @Override
     public Object convertPCToPrimaryKey (Object pc, PersistenceManager pm) {
         if (pc == null) return null;
         Object rc = convertObjectIdToPrimaryKey(pm.getObjectId(pc));
@@ -255,6 +261,7 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * @param pm the associated instance of PersistenceManager.
      * @return Collection of the PrimaryKey Class instances.
      */
+    @Override
     public Collection convertCollectionPCToPrimaryKey (Collection pcs, PersistenceManager pm) {
         Collection rc = new java.util.ArrayList();
 
@@ -276,7 +283,8 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * @param objectId the Object Id to be converted.
      * @return instance of the PrimaryKey Class.
      */
-    abstract public Object convertObjectIdToPrimaryKey (Object objectId);
+    @Override
+    public abstract Object convertObjectIdToPrimaryKey (Object objectId);
 
    /**
      * Converts instance of a PrimaryKey Class to an instance of the Object Id of a
@@ -284,7 +292,8 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * @param key the PrimaryKey instance to be converted.
      * @return instance of the Object Id.
      */
-    abstract public Object convertPrimaryKeyToObjectId (Object key);
+    @Override
+    public abstract Object convertPrimaryKeyToObjectId (Object key);
 
    /**
      * Converts Collection of Object Id's of persistence-capable instances to a
@@ -292,6 +301,7 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * @param oids Collection of the Object Id to be converted.
      * @return Collection of of the PrimaryKey Class instances.
      */
+    @Override
     public Collection convertCollectionObjectIdToPrimaryKey (Collection oids) {
         Collection rc = new java.util.ArrayList();
 
@@ -313,6 +323,7 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * @param keys Collection of the PrimaryKey instances to be converted.
      * @return Collection of the Object Id's.
      */
+    @Override
     public Collection convertCollectionPrimaryKeyToObjectId (Collection keys) {
         Collection rc = new java.util.ArrayList();
 
@@ -333,6 +344,7 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * @param serializableObject Instance of a Serializable Object
      * @return serializableObject serialized into a byte array
      */
+    @Override
     public byte[] writeSerializableObjectToByteArray(Serializable serializableObject)
     {
         byte[] byteArray = null;
@@ -363,6 +375,7 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * @return A Serializable object contructed from byteArray
      * @see #writeSerializableObjectToByteArray(Serializable)
      */
+    @Override
     public Serializable readSerializableObjectFromByteArray(byte[] byteArray)
     {
         Serializable serializableObject = null;
@@ -400,6 +413,7 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * correct policy value to the NumericConverterFactory.
      * @return NumericConverter for given object policy
      */
+    @Override
     public NumericConverter getNumericConverter() {
         int policy = CMPHelper.getNumericConverterPolicy(getContainer());
         return NumericConverterFactory.getNumericConverter(policy);
@@ -410,7 +424,8 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * of the concrete bean class.
      * @return the pc class object
      */
-    abstract public Class getPCClass ();
+    @Override
+    public abstract Class getPCClass ();
 
     /**
      * Validates that this instance is of the correct implementation class
@@ -419,7 +434,8 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * @param o the instance to validate.
      * @throws IllegalArgumentException if validation fails.
      */
-    abstract public void assertInstanceOfRemoteInterfaceImpl(Object o);
+    @Override
+    public abstract void assertInstanceOfRemoteInterfaceImpl(Object o);
 
    /**
      * Validates that this instance is of the correct implementation class
@@ -510,6 +526,7 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
          }
 
          /** Overrides the same method of the base class */
+         @Override
          protected Class resolveClass(ObjectStreamClass v)
               throws IOException, ClassNotFoundException {
               return Class.forName(v.getName(), true, classLoader);

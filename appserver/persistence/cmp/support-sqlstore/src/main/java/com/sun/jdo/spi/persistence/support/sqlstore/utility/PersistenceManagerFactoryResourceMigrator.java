@@ -65,6 +65,7 @@ public class PersistenceManagerFactoryResourceMigrator implements ConfigurationU
     @Inject
     Resources resources;
 
+    @Override
     public void postConstruct() {
         Collection<PersistenceManagerFactoryResource> pmfResources = resources.getResources(PersistenceManagerFactoryResource.class);
         for (final PersistenceManagerFactoryResource pmfResource : pmfResources) {
@@ -75,6 +76,7 @@ public class PersistenceManagerFactoryResourceMigrator implements ConfigurationU
             try {
                 ConfigSupport.apply(new SingleConfigCode<Resources>() {
 
+                    @Override
                     public Object run(Resources resources) throws PropertyVetoException, TransactionFailure {
                         // delete the persitence-manager-factory resource
                         resources.getResources().remove(pmfResource);

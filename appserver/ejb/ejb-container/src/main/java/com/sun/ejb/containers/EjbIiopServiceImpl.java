@@ -51,6 +51,7 @@ import org.jvnet.hk2.annotations.Service;
 public class EjbIiopServiceImpl implements EjbService {
 
 
+    @Override
     public EjbDescriptor ejbIdToDescriptor(long ejbId) {
 
         // Ejb container util might not have been initialized yet if this is being

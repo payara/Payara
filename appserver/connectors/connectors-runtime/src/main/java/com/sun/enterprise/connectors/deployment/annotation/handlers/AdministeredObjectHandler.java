@@ -70,9 +70,10 @@ import org.jvnet.hk2.annotations.Service;
 @AnnotationHandlerFor(AdministeredObject.class)
 public class AdministeredObjectHandler extends AbstractHandler {
 
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(AdministeredObjectHandler.class);
     
+    @Override
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();
         AdministeredObject adminObject = (AdministeredObject) element.getAnnotation();
@@ -144,6 +145,7 @@ public class AdministeredObjectHandler extends AbstractHandler {
         }
     }
 
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return null;
     }
@@ -151,6 +153,7 @@ public class AdministeredObjectHandler extends AbstractHandler {
     /**
      * @return a default processed result
      */
+    @Override
     protected HandlerProcessingResult getDefaultProcessedResult() {
         return HandlerProcessingResultImpl.getDefaultResult(
                 getAnnotationType(), ResultType.PROCESSED);

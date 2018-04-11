@@ -55,16 +55,19 @@ public final class EnumerationIterator implements Iterator
         mEnum = enumIn;
     }
 
+    @Override
     public boolean hasNext()
     {
         return (mEnum.hasMoreElements());
     }
 
+    @Override
     public Object next()
     {
         return (mEnum.nextElement());
     }
 
+    @Override
     public void remove()
     {
         throw new UnsupportedOperationException("");

@@ -133,6 +133,7 @@ public class MappingFieldElementImpl extends MappingMemberElementImpl
 	 * @return <code>true</code> if the field is read only,
 	 * <code>false</code> otherwise
 	 */
+        @Override
 	public boolean isReadOnly () { return getProperty(READ_ONLY); }
 
 	/** Set whether this field element is read only or not.
@@ -140,6 +141,7 @@ public class MappingFieldElementImpl extends MappingMemberElementImpl
 	 * read only; otherwise, it is not
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setReadOnly (boolean flag) throws ModelException
 	{
 		Boolean old = JavaTypeHelper.valueOf(isReadOnly());
@@ -161,6 +163,7 @@ public class MappingFieldElementImpl extends MappingMemberElementImpl
 	 * @return <code>true</code> if the field is in a concurrency check,
 	 * <code>false</code> otherwise
 	 */
+        @Override
 	public boolean isInConcurrencyCheck ()
 	{
 		return getProperty(IN_CONCURRENCY_CHECK);
@@ -171,6 +174,7 @@ public class MappingFieldElementImpl extends MappingMemberElementImpl
 	 * being in a concurrency check; otherwise, it is not
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setInConcurrencyCheck (boolean flag) throws ModelException
 	{
 		Boolean old = JavaTypeHelper.valueOf(isInConcurrencyCheck());
@@ -192,6 +196,7 @@ public class MappingFieldElementImpl extends MappingMemberElementImpl
 	 * @return <code>true</code> if the field is a version field, 
 	 * <code>false</code> otherwise
 	 */
+        @Override
 	public boolean isVersion () { return _isVersion; }
 
 	/** Set whether this field element is a version field or not.
@@ -199,6 +204,7 @@ public class MappingFieldElementImpl extends MappingMemberElementImpl
 	 * as a version field; otherwise, it is not
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setVersion (boolean flag) throws ModelException
 	{
 		Boolean old = JavaTypeHelper.valueOf(isVersion());
@@ -223,6 +229,7 @@ public class MappingFieldElementImpl extends MappingMemberElementImpl
 	 * {@link #GROUP_NONE}, or anything less than or equal to
 	 * {@link #GROUP_INDEPENDENT}
 	 */
+        @Override
 	public int getFetchGroup () { return _fetchGroup; }
 
 	/** Set the fetch group of this field element.
@@ -231,6 +238,7 @@ public class MappingFieldElementImpl extends MappingMemberElementImpl
 	 * equal to {@link #GROUP_INDEPENDENT}
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setFetchGroup (int group) throws ModelException
 	{
 		Integer old = new Integer(getFetchGroup());
@@ -266,6 +274,7 @@ public class MappingFieldElementImpl extends MappingMemberElementImpl
 	 * mapped.
 	 * @return the names of the columns mapped by this mapping field
 	 */
+        @Override
 	public ArrayList getColumns ()
 	{
 		if (_columns == null)
@@ -278,6 +287,7 @@ public class MappingFieldElementImpl extends MappingMemberElementImpl
 	 * @param column column element to be added to the mapping
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void addColumn (DBMemberElement column) throws ModelException
 	{
 		if (column != null)
@@ -321,6 +331,7 @@ public class MappingFieldElementImpl extends MappingMemberElementImpl
 	 * the mapping
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void removeColumn (String columnName) throws ModelException
 	{
 		if (columnName != null)

@@ -53,7 +53,7 @@ import java.io.DataOutputStream;
  * a class file.
  */
 
-final public class ClassFile implements VMConstants {
+public final class ClassFile implements VMConstants {
 
   /* Class file constants */
   public static final int magic = 0xcafebabe;
@@ -127,28 +127,28 @@ final public class ClassFile implements VMConstants {
   /**
    * Is the class final?
    */
-  final public boolean isFinal() {
+  public final boolean isFinal() {
     return (accessFlags & ACCFinal) != 0;
   }
 
   /**
    * Is the class an interface?
    */
-  final public boolean isInterface() {
+  public final boolean isInterface() {
     return (accessFlags & ACCInterface) != 0;
   }
 
   /**
    * Is the class public?
    */
-  final public boolean isPublic() {
+  public final boolean isPublic() {
     return (accessFlags & ACCPublic) != 0;
   }
 
   /**
    * Is the class abstract?
    */
-  final public boolean isAbstract() {
+  public final boolean isAbstract() {
     return (accessFlags & ACCAbstract) != 0;
   }
 
@@ -549,15 +549,18 @@ class InterfaceArraySorter extends ArraySorter {
   }
 
   /* return the size of the array being sorted */
+  @Override
   int size() { return theArray.length; }
 
   /* return -1 if o1 < o2, 0 if o1 == o2, 1 if o1 > o2 */
+  @Override
   int compare(int o1Index, int o2Index) {
     return theArray[o1Index].asString().compareTo(
 	theArray[o2Index].asString());
   }
 
   /* Swap the elements at index o1Index and o2Index */
+  @Override
   void swap(int o1Index, int o2Index) {
     ConstClass tmp = theArray[o1Index];
     theArray[o1Index] = theArray[o2Index];
@@ -573,15 +576,18 @@ class FieldArraySorter extends ArraySorter {
   }
 
   /* return the size of the array being sorted */
+  @Override
   int size() { return theArray.length; }
 
   /* return -1 if o1 < o2, 0 if o1 == o2, 1 if o1 > o2 */
+  @Override
   int compare(int o1Index, int o2Index) {
     return theArray[o1Index].name().asString().compareTo(
 	theArray[o2Index].name().asString());
   }
 
   /* Swap the elements at index o1Index and o2Index */
+  @Override
   void swap(int o1Index, int o2Index) {
     ClassField tmp = theArray[o1Index];
     theArray[o1Index] = theArray[o2Index];
@@ -597,9 +603,11 @@ class MethodArraySorter extends ArraySorter {
   }
 
   /* return the size of the array being sorted */
+  @Override
   int size() { return theArray.length; }
 
   /* return -1 if o1 < o2, 0 if o1 == o2, 1 if o1 > o2 */
+  @Override
   int compare(int o1Index, int o2Index) {
     int cmp = theArray[o1Index].name().asString().compareTo(
 	theArray[o2Index].name().asString());
@@ -611,6 +619,7 @@ class MethodArraySorter extends ArraySorter {
   }
 
   /* Swap the elements at index o1Index and o2Index */
+  @Override
   void swap(int o1Index, int o2Index) {
     ClassMethod tmp = theArray[o1Index];
     theArray[o1Index] = theArray[o2Index];

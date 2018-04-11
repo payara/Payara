@@ -80,7 +80,7 @@ import org.glassfish.api.admin.RestEndpoints;
 })
 public class ListJndiEntries implements AdminCommand {
 
-   final private static LocalStringManagerImpl localStrings =
+   private final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ListJndiEntries.class);
 
     @Param(name="context", optional = true)
@@ -89,6 +89,7 @@ public class ListJndiEntries implements AdminCommand {
     @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     String target;
 
+   @Override
     public void execute(AdminCommandContext context) {
         List<String> names = null;
         final ActionReport report = context.getActionReport();

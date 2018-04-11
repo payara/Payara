@@ -73,11 +73,13 @@ public class Remote30WrapperGenerator extends Generator
 
     private ClassLoader loader;
 
+    @Override
     public String getGeneratedClass() {
         return remoteClientClassName;
     }
     
     // For corba codegen infrastructure
+    @Override
     public String className() {
         return getGeneratedClass();
     }
@@ -126,6 +128,7 @@ public class Remote30WrapperGenerator extends Generator
     }
 
 
+    @Override
     public void evaluate() {
 
         _clear();

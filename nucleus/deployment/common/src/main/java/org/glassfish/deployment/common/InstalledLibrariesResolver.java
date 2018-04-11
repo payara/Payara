@@ -554,6 +554,7 @@ public class InstalledLibrariesResolver {
             this.implVendor = implVendor;
         }
 
+        @Override
         public boolean equals(Object o){
             if(o != null && o instanceof Extension){
                 Extension e = (Extension)o;
@@ -573,6 +574,7 @@ public class InstalledLibrariesResolver {
             }
         }
 
+        @Override
         public int hashCode() {
             int result = 17;
             result = 37*result + extensionName.hashCode();

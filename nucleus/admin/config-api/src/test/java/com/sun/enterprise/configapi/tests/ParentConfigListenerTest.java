@@ -69,6 +69,7 @@ public class ParentConfigListenerTest extends ConfigApiTest {
 
     ServiceLocator habitat;
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -87,6 +88,7 @@ public class ParentConfigListenerTest extends ConfigApiTest {
 
         ConfigSupport.apply(new SingleConfigCode<NetworkListeners>() {
 
+            @Override
             public Object run(NetworkListeners param) throws TransactionFailure {
                 NetworkListener newListener = param.createChild(NetworkListener.class);
                 newListener.setName("Funky-Listener");

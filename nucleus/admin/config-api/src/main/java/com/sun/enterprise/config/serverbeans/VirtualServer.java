@@ -506,6 +506,7 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
         }
     )
     @Element
+    @Override
     List<Property> getProperty();
 
 }

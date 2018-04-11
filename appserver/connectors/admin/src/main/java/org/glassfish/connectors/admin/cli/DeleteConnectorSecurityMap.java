@@ -77,7 +77,7 @@ import javax.inject.Inject;
 @I18n("delete.connector.security.map")
 public class DeleteConnectorSecurityMap extends ConnectorSecurityMap implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteConnectorSecurityMap.class);
 
     @Param(name="poolname")
@@ -98,6 +98,7 @@ public class DeleteConnectorSecurityMap extends ConnectorSecurityMap implements 
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
@@ -118,6 +119,7 @@ public class DeleteConnectorSecurityMap extends ConnectorSecurityMap implements 
             // delete connector-security-map
             ConfigSupport.apply(new SingleConfigCode<ConnectorConnectionPool>() {
 
+                @Override
                 public Object run(ConnectorConnectionPool param) throws PropertyVetoException,
                         TransactionFailure {
 

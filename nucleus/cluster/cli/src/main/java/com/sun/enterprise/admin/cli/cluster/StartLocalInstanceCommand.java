@@ -295,6 +295,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
             info = inf;
     }
 
+    @Override
     public String toString() {
         return ObjectAnalyzer.toStringWithSuper(this);
     }

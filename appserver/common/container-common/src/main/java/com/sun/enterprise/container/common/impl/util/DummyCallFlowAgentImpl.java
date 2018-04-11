@@ -52,13 +52,18 @@ import com.sun.enterprise.container.common.spi.util.EntityManagerQueryMethod;
 public class DummyCallFlowAgentImpl
     implements CallFlowAgent {
 
+    @Override
     public boolean isEnabled() {return false;}
 
+    @Override
     public void entityManagerMethodStart(EntityManagerMethod val) {}
 
+    @Override
     public void entityManagerMethodEnd() {}
 
+    @Override
     public void entityManagerQueryStart(EntityManagerQueryMethod val) {}
 
+    @Override
     public void entityManagerQueryEnd() {}
 }

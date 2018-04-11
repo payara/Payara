@@ -170,6 +170,7 @@ public class DynamicAttributesDescriptor extends Observable implements Serializa
      * should be overridden to describe itself. Refer to the comments on print() method for more details.
      * This method is optimized for persformance reasons.
      */ 
+    @Override
     public String toString() {
         StringBuffer toStringBuf = new StringBuffer();
         this.print(toStringBuf);

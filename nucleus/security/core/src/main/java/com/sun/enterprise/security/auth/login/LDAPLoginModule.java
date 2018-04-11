@@ -87,6 +87,7 @@ public class LDAPLoginModule extends PasswordLoginModule
      * Performs authentication for the current user.
      *
      */
+    @Override
     protected void authenticate ()
         throws LoginException
     {

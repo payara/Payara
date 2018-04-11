@@ -83,7 +83,7 @@ public class ConfigCacheImpl
     private Map classLoaderToClassType;
 
     /** The logger. */
-    protected final static Logger logger = LogHelperSQLStore.getLogger();
+    protected static final Logger logger = LogHelperSQLStore.getLogger();
 
     public ConfigCacheImpl() {
         classConfigs = new HashMap();
@@ -102,6 +102,7 @@ public class ConfigCacheImpl
      * @param pcClass The input pcClass.
      * @return PersistenceConfig for given pcClass.
      */
+    @Override
     public synchronized PersistenceConfig getPersistenceConfig(Class pcClass) {
         ClassDesc sqlConfig =
                 (ClassDesc) classConfigs.get(pcClass);
@@ -129,6 +130,7 @@ public class ConfigCacheImpl
      * @param oidType The input oidType.
      * @return The Class instance corresponding to given oidType.
      */
+    @Override
     public Class getClassByOidClass(Class oidType) {
         return (Class) oidClassToClassType.get(oidType);
     }
@@ -136,6 +138,7 @@ public class ConfigCacheImpl
     /**
      * @inheritDoc
      */
+    @Override
     public void notifyApplicationUnloaded(ClassLoader classLoader) {
         boolean debug = logger.isLoggable(Logger.FINEST);
 
@@ -199,6 +202,7 @@ public class ConfigCacheImpl
      *    
      * @param vcCache the VersionConsistencyCache instance. 
      */  
+    @Override
     public synchronized void setVersionConsistencyCache(
             VersionConsistencyCache vcCache) { 
         this.vcCache = vcCache;

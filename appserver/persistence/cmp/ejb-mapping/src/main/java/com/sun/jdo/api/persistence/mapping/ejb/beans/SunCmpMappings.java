@@ -114,7 +114,7 @@ public class SunCmpMappings extends org.netbeans.modules.schema2beans.BaseBean
 	static Vector comparators = new Vector();
 	private static final org.netbeans.modules.schema2beans.Version runtimeVersion = new org.netbeans.modules.schema2beans.Version(5, 0, 0);
 
-	static public final String SUN_CMP_MAPPING = "SunCmpMapping";	// NOI18N
+	public static final String SUN_CMP_MAPPING = "SunCmpMapping";	// NOI18N
 
 	public SunCmpMappings() throws org.netbeans.modules.schema2beans.Schema2BeansException {
 		this(null, Common.USE_DEFAULT_VALUES);
@@ -322,6 +322,7 @@ public class SunCmpMappings extends org.netbeans.modules.schema2beans.BaseBean
 	}
 
 	// Dump the content of this bean returning it as a String
+        @Override
 	public void dump(StringBuffer str, String indent){
 		String s;
 		Object o;
@@ -341,6 +342,7 @@ public class SunCmpMappings extends org.netbeans.modules.schema2beans.BaseBean
 		}
 
 	}
+        @Override
 	public String dumpBeanNode(){
 		StringBuffer str = new StringBuffer();
 		str.append("SunCmpMappings\n");	// NOI18N

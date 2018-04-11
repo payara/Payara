@@ -88,6 +88,7 @@ public class MEJBNamingObjectProxy implements NamingObjectProxy {
         return jndiNames;
     }
 
+    @Override
     public Object create(Context ic) throws NamingException {
 
         Object mEJBHome = null;

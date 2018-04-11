@@ -53,11 +53,13 @@ public final class DebugSinkImpl implements DebugSink
         mPrintStream = out;
     }
 
+    @Override
     public void print(final Object o)
     {
         mPrintStream.print("" + o);
     }
 
+    @Override
     public void println(Object o)
     {
         mPrintStream.println("" + o);

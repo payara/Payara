@@ -98,6 +98,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
      * Constructor
      */
 
+    @Override
     public void postConstruct() {
         // set logging.properties filename
         setupConfigDir(env.getConfigDirPath(), env.getLibPath());
@@ -231,6 +232,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
      * @param propertyValue Value to set
      * @throws IOException
      */
+    @Override
     public synchronized String setLoggingProperty(String propertyName, String propertyValue) throws IOException {
         loadLoggingProperties();
         // update the property
@@ -258,6 +260,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
      * @param propertyValue Value to set
      * @throws IOException
      */
+    @Override
     public synchronized String setLoggingProperty(String propertyName, String propertyValue, String targetConfigName) throws IOException {
         loadLoggingProperties(targetConfigName);
         // update the property
@@ -285,6 +288,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @throws  IOException
       */
 
+    @Override
     public synchronized Map<String, String> updateLoggingProperties(Map<String, String> properties) throws IOException {
         Map<String, String> m = new HashMap<String, String>();
         loadLoggingProperties();
@@ -318,6 +322,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @throws  IOException
       */
 
+    @Override
     public synchronized Map<String, String> updateLoggingProperties(Map<String, String> properties, String targetConfigName) throws IOException {
         Map<String, String> m = new HashMap<String, String>();
         loadLoggingProperties(targetConfigName);
@@ -346,6 +351,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @throws  IOException
       */
 
+    @Override
     public synchronized Map<String, String> getLoggingProperties(String targetConfigName) throws IOException {
         Map<String, String> m = new HashMap<String, String>();
         try {
@@ -373,6 +379,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @throws  IOException
       */
 
+    @Override
     public synchronized Map<String, String> getLoggingProperties() throws IOException {
         Map<String, String> m = new HashMap<String, String>();
         try {
@@ -481,6 +488,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @throws  IOException
       */
 
+    @Override
     public synchronized void deleteLoggingProperties(Map<String, String> properties) throws IOException {
         loadLoggingProperties();
 
@@ -510,6 +518,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @throws  IOException
       */
 
+    @Override
     public synchronized void deleteLoggingProperties(Map<String, 
             String> properties, String targetConfigName) throws IOException {
         loadLoggingProperties(targetConfigName);
@@ -580,6 +589,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @throws  IOException
       */
 
+    @Override
     public String createZipFile(String sourceDir) throws IOException {
         ZipOutputStream zout = null;
         String zipFile = getZipFileName(sourceDir);

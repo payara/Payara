@@ -82,6 +82,7 @@ public class EjbsContext extends AnnotationContext
         return ejbContexts;
     }
     
+    @Override
     public void endElement(ElementType type, AnnotatedElement element) {
         
         if (ElementType.TYPE.equals(type)) {
@@ -90,6 +91,7 @@ public class EjbsContext extends AnnotationContext
         }
     }
 
+    @Override
     public String getComponentClassName() {
         return componentClassName;
     }

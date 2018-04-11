@@ -89,6 +89,7 @@ public class RemoteResponseManager implements ResponseManager {
         logger.finer("------- RAW RESPONSE  ---------");
     }
 
+    @Override
     public void process() throws RemoteException {
         checkCode();  // Exception == Goodbye!
         try { 

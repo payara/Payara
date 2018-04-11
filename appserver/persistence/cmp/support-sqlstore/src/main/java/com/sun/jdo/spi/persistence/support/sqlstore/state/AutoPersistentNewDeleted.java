@@ -54,7 +54,7 @@ public class AutoPersistentNewDeleted extends LifeCycleState {
     /**
      * I18N message handler
      */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
             "com.sun.jdo.spi.persistence.support.sqlstore.Bundle", // NOI18N
             AutoPersistentNewDeleted.class.getClassLoader());
 
@@ -84,18 +84,22 @@ public class AutoPersistentNewDeleted extends LifeCycleState {
         stateType = AP_NEW_DELETED;
     }
 
+    @Override
     public LifeCycleState transitionMakePersistent() {
         return changeState(P_NEW_DELETED);
     }
 
+    @Override
     public LifeCycleState transitionCommit(boolean retainValues) {
         return changeState(TRANSIENT);
     }
 
+    @Override
     public LifeCycleState transitionRollback(boolean retainValues) {
         return changeState(TRANSIENT);
     }
 
+    @Override
     public LifeCycleState transitionReadField(boolean optimisitic, boolean nontransactonalRead,
                                               boolean transactionActive) {
         // Cannot read a deleted object
@@ -103,12 +107,14 @@ public class AutoPersistentNewDeleted extends LifeCycleState {
                 "jdo.lifecycle.deleted.accessField")); // NOI18N
     }
 
+    @Override
     public LifeCycleState transitionWriteField(boolean transactionActive) {
         // Cannot update a deleted object
         throw new JDOUserException(I18NHelper.getMessage(messages,
                 "jdo.lifecycle.deleted.accessField")); // NOI18N
     }
 
+    @Override
     public boolean needsRestoreOnRollback(boolean retainValues) {
         //
         // This is a special case where retores doesn't depend on

@@ -70,6 +70,7 @@ public class OrderedSet<T> extends Vector<T> implements Set<T> { // FIXME by sri
      * Add the given object to the Set if it is not equal (equals()) to
      * an element already in the set.
      */
+    @Override
     public boolean add(T o) {
         if (o != null && !this.contains(o)) {
             return super.add(o);
@@ -81,6 +82,7 @@ public class OrderedSet<T> extends Vector<T> implements Set<T> { // FIXME by sri
      * Add all the elements in the given set that are not already
      * in this ordered set.
      */
+    @Override
     public boolean addAll(Collection<? extends T> c) {
         boolean setChanged = false;
         if (c != null) {

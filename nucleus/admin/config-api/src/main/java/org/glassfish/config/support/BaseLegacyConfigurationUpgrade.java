@@ -65,6 +65,7 @@ public abstract class BaseLegacyConfigurationUpgrade implements LegacyConfigurat
         final String property, final String attribute)
         throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
+            @Override
             public Object run(ConfigBeanProxy param) {
                 PropertyBag bag = (PropertyBag) param;
                 final List<Property> propertyList = new ArrayList<Property>(bag.getProperty());
@@ -84,6 +85,7 @@ public abstract class BaseLegacyConfigurationUpgrade implements LegacyConfigurat
     protected void removeProperty(final ConfigBeanProxy target, final String property)
         throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
+            @Override
             public Object run(ConfigBeanProxy param) {
                 PropertyBag bag = (PropertyBag) param;
                 final List<Property> propertyList = new ArrayList<Property>(bag.getProperty());

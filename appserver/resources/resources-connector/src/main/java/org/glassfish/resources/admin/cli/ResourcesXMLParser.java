@@ -1560,19 +1560,23 @@ public class ResourcesXMLParser implements EntityResolver
      }
     
     
-      final static class AddResourcesErrorHandler implements ErrorHandler {
+      static final class AddResourcesErrorHandler implements ErrorHandler {
+          @Override
           public void error(SAXParseException e) throws org.xml.sax.SAXException{
            throw e ;
         }
+          @Override
           public void fatalError(SAXParseException e) throws org.xml.sax.SAXException{
           throw e ;
         }
+          @Override
           public void warning(SAXParseException e) throws org.xml.sax.SAXException{
           throw e ;
         }
     }
       
       
+    @Override
     public InputSource resolveEntity(String publicId, String systemId)
         throws SAXException {
         InputSource is = null;
@@ -1640,25 +1644,32 @@ public class ResourcesXMLParser implements EntityResolver
     }
 
     class MyLexicalHandler implements LexicalHandler{
+        @Override
         public void startDTD(String name, String publicId, String systemId) throws SAXException {
             isDoctypePresent = true;
         }
         
+        @Override
         public void endDTD() throws SAXException {
         }
         
+        @Override
         public void startEntity(String name) throws SAXException {
         }
         
+        @Override
         public void endEntity(String name) throws SAXException {
         }
         
+        @Override
         public void startCDATA() throws SAXException {
         }
         
+        @Override
         public void endCDATA() throws SAXException {
         }
         
+        @Override
         public void comment(char[] ch, int start, int length) throws SAXException {
         }
         

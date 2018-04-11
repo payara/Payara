@@ -83,7 +83,7 @@ public class TransactionManagerImpl implements TransactionManager {
     /**
      * the singleton object
      */
-    static private TransactionManagerImpl tm = null;
+    private static TransactionManagerImpl tm = null;
 
     /**
      * store the current psuedo object
@@ -98,8 +98,8 @@ public class TransactionManagerImpl implements TransactionManager {
     /**
      * mapping between CosTransaction status -> JTA status
      */
-    static private HashMap statusMap;
-    static private int[] directLookup;
+    private static HashMap statusMap;
+    private static int[] directLookup;
     static final int maxStatus;
 
 	/*
@@ -112,10 +112,10 @@ public class TransactionManagerImpl implements TransactionManager {
 	/**
 	* store XAResource Timeout 
 	*/
-	static private int xaTimeOut = 0;
+	private static int xaTimeOut = 0;
   	//END IASRI 4706150 
 
-	static private Status CosTransactionStatus[] =
+	private static Status CosTransactionStatus[] =
     {
         org.omg.CosTransactions.Status.StatusActive,
         org.omg.CosTransactions.Status.StatusMarkedRollback,
@@ -129,7 +129,7 @@ public class TransactionManagerImpl implements TransactionManager {
         org.omg.CosTransactions.Status.StatusRollingBack
     };
 
-    static private int JTAStatus[] =
+    private static int JTAStatus[] =
     {
         javax.transaction.Status.STATUS_ACTIVE,
         javax.transaction.Status.STATUS_MARKED_ROLLBACK,
@@ -229,7 +229,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * @param traceDir directory for tracing, current directory if null
      *
      */
-    static public void initJTSProperties(Properties props, String logDir,
+    public static void initJTSProperties(Properties props, String logDir,
                                          boolean trace, String traceDir) {
         if (traceDir == null) traceDir = "."/*#Frozen*/;
         if (logDir == null) logDir = "."/*#Frozen*/;
@@ -247,7 +247,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * given a CosTransactions Status, return
      * the equivalent JTA Status
      */
-    static public int mapStatus(Status status) {
+    public static int mapStatus(Status status) {
         int statusVal = status.value();
         if (statusVal < 0 || statusVal > maxStatus) {
             return javax.transaction.Status.STATUS_UNKNOWN;
@@ -262,6 +262,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * @exception NotSupportedException Thrown if the thread is already
      *    associated with a transaction.
      */
+    @Override
     public void begin()
         throws NotSupportedException, SystemException {
 
@@ -323,6 +324,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * @exception IllegalStateException Thrown if the current thread is
      *    not associated with a transaction.
      */
+    @Override
     public void commit() throws RollbackException,
 	HeuristicMixedException, HeuristicRollbackException, SecurityException,
 	IllegalStateException, SystemException {
@@ -365,6 +367,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * @exception IllegalStateException Thrown if the current thread is
      *    not associated with a transaction.
      */
+    @Override
     public void rollback()
         throws IllegalStateException, SecurityException, SystemException {
 
@@ -393,6 +396,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * @exception IllegalStateException Thrown if the current thread is
      *    not associated with a transaction.
      */
+    @Override
     public void setRollbackOnly()
         throws IllegalStateException, SystemException {
 
@@ -412,6 +416,7 @@ public class TransactionManagerImpl implements TransactionManager {
      *    the current thread, this method returns the Status.NoTransaction
      *    value.
      */
+    @Override
     public int getStatus() throws SystemException {
         try {
             Status status = current.get_status();
@@ -436,6 +441,7 @@ public class TransactionManagerImpl implements TransactionManager {
      *    encounters an unexpected error condition.
      *
      */
+    @Override
     public synchronized void setTransactionTimeout(int seconds)
         throws SystemException {
 
@@ -455,6 +461,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * Get the transaction object that represents the transaction
      * context of the calling thread
      */
+    @Override
     public Transaction getTransaction()
         throws SystemException {
 
@@ -478,6 +485,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * When this method returns, the calling thread is associated with the
      * transaction context specified.
      */
+    @Override
     public void resume(Transaction suspended) throws
         InvalidTransactionException, IllegalStateException, SystemException {
         // thread is already associated with a transaction?
@@ -507,6 +515,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * object reference. When this method returns, the calling thread
      * is associated with no transaction.
      */
+    @Override
     public Transaction suspend() throws SystemException {
         try {
             Control control = current.suspend();

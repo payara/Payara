@@ -92,6 +92,7 @@ public abstract class StatisticImpl implements Statistic,Serializable {
     /**
      * returns the name of the statistic
      */
+    @Override
     public String getName() {
         return this.statisticName;
     }
@@ -99,6 +100,7 @@ public abstract class StatisticImpl implements Statistic,Serializable {
     /**
      * returns the description of the statistic
      */
+    @Override
     public String getDescription() {
         return this.statisticDesc;
     }
@@ -106,6 +108,7 @@ public abstract class StatisticImpl implements Statistic,Serializable {
     /**
      * returns the unit of measurement for the statistic
      */
+    @Override
     public String getUnit() {
         return this.statisticUnit;
     }
@@ -113,6 +116,7 @@ public abstract class StatisticImpl implements Statistic,Serializable {
     /**
      * returns the time in millis, at which the last measurement was taken
      */
+    @Override
     public long getLastSampleTime() {
         return this.sampleTime;
     }
@@ -120,6 +124,7 @@ public abstract class StatisticImpl implements Statistic,Serializable {
     /**
      * returns the time in millis, at which the first measurement was taken
      */
+    @Override
     public long getStartTime() {
         return this.startTime;
     }
@@ -131,6 +136,7 @@ public abstract class StatisticImpl implements Statistic,Serializable {
         this.statisticDesc = desc;
     }
     
+    @Override
     public String toString() {
         return "Statistic " + getClass().getName() + NEWLINE +
             "Name: " + getName() + NEWLINE +

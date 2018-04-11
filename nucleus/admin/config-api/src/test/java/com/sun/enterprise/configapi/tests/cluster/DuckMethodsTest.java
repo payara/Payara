@@ -61,6 +61,7 @@ import static org.junit.Assert.assertTrue;
 public class DuckMethodsTest extends ConfigApiTest {
     ServiceLocator habitat;
 
+    @Override
     public String getFileName() {
         return "ClusterDomain";
     }

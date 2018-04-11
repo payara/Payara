@@ -72,6 +72,7 @@ public class ConnectorAllocator extends AbstractConnectorAllocator {
             this.resource = resource;
         }
 
+        @Override
         public void connectionClosed(ConnectionEvent evt) {
             if (resource.hasConnectionErrorOccurred()) {
                 return;
@@ -87,6 +88,7 @@ public class ConnectorAllocator extends AbstractConnectorAllocator {
          *
          * @param evt ConnectionEvent
          */
+        @Override
         public void badConnectionClosed(ConnectionEvent evt) {
 
             if (resource.hasConnectionErrorOccurred()) {
@@ -105,6 +107,7 @@ public class ConnectorAllocator extends AbstractConnectorAllocator {
          *
          * @param evt ConnectionEvent
          */
+        @Override
         public void connectionAbortOccurred(ConnectionEvent evt) {
             resource.setConnectionErrorOccurred();
 
@@ -113,6 +116,7 @@ public class ConnectorAllocator extends AbstractConnectorAllocator {
             poolMgr.resourceAbortOccurred(resource);
         }
 
+        @Override
         public void connectionErrorOccurred(ConnectionEvent evt) {
             resource.setConnectionErrorOccurred();
 
@@ -128,14 +132,17 @@ public class ConnectorAllocator extends AbstractConnectorAllocator {
 */
         }
 
+        @Override
         public void localTransactionStarted(ConnectionEvent evt) {
             // no-op
         }
 
+        @Override
         public void localTransactionCommitted(ConnectionEvent evt) {
             // no-op
         }
 
+        @Override
         public void localTransactionRolledback(ConnectionEvent evt) {
             // no-op
         }
@@ -154,6 +161,7 @@ public class ConnectorAllocator extends AbstractConnectorAllocator {
     }
 
 
+    @Override
     public ResourceHandle createResource()
             throws PoolingException {
         try {
@@ -182,6 +190,7 @@ public class ConnectorAllocator extends AbstractConnectorAllocator {
         }
     }
 
+    @Override
     public void fillInResourceObjects(ResourceHandle resource)
             throws PoolingException {
         try {
@@ -195,6 +204,7 @@ public class ConnectorAllocator extends AbstractConnectorAllocator {
         }
     }
 
+    @Override
     public void destroyResource(ResourceHandle resource)
             throws PoolingException {
 
@@ -213,6 +223,7 @@ public class ConnectorAllocator extends AbstractConnectorAllocator {
 
     }
 
+    @Override
     public boolean shareableWithinComponent() {
         return shareable;
     }

@@ -158,6 +158,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
      * Get a Deployer capable for each application found
      * Invoke the deployer load() method for each application.
      */
+    @Override
     public void postConstruct() {
         
         assert env!=null;
@@ -286,6 +287,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                         File tmpDir = new File(path);
                         tmpDir.deleteOnExit();
                         events.register(new org.glassfish.api.event.EventListener() {
+                            @Override
                             public void event(Event event) {
                                 if (event.is(EventTypes.SERVER_SHUTDOWN)) {
                                     if (tmpFile.exists()) {
@@ -447,6 +449,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
     }
 
 
+    @Override
     public String toString() {
         return "Application Loader";
     }
@@ -454,6 +457,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
     /**
      * Stopped all loaded applications
      */
+    @Override
     public void preDestroy() {
 
 

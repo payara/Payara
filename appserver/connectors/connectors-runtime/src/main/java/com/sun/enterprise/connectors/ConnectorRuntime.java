@@ -285,6 +285,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      *         appserv runtime
      *         else it returns ConnectorConstants.CLIENT
      */
+    @Override
     public ProcessEnvironment.ProcessType getEnvironment() {
         return processType;
     }
@@ -390,6 +391,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * @return ConnectorDescriptor pertaining to rar.
      * @throws ConnectorRuntimeException when unable to get descriptor
      */
+    @Override
     public ConnectorDescriptor getConnectorDescriptor(String rarName)
             throws ConnectorRuntimeException {
         return connectorService.getConnectorDescriptor(rarName);
@@ -399,6 +401,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public void createActiveResourceAdapter(String moduleDir,
                                             String moduleName,
                                             ClassLoader loader) throws ConnectorRuntimeException {
@@ -430,6 +433,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public void destroyActiveResourceAdapter(String moduleName)
             throws ConnectorRuntimeException {
         resourceAdapterAdmService.stopActiveResourceAdapter(moduleName);
@@ -444,6 +448,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      *  @return created/already present MCF instance
      *  @throws ConnectorRuntimeException if creation/retrieval of MCF fails
      */
+    @Override
     public ManagedConnectionFactory obtainManagedConnectionFactory(
            PoolInfo poolInfo) throws ConnectorRuntimeException {
         return ccPoolAdmService.obtainManagedConnectionFactory(poolInfo);
@@ -460,6 +465,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * @return created/already present MCF instance
      * @throws ConnectorRuntimeException if creation/retrieval of MCF fails
      */
+    @Override
     public ManagedConnectionFactory obtainManagedConnectionFactory(
             PoolInfo poolInfo, Hashtable env) throws ConnectorRuntimeException {
         return ccPoolAdmService.obtainManagedConnectionFactory(poolInfo, env);
@@ -499,6 +505,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public Object lookupPMResource(ResourceInfo resourceInfo, boolean force) throws NamingException{
         Object result ;
         try{
@@ -525,6 +532,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public Object lookupPMResource(String jndiName, boolean force) throws NamingException {
         ResourceInfo resourceInfo = new ResourceInfo(jndiName);
         return lookupPMResource(resourceInfo, force);
@@ -533,6 +541,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public Object lookupNonTxResource(String jndiName, boolean force) throws NamingException {
         ResourceInfo resourceInfo = new ResourceInfo(jndiName);
         return lookupNonTxResource(resourceInfo, force);
@@ -541,6 +550,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public Object lookupNonTxResource(ResourceInfo resourceInfo, boolean force) throws NamingException {
 
         Object result ;
@@ -655,6 +665,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * @return Map<String, Object> String represents property name
      *         and Object is the defaultValue that is a primitive type or String.
      */
+    @Override
     public Map<String, Object> getConnectionDefinitionPropertiesAndDefaults(String connectionDefinitionClassName, String resType) {
         return ccPoolAdmService.getConnectionDefinitionPropertiesAndDefaults(
                 connectionDefinitionClassName, resType);
@@ -665,6 +676,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * resource-type and factory-class-name pair.
      * @return map of resource-type & factory-class-name
      */
+    @Override
     public Map<String,String> getBuiltInCustomResources(){
         return ConnectorsUtil.getBuiltInCustomResources();
     }
@@ -673,6 +685,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * Returns the system RAR names that allow pool creation
      * @return String array representing list of system-rars
      */
+    @Override
     public String[] getSystemConnectorsAllowingPoolCreation(){
 
         Collection<String> validSystemRarsAllowingPoolCreation = new ArrayList<String>();
@@ -690,6 +703,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public String[] getConnectionDefinitionNames(String rarName)
                throws ConnectorRuntimeException {
         return configParserAdmService.getConnectionDefinitionNames(rarName);
@@ -698,6 +712,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getSecurityPermissionSpec(String moduleName)
                          throws ConnectorRuntimeException {
         return configParserAdmService.getSecurityPermissionSpec(moduleName);
@@ -706,6 +721,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public String[] getAdminObjectInterfaceNames(String rarName)
                throws ConnectorRuntimeException {
         return configParserAdmService.getAdminObjectInterfaceNames(rarName);
@@ -714,6 +730,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public String[] getAdminObjectClassNames(String rarName, String intfName)
             throws ConnectorRuntimeException {
         return configParserAdmService.getAdminObjectClassNames(rarName, intfName);
@@ -722,6 +739,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean hasAdminObject(String rarName, String intfName, String className)
                 throws ConnectorRuntimeException{
         return configParserAdmService.hasAdminObject(rarName, intfName, className);
@@ -730,6 +748,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public Map<String,String> getResourceAdapterConfigProps(String rarName)
                 throws ConnectorRuntimeException {
         Properties properties = configParserAdmService.getResourceAdapterConfigProps(rarName);
@@ -739,6 +758,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public Map<String,String> getMCFConfigProps(
      String rarName,String connectionDefName) throws ConnectorRuntimeException {
         Properties properties = configParserAdmService.getMCFConfigProps(
@@ -750,6 +770,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public Map<String,String> getAdminObjectConfigProps(
       String rarName,String adminObjectIntf) throws ConnectorRuntimeException {
         Properties properties =
@@ -760,6 +781,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public Map<String,String> getAdminObjectConfigProps(
       String rarName,String adminObjectIntf, String adminObjectClass) throws ConnectorRuntimeException {
         Properties properties =
@@ -771,6 +793,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public Map<String,String> getConnectorConfigJavaBeans(String rarName,
         String connectionDefName,String type) throws ConnectorRuntimeException {
 
@@ -782,6 +805,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getActivationSpecClass( String rarName,
              String messageListenerType) throws ConnectorRuntimeException {
         return configParserAdmService.getActivationSpecClass(
@@ -791,6 +815,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public String[] getMessageListenerTypes(String rarName)
                throws ConnectorRuntimeException  {
         return configParserAdmService.getMessageListenerTypes( rarName);
@@ -799,6 +824,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public Map<String,String> getMessageListenerConfigProps(String rarName,
          String messageListenerType)throws ConnectorRuntimeException {
         Properties properties =
@@ -810,6 +836,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public Map<String,String> getMessageListenerConfigPropTypes(String rarName,
                String messageListenerType) throws ConnectorRuntimeException {
         Properties properties =  configParserAdmService.getMessageListenerConfigPropTypes(
@@ -864,6 +891,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * The component has been injected with any dependency and
      * will be placed into commission by the subsystem.
      */
+    @Override
     public void postConstruct() {
         ccPoolAdmService = (ConnectorConnectionPoolAdminServiceImpl)
                 ConnectorAdminServicesFactory.getService(ConnectorConstants.CCP);
@@ -983,6 +1011,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public void cleanUpResourcesAndShutdownAllActiveRAs(){
 
         Domain domain = domainProvider.get();
@@ -1007,6 +1036,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public void shutdownAllActiveResourceAdapters() {
         resourceAdapterAdmService.stopAllActiveResourceAdapters();
     }
@@ -1020,6 +1050,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      *
      * @return InvocationManager
      */
+    @Override
     public InvocationManager getInvocationManager() {
         return invocationManager;
     }
@@ -1033,6 +1064,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      *
      * @return set of resource-refs
      */
+    @Override
     public Set getResourceReferenceDescriptor() {
         JndiNameEnvironment jndiEnv = componentEnvManager.getCurrentJndiNameEnvironment();
         if (jndiEnv != null) {
@@ -1045,6 +1077,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * The component is about to be removed from commission
      */
+    @Override
     public void preDestroy() {
     }
 
@@ -1067,6 +1100,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * Checks whether the executing environment is embedded
      * @return true if execution environment is embedded
      */
+    @Override
     public boolean isEmbedded() {
         return ProcessEnvironment.ProcessType.Embedded.equals(processType);
     }
@@ -1084,6 +1118,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * @return true if execution environment is server
      *         false if it is client
      */
+    @Override
     public boolean isServer() {
         return ProcessEnvironment.ProcessType.Server.equals(processType);
     }
@@ -1110,6 +1145,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * provides the transactionManager
      * @return TransactionManager
      */
+    @Override
     public JavaEETransactionManager getTransactionManager() {
         if (transactionManager == null) {
             transactionManager = javaEETransactionManagerProvider.get();
@@ -1130,6 +1166,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * register the connector naming event listener
      * @param listener connector-naming-event-listener
      */
+    @Override
     public void registerConnectorNamingEventListener(ConnectorNamingEventListener listener){
         connectorResourceAdmService.getResourceRebindEventNotifier().addListener(listener);
     }
@@ -1138,11 +1175,13 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * unregister the connector naming event listner
      * @param listener connector-naming-event-listener
      */
+    @Override
     public void unregisterConnectorNamingEventListener(ConnectorNamingEventListener listener){
         connectorResourceAdmService.getResourceRebindEventNotifier().removeListener(listener);
     }
 
 
+    @Override
     public ResourcePool getConnectionPoolConfig(PoolInfo poolInfo) {
 
             ResourcePool pool  = ResourcesUtil.createInstance().getPoolConfig(poolInfo);
@@ -1158,6 +1197,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
             return pool;
     }
 
+    @Override
     public boolean pingConnectionPool(PoolInfo poolInfo) throws ResourceException {
         return ccPoolAdmService.testConnectionPool(poolInfo);
     }
@@ -1219,6 +1259,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * For embedded rars, parent is necessary<br>
      * @return classloader created for the module
      */
+    @Override
     public ClassLoader createConnectorClassLoader(String moduleDirectory, ClassLoader parent, String rarModuleName)
             throws ConnectorRuntimeException{
         List<URI> libraries = ConnectorsUtil.getInstalledLibrariesFromManifest(moduleDirectory, env);
@@ -1309,6 +1350,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
         return env;
     }
 
+    @Override
     public void createActiveResourceAdapterForEmbeddedRar(String rarModuleName) throws ConnectorRuntimeException {
         connectorService.createActiveResourceAdapterForEmbeddedRar(rarModuleName);
     }
@@ -1338,6 +1380,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public CallbackHandler getCallbackHandler(){
         //TODO V3 hack to make sure that SecurityServicesUtil is initialized before ContainerCallbackHander
         securityServicesUtilProvider.get();
@@ -1361,6 +1404,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public DelegatingClassLoader getConnectorClassLoader() {
         return clh.getConnectorClassLoader(null);
     }
@@ -1372,6 +1416,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public void registerDataSourceDefinitions(com.sun.enterprise.deployment.Application application) {
         Collection<ConnectorRuntimeExtension> extensions =
                 habitat.getAllServices(ConnectorRuntimeExtension.class);
@@ -1383,6 +1428,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public void unRegisterDataSourceDefinitions(com.sun.enterprise.deployment.Application application) {
         Collection<ConnectorRuntimeExtension> extensions =
                 habitat.getAllServices(ConnectorRuntimeExtension.class);
@@ -1408,6 +1454,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
+    @Override
     public List<WorkSecurityMap> getWorkSecurityMap(String raName) {
         List<WorkSecurityMap> workSecurityMap =
                 ConnectorsUtil.getWorkSecurityMaps(raName, getResources());
@@ -1486,6 +1533,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * @inheritDoc
      */
+    @Override
     public long getShutdownTimeout() {
         return ConnectorsUtil.getShutdownTimeout(
                 connectorServiceProvider.get());
@@ -1497,6 +1545,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * @param poolName
      * @throws com.sun.appserv.connectors.internal.api.ConnectorRuntimeException
      */
+    @Override
     public boolean flushConnectionPool(String poolName) throws ConnectorRuntimeException {
         return ccPoolAdmService.flushConnectionPool(new PoolInfo(poolName));
     }
@@ -1507,6 +1556,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * @param poolInfo
      * @throws com.sun.appserv.connectors.internal.api.ConnectorRuntimeException
      */
+    @Override
     public boolean flushConnectionPool(PoolInfo poolInfo) throws ConnectorRuntimeException {
         return ccPoolAdmService.flushConnectionPool(poolInfo);
     }
@@ -1519,6 +1569,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * @param resType
      * @return all jdbc driver implementation class names
      */
+    @Override
     public Set<String> getJdbcDriverClassNames(String dbVendor, String resType) {
         return driverLoader.getJdbcDriverClassNames(dbVendor, resType);
     }
@@ -1533,6 +1584,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * @param introspect
      * @return all jdbc driver implementation class names
      */
+    @Override
     public Set<String> getJdbcDriverClassNames(String dbVendor, String resType,
             boolean introspect) {
         return driverLoader.getJdbcDriverClassNames(dbVendor, resType, introspect);
@@ -1553,6 +1605,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * @param poolInfo
      * @return
      */
+    @Override
     public boolean getPingDuringPoolCreation(PoolInfo poolInfo) {
         return ConnectorsUtil.getPingDuringPoolCreation(poolInfo, getResources(poolInfo));
     }
@@ -1561,6 +1614,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * Get jdbc database vendor names list.
      * @return set of common database vendor names
      */
+    @Override
     public Set<String> getDatabaseVendorNames() {
         return driverLoader.getDatabaseVendorNames();
     }
@@ -1584,6 +1638,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * @inheritDoc
      */
+    @Override
     public void associateResourceAdapter(String rarName, ResourceAdapterAssociation raa)
             throws ResourceException{
         resourceAdapterAdmService.associateResourceAdapter(rarName,raa);
@@ -1596,6 +1651,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * @inheritDoc
      */
+    @Override
     public List<String> getConfidentialProperties(String rarName,
                                            String type, String... keyFields) throws ConnectorRuntimeException {
         ConnectorConfigParser configParser = ConnectorConfigParserFactory.getParser(type);

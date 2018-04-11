@@ -91,7 +91,7 @@ CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.STA
 public class DeleteSystemProperty implements AdminCommand,
         AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteSystemProperty.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteSystemProperty.class);
 
     @Param(optional=true, defaultValue=SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
@@ -131,6 +131,7 @@ public class DeleteSystemProperty implements AdminCommand,
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         Property domainProp = domain.getProperty("administrative.domain.name");
@@ -214,6 +215,7 @@ public class DeleteSystemProperty implements AdminCommand,
         //now we are sure that the target exits in the config, just remove the given property
         try {
             ConfigSupport.apply(new SingleConfigCode<SystemPropertyBag>() {
+                @Override
                 public Object run(SystemPropertyBag param) throws PropertyVetoException, TransactionFailure {
                     param.getSystemProperty().remove(param.getSystemProperty(propName));
                     return param;

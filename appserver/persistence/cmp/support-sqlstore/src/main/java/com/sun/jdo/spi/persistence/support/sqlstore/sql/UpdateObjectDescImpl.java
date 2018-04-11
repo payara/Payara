@@ -95,7 +95,7 @@ public class UpdateObjectDescImpl implements UpdateObjectDesc {
     private static Logger logger = LogHelperSQLStore.getLogger();
 
     /** I18N message handler. */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
             "com.sun.jdo.spi.persistence.support.sqlstore.Bundle",  // NOI18N
             UpdateObjectDescImpl.class.getClassLoader());
 
@@ -104,6 +104,7 @@ public class UpdateObjectDescImpl implements UpdateObjectDesc {
         updatedFields = new ArrayList();
     }
 
+    @Override
     public Class getPersistenceCapableClass() {
         return pcClass;
     }
@@ -361,6 +362,7 @@ public class UpdateObjectDescImpl implements UpdateObjectDesc {
      * (except that we won't have an AfterImage for Deletes and we won't have
      * a BeforeImage for updates).
      */
+    @Override
     public void setObjectInfo(StateManager biStateManager,
                               StateManager aiStateManager,
                               int action) {

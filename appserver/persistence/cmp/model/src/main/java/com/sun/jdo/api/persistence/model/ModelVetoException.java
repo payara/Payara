@@ -115,6 +115,7 @@ public class ModelVetoException extends ModelException
 	* neither has an error message.
 	*
 	*/
+        @Override
 	public String getMessage()
 	{
 		String message = super.getMessage();
@@ -133,6 +134,7 @@ public class ModelVetoException extends ModelException
 	 * Prints the stack trace of the thrown target exception.
 	 * @see java.lang.System#err
 	 */
+        @Override
 	public void printStackTrace ()
 	{
 		printStackTrace(System.err);
@@ -142,6 +144,7 @@ public class ModelVetoException extends ModelException
 	 * Prints the stack trace of the thrown target exception to the specified
 	 * print stream.
 	 */
+        @Override
 	public void printStackTrace (PrintStream ps)
 	{
 		synchronized (ps)
@@ -162,6 +165,7 @@ public class ModelVetoException extends ModelException
 	 * Prints the stack trace of the thrown target exception to the
 	 * specified print writer.
 	 */
+        @Override
 	public void printStackTrace (PrintWriter pw)
 	{
 		synchronized (pw)

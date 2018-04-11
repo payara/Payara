@@ -62,7 +62,7 @@ import java.beans.PropertyVetoException;
 @Service(name="iiop-listener")
 public class IiopSslConfigHandler implements SslConfigHandler {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(CreateSsl.class);
 
 
@@ -94,6 +94,7 @@ public class IiopSslConfigHandler implements SslConfigHandler {
         }
         try {
             ConfigSupport.apply(new SingleConfigCode<IiopListener>() {
+                        @Override
                         public Object run(IiopListener param)
                                 throws PropertyVetoException, TransactionFailure {
                             Ssl newSsl = param.createChild(Ssl.class);
@@ -137,6 +138,7 @@ public class IiopSslConfigHandler implements SslConfigHandler {
         }
         try {
             ConfigSupport.apply(new SingleConfigCode<IiopListener>() {
+                @Override
                 public Object run(IiopListener param)
                 throws PropertyVetoException {
                     param.setSsl(null);

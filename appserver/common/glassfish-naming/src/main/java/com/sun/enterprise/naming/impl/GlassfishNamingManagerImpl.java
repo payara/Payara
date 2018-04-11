@@ -595,6 +595,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
     /**
      * @inheritDoc
      */
+    @Override
     public void bindToModuleNamespace(String appName, String moduleName, Collection<? extends JNDIBinding> bindings)
             throws NamingException {
         AppModuleKey appModuleKey = new AppModuleKey(appName, moduleName);
@@ -610,6 +611,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
     /**
      * @inheritDoc
      */
+    @Override
     public void bindToAppNamespace(String appName, Collection<? extends JNDIBinding> bindings)
             throws NamingException {
           Map namespace = getAppNamespace(appName);
@@ -654,11 +656,13 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
      * This method enumerates the env properties, ejb and resource references
      * and unbinds them from the java:comp namespace.
      */
+    @Override
     public void unbindComponentObjects(String componentId) throws NamingException {
         componentNamespaces.remove(componentId); // remove local namespace cache
         componentIdInfo.remove(componentId);
     }
 
+    @Override
     public void unbindAppObjects(String appName) throws NamingException {
 
         appNamespaces.remove(appName);
@@ -675,6 +679,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
     /**
      * @inheritDoc
      */
+    @Override
     public void unbindAppObject(String appName, String name) throws NamingException {
         Map<String, Map> namespaces = appNamespaces.get(appName);
         if(namespaces != null){
@@ -685,6 +690,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
     /**
      * @inheritDoc
      */
+    @Override
     public void unbindModuleObject(String appName, String moduleName, String name) throws NamingException {
         AppModuleKey appModuleKey = new AppModuleKey(appName, moduleName);
         Map<String, Map> namespaces = moduleNamespaces.get(appModuleKey);
@@ -697,6 +703,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
      * Recreate a context for java:comp/env or one of its sub-contexts given the
      * context name.
      */
+    @Override
     public Context restoreJavaCompEnvContext(String contextName)
             throws NamingException {
         if (!contextName.startsWith("java:")) {
@@ -738,6 +745,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
     /**
      * Lookup object for a particular componentId and name.
      */
+    @Override
     public Object lookup(String componentId, String name) throws NamingException {
 
         return lookup(componentId, name, initialContext);

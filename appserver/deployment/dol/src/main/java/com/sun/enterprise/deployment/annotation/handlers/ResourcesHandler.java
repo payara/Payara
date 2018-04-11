@@ -68,6 +68,7 @@ public class ResourcesHandler extends ResourceHandler {
      * This entry point is used both for a single @EJB and iteratively
      * from a compound @EJBs processor.
      */
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {

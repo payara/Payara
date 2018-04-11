@@ -104,6 +104,7 @@ public class ConnectorApplication implements ApplicationContainer, EventListener
      *
      * @return deployment descriptor if they exist or null if not
      */
+    @Override
     public Object getDescriptor() {
         return descriptor;
     }
@@ -118,6 +119,7 @@ public class ConnectorApplication implements ApplicationContainer, EventListener
      * @param startupContext the start up context
      * @return true if the container startup was successful.
      */
+    @Override
     public boolean start(ApplicationContext startupContext) {
         boolean started = false;
 
@@ -198,6 +200,7 @@ public class ConnectorApplication implements ApplicationContainer, EventListener
      * @param stopContext
      * @return true if stopping was successful.
      */
+    @Override
     public boolean stop(ApplicationContext stopContext) {
         boolean stopped = false;
 
@@ -231,6 +234,7 @@ public class ConnectorApplication implements ApplicationContainer, EventListener
      *
      * @return true if suspending was successful, false otherwise.
      */
+    @Override
     public boolean suspend() {
         // Not (yet) supported
         return false;
@@ -241,6 +245,7 @@ public class ConnectorApplication implements ApplicationContainer, EventListener
      *
      * @return true if resumption was successful, false otherwise.
      */
+    @Override
     public boolean resume() {
         // Not (yet) supported
         return false;
@@ -251,6 +256,7 @@ public class ConnectorApplication implements ApplicationContainer, EventListener
      *
      * @return ClassLoader for this app
      */
+    @Override
     public ClassLoader getClassLoader() {
         return loader;
     }
@@ -289,6 +295,7 @@ public class ConnectorApplication implements ApplicationContainer, EventListener
      * and --cascade is not set.
      * @param event Event 
      */
+    @Override
     public void event(Event event) {
         if (Deployment.UNDEPLOYMENT_VALIDATION.equals(event.type())) {
             //this is an application undeploy event

@@ -68,8 +68,10 @@ public class ORBInitializerImpl extends LocalObject implements ORBInitializer {
 
     public ORBInitializerImpl() {}
 
+    @Override
     public void pre_init(ORBInitInfo info) {}
 
+    @Override
     public void post_init(ORBInitInfo info) {
 
         // get hold of the codec instance to pass onto interceptors.

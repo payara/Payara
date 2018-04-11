@@ -64,6 +64,7 @@ public class EJBsHandler extends EJBHandler {
     public EJBsHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {

@@ -45,7 +45,7 @@ import javax.security.auth.Subject;
 
 public final class AzSubjectImpl extends AzAttributesImpl implements AzSubject {
 
-    final private Subject subject;
+    private final Subject subject;
 
     /**
      * Constructor

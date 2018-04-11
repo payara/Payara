@@ -70,10 +70,12 @@ public class ExcludeDefaultInterceptorsHandler
     public ExcludeDefaultInterceptorsHandler() {
     }
 
+    @Override
     protected boolean supportTypeInheritance() {
         return true;
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 
@@ -119,6 +121,7 @@ public class ExcludeDefaultInterceptorsHandler
      * require to be processed (if present) before it processes it's own 
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAnnotationTypes();
     }

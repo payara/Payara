@@ -70,6 +70,7 @@ public class ConstNameAndType extends ConstBasic {
   /**
    * The tag of this constant entry
    */
+  @Override
   public int tag () { return MyTag; }
 
   /**
@@ -96,6 +97,7 @@ public class ConstNameAndType extends ConstBasic {
   /**
    * A printable representation
    */
+  @Override
   public String toString () {
       return "CONSTANTNameAndType(" + indexAsString() + "): " + //NOI18N
           "name(" + theName.toString() + ") " +//NOI18N
@@ -112,6 +114,7 @@ public class ConstNameAndType extends ConstBasic {
     theNameIndex = n; typeSignatureIndex = sig;
   }
 
+  @Override
   void formatData (DataOutputStream b) throws IOException {
     b.writeShort(theName.getIndex());
     b.writeShort(typeSignature.getIndex());
@@ -124,6 +127,7 @@ public class ConstNameAndType extends ConstBasic {
     return new ConstNameAndType (cname, sig);
   }
 
+  @Override
   void resolve (ConstantPool p) {
     theName = (ConstUtf8) p.constantAt(theNameIndex);
     typeSignature = (ConstUtf8) p.constantAt(typeSignatureIndex);

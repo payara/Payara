@@ -76,6 +76,7 @@ public class AccessTimeoutHandler extends AbstractAttributeHandler
     public AccessTimeoutHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 
@@ -118,12 +119,14 @@ public class AccessTimeoutHandler extends AbstractAttributeHandler
      *         require to be processed (if present) before it processes it's own
      *         annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
 
         return new Class[]{Singleton.class, Stateful.class, ConcurrencyManagement.class};
 
     }
 
+    @Override
     protected boolean supportTypeInheritance() {
         return true;
     }
@@ -132,6 +135,7 @@ public class AccessTimeoutHandler extends AbstractAttributeHandler
      * Set the default value (from class type annotation) on all
      * methods that don't have a value.
      */
+    @Override
     public void postProcessAnnotation(AnnotationInfo ainfo, EjbContext ejbContext)
             throws AnnotationProcessorException {
         EjbSessionDescriptor ejbDesc = (EjbSessionDescriptor) ejbContext.getDescriptor();

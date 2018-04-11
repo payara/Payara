@@ -108,6 +108,7 @@ public class J2EEDomainImpl extends J2EEManagedObjectImplBase {
         //ImplUtil.getLogger().info( "Registered J2EEDomain as " + getObjectName() + " with J2EEServer of " + serverObjectName);
     }
 
+    @Override
     public String getServerName() {
         return serverName;
     }

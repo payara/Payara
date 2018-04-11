@@ -80,6 +80,7 @@ public class InBoundRANode extends DeploymentDescriptorNode {
     /**
      * SAX Parser API implementation, we don't really care for now.
      */
+    @Override
      public void startElement(XMLElement element, Attributes attributes) {
      }
 
@@ -89,6 +90,7 @@ public class InBoundRANode extends DeploymentDescriptorNode {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */ 
+    @Override
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
 	return table;
@@ -97,6 +99,7 @@ public class InBoundRANode extends DeploymentDescriptorNode {
     /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
         if (descriptor==null) {
 	    // the descriptor associated with the InBoundRANode is a InboundResourceAdapter 
@@ -114,6 +117,7 @@ public class InBoundRANode extends DeploymentDescriptorNode {
      *
      * @param descriptor the new descriptor
      */
+    @Override
     public void addDescriptor(Object obj) {
 	if (obj instanceof MessageListener) {
 	    descriptor.addMessageListener((MessageListener)obj);

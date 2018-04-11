@@ -82,7 +82,7 @@ import java.util.logging.Logger;
 })
 public class SetRequestTracingConfiguration implements AdminCommand {
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(SetRequestTracingConfiguration.class);
+    private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(SetRequestTracingConfiguration.class);
 
     @Inject
     ServerEnvironment server;

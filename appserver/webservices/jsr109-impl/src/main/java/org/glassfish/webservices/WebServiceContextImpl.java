@@ -82,6 +82,7 @@ public final class WebServiceContextImpl implements WSWebServiceContext {
         this.jaxwsContextDelegate = wsc;
     }
     
+    @Override
     public MessageContext getMessageContext() {
         return this.jaxwsContextDelegate.getMessageContext();
     }
@@ -102,6 +103,7 @@ public final class WebServiceContextImpl implements WSWebServiceContext {
         principal.set(p);
     }
     
+    @Override
     public Principal getUserPrincipal() {
         // This could be an EJB endpoint; check the threadlocal variable
         Principal p = (Principal) principal.get();
@@ -121,6 +123,7 @@ public final class WebServiceContextImpl implements WSWebServiceContext {
         return p;
     }
 
+    @Override
     public boolean isUserInRole(String role) {
         WebServiceContractImpl wscImpl = WebServiceContractImpl.getInstance();
         ComponentInvocation.ComponentInvocationType EJBInvocationType = ComponentInvocation.ComponentInvocationType.EJB_INVOCATION;
@@ -145,14 +148,17 @@ public final class WebServiceContextImpl implements WSWebServiceContext {
     }
     
     // TODO BM need to fix this after checking with JAXWS spec
+    @Override
     public EndpointReference getEndpointReference(Class clazz, org.w3c.dom.Element... params) {
         return this.jaxwsContextDelegate.getEndpointReference(clazz, params);
     }
     
+    @Override
     public EndpointReference getEndpointReference(org.w3c.dom.Element... params) {
         return this.jaxwsContextDelegate.getEndpointReference(params);
     }
     
+    @Override
     public Packet getRequestPacket() {
         return this.jaxwsContextDelegate.getRequestPacket();
     }

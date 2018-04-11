@@ -72,9 +72,9 @@ public class StatementLeakDetector {
     //Lock on HashMap to trace statement leaks
     private final Object statementLeakLock;
     private Map<Statement, StatementLeakListener> listeners;
-    private final static Logger _logger = LogDomains.getLogger(
+    private static final Logger _logger = LogDomains.getLogger(
             StatementLeakDetector.class, LogDomains.RSR_LOGGER);
-    private final static StringManager localStrings =
+    private static final StringManager localStrings =
             StringManager.getManager(StatementLeakDetector.class);
     private Timer timer;
     private StatementLeakProbeProvider stmtLeakProbeProvider = null;
@@ -235,6 +235,7 @@ public class StatementLeakDetector {
             this.statement = stmt;
         }
 
+        @Override
         public void run() {
             potentialStatementLeakFound(statement);
         }

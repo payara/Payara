@@ -51,15 +51,18 @@ import org.jvnet.hk2.config.TransactionFailure;
  */
 public class PersistenceTest extends ConfigPersistence {
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
     
+    @Override
     public void doTest() throws TransactionFailure {
         NetworkListeners service = getHabitat().getService(NetworkListeners.class);
         // now do a transaction
 
         ConfigSupport.apply(new SingleConfigCode<Transport>() {
+            @Override
             public Object run(Transport param) {
                 param.setAcceptorThreads("8989");
                 return null;
@@ -68,6 +71,7 @@ public class PersistenceTest extends ConfigPersistence {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public boolean assertResult(String s) {
         return s.contains("acceptor-threads=\"8989\"");
     }

@@ -92,6 +92,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
      *
      * @return the configuration file name
      */
+    @Override
     public String getFileName() {
         return "DomainTest";
     }    
@@ -121,6 +122,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
     public void tearDown() throws TransactionFailure {
        // Delete the created resource
        ConfigSupport.apply(new SingleConfigCode<Resources>() {
+            @Override
             public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                 Resource target = null;
                 // TODO: this causes NoSuchElementException but really

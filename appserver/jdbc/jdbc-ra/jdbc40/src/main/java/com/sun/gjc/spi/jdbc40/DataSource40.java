@@ -61,7 +61,7 @@ import java.util.logging.Logger;
 public class DataSource40 extends AbstractDataSource {
 
 
-    protected final static StringManager localStrings =
+    protected static final StringManager localStrings =
             StringManager.getManager(ManagedConnectionFactoryImpl.class);
 
     /**
@@ -94,6 +94,7 @@ public class DataSource40 extends AbstractDataSource {
      * @throws java.sql.SQLException If no object found that implements the interface
      * @since 1.6
      */
+    @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
         T result;
         try {
@@ -129,6 +130,7 @@ public class DataSource40 extends AbstractDataSource {
      *                               for an object with the given interface.
      * @since 1.6
      */
+    @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         boolean result = false;
         try {
@@ -146,6 +148,7 @@ public class DataSource40 extends AbstractDataSource {
         return result;
     }
 
+    @Override
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
         if(DataSourceObjectBuilder.isJDBC41()) {
             try {

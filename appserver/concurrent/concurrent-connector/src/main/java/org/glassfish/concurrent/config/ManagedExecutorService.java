@@ -110,6 +110,7 @@ public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
     void setTaskQueueCapacity(String value) throws PropertyVetoException;
 
     @DuckTyped
+    @Override
     String getIdentity();
 
     class Duck {

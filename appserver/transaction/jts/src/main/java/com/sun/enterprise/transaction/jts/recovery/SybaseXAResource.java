@@ -61,6 +61,7 @@ public class SybaseXAResource extends XAResourceWrapper
     // Use superclass Sting Manager for Localization
     private static StringManager sm = StringManager.getManager(XAResourceWrapper.class);
 
+    @Override
     public XAResourceWrapper getInstance() {
         return new SybaseXAResource();
     }
@@ -74,6 +75,7 @@ public class SybaseXAResource extends XAResourceWrapper
    * @return a <code>Xid[]</code> value
    * @exception XAException if an error occurs
    */
+    @Override
   public Xid[] recover(int flag) throws XAException {
         try{
             if(flag==XAResource.TMSTARTRSCAN)
@@ -85,6 +87,7 @@ public class SybaseXAResource extends XAResourceWrapper
         }
         return null;
     }
+    @Override
     public void commit(Xid xid, boolean flag) throws XAException{
         try{
             m_xacon.getXAResource().commit(xid, flag);
@@ -94,6 +97,7 @@ public class SybaseXAResource extends XAResourceWrapper
             // throw new XAException("sybase XA resource wrapper :Could not connect : sqlexception was "+e);
         }
     }
+    @Override
     public void rollback(Xid xid) throws XAException{
         try{
             m_xacon.getXAResource().rollback(xid);

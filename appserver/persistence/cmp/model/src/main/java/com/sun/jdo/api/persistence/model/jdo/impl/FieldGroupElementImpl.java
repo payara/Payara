@@ -83,6 +83,7 @@ public class FieldGroupElementImpl extends PersistenceMemberElementImpl
 	 * @param name the name to match
 	 * @return the field, or <code>null</code> if it does not exist
 	 */
+        @Override
 	public PersistenceFieldElement getField (String name)
 	{
 		return (PersistenceFieldElement)_fields.getElement(name);
@@ -91,6 +92,7 @@ public class FieldGroupElementImpl extends PersistenceMemberElementImpl
 	/** Get all fields.
 	 * @return the fields
 	 */
+        @Override
 	public PersistenceFieldElement[] getFields ()
 	{
 		return (PersistenceFieldElement[])_fields.getElements();
@@ -102,6 +104,7 @@ public class FieldGroupElementImpl extends PersistenceMemberElementImpl
 	 * @param action {@link #ADD}, {@link #REMOVE}, or {@link #SET}
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void changeFields (PersistenceFieldElement[] fields, int action)
 		throws ModelException
 	{

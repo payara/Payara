@@ -113,6 +113,7 @@ public final class IOJavaClassWriter implements JavaClassWriter
 	 * to make use of this comment.
 	 * @see java.lang.reflect.Modifier
 	 */	
+        @Override
 	public void setClassDeclaration (final int modifiers, 
 		final String className, final String[] comments)
 	{
@@ -131,6 +132,7 @@ public final class IOJavaClassWriter implements JavaClassWriter
 	 * be package style (that is - it can contain . but not / or $).
 	 * @param name The name of the superclass.
 	 */	
+        @Override
 	public void setSuperclass (final String name)
 	{
 		_superclass = name;
@@ -139,6 +141,7 @@ public final class IOJavaClassWriter implements JavaClassWriter
 	/** Adds an interface to the list of those implemented by this class.
 	 * @param name The name of the interface.
 	 */	
+        @Override
 	public void addInterface (final String name)
 	{
 		if (!StringHelper.isEmpty(name))
@@ -159,6 +162,7 @@ public final class IOJavaClassWriter implements JavaClassWriter
 	 * implementations will choose to make use of this comment.
 	 * @see java.lang.reflect.Modifier
 	 */ 
+        @Override
 	public void addField (final String name, final int modifiers, String type,
 		final String initialValue, final String[] comments)
 	{
@@ -183,6 +187,7 @@ public final class IOJavaClassWriter implements JavaClassWriter
 	 * by the implementation.  Note that not all implementations will choose
 	 * to make use of this comment.
 	 */	
+        @Override
 	public void addInitializer (boolean isStatic, String[] body,
 		String[] comments)
 	{
@@ -223,6 +228,7 @@ public final class IOJavaClassWriter implements JavaClassWriter
 	 * to make use of this comment.
 	 * @see java.lang.reflect.Modifier
 	 */	
+        @Override
 	public void addConstructor (final String name, final int modifiers,
 		final String[] parameterNames, final String[] parameterTypes,
 		final String[] exceptions, final String[] body, final String[] comments)
@@ -249,6 +255,7 @@ public final class IOJavaClassWriter implements JavaClassWriter
 	 * to make use of this comment.
 	 * @see java.lang.reflect.Modifier
 	 */	
+        @Override
 	public void addMethod (final String name, final int modifiers,
 		final String returnType, final String[] parameterNames,
 		final String[] parameterTypes, final String[] exceptions,
@@ -261,6 +268,7 @@ public final class IOJavaClassWriter implements JavaClassWriter
 	/** Adds an inner class to this class.
 	 * @param classWriter The definition of the inner class.
 	 */	
+        @Override
 	public void addClass (final JavaClassWriter classWriter)
 	{
 		if (classWriter != null)
@@ -270,6 +278,7 @@ public final class IOJavaClassWriter implements JavaClassWriter
 	/** Returns a string representation of this object.
 	 * @return The string representation of the generated class.
 	 */	
+        @Override
 	public String toString ()
 	{
 		final FormattedWriter writerHelper =  new FormattedWriter();
@@ -310,7 +319,7 @@ public final class IOJavaClassWriter implements JavaClassWriter
 		methodList.add(writerHelper.toString());
 	}
 
-	static private String createMethodSignature (final String name,
+	private static String createMethodSignature (final String name,
 		final int modifiers, String returnType, final String[] parameterNames,
 		final String[] parameterTypes, final String[] exceptions)
 	{
@@ -347,7 +356,7 @@ public final class IOJavaClassWriter implements JavaClassWriter
 		return writerHelper.toString();
 	}
 
-	static private void writeListElement (int i, int count, String string, 
+	private static void writeListElement (int i, int count, String string, 
 		FormattedWriter writerHelper)
 	{
 		int indent = ((i == 0) ? 0 : 1);

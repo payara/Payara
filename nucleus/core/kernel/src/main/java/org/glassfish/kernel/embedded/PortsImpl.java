@@ -70,6 +70,7 @@ public class PortsImpl implements Ports {
 
     final Map<Integer, Port> ports = new HashMap<Integer, Port>();
 
+    @Override
     public Port createPort(int number) throws IOException {
         return createPort(Integer.valueOf(number));
     }
@@ -91,6 +92,7 @@ public class PortsImpl implements Ports {
         ports.put(portNumber, port);
         return port;    }
 
+    @Override
     public Collection<Port> getPorts() {
         return ports.values();
     }

@@ -66,6 +66,7 @@ public class LogAuthenticationListener implements AuthenticationListener {
      * notification that a user properly authenticated while making 
      * a web service invocation.
      */
+    @Override
     public void authSucess(BundleDescriptor bundleDesc, Endpoint endpoint, Principal principal) {
         if (DOLUtils.ejbType().equals(bundleDesc.getModuleType())) {
             if (logger.isLoggable(Level.FINER)) {
@@ -87,6 +88,7 @@ public class LogAuthenticationListener implements AuthenticationListener {
      * @param endpoint the endpoint selector 
      * @param principal Optional principal that failed
      */
+    @Override
     public void authFailure(BundleDescriptor bundleDesc, Endpoint endpoint, Principal principal) {
         if (DOLUtils.ejbType().equals(bundleDesc.getModuleType())) {
             if (logger.isLoggable(Level.FINE)) {

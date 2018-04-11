@@ -101,6 +101,7 @@ public class ORBConnectorStartup implements PostConstruct {
     @Inject
     private GrizzlyService grizzlyService;
 
+    @Override
     public void postConstruct()
     {
         setORBSystemProperties();    
@@ -119,6 +120,7 @@ public class ORBConnectorStartup implements PostConstruct {
 
         java.security.AccessController.doPrivileged(
                 new java.security.PrivilegedAction() {
+                    @Override
                     public java.lang.Object run() {
                         if (System.getProperty(OMG_ORB_CLASS_PROPERTY) == null) {
                             // Assume Sun ee ORB at all times.

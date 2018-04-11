@@ -121,6 +121,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @throws java.sql.SQLException if a database access error occurs or the SQL
      *                               statement returns a <code>ResultSet</code> object
      */
+    @Override
     public int executeUpdate() throws SQLException {
         return preparedStatement.executeUpdate();
     }
@@ -134,6 +135,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @param sqlType        the SQL type code defined in <code>java.sql.Types</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void setNull(int parameterIndex, int sqlType) throws SQLException {
         preparedStatement.setNull(parameterIndex, sqlType);
     }
@@ -147,6 +149,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @param x              the parameter value
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void setBoolean(int parameterIndex, boolean x) throws SQLException {
         preparedStatement.setBoolean(parameterIndex, x);
     }
@@ -160,6 +163,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @param x              the parameter value
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void setByte(int parameterIndex, byte x) throws SQLException {
         preparedStatement.setByte(parameterIndex, x);
     }
@@ -173,6 +177,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @param x              the parameter value
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void setShort(int parameterIndex, short x) throws SQLException {
         preparedStatement.setShort(parameterIndex, x);
     }
@@ -186,6 +191,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @param x              the parameter value
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void setInt(int parameterIndex, int x) throws SQLException {
         preparedStatement.setInt(parameterIndex, x);
     }
@@ -199,6 +205,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @param x              the parameter value
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void setLong(int parameterIndex, long x) throws SQLException {
         preparedStatement.setLong(parameterIndex, x);
     }
@@ -212,6 +219,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @param x              the parameter value
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void setFloat(int parameterIndex, float x) throws SQLException {
         preparedStatement.setFloat(parameterIndex, x);
     }
@@ -225,6 +233,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @param x              the parameter value
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void setDouble(int parameterIndex, double x) throws SQLException {
         preparedStatement.setDouble(parameterIndex, x);
     }
@@ -238,6 +247,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @param x              the parameter value
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void setBigDecimal(int parameterIndex, BigDecimal x) throws SQLException {
         preparedStatement.setBigDecimal(parameterIndex, x);
     }
@@ -254,6 +264,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @param x              the parameter value
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void setString(int parameterIndex, String x) throws SQLException {
         preparedStatement.setString(parameterIndex, x);
     }
@@ -268,6 +279,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @param x              the parameter value
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void setBytes(int parameterIndex, byte x[]) throws SQLException {
         preparedStatement.setBytes(parameterIndex, x);
     }
@@ -281,6 +293,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @param x              the parameter value
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void setDate(int parameterIndex, Date x) throws SQLException {
         preparedStatement.setDate(parameterIndex, x);
     }
@@ -294,6 +307,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @param x              the parameter value
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void setTime(int parameterIndex, Time x) throws SQLException {
         preparedStatement.setTime(parameterIndex, x);
     }
@@ -308,6 +322,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @param x              the parameter value
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException {
         preparedStatement.setTimestamp(parameterIndex, x);
     }
@@ -330,6 +345,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @param length         the number of bytes in the stream
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void setAsciiStream(int parameterIndex, InputStream x, int length) throws SQLException {
         preparedStatement.setAsciiStream(parameterIndex, x, length);
     }
@@ -358,6 +374,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @deprecated
      */
     @Deprecated
+    @Override
     public void setUnicodeStream(int parameterIndex, InputStream x, int length) throws SQLException {
         preparedStatement.setUnicodeStream(parameterIndex, x, length);
     }
@@ -379,6 +396,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @param length         the number of bytes in the stream
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void setBinaryStream(int parameterIndex, InputStream x, int length) throws SQLException {
         preparedStatement.setBinaryStream(parameterIndex, x, length);
     }
@@ -393,6 +411,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      *
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void clearParameters() throws SQLException {
         preparedStatement.clearParameters();
     }
@@ -427,6 +446,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @throws java.sql.SQLException if a database access error occurs
      * @see java.sql.Types
      */
+    @Override
     public void setObject(int parameterIndex, Object x, int targetSqlType, int scale) throws SQLException {
         preparedStatement.setObject(parameterIndex, x, targetSqlType, scale);
     }
@@ -442,6 +462,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      *                       sent to the database
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void setObject(int parameterIndex, Object x, int targetSqlType) throws SQLException {
         preparedStatement.setObject(parameterIndex, x, targetSqlType);
     }
@@ -476,6 +497,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @throws java.sql.SQLException if a database access error occurs or the type
      *                               of the given object is ambiguous
      */
+    @Override
     public void setObject(int parameterIndex, Object x) throws SQLException {
         preparedStatement.setObject(parameterIndex, x);
     }
@@ -504,6 +526,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @see java.sql.Statement#getUpdateCount
      * @see java.sql.Statement#getMoreResults
      */
+    @Override
     public boolean execute() throws SQLException {
         return preparedStatement.execute();
     }
@@ -516,6 +539,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @see java.sql.Statement#addBatch
      * @since 1.2
      */
+    @Override
     public void addBatch() throws SQLException {
         preparedStatement.addBatch();
     }
@@ -540,6 +564,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void setCharacterStream(int parameterIndex, Reader reader, int length) throws SQLException {
         preparedStatement.setCharacterStream(parameterIndex, reader, length);
     }
@@ -555,6 +580,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void setRef(int i, Ref x) throws SQLException {
         preparedStatement.setRef(i, x);
     }
@@ -569,6 +595,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void setBlob(int i, Blob x) throws SQLException {
         preparedStatement.setBlob(i, x);
     }
@@ -583,6 +610,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void setClob(int i, Clob x) throws SQLException {
         preparedStatement.setClob(i, x);
     }
@@ -597,6 +625,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void setArray(int i, Array x) throws SQLException {
         preparedStatement.setArray(i, x);
     }
@@ -624,6 +653,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public ResultSetMetaData getMetaData() throws SQLException {
         return preparedStatement.getMetaData();
     }
@@ -645,6 +675,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void setDate(int parameterIndex, Date x, Calendar cal) throws SQLException {
         preparedStatement.setDate(parameterIndex, x, cal);
     }
@@ -666,6 +697,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void setTime(int parameterIndex, Time x, Calendar cal) throws SQLException {
         preparedStatement.setTime(parameterIndex, x, cal);
     }
@@ -687,6 +719,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void setTimestamp(int parameterIndex, Timestamp x, Calendar cal) throws SQLException {
         preparedStatement.setTimestamp(parameterIndex, x, cal);
     }
@@ -718,6 +751,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void setNull(int paramIndex, int sqlType, String typeName) throws SQLException {
         preparedStatement.setNull(paramIndex, sqlType, typeName);
     }
@@ -732,6 +766,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public void setURL(int parameterIndex, URL x) throws SQLException {
         preparedStatement.setURL(parameterIndex, x);
     }
@@ -747,6 +782,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
      * @see java.sql.ParameterMetaData
      * @since 1.4
      */
+    @Override
     public ParameterMetaData getParameterMetaData() throws SQLException {
         return preparedStatement.getParameterMetaData();
     }
@@ -779,6 +815,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
         return cached;
     }
 
+    @Override
     public void close() throws SQLException {
         if (!cached) {
             //Stop leak tracing
@@ -817,6 +854,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
         }
     }
 
+    @Override
     public void closeOnCompletion() throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
             if(!cached) {
@@ -832,6 +870,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
         }
     }
 
+    @Override
     public boolean isCloseOnCompletion() throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
             if(cached) {
@@ -841,30 +880,35 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
         return super.isCloseOnCompletion();
     }
 
+    @Override
     public void setMaxFieldSize(int max) throws SQLException {
         preparedStatement.setMaxFieldSize(max);
         if (cached)
             currentMaxFieldSize = max;
     }
 
+    @Override
     public void setMaxRows(int max) throws SQLException {
         preparedStatement.setMaxRows(max);
         if (cached)
             currentMaxRows = max;
     }
 
+    @Override
     public void setQueryTimeout(int seconds) throws SQLException {
         preparedStatement.setQueryTimeout(seconds);
         if (cached)
             currentQueryTimeout = seconds;
     }
 
+    @Override
     public void setFetchDirection(int direction) throws SQLException {
         preparedStatement.setFetchDirection(direction);
         if (cached)
             currentFetchDirection = direction;
     }
 
+    @Override
     public void setFetchSize(int rows) throws SQLException {
         preparedStatement.setFetchSize(rows);
         if (cached)
@@ -890,6 +934,7 @@ public abstract class PreparedStatementWrapper extends StatementWrapper implemen
         }
     }
 
+    @Override
     public void resultSetClosed() throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41() && getCached()) {
             decrementResultSetCount();

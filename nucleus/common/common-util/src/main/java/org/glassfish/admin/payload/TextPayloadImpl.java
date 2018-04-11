@@ -98,19 +98,23 @@ public class TextPayloadImpl {
             this.is = is;
         }
 
+        @Override
         public Iterator<Payload.Part> parts() {
             return new Iterator<Payload.Part>() {
                 private boolean hasReturnedReport = false;
 
+                @Override
                 public boolean hasNext() {
                     return ! hasReturnedReport;
                 }
 
+                @Override
                 public Payload.Part next() {
                     hasReturnedReport = true;
                     return new PayloadImpl.Part.Streamed(contentType, "report", null, is);
                 }
 
+                @Override
                 public void remove() {
                     throw new UnsupportedOperationException();
                 }

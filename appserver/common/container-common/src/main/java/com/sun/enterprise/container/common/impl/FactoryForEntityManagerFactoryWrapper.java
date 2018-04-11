@@ -64,10 +64,12 @@ public class FactoryForEntityManagerFactoryWrapper
         this.compEnvMgr = compEnvMgr;
     }
 
+    @Override
     public boolean isCreateResultCacheable() {
         return false;
     }
 
+    @Override
     public Object create(Context ic)
         throws NamingException {
 

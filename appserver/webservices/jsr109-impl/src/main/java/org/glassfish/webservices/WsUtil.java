@@ -663,6 +663,7 @@ public class WsUtil {
             final ServiceReferenceDescriptor serviceRef = desc;
             wsdlFileURL = (URL) java.security.AccessController.doPrivileged
                 (new java.security.PrivilegedExceptionAction() {
+                        @Override
                         public java.lang.Object run() throws Exception {
                             URL retVal;
                             if(serviceRef.hasWsdlOverride()) {
@@ -851,6 +852,7 @@ public class WsUtil {
             service = (javax.xml.rpc.Service) 
                 java.security.AccessController.doPrivileged
                 (new java.security.PrivilegedExceptionAction() {
+                        @Override
                         public java.lang.Object run() throws Exception {
                             return serviceFactory.createService
                                 (wsdlFileURL, serviceName);
@@ -1909,6 +1911,7 @@ public class WsUtil {
             if (method.getAnnotation(annType) != null) {
                 try {
                     AccessController.doPrivileged(new PrivilegedExceptionAction() {
+                        @Override
                         public Object run() throws IllegalAccessException,
                                 InvocationTargetException {
                             if (!method.isAccessible()) {

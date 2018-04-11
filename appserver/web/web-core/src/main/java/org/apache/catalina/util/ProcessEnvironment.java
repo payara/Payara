@@ -174,6 +174,7 @@ public class ProcessEnvironment {
      * easy-to-read HTML table
      * @return  HTML string containing process environment info
      */
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("<TABLE border=2>");

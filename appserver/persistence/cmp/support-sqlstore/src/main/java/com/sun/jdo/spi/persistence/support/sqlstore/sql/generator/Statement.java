@@ -118,7 +118,7 @@ public abstract class Statement extends Object implements Cloneable {
     /**
      * I18N message handler
      */
-    protected final static ResourceBundle messages = I18NHelper.loadBundle(
+    protected static final ResourceBundle messages = I18NHelper.loadBundle(
            "com.sun.jdo.spi.persistence.support.sqlstore.Bundle", // NOI18N
             Statement.class.getClassLoader());
 
@@ -1213,6 +1213,7 @@ public abstract class Statement extends Object implements Cloneable {
         return action;
     }
 
+    @Override
     public Object clone() {
         try {
             return super.clone();
@@ -1270,7 +1271,7 @@ public abstract class Statement extends Object implements Cloneable {
      *  @return The SQL text and the input values formatted into a printable
      * string.
      */
-    static protected String formatSqlText(String sqlText, Object[] input) {
+    protected static String formatSqlText(String sqlText, Object[] input) {
         StringBuffer str = new StringBuffer();
 
         str.append(I18NHelper.getMessage(messages,

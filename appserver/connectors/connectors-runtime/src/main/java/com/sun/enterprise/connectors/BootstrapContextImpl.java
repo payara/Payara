@@ -112,6 +112,7 @@ public final class BootstrapContextImpl implements BootstrapContext, Serializabl
      *
      * @return <code>java.util.Timer</code> object.
      */
+    @Override
     public Timer createTimer() {
         // set the timer as 'daemon' such that RAs that do not cancel the timer during
         // ra.stop() will not block (eg : server shutdown)
@@ -121,6 +122,7 @@ public final class BootstrapContextImpl implements BootstrapContext, Serializabl
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isContextSupported(Class<? extends WorkContext> aClass) {
         WorkContextHandler wch = ConnectorRuntime.getRuntime().getWorkContextHandler();
         wch.init(moduleName, rarCL);
@@ -130,6 +132,7 @@ public final class BootstrapContextImpl implements BootstrapContext, Serializabl
     /**
      * {@inheritDoc}
      */
+    @Override
     public TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
         try{
             InitialContext ic = new InitialContext();
@@ -149,6 +152,7 @@ public final class BootstrapContextImpl implements BootstrapContext, Serializabl
      * @see com.sun.enterprise.connectors.work.CommonWorkManager
      * @see com.sun.enterprise.connectors.work.WorkManagerFactoryImpl
      */
+    @Override
     public WorkManager getWorkManager() {
         initializeWorkManager();
         return wm;
@@ -171,6 +175,7 @@ public final class BootstrapContextImpl implements BootstrapContext, Serializabl
     /**
      * Retrieves the <code>XATerminator</code> object.
      */
+    @Override
     public XATerminator getXATerminator() {
         initializeXATerminator();
         return xa;

@@ -68,7 +68,7 @@ public class OutBoundRANode extends DeploymentDescriptorNode {
 
     OutboundResourceAdapter descriptor = null; 
    
-    public final static XMLElement tag = new XMLElement(ConnectorTagNames.OUTBOUND_RESOURCE_ADAPTER);
+    public static final XMLElement tag = new XMLElement(ConnectorTagNames.OUTBOUND_RESOURCE_ADAPTER);
     
     //default constructor...for normal operation in case of 1.5 DTD
     public OutBoundRANode() {
@@ -109,6 +109,7 @@ public class OutBoundRANode extends DeploymentDescriptorNode {
     /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
         if (descriptor==null) {
 	    // the descriptor associated with the OutBoundRANode is a OutboundResourceAdapter 
@@ -125,6 +126,7 @@ public class OutBoundRANode extends DeploymentDescriptorNode {
      *
      * @param descriptor the new descriptor
      */
+    @Override
     public void addDescriptor(Object obj) {
 	if (obj instanceof AuthMechanism) {
 	    boolean flag = descriptor.addAuthMechanism((AuthMechanism)obj);
@@ -149,6 +151,7 @@ public class OutBoundRANode extends DeploymentDescriptorNode {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */    
+    @Override
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
@@ -188,6 +191,7 @@ public class OutBoundRANode extends DeploymentDescriptorNode {
     /**
      * SAX Parser API implementation, we don't really care for now.
      */
+    @Override
     public void startElement(XMLElement element, Attributes attributes) {
     }
 

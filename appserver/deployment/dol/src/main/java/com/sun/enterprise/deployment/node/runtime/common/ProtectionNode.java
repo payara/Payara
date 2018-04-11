@@ -58,6 +58,7 @@ public class ProtectionNode extends DeploymentDescriptorNode {
     /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
        if (descriptor == null) {
             descriptor = new ProtectionDescriptor();
@@ -74,6 +75,7 @@ public class ProtectionNode extends DeploymentDescriptorNode {
      * @param the attribute value
      * @return true if the attribute was processed
      */ 
+    @Override
     protected boolean setAttributeValue(XMLElement elementName, 
         XMLElement attributeName, String value) {
         if (attributeName.getQName().equals(WebServicesTagNames.AUTH_SOURCE)) {

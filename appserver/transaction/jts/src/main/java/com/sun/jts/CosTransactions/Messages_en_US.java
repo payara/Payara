@@ -85,6 +85,7 @@ public class Messages_en_US extends Messages {
     /**
      * Return the contents of the bundle.
      */
+    @Override
     protected Object[][] getContents() { return contents; }
 
     /**

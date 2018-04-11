@@ -65,6 +65,7 @@ public class HttpServicePropertiesUpgrade extends BaseLegacyConfigurationUpgrade
     @Inject
     private Configs configs;
 
+    @Override
     public void execute(AdminCommandContext context) {
         for (Config config : configs.getConfig()) {
             HttpService service = config.getHttpService();

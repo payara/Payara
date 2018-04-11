@@ -91,41 +91,41 @@ public final class ClassControl
     /* The user didn't tell us to make this persistence-capable or
      * persistence-aware and it doesn't appear to be annotated */
     //@olsen: changed value 3 -> -1
-    static public final int TransientOnly = -1;
+    public static final int TransientOnly = -1;
 
     /* The user made no explicit statement about the persistence capability. */
-    static public final int PersistUnknown = 0;
+    public static final int PersistUnknown = 0;
 
     /* The user said that this class needs to be annotated for fetch/dirty
      * but the class doesn't need to be stored persistently */
     //@olsen: changed value 2 -> 1
-    static public final int PersistAware = 1;
+    public static final int PersistAware = 1;
 
     /* The user said this class should be persistence capable or it was
      * promoted to persistence-capable status as a result of being a base
      * class of an explicitly persistence capable class */
     //@olsen: changed value 1 -> 2
-    static public final int PersistCapable = 2;
+    public static final int PersistCapable = 2;
 
     /* A filtered version of this class exists and is up to date w.r.t.
      * the unfiltered versionr - filtering will NOT be required.
      */
     //@olsen: changed value 3 -> -1
-    static public final int UpdateNotNeeded = -1;
+    public static final int UpdateNotNeeded = -1;
 
     /* It is not yet known whether the current filtered version of this
      * class exists or if it is up-to-date w.r.t. the unfiltered version.
      */
-    static public final int UpdateUnknown = 0;
+    public static final int UpdateUnknown = 0;
 
     /* No filtered version of this class exists - filtering will be required.
      */
-    static public final int UpdateNew = 1;
+    public static final int UpdateNew = 1;
 
     /* A filtered version of this class exists but the unfiltered version
      * is newer - filtering will be required.
      */
-    static public final int UpdateNewer = 2;
+    public static final int UpdateNewer = 2;
 
     /* Central repository for the options and classes */
     //@olsen: added association
@@ -578,7 +578,7 @@ public final class ClassControl
      * Return the class name in user ('.' delimited) form
      */
     //^olsen: move to -> classfile.Descriptor ?
-    static public String userClassFromVMClass(String vmName) {
+    public static String userClassFromVMClass(String vmName) {
         return vmName.replace('/', '.');
     }
 
@@ -586,7 +586,7 @@ public final class ClassControl
      * Return the class name in VM ('/' delimited) form
      */
     //^olsen: move to -> classfile.Descriptor ?
-    static public String vmClassFromUserClass(String userName) {
+    public static String vmClassFromUserClass(String userName) {
         return userName.replace('.', '/');
     }
 
@@ -600,7 +600,7 @@ public final class ClassControl
     /**
      * Return the vm package name for the vm class name
      */
-    static public String packageOf(String vmName) {
+    public static String packageOf(String vmName) {
         int last = vmName.lastIndexOf('/');
         if (last < 0)
             return "";//NOI18N
@@ -622,7 +622,7 @@ public final class ClassControl
      */
 //@olsen: disabled feature
 /*
-    static public String unpackagedNameOf(String vmName) {
+    public static String unpackagedNameOf(String vmName) {
         int last = vmName.lastIndexOf('/');
         if (last < 0)
             return vmName;

@@ -80,6 +80,7 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
     private SimpleFormatter simpleFormatter = new SimpleFormatter();
     
 
+    @Override
     public void postConstruct() {
 
         LogManager manager = LogManager.getLogManager();
@@ -103,6 +104,7 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
         
         // start the Queue consummer thread.
         pump = new Thread() {
+            @Override
             public void run() {
                 try {
                     while (!done.isSignalled()) {
@@ -117,6 +119,7 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
 
     }
     
+    @Override
     public void preDestroy() {
         if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
             LogFacade.LOGGING_LOGGER.fine("SysLog Logger handler killed");
@@ -171,6 +174,7 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
     /**
      * Publishes the logrecord storing it in our queue
      */
+    @Override
     public void publish( LogRecord record ) {
         if (pump == null)
             return;
@@ -187,10 +191,12 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
         }
     }
 
+    @Override
     public void close() {
 
     }
 
+    @Override
     public void flush() {
         
     }

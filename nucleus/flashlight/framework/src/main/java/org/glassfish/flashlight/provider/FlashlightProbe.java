@@ -255,34 +255,42 @@ public class FlashlightProbe
         return listenerEnabled.get();
     }
 
+    @Override
     public int getId() {
         return id;
     }
 
+    @Override
     public String getModuleProviderName() {
 		return moduleProviderName;
 	}
 
+    @Override
     public String getModuleName() {
         return moduleProviderName;
     }
 
+    @Override
 	public String getProbeProviderName() {
         return probeProviderName;
     }
 
+    @Override
     public String getProbeName() {
         return probeName;
     }
 
+    @Override
     public String[] getProbeParamNames() {
         return probeParamNames;
     }
 
+    @Override
     public Class[] getParamTypes() {
         return paramTypes;
     }
 
+    @Override
     public String getProviderJavaMethodName() {
         return providerJavaMethodName;
     }
@@ -307,6 +315,7 @@ public class FlashlightProbe
 		return providerClazz;
 	}
 
+    @Override
 	 public String toString() {
          StringBuilder sbldr = new StringBuilder(moduleProviderName + ":" + moduleName
          		+ ":" + probeProviderName + ":" + probeName);
@@ -331,6 +340,7 @@ public class FlashlightProbe
         return dtraceProviderImpl;
     }
 
+    @Override
     public Method getDTraceMethod() {
         return dtraceMethod;
     }

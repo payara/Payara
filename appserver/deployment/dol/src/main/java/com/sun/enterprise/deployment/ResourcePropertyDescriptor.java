@@ -54,6 +54,7 @@ public class ResourcePropertyDescriptor extends Descriptor {
     private String name;
     private String value;
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -62,6 +63,7 @@ public class ResourcePropertyDescriptor extends Descriptor {
         this.value = value;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -70,6 +72,7 @@ public class ResourcePropertyDescriptor extends Descriptor {
         return value;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -87,6 +90,7 @@ public class ResourcePropertyDescriptor extends Descriptor {
         return false;
     }
 
+    @Override
     public int hashCode() {
         int result = 17;
         result = 37 * result + getName().hashCode();

@@ -77,6 +77,7 @@ public class ConnectorNamingEvent{
      * Returns the state of the object
      * @return  String
      */
+    @Override
     public String toString(){
         StringBuffer objectState = new StringBuffer(  "ConnectorNamingEvent : " +
                 "{"+ jndiName +", " + getEventName(eventType) + "}" );

@@ -61,6 +61,7 @@ public class XmppNotifierExecutionOptionsFactory extends NotifierExecutionOption
         register(NotifierType.XMPP, this);
     }
 
+    @Override
     public NotifierExecutionOptions build(XmppNotifier notifier) {
         XmppNotifierExecutionOptions executionOptions = new XmppNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));

@@ -82,6 +82,7 @@ public class UserTransactionImpl implements javax.transaction.UserTransaction,
      *    encounters an unexpected error condition
      *
      */
+    @Override
     public void begin() throws NotSupportedException, SystemException {
         if (transactionManager == null) init();
     	this.transactionManager.begin();
@@ -111,6 +112,7 @@ public class UserTransactionImpl implements javax.transaction.UserTransaction,
      * @exception SystemException Thrown if the transaction manager
      *    encounters an unexpected error condition
     */
+    @Override
     public void commit() throws RollbackException,
 	HeuristicMixedException, HeuristicRollbackException, SecurityException,
 	IllegalStateException, SystemException {
@@ -132,6 +134,7 @@ public class UserTransactionImpl implements javax.transaction.UserTransaction,
      *    encounters an unexpected error condition
      *
      */
+    @Override
     public void rollback() throws IllegalStateException, SecurityException,
         SystemException {
         if (transactionManager == null) init();
@@ -150,6 +153,7 @@ public class UserTransactionImpl implements javax.transaction.UserTransaction,
      *    encounters an unexpected error condition
      *
      */
+    @Override
     public void setRollbackOnly() throws IllegalStateException,
     	SystemException {
         if (transactionManager == null) init();
@@ -167,6 +171,7 @@ public class UserTransactionImpl implements javax.transaction.UserTransaction,
      *    encounters an unexpected error condition
      *
      */
+    @Override
     public int getStatus() throws SystemException {
         if (transactionManager == null) init();
     	return this.transactionManager.getStatus();
@@ -187,6 +192,7 @@ public class UserTransactionImpl implements javax.transaction.UserTransaction,
      *    encounters an unexpected error condition.
      *
      */
+    @Override
     public void setTransactionTimeout(int seconds) throws SystemException {
         if (transactionManager == null) init();
     	this.transactionManager.setTransactionTimeout(seconds);
@@ -197,6 +203,7 @@ public class UserTransactionImpl implements javax.transaction.UserTransaction,
     /**
      * This method is used by JNDI to store a referenceable object.
      */
+    @Override
     public Reference getReference() throws NamingException {
 		//_logger.log(Level.FINE,"Referenceable object invoked");
     	return new Reference(this.getClass().getName(),

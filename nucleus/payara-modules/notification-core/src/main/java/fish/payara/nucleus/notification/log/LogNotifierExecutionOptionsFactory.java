@@ -34,6 +34,7 @@ public class LogNotifierExecutionOptionsFactory extends NotifierExecutionOptions
         register(NotifierType.LOG, this);
     }
 
+    @Override
     public NotifierExecutionOptions build(LogNotifier notifier) {
         LogNotifierExecutionOptions executionOptions = new LogNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));

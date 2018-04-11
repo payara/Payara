@@ -308,14 +308,17 @@ public final class SessionContextImpl
 	this.lastPersistedAt = val;
     }
 
+    @Override
     public long getVersion() {
         return version;
     }
     
+    @Override
     public long incrementAndGetVersion() {
         return ++version;
     }
 
+    @Override
     public void setVersion(long newVersion) {
         this.version = newVersion;
     }
@@ -324,10 +327,12 @@ public final class SessionContextImpl
     /************ Implementation of StatefulEJBContext ***********************/
     /*************************************************************************/
 
+    @Override
     public long getLastAccessTime() {
         return getLastTimeUsed();
     }
 
+    @Override
     public boolean canBePassivated() {
         return (state == EJBContextImpl.BeanState.READY);
     }
@@ -336,14 +341,17 @@ public final class SessionContextImpl
         return (this.getExtendedEntityManagerMap().size() != 0);
     }
 
+    @Override
     public SessionContext getSessionContext() {
         return this;
     }
 
+    @Override
     public boolean existsInStore() {
         return existsInSessionStore ;
     }
 
+    @Override
     public void setExistsInStore(boolean val) {
         this.existsInSessionStore = val;
     }

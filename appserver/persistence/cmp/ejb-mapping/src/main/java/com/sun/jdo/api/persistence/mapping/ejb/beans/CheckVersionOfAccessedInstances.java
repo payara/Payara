@@ -53,7 +53,7 @@ public class CheckVersionOfAccessedInstances extends org.netbeans.modules.schema
 	static Vector comparators = new Vector();
 	private static final org.netbeans.modules.schema2beans.Version runtimeVersion = new org.netbeans.modules.schema2beans.Version(5, 0, 0);
 
-	static public final String COLUMN_NAME = "ColumnName";	// NOI18N
+	public static final String COLUMN_NAME = "ColumnName";	// NOI18N
 
 	public CheckVersionOfAccessedInstances() {
 		this(Common.USE_DEFAULT_VALUES);
@@ -134,6 +134,7 @@ public class CheckVersionOfAccessedInstances extends org.netbeans.modules.schema
 	}
 
 	// Dump the content of this bean returning it as a String
+        @Override
 	public void dump(StringBuffer str, String indent){
 		String s;
 		Object o;
@@ -153,6 +154,7 @@ public class CheckVersionOfAccessedInstances extends org.netbeans.modules.schema
 		}
 
 	}
+        @Override
 	public String dumpBeanNode(){
 		StringBuffer str = new StringBuffer();
 		str.append("CheckVersionOfAccessedInstances\n");	// NOI18N

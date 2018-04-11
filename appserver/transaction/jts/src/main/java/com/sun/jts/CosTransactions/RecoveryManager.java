@@ -1835,12 +1835,14 @@ public class RecoveryManager {
 
         private final Semaphore semaphore = new Semaphore(1, true);
 
+        @Override
         public void start() {
         }
 
         /**
          * {@inheritDoc}
          */
+        @Override
         public void raiseFence() {
             try {
                 semaphore.acquire();
@@ -1852,6 +1854,7 @@ public class RecoveryManager {
         /**
          * {@inheritDoc}
          */
+        @Override
         public void lowerFence() {
             semaphore.release();
         }
@@ -1904,6 +1907,7 @@ class ResyncThread extends Thread  {
      *
      * @see
      */
+    @Override
     public void run() {
         yield();
 

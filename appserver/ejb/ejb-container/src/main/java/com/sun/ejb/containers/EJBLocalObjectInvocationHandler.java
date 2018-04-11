@@ -122,6 +122,7 @@ public final class EJBLocalObjectInvocationHandler
         proxy_ = proxy;
     }
 
+    @Override
     public Object getClientObject() {
         return proxy_;
     }
@@ -129,6 +130,7 @@ public final class EJBLocalObjectInvocationHandler
     /**
      * This entry point is only used for Local Home view.
      */
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args) 
         throws Throwable {
 

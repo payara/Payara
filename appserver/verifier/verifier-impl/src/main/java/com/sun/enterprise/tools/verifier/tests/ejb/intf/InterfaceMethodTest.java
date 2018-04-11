@@ -55,7 +55,7 @@ import java.util.Arrays;
  * Superclass for all local/remote interfaces method testing.
  *
  */
-abstract public class InterfaceMethodTest extends EjbTest {
+public abstract class InterfaceMethodTest extends EjbTest {
     
     static String[] EJBObjectMethods = 
             { "getEJBHome", "getHandle", "getPrimaryKey",
@@ -66,8 +66,8 @@ abstract public class InterfaceMethodTest extends EjbTest {
      * Methods to get the type of interface: local/remote and the name of the class
      */
     
-    abstract protected String getInterfaceName(EjbDescriptor descriptor);
-    abstract protected String getInterfaceType();
+    protected abstract String getInterfaceName(EjbDescriptor descriptor);
+    protected abstract String getInterfaceType();
     
     
     /**
@@ -81,7 +81,7 @@ abstract public class InterfaceMethodTest extends EjbTest {
      * @return true if the test passes
      */
     
-    abstract protected boolean runIndividualMethodTest(EjbDescriptor descriptor, Method method, Result result);
+    protected abstract boolean runIndividualMethodTest(EjbDescriptor descriptor, Method method, Result result);
     
     /**
      * Run the verifier test against the local or remote interface, get all methods

@@ -66,6 +66,7 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
 
     private Logger _logger = LogDomains.getLogger(ConnectorValidator.class, LogDomains.RSR_LOGGER);
 
+    @Override
     public void accept (BundleDescriptor descriptor) {
         if (descriptor instanceof ConnectorDescriptor) {
             ConnectorDescriptor connectorDesc = (ConnectorDescriptor)descriptor;
@@ -73,6 +74,7 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
         }
     }
 
+    @Override
     public void accept(ConnectorDescriptor descriptor) {
 
         //make sure that the ActivationSpec class implement ActivationSpec interface.

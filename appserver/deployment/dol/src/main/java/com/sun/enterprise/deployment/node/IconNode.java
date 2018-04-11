@@ -68,6 +68,7 @@ public class IconNode extends LocalizedNode {
     /**
      * @return the descriptor for this node
      */
+    @Override
     public Object getDescriptor() {
         return null;
     }
@@ -78,6 +79,7 @@ public class IconNode extends LocalizedNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         if (element.getQName().equals(TagNames.SMALL_ICON)) {
             smallIcon = value;
@@ -90,6 +92,7 @@ public class IconNode extends LocalizedNode {
     /**
      * notification of the end of XML parsing for this node
      */
+    @Override
     public void postParsing() {
         Object o = getParentNode().getDescriptor();    
         if (o!=null && o instanceof Descriptor) {

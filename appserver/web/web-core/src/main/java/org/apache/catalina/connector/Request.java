@@ -488,7 +488,7 @@ public class Request
     private boolean initRequestFacadeHelper = false;
 
     // Allow Grizzly to auto detect a remote close connection.
-    public final static boolean discardDisconnectEvent =
+    public static final boolean discardDisconnectEvent =
             Boolean.getBoolean("org.glassfish.grizzly.discardDisconnect");
 
     /*
@@ -1047,6 +1047,7 @@ public class Request
      * Return an Iterator containing the String names of all notes bindings
      * that exist for this request.
      */
+    @Override
     public Iterator<String> getNoteNames() {
         return notes.keySet().iterator();
     }

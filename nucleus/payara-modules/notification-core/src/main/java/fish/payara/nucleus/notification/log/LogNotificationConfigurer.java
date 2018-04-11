@@ -77,6 +77,7 @@ public class LogNotificationConfigurer extends BaseNotificationConfigurer<LogNot
         super.execute(context);
     }
 
+    @Override
     protected void applyValues(LogNotifierConfiguration configuration) throws PropertyVetoException {
         if(this.enabled != null) {
             configuration.enabled(this.enabled);

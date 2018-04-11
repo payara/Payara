@@ -83,7 +83,7 @@ CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
 })
 public class ListJaccProviders implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
-    final private static LocalStringManagerImpl localStrings =
+    private final static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(DeleteJaccProvider.class);
 
     @Param(name = "target", primary=true, optional = true, defaultValue =

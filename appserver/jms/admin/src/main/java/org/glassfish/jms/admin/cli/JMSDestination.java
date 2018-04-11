@@ -73,7 +73,7 @@ import org.glassfish.config.support.CommandTarget;
 public abstract class JMSDestination {
 
     protected static final Logger logger = Logger.getLogger(LogUtils.JMS_ADMIN_LOGGER);
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateJMSDestination.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateJMSDestination.class);
 
     // JMS destination types
            public static final String JMS_DEST_TYPE_TOPIC		= "topic";
@@ -151,6 +151,7 @@ public abstract class JMSDestination {
                    MQJMXConnectorInfo mqjmxForServer = (MQJMXConnectorInfo)
                    java.security.AccessController.doPrivileged
                        (new java.security.PrivilegedExceptionAction() {
+                        @Override
                         public java.lang.Object run() throws Exception {
                             if(ctarget == CommandTarget.CLUSTER || ctarget == CommandTarget.CLUSTERED_INSTANCE) {
                                 if (logger.isLoggable(Level.FINE)) {
@@ -491,6 +492,7 @@ public abstract class JMSDestination {
             ActiveJmsResourceAdapter air = (ActiveJmsResourceAdapter)
             java.security.AccessController.doPrivileged
                 (new java.security.PrivilegedExceptionAction() {
+                     @Override
                      public java.lang.Object run() throws Exception {
                           String module = ConnectorConstants.DEFAULT_JMS_ADAPTER;
                           String loc = ConnectorsUtil.getSystemModuleLocation(module);

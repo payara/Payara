@@ -62,6 +62,7 @@ public class ConcurrentModificationsTest extends ConfigApiTest{
      *
      * @return the configuration file name
      */
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -75,6 +76,7 @@ public class ConcurrentModificationsTest extends ConfigApiTest{
 
         ConfigSupport.apply(new SingleConfigCode<Resources>() {
 
+            @Override
             public Object run(Resources writeableResources) throws PropertyVetoException, TransactionFailure {
 
                 assertTrue(writeableResources!=null);

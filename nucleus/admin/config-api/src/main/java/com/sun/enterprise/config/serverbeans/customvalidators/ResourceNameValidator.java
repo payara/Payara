@@ -53,6 +53,7 @@ import javax.validation.ConstraintValidatorContext;
 public class ResourceNameValidator
     implements ConstraintValidator<ResourceNameConstraint, Resource> {
 
+    @Override
     public void initialize(final ResourceNameConstraint constraint) {
     }
 

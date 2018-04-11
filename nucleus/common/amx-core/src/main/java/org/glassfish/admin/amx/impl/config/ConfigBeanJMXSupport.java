@@ -189,6 +189,7 @@ class ConfigBeanJMXSupport
 
     public Class<? extends ConfigBeanProxy> getIntf() { return mIntf; }
     
+    @Override
     public String toString()
     {
         final StringBuilder buf = new StringBuilder();
@@ -966,11 +967,13 @@ class ConfigBeanJMXSupport
             return types;
         }
 
+        @Override
         public boolean required()
         {
             return mElement.required();
         }
 
+        @Override
         public boolean key()
         {
             return mElement.key();
@@ -1108,11 +1111,13 @@ class ConfigBeanJMXSupport
             return mAttribute;
         }
 
+        @Override
         public boolean required()
         {
             return mAttribute.required();
         }
 
+        @Override
         public boolean key()
         {
             return mAttribute.key();
@@ -1277,6 +1282,7 @@ class ConfigBeanJMXSupport
             return method().getParameterTypes();
         }
 
+        @Override
         public String toString()
         {
             String paramsString = "";

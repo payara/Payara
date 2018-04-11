@@ -52,22 +52,27 @@ public class InsnIntOp extends Insn {
 
   /* public accessors */
 
+  @Override
   public int nStackArgs() {
     return VMOp.ops[opcode()].nStackArgs();
   }
 
+  @Override
   public int nStackResults() {
     return VMOp.ops[opcode()].nStackResults();
   }
 
+  @Override
   public String argTypes() {
     return VMOp.ops[opcode()].argTypes();
   }
 
+  @Override
   public String resultTypes() {
     return VMOp.ops[opcode()].resultTypes();
   }
 
+  @Override
   public boolean branches() {
     return opcode() == opc_ret;
   }
@@ -101,6 +106,7 @@ public class InsnIntOp extends Insn {
     }
   }
 
+  @Override
   void print (PrintStream out, int indent) {
     ClassPrint.spaces(out, indent);
     if (opcode() == opc_newarray) 
@@ -109,6 +115,7 @@ public class InsnIntOp extends Insn {
         out.println(offset() + "  " + opName(opcode()) + "  " + operandValue);//NOI18N
   }
 
+  @Override
   int store(byte[] buf, int index) {
     if (size() == 4) {
       /* prefix with an opc_wide */
@@ -125,6 +132,7 @@ public class InsnIntOp extends Insn {
 
   /* return the size of the instruction in bytes */
 
+  @Override
   int size() {
     switch(opcode()) {
     case opc_bipush:

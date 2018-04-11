@@ -58,6 +58,7 @@ public class ConstDouble extends ConstValue {
   /**
    * The tag of this constant entry
    */
+  @Override
   public int tag () {
     return MyTag;
   }
@@ -72,6 +73,7 @@ public class ConstDouble extends ConstValue {
   /**
    * Return the descriptor string for the constant type.
    */
+  @Override
   public String descriptor() {
       return "D";//NOI18N
   }
@@ -79,6 +81,7 @@ public class ConstDouble extends ConstValue {
   /**
    * A printable representation
    */
+  @Override
   public String toString () {
       return "CONSTANTDouble(" + indexAsString() + "): " + //NOI18N
           "doubleValue(" + Double.toString(doubleValue) + ")";//NOI18N
@@ -93,6 +96,7 @@ public class ConstDouble extends ConstValue {
     doubleValue = f;
   }
 
+  @Override
   void formatData (DataOutputStream b) throws IOException {
     b.writeDouble(doubleValue);
   }
@@ -101,6 +105,7 @@ public class ConstDouble extends ConstValue {
     return new ConstDouble (input.readDouble());
   }
 
+  @Override
   void resolve (ConstantPool p) { }
 }
 

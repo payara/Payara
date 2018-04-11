@@ -75,7 +75,7 @@ public class VersionConsistencyCacheImpl implements VersionConsistencyCache {
     // Not final, so that we can create different kinds of caches for testing.
     private static CacheFactory cacheFactory;
 
-    private final static ResourceBundle messages =
+    private static final ResourceBundle messages =
         I18NHelper.loadBundle(VersionConsistencyCacheImpl.class); 
 
     /** Use the PersistenceManager's logger. */
@@ -341,6 +341,7 @@ public class VersionConsistencyCacheImpl implements VersionConsistencyCache {
     /**
      * @see VersionConsistencyCache#put
      */
+    @Override
     public StateManager put(Class pcType, Object oid, StateManager sm) {
         boolean logAtFinest = logger.isLoggable(Logger.FINEST);
 
@@ -379,6 +380,7 @@ public class VersionConsistencyCacheImpl implements VersionConsistencyCache {
     /**
      * @see VersionConsistencyCache#get
      */
+    @Override
     public StateManager get(Class pcType, Object oid) {
         boolean logAtFinest = logger.isLoggable(Logger.FINEST);
 
@@ -414,6 +416,7 @@ public class VersionConsistencyCacheImpl implements VersionConsistencyCache {
     /**
      * @see VersionConsistencyCache#remove
      */
+    @Override
     public StateManager remove(Class pcType, Object oid) {
         boolean logAtFinest = logger.isLoggable(Logger.FINEST);
 
@@ -451,6 +454,7 @@ public class VersionConsistencyCacheImpl implements VersionConsistencyCache {
      * This implementation does nothing.  Instead, we create buckets for each
      * pcType as-needed; see {@link #put}
      */
+    @Override
     public void addPCType(Class pcType) {
         if (logger.isLoggable(Logger.FINEST)) {
             logger.finest(
@@ -465,6 +469,7 @@ public class VersionConsistencyCacheImpl implements VersionConsistencyCache {
     /**
      * @see VersionConsistencyCache#removePCType
      */
+    @Override
     public void removePCType(Class pcType) {
         if (logger.isLoggable(Logger.FINEST)) {
             logger.finest(
@@ -555,31 +560,37 @@ public class VersionConsistencyCacheImpl implements VersionConsistencyCache {
         }
         
         /** @see Map#put */
+        @Override
         public StateManager put(Object key, StateManager value) {
             return (StateManager) cache.put(key, value);
         }
 
         /** @see Map#get */
+        @Override
         public StateManager get(Object key) {
             return (StateManager) cache.get(key);
         }
 
         /** @see Map#remove */
+        @Override
         public StateManager remove(Object key) {
             return (StateManager) cache.remove(key);
         }
         
         /** @see Map#clear */
+        @Override
         public void clear() {
             cache.clear();
         }
 
         /** @see Map#isEmpty */
+        @Override
         public boolean isEmpty() {
             return cache.isEmpty();
         }
 
         /** @see Map#size */
+        @Override
         public int size() {
             return cache.size();
         }
@@ -617,6 +628,7 @@ public class VersionConsistencyCacheImpl implements VersionConsistencyCache {
             c.init(maxEntries, timeout, loadFactor, (Properties) null);
             c.addCacheListener(
                     new CacheListener() {
+                        @Override
                         public void trimEvent(Object key, Object value) {
                             cache.remove(key);
                             if (logger.isLoggable(Logger.FINER)) {
@@ -631,31 +643,37 @@ public class VersionConsistencyCacheImpl implements VersionConsistencyCache {
         }
         
         /** @see Map#put */
+        @Override
         public StateManager put(Object key, StateManager value) {
             return (StateManager) cache.put(key, value);
         }
 
         /** @see Map#get */
+        @Override
         public StateManager get(Object key) {
             return (StateManager) cache.get(key);
         }
 
         /** @see Map#remove */
+        @Override
         public StateManager remove(Object key) {
             return (StateManager) cache.remove(key);
         }
 
         /** @see Map#clear */
+        @Override
         public void clear() {
             cache.clear();
         }
 
         /** @see Map#isEmpty */
+        @Override
         public boolean isEmpty() {
             return cache.isEmpty();
         }
 
         /** @see Map#size */
+        @Override
         public int size() {
             return cache.getEntryCount();
         }
@@ -675,6 +693,7 @@ public class VersionConsistencyCacheImpl implements VersionConsistencyCache {
     static class BasicCacheFactory implements CacheFactory {
 
         /** @return an instance of a BasicVCCache. */
+        @Override
         public VCCache create() {
             return new BasicVCCache();
         }
@@ -684,6 +703,7 @@ public class VersionConsistencyCacheImpl implements VersionConsistencyCache {
     static class LruCacheFactory implements CacheFactory {
 
         /** @return an instance of a LruVCCache. */
+        @Override
         public VCCache create() {
             return new LruVCCache(maxEntries, timeout, loadFactor);
         }

@@ -65,6 +65,7 @@ public class SerialInitContextFactory implements InitialContextFactory {
     /**
      * Create the InitialContext object.
      */
+    @Override
     public Context getInitialContext(Hashtable env) throws NamingException {
         return delegate.getInitialContext(env);
 

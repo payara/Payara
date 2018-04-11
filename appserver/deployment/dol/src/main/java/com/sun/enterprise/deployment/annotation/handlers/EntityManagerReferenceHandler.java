@@ -80,6 +80,7 @@ public class EntityManagerReferenceHandler
      * @param rcContexts an array of ResourceContainerContext
      * @return HandlerProcessingResult
      */
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {

@@ -63,6 +63,7 @@ public class SysnetRegistrationService implements RegistrationService {
         this.localRepositoryFile = localRepositoryFile;
     }
     
+    @Override
     public boolean isRegistrationEnabled() {
         // hack to disable registration on AIX. The sysnet registration APIs do not work on AIX.
          if (AIX.equalsIgnoreCase(System.getProperty("os.name")))
@@ -85,6 +86,7 @@ public class SysnetRegistrationService implements RegistrationService {
         throw new RuntimeException("Not supported");
     }
     
+    @Override
     public List getRegistrationDescriptors() throws RegistrationException {
         RepositoryManager rm = getRepositoryManager();
         // make sure runtime values are generated in RepositoryManager
@@ -92,6 +94,7 @@ public class SysnetRegistrationService implements RegistrationService {
         return rm.getServiceTags();
     }
 
+    @Override
     public List getRegistrationDescriptors(String productURN) throws RegistrationException {
         List<ServiceTag> st1 = getRegistrationDescriptors();
         List<ServiceTag> st2 = new ArrayList();
@@ -103,6 +106,7 @@ public class SysnetRegistrationService implements RegistrationService {
         return st2;
     }
     
+    @Override
     public List getRegistrationDescriptors(RegistrationDescriptor.RegistrationStatus status) throws RegistrationException {
         List<ServiceTag> st1 = getRegistrationDescriptors();
         List<ServiceTag> st2 = new ArrayList();
@@ -116,16 +120,19 @@ public class SysnetRegistrationService implements RegistrationService {
     }
 
     /* read the registration reminder from local persistent store */
+    @Override
     public RegistrationReminder getRegistrationReminder() throws RegistrationException {
         return getRepositoryManager().getRegistrationReminder();
     }
     
     /* set the registration reminder to local persistent store */
+    @Override
     public void setRegistrationReminder(RegistrationReminder reminder) throws RegistrationException {        
         getRepositoryManager().setRegistrationReminder(reminder);
     }
 
     /* read the registration status from local persistent store */
+    @Override
     public RegistrationStatus getRegistrationStatus() throws RegistrationException {
         return getRepositoryManager().getRegistrationStatus();
     }

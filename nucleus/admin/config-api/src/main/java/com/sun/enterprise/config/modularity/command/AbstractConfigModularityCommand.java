@@ -67,7 +67,7 @@ public class AbstractConfigModularityCommand {
     private ConfigModularityUtils configModularityUtils;
     @Inject
     ServiceLocator locator;
-    protected final static String LINE_SEPARATOR = System.getProperty("line.separator");
+    protected static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     protected String replaceExpressionsWithValues(String location) {
         StringTokenizer tokenizer = new StringTokenizer(location, "/", false);

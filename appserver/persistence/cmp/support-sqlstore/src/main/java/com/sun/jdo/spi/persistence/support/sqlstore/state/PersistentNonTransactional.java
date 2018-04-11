@@ -53,7 +53,7 @@ public class PersistentNonTransactional extends LifeCycleState {
     /**
      * I18N message handler
      */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
             "com.sun.jdo.spi.persistence.support.sqlstore.Bundle", // NOI18N
             PersistentNonTransactional.class.getClassLoader());
 
@@ -81,10 +81,12 @@ public class PersistentNonTransactional extends LifeCycleState {
     /**
      * Operations that cause life cycle state transitions
      */
+    @Override
     public LifeCycleState transitionDeletePersistent() {
         return changeState(P_DELETED);
     }
 
+    @Override
     public LifeCycleState transitionWriteField(boolean transactionActive) {
         if (transactionActive) {
             return changeState(P_DIRTY);
@@ -93,6 +95,7 @@ public class PersistentNonTransactional extends LifeCycleState {
         }
     }
 
+    @Override
     public LifeCycleState transitionReload(boolean transactionActive) {
         if (!transactionActive) {
             return this;
@@ -101,6 +104,7 @@ public class PersistentNonTransactional extends LifeCycleState {
         }
     }
 
+    @Override
     public boolean needsReload(boolean optimistic,
                                boolean nontransactionalRead,
                                boolean transactionActive) {

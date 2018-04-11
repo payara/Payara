@@ -52,10 +52,12 @@ public class InsnInterfaceInvoke extends InsnConstOp {
 
   /* public accessors */
 
+  @Override
   public int nStackArgs() {
     return super.nStackArgs();
   }
 
+  @Override
   public int nStackResults() {
     return super.nStackResults();
   }
@@ -63,6 +65,7 @@ public class InsnInterfaceInvoke extends InsnConstOp {
   /**
    * What are the types of the stack operands ?
    */
+  @Override
   public String argTypes() {
     return super.argTypes();
   }
@@ -70,10 +73,12 @@ public class InsnInterfaceInvoke extends InsnConstOp {
   /**
    * What are the types of the stack results?
    */
+  @Override
   public String resultTypes() {
     return super.resultTypes();
   }
 
+  @Override
   public boolean branches() {
     return false;
   }
@@ -113,12 +118,14 @@ public class InsnInterfaceInvoke extends InsnConstOp {
 			     " with invalid operands");//NOI18N
   }
 
+  @Override
   void print (PrintStream out, int indent) {
     ClassPrint.spaces(out, indent);
     out.println(offset() + "  opc_invokeinterface  " + //NOI18N
 		"pool(" + method().getIndex() + ")," + nArgsOp);//NOI18N
   }
 
+  @Override
   int store(byte[] buf, int index) {
     buf[index++] = (byte) opcode();
     index = storeShort(buf, index, (short)method().getIndex());
@@ -127,6 +134,7 @@ public class InsnInterfaceInvoke extends InsnConstOp {
     return index;
   }
 
+  @Override
   int size() {
     return 5;
   }

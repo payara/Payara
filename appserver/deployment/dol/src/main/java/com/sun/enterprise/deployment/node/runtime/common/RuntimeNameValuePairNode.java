@@ -59,6 +59,7 @@ public class RuntimeNameValuePairNode extends NameValuePairNode{
    /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
         if (descriptor==null) {
             descriptor = new NameValuePairDescriptor();

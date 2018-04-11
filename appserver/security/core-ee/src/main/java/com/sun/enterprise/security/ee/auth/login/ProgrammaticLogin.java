@@ -166,6 +166,7 @@ public class ProgrammaticLogin
             // try to login. doPrivileged is used since application code does
             // not have permissions to process the jaas login.
             authenticated = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
+                    @Override
                     public java.lang.Boolean run() {
                     // if realm is null, LCD will log into the default realm
                         if (((SecurityServicesUtil.getInstance() != null) && SecurityServicesUtil.getInstance().isServer()) 
@@ -288,6 +289,7 @@ public class ProgrammaticLogin
             // try to login. doPrivileged is used since application code does
             // not have permissions to process the jaas login.
             authenticated = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
+                    @Override
                     public Boolean run() {
                         return webProgrammaticLogin.login(user, password, realm,
                                                           request, response);
@@ -380,6 +382,7 @@ public class ProgrammaticLogin
         try{
             checkLogoutPermission();
             AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                @Override
                 public java.lang.Object run() {
                     //V3:Commentedif (isServer) {
                     if (SecurityServicesUtil.getInstance() != null && 
@@ -451,6 +454,7 @@ public class ProgrammaticLogin
         try{
             checkLogoutPermission();
             loggedout = AccessController.doPrivileged(new PrivilegedExceptionAction<Boolean>() {
+                @Override
                 public Boolean run() throws Exception{
                     return webProgrammaticLogin.logout(request, response);
                 }

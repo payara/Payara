@@ -76,7 +76,7 @@ public class SemaphoreImpl implements Semaphore {
     /**
      * I18N message handler
      */
-    private final static ResourceBundle messages = 
+    private static final ResourceBundle messages = 
         I18NHelper.loadBundle(SemaphoreImpl.class);
 
 
@@ -86,6 +86,7 @@ public class SemaphoreImpl implements Semaphore {
 
     /** Acquire a lock.
      */
+    @Override
     public void acquire() {
         boolean debug = _logger.isLoggable(Logger.FINEST);
 
@@ -123,6 +124,7 @@ public class SemaphoreImpl implements Semaphore {
 
     /** Release a lock.
      */
+    @Override
     public void release() {
         boolean debug = _logger.isLoggable(Logger.FINEST);
         

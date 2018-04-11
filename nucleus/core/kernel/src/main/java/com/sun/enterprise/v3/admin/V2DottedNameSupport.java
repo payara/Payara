@@ -407,6 +407,7 @@ public class V2DottedNameSupport {
     public List<Map.Entry> sortNodesByDottedName(Map<Dom, String> nodes) {
         List<Map.Entry> mapEntries = new ArrayList(nodes.entrySet());
         Collections.sort(mapEntries, new Comparator() {
+            @Override
             public int compare(Object o1, Object o2) {
                 return (((String)(((Map.Entry) (o1)).getValue())).compareTo((String)(((Map.Entry) (o2)).getValue())));
             }
@@ -416,6 +417,7 @@ public class V2DottedNameSupport {
     
     public List<org.glassfish.flashlight.datatree.TreeNode> sortTreeNodesByCompletePathName(List<org.glassfish.flashlight.datatree.TreeNode> nodes) {
         Collections.sort(nodes, new Comparator() {
+            @Override
             public int compare(Object o1, Object o2) {
                 return (((String)(((org.glassfish.flashlight.datatree.TreeNode) (o1)).getCompletePathName())).compareTo(
                         (String)(((org.glassfish.flashlight.datatree.TreeNode) (o2)).getCompletePathName())));

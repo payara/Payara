@@ -90,6 +90,7 @@ public class LoggerJDK13 extends AbstractLogger
 	 * @param msg The string message (or a key in the message catalog)
 	 * @param thrown The exception to log
 	 */
+        @Override
 	public synchronized void log (int level, String msg, Throwable thrown)
 	{
 		if (isLoggable(level))
@@ -107,6 +108,7 @@ public class LoggerJDK13 extends AbstractLogger
 	 * @param level the level to print
 	 * @param message the message to print
 	 */
+        @Override
 	protected synchronized void logInternal (int level, String message)
 	{
 		getPrintStream().println(getMessageWithPrefix(level, message));

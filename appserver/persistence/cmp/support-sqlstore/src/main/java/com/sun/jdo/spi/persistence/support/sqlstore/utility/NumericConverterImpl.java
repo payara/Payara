@@ -68,6 +68,7 @@ public class NumericConverterImpl implements NumericConverter {
       * @param bInteger the BigInteger to be converted
       * @return converted BigDecimal
       */
+     @Override
      public BigDecimal toBigDecimal(BigInteger bInteger) {
           return (bInteger == null) ? null : new BigDecimal(bInteger);
      }
@@ -77,6 +78,7 @@ public class NumericConverterImpl implements NumericConverter {
       * @param d the Double to be converted
       * @return converted BigDecimal
       */
+     @Override
      public BigDecimal toBigDecimal(Double d) {
           return (d == null) ? null : new BigDecimal(d.toString());
      }
@@ -86,6 +88,7 @@ public class NumericConverterImpl implements NumericConverter {
       * @param f the Float to be converted
       * @return converted BigDecimal
       */
+     @Override
      public BigDecimal toBigDecimal(Float f) {
           return (f == null) ? null : new BigDecimal(f.toString());
      }
@@ -95,6 +98,7 @@ public class NumericConverterImpl implements NumericConverter {
       * @param n the Number to be converted
       * @return converted BigDecimal
       */
+     @Override
      public BigDecimal toBigDecimal(Number n) {
           return (n == null) ? null : new BigDecimal(n.toString());
      }
@@ -104,6 +108,7 @@ public class NumericConverterImpl implements NumericConverter {
       * @param bDecimal the BigDecimal to be converted
       * @return converted BigInteger
       */
+     @Override
      public BigInteger toBigInteger(BigDecimal bDecimal) {
           return (bDecimal == null) ? null : bDecimal.toBigInteger();
      }
@@ -113,6 +118,7 @@ public class NumericConverterImpl implements NumericConverter {
       * @param d the Double to be converted
       * @return converted BigInteger
       */
+     @Override
      public BigInteger toBigInteger(Double d) {
           return (d == null) ? null : (new BigDecimal(d.toString())).toBigInteger();
      }
@@ -122,6 +128,7 @@ public class NumericConverterImpl implements NumericConverter {
       * @param f the Float to be converted
       * @return converted BigInteger
       */
+     @Override
      public BigInteger toBigInteger(Float f) {
           return (f == null) ? null : (new BigDecimal(f.toString())).toBigInteger();
      }
@@ -131,6 +138,7 @@ public class NumericConverterImpl implements NumericConverter {
       * @param n the Number to be converted
       * @return converted BigInteger
       */
+     @Override
      public BigInteger toBigInteger(Number n) {
           return (n == null) ? null : BigInteger.valueOf(n.longValue());
      }

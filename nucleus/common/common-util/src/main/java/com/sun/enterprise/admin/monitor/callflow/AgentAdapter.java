@@ -48,66 +48,93 @@ package	com.sun.enterprise.admin.monitor.callflow;
  */
 public class AgentAdapter implements Agent {
 
+    @Override
     public void	requestStart(RequestType requestType) {}
+    @Override
     public void	addRequestInfo(RequestInfo requestInfo,	String value) {}
+    @Override
     public void	requestEnd() {}
+    @Override
     public void	startTime(ContainerTypeOrApplicationType type) {}
+    @Override
     public void	endTime() {}
 
+    @Override
     public void	ejbMethodStart(CallFlowInfo info) {}
+    @Override
     public void	ejbMethodEnd(CallFlowInfo info)	{}
 
+    @Override
     public void	webMethodStart(
 	    String methodName, String applicationName, String moduleName,
 	    String componentName, ComponentType	componentType,
 	    String callerPrincipal) {}
+    @Override
     public void	webMethodEnd(Throwable exception) {}
 
+    @Override
     public void	entityManagerQueryStart(EntityManagerQueryMethod queryMethod) {}
+    @Override
     public void	entityManagerQueryEnd()	{}
 
+    @Override
     public void	entityManagerMethodStart(EntityManagerMethod entityManagerMethod) {}
+    @Override
     public void	entityManagerMethodEnd() {}
 
+    @Override
     public void	registerListener(Listener listener) {}
+    @Override
     public void	unregisterListener(Listener listener) {}
 
+    @Override
     public ThreadLocalData getThreadLocalData()	{
 	return null;
     }
 
+    @Override
     public void	setEnable(boolean enable) {}
 
+    @Override
     public boolean isEnabled() {return false;}
 
+    @Override
     public void	setCallerIPFilter(String ipAddress) {}
 
+    @Override
     public void	setCallerPrincipalFilter(String	callerPrincipal) {}
 
+    @Override
     public String getCallerPrincipalFilter() {
 	return null;
     }
 
+    @Override
     public String getCallerIPFilter() {
 	return null;
     }
 
+    @Override
     public void	clearData() {}
 
+    @Override
     public boolean deleteRequestIds (String[] requestIds){
 	return true;
     }
 
+    @Override
     public java.util.List<java.util.Map<String,	String>>
 	    getRequestInformation() {
 	return null;
     }
 
+    @Override
     public java.util.List<java.util.Map<String,	String>>
 	    getCallStackForRequest(String requestId) {
 	return null;
     }
 
+    @Override
     public java.util.Map<String, String> getPieInformation (String requestID) {
 	return null;
     }

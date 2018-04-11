@@ -368,5 +368,6 @@ public interface JmsService extends ConfigExtension, PropertyBag, Container {
     }
     )
     @Element
+    @Override
     List<Property> getProperty();
 }

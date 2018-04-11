@@ -84,6 +84,7 @@ import org.glassfish.hk2.api.PerLookup;
 @PerLookup
 public class XMLContentActionReporter extends ActionReporter {
 
+    @Override
     public void writeReport(OutputStream os)  {
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();

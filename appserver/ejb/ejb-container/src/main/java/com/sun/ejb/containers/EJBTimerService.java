@@ -1991,6 +1991,7 @@ public class EJBTimerService {
             timerService_ = timerService;
         }
 
+        @Override
         public void afterCompletion(int status) {
             if( logger.isLoggable(Level.FINE) ) {
                     logger.log(Level.FINE, "TimerSynch::afterCompletion. " +
@@ -2032,6 +2033,7 @@ public class EJBTimerService {
             }
         }
 
+        @Override
         public void beforeCompletion() {}
 
     }

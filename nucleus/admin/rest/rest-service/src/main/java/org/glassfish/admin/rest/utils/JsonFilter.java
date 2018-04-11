@@ -114,6 +114,7 @@ public class JsonFilter {
         public IdentityFilter(String identityAttr) {
             this.identityAttr = identityAttr;
         }
+        @Override
         public Result filter(String attr) {
             if (identityAttr.equals(attr)) {
                 return Result.Include;
@@ -176,6 +177,7 @@ public class JsonFilter {
             throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity(msg).build());
         }
 
+        @Override
         public Result filter(String attr) {
             // See if we know about this exact attr
             if (attrs.contains(attr) || parentAttrs.contains(attr)) {
@@ -197,25 +199,33 @@ public class JsonFilter {
 
     public static class IncludeFilter extends AttrsFilter {
         public IncludeFilter(Locale locale, String attrsString) throws Exception { super(locale, attrsString, true); }
+        @Override
         protected Result foundResult() { return Result.Include; }
+        @Override
         protected Result notFoundResult() { return Result.Deferr; }
     }
 
     public static class ExcludeFilter extends AttrsFilter {
         public ExcludeFilter(Locale locale, String attrsString) throws Exception { super(locale, attrsString, false); }
+        @Override
         protected Result foundResult() { return Result.Exclude; }
+        @Override
         protected Result notFoundResult() { return Result.Deferr; }
     }
 
     public static class IncludeExceptFilter extends AttrsFilter {
         public IncludeExceptFilter(Locale locale, String attrsString) throws Exception { super(locale, attrsString, false); }
+        @Override
         protected Result foundResult() { return Result.Deferr; }
+        @Override
         protected Result notFoundResult() { return Result.Include; }
     }
 
     public static class ExcludeExceptFilter extends AttrsFilter {
         public ExcludeExceptFilter(Locale locale, String attrsString) throws Exception { super(locale, attrsString, true); }
+        @Override
         protected Result foundResult() { return Result.Deferr; }
+        @Override
         protected Result notFoundResult() { return Result.Exclude; }
     }
 

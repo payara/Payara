@@ -74,7 +74,7 @@ import java.beans.PropertyVetoException;
 @I18n("delete.admin.ojbect")
 public class DeleteAdminObject implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteAdminObject.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteAdminObject.class);
 
     @Param(optional=true)
     private String target = SystemPropertyConstants.DAS_SERVER_NAME;
@@ -98,6 +98,7 @@ public class DeleteAdminObject implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
@@ -153,6 +154,7 @@ public class DeleteAdminObject implements AdminCommand {
 
             // delete admin-object-resource
             if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     Resource resource = ConnectorsUtil.getResourceByName(domain.getResources(), AdminObjectResource.class, jndiName);
                     return param.getResources().remove(resource);

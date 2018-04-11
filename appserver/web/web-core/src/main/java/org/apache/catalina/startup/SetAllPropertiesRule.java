@@ -86,6 +86,7 @@ public class SetAllPropertiesRule extends Rule {
      *
      * @exception Exception if a processing error occurs
      */
+    @Override
     public void begin(Attributes attributes) throws Exception {
 
         for (int i = 0; i < attributes.getLength(); i++) {

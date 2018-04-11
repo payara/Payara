@@ -83,6 +83,7 @@ public final class PamRealm extends AppservRealm {
      *                If the configuration parameters specify a realm which doesn't exist.
      *
      */
+    @Override
     public synchronized void init(Properties props) throws BadRealmException, NoSuchRealmException {
         super.init(props);
         String jaasCtx = props.getProperty(JAAS_CONTEXT_PARAM);
@@ -95,6 +96,7 @@ public final class PamRealm extends AppservRealm {
     /**
      * @return Description of the kind of authentication that is directly supported by this realm.
      */
+    @Override
     public String getAuthType() {
         return AUTH_TYPE;
     }

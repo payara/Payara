@@ -57,7 +57,7 @@ import java.util.logging.Level;
  *   method in the enterprise Bean's class. The matching method must have:
  *   . The same number and types of arguments
  */
-abstract public class InterfaceMatchMethodArgs extends InterfaceMethodTest {
+public abstract class InterfaceMatchMethodArgs extends InterfaceMethodTest {
     /**
      * <p>
      * run an individual verifier test against a declared method of the 

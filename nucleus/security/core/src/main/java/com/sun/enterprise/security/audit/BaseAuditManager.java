@@ -292,6 +292,7 @@ public class BaseAuditManager<T extends BaseAuditModule> implements AuditManager
      * logs the authentication call for all the loaded modules.
      * @see com.sun.appserv.security.BaseAuditModule.authentication
      */
+    @Override
     public void authentication(final String user, final String realm, final boolean success){
         if (auditOn) {
             for (BaseAuditModule am : instances) {
@@ -310,6 +311,7 @@ public class BaseAuditManager<T extends BaseAuditModule> implements AuditManager
         }
     }
     
+    @Override
     public void serverStarted(){
         if (auditOn) {
             for (BaseAuditModule am : instances) {
@@ -328,6 +330,7 @@ public class BaseAuditManager<T extends BaseAuditModule> implements AuditManager
         }
     }
 
+    @Override
     public void serverShutdown(){
         if (auditOn) {
             for (BaseAuditModule am : instances) {
@@ -350,6 +353,7 @@ public class BaseAuditManager<T extends BaseAuditModule> implements AuditManager
         this.auditOn = auditOn;
     }
     
+    @Override
     public boolean isAuditOn() {
         return auditOn;
     }

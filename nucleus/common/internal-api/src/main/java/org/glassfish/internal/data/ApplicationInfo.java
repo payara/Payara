@@ -76,16 +76,16 @@ public class ApplicationInfo extends ModuleInfo {
     /** The prefix that will be given to the service locator, followed by the name of the application */
     public final static String APP_SERVICE_LOCATOR_PREFIX = "JavaEEApp.";
 
-    final private Collection<ModuleInfo> modules = new ArrayList<ModuleInfo>();
+    private final Collection<ModuleInfo> modules = new ArrayList<ModuleInfo>();
 
     // The reversed modules contain the same elements as modules but just in 
     // reversed order, they are used when stopping/unloading the application.
     // The modules should be stopped/unloaded in the reverse order of what 
     // they were originally loaded/started.
-    final private LinkedList<ModuleInfo> reversedModules = new LinkedList<ModuleInfo>();
+    private final LinkedList<ModuleInfo> reversedModules = new LinkedList<ModuleInfo>();
 
-    final private ReadableArchive source;
-    final private Map<String, Object> transientAppMetaData = new HashMap<String, Object>();
+    private final ReadableArchive source;
+    private final Map<String, Object> transientAppMetaData = new HashMap<String, Object>();
 
     private String libraries;
     private boolean isJavaEEApp = false;
@@ -162,6 +162,7 @@ public class ApplicationInfo extends ModuleInfo {
      * Returns the registration name for this application
      * @return the application registration name
      */
+    @Override
     public String getName() {
         return name;
     }  
@@ -253,6 +254,7 @@ public class ApplicationInfo extends ModuleInfo {
      *
      * @return array of sniffer that loaded the application's module
      */
+    @Override
     public Collection<Sniffer> getSniffers() {
         List<Sniffer> sniffers = new ArrayList<Sniffer>();
         for (EngineRef ref : engines) {
@@ -291,6 +293,7 @@ public class ApplicationInfo extends ModuleInfo {
         return context;
     }
 
+    @Override
     public void load(ExtendedDeploymentContext context, ProgressTracker tracker)
             throws Exception {
         Logger logger = context.getLogger();
@@ -379,6 +382,7 @@ public class ApplicationInfo extends ModuleInfo {
     }
 
 
+    @Override
     public void stop(ExtendedDeploymentContext context, Logger logger) {
 
         ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
@@ -397,6 +401,7 @@ public class ApplicationInfo extends ModuleInfo {
         }
     }
 
+    @Override
     public void unload(ExtendedDeploymentContext context) {
 
         Logger logger = context.getLogger();
@@ -423,6 +428,7 @@ public class ApplicationInfo extends ModuleInfo {
         }
     }
 
+    @Override
     public boolean suspend(Logger logger) {
 
         boolean isSuccess = super.suspend(logger);
@@ -435,6 +441,7 @@ public class ApplicationInfo extends ModuleInfo {
         return isSuccess;
     }
 
+    @Override
     public boolean resume(Logger logger) {
 
         boolean isSuccess = super.resume(logger);
@@ -448,6 +455,7 @@ public class ApplicationInfo extends ModuleInfo {
         return isSuccess;
     }
 
+    @Override
     public void clean(ExtendedDeploymentContext context) throws Exception {
         super.clean(context);
         for (ModuleInfo info : reversedModules) {

@@ -60,6 +60,7 @@ import java.util.logging.Level;
  */
 public class AttributeRemovalTest extends ConfigApiTest {
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -70,6 +71,7 @@ public class AttributeRemovalTest extends ConfigApiTest {
         VirtualServer vs = httpService.getVirtualServerByName("server");
         ConfigSupport.apply(new SingleConfigCode<VirtualServer>() {
 
+            @Override
             public Object run(VirtualServer param) throws PropertyVetoException, TransactionFailure {
                 param.setDefaultWebModule("/context/bar");
                 return null;
@@ -81,6 +83,7 @@ public class AttributeRemovalTest extends ConfigApiTest {
 
         ConfigSupport.apply(new SingleConfigCode<VirtualServer>() {
 
+            @Override
             public Object run(VirtualServer param) throws PropertyVetoException, TransactionFailure {
                 param.setDefaultWebModule(null);
                 return null;

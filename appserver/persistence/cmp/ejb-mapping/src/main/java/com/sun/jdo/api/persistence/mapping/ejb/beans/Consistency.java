@@ -53,13 +53,13 @@ public class Consistency extends org.netbeans.modules.schema2beans.BaseBean
 	static Vector comparators = new Vector();
 	private static final org.netbeans.modules.schema2beans.Version runtimeVersion = new org.netbeans.modules.schema2beans.Version(5, 0, 0);
 
-	static public final String NONE = "None";	// NOI18N
-	static public final String CHECK_MODIFIED_AT_COMMIT = "CheckModifiedAtCommit";	// NOI18N
-	static public final String LOCK_WHEN_LOADED = "LockWhenLoaded";	// NOI18N
-	static public final String CHECK_ALL_AT_COMMIT = "CheckAllAtCommit";	// NOI18N
-	static public final String LOCK_WHEN_MODIFIED = "LockWhenModified";	// NOI18N
-	static public final String CHECK_ALL_AT_COMMIT2 = "CheckAllAtCommit2";	// NOI18N
-	static public final String CHECK_VERSION_OF_ACCESSED_INSTANCES = "CheckVersionOfAccessedInstances";	// NOI18N
+	public static final String NONE = "None";	// NOI18N
+	public static final String CHECK_MODIFIED_AT_COMMIT = "CheckModifiedAtCommit";	// NOI18N
+	public static final String LOCK_WHEN_LOADED = "LockWhenLoaded";	// NOI18N
+	public static final String CHECK_ALL_AT_COMMIT = "CheckAllAtCommit";	// NOI18N
+	public static final String LOCK_WHEN_MODIFIED = "LockWhenModified";	// NOI18N
+	public static final String CHECK_ALL_AT_COMMIT2 = "CheckAllAtCommit2";	// NOI18N
+	public static final String CHECK_VERSION_OF_ACCESSED_INSTANCES = "CheckVersionOfAccessedInstances";	// NOI18N
 
 	public Consistency() {
 		this(Common.USE_DEFAULT_VALUES);
@@ -431,6 +431,7 @@ public class Consistency extends org.netbeans.modules.schema2beans.BaseBean
 	}
 
 	// Dump the content of this bean returning it as a String
+        @Override
 	public void dump(StringBuffer str, String indent){
 		String s;
 		Object o;
@@ -481,6 +482,7 @@ public class Consistency extends org.netbeans.modules.schema2beans.BaseBean
 		this.dumpAttributes(CHECK_VERSION_OF_ACCESSED_INSTANCES, 0, str, indent);
 
 	}
+        @Override
 	public String dumpBeanNode(){
 		StringBuffer str = new StringBuffer();
 		str.append("Consistency\n");	// NOI18N

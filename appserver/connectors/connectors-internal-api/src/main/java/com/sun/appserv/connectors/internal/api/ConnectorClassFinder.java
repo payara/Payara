@@ -69,6 +69,7 @@ public class ConnectorClassFinder extends ASURLClassLoader implements Delegating
             this.librariesClassFinder = libcf;
         }
 
+        @Override
     public Class<?> findClass(String name) throws ClassNotFoundException {
             Class c = null;
 
@@ -85,6 +86,7 @@ public class ConnectorClassFinder extends ASURLClassLoader implements Delegating
             return super.findClass(name);
         }
 
+        @Override
         public Class<?> findExistingClass(String name) {
             if(librariesClassFinder != null){
                 Class claz = librariesClassFinder.findExistingClass(name);

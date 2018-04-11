@@ -103,6 +103,7 @@ final class StandardContextValve
     /**
      * Return descriptive information about this Valve implementation.
      */
+    @Override
     public String getInfo() {
 
         return (info);
@@ -118,6 +119,7 @@ final class StandardContextValve
      * 
      * @see org.apache.catalina.Contained#setContainer(org.apache.catalina.Container)
      */
+    @Override
     public void setContainer(Container container) {
         super.setContainer(container);
         if (container instanceof StandardContext) {

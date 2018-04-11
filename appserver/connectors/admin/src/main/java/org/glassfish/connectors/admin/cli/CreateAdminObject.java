@@ -83,7 +83,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 @I18n("create.admin.object")
 public class CreateAdminObject implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateAdminObject.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateAdminObject.class);    
 
     @Param(name=AOR_RES_TYPE)
     private String resType;
@@ -121,6 +121,7 @@ public class CreateAdminObject implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 

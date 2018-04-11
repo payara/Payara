@@ -70,6 +70,7 @@ public class ConstString extends ConstValue {
   /**
    * Return the tag for this constant
    */
+  @Override
   public int tag () { return MyTag; }
 
   /**
@@ -82,6 +83,7 @@ public class ConstString extends ConstValue {
   /**
    * Return the descriptor string for the constant type.
    */
+  @Override
   public String descriptor() {
       return "Ljava/lang/String;";//NOI18N
   }
@@ -89,6 +91,7 @@ public class ConstString extends ConstValue {
   /**
    * A printable representation 
    */
+  @Override
   public String toString () {
       return "CONSTANTString(" + indexAsString() + "): " + //NOI18N
           "string(" + stringValue.asString() + ")";//NOI18N
@@ -104,12 +107,14 @@ public class ConstString extends ConstValue {
     stringValueIndex = sIndex;
   }
 
+  @Override
   void formatData (DataOutputStream b) throws IOException {
     b.writeShort (stringValue.getIndex());
   }
   static ConstString read (DataInputStream input) throws IOException {
     return new ConstString (input.readUnsignedShort());
   }
+  @Override
   void resolve (ConstantPool p) {
     stringValue = (ConstUtf8) p.constantAt(stringValueIndex);
   }

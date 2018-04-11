@@ -109,7 +109,7 @@ import org.glassfish.api.admin.RestEndpoints;
 public class InstanceDeployCommand extends InstanceDeployCommandParameters 
         implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InstanceDeployCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InstanceDeployCommand.class);
     private final static String LS = System.getProperty("line.separator");
 
     @Inject

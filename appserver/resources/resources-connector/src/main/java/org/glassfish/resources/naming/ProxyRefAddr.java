@@ -64,6 +64,7 @@ public class ProxyRefAddr extends RefAddr {
 		this.env = env;
 	}
 
+        @Override
 	public Object getContent() {
 		return env;
 	}

@@ -57,6 +57,7 @@ public class RestMonitoringResourceProvider extends AbstractRestResourceProvider
         super();
     }
 
+    @Override
     public Set<Class<?>> getResourceClasses(ServiceLocator habitat) {
 //        return getLazyJersey().getResourcesConfigForMonitoring(habitat);
 //    @Override

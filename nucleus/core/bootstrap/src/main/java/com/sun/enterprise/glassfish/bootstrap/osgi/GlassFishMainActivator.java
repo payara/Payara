@@ -119,6 +119,7 @@ public class GlassFishMainActivator implements BundleActivator {
      */
     private boolean nonEmbedded;
 
+    @Override
     public void start(BundleContext context) throws Exception {
         nonEmbedded = context.getProperty(Constants.BUILDER_NAME_PROPERTY) != null;
         if (nonEmbedded) {
@@ -246,6 +247,7 @@ public class GlassFishMainActivator implements BundleActivator {
         return provisioningOptions;
     }
 
+    @Override
     public void stop(BundleContext context) throws Exception {
         if (nonEmbedded) {
             System.out.println("We are in non-embedded mode, so " + context.getBundle() + " has nothing to do.");

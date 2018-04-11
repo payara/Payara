@@ -63,9 +63,10 @@ import org.jvnet.hk2.annotations.Service;
 @AnnotationHandlerFor(SecurityPermission.class)
 public class SecurityPermissionHandler extends AbstractHandler {
 
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(SecurityPermissionHandler.class);
     
+    @Override
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();
         SecurityPermission securityPermission = (SecurityPermission) element.getAnnotation();
@@ -94,6 +95,7 @@ public class SecurityPermissionHandler extends AbstractHandler {
         return getDefaultProcessedResult();
     }
 
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getConnectorAnnotationTypes();
     }
@@ -101,6 +103,7 @@ public class SecurityPermissionHandler extends AbstractHandler {
     /**
      * @return a default processed result
      */
+    @Override
     protected HandlerProcessingResult getDefaultProcessedResult() {
         return HandlerProcessingResultImpl.getDefaultResult(
                 getAnnotationType(), ResultType.PROCESSED);

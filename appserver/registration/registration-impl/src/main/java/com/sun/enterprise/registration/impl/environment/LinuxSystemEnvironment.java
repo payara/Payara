@@ -184,6 +184,7 @@ class LinuxSystemEnvironment extends SystemEnvironment {
         // reuse the output
         if (dmiInfo == null) {
             Thread dmidecodeThread = new Thread() {
+                @Override
                 public void run() {
                     dmiInfo = getCommandOutput("/usr/sbin/dmidecode");
                 }

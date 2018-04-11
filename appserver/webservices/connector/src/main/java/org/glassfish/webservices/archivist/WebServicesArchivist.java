@@ -71,6 +71,7 @@ import org.xml.sax.SAXParseException;
 @ExtensionsArchivistFor("webservices")
 public class WebServicesArchivist extends ExtensionsArchivist {
 
+    @Override
     public DeploymentDescriptorFile getStandardDDFile(RootDeploymentDescriptor descriptor) {
         if (standardDD == null) {
             standardDD = new WebServicesDeploymentDescriptorFile(descriptor);
@@ -82,6 +83,7 @@ public class WebServicesArchivist extends ExtensionsArchivist {
      * @return the list of the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
+    @Override
     public List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles(RootDeploymentDescriptor descriptor) {
         if (confDDFiles == null) {
             confDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>();
@@ -90,6 +92,7 @@ public class WebServicesArchivist extends ExtensionsArchivist {
         return confDDFiles;
     }
 
+    @Override
     public boolean supportsModuleType(ArchiveType moduleType) {
         return (DOLUtils.warType().equals(moduleType) || DOLUtils.ejbType().equals(moduleType));
     }
@@ -106,6 +109,7 @@ public class WebServicesArchivist extends ExtensionsArchivist {
         } else throw new IllegalArgumentException("" + descriptor + " is not instance of BundleDescriptor");
     }
 
+    @Override
     public RootDeploymentDescriptor getDefaultDescriptor() {
         return new WebServicesDescriptor();
     }

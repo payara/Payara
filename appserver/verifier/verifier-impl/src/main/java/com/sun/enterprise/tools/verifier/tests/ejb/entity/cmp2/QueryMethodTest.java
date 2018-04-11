@@ -55,7 +55,7 @@ import java.lang.reflect.Method;
  * @author  Jerome Dochez
  * @version 
  */
-abstract public class QueryMethodTest extends CMPTest {
+public abstract class QueryMethodTest extends CMPTest {
     ComponentNameConstructor compName = null;
     /**
      * <p>

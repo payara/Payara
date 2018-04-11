@@ -182,6 +182,7 @@ public class PersistentEJBTimerService extends EJBTimerService {
     /**
      * Provide a count of timers owned by each server
      */
+    @Override
     public String[] listTimers( String[] serverIds ) {
         String[] totalTimers = null;
         try {
@@ -199,6 +200,7 @@ public class PersistentEJBTimerService extends EJBTimerService {
     /**
      * Take ownership of another server's timers.
      */
+    @Override
     public int migrateTimers(String fromOwnerId) {
 
         String ownerIdOfThisServer = getOwnerIdOfThisServer();
@@ -298,6 +300,7 @@ public class PersistentEJBTimerService extends EJBTimerService {
 
     } //migrateTimers()
 
+    @Override
     public boolean isPersistent() {
         return true;
     }
@@ -779,6 +782,7 @@ public class PersistentEJBTimerService extends EJBTimerService {
      * Called in a clustered environment to eagerly create automatic persistent timers
      * on the specific server instance.
      */
+    @Override
     public void createSchedulesOnServer(EjbDescriptor ejbDescriptor, String server_name) {
         Map<MethodDescriptor, List<ScheduledTimerDescriptor>> schedules =
                 new HashMap<MethodDescriptor, List<ScheduledTimerDescriptor>>();
@@ -817,6 +821,7 @@ public class PersistentEJBTimerService extends EJBTimerService {
      * Only persistent schedule based timers for the containerId that has no timers associated
      * with it, will be created. And no timers will be scheduled.
      */
+    @Override
     public void createSchedules(long containerId, long applicationId,
             Map<MethodDescriptor, List<ScheduledTimerDescriptor>> methodDescriptorSchedules, String server_name) {
         TransactionManager tm = ejbContainerUtil.getTransactionManager();
@@ -1521,6 +1526,7 @@ public class PersistentEJBTimerService extends EJBTimerService {
                     success = h.executeDDLStatement(
                             dir.getCanonicalPath() + "/ejbtimer_upgrade_", resource);
                     ConfigSupport.apply(new SingleConfigCode<Property>() {
+                        @Override
                         public Object run(Property p) throws PropertyVetoException, TransactionFailure {
                             p.setValue("true");
                             return null;

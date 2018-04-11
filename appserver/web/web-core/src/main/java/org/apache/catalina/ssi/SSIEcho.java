@@ -72,12 +72,13 @@ import java.io.PrintWriter;
  * @version $Revision: 1.4 $, $Date: 2007/05/05 05:32:19 $
  */
 public class SSIEcho implements SSICommand {
-    protected final static String DEFAULT_ENCODING = "entity";
-    protected final static String MISSING_VARIABLE_VALUE = "(none)";
+    protected static final String DEFAULT_ENCODING = "entity";
+    protected static final String MISSING_VARIABLE_VALUE = "(none)";
 
     /**
      * @see SSICommand
      */
+    @Override
     public long process(SSIMediator ssiMediator, String commandName,
             String[] paramNames, String[] paramValues, PrintWriter writer) {
         String encoding = DEFAULT_ENCODING;

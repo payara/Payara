@@ -50,78 +50,91 @@ package	com.sun.enterprise.admin.monitor.callflow;
 public enum EntityManagerQueryMethod {
     
     GET_RESULT_LIST {
+        @Override
         public String toString() {
             return "getResultList()";
         }
     },
     
     GET_SINGLE_RESULT {
+        @Override
         public String toString() {
             return "getSingleResult()";
         }
     },
     
     EXECUTE_UPDATE {
+        @Override
         public String toString() {
             return "executeUpdate()";
         }
     },
     
     SET_MAX_RESULTS {
+        @Override
         public String toString() {
             return "setMaxResults(int maxResult)";
         }
     },
     
     SET_FIRST_RESULT {
+        @Override
         public String toString() {
             return "setFirstResult(int startPosition)";
         }
     },
     
     SET_HINT {
+        @Override
         public String toString() {
             return "setHint(String hintName, Object value)";
         }
     },
     
     SET_PARAMETER_STRING_OBJECT {
+        @Override
         public String toString() {
             return "setParameter(String name, Object value)";
         }
     },
     
     SET_PARAMETER_STRING_DATE_TEMPORAL_TYPE {
+        @Override
         public String toString() {
             return "setParameter(String name, Date value, TemporalType temporalType)";
         }
     },
     
     SET_PARAMETER_STRING_CALENDAR_TEMPORAL_TYPE {
+        @Override
         public String toString() {
             return "setParameter(String name, Calendar value, TemporalType temporalType)";
         }
     },
     
     SET_PARAMETER_INT_OBJECT {
+        @Override
         public String toString() {
             return "setParameter(int position, Object value)";
         }
     },
     
     SET_PARAMETER_INT_DATE_TEMPORAL_TYPE {
+        @Override
         public String toString() {
             return "setParameter(int position, Date value, TemporalType temporalType)";
         }
     },
     
     SET_PARAMETER_INT_CALENDAR_TEMPORAL_TYPE {
+        @Override
         public String toString() {
             return "setParameter(int position, Calendar value, TemporalType temporalType)";
         }
     },
     
     SET_FLUSH_MODE {
+        @Override
         public String toString() {
             return "setFlushMode(FlushModeType flushMode)";
         }

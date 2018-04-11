@@ -61,7 +61,7 @@ import java.lang.*;
 public class MessageListenerConfigParserImpl implements 
                                MessageListenerConfigParser {
 
-    private final static Logger _logger = LogDomains.getLogger(MessageListenerConfigParserImpl.class, LogDomains.RSR_LOGGER);
+    private static final Logger _logger = LogDomains.getLogger(MessageListenerConfigParserImpl.class, LogDomains.RSR_LOGGER);
    
     /**
      *  Default constructor.
@@ -80,6 +80,7 @@ public class MessageListenerConfigParserImpl implements
      *          If corresponding rar is not deployed. 
      */
 
+    @Override
     public String getActivationSpecClass( ConnectorDescriptor desc, 
              String messageListenerType) throws ConnectorRuntimeException
     {
@@ -110,6 +111,7 @@ public class MessageListenerConfigParserImpl implements
      *
      */
 
+    @Override
     public String[] getMessageListenerTypes(ConnectorDescriptor desc)
                throws ConnectorRuntimeException 
     {
@@ -161,6 +163,7 @@ public class MessageListenerConfigParserImpl implements
      *           If messagelistener type is not found in ra.xml
      */
 
+    @Override
     public Properties getJavaBeanProps(ConnectorDescriptor desc, 
                String messageListenerType, String rarName) throws ConnectorRuntimeException 
     {
@@ -216,6 +219,7 @@ public class MessageListenerConfigParserImpl implements
         return messageListener;
     }
 
+    @Override
     public List<String> getConfidentialProperties(ConnectorDescriptor desc, String rarName, String... keyFields)
             throws ConnectorRuntimeException {
         if(keyFields == null || keyFields.length == 0 || keyFields[0] == null){
@@ -247,6 +251,7 @@ public class MessageListenerConfigParserImpl implements
      *           If corresponding rar is not deployed i.e moduleDir is invalid. 
      *           If messagelistener type is not found in ra.xml
      */
+    @Override
     public Properties getJavaBeanReturnTypes(ConnectorDescriptor desc, 
                String messageListenerType, String rarName) throws ConnectorRuntimeException
     {

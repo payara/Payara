@@ -125,6 +125,7 @@ public class MethodPermission extends Descriptor {
     }
     
     // For Map storage
+    @Override
     public int hashCode() {
         if (role!=null)
             return role.hashCode();
@@ -133,6 +134,7 @@ public class MethodPermission extends Descriptor {
     }
     
     // for Map storage
+    @Override
     public boolean equals(Object other) {
 	boolean ret = false;
 	if(other instanceof MethodPermission) {
@@ -146,6 +148,7 @@ public class MethodPermission extends Descriptor {
 	return ret;
     }    
     
+    @Override
     public void print(StringBuffer toStringBuffer) {
         if (isRoleBased()) {
             toStringBuffer.append(role.toString());

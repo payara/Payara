@@ -88,7 +88,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 )
 public class CreateIiopListener implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new
+    private static final LocalStringManagerImpl localStrings = new
             LocalStringManagerImpl(CreateIiopListener.class);
 
     @Param( name="target", optional=true,

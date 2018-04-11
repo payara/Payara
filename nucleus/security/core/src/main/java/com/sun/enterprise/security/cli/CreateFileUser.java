@@ -103,7 +103,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 })
 public class CreateFileUser implements /*UndoableCommand*/ AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(CreateFileUser.class);    
 
     @Param(name="groups", optional=true, separator=':')
@@ -177,6 +177,7 @@ public class CreateFileUser implements /*UndoableCommand*/ AdminCommand, AdminCo
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         
         final ActionReport report = context.getActionReport();
@@ -255,6 +256,7 @@ public class CreateFileUser implements /*UndoableCommand*/ AdminCommand, AdminCo
             //hypothetically ?.
             ConfigSupport.apply(new SingleConfigCode<SecurityService>() {
 
+                @Override
                 public Object run(SecurityService param)
                         throws PropertyVetoException, TransactionFailure {
                     try {

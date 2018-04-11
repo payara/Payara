@@ -72,10 +72,12 @@ public class DefaultAnnotationScanner implements AnnotationScanner,
      * @String the constant pool info string 
      * @return true if it is a J2EE annotation reference
      */
+    @Override
     public boolean isAnnotation(String value) {
         return annotations.contains(value);
     }
     
+    @Override
     public void postConstruct() {
         annotations = factory.getAnnotations(false);
         annotationsMetaDataComplete = factory.getAnnotations(true);

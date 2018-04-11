@@ -56,22 +56,27 @@ class LocationImpl implements Location {
         this.systemId = loc.getSystemId();
     }
 
+    @Override
     public int getLineNumber() {
         return lineNumber;
     }
 
+    @Override
     public int getColumnNumber() {
         return columnNumber;
     }
 
+    @Override
     public int getCharacterOffset() {
         return -1;
     }
 
+    @Override
     public String getPublicId() {
         return null;
     }
 
+    @Override
     public String getSystemId() {
         return systemId;
     }

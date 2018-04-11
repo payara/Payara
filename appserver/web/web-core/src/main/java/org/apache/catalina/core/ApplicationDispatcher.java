@@ -119,6 +119,7 @@ public final class ApplicationDispatcher
             this.dispatcherType = dispatcherType;
         }
 
+        @Override
         public Void run() throws java.lang.Exception {
             doDispatch(request, response, dispatcherType);
             return null;
@@ -135,6 +136,7 @@ public final class ApplicationDispatcher
             this.response = response;
         }
 
+        @Override
         public Void run() throws ServletException, IOException {
             doInclude(request,response);
             return null;
@@ -316,6 +318,7 @@ public final class ApplicationDispatcher
      * @throws IOException if an input/output error occurs
      * @throws ServletException if a servlet exception occurs
      */
+    @Override
     public void forward(ServletRequest request, ServletResponse response)
             throws ServletException, IOException {
         // store previous forward
@@ -559,6 +562,7 @@ public final class ApplicationDispatcher
      * @throws IOException if an input/output error occurs
      * @throws ServletException if a servlet exception occurs
      */
+    @Override
     public void include(ServletRequest request, ServletResponse response)
         throws ServletException, IOException
     {

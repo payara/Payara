@@ -82,6 +82,7 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
 
     private static final Logger _logger = SecurityLoggerInfo.getLogger();
     
+    @Override
     public void copyConfigFiles(ServiceLocator habitat, File fromInstanceDir, File domainXml) {
         //For security reasons, permit only an embedded server instance to carry out the copy operations
         ServerEnvironment se = habitat.getService(ServerEnvironment.class);
@@ -144,6 +145,7 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
 
     }
 
+    @Override
     public String parseFileName(String fullFilePath) {
         if (fullFilePath == null) {
             return null;
@@ -153,6 +155,7 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
        
     }
 
+    @Override
     public boolean isEmbedded(ServerEnvironment se) {
         if (se.getRuntimeType() == RuntimeType.EMBEDDED) {
             return true;
@@ -160,6 +163,7 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
         return false;
     }
 
+    @Override
     public List<String> getKeyFileNames(SecurityService securityService) {
         List<String> keyFileNames = new ArrayList<String>();
 

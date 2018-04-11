@@ -248,6 +248,7 @@ public abstract class ManagerBase implements Manager {
     // ------------------------------------------------------- Security classes
     private class PrivilegedSetRandomFile implements PrivilegedAction<DataInputStream>{
         
+        @Override
         public DataInputStream run(){               
             FileInputStream fileInputStream = null;
             try {
@@ -295,6 +296,7 @@ public abstract class ManagerBase implements Manager {
     /**
      * Return the Container with which this Manager is associated.
      */
+    @Override
     public Container getContainer() {
         return container;
     }
@@ -305,6 +307,7 @@ public abstract class ManagerBase implements Manager {
      *
      * @param container The newly associated Container
      */
+    @Override
     public void setContainer(Container container) {
         Container oldContainer = this.container;
         this.container = container;
@@ -342,6 +345,7 @@ public abstract class ManagerBase implements Manager {
      * Return the distributable flag for the sessions supported by
      * this Manager.
      */
+    @Override
     public boolean getDistributable() {
         return distributable;
     }
@@ -354,6 +358,7 @@ public abstract class ManagerBase implements Manager {
      *
      * @param distributable The new distributable flag
      */
+    @Override
     public void setDistributable(boolean distributable) {
         boolean oldDistributable = this.distributable;
         this.distributable = distributable;
@@ -392,6 +397,7 @@ public abstract class ManagerBase implements Manager {
      * the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
      */
+    @Override
     public String getInfo() {
         return info;
     }
@@ -400,6 +406,7 @@ public abstract class ManagerBase implements Manager {
     /**
      * Same as getMaxInactiveIntervalSeconds
      */
+    @Override
     public int getMaxInactiveInterval() {
         return getMaxInactiveIntervalSeconds();
     }
@@ -409,6 +416,7 @@ public abstract class ManagerBase implements Manager {
      * Return the default maximum inactive interval (in seconds)
      * for Sessions created by this Manager.
      */
+    @Override
     public int getMaxInactiveIntervalSeconds() {
         return maxInactiveInterval;
     }
@@ -417,6 +425,7 @@ public abstract class ManagerBase implements Manager {
     /**
      * Same as setMaxInactiveIntervalSeconds
      */
+    @Override
     public void setMaxInactiveInterval(int interval) {
         setMaxInactiveIntervalSeconds(interval);
     }
@@ -428,6 +437,7 @@ public abstract class ManagerBase implements Manager {
      *
      * @param interval The new default value
      */
+    @Override
     public void setMaxInactiveIntervalSeconds(int interval) {
         int oldMaxInactiveInterval = this.maxInactiveInterval;
         this.maxInactiveInterval = interval;
@@ -443,6 +453,7 @@ public abstract class ManagerBase implements Manager {
      *
      * @return The session id length
      */
+    @Override
     public int getSessionIdLength() {
         return sessionIdLength;
     }
@@ -454,6 +465,7 @@ public abstract class ManagerBase implements Manager {
      *
      * @param idLength The session id length
      */
+    @Override
     public void setSessionIdLength(int idLength) {
 
         int oldSessionIdLength = this.sessionIdLength;
@@ -472,6 +484,7 @@ public abstract class ManagerBase implements Manager {
      * @return number of session creations that failed due to
      * maxActiveSessions
      */
+    @Override
     public int getRejectedSessions() {
         return rejectedSessions;
     }
@@ -483,6 +496,7 @@ public abstract class ManagerBase implements Manager {
      *
      * @param rejectedSessions Number of rejected sessions
      */
+    @Override
     public void setRejectedSessions(int rejectedSessions) {
         this.rejectedSessions = rejectedSessions;
     }
@@ -619,6 +633,7 @@ public abstract class ManagerBase implements Manager {
      *
      * @return Number of sessions that have expired
      */
+    @Override
     public int getExpiredSessions() {
         return expiredSessions;
     }
@@ -629,6 +644,7 @@ public abstract class ManagerBase implements Manager {
      *
      * @param expiredSessions Number of sessions that have expired
      */
+    @Override
     public void setExpiredSessions(int expiredSessions) {
         this.expiredSessions = expiredSessions;
     }
@@ -690,6 +706,7 @@ public abstract class ManagerBase implements Manager {
      *
      * @param session Session to be added
      */
+    @Override
     public void add(Session session) {
         sessions.put(session.getIdInternal(), session);
         int size = sessions.size();
@@ -708,6 +725,7 @@ public abstract class ManagerBase implements Manager {
      *
      * @param listener The listener to add
      */
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
@@ -724,6 +742,7 @@ public abstract class ManagerBase implements Manager {
      * @exception IllegalStateException if a new session cannot be
      *  instantiated for any reason
      */
+    @Override
     public Session createSession() {
         
         // Recycle or create a Session instance
@@ -764,6 +783,7 @@ public abstract class ManagerBase implements Manager {
      * @return the new session, or <code>null</code> if a session with the
      * requested id already exists
      */
+    @Override
     public Session createSession(String sessionId) {
 
         // Recycle or create a Session instance
@@ -794,6 +814,7 @@ public abstract class ManagerBase implements Manager {
      * The PersistentManager manager does not need to create session data
      * because it reads it from the Store.
      */
+    @Override
     public Session createEmptySession() {
         return (getNewSession());
     }
@@ -879,6 +900,7 @@ public abstract class ManagerBase implements Manager {
      * Return the set of active Sessions associated with this Manager.
      * If this Manager has no active Sessions, a zero-length array is returned.
      */
+    @Override
     public Session[] findSessions() {
         // take a snapshot
         Collection<Session> sessionsValues = sessions.values();
@@ -895,6 +917,7 @@ public abstract class ManagerBase implements Manager {
      *
      * @param session Session to be removed
      */
+    @Override
     public void remove(Session session) {
         sessions.remove(session.getIdInternal());
     }
@@ -910,6 +933,7 @@ public abstract class ManagerBase implements Manager {
      *
      * @param listener The listener to remove
      */
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
@@ -921,6 +945,7 @@ public abstract class ManagerBase implements Manager {
      * 
      * @param session   The session to change the session ID for
      */
+    @Override
     public void changeSessionId(Session session) {
         session.setId(generateSessionId());
     }
@@ -1035,11 +1060,13 @@ public abstract class ManagerBase implements Manager {
     /**
      * Same as setSessionCount
      */
+    @Override
     public void setSessionCounter(int sessionCounter) {
         setSessionCount(sessionCounter);
     }
 
    
+    @Override
     public void setSessionCount(int sessionCounter) {
         this.sessionCounter = sessionCounter;
     }
@@ -1048,6 +1075,7 @@ public abstract class ManagerBase implements Manager {
     /** 
      * Same as getSessionCount
      */
+    @Override
     public int getSessionCounter() {
         return getSessionCount();
     }
@@ -1058,6 +1086,7 @@ public abstract class ManagerBase implements Manager {
      *
      * @return sessions created
      */
+    @Override
     public int getSessionCount() {
         return sessionCounter;
     }
@@ -1084,6 +1113,7 @@ public abstract class ManagerBase implements Manager {
      *
      * @return number of sessions active
      */
+    @Override
     public int getActiveSessions() {
         return sessions.size();
     }
@@ -1094,11 +1124,13 @@ public abstract class ManagerBase implements Manager {
      *
      * @return
      */
+    @Override
     public int getMaxActive() {
         return maxActive;
     }
 
 
+    @Override
     public void setMaxActive(int maxActive) {
         synchronized (maxActiveUpdateLock) {
             this.maxActive = maxActive;
@@ -1109,6 +1141,7 @@ public abstract class ManagerBase implements Manager {
     /**
      * Same as getSessionMaxAliveTimeSeconds
      */
+    @Override
     public int getSessionMaxAliveTime() {
         return getSessionMaxAliveTimeSeconds();
     }
@@ -1121,6 +1154,7 @@ public abstract class ManagerBase implements Manager {
      * @return Longest time (in seconds) that an expired session had been
      * alive.
      */
+    @Override
     public int getSessionMaxAliveTimeSeconds() {
         return sessionMaxAliveTime;
     }
@@ -1129,6 +1163,7 @@ public abstract class ManagerBase implements Manager {
     /**
      * Same as setSessionMaxAliveTimeSeconds
      */
+    @Override
     public void setSessionMaxAliveTime(int sessionMaxAliveTime) {
         setSessionMaxAliveTimeSeconds(sessionMaxAliveTime);
     }
@@ -1141,6 +1176,7 @@ public abstract class ManagerBase implements Manager {
      * @param sessionMaxAliveTime Longest time (in seconds) that an expired
      * session had been alive.
      */
+    @Override
     public void setSessionMaxAliveTimeSeconds(int sessionMaxAliveTime) {
         this.sessionMaxAliveTime = sessionMaxAliveTime;
     }
@@ -1149,6 +1185,7 @@ public abstract class ManagerBase implements Manager {
     /**
      * Same as getSessionAverageAliveTimeSeconds
      */
+    @Override
     public int getSessionAverageAliveTime() {
         return getSessionAverageAliveTimeSeconds();
     }
@@ -1161,6 +1198,7 @@ public abstract class ManagerBase implements Manager {
      * @return Average time (in seconds) that expired sessions had been
      * alive.
      */
+    @Override
     public int getSessionAverageAliveTimeSeconds() {
         return sessionAverageAliveTime;
     }
@@ -1169,6 +1207,7 @@ public abstract class ManagerBase implements Manager {
     /**
      * Same as setSessionAverageAliveTimeSeconds
      */
+    @Override
     public void setSessionAverageAliveTime(int sessionAverageAliveTime) {
         setSessionAverageAliveTimeSeconds(sessionAverageAliveTime);
     }
@@ -1181,6 +1220,7 @@ public abstract class ManagerBase implements Manager {
      * @param sessionAverageAliveTime Average time (in seconds) that expired
      * sessions had been alive.
      */
+    @Override
     public void setSessionAverageAliveTimeSeconds(int sessionAverageAliveTime) {
         this.sessionAverageAliveTime = sessionAverageAliveTime;
     }
@@ -1250,6 +1290,7 @@ public abstract class ManagerBase implements Manager {
     /**
      * Perform any operations when the request is finished.
      */
+    @Override
     public void update(HttpSession session) throws Exception {
         return;
     }
@@ -1268,16 +1309,19 @@ public abstract class ManagerBase implements Manager {
     }
     
     //START OF 6364900
+    @Override
     public void postRequestDispatcherProcess(ServletRequest request, ServletResponse response) {
         //deliberate no-op
         return;
     }
     
+    @Override
     public void preRequestDispatcherProcess(ServletRequest request, ServletResponse response) {
         //deliberate no-op
         return;
     }    
     
+    @Override
     public boolean lockSession(ServletRequest request) throws ServletException {
         boolean result = false;
         if(sessionLocker != null) {
@@ -1286,6 +1330,7 @@ public abstract class ManagerBase implements Manager {
         return result;
     }
     
+    @Override
     public void unlockSession(ServletRequest request) {
         if(sessionLocker != null) {
             sessionLocker.unlockSession(request);

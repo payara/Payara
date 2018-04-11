@@ -115,7 +115,7 @@ public class ShowComponentStatusCommand implements AdminCommand, AdminCommandSec
     private Logger logger;
     private List<String> matchedVersions = null;
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListAppRefsCommand.class);    
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListAppRefsCommand.class);    
 
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
@@ -156,6 +156,7 @@ public class ShowComponentStatusCommand implements AdminCommand, AdminCommandSec
         return accessChecks;
     }
     
+    @Override
     public void execute(AdminCommandContext context) {
         
         ActionReport.MessagePart part;

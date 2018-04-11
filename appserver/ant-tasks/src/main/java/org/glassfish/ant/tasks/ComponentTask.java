@@ -54,16 +54,19 @@ public class ComponentTask extends DeployTask {
     public ComponentTask() {
     }
 
+    @Override
     public void setAction(String action) {
         this.action = action;
     }
 
+    @Override
     public Component createComponent() {
         component = new Component();
         components.add(component);
         return component;
     }
 
+    @Override
     public void execute() throws BuildException {
         if (components.size() == 0) {
             log("component must be specified", Project.MSG_WARN);

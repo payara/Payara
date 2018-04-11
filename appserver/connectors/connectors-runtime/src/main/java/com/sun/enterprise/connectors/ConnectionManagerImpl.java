@@ -107,6 +107,7 @@ public class ConnectionManagerImpl implements ConnectionManager, Serializable {
         this.jndiName = jndiName;
     }
 
+    @Override
     public String getJndiName() {
         return jndiName;
     }
@@ -140,6 +141,7 @@ public class ConnectionManagerImpl implements ConnectionManager, Serializable {
      * If one were to create a resource with a jndiName ending with __nontx
      * the same functionality might be achieved.
      */
+    @Override
     public Object allocateNonTxConnection(ManagedConnectionFactory mcf,
                                           ConnectionRequestInfo cxRequestInfo) throws ResourceException {
         String localJndiName = jndiName;
@@ -161,6 +163,7 @@ public class ConnectionManagerImpl implements ConnectionManager, Serializable {
         return allocateConnection(mcf, cxRequestInfo, localJndiName);
     }
 
+    @Override
     public Object allocateConnection(ManagedConnectionFactory mcf, ConnectionRequestInfo cxRequestInfo)
             throws ResourceException {
         return this.allocateConnection(mcf, cxRequestInfo, jndiName);

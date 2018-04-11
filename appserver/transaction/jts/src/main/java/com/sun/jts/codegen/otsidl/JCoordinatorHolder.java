@@ -62,16 +62,19 @@ public final class JCoordinatorHolder implements org.omg.CORBA.portable.Streamab
     value = initialValue;
   }
 
+  @Override
   public void _read (org.omg.CORBA.portable.InputStream i)
   {
     value = com.sun.jts.codegen.otsidl.JCoordinatorHelper.read (i);
   }
 
+  @Override
   public void _write (org.omg.CORBA.portable.OutputStream o)
   {
     com.sun.jts.codegen.otsidl.JCoordinatorHelper.write (o, value);
   }
 
+  @Override
   public org.omg.CORBA.TypeCode _type ()
   {
     return com.sun.jts.codegen.otsidl.JCoordinatorHelper.type ();

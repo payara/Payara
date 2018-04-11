@@ -80,6 +80,7 @@ public class JavaEEInterceptorBuilderImpl implements JavaEEInterceptorBuilder {
         this.subClass = subClass;
     }
 
+    @Override
     public InterceptorInvoker createInvoker(Object instance) throws Exception {
 
         interceptorInfo.setTargetObjectInstance(instance);
@@ -104,6 +105,7 @@ public class JavaEEInterceptorBuilderImpl implements JavaEEInterceptorBuilder {
 
     }
 
+    @Override
     public void addRuntimeInterceptor(Object interceptor) {
 
         interceptorManager.registerRuntimeInterceptor(interceptor);

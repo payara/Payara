@@ -58,6 +58,7 @@ public class ConstUtf8 extends ConstBasic {
   /**
    * The tag of this constant entry
    */
+  @Override
   public int tag () { return MyTag; }
 
   /**
@@ -70,6 +71,7 @@ public class ConstUtf8 extends ConstBasic {
   /**
    * A printable representation
    */
+  @Override
   public String toString () {
       return "CONSTANTUtf8(" + indexAsString() + "): " + asString();//NOI18N
   }
@@ -79,6 +81,7 @@ public class ConstUtf8 extends ConstBasic {
     stringValue = s;
   }
 
+  @Override
   void formatData (DataOutputStream b) throws IOException {
     b.writeUTF(stringValue);
   }
@@ -87,6 +90,7 @@ public class ConstUtf8 extends ConstBasic {
     return new ConstUtf8 (input.readUTF());
   }
 
+  @Override
   void resolve (ConstantPool p) {
   }
 }

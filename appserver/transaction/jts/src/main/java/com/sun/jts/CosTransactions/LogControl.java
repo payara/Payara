@@ -94,16 +94,16 @@ public class LogControl {
 
     /**Constants for file name extensions.
      */
-    private final static String CUSHION_NAME = "cushion"/*#Frozen*/;
-    private final static String EXTENT_NAME  = "extent."/*#Frozen*/;
-    private final static String CONTROL_NAME = "control"/*#Frozen*/;
-    public final static String RECOVERY_STRING_FILE_NAME = "recoveryfile"/*#Frozen*/;
-    public final static String RECOVERY_LOCK_FILE_NAME = "recoverylockfile"/*#Frozen*/;
+    private static final String CUSHION_NAME = "cushion"/*#Frozen*/;
+    private static final String EXTENT_NAME  = "extent."/*#Frozen*/;
+    private static final String CONTROL_NAME = "control"/*#Frozen*/;
+    public static final String RECOVERY_STRING_FILE_NAME = "recoveryfile"/*#Frozen*/;
+    public static final String RECOVERY_LOCK_FILE_NAME = "recoverylockfile"/*#Frozen*/;
 	//START IASRI 4721336
-    //private final static String LOG_EXTENSION = ".ld"/*#Frozen*/;
-    private final static String LOG_EXTENSION = ""/*#Frozen*/;
+    //private static final String LOG_EXTENSION = ".ld"/*#Frozen*/;
+    private static final String LOG_EXTENSION = ""/*#Frozen*/;
 	//END IASRI 4721336
-    private final static char[] EXTENT_CHARS = { 'e','x','t','e','n','t','.','0','0','0' };
+    private static final char[] EXTENT_CHARS = { 'e','x','t','e','n','t','.','0','0','0' };
 
     /**Internal instance members
      */
@@ -835,6 +835,7 @@ public class LogControl {
                     */                                        
                     java.security.AccessController.doPrivileged(
                         new java.security.PrivilegedAction() {
+                            @Override
                             public Object run(){
                                 for( int j = 0; j < logFiles.length; j++ ){
                                     new File(logFileDir,logFiles[j]).delete();                                    
@@ -845,6 +846,7 @@ public class LogControl {
                     );                    
                     java.security.AccessController.doPrivileged(
                         new java.security.PrivilegedAction() {
+                            @Override
                             public Object run(){
                                 logFileDir.delete();
                                 return null;
@@ -896,7 +898,7 @@ public class LogControl {
      *
      * @see
      */
-    final static File controlFile( String logId, String logDir ) {
+    static final File controlFile( String logId, String logDir ) {
         File result = new File(directory(logId,logDir),CONTROL_NAME);
         return result;
     }
@@ -925,7 +927,7 @@ public class LogControl {
      *
      * @see
      */
-    final static File directory( String logId, String logDir ) {
+    static final File directory( String logId, String logDir ) {
 
 	//START IASRI 4721336
 	//START IASRI 4730519
@@ -936,12 +938,12 @@ public class LogControl {
 	//END IASRI 4721336
     }
 
-    final static File recoveryIdentifierFile(String logId, String logDir) {
+    static final File recoveryIdentifierFile(String logId, String logDir) {
         File result = new File(directory(logId,logDir),RECOVERY_STRING_FILE_NAME);
         return result;
     }
 
-    public final static File recoveryLockFile(String logId, String logDir) {
+    public static final File recoveryLockFile(String logId, String logDir) {
         File dir = directory(logId,logDir);
         if( !dir.exists() ) {
             boolean created = dir.mkdirs();

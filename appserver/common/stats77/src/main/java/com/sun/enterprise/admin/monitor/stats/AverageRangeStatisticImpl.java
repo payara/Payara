@@ -107,22 +107,27 @@ public class AverageRangeStatisticImpl implements
         this.runningTotal = runningTotal;
     }         
    
+    @Override
     public long getCurrent() {
         return boundedRangeStatistic.getCurrent();
     }
 
+    @Override
     public String getDescription() {
         return boundedRangeStatistic.getDescription();
     }
 
+    @Override
     public long getHighWaterMark() {
         return boundedRangeStatistic.getHighWaterMark();
     }
 
+    @Override
     public long getLastSampleTime() {
         return boundedRangeStatistic.getLastSampleTime();
     }
 
+    @Override
     public long getLowWaterMark() {
         return boundedRangeStatistic.getLowWaterMark();
     }
@@ -132,14 +137,17 @@ public class AverageRangeStatisticImpl implements
     }
      */
 
+    @Override
     public String getName() {
         return boundedRangeStatistic.getName();
     }
 
+    @Override
     public long getStartTime() {
         return boundedRangeStatistic.getStartTime();
     }
 
+    @Override
     public String getUnit() {
         return boundedRangeStatistic.getUnit();
     }
@@ -149,6 +157,7 @@ public class AverageRangeStatisticImpl implements
     }
      */
         
+    @Override
     public long getAverage() {
         if(numberOfSamples == 0) {
             return -1;

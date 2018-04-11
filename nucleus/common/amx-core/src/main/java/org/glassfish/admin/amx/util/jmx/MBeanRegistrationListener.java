@@ -101,6 +101,7 @@ public abstract class MBeanRegistrationListener extends NotificationListenerBase
 
     protected abstract void mbeanUnregistered(final ObjectName objectName);
 
+    @Override
     public void handleNotification(final Notification notifIn, final Object handback)
     {
         if (!(notifIn instanceof MBeanServerNotification))

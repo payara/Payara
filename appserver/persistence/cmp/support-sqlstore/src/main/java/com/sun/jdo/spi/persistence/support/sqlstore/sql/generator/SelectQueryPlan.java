@@ -146,7 +146,7 @@ public class SelectQueryPlan extends QueryPlan {
     private boolean appendAndOp;
 
     /** The logger. */
-    private final static Logger logger = LogHelperSQLStore.getLogger();
+    private static final Logger logger = LogHelperSQLStore.getLogger();
 
     /** Name of the MULTILEVEL_PREFETCH property. */
     public static final String MULTILEVEL_PREFETCH_PROPERTY =
@@ -604,6 +604,7 @@ public class SelectQueryPlan extends QueryPlan {
         }
     }
 
+    @Override
     protected void processStatements() {
         boolean debug = logger.isLoggable(Logger.FINEST);
 
@@ -1091,6 +1092,7 @@ public class SelectQueryPlan extends QueryPlan {
      * Builds the query plan for a select type
      * {@link ActionDesc} (i.e. a {@link RetrieveDesc}).
      */
+    @Override
     public void build() {
         // Plan must be build only once.
         if ((status & ST_BUILT) > 0) {
@@ -1564,6 +1566,7 @@ public class SelectQueryPlan extends QueryPlan {
         status |= ST_OC_BUILT;
     }
 
+    @Override
     protected Statement newStatement() {
         return new SelectStatement(store.getVendorType(), this);
     }

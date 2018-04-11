@@ -67,7 +67,7 @@ import java.util.Properties;
 @I18n("create.jdbc.connection.pool")
 public class CreateJdbcConnectionPool implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateJdbcConnectionPool.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateJdbcConnectionPool.class);    
 
     @Param(name = "datasourceClassname",  optional=true)
     String datasourceclassname;
@@ -201,6 +201,7 @@ public class CreateJdbcConnectionPool implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
        

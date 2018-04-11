@@ -71,6 +71,7 @@ public class LogOutputStream extends OutputStream {
 	this.level = level;
     }
 
+    @Override
     public void write(int b) throws IOException {
 	if (!logger.isLoggable(level))
 	    return;
@@ -87,10 +88,12 @@ public class LogOutputStream extends OutputStream {
 	lastb = b;
     }
 
+    @Override
     public void write(byte b[]) throws IOException {
 	write(b, 0, b.length);
     }
 
+    @Override
     public void write(byte b[], int off, int len) throws IOException {
 	int start = off;
 	

@@ -137,6 +137,7 @@ public class SetPropertyRule extends Rule {
      * @exception NoSuchMethodException if the bean does not
      *  have a writeable property of the specified name
      */
+    @Override
     public void begin(Attributes attributes) throws Exception {
 
         // Identify the actual property name and value to be used
@@ -179,6 +180,7 @@ public class SetPropertyRule extends Rule {
     /**
      * Render a printable version of this Rule.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("SetPropertyRule[");

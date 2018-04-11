@@ -61,6 +61,7 @@ public class ScheduledExecutorServiceFactory implements Factory<ScheduledExecuto
     @Override
     public ScheduledExecutorService provide() {
         return Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+            @Override
             public Thread newThread(Runnable r) {
                     Thread t = Executors.defaultThreadFactory().newThread(r);
                     t.setDaemon(true);

@@ -26,6 +26,8 @@ import java.beans.PropertyVetoException;
 public interface MachineMemoryUsageChecker extends Checker, ThresholdDiagnosticsChecker {
 
  @Attribute(defaultValue = "MEMM")
+ @Override
  String getName();
+ @Override
  void setName(String value) throws PropertyVetoException;
 }

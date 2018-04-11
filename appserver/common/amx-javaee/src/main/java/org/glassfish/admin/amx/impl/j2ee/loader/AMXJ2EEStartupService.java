@@ -120,6 +120,7 @@ public final class AMXJ2EEStartupService
         //debug( "AMXStartupService.AMXStartupService()" );
     }
 
+    @Override
     public void postConstruct() {
         addListenerToServer();
     }
@@ -149,6 +150,7 @@ public final class AMXJ2EEStartupService
          * @param changedType     type of the configuration object
          * @param changedInstance changed instance.
          */
+        @Override
         public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
             switch (type) {
                 case ADD:
@@ -197,6 +199,7 @@ public final class AMXJ2EEStartupService
         }
     }
 
+    @Override
     public void preDestroy() {
         unloadAMXMBeans();
     }
@@ -215,6 +218,7 @@ public final class AMXJ2EEStartupService
         return ProxyFactory.getInstance(mMBeanServer).getProxy(getJ2EEDomain(), J2EEDomain.class);
     }
 
+    @Override
     public synchronized ObjectName
     loadAMXMBeans() {
         FeatureAvailability.getInstance().waitForFeature(FeatureAvailability.AMX_CORE_READY_FEATURE, "" + this);
@@ -243,6 +247,7 @@ public final class AMXJ2EEStartupService
         return objectName;
     }
 
+    @Override
     public synchronized void unloadAMXMBeans() {
         final J2EEDomain j2eeDomain = getJ2EEDomainProxy();
         if (j2eeDomain != null) {

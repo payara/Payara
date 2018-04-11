@@ -241,6 +241,7 @@ public class CaptureSchema {
     }
            
     static class PropChangeReport implements java.beans.PropertyChangeListener {
+        @Override
         public void propertyChange(java.beans.PropertyChangeEvent pce) {
             //System.err.println(pce); //NOI18N
         }        

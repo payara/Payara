@@ -153,22 +153,27 @@ public class GlassfishRoleMapper implements JACCRoleMapper {
     }
 
     // public methods follow
+    @Override
     public Set<String> getDeclaredRoles(String pcid) {
         return getDeclaredRoles(getInternalMapper(pcid));
     }
 
+    @Override
     public boolean isSubjectInRole(String pcid, Subject s, String roleName) throws SecurityException {
         return arePrincipalsInRole(pcid, toArray(s.getPrincipals()), roleName);
     }
 
+    @Override
     public boolean arePrincipalsInRole(String pcid, Principal[] principals, String roleName) throws SecurityException {
         return arePrincipalsInRole(getInternalMapper(pcid), principals, roleName);
     }
 
+    @Override
     public Set<String> getRolesOfSubject(String pcid, Subject s) throws SecurityException, UnsupportedOperationException {
         return getRolesOfPrincipals(pcid, toArray(s.getPrincipals()));
     }
 
+    @Override
     public Set<String> getRolesOfPrincipals(String pcid, Principal[] principals) throws SecurityException, UnsupportedOperationException {
         if (principals.length == 0) {
             return null;
@@ -201,6 +206,7 @@ public class GlassfishRoleMapper implements JACCRoleMapper {
         return roles;
     }
 
+    @Override
     public BitSet getRolesOfSubject(String pcid, String[] roles, Subject s) throws SecurityException, UnsupportedOperationException {
         return getRolesOfPrincipals(pcid, roles, toArray(s.getPrincipals()));
     }
@@ -217,6 +223,7 @@ public class GlassfishRoleMapper implements JACCRoleMapper {
         return list;
     }
 
+    @Override
     public BitSet getRolesOfPrincipals(String pcid, String[] roles, Principal[] principals) throws SecurityException, UnsupportedOperationException {
         if (principals.length == 0 || roles == null || roles.length == 0) {
             return null;
@@ -231,6 +238,7 @@ public class GlassfishRoleMapper implements JACCRoleMapper {
         return roleSet;
     }
 
+    @Override
     public Set<Principal> getPrincipalsInRole(String pcid, String roleName) throws SecurityException, UnsupportedOperationException {
         return getPrincipalsInRole(getInternalMapper(pcid), roleName);
     }

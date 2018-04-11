@@ -100,7 +100,7 @@ import org.jvnet.hk2.config.types.Property;
 })
 public class DeleteFileUser implements /*UndoableCommand*/ AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(DeleteFileUser.class);    
 
     @Param(name="authrealmname", optional=true)
@@ -157,6 +157,7 @@ public class DeleteFileUser implements /*UndoableCommand*/ AdminCommand, AdminCo
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         
         final ActionReport report = context.getActionReport();
@@ -207,6 +208,7 @@ public class DeleteFileUser implements /*UndoableCommand*/ AdminCommand, AdminCo
          //hypothetically ?.
         try {
             ConfigSupport.apply(new SingleConfigCode<SecurityService>() {
+                @Override
                 public Object run(SecurityService param)
                         throws PropertyVetoException, TransactionFailure {
                     try {

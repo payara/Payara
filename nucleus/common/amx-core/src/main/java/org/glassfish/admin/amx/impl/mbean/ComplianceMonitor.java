@@ -139,6 +139,7 @@ public final class ComplianceMonitor implements NotificationListener {
         }
     }
 
+    @Override
     public void handleNotification(final Notification notifIn, final Object handback) {
         if ((notifIn instanceof MBeanServerNotification) &&
                 notifIn.getType().equals(MBeanServerNotification.REGISTRATION_NOTIFICATION)) {
@@ -198,6 +199,7 @@ public final class ComplianceMonitor implements NotificationListener {
             mMBeans.add(objectName);
         }
 
+        @Override
         public void run() {
             try {
                 doRun();

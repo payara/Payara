@@ -65,6 +65,7 @@ public class ConcurrencyManagementHandler extends AbstractAttributeHandler {
     public ConcurrencyManagementHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 
@@ -107,10 +108,12 @@ public class ConcurrencyManagementHandler extends AbstractAttributeHandler {
      * require to be processed (if present) before it processes it's own
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAnnotationTypes();
     }
 
+    @Override
     protected boolean supportTypeInheritance() {
         return true;
     }

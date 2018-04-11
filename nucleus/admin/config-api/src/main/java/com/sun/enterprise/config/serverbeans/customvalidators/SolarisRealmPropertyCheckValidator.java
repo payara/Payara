@@ -55,9 +55,11 @@ public class SolarisRealmPropertyCheckValidator
     private static final String SOLARIS_REALM =
         "com.sun.enterprise.security.auth.realm.solaris.SolarisRealm";
 
+    @Override
     public void initialize(final SolarisRealmPropertyCheck fqcn) {
     }
 
+    @Override
     public boolean isValid(final AuthRealm realm,
         final ConstraintValidatorContext constraintValidatorContext) {
 

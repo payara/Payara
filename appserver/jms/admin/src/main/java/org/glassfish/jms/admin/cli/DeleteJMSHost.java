@@ -82,7 +82,7 @@ import org.jvnet.hk2.config.TransactionFailure;
         })
 })
 public class DeleteJMSHost implements AdminCommand {
-        final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteJMSHost.class);
+        private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteJMSHost.class);
 
     @Param(optional=true)
     String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
@@ -101,6 +101,7 @@ public class DeleteJMSHost implements AdminCommand {
      *
      * @param context information
      */
+        @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
@@ -156,6 +157,7 @@ public class DeleteJMSHost implements AdminCommand {
         final JmsHost jHost = jmsHost;
          try {
             ConfigSupport.apply(new SingleConfigCode<JmsService>() {
+                    @Override
                 public Object run(JmsService param) throws PropertyVetoException, TransactionFailure {
                     return param.getJmsHost().remove(jHost);
                 }

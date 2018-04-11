@@ -65,10 +65,12 @@ public abstract class AbstractConnectorResourceDescriptor extends ResourceDescri
         super();
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -92,6 +94,7 @@ public abstract class AbstractConnectorResourceDescriptor extends ResourceDescri
         return properties;
     }
 
+    @Override
     public boolean equals(Object object) {
         if (object instanceof AbstractConnectorResourceDescriptor) {
             AbstractConnectorResourceDescriptor another = (AbstractConnectorResourceDescriptor) object;
@@ -103,6 +106,7 @@ public abstract class AbstractConnectorResourceDescriptor extends ResourceDescri
     }
     
 
+    @Override
     public int hashCode() {
         int result = 17;
         result = 37*result + getName().hashCode();

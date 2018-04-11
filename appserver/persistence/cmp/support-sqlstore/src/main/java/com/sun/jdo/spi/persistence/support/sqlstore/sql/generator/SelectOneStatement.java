@@ -57,6 +57,7 @@ public class SelectOneStatement extends SelectStatement {
         super(vendorType, selectPlan);
     }
 
+    @Override
     protected StringBuffer generateColumnText() {
         // No columns selected.
         return ONE;

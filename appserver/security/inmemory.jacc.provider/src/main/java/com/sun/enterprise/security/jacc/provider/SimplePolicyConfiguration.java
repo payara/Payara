@@ -118,6 +118,7 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
 
                 PolicyContext.registerHandler(HANDLER_KEY, new PolicyContextHandler() {
 
+                    @Override
                     public Object getContext(String key, Object data) throws PolicyContextException {
                         if (key.equals(HANDLER_KEY)) {
                             try {
@@ -130,10 +131,12 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
                         return null;
                     }
 
+                    @Override
                     public String[] getKeys() throws PolicyContextException {
                         return new String[] { HANDLER_KEY };
                     }
 
+                    @Override
                     public boolean supports(String key) throws PolicyContextException {
                         return key.equals(HANDLER_KEY);
                     }
@@ -167,6 +170,7 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
      *             method signature. The exception thrown by the implementation class will be encapsulated (during
      *             construction) in the thrown PolicyContextException.
      */
+    @Override
     public String getContextID() throws PolicyContextException {
         return contextId;
     }
@@ -198,6 +202,7 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
      *             signature. The exception thrown by the implementation class will be encapsulated (during construction) in
      *             the thrown PolicyContextException.
      */
+    @Override
     public void addToRole(String roleName, PermissionCollection permissions) throws PolicyContextException {
         checkSetPolicyPermission();
         
@@ -238,6 +243,7 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
      *             signature. The exception thrown by the implementation class will be encapsulated (during construction) in
      *             the thrown PolicyContextException.
      */
+    @Override
     public void addToRole(String roleName, Permission permission) throws javax.security.jacc.PolicyContextException {
         checkSetPolicyPermission();
         
@@ -272,6 +278,7 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
      *             addToUncheckedPolicy method signature. The exception thrown by the implementation class will be
      *             encapsulated (during construction) in the thrown PolicyContextException.
      */
+    @Override
     public void addToUncheckedPolicy(PermissionCollection permissions) throws PolicyContextException {
         checkSetPolicyPermission();
         
@@ -309,6 +316,7 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
      *             addToUncheckedPolicy method signature. The exception thrown by the implementation class will be
      *             encapsulated (during construction) in the thrown PolicyContextException.
      */
+    @Override
     public void addToUncheckedPolicy(Permission permission) throws PolicyContextException {
         checkSetPolicyPermission();
         
@@ -343,6 +351,7 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
      *             addToExcludedPolicy method signature. The exception thrown by the implementation class will be
      *             encapsulated (during construction) in the thrown PolicyContextException.
      */
+    @Override
     public void addToExcludedPolicy(PermissionCollection permissions) throws PolicyContextException {
         checkSetPolicyPermission();
         
@@ -379,6 +388,7 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
      *             addToExcludedPolicy method signature. The exception thrown by the implementation class will be
      *             encapsulated (during construction) in the thrown PolicyContextException.
      */
+    @Override
     public void addToExcludedPolicy(Permission permission) throws PolicyContextException {
         checkSetPolicyPermission();
         
@@ -412,6 +422,7 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
      *             signature. The exception thrown by the implementation class will be encapsulated (during construction) in
      *             the thrown PolicyContextException.
      */
+    @Override
     public void removeRole(String roleName) throws PolicyContextException {
         checkSetPolicyPermission();
         
@@ -449,6 +460,7 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
      *             removeUncheckedPolicy method signature. The exception thrown by the implementation class will be
      *             encapsulated (during construction) in the thrown PolicyContextException.
      */
+    @Override
     public void removeUncheckedPolicy() throws PolicyContextException {
         checkSetPolicyPermission();
         
@@ -476,6 +488,7 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
      *             removeExcludedPolicy method signature. The exception thrown by the implementation class will be
      *             encapsulated (during construction) in the thrown PolicyContextException.
      */
+    @Override
     public void removeExcludedPolicy() throws PolicyContextException {
         checkSetPolicyPermission();
         
@@ -520,6 +533,7 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
      *             method signature. The exception thrown by the implementation class will be encapsulated (during
      *             construction) in the thrown PolicyContextException.
      */
+    @Override
     public void linkConfiguration(PolicyConfiguration link) throws PolicyContextException {
         checkSetPolicyPermission();
         
@@ -554,6 +568,7 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
      *             signature. The exception thrown by the implementation class will be encapsulated (during construction) in
      *             the thrown PolicyContextException.
      */
+    @Override
     public void delete() throws PolicyContextException {
         checkSetPolicyPermission();
         
@@ -596,6 +611,7 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
      *             signature. The exception thrown by the implementation class will be encapsulated (during construction) in
      *             the thrown PolicyContextException.
      */
+    @Override
     public void commit() throws PolicyContextException {
         checkSetPolicyPermission();
         
@@ -635,6 +651,7 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
      *             signature. The exception thrown by the implementation class will be encapsulated (during construction) in
      *             the thrown PolicyContextException.
      */
+    @Override
     public boolean inService() throws PolicyContextException {
         readLock.lock();
         try {
@@ -1020,6 +1037,7 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
             } else {
                 doPrivileged(new PrivilegedAction<Object>() {
 
+                    @Override
                     public Object run() {
                         logger.log(level, msg, params);
                         return null;
@@ -1038,6 +1056,7 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
             } else {
                 doPrivileged(new PrivilegedAction<Object>() {
 
+                    @Override
                     public Object run() {
                         logger.log(level, msg, t);
                         return null;

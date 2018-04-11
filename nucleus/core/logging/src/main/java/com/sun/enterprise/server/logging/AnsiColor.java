@@ -76,6 +76,7 @@ public enum AnsiColor {
         colorString = color;
     }
     
+    @Override
     public String toString() {
         return colorString;
     }

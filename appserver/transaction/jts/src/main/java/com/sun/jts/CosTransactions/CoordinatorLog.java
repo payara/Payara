@@ -164,7 +164,7 @@ class CoordinatorLog extends java.lang.Object implements LogUpcallTarget {
      *
      * @see
      */
-    static private CoordinatorLogStateHolder getStateHolder(String str) {
+    private static CoordinatorLogStateHolder getStateHolder(String str) {
         synchronized (logStateHoldertable) {
             CoordinatorLogStateHolder logStateHolder = (CoordinatorLogStateHolder)logStateHoldertable.get(str);
             if (logStateHolder == null) {
@@ -1698,6 +1698,7 @@ class CoordinatorLog extends java.lang.Object implements LogUpcallTarget {
      * @see
      */
 
+    @Override
     public void upcall( int reason ){
 
         // Just perform a keypoint.

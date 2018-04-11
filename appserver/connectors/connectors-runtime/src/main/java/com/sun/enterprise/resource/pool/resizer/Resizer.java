@@ -79,7 +79,7 @@ public class
     protected ResourceHandler handler;
     protected boolean preferValidateOverRecreate = false;
 
-    protected final static Logger _logger = LogDomains.getLogger(Resizer.class, LogDomains.RSR_LOGGER);
+    protected static final Logger _logger = LogDomains.getLogger(Resizer.class, LogDomains.RSR_LOGGER);
 
     public Resizer(PoolInfo poolInfo, DataStructure ds, PoolProperties pp, ResourceHandler handler,
             boolean preferValidateOverRecreate) {
@@ -90,6 +90,7 @@ public class
         this.preferValidateOverRecreate = preferValidateOverRecreate;
     }
 
+    @Override
     public void run() {
         debug("Resizer for pool " + poolInfo);
         try {

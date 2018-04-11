@@ -81,7 +81,7 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
             new ArrayList<Class<? extends WorkContext>>();
     private static final Logger logger = LogFacade.getLogger();
 
-    private final static Locale locale = Locale.getDefault();
+    private static final Locale locale = Locale.getDefault();
 
     @Inject
     private ConnectorRuntime runtime ;
@@ -108,6 +108,7 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void init(String raName, ClassLoader cl){
         this.rarCL = cl;
     }
@@ -123,6 +124,7 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
      * @param workContextClassName work context class name
      * @return boolean indicating whether the workContextClass is supported or not
      */
+    @Override
     public boolean isContextSupported(boolean strict, String workContextClassName) {
         boolean result = false;
         if (strict) {

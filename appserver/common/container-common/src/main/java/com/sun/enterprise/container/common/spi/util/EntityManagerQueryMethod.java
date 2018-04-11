@@ -50,198 +50,231 @@ package com.sun.enterprise.container.common.spi.util;
 public enum EntityManagerQueryMethod {
     
     GET_RESULT_LIST {
+        @Override
         public String toString() {
             return "getResultList()";
         }
     },
     
     GET_SINGLE_RESULT {
+        @Override
         public String toString() {
             return "getSingleResult()";
         }
     },
     
     EXECUTE_UPDATE {
+        @Override
         public String toString() {
             return "executeUpdate()";
         }
     },
     
     SET_MAX_RESULTS {
+        @Override
         public String toString() {
             return "setMaxResults(int maxResult)";
         }
     },
     
     GET_MAX_RESULTS {
+        @Override
         public String toString() {
             return "getMaxResults()";
         }
     },
 
     SET_FIRST_RESULT {
+        @Override
         public String toString() {
             return "setFirstResult(int startPosition)";
         }
     },
 
     GET_FIRST_RESULT {
+        @Override
         public String toString() {
             return "getFirstResult()";
         }
     },
 
     SET_HINT {
+        @Override
         public String toString() {
             return "setHint(String hintName, Object value)";
         }
     },
     
     GET_HINTS {
+        @Override
         public String toString() {
             return "getHints()";
         }
     },
 
     SET_PARAMETER_PARAMETER_OBJECT {
+        @Override
         public String toString() {
             return "setParameter(Parameter<T> param, T value)";
         }
     },
 
     SET_PARAMETER_PARAMETER_DATE_TEMPORAL_TYPE {
+        @Override
         public String toString() {
             return "setParameter(Parameter<Date> param, Date value,  TemporalType temporalType)";
         }
     },
 
     SET_PARAMETER_PARAMETER_CALENDAR_TEMPORAL_TYPE {
+        @Override
         public String toString() {
             return "setParameter(Parameter<Calendar> param, Calendar value,  TemporalType temporalType)";
         }
     },
 
     SET_PARAMETER_STRING_OBJECT {
+        @Override
         public String toString() {
             return "setParameter(String name, Object value)";
         }
     },
     
     SET_PARAMETER_STRING_DATE_TEMPORAL_TYPE {
+        @Override
         public String toString() {
             return "setParameter(String name, Date value, TemporalType temporalType)";
         }
     },
     
     SET_PARAMETER_STRING_CALENDAR_TEMPORAL_TYPE {
+        @Override
         public String toString() {
             return "setParameter(String name, Calendar value, TemporalType temporalType)";
         }
     },
     
     SET_PARAMETER_INT_OBJECT {
+        @Override
         public String toString() {
             return "setParameter(int position, Object value)";
         }
     },
     
     SET_PARAMETER_INT_DATE_TEMPORAL_TYPE {
+        @Override
         public String toString() {
             return "setParameter(int position, Date value, TemporalType temporalType)";
         }
     },
     
     SET_PARAMETER_INT_CALENDAR_TEMPORAL_TYPE {
+        @Override
         public String toString() {
             return "setParameter(int position, Calendar value, TemporalType temporalType)";
         }
     },
     
     GET_PARAMETERS {
+        @Override
         public String toString() {
             return "getParameter()";
         }
     },
 
     GET_PARAMETER_NAME {
+        @Override
         public String toString() {
             return "getParameter(String name)";
         }
     },
 
     GET_PARAMETER_NAME_TYPE {
+        @Override
         public String toString() {
             return "getParameter(String name, Class<T> type)";
         }
     },
 
     GET_PARAMETER_NAME_CLASS {
+        @Override
         public String toString() {
             return "getParameter(String name, Class<T> type)";
         }
     },
 
     GET_PARAMETER_POSITION {
+        @Override
         public String toString() {
             return "getParameter(int position)";
         }
     },
 
     GET_PARAMETER_POSITION_CLASS {
+        @Override
         public String toString() {
             return "getParameter(int position, Class<T> type)";
         }
     },
 
     IS_BOUND_PARAMETER {
+        @Override
         public String toString() {
             return "isBound(Parameter)";
         }
     },
 
     GET_PARAMETER_VALUE_PARAMETER {
+        @Override
         public String toString() {
             return "getParameterValue(Parameter)";
         }
     },
 
     GET_PARAMETER_VALUE_STRING {
+        @Override
         public String toString() {
             return "getParameterValue(String)";
         }
     },
 
     GET_PARAMETER_VALUE_INT {
+        @Override
         public String toString() {
             return "getParameterValue(int)";
         }
     },
 
     GET_FLUSH_MODE {
+        @Override
         public String toString() {
             return "getFlushMode()";
         }
     },
 
     SET_FLUSH_MODE {
+        @Override
         public String toString() {
             return "setFlushMode(FlushModeType flushMode)";
         }
     },
 
     SET_LOCK_MODE {
+        @Override
         public String toString() {
             return "setLock(LockModeType lockMode)";
         }
     },
 
     GET_LOCK_MODE {
+        @Override
         public String toString() {
             return "getLockMode()";
         }
     },
 
     UNWRAP {
+        @Override
         public String toString() {
             return "unwrap()";
         }

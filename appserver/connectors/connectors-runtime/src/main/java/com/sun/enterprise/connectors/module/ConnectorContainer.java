@@ -62,10 +62,12 @@ public class ConnectorContainer implements Container, PostConstruct, PreDestroy 
 
     private static Logger _logger = LogDomains.getLogger(ConnectorContainer.class, LogDomains.RSR_LOGGER);
 
+    @Override
     public void postConstruct() {
         logFine("postConstruct of ConnectorContainer");
     }
 
+    @Override
     public void preDestroy() {
         logFine("preDestroy of ConnectorContainer");
     }
@@ -76,6 +78,7 @@ public class ConnectorContainer implements Container, PostConstruct, PreDestroy 
      *
      * @return the Deployer implementation
      */
+    @Override
     public Class<? extends Deployer> getDeployer() {
         return ConnectorDeployer.class;
     }
@@ -87,6 +90,7 @@ public class ConnectorContainer implements Container, PostConstruct, PreDestroy 
      *
      * @return a human readable name for this container.
      */
+    @Override
     public String getName() {
         return ConnectorConstants.CONNECTOR_MODULE;
     }

@@ -82,6 +82,7 @@ public class UptimeCommand implements AdminCommand {
     @Param(name = "milliseconds", optional = true, defaultValue = "false")
     Boolean milliseconds;
 
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         long totalTime_ms = getUptime();
@@ -99,7 +100,7 @@ public class UptimeCommand implements AdminCommand {
         report.setMessage(message);
         report.getTopMessagePart().addProperty("milliseconds", totalTime_mss);
     }
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(UptimeCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(UptimeCommand.class);
 
     private long getUptime() {
         RuntimeMXBean mxbean = ManagementFactory.getRuntimeMXBean();

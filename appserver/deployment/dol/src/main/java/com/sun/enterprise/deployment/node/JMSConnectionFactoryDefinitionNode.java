@@ -51,7 +51,7 @@ import java.util.logging.Level;
 
 public class JMSConnectionFactoryDefinitionNode extends DeploymentDescriptorNode<JMSConnectionFactoryDefinitionDescriptor> {
 
-    public final static XMLElement tag = new XMLElement(TagNames.JMS_CONNECTION_FACTORY);
+    public static final XMLElement tag = new XMLElement(TagNames.JMS_CONNECTION_FACTORY);
 
     private JMSConnectionFactoryDefinitionDescriptor descriptor = null;
 
@@ -60,6 +60,7 @@ public class JMSConnectionFactoryDefinitionNode extends DeploymentDescriptorNode
                 "addJMSConnectionFactoryPropertyDescriptor");
     }
 
+    @Override
     protected Map<String, String> getDispatchTable() {
         // no need to be synchronized for now
         Map<String, String> table = super.getDispatchTable();
@@ -88,6 +89,7 @@ public class JMSConnectionFactoryDefinitionNode extends DeploymentDescriptorNode
     )
     private static final String RESOURCE_ADAPTER_NAME_INVALID = "AS-DEPLOYMENT-00024";
 
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, JMSConnectionFactoryDefinitionDescriptor desc) {
         Node node = appendChild(parent, nodeName);
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_DESCRIPTION, desc.getDescription());
@@ -125,6 +127,7 @@ public class JMSConnectionFactoryDefinitionNode extends DeploymentDescriptorNode
         return node;
     }
 
+    @Override
     public JMSConnectionFactoryDefinitionDescriptor getDescriptor() {
         if (descriptor == null) {
             descriptor = new JMSConnectionFactoryDefinitionDescriptor();

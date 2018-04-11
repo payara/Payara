@@ -82,6 +82,7 @@ public class RuntimeSurrogate {
                 ServerAuthConfig c = p.getServerAuthConfig(r.getMessageLayer(), r.getAppContext(),
                         new CallbackHandler() {
 
+                            @Override
                             public void handle(Callback[] clbcks)
                                     throws IOException, UnsupportedCallbackException {
                                 throw new UnsupportedOperationException("Not supported yet.");
@@ -128,6 +129,7 @@ public class RuntimeSurrogate {
         RegistrationListener listener =
                 new RegistrationListener() {
 
+                    @Override
                     public void notify(String layer, String context) {
                         System.out.println("listener notified - layer: " + layer + " context: " + context);
                         f.getConfigProvider(layer, context, this);
@@ -328,6 +330,7 @@ public class RuntimeSurrogate {
             }
         }
 
+        @Override
         public void notify(String layer, String context) {
             if (random.nextInt(100) == 1) {
                 synchronized (TestThread.class) {

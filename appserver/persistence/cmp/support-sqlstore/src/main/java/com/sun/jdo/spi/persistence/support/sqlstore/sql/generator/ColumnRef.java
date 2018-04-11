@@ -140,6 +140,7 @@ public class ColumnRef extends Object implements FieldMapping {
      /**
       * This method return int corresponding to java.sql.Types.
       */
+    @Override
      public int getColumnType() {
          return columnElement.getType();
      }
@@ -147,6 +148,7 @@ public class ColumnRef extends Object implements FieldMapping {
      /**
       * This method return the name of the column.
       */
+    @Override
      public String getColumnName() {
          return name;
      }
@@ -154,6 +156,7 @@ public class ColumnRef extends Object implements FieldMapping {
      /**
       * This method return the length of the column and -1 if unknown.
       */
+    @Override
      public int getColumnLength() {
          Integer len = columnElement.getLength();
          return (len != null) ? len.intValue(): -1;

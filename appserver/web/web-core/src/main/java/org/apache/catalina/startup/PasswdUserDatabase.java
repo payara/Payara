@@ -118,6 +118,7 @@ public final class PasswdUserDatabase
     /**
      * Return the UserConfig listener with which we are associated.
      */
+    @Override
     public UserConfig getUserConfig() {
 
         return (this.userConfig);
@@ -130,6 +131,7 @@ public final class PasswdUserDatabase
      *
      * @param userConfig The new UserConfig listener
      */
+    @Override
     public void setUserConfig(UserConfig userConfig) {
 
         this.userConfig = userConfig;
@@ -146,6 +148,7 @@ public final class PasswdUserDatabase
      *
      * @param user User for which a home directory should be retrieved
      */
+    @Override
     public String getHome(String user) {
 
         return homes.get(user);
@@ -156,6 +159,7 @@ public final class PasswdUserDatabase
     /**
      * Return an enumeration of the usernames defined on this server.
      */
+    @Override
     public Enumeration<String> getUsers() {
 
         return (homes.keys());

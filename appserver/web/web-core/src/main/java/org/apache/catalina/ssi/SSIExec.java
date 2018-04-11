@@ -78,7 +78,7 @@ import java.io.PrintWriter;
  */
 public class SSIExec implements SSICommand {
     protected SSIInclude ssiInclude;
-    protected final static int BUFFER_SIZE = 1024;
+    protected static final int BUFFER_SIZE = 1024;
 
     public SSIExec() {
         this.ssiInclude = new SSIInclude();
@@ -87,6 +87,7 @@ public class SSIExec implements SSICommand {
     /**
      * @see SSICommand
      */
+    @Override
     public long process(SSIMediator ssiMediator, String commandName,
             String[] paramNames, String[] paramValues, PrintWriter writer) {
         long lastModified = 0;

@@ -48,7 +48,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	private static final String CLASSNAME = OraclePersistenceManager.class
 			.getName();
 
-	private final static Logger logger = Logger.getLogger(CLASSNAME);
+	private static final Logger logger = Logger.getLogger(CLASSNAME);
 
 	private IBatchConfig batchConfig = null;
 	

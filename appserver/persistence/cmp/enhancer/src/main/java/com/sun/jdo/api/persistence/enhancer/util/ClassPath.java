@@ -261,6 +261,7 @@ class ClassPackageEnumeration implements Enumeration {
     thePackageName = packageName;
   }
 
+  @Override
   public boolean hasMoreElements() {
     while ((currentElementEnumeration == null ||
 	    !currentElementEnumeration.hasMoreElements()) &&
@@ -274,6 +275,7 @@ class ClassPackageEnumeration implements Enumeration {
 	    currentElementEnumeration.hasMoreElements());
   }
 
+  @Override
   public Object nextElement() {
     if (hasMoreElements())
       return currentElementEnumeration.nextElement();

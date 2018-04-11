@@ -112,6 +112,7 @@ public final class ArrayStringifier implements Stringifier
 		return( out );
 	}
 	
+        @Override
 		public String
 	stringify( Object o )
 	{

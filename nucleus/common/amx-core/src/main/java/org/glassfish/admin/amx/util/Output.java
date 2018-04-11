@@ -50,6 +50,7 @@ public interface Output extends DebugSink
 
     @param o	the Object to output
      */
+    @Override
     public void print(Object o);
 
     /**
@@ -57,6 +58,7 @@ public interface Output extends DebugSink
 
     @param o	the Object to output
      */
+    @Override
     public void println(Object o);
 
     /**

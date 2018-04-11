@@ -70,7 +70,7 @@ import javax.inject.Inject;
 @I18n("delete.managed.scheduled.executor.service")
 public class DeleteManagedScheduledExecutorService implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteManagedScheduledExecutorService.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteManagedScheduledExecutorService.class);    
 
     @Param(optional=true)
     private String target = SystemPropertyConstants.DAS_SERVER_NAME;
@@ -90,6 +90,7 @@ public class DeleteManagedScheduledExecutorService implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();

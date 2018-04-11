@@ -334,6 +334,7 @@ public class Server {
             final List<Container> delegates = new ArrayList<Container>();
             final ArrayList<Sniffer> sniffers = new ArrayList<Sniffer>();
 
+            @Override
             public List<Sniffer> getSniffers() {
                 synchronized(sniffers) {
                     if (sniffers.isEmpty()) {
@@ -354,6 +355,7 @@ public class Server {
                 return sniffers;
             }
 
+            @Override
             public void bind(Port port, String protocol)  {
                 for (Container delegate : delegates) {
                     delegate.container.bind(port, protocol);
@@ -367,6 +369,7 @@ public class Server {
                 } else {
                     return new Container(new EmbeddedContainer() {
 
+                        @Override
                         public List<Sniffer> getSniffers() {
                             List<Sniffer> sniffers = new ArrayList<Sniffer>();
                             Sniffer s = habitat.getService(Sniffer.class, type.toString());
@@ -376,14 +379,17 @@ public class Server {
                             return sniffers;
                         }
 
+                        @Override
                         public void bind(Port port, String protocol) {
 
                         }
 
+                        @Override
                         public void start() throws LifecycleException {
 
                         }
 
+                        @Override
                         public void stop() throws LifecycleException {
 
                         }
@@ -392,6 +398,7 @@ public class Server {
                 }
             }
 
+            @Override
             public void start() throws LifecycleException {
                 for (Container c : delegates) {
                     if (!c.started) {
@@ -401,6 +408,7 @@ public class Server {
                 }
             }
 
+            @Override
             public void stop() throws LifecycleException {
                 for (Container c : delegates) {
                     if (c.started) {

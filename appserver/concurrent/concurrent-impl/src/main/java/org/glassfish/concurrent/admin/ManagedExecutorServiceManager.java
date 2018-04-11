@@ -93,6 +93,7 @@ public class ManagedExecutorServiceManager extends ManagedExecutorServiceBaseMan
         return super.isValid(resources, validateResourceRef, target); 
     }
 
+    @Override
     protected ManagedExecutorServiceBase createConfigBean(Resources param, Properties properties) throws PropertyVetoException, TransactionFailure {
         ManagedExecutorService managedExecutorService = param.createChild(ManagedExecutorService.class);
         setAttributesOnConfigBean(managedExecutorService, properties); 
@@ -101,6 +102,7 @@ public class ManagedExecutorServiceManager extends ManagedExecutorServiceBaseMan
         return managedExecutorService;
     }
 
+    @Override
     public String getResourceType () {
         return ServerTags.MANAGED_EXECUTOR_SERVICE;
     }

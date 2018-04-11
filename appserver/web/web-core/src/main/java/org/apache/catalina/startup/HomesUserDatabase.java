@@ -111,6 +111,7 @@ public final class HomesUserDatabase
     /**
      * Return the UserConfig listener with which we are associated.
      */
+    @Override
     public UserConfig getUserConfig() {
 
         return (this.userConfig);
@@ -123,6 +124,7 @@ public final class HomesUserDatabase
      *
      * @param userConfig The new UserConfig listener
      */
+    @Override
     public void setUserConfig(UserConfig userConfig) {
 
         this.userConfig = userConfig;
@@ -139,6 +141,7 @@ public final class HomesUserDatabase
      *
      * @param user User for which a home directory should be retrieved
      */
+    @Override
     public String getHome(String user) {
 
         return homes.get(user);
@@ -149,6 +152,7 @@ public final class HomesUserDatabase
     /**
      * Return an enumeration of the usernames defined on this server.
      */
+    @Override
     public Enumeration<String> getUsers() {
 
         return (homes.keys());

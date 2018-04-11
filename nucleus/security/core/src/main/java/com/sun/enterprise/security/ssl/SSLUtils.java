@@ -100,6 +100,7 @@ public final class SSLUtils implements PostConstruct {
     private AppClientSSL appclientSsl = null;
     private SSLContext ctx = null;
     
+    @Override
     public void postConstruct() {
         try {
             //TODO: To check the right implementation once we support EE.

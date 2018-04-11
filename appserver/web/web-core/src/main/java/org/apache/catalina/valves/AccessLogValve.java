@@ -413,6 +413,7 @@ public final class AccessLogValve
     /**
      * Return descriptive information about this implementation.
      */
+    @Override
     public String getInfo() {
 
         return (this.info);
@@ -598,6 +599,7 @@ public final class AccessLogValve
      * @exception IOException if an input/output error has occurred
      * @exception ServletException if a servlet error has occurred
      */
+    @Override
     public int invoke(Request request, Response response)
          throws IOException, ServletException {
 
@@ -608,6 +610,7 @@ public final class AccessLogValve
     }
 
 
+    @Override
     public void postInvoke(Request request, Response response){
 
         long t2 = System.currentTimeMillis();
@@ -1162,6 +1165,7 @@ public final class AccessLogValve
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
 
         // START CR 6411114
@@ -1201,6 +1205,7 @@ public final class AccessLogValve
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
     public void stop() throws LifecycleException {
 
         // START CR 6411114

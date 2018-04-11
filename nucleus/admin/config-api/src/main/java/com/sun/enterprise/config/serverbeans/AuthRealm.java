@@ -163,6 +163,7 @@ public interface AuthRealm extends ConfigBeanProxy, PropertyBag {
     }
     )
     @Element
+    @Override
     List<Property> getProperty();
 }
 

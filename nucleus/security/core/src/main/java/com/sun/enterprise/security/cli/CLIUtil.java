@@ -56,7 +56,7 @@ import org.glassfish.api.ActionReport;
  */
 public class CLIUtil {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(CLIUtil.class);    
 
     /**

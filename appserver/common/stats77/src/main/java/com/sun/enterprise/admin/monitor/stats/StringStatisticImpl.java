@@ -71,10 +71,12 @@ public final class StringStatisticImpl extends StatisticImpl implements StringSt
     /**
      * Returns the String value of the statistic.
      */
+    @Override
     public String getCurrent() {
         return strVal;
     }
     
+    @Override
     public String toString() {
         return super.toString() + NEWLINE + 
             "Current: " + getCurrent();

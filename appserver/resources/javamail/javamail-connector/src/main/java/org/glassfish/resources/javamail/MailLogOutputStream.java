@@ -61,6 +61,7 @@ public class MailLogOutputStream extends LogOutputStream {
      * NOTE: protocol trace output can include lines that start with
      * "DEBUG" so this isn't perfect.
      */
+    @Override
     protected void log(String msg) {
         if (msg.startsWith("DEBUG"))
             logger.log(Level.FINE, msg);

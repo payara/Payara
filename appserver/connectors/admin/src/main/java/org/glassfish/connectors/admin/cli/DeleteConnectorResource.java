@@ -84,7 +84,7 @@ import java.beans.PropertyVetoException;
 @I18n("delete.connector.resource")
 public class DeleteConnectorResource implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteConnectorResource.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteConnectorResource.class);
 
     @Param(optional=true)
     private String target = SystemPropertyConstants.DAS_SERVER_NAME;
@@ -107,6 +107,7 @@ public class DeleteConnectorResource implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
@@ -172,6 +173,7 @@ public class DeleteConnectorResource implements AdminCommand {
 
             // delete connector-resource
             if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     ConnectorResource resource = (ConnectorResource)
                             ConnectorsUtil.getResourceByName(domain.getResources(), ConnectorResource.class, jndiName );

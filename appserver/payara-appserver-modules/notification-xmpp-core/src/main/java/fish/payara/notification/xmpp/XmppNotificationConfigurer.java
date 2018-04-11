@@ -87,6 +87,7 @@ public class XmppNotificationConfigurer extends BaseNotificationConfigurer<XmppN
     @Param(name = "roomId")
     private String roomId;
 
+    @Override
     protected void applyValues(XmppNotifierConfiguration configuration) throws PropertyVetoException {
         if(this.enabled != null) {
             configuration.enabled(this.enabled);

@@ -89,6 +89,7 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
 
     private Logger logger = Logger.getAnonymousLogger();
 
+    @Override
     public CommandResult run(String command, String... args){
         try {
             ActionReport actionReport = executeCommand(command, args);
@@ -139,6 +140,7 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
         return options;
     }
 
+    @Override
     public void setTerse(boolean terse) {
         this.terse = terse;
     }
@@ -173,6 +175,7 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
 
     private CommandResult convert(final ActionReport actionReport) {
         return new CommandResult(){
+            @Override
             public ExitStatus getExitStatus() {
                 final ActionReport.ExitCode actionExitCode = actionReport.getActionExitCode();
                 switch (actionExitCode) {
@@ -187,6 +190,7 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
                 }
             }
 
+            @Override
             public String getOutput() {
                 final ByteArrayOutputStream os = new ByteArrayOutputStream();
                 try {
@@ -203,6 +207,7 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
                 }
             }
 
+            @Override
             public Throwable getFailureCause() {
                 return actionReport.getFailureCause();
             }
@@ -211,14 +216,17 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
 
     private CommandResult convert(final Exception e) {
         return new CommandResult() {
+            @Override
             public ExitStatus getExitStatus() {
                 return ExitStatus.FAILURE;
             }
 
+            @Override
             public String getOutput() {
                 return "Exception while executing command.";
             }
 
+            @Override
             public Throwable getFailureCause() {
                 return e;
             }

@@ -75,6 +75,7 @@ public class EjbInvokerImpl extends InvokerImpl {
     /**
      * Here is where we actually call the endpoint method
      */
+    @Override
     public Object invoke(Packet p, Method m, Object... args )
                                 throws InvocationTargetException, IllegalAccessException {
         Method mappedMethod = methodMap.get(m);

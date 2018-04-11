@@ -322,7 +322,7 @@ public class SecurityHandler {
     }
 
 
-    static public void putOptional(Map<String,String> attrMap, List propList, String propName, String key)
+    public static void putOptional(Map<String,String> attrMap, List propList, String propName, String key)
     {
         Map oneProp = new HashMap();
         oneProp.put("name", propName);

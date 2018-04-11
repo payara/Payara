@@ -112,12 +112,14 @@ public class JQLAST
         setType(type);
     }
     
+    @Override
     public void initialize(int type, String text)
     {
         setType(type);
         setText(text);
     }
 
+    @Override
     public void initialize(Token t)
     {
         setType(t.getType());
@@ -141,6 +143,7 @@ public class JQLAST
         setValue(value);
     }
 
+    @Override
     public void initialize(AST ast)
     {
         initialize((JQLAST)ast);
@@ -163,6 +166,7 @@ public class JQLAST
         this.line = line;
     }
 
+    @Override
     public int getLine()
     {
         return line;
@@ -173,6 +177,7 @@ public class JQLAST
         this.column = column;
     }
 
+    @Override
     public int getColumn()
     {
         return column;
@@ -212,6 +217,7 @@ public class JQLAST
      * Returns a string representation of this JQLAST w/o child nodes.
      * @return a string representation of the object.
      */
+    @Override
     public String toString()
     {
         StringBuffer repr = new StringBuffer();
@@ -326,6 +332,7 @@ public class JQLAST
         }
         
         /** */
+        @Override
         public AST create() 
         {
             return new JQLAST();

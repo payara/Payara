@@ -59,6 +59,7 @@ public abstract class PasswordLoginModule extends BasePasswordLoginModule
      * of this subclass
      * @throws LoginException
      */
+    @Override
     protected final void authenticateUser() throws LoginException{
         AuthenticationStatus as = authenticate();
         if(as.getStatus() == as.AUTH_SUCCESS)
@@ -92,5 +93,5 @@ public abstract class PasswordLoginModule extends BasePasswordLoginModule
             new AuthenticationStatusImpl(username, authMethod, realm, status);
         return as;
     }
-    abstract protected AuthenticationStatus authenticate() throws LoginException;
+    protected abstract AuthenticationStatus authenticate() throws LoginException;
 }

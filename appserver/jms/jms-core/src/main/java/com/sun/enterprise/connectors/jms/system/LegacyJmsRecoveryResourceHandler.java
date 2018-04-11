@@ -81,9 +81,10 @@ public class LegacyJmsRecoveryResourceHandler implements RecoveryResourceHandler
     static final String JMS_TOPIC_CONNECTION_FACTORY = "javax.jms.TopicConnectionFactory";
 
     private static final Logger _logger = JMSLoggerInfo.getLogger();
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LegacyJmsRecoveryResourceHandler.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LegacyJmsRecoveryResourceHandler.class);
 
 
+    @Override
      public void loadXAResourcesAndItsConnections(List xaresList, List connList)
      {
             try {
@@ -131,6 +132,7 @@ public class LegacyJmsRecoveryResourceHandler implements RecoveryResourceHandler
             }
         }
      }
+    @Override
      public void closeConnections(List connList) {
         for (Object obj : connList) {
             try {

@@ -74,7 +74,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.*;
  */
 public abstract class ManagedExecutorServiceBaseManager implements ResourceManager {
 
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(ManagedExecutorServiceBaseManager.class);
     protected static final String DESCRIPTION = ServerTags.DESCRIPTION;
     protected String jndiName = null;
@@ -99,8 +99,10 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
     @Inject
     protected BindableResourcesHelper resourcesHelper;
 
+    @Override
     public abstract String getResourceType();
 
+    @Override
     public ResourceStatus create(Resources resources, HashMap attributes, final Properties properties,
                                  String target) throws Exception {
 
@@ -114,6 +116,7 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
         try {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
 
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     return createResource(param, properties);
                 }
@@ -210,6 +213,7 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
         }
     }
 
+    @Override
     public Resource createConfigBean(final Resources resources, HashMap attributes, final Properties properties, boolean validate) throws Exception{
         setAttributes(attributes, null);
         ResourceStatus status = null;
@@ -293,6 +297,7 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
             
             // delete managed executor service
             if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     ManagedExecutorServiceBase resource = null;
                     if (getResourceType().equals(ServerTags.MANAGED_EXECUTOR_SERVICE)) {

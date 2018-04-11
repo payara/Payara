@@ -64,6 +64,7 @@ public class DirectRemovalTest extends ConfigPersistence {
      *
      * @return the configuration file name
      */
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -73,6 +74,7 @@ public class DirectRemovalTest extends ConfigPersistence {
         return habitat;
     }
 
+    @Override
     public void doTest() throws TransactionFailure {
 
         NetworkListeners listeners = habitat.getService(NetworkListeners.class);
@@ -87,6 +89,7 @@ public class DirectRemovalTest extends ConfigPersistence {
         }
     }
 
+    @Override
     public boolean assertResult(String s) {
         // we must not find it
         return !s.contains("id=\"http-listener-1\"");

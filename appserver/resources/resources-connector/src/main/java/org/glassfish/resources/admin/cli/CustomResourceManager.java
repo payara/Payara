@@ -71,7 +71,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 @I18n("create.custom.resource")
 public class CustomResourceManager implements ResourceManager {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(CustomResourceManager.class);
     private static final String DESCRIPTION = ServerTags.DESCRIPTION;
 
@@ -88,10 +88,12 @@ public class CustomResourceManager implements ResourceManager {
     private String description = null;
     private String jndiName = null;
 
+    @Override
     public String getResourceType() {
         return ServerTags.CUSTOM_RESOURCE;
     }
 
+    @Override
     public ResourceStatus create(Resources resources, HashMap attributes, final Properties properties,
                                  String target) throws Exception {
         setAttributes(attributes, target);
@@ -103,6 +105,7 @@ public class CustomResourceManager implements ResourceManager {
         try {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
 
+                @Override
                 public Object run(Resources param) throws PropertyVetoException,
                         TransactionFailure {
 
@@ -192,6 +195,7 @@ public class CustomResourceManager implements ResourceManager {
         return newResource;
     }
 
+    @Override
     public Resource createConfigBean(Resources resources, HashMap attributes, Properties properties, boolean validate)
             throws Exception{
         setAttributes(attributes, null);

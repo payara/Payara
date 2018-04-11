@@ -93,7 +93,7 @@ import javax.inject.Inject;
 @AccessRequired(resource="domain/passwordAliases", action="create")
 public class CreatePasswordAlias implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(CreatePasswordAlias.class);    
 
     @Param(name="aliasname", primary=true)
@@ -111,6 +111,7 @@ public class CreatePasswordAlias implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         

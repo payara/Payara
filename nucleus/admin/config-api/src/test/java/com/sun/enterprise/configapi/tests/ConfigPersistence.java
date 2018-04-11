@@ -83,6 +83,7 @@ public abstract class ConfigPersistence extends ConfigApiTest {
         baos.reset();
 
         final ConfigurationPersistence testPersistence =  new ConfigurationPersistence() {
+            @Override
             public void save(DomDocument doc) throws IOException, XMLStreamException {
                 XMLOutputFactory factory = XMLOutputFactory.newInstance();
                 XMLStreamWriter writer = factory.createXMLStreamWriter(baos);
@@ -92,6 +93,7 @@ public abstract class ConfigPersistence extends ConfigApiTest {
         };
 
         TransactionListener testListener = new TransactionListener() {
+            @Override
             public void transactionCommited(List<PropertyChangeEvent> changes) {
                 try {
                     testPersistence.save(document);
@@ -102,6 +104,7 @@ public abstract class ConfigPersistence extends ConfigApiTest {
                 }
             }
 
+            @Override
             public void unprocessedTransactedEvents(List<UnprocessedChangeEvents> changes) {
 
             }

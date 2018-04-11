@@ -63,6 +63,7 @@ public final class AttributeListStringifier implements Stringifier
 
     }
 
+    @Override
     public String stringify(Object o)
     {
         final AttributeList attrList = (AttributeList) o;

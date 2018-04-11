@@ -79,7 +79,7 @@ public class ConnectorResourceManager implements ResourceManager {
 
     private static final String DESCRIPTION = ServerTags.DESCRIPTION;
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ConnectorResourceManager.class);
 
     private String poolName = null;
@@ -101,10 +101,12 @@ public class ConnectorResourceManager implements ResourceManager {
     public ConnectorResourceManager() {
     }
 
+    @Override
     public String getResourceType() {
         return ServerTags.CONNECTOR_RESOURCE;
     }
 
+    @Override
     public ResourceStatus create(Resources resources, HashMap attributes, final Properties properties,
                                  String target) throws Exception {
 
@@ -118,6 +120,7 @@ public class ConnectorResourceManager implements ResourceManager {
         try {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
 
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     return createResource(param, properties);
                 }
@@ -208,6 +211,7 @@ public class ConnectorResourceManager implements ResourceManager {
         return ConnectorsUtil.getResourceByName(resources, ConnectorConnectionPool.class, poolName) != null;
     }
 
+    @Override
     public Resource createConfigBean(Resources resources, HashMap attributes, Properties properties, boolean validate)
             throws Exception {
         setAttributes(attributes, null);

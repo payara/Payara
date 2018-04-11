@@ -78,6 +78,7 @@ public class Field
     /**
      *
      */
+    @Override
 	public String getName()
 	{
 		return I18NHelper.getMessage(messages, "scope.field.getname.name"); //NOI18N
@@ -94,6 +95,7 @@ public class Field
     /**
      *
      */
+    @Override
     public String toString()
     {
         StringBuffer buf = new StringBuffer();

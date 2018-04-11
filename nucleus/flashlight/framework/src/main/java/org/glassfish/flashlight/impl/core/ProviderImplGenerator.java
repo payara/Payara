@@ -94,6 +94,7 @@ public class ProviderImplGenerator {
         try {
             java.security.AccessController.doPrivileged(
                     new java.security.PrivilegedExceptionAction() {
+                        @Override
                         public java.lang.Object run() throws Exception {
                             if (!clM.isAccessible()) {
                                 clM.setAccessible(true);

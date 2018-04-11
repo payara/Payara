@@ -86,6 +86,7 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
 
     private Map<String, List<ServiceHandle<?>>> supplementalCommandsMap = null;
     
+    @Override
     public Collection<SupplementalCommand> listSuplementalCommands(String commandName) {
         List<ServiceHandle<?>> supplementalList = getSupplementalCommandsList().get(commandName);
         if (supplementalList == null) {

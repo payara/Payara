@@ -128,6 +128,7 @@ public class ConfigurationParser<C extends ConfigLoader> {
                     final ConfigBeanProxy pr = doc.getRoot().createProxy(configBeanClass);
                     configModularityUtils.setIgnorePersisting(true);
                     ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
+                        @Override
                         public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
                             configModularityUtils.setConfigBean(pr, configBeanDefaultValue, param);
                             return param;

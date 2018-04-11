@@ -52,12 +52,12 @@ import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 public class ConstraintField extends RuntimeDescriptor
 {
     
-    static public final String VALUE = "Value";	// NOI18N
-    static public final String NAME = "Name";
-    static public final String SCOPE = "Scope";    
-    static public final String MATCH_EXPR = "MatchExpr";
-    static public final String CACHE_ON_MATCH = "CacheOnMatch";
-    static public final String CACHE_ON_MATCH_FAILURE = "CacheOnMatchFailure";
+    public static final String VALUE = "Value";	// NOI18N
+    public static final String NAME = "Name";
+    public static final String SCOPE = "Scope";    
+    public static final String MATCH_EXPR = "MatchExpr";
+    public static final String CACHE_ON_MATCH = "CacheOnMatch";
+    public static final String CACHE_ON_MATCH_FAILURE = "CacheOnMatchFailure";
         
     public ConstraintField(ConstraintField other)
     {

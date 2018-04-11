@@ -108,6 +108,7 @@ public class PersistenceClassElementImpl extends PersistenceElementImpl
 	 * @param o old value
 	 * @param n new value
 	 */
+        @Override
 	protected final void firePropertyChange (String name, Object o, Object n)
 	{
 		// even though o == null and n == null will signify a change, that 
@@ -129,6 +130,7 @@ public class PersistenceClassElementImpl extends PersistenceElementImpl
 	 * @param n new value
 	 * @exception PropertyVetoException when the change is vetoed by a listener
 	 */
+        @Override
 	protected final void fireVetoableChange (String name, Object o, Object n)
 		throws PropertyVetoException
 	{
@@ -147,6 +149,7 @@ public class PersistenceClassElementImpl extends PersistenceElementImpl
 	 * @return <code>true</code> if there have been (property) changes to this 
 	 * class, <code>false</code> otherwise.
 	 */
+        @Override
 	public boolean isModified () { return _isModified; }
 
 	/** Set the modified flag for this persistence class to flag.  This is  
@@ -155,6 +158,7 @@ public class PersistenceClassElementImpl extends PersistenceElementImpl
 	 * @param flag if <code>true</code>, this class is marked as modified;
 	 * if <code>false</code>, it is marked as unmodified.
 	 */
+        @Override
 	public void setModified (boolean flag)
 	{
 		boolean oldFlag = isModified();
@@ -174,6 +178,7 @@ public class PersistenceClassElementImpl extends PersistenceElementImpl
 	 * {@link PersistenceClassElement#UNMANAGED_IDENTITY}.  The default is
 	 * APPLICATION_IDENTITY.
 	 */
+        @Override
 	public int getObjectIdentityType ()
 	{
 		return _objectIdentityType;
@@ -186,6 +191,7 @@ public class PersistenceClassElementImpl extends PersistenceElementImpl
 	 * {@link PersistenceClassElement#UNMANAGED_IDENTITY}
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setObjectIdentityType (int type) throws ModelException
 	{
 		Integer old = new Integer(getObjectIdentityType());
@@ -213,6 +219,7 @@ public class PersistenceClassElementImpl extends PersistenceElementImpl
 	 * @see PersistenceClassElement#APPLICATION_IDENTITY
 	 *
 	 */
+        @Override
 	public String getKeyClass ()
 	{
 		return ((PersistenceClassElement.APPLICATION_IDENTITY == 
@@ -227,6 +234,7 @@ public class PersistenceClassElementImpl extends PersistenceElementImpl
 	 * @see #setObjectIdentityType
 	 * @see PersistenceClassElement#APPLICATION_IDENTITY
 	 */
+        @Override
 	public void setKeyClass (String name) throws ModelException
 	{
 		String old = getKeyClass();
@@ -250,6 +258,7 @@ public class PersistenceClassElementImpl extends PersistenceElementImpl
 	 * @param action {@link #ADD}, {@link #REMOVE}, or {@link #SET}
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void changeFields (PersistenceFieldElement[] fields, int action)
 		throws ModelException
 	{
@@ -259,6 +268,7 @@ public class PersistenceClassElementImpl extends PersistenceElementImpl
 	/** Get all fields.
 	 * @return the fields
 	 */
+        @Override
 	public PersistenceFieldElement[] getFields ()
 	{
 		return (PersistenceFieldElement[])_fields.getElements();
@@ -268,6 +278,7 @@ public class PersistenceClassElementImpl extends PersistenceElementImpl
 	 * @param name the name to match
 	 * @return the field, or <code>null</code> if it does not exist
 	 */
+        @Override
 	public PersistenceFieldElement getField (String name)
 	{
 		return (PersistenceFieldElement)_fields.getElement(name);
@@ -280,6 +291,7 @@ public class PersistenceClassElementImpl extends PersistenceElementImpl
 	 * @param action {@link #ADD}, {@link #REMOVE}, or {@link #SET}
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void changeConcurrencyGroups (ConcurrencyGroupElement[] groups,
 		int action) throws ModelException
 	{
@@ -289,6 +301,7 @@ public class PersistenceClassElementImpl extends PersistenceElementImpl
 	/** Get all concurrency groups.
 	 * @return the concurrency groups
 	 */
+        @Override
 	public ConcurrencyGroupElement[] getConcurrencyGroups ()
 	{
 		return (ConcurrencyGroupElement[])_groups.getElements();
@@ -298,6 +311,7 @@ public class PersistenceClassElementImpl extends PersistenceElementImpl
 	 * @param name the name to match
 	 * @return the concurrency group, or <code>null</code> if it does not exist
 	 */
+        @Override
 	public ConcurrencyGroupElement getConcurrencyGroup (String name)
 	{
 		return (ConcurrencyGroupElement)_groups.getElement(name);

@@ -67,6 +67,7 @@ public class PropertiesNode extends DeploymentDescriptorNode {
    /**
     * @return the descriptor instance to associate with this XMLNode
     */      
+    @Override
     public Object getDescriptor() {
         return descriptor;
     }
@@ -77,6 +78,7 @@ public class PropertiesNode extends DeploymentDescriptorNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         if (TagNames.NAME_VALUE_PAIR_NAME.equals(element.getQName())) {
             name = value;

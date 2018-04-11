@@ -116,6 +116,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
      */
     public OSGiGlassFishRuntimeBuilder() {}
 
+    @Override
     public GlassFishRuntime build(BootstrapProperties bsProps) throws GlassFishException {
         try {
             MainHelper.buildStartupContext(bsProps.getProperties());
@@ -171,6 +172,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
         }
     }
 
+    @Override
     public boolean handles(BootstrapProperties bsProps) {
         // See GLASSFISH-16743 for the reason behind additional check
         final String builderName = bsProps.getProperty(Constants.BUILDER_NAME_PROPERTY);

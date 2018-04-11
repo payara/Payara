@@ -82,38 +82,38 @@ public abstract class SecuritySupport {
      * This method returns an array of keystores containing keys and
      * certificates.
      */
-    abstract public KeyStore[] getKeyStores();
+    public abstract KeyStore[] getKeyStores();
 
     /**
      * This method returns an array of truststores containing certificates.
      */
-    abstract public KeyStore[] getTrustStores();
+    public abstract KeyStore[] getTrustStores();
 
     /**
      * @param  token 
      * @return a keystore. If token is null, return the the first keystore.
      */
-    abstract public KeyStore getKeyStore(String token);
+    public abstract KeyStore getKeyStore(String token);
 
     /**
      * @param  token 
      * @return a truststore. If token is null, return the first truststore.
      */
-    abstract public KeyStore getTrustStore(String token);
+    public abstract KeyStore getTrustStore(String token);
 
     /**
      * @param type
      * @param index
      * @return load a null keystore of given type.
      */
-    abstract public KeyStore loadNullStore(String type, int index) throws KeyStoreException,
+    public abstract KeyStore loadNullStore(String type, int index) throws KeyStoreException,
             IOException, NoSuchAlgorithmException, CertificateException;
 
     /**
      * @param masterPass
      * @return result whether the given master password is correct.
      */
-    abstract public boolean verifyMasterPassword(final char[] masterPass);
+    public abstract boolean verifyMasterPassword(final char[] masterPass);
 
     /**
      * @param algorithm
@@ -123,7 +123,7 @@ public abstract class SecuritySupport {
      * @throws NoSuchAlgorithmException
      * @throws UnrecoverableKeyException
      */
-    abstract public KeyManager[] getKeyManagers(String algorithm) throws IOException,
+    public abstract KeyManager[] getKeyManagers(String algorithm) throws IOException,
             KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException;
 
     /**
@@ -133,7 +133,7 @@ public abstract class SecuritySupport {
      * @throws KeyStoreException
      * @throws NoSuchAlgorithmException
      */
-    abstract public TrustManager[] getTrustManagers(String algorithm) throws IOException,
+    public abstract TrustManager[] getTrustManagers(String algorithm) throws IOException,
             KeyStoreException, NoSuchAlgorithmException;
 
     /**
@@ -147,14 +147,14 @@ public abstract class SecuritySupport {
      * @throws NoSuchAlgorithmException
      * @throws UnrecoverableKeyException
      */
-    abstract public PrivateKey getPrivateKeyForAlias(String alias, int keystoreIndex)
+    public abstract PrivateKey getPrivateKeyForAlias(String alias, int keystoreIndex)
             throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException;
 
     /**
      * This method returns an array of token names in order corresponding to
      * array of keystores.
      */
-    abstract public String[] getTokenNames();
+    public abstract String[] getTokenNames();
 
     /**
      * This method synchronize key file for given realm.
@@ -165,13 +165,13 @@ public abstract class SecuritySupport {
      */
     /** TODO:V3:Cluster ConfigContext is no longer present so find out what this needs to be */
     //public void synchronizeKeyFile(ConfigContext config, String fileRealmName)
-    abstract public void synchronizeKeyFile(Object configContext, String fileRealmName)
+    public abstract void synchronizeKeyFile(Object configContext, String fileRealmName)
         throws Exception;
 
     /**
      * Check permission for the given key.
      * @param key
      */
-    abstract public void checkPermission(String key);
+    public abstract void checkPermission(String key);
     
 }

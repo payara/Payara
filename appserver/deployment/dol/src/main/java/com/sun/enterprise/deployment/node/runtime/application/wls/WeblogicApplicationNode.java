@@ -65,9 +65,9 @@ import java.util.Map;
  */
 public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
 
-    public final static String SCHEMA_ID = "weblogic-application.xsd";
+    public static final String SCHEMA_ID = "weblogic-application.xsd";
 
-    private final static List<String> systemIDs = initSystemIDs();
+    private static final List<String> systemIDs = initSystemIDs();
 
     private static List<String> initSystemIDs() {
         List<String> systemIDs = new ArrayList<String>();
@@ -75,8 +75,8 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
         return Collections.unmodifiableList(systemIDs);
     }
 
-    public final static String PUBLIC_DTD_ID_2 = "-//BEA Systems, Inc.//DTD WebLogic Application 8.1.0//EN";
-    public final static String SYSTEM_ID_2 = "http://www.beasys.com/servers/wls810/dtd/weblogic-application_2_0.dtd";
+    public static final String PUBLIC_DTD_ID_2 = "-//BEA Systems, Inc.//DTD WebLogic Application 8.1.0//EN";
+    public static final String SYSTEM_ID_2 = "http://www.beasys.com/servers/wls810/dtd/weblogic-application_2_0.dtd";
 
     /** Creates new WeblogicApplicationNode */
     public WeblogicApplicationNode(Application descriptor) {
@@ -91,6 +91,7 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
     /**
      * Initialize the child handlers
      */
+    @Override
     protected void init() {
         super.init();
         registerElementHandler(new XMLElement(
@@ -120,6 +121,7 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return new XMLElement(RuntimeTagNames.WLS_APPLICATION_RUNTIME_TAG);
     }    
@@ -127,6 +129,7 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
     /** 
      * @return the DOCTYPE that should be written to the XML file
      */
+    @Override
     public String getDocType() {
         return null;
     }
@@ -134,6 +137,7 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
     /**
      * @return the SystemID of the XML file
      */
+    @Override
     public String getSystemID() {
         return SCHEMA_ID;
     }
@@ -141,6 +145,7 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
     /**
      * @return the list of SystemID of the XML schema supported
      */
+    @Override
     public List<String> getSystemIDs() {
         return systemIDs;
     }
@@ -148,6 +153,7 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
    /**
     * @return the application instance to associate with this XMLNode
     */    
+    @Override
     public Application getDescriptor() {    
 	return descriptor;               
     }
@@ -158,6 +164,7 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
      *
      * @param descriptor the new descriptor
      */
+    @Override
     public void addDescriptor(Object newDescriptor) {
         if (newDescriptor instanceof EnvironmentProperty) {
             descriptor.addApplicationParam((ApplicationParam)newDescriptor);
@@ -172,6 +179,7 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
      * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, Application application) {
         Element root = appendChildNS(parent, getXMLRootTag().getQName(),
                     TagNames.WLS_APPLICATION_NAMESPACE);

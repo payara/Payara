@@ -50,14 +50,17 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class AbstractPoolManager implements PoolManager {
 
+    @Override
     public void emptyResourcePool(ResourceSpec spec) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void killAllPools() {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void setSelfManaged(PoolInfo poolInfo, boolean flag) {
         throw new UnsupportedOperationException();
     }

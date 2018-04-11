@@ -84,7 +84,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 @Service
 public class InjectionManagerImpl implements InjectionManager, PostConstruct {
 
-    static private LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InjectionManagerImpl.class);
+    private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InjectionManagerImpl.class);
     
     @Inject
     private Logger _logger;
@@ -104,6 +104,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
     @Inject
     private ProcessEnvironment processEnv;
 
+    @Override
     public void postConstruct() {
 
         // When in the server, register in JNDI to allow container code without
@@ -120,10 +121,12 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
 
     }
 
+    @Override
     public void injectInstance(Object instance) throws InjectionException {
         injectInstance(instance, true);
     }
 
+    @Override
     public void injectInstance(Object instance, boolean invokePostConstruct) throws InjectionException {
 
         ComponentInvocation invocation = invocationMgr.getCurrentInvocation();
@@ -145,14 +148,17 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
         inject(instance.getClass(), instance, componentEnvironment, null, invokePostConstruct);
     }
 
+    @Override
     public void injectInstance(Object instance, JndiNameEnvironment componentEnv) throws InjectionException {
         inject(instance.getClass(), instance, componentEnv, null, true);
     }
 
+    @Override
     public void injectInstance(Object instance, JndiNameEnvironment componentEnv, boolean invokePostConstruct) throws InjectionException {
         inject(instance.getClass(), instance, componentEnv, null, invokePostConstruct);
     }
 
+    @Override
     public void injectInstance(Object instance, String componentId, boolean invokePostConstruct) throws InjectionException {
 
         ComponentInvocation invocation = invocationMgr.getCurrentInvocation();
@@ -172,6 +178,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
         inject(instance.getClass(), instance, componentEnvironment, componentId, invokePostConstruct);
     }
 
+    @Override
     public void injectClass(Class clazz, String componentId, boolean invokePostConstruct) throws InjectionException {
 
         ComponentInvocation inv = invocationMgr.getCurrentInvocation();
@@ -191,26 +198,32 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
         }
     }
 
+    @Override
     public void injectClass(Class clazz, JndiNameEnvironment componentEnv) throws InjectionException {
         injectClass(clazz, componentEnv, true);
     }
 
+    @Override
     public void injectClass(Class clazz, JndiNameEnvironment componentEnv, boolean invokePostConstruct) throws InjectionException {
         inject(clazz, null, componentEnv, null, invokePostConstruct);
     }
 
+    @Override
     public void invokeInstancePreDestroy(Object instance, JndiNameEnvironment componentEnv) throws InjectionException {
         invokePreDestroy(instance.getClass(), instance, componentEnv);
     }
 
+    @Override
     public void invokeInstancePostConstruct(Object instance, JndiNameEnvironment componentEnv) throws InjectionException {
         invokePostConstruct(instance.getClass(), instance, componentEnv);
     }
 
+    @Override
     public void invokeInstancePreDestroy(Object instance) throws InjectionException {
         invokeInstancePreDestroy(instance, true);
     }
 
+    @Override
     public void invokeInstancePreDestroy(Object instance, boolean validate) throws InjectionException {
         ComponentInvocation inv = invocationMgr.getCurrentInvocation();
 
@@ -240,6 +253,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
         }
     }
 
+    @Override
     public void invokeClassPreDestroy(Class clazz, JndiNameEnvironment componentEnv) throws InjectionException {
         invokePreDestroy(clazz, null, componentEnv);
     }
@@ -257,6 +271,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
      * @return managed object
      * @throws InjectionException
      */
+    @Override
     public <T> T createManagedObject(Class<T> clazz) throws InjectionException {
 
         T managedObject = null;
@@ -319,6 +334,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
      * @return managed object
      * @throws InjectionException
      */
+    @Override
     public <T> T createManagedObject(Class<T> clazz, boolean invokePostConstruct) throws InjectionException {
 
         T managedObject = null;
@@ -372,6 +388,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
      * @param managedObject
      * @throws InjectionException
      */
+    @Override
     public void destroyManagedObject(Object managedObject) throws InjectionException {
         destroyManagedObject(managedObject, true);
     }
@@ -384,6 +401,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
      *            if false, do nothing if the instance is not registered
      * @throws InjectionException
      */
+    @Override
     public void destroyManagedObject(Object managedObject, boolean validate) throws InjectionException {
 
         Class managedObjectClass = managedObject.getClass();
@@ -422,6 +440,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
      *            Target instance for injection, or null if injection is class-based. Any error encountered during any
      *            portion of injection is propagated immediately.
      */
+    @Override
     public void inject(final Class clazz, final Object instance, JndiNameEnvironment envDescriptor, String componentId,
             boolean invokePostConstruct) throws InjectionException {
 
@@ -585,6 +604,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
                         // allow for private/protected field access.
                         if (System.getSecurityManager() != null) {
                             java.security.AccessController.doPrivileged(new java.security.PrivilegedExceptionAction() {
+                                @Override
                                 public java.lang.Object run() throws Exception {
                                     f.set(instance, value);
                                     return null;
@@ -619,6 +639,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
                             // Wrap actual value insertion in doPrivileged to
                             // allow for private/protected field access.
                             java.security.AccessController.doPrivileged(new java.security.PrivilegedExceptionAction() {
+                                @Override
                                 public java.lang.Object run() throws Exception {
                                     m.invoke(instance, new Object[] { value });
                                     return null;
@@ -652,6 +673,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
             // Wrap actual value insertion in doPrivileged to
             // allow for private/protected field access.
             java.security.AccessController.doPrivileged(new java.security.PrivilegedExceptionAction() {
+                @Override
                 public java.lang.Object run() throws Exception {
                     if (!lifecycleMethod.isAccessible()) {
                         lifecycleMethod.setAccessible(true);
@@ -686,6 +708,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
 
                 final Field finalF = f;
                 java.security.AccessController.doPrivileged(new java.security.PrivilegedExceptionAction() {
+                    @Override
                     public java.lang.Object run() throws Exception {
                         if (!finalF.isAccessible()) {
                             finalF.setAccessible(true);
@@ -726,6 +749,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
 
                     final Method finalM = m;
                     java.security.AccessController.doPrivileged(new java.security.PrivilegedExceptionAction() {
+                        @Override
                         public java.lang.Object run() throws Exception {
                             if (!finalM.isAccessible()) {
                                 finalM.setAccessible(true);

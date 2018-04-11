@@ -71,26 +71,32 @@ public interface Content {
 
         private State state = State.AVAILABLE;
 
+        @Override
         public State state() {
             return state;
         }
 
+        @Override
         public boolean isAvailable(final URI requestURI) throws IOException {
             return state == State.AVAILABLE;
         }
 
+        @Override
         public void suspend() {
             state = State.SUSPENDED;
         }
 
+        @Override
         public void resume() {
             state = State.AVAILABLE;
         }
 
+        @Override
         public void start() {
             state = State.AVAILABLE;
         }
 
+        @Override
         public void stop() {
             state = State.UNAVAILABLE;
         }

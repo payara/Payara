@@ -68,6 +68,7 @@ public class PortCreationCallbackImpl extends ServiceInterceptor {
         ref = svcRef;
     }
     
+    @Override
     public void postCreateProxy(WSBindingProvider bp, Class<?> serviceEndpointInterface) {
         
         ServiceRefPortInfo portInfo = ref.getPortInfoBySEI(serviceEndpointInterface.getName());
@@ -99,5 +100,6 @@ public class PortCreationCallbackImpl extends ServiceInterceptor {
         }        
     }
 
+    @Override
     public void postCreateDispatch(WSBindingProvider bp) {}
 }

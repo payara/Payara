@@ -124,7 +124,7 @@ public class GMSAnnounceAfterStartClusterCommand implements AdminCommand {
         announceGMSGroupStartupComplete(clusterName, report);
     }
 
-    static public void announceGMSGroupStartupComplete(String clusterName, ActionReport report) {
+    public static void announceGMSGroupStartupComplete(String clusterName, ActionReport report) {
         if (report != null) {
             GMSAnnounceSupplementalInfo gmsInfo = report.getResultType(GMSAnnounceSupplementalInfo.class);
             if (gmsInfo != null && gmsInfo.gmsInitiated) {

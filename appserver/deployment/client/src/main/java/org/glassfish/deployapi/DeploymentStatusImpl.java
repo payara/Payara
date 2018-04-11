@@ -68,6 +68,7 @@ public class DeploymentStatusImpl implements DeploymentStatus {
      *
      * @return the ActionType Object
      */
+    @Override
     public ActionType getAction() {
         return ActionType.EXECUTE;
     }
@@ -76,6 +77,7 @@ public class DeploymentStatusImpl implements DeploymentStatus {
      *
      * @return the CommandType Object
      */
+    @Override
     public CommandType getCommand() {
         if (progressObject!=null) {
             return progressObject.getCommandType();
@@ -89,6 +91,7 @@ public class DeploymentStatusImpl implements DeploymentStatus {
      *
      * @return message text
      */
+    @Override
     public String getMessage() {
         return lastMsg;
     }
@@ -97,6 +100,7 @@ public class DeploymentStatusImpl implements DeploymentStatus {
      *
      * @return the StateType object
      */
+    @Override
     public StateType getState() {
         return stateType;
     }
@@ -106,6 +110,7 @@ public class DeploymentStatusImpl implements DeploymentStatus {
      *
      * @return true if this command has completed successfully
      */
+    @Override
     public boolean isCompleted() {
         return StateType.COMPLETED.equals(stateType);        
     }
@@ -115,6 +120,7 @@ public class DeploymentStatusImpl implements DeploymentStatus {
      *
      * @return true if this command has failed
      */
+    @Override
     public boolean isFailed() {
         return StateType.FAILED.equals(stateType);        
     }
@@ -124,6 +130,7 @@ public class DeploymentStatusImpl implements DeploymentStatus {
      *
      * @return true if this command is still running
      */
+    @Override
     public boolean isRunning() {
         return StateType.RUNNING.equals(stateType);
     }

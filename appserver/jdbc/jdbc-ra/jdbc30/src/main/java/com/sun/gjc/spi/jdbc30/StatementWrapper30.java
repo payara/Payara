@@ -75,6 +75,7 @@ public class StatementWrapper30 extends StatementWrapper {
      *                      SQL statement produces anything other than a single
      *                      <code>ResultSet</code> object
      */
+    @Override
     public java.sql.ResultSet executeQuery(final String sql) throws
             java.sql.SQLException {
         ResultSet rs = jdbcStatement.executeQuery(sql);
@@ -92,6 +93,7 @@ public class StatementWrapper30 extends StatementWrapper {
      * @throws SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public java.sql.ResultSet getGeneratedKeys() throws java.sql.SQLException {
         ResultSet rs = jdbcStatement.getGeneratedKeys();
         if (rs == null)
@@ -108,6 +110,7 @@ public class StatementWrapper30 extends StatementWrapper {
      * @throws SQLException if a database access error occurs
      * @see #execute
      */
+    @Override
     public java.sql.ResultSet getResultSet() throws java.sql.SQLException {
         ResultSet rs = jdbcStatement.getResultSet();
         if (rs == null)

@@ -88,7 +88,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.POOL_NAME;
 @I18n("create.connector.resource")
 public class CreateConnectorResource implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateConnectorResource.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateConnectorResource.class);    
 
     @Param(name=CR_POOL_NAME)
     private String poolName;
@@ -123,6 +123,7 @@ public class CreateConnectorResource implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 

@@ -69,14 +69,17 @@ public class PersistentDirty extends LifeCycleState {
         stateType = P_DIRTY;
     }
 
+    @Override
     public LifeCycleState transitionDeletePersistent() {
         return changeState(P_DELETED);
     }
 
+    @Override
     public LifeCycleState transitionRefreshPersistent() {
         return changeState(P_CLEAN);
     }
 
+    @Override
     public LifeCycleState transitionCommit(boolean retainValues) {
         if (retainValues) {
             return changeState(P_NON_TX);
@@ -85,6 +88,7 @@ public class PersistentDirty extends LifeCycleState {
         }
     }
 
+    @Override
     public LifeCycleState transitionRollback(boolean retainValues) {
         if (retainValues) {
             return changeState(P_NON_TX);

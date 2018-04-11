@@ -49,7 +49,7 @@ import java.io.*;
  */
 
 public class CodeAttribute extends ClassAttribute {
-    public final static String expectedAttrName = "Code";//NOI18N
+    public static final String expectedAttrName = "Code";//NOI18N
 
   /* The java class file contents defining this code attribute.
      If non-null, this must be disassembled before the remaining 
@@ -241,6 +241,7 @@ public class CodeAttribute extends ClassAttribute {
     return new CodeAttribute(attrName, dataBytes, new CodeEnv(pool));
   } 
 
+    @Override
   void write(DataOutputStream out) throws IOException {
     out.writeShort(attrName().getIndex());
     if (theDataBytes == null) {
@@ -264,6 +265,7 @@ public class CodeAttribute extends ClassAttribute {
     }
   }
 
+    @Override
   void print(PrintStream out, int indent) {
     makeValid();
     ClassPrint.spaces(out, indent);

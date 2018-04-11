@@ -84,7 +84,7 @@ import java.io.*;
 class LogRecordEnding implements Serializable {
     /**This constant holds the size of the LogRecordEnding object.
      */
-    final static int SIZEOF = LogLSN.SIZEOF;
+    static final int SIZEOF = LogLSN.SIZEOF;
 
     /**The log record ending contains the current LSN.
      */
@@ -139,6 +139,7 @@ class LogRecordEnding implements Serializable {
      *
      * @see
      */
+    @Override
     public final String toString() {
         return "LRE(curr="/*#Frozen*/+currentLSN+")"/*#Frozen*/;
     }

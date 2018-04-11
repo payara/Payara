@@ -104,6 +104,7 @@ public class GenericStatsImpl implements Stats {
         populateGetterMap();
     }
     
+    @Override
     public Statistic getStatistic(String statisticName) {
         final Method getter = (Method) getters.get(statisticName);
         assert (getter != null) : ("Getter not initialized properly: " + statisticName);
@@ -119,12 +120,14 @@ public class GenericStatsImpl implements Stats {
         return ( (Statistic)result );
     }
     
+    @Override
     public String[] getStatisticNames() {
         /* The return array is fixed at the construction time */
         final String[] names = new String[getters.size()];
         return ( (String[])getters.keySet().toArray(names) ); //TODOOOOOOO
     }
     
+    @Override
     public Statistic[] getStatistics() {
         return ( getStatisticsOneByOne() );         //invokes sequentially
     }

@@ -79,6 +79,7 @@ public class MessageTraceImpl implements MessageTrace {
      * @param includeHeaders the soap headers.
      * @return the soap message
      */ 
+    @Override
     public String getMessage(boolean includeHeaders) {
 
         if (soapMessage!=null) {
@@ -100,6 +101,7 @@ public class MessageTraceImpl implements MessageTrace {
     /**
      * Return the endpoint where this message originated from
      */
+    @Override
     public Endpoint getEndpoint() {
         return source;
     }
@@ -131,6 +133,7 @@ public class MessageTraceImpl implements MessageTrace {
         this.source = source;
     }
     
+    @Override
     public TransportInfo getTransportInfo() {
         return transportInfo;
     }

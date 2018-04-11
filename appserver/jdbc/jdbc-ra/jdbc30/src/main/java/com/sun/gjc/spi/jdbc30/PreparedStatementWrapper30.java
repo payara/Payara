@@ -73,6 +73,7 @@ public class PreparedStatementWrapper30 extends PreparedStatementWrapper {
      * @throws java.sql.SQLException if a database access error occurs or the SQL
      *                               statement does not return a <code>ResultSet</code> object
      */
+    @Override
     public java.sql.ResultSet executeQuery() throws java.sql.SQLException {
         ResultSet rs = preparedStatement.executeQuery();
         return new ResultSetWrapper30(this, rs);
@@ -90,6 +91,7 @@ public class PreparedStatementWrapper30 extends PreparedStatementWrapper {
      *                               SQL statement produces anything other than a single
      *                               <code>ResultSet</code> object
      */
+    @Override
     public java.sql.ResultSet executeQuery(String sql) throws
             java.sql.SQLException {
         ResultSet rs = preparedStatement.executeQuery(sql);
@@ -107,6 +109,7 @@ public class PreparedStatementWrapper30 extends PreparedStatementWrapper {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public java.sql.ResultSet getGeneratedKeys() throws java.sql.SQLException {
         ResultSet rs = preparedStatement.getGeneratedKeys();
         if (rs == null)
@@ -123,6 +126,7 @@ public class PreparedStatementWrapper30 extends PreparedStatementWrapper {
      * @throws java.sql.SQLException if a database access error occurs
      * @see #execute
      */
+    @Override
     public java.sql.ResultSet getResultSet() throws java.sql.SQLException {
         ResultSet rs = preparedStatement.getResultSet();
         if (rs == null)

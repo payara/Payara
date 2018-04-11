@@ -111,6 +111,7 @@ public class PoolLifeCycleRegistry implements PoolLifeCycle {
      * Invoke poolCreated for all listeners of this pool.
      * @param poolInfo
      */
+    @Override
     public void poolCreated(PoolInfo poolInfo) {
         for (PoolLifeCycle listener : lifeCycleListeners) {
             listener.poolCreated(poolInfo);
@@ -121,6 +122,7 @@ public class PoolLifeCycleRegistry implements PoolLifeCycle {
      * Invoke poolDestroyed for all listeners of this pool.
      * @param poolInfo
      */
+    @Override
     public void poolDestroyed(PoolInfo poolInfo) {
         for (PoolLifeCycle listener : lifeCycleListeners) {
             listener.poolDestroyed(poolInfo);

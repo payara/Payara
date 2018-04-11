@@ -150,6 +150,7 @@ public class AutodeployRetryManager implements PostConstruct {
     @LogMessageInfo(message = "Could not convert configured timeout value of \"{0}\" to a number; using previous value of {1} second{1,choice,0#seconds|1#second|1<seconds", level="WARNING")
     private static final String INVALID_TIMEOUT = "NCLS-DEPLOYMENT-02033";
 
+    @Override
     public void postConstruct() {
         setTimeout();
     }

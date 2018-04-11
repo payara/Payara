@@ -148,6 +148,7 @@ public class ConnectorService implements ConnectorConstants {
                 loadDeferredResourceAdapter(rarName);
                 final Resource[] resToLoad = defResConfig.getResourcesToLoad();
                 AccessController.doPrivileged(new PrivilegedAction() {
+                    @Override
                     public Object run() {
                         try {
                             loadDeferredResources(resToLoad);
@@ -390,6 +391,7 @@ public class ConnectorService implements ConnectorConstants {
 
                     final ClassLoader temp = parent;
                     Object obj = AccessController.doPrivileged(new PrivilegedAction() {
+                        @Override
                         public Object run() {
                             return temp.getParent();
                         }

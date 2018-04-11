@@ -67,7 +67,7 @@ public class LRUCacheImpl implements Cache {
      * Size of the cache
      */
     private int maxSize ;
-    protected final static Logger _logger;
+    protected static final Logger _logger;
     private StatementCacheProbeProvider probeProvider = null;
     private PoolInfo poolInfo;
 
@@ -95,6 +95,7 @@ public class LRUCacheImpl implements Cache {
      * null when
      * (1) object not found in cache
      */
+    @Override
     public Object checkAndUpdateCache(CacheObjectKey key) {
         Object result = null;
         CacheEntry entry = list.get(key);        
@@ -123,6 +124,7 @@ public class LRUCacheImpl implements Cache {
      * CallableStatement
      * @param force If the already existing key is to be overwritten
      */
+    @Override
     public void addToCache(CacheObjectKey key, Object o, boolean force) {
         if(force || !list.containsKey(key)){
             //overwrite or if not already found in cache
@@ -138,6 +140,7 @@ public class LRUCacheImpl implements Cache {
     /**
      * Clears the statement cache
      */
+    @Override
     public void clearCache(){
         if (_logger.isLoggable(Level.FINE)) {
             _logger.fine("clearing objects in cache");
@@ -145,12 +148,14 @@ public class LRUCacheImpl implements Cache {
        list.clear();
     }
 
+    @Override
     public void flushCache() {
         while(list.size()!=0){
             purge();
         }
     }
 
+    @Override
     public void purge() {
         Iterator keyIterator = list.keySet().iterator();
         while(keyIterator.hasNext()){
@@ -171,6 +176,7 @@ public class LRUCacheImpl implements Cache {
     }
 
     // Used only for purging the bad statements.
+    @Override
     public void purge(Object obj) {
         PreparedStatementWrapper tmpPS = (PreparedStatementWrapper) obj;
         Iterator keyIterator = list.keySet().iterator();
@@ -201,6 +207,7 @@ public class LRUCacheImpl implements Cache {
      * Returns the number of entries in the statement cache
      * @return has integer value
      */
+    @Override
     public int getSize() {
        return list.size();
     }
@@ -230,6 +237,7 @@ public class LRUCacheImpl implements Cache {
         return set;
     }*/
 
+    @Override
     public boolean isSynchronized() {
         return false;
     }

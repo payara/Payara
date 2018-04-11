@@ -100,6 +100,7 @@ public class ActiveResourceAdapterImpl implements ActiveResourceAdapter {
      *                   connection factory class.
      *                   values to domain.xml.
      */
+    @Override
     public void init(javax.resource.spi.ResourceAdapter ra, ConnectorDescriptor desc,
                                          String moduleName, ClassLoader jcl) throws ConnectorRuntimeException {
         this.desc_ = desc;
@@ -116,6 +117,7 @@ public class ActiveResourceAdapterImpl implements ActiveResourceAdapter {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getModuleName() {
         return moduleName_;
     }
@@ -128,6 +130,7 @@ public class ActiveResourceAdapterImpl implements ActiveResourceAdapter {
      *                                   ra.xml is invalid or the default pools and resources couldn't
      *                                   be created
      */
+    @Override
     public void setup() throws ConnectorRuntimeException {
         if (connectionDefs_ == null || connectionDefs_.length != 1) {
             _logger.log(Level.SEVERE, "rardeployment.invalid_connector_desc", moduleName_);
@@ -274,6 +277,7 @@ public class ActiveResourceAdapterImpl implements ActiveResourceAdapter {
      * uninitializes the resource adapter. It also destroys the default pools
      * and resources
      */
+    @Override
     public void destroy() {
         if (isServer()) {
             destroyAllConnectorResources();
@@ -285,6 +289,7 @@ public class ActiveResourceAdapterImpl implements ActiveResourceAdapter {
      *
      * @return ConnectorDescriptor Representation of ra.xml.
      */
+    @Override
     public ConnectorDescriptor getDescriptor() {
         return desc_;
     }
@@ -292,6 +297,7 @@ public class ActiveResourceAdapterImpl implements ActiveResourceAdapter {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean handles(ConnectorDescriptor cd, String moduleName) {
 
         boolean canHandle = false;
@@ -321,6 +327,7 @@ public class ActiveResourceAdapterImpl implements ActiveResourceAdapter {
     /**
      * {@inheritDoc}
      */
+    @Override
     public ManagedConnectionFactory[] createManagedConnectionFactories(
             ConnectorConnectionPool ccp, ClassLoader jcl) {
         throw new UnsupportedOperationException("This operation is not supported");
@@ -337,6 +344,7 @@ public class ActiveResourceAdapterImpl implements ActiveResourceAdapter {
      * @return ManagedConnectionFactory created managed connection factory
      *         instance
      */
+    @Override
     public ManagedConnectionFactory createManagedConnectionFactory(
             ConnectorConnectionPool ccp, ClassLoader jcl) {
         final String mcfClass = ccp.getConnectorDescriptorInfo().getManagedConnectionFactoryClass();
@@ -542,6 +550,7 @@ public class ActiveResourceAdapterImpl implements ActiveResourceAdapter {
      *
      * @return <code>ClassLoader</code> object.
      */
+    @Override
     public ClassLoader getClassLoader() {
         return jcl_;
     }
@@ -551,6 +560,7 @@ public class ActiveResourceAdapterImpl implements ActiveResourceAdapter {
      *
      * @return <code>ResourceAdapter</code>
      */
+    @Override
     public javax.resource.spi.ResourceAdapter getResourceAdapter() {
         throw new UnsupportedOperationException("1.0 RA will not have ResourceAdapter bean");
     }

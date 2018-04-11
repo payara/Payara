@@ -59,6 +59,7 @@ public class UnpooledConnectionEventListener extends ConnectionEventListener {
 
     private static Logger _logger = LogDomains.getLogger(UnpooledConnectionEventListener.class,LogDomains.RSR_LOGGER);
 
+    @Override
     public void connectionClosed(ConnectionEvent evt) {
         ManagedConnection mc = (ManagedConnection) evt.getSource();
         try {
@@ -77,24 +78,29 @@ public class UnpooledConnectionEventListener extends ConnectionEventListener {
      * Resource adapters will signal that the connection being closed is bad.
      * @param evt ConnectionEvent
      */
+    @Override
     public void badConnectionClosed(ConnectionEvent evt){
         ManagedConnection mc = (ManagedConnection) evt.getSource();
         mc.removeConnectionEventListener(this);
         connectionClosed(evt);
     }
 
+    @Override
     public void connectionErrorOccurred(ConnectionEvent evt) {
         //no-op
     }
 
+    @Override
     public void localTransactionStarted(ConnectionEvent evt) {
             // no-op
     }
 
+    @Override
     public void localTransactionCommitted(ConnectionEvent evt) {
          // no-op
     }
 
+    @Override
     public void localTransactionRolledback(ConnectionEvent evt) {
         // no-op
     }

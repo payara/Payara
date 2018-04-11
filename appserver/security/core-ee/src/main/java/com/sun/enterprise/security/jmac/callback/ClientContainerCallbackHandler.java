@@ -80,6 +80,7 @@ final class ClientContainerCallbackHandler
     }
 
     //TODO:V3 trying to read system properties here
+    @Override
     protected void handleSupportedCallbacks(Callback[] callbacks) 
             throws IOException, UnsupportedCallbackException {
 
@@ -140,6 +141,7 @@ final class ClientContainerCallbackHandler
         }
     }
 
+    @Override
     protected boolean isSupportedCallback(Callback callback) 
     {
        boolean supported = false;

@@ -84,7 +84,7 @@ import javax.inject.Inject;
 })
 public class ListResourceAdapterConfigs implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListResourceAdapterConfigs.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListResourceAdapterConfigs.class);    
 
     @Param(name="raname", optional=true)
     private String raName;
@@ -104,6 +104,7 @@ public class ListResourceAdapterConfigs implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();

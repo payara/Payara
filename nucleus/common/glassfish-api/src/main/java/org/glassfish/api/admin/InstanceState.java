@@ -55,55 +55,67 @@ import java.util.concurrent.*;
 public class InstanceState {
     public enum StateType {
         NO_RESPONSE {
+            @Override
             public String getDescription() {
                 return "NO_RESPONSE";
             }
 
+            @Override
             public String getDisplayString() {
                 return " no response";
             }
         },
         NOT_RUNNING {
+            @Override
             public String getDescription() {
                 return "NOT_RUNNING";
             }
 
+            @Override
             public String getDisplayString() {
                 return " not running";
             }
         },
         STARTING {
+            @Override
             public String getDescription() {
                 return "STARTING";
             }
 
+            @Override
             public String getDisplayString() {
                 return " starting";
             }
         },
         RUNNING {
+            @Override
             public String getDescription() {
                 return "RUNNING";
             }
 
+            @Override
             public String getDisplayString() {
                 return " running";
             }
         },
         RESTART_REQUIRED {
+            @Override
             public String getDescription() {
                 return "REQUIRES_RESTART";
             }
 
+            @Override
             public String getDisplayString() {
                 return " requires restart";
             }
         },
         NEVER_STARTED {
+            @Override
             public String getDescription() {
                 return "NEVER_STARTED";
             }
 
+            @Override
             public String getDisplayString() {
                 return " never started";
             }

@@ -88,7 +88,7 @@ import org.glassfish.config.support.TargetType;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
 public class DeleteAuthRealm implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(DeleteAuthRealm.class);
 
     @Param(name="authrealmname", primary=true)
@@ -135,11 +135,13 @@ public class DeleteAuthRealm implements AdminCommand, AdminCommandSecurity.Preau
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
 
         try {            
             ConfigSupport.apply(new SingleConfigCode<SecurityService>() {
+                @Override
                 public Object run(SecurityService param) 
                 throws PropertyVetoException, TransactionFailure {
                     param.getAuthRealm().remove(authRealm);

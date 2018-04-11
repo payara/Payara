@@ -101,6 +101,7 @@ public class DeployTask extends TaskBase {
         deployParams.add("--availabilityenabled=" + availabilityenabled);
     }
 
+    @Override
     public void setDescription(String description) {
         deployParams.add("--description=" + description);
     }
@@ -125,6 +126,7 @@ public class DeployTask extends TaskBase {
         deployParams.add("--deploymentplan=" + deploymentplan);
     }
 
+    @Override
     public void execute() throws BuildException {
         try {
             Util.deploy(app, serverID, deployParams);

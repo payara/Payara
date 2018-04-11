@@ -77,6 +77,7 @@ public class NavNodeContainerFactory extends ComponentFactoryBase {
      *
      *	@return	The newly created <code>Tree</code>.
      */
+    @Override
     public UIComponent create(FacesContext context, LayoutComponent descriptor, UIComponent parent) {
         // Create the UIComponent
         UIComponent comp = createComponent(context, COMPONENT_TYPE, descriptor, parent);

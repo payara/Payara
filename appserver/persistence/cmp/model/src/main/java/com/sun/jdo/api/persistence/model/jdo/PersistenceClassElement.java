@@ -209,6 +209,7 @@ public class PersistenceClassElement extends PersistenceElement
 	 * @param name the name
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setName (String name) throws ModelException
 	{
 		String oldName = getName();
@@ -233,6 +234,7 @@ public class PersistenceClassElement extends PersistenceElement
 	 * @param field the field to be added
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void addField (PersistenceFieldElement field) 
 		throws ModelException 
 	{
@@ -244,6 +246,7 @@ public class PersistenceClassElement extends PersistenceElement
 	 * @param fields the array of fields to be added
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void addFields(PersistenceFieldElement[] fields)
 		throws ModelException 
 	{
@@ -255,6 +258,7 @@ public class PersistenceClassElement extends PersistenceElement
 	 * @param field the field to be removed
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void removeField (PersistenceFieldElement field)
 		throws ModelException 
 	{
@@ -266,6 +270,7 @@ public class PersistenceClassElement extends PersistenceElement
 	 * @param fields the array of fields to be removed
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void removeFields (PersistenceFieldElement[] fields)
 		throws ModelException 
 	{
@@ -290,6 +295,7 @@ public class PersistenceClassElement extends PersistenceElement
 	 * of an array.
 	 * @return the fields maintained by this holder
 	 */
+        @Override
 	public PersistenceFieldElement[] getFields ()
 	{
 		return getClassImpl().getFields();
@@ -300,6 +306,7 @@ public class PersistenceClassElement extends PersistenceElement
 	 * @param fields the fields maintained by this holder
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setFields (PersistenceFieldElement[] fields)
 		throws ModelException 
 	{
@@ -312,6 +319,7 @@ public class PersistenceClassElement extends PersistenceElement
 	 * @return the field with the supplied name, <code>null</code> if none 
 	 * exists
 	 */
+        @Override
 	public PersistenceFieldElement getField (String name)
 	{
 		return getClassImpl().getField(name);
@@ -321,6 +329,7 @@ public class PersistenceClassElement extends PersistenceElement
 	 * maintained by this holder.
 	 * @param field the field to be tested
 	 */
+        @Override
 	public boolean containsField (PersistenceFieldElement field)
 	{
 		return (getClassImpl().getField(field.getName()) != null);

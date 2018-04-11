@@ -65,6 +65,7 @@ public class JarScanner extends JavaEEScanner implements Scanner<Object> {
     ClassLoader classLoader = null;
     
     
+    @Override
     public  void process(File jarFile, Object bundleDesc, ClassLoader loader) throws java.io.IOException {
         this.jarFile = jarFile;
         JarFile jf = new JarFile(jarFile);
@@ -85,6 +86,7 @@ public class JarScanner extends JavaEEScanner implements Scanner<Object> {
         initTypes(jarFile);
     }    
     
+    @Override
     public ClassLoader getClassLoader() {
         if (classLoader==null) {
             final URL[] urls = new URL[1];
@@ -104,6 +106,7 @@ public class JarScanner extends JavaEEScanner implements Scanner<Object> {
         return classLoader;
     }
     
+    @Override
     public Set<Class> getElements() {
         
         

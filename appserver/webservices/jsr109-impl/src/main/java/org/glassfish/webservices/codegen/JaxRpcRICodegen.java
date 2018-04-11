@@ -832,6 +832,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         return moduleId.equals(webService.getBundleDescriptor().getModuleID());
     }
 
+    @Override
     public void accept (BundleDescriptor descriptor) {
         if (descriptor instanceof Application) {
             Application application = (Application)descriptor;
@@ -858,6 +859,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
      * visit an application object
      * @param the application descriptor
      */
+    @Override
     public void accept(Application application) {
     }
 
@@ -865,6 +867,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
      * visits an ejb bundle descriptor
      * @param an ejb bundle descriptor
      */
+    @Override
     public void accept(EjbBundleDescriptor bundleDescriptor) {
     }
 
@@ -875,6 +878,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
      * get the visitor for its sub descriptor
      * @param sub descriptor to return visitor for
      */
+    @Override
     public void accept(ApplicationClientDescriptor appclientdescriptor) {
     }
 
@@ -883,6 +887,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
      *
      * @param the web bundle descriptor
      */
+    @Override
     public void accept(WebBundleDescriptor descriptor) {
     }
 }

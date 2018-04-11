@@ -61,6 +61,7 @@ public final class JDOMetaDataTimer
         this.delegate = delegate;
     }
 
+    @Override
     public boolean isPersistenceCapableClass(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -73,6 +74,7 @@ public final class JDOMetaDataTimer
         }
     }
 
+    @Override
     public boolean isTransientClass(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -85,6 +87,7 @@ public final class JDOMetaDataTimer
         }
     }
 
+    @Override
     public boolean isPersistenceCapableRootClass(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -97,6 +100,7 @@ public final class JDOMetaDataTimer
         }
     }
 
+    @Override
     public String getSuperClass(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -109,6 +113,7 @@ public final class JDOMetaDataTimer
         }
     }
 
+    @Override
     public String getPersistenceCapableRootClass(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -121,6 +126,7 @@ public final class JDOMetaDataTimer
         }
     }
 
+    @Override
     public boolean isSecondClassObjectType(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -133,6 +139,7 @@ public final class JDOMetaDataTimer
         }
     }
 
+    @Override
     public boolean isMutableSecondClassObjectType(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -145,6 +152,7 @@ public final class JDOMetaDataTimer
         }
     }
 
+    @Override
     public boolean isPersistentField(String classPath, String fieldName)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -158,6 +166,7 @@ public final class JDOMetaDataTimer
         }
     }
 
+    @Override
     public boolean isTransactionalField(String classPath, String fieldName)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -171,6 +180,7 @@ public final class JDOMetaDataTimer
         }
     }
 
+    @Override
     public boolean isPrimaryKeyField(String classPath, String fieldName)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -184,6 +194,7 @@ public final class JDOMetaDataTimer
         }
     }
 
+    @Override
     public boolean isDefaultFetchGroupField(String classPath, String fieldName)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -197,6 +208,7 @@ public final class JDOMetaDataTimer
         }
     }
 
+    @Override
     public int getFieldNo(String classPath, String fieldName)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -210,6 +222,7 @@ public final class JDOMetaDataTimer
         }
     }
 
+    @Override
     public String[] getManagedFields(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {

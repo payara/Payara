@@ -75,7 +75,7 @@ import java.util.List;
 })
 public class HealthCheckServiceLister implements AdminCommand {
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceLister.class);
+    private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceLister.class);
     final static String serviceHeaders[] = {"Name", "Description"};
 
     @Inject

@@ -81,6 +81,7 @@ public class DTraceClientInvoker implements ProbeClientInvoker{
         targetObj   = p.getDTraceProviderImpl();
     }
 
+    @Override
     public void invoke(Object[] args) {
         if(FlashlightUtils.isDtraceAvailable()) {
             try {
@@ -92,6 +93,7 @@ public class DTraceClientInvoker implements ProbeClientInvoker{
         }
     }
 
+    @Override
     public int getId() {
         return id;
     }

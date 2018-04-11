@@ -85,10 +85,10 @@ import org.glassfish.grizzly.http.util.HttpUtils;
  * @version $Revision: 1.5 $, $Date: 2007/05/05 05:32:20 $
  */
 public class SSIMediator {
-    protected final static String DEFAULT_CONFIG_ERR_MSG = "[an error occurred while processing this directive]";
-    protected final static String DEFAULT_CONFIG_TIME_FMT = "%A, %d-%b-%Y %T %Z";
-    protected final static String DEFAULT_CONFIG_SIZE_FMT = "abbrev";
-    protected final static URLEncoder urlEncoder;
+    protected static final String DEFAULT_CONFIG_ERR_MSG = "[an error occurred while processing this directive]";
+    protected static final String DEFAULT_CONFIG_TIME_FMT = "%A, %d-%b-%Y %T %Z";
+    protected static final String DEFAULT_CONFIG_SIZE_FMT = "abbrev";
+    protected static final URLEncoder urlEncoder;
     protected String configErrMsg = DEFAULT_CONFIG_ERR_MSG;
     protected String configTimeFmt = DEFAULT_CONFIG_TIME_FMT;
     protected String configSizeFmt = DEFAULT_CONFIG_SIZE_FMT;

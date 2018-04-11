@@ -91,68 +91,68 @@ public class DBVendorType  {
     /**
      * The logger
      */
-    private final static Logger logger;
+    private static final Logger logger;
 
     /**
      * I18N message handler
      */
-    private final static ResourceBundle messages;
+    private static final ResourceBundle messages;
 
     /**
      * Default properties
      */
     private static Properties defaultProperties;
 
-    private final static String EXT = ".properties"; // NOI18N
-    private final static String SPACE = " "; // NOI18N
-    private final static String NONE = ""; // NOI18N
+    private static final String EXT = ".properties"; // NOI18N
+    private static final String SPACE = " "; // NOI18N
+    private static final String NONE = ""; // NOI18N
 
-    private final static String PATH = "com/sun/jdo/spi/persistence/support/sqlstore/database/"; // NOI18N
-    private final static String PROPERTY_OVERRIDE_FILE = ".tpersistence.properties"; // NOI18N
+    private static final String PATH = "com/sun/jdo/spi/persistence/support/sqlstore/database/"; // NOI18N
+    private static final String PROPERTY_OVERRIDE_FILE = ".tpersistence.properties"; // NOI18N
 
 
-    private final static String FOR_UPDATE = "FOR_UPDATE"; // NOI18N
-    private final static String HOLDLOCK = "HOLDLOCK"; //NOI18N
-    private final static String SUPPORTS_UPDATE_LOCK = "SUPPORTS_UPDATE_LOCK"; //NOI18N
-    private final static String SUPPORTS_LOCK_COLUMN_LIST = "SUPPORTS_LOCK_COLUMN_LIST"; //NOI18N
-    private final static String SUPPORTS_DISTINCT_WITH_UPDATE_LOCK = "SUPPORTS_DISTINCT_WITH_UPDATE_LOCK"; //NOI18N
-    private final static String NATIVE_OUTER_JOIN = "NATIVE_OUTER_JOIN"; //NOI18N
-    private final static String LEFT_JOIN = "LEFT_JOIN"; //NOI18N
-    private final static String LEFT_JOIN_APPEND = "LEFT_JOIN_APPEND"; //NOI18N
-    private final static String RIGHT_JOIN = "RIGHT_JOIN"; //NOI18N
-    private final static String RIGHT_JOIN_PRE = "RIGHT_JOIN_PRE"; //NOI18N
-    private final static String IS_NULL = "IS_NULL"; //NOI18N
-    private final static String IS_NOT_NULL = "IS_NOT_NULL"; //NOI18N
-    private final static String ANSI_TRIM = "ANSI_TRIM"; //NOI18N
-    private final static String RTRIM = "RTRIM"; //NOI18N
-    private final static String RTRIM_POST = "RTRIM_POST"; //NOI18N
-    private final static String TABLE_LIST_START = "TABLE_LIST_START"; //NOI18N
-    private final static String TABLE_LIST_END = "TABLE_LIST_END"; //NOI18N
-    private final static String STRING_CONCAT = "STRING_CONCAT"; //NOI18N
-    private final static String QUOTE_CHAR_START = "QUOTE_CHAR_START"; //NOI18N
-    private final static String QUOTE_CHAR_END = "QUOTE_CHAR_END"; //NOI18N
-    private final static String QUOTE_SPECIAL_ONLY = "QUOTE_SPECIAL_ONLY"; //NOI18N
-    private final static String CHAR_LENGTH = "CHAR_LENGTH"; //NOI18N
-    private final static String SQRT = "SQRT"; //NOI18N
-    private final static String ABS = "ABS"; //NOI18N
-    private final static String SUBSTRING = "SUBSTRING"; //NOI18N
-    private final static String SUBSTRING_FROM = "SUBSTRING_FROM"; //NOI18N
-    private final static String SUBSTRING_FOR = "SUBSTRING_FOR"; //NOI18N
-    private final static String POSITION = "POSITION"; //NOI18N
-    private final static String POSITION_SEP = "POSITION_SEP"; //NOI18N
-    private final static String POSITION_SEARCH_SOURCE = "POSITION_SEARCH_SOURCE"; //NOI18N
-    private final static String POSITION_THREE_ARGS = "POSITION_THREE_ARGS"; //NOI18N
-    private final static String MAP_EMPTY_STRING_TO_NULL = "MAP_EMPTY_STRING_TO_NULL"; //NOI18N
-    private final static String SPECIAL_DB_OPERATION = "SPECIAL_DB_OPERATION"; //NOI18N
-    private final static String SUPPORTS_LIKE_ESCAPE = "SUPPORTS_LIKE_ESCAPE"; //NOI18N
-    private final static String LEFT_LIKE_ESCAPE = "LEFT_LIKE_ESCAPE"; //NOI18N
-    private final static String RIGHT_LIKE_ESCAPE = "RIGHT_LIKE_ESCAPE"; //NOI18N
-    private final static String NULL_COMPARISON_FUNCTION_NAME = "NULL_COMPARISON_FUNCTION_NAME"; //NOI18N
-    private final static String MOD_FUNCTION_NAME = "MOD_FUNCTION_NAME"; //NOI18N
-    private final static String CONCAT_CAST = "CONCAT_CAST"; //NOI18N
-    private final static String PARAMETER_CAST = "PARAMETER_CAST"; //NOI18N
-    private final static String INLINE_NUMERIC = "INLINE_NUMERIC"; //NOI18N
-    private final static String NOT_EQUAL = "NOT_EQUAL"; //NOI18N
+    private static final String FOR_UPDATE = "FOR_UPDATE"; // NOI18N
+    private static final String HOLDLOCK = "HOLDLOCK"; //NOI18N
+    private static final String SUPPORTS_UPDATE_LOCK = "SUPPORTS_UPDATE_LOCK"; //NOI18N
+    private static final String SUPPORTS_LOCK_COLUMN_LIST = "SUPPORTS_LOCK_COLUMN_LIST"; //NOI18N
+    private static final String SUPPORTS_DISTINCT_WITH_UPDATE_LOCK = "SUPPORTS_DISTINCT_WITH_UPDATE_LOCK"; //NOI18N
+    private static final String NATIVE_OUTER_JOIN = "NATIVE_OUTER_JOIN"; //NOI18N
+    private static final String LEFT_JOIN = "LEFT_JOIN"; //NOI18N
+    private static final String LEFT_JOIN_APPEND = "LEFT_JOIN_APPEND"; //NOI18N
+    private static final String RIGHT_JOIN = "RIGHT_JOIN"; //NOI18N
+    private static final String RIGHT_JOIN_PRE = "RIGHT_JOIN_PRE"; //NOI18N
+    private static final String IS_NULL = "IS_NULL"; //NOI18N
+    private static final String IS_NOT_NULL = "IS_NOT_NULL"; //NOI18N
+    private static final String ANSI_TRIM = "ANSI_TRIM"; //NOI18N
+    private static final String RTRIM = "RTRIM"; //NOI18N
+    private static final String RTRIM_POST = "RTRIM_POST"; //NOI18N
+    private static final String TABLE_LIST_START = "TABLE_LIST_START"; //NOI18N
+    private static final String TABLE_LIST_END = "TABLE_LIST_END"; //NOI18N
+    private static final String STRING_CONCAT = "STRING_CONCAT"; //NOI18N
+    private static final String QUOTE_CHAR_START = "QUOTE_CHAR_START"; //NOI18N
+    private static final String QUOTE_CHAR_END = "QUOTE_CHAR_END"; //NOI18N
+    private static final String QUOTE_SPECIAL_ONLY = "QUOTE_SPECIAL_ONLY"; //NOI18N
+    private static final String CHAR_LENGTH = "CHAR_LENGTH"; //NOI18N
+    private static final String SQRT = "SQRT"; //NOI18N
+    private static final String ABS = "ABS"; //NOI18N
+    private static final String SUBSTRING = "SUBSTRING"; //NOI18N
+    private static final String SUBSTRING_FROM = "SUBSTRING_FROM"; //NOI18N
+    private static final String SUBSTRING_FOR = "SUBSTRING_FOR"; //NOI18N
+    private static final String POSITION = "POSITION"; //NOI18N
+    private static final String POSITION_SEP = "POSITION_SEP"; //NOI18N
+    private static final String POSITION_SEARCH_SOURCE = "POSITION_SEARCH_SOURCE"; //NOI18N
+    private static final String POSITION_THREE_ARGS = "POSITION_THREE_ARGS"; //NOI18N
+    private static final String MAP_EMPTY_STRING_TO_NULL = "MAP_EMPTY_STRING_TO_NULL"; //NOI18N
+    private static final String SPECIAL_DB_OPERATION = "SPECIAL_DB_OPERATION"; //NOI18N
+    private static final String SUPPORTS_LIKE_ESCAPE = "SUPPORTS_LIKE_ESCAPE"; //NOI18N
+    private static final String LEFT_LIKE_ESCAPE = "LEFT_LIKE_ESCAPE"; //NOI18N
+    private static final String RIGHT_LIKE_ESCAPE = "RIGHT_LIKE_ESCAPE"; //NOI18N
+    private static final String NULL_COMPARISON_FUNCTION_NAME = "NULL_COMPARISON_FUNCTION_NAME"; //NOI18N
+    private static final String MOD_FUNCTION_NAME = "MOD_FUNCTION_NAME"; //NOI18N
+    private static final String CONCAT_CAST = "CONCAT_CAST"; //NOI18N
+    private static final String PARAMETER_CAST = "PARAMETER_CAST"; //NOI18N
+    private static final String INLINE_NUMERIC = "INLINE_NUMERIC"; //NOI18N
+    private static final String NOT_EQUAL = "NOT_EQUAL"; //NOI18N
 
     private static final String[] props = new String[] { FOR_UPDATE,
             HOLDLOCK, SUPPORTS_UPDATE_LOCK, SUPPORTS_LOCK_COLUMN_LIST,
@@ -325,6 +325,7 @@ public class DBVendorType  {
             final ClassLoader loader = DBVendorType.class.getClassLoader();
             Class clz = (Class)java.security.AccessController.doPrivileged(
                 new java.security.PrivilegedAction() {
+                    @Override
                     public Object run() {
                         try {
                             if (loader != null) {

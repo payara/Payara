@@ -197,6 +197,7 @@ public class JWSACCMain implements Runnable {
         return orig.replaceAll("\\.","/");
     }
 
+    @Override
     public void run() {
 //        Main.main(args);
         int exitValue = 0;
@@ -241,6 +242,7 @@ public class JWSACCMain implements Runnable {
             if (exitAfterReturn || (exitValue != 0)) {
                 Runnable exit = new Runnable() {
                     private int statusValue;
+                    @Override
                     public void run() {
                         System.out.printf("Exiting after return from client with status %1$d%n", statusValue);
                         System.exit(statusValue);

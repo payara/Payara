@@ -127,7 +127,7 @@ public class DeleteLifecycleModuleCommand implements AdminCommand, AdminCommandS
     
     private List<String> targets = null;
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteLifecycleModuleCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteLifecycleModuleCommand.class);
 
     @Override
     public Collection<? extends AccessCheck> getAccessChecks() {
@@ -149,6 +149,7 @@ public class DeleteLifecycleModuleCommand implements AdminCommand, AdminCommandS
         return accessChecks;
     }
    
+    @Override
     public void execute(AdminCommandContext context) {
         
         ActionReport report = context.getActionReport();

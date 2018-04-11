@@ -207,6 +207,7 @@ public class StatefulContainerFactory extends BaseContainerFactory
 
     private SimpleKeyGenerator keyGen;
 
+    @Override
     public void postConstruct() {
         ejbContainerConfig = serverConfig.getExtensionByType(EjbContainer.class);
     }
@@ -502,6 +503,7 @@ class CachePassivatorTask
         this.logger = logger;
     }
 
+    @Override
     public void run() {
         try {
             cache.trimTimedoutItems(Integer.MAX_VALUE);
@@ -527,6 +529,7 @@ class ExpiredSessionsRemovalTask
         this.logger = logger;
     }
 
+    @Override
     public void run() {
         try {
             container.removeExpiredSessions();

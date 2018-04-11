@@ -78,6 +78,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method is called on a closed <code>CallableStatement</code>
      * @since 1.6
      */
+    @Override
     public Reader getCharacterStream(int parameterIndex) throws SQLException {
         return callableStatement.getCharacterStream(parameterIndex);
     }
@@ -98,6 +99,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public Reader getCharacterStream(String parameterName) throws SQLException {
         return callableStatement.getCharacterStream(parameterName);
     }
@@ -121,6 +123,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public Reader getNCharacterStream(int parameterIndex) throws SQLException {
         return callableStatement.getNCharacterStream(parameterIndex);
     }
@@ -144,6 +147,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public Reader getNCharacterStream(String parameterName) throws SQLException {
         return callableStatement.getNCharacterStream(parameterName);
     }
@@ -167,6 +171,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public NClob getNClob(int parameterIndex) throws SQLException {
         return callableStatement.getNClob(parameterIndex);
     }
@@ -189,6 +194,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public NClob getNClob(String parameterName) throws SQLException {
         return callableStatement.getNClob(parameterName);
     }
@@ -217,6 +223,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      * @see #setNString
      * @since 1.6
      */
+    @Override
     public String getNString(int parameterIndex) throws SQLException {
         return callableStatement.getNString(parameterIndex);
     }
@@ -246,6 +253,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      * @see #setNString
      * @since 1.6
      */
+    @Override
     public String getNString(String parameterName) throws SQLException {
         return callableStatement.getNString(parameterName);
     }
@@ -266,6 +274,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public RowId getRowId(int parameterIndex) throws SQLException {
         return callableStatement.getRowId(parameterIndex);
     }
@@ -286,6 +295,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public RowId getRowId(String parameterName) throws SQLException {
         return callableStatement.getRowId(parameterName);
     }
@@ -304,6 +314,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public SQLXML getSQLXML(int parameterIndex) throws SQLException {
         return callableStatement.getSQLXML(parameterIndex);
     }
@@ -322,6 +333,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public SQLXML getSQLXML(String parameterName) throws SQLException {
         return callableStatement.getSQLXML(parameterName);
     }
@@ -350,6 +362,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setAsciiStream(String parameterName, InputStream x) throws SQLException {
         callableStatement.setAsciiStream(parameterName, x);
     }
@@ -378,6 +391,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void setAsciiStream(String parameterName, InputStream x, long length) throws SQLException {
         callableStatement.setAsciiStream(parameterName, x, length);
     }
@@ -405,6 +419,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setBinaryStream(String parameterName, InputStream x) throws SQLException {
         callableStatement.setBinaryStream(parameterName, x);
     }
@@ -432,6 +447,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void setBinaryStream(String parameterName, InputStream x, long length) throws SQLException {
         callableStatement.setBinaryStream(parameterName, x, length);
     }
@@ -451,6 +467,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void setBlob(String parameterName, Blob x) throws SQLException {
         callableStatement.setBlob(parameterName, x);
     }
@@ -477,6 +494,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setBlob(String parameterName, InputStream inputStream) throws SQLException {
         callableStatement.setBlob(parameterName, inputStream);
     }
@@ -506,6 +524,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void setBlob(String parameterName, InputStream inputStream, long length) throws SQLException {
         callableStatement.setBlob(parameterName, inputStream, length);
     }
@@ -536,6 +555,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setCharacterStream(String parameterName, Reader reader) throws SQLException {
         callableStatement.setCharacterStream(parameterName, reader);
     }
@@ -565,6 +585,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void setCharacterStream(String parameterName, Reader reader, long length) throws SQLException {
         callableStatement.setCharacterStream(parameterName, reader, length);
     }
@@ -584,6 +605,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void setClob(String parameterName, Clob x) throws SQLException {
         callableStatement.setClob(parameterName, x);
     }
@@ -609,6 +631,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setClob(String parameterName, Reader reader) throws SQLException {
         callableStatement.setClob(parameterName, reader);
     }
@@ -637,6 +660,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setNCharacterStream(String parameterName, Reader value) throws SQLException {
         callableStatement.setNCharacterStream(parameterName, value);
     }
@@ -660,6 +684,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void setNCharacterStream(String parameterName, Reader value, long length) throws SQLException {
         callableStatement.setNCharacterStream(parameterName, value, length);
     }
@@ -686,6 +711,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setNClob(String parameterName, NClob reader) throws SQLException {
         callableStatement.setNClob(parameterName, reader);
     }
@@ -712,6 +738,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void setClob(String parameterName, Reader reader, long length) throws SQLException {
         callableStatement.setClob(parameterName, reader, length);
     }
@@ -738,6 +765,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setNClob(String parameterName, Reader reader) throws SQLException {
         callableStatement.setNClob(parameterName, reader);
     }
@@ -766,6 +794,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void setNClob(String parameterName, Reader reader, long length) throws SQLException {
         callableStatement.setNClob(parameterName, reader, length);
     }
@@ -787,6 +816,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void setNString(String parameterName, String value) throws SQLException {
         callableStatement.setNString(parameterName, value);
     }
@@ -806,6 +836,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void setRowId(String parameterName, RowId x) throws SQLException {
         callableStatement.setRowId(parameterName, x);
     }
@@ -826,6 +857,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void setSQLXML(String parameterName, SQLXML xmlObject) throws SQLException {
         callableStatement.setSQLXML(parameterName, xmlObject);
     }
@@ -854,6 +886,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setAsciiStream(int parameterIndex, InputStream x) throws SQLException {
         callableStatement.setAsciiStream(parameterIndex, x);
     }
@@ -879,6 +912,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method is called on a closed <code>PreparedStatement</code>
      * @since 1.6
      */
+    @Override
     public void setAsciiStream(int parameterIndex, InputStream x, long length) throws SQLException {
         callableStatement.setAsciiStream(parameterIndex, x, length);
     }
@@ -906,6 +940,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setBinaryStream(int parameterIndex, InputStream x) throws SQLException {
         callableStatement.setBinaryStream(parameterIndex, x);
     }
@@ -930,6 +965,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method is called on a closed <code>PreparedStatement</code>
      * @since 1.6
      */
+    @Override
     public void setBinaryStream(int parameterIndex, InputStream x, long length) throws SQLException {
         callableStatement.setBinaryStream(parameterIndex, x, length);
     }
@@ -959,6 +995,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setBlob(int parameterIndex, InputStream inputStream) throws SQLException {
         callableStatement.setBlob(parameterIndex, inputStream);
     }
@@ -988,6 +1025,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setBlob(int parameterIndex, InputStream inputStream, long length) throws SQLException {
         callableStatement.setBlob(parameterIndex, inputStream, length);
     }
@@ -1018,6 +1056,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setCharacterStream(int parameterIndex, Reader reader) throws SQLException {
         callableStatement.setCharacterStream(parameterIndex, reader);
     }
@@ -1044,6 +1083,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method is called on a closed <code>PreparedStatement</code>
      * @since 1.6
      */
+    @Override
     public void setCharacterStream(int parameterIndex, Reader reader, long length) throws SQLException {
         callableStatement.setCharacterStream(parameterIndex, reader, length);
     }
@@ -1070,6 +1110,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setClob(int parameterIndex, Reader reader) throws SQLException {
         callableStatement.setClob(parameterIndex, reader);
     }
@@ -1094,6 +1135,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setClob(int parameterIndex, Reader reader, long length) throws SQLException {
         callableStatement.setClob(parameterIndex, reader, length);
     }
@@ -1122,6 +1164,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setNCharacterStream(int parameterIndex, Reader value) throws SQLException {
         callableStatement.setNCharacterStream(parameterIndex, value);
     }
@@ -1144,6 +1187,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setNCharacterStream(int parameterIndex, Reader value, long length) throws SQLException {
         callableStatement.setNCharacterStream(parameterIndex, value, length);
     }
@@ -1163,6 +1207,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setNClob(int parameterIndex, NClob value) throws SQLException {
         callableStatement.setNClob(parameterIndex, value);
     }
@@ -1190,6 +1235,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setNClob(int parameterIndex, Reader reader) throws SQLException {
         callableStatement.setNClob(parameterIndex, reader);
     }
@@ -1217,6 +1263,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setNClob(int parameterIndex, Reader reader, long length) throws SQLException {
         callableStatement.setNClob(parameterIndex, reader, length);
     }
@@ -1240,6 +1287,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setNString(int parameterIndex, String value) throws SQLException {
         callableStatement.setNString(parameterIndex, value);
     }
@@ -1258,6 +1306,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setRowId(int parameterIndex, RowId x) throws SQLException {
         callableStatement.setRowId(parameterIndex, x);
     }
@@ -1280,6 +1329,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.6
      */
+    @Override
     public void setSQLXML(int parameterIndex, SQLXML xmlObject) throws SQLException {
         callableStatement.setSQLXML(parameterIndex, xmlObject);
     }
@@ -1292,6 +1342,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      * @throws SQLException if a database access error occurs
      * @since 1.6
      */
+    @Override
     public boolean isClosed() throws SQLException {
         return callableStatement.isClosed();
     }
@@ -1311,6 +1362,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      * @since 1.6
      *        <p/>
      */
+    @Override
     public boolean isPoolable() throws SQLException {
         return callableStatement.isPoolable();
     }
@@ -1338,6 +1390,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      <p/>
      * @since 1.6
      */
+    @Override
     public void setPoolable(boolean poolable) throws SQLException {
         callableStatement.setPoolable(poolable);
     }
@@ -1357,6 +1410,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                               for an object with the given interface.
      * @since 1.6
      */
+    @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         boolean result;
         if (iface.isInstance(this)) {
@@ -1384,6 +1438,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      * @throws java.sql.SQLException If no object found that implements the interface
      * @since 1.6
      */
+    @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
         T result = null;
         if (iface.isInstance(this)) {
@@ -1404,6 +1459,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method is called on a closed  <code>PreparedStatement</code> or the SQL
      *                      statement does not return a <code>ResultSet</code> object
      */
+    @Override
     public java.sql.ResultSet executeQuery() throws java.sql.SQLException {
         ResultSet rs = callableStatement.executeQuery();
         incrementResultSetReferenceCount();
@@ -1423,6 +1479,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      SQL statement produces anything other than a single
      *                      <code>ResultSet</code> object
      */
+    @Override
     public java.sql.ResultSet executeQuery(String sql) throws
             java.sql.SQLException {
         ResultSet rs = callableStatement.executeQuery(sql);
@@ -1447,6 +1504,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      if the JDBC driver does not support this method
      * @since 1.4
      */
+    @Override
     public java.sql.ResultSet getGeneratedKeys() throws java.sql.SQLException {
         ResultSet rs = callableStatement.getGeneratedKeys();
         if (rs == null)
@@ -1465,6 +1523,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
      *                      this method is called on a closed <code>Statement</code>
      * @see #execute
      */
+    @Override
     public java.sql.ResultSet getResultSet() throws java.sql.SQLException {
         ResultSet rs = callableStatement.getResultSet();
         if (rs == null)
@@ -1473,6 +1532,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
         return new ResultSetWrapper40(this, rs);
     }
 
+    @Override
     public <T> T getObject(int parameterIndex, Class<T> type) throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
             Class<?>[] valueTypes = new Class<?>[]{Integer.TYPE, Class.class};
@@ -1487,6 +1547,7 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
         throw new UnsupportedOperationException("Operation not supported in this runtime.");
     }
 
+    @Override
     public <T> T getObject(String parameterName, Class<T> type) throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
             Class<?>[] valueTypes = new Class<?>[]{String.class, Class.class};

@@ -53,8 +53,8 @@ public class SecondaryTable extends org.netbeans.modules.schema2beans.BaseBean
 	static Vector comparators = new Vector();
 	private static final org.netbeans.modules.schema2beans.Version runtimeVersion = new org.netbeans.modules.schema2beans.Version(5, 0, 0);
 
-	static public final String TABLE_NAME = "TableName";	// NOI18N
-	static public final String COLUMN_PAIR = "ColumnPair";	// NOI18N
+	public static final String TABLE_NAME = "TableName";	// NOI18N
+	public static final String COLUMN_PAIR = "ColumnPair";	// NOI18N
 
 	public SecondaryTable() {
 		this(Common.USE_DEFAULT_VALUES);
@@ -167,6 +167,7 @@ public class SecondaryTable extends org.netbeans.modules.schema2beans.BaseBean
 	}
 
 	// Dump the content of this bean returning it as a String
+        @Override
 	public void dump(StringBuffer str, String indent){
 		String s;
 		Object o;
@@ -195,6 +196,7 @@ public class SecondaryTable extends org.netbeans.modules.schema2beans.BaseBean
 		}
 
 	}
+        @Override
 	public String dumpBeanNode(){
 		StringBuffer str = new StringBuffer();
 		str.append("SecondaryTable\n");	// NOI18N

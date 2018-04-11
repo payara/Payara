@@ -112,6 +112,7 @@ public class GenerateJvmReportCommand implements AdminCommand {
     
     private MBeanServer mbs = null;  //needs to be injected, I guess
 
+    @Override
     public void execute(AdminCommandContext ctx) {
         prepare();
         String result = getResult();

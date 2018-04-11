@@ -80,18 +80,22 @@ public class DigestAlgorithmParameterImpl implements  com.sun.enterprise.securit
         this.name = name;
     }
     
+    @Override
     public String getAlgorithm() {
         return this.algorithm;
     }
     
+    @Override
     public  byte[] getValue() {
         return data;
     }    
    
+    @Override
     public byte[] getDelimiter() {
         return delimeter;
     }
 
+    @Override
     public String getName() {
         return this.name;
     }

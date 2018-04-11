@@ -77,7 +77,7 @@ import org.glassfish.api.ActionReport.ExitCode;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class DeleteThreadpool implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
-    final private static LocalStringManagerImpl localStrings =
+    private final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteThreadpool.class);
 
     @Param(name="threadpool_id", primary=true)
@@ -143,6 +143,7 @@ public class DeleteThreadpool implements AdminCommand, AdminCommandSecurity.Prea
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
 
@@ -150,6 +151,7 @@ public class DeleteThreadpool implements AdminCommand, AdminCommandSecurity.Prea
 
         try {
             ConfigSupport.apply(new SingleConfigCode<ThreadPools>() {
+                @Override
                 public Object run(ThreadPools param) throws PropertyVetoException,
                         TransactionFailure {
                     List<ThreadPool> poolList = param.getThreadPool();

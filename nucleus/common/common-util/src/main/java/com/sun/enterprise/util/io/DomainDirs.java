@@ -165,6 +165,7 @@ public final class DomainDirs {
         // look for subdirs in the parent dir -- there must be one and only one
 
         File[] files = parent.listFiles(new FileFilter() {
+            @Override
             public boolean accept(File f) {
                 File config = new File(f, "config");
                 File dxml = new File(config, "domain.xml");

@@ -176,6 +176,7 @@ public class MEJBTest {
         {
         }
         
+        @Override
         public void handleNotification( final Notification notif, final Object handback )
         {
             System.out.println( "NotifListener: " + notif);

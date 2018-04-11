@@ -61,6 +61,7 @@ import org.glassfish.api.admin.config.ApplicationName;
 public class CollectionsAccessTest extends ConfigApiTest  {
 
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -77,6 +78,7 @@ public class CollectionsAccessTest extends ConfigApiTest  {
         final Applications apps = getHabitat().getService(Applications.class);
         assertTrue(apps!=null);
         ConfigSupport.apply(new SingleConfigCode<Applications>() {
+            @Override
             public Object run(Applications param) throws PropertyVetoException, TransactionFailure {
                 // this is the bug, we should not get the list from apps but from param.
                 List<ApplicationName> modules = apps.getModules();
@@ -92,6 +94,7 @@ public class CollectionsAccessTest extends ConfigApiTest  {
         final Applications apps = getHabitat().getService(Applications.class);
         assertTrue(apps!=null);
         ConfigSupport.apply(new SingleConfigCode<Applications>() {
+            @Override
             public Object run(Applications param) throws PropertyVetoException, TransactionFailure {
                 List<ApplicationName> modules = param.getModules();
                 Application m = param.createChild(Application.class);

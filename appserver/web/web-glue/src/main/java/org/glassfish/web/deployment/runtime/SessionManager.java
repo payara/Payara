@@ -52,9 +52,9 @@ import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 public class SessionManager extends RuntimeDescriptor
 {
     
-    static public final String MANAGER_PROPERTIES = "ManagerProperties";	// NOI18N
-    static public final String STORE_PROPERTIES = "StoreProperties";	// NOI18N
-    static public final String PERSISTENCE_TYPE = "PersistenceType";
+    public static final String MANAGER_PROPERTIES = "ManagerProperties";	// NOI18N
+    public static final String STORE_PROPERTIES = "StoreProperties";	// NOI18N
+    public static final String PERSISTENCE_TYPE = "PersistenceType";
     
     public SessionManager()
     {

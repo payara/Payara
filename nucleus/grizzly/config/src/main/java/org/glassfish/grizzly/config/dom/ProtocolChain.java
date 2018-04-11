@@ -84,6 +84,7 @@ public interface ProtocolChain extends ConfigBeanProxy, PropertyBag {
     void setProtocolFilter(List<ProtocolFilter> list);
 
     @DuckTyped
+    @Override
     Protocol getParent();
 
     class Duck {

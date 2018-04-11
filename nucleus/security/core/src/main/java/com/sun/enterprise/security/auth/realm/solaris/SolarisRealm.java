@@ -102,6 +102,7 @@ public final class SolarisRealm extends IASRealm
      *     specify a realm which doesn't exist.
      *
      */
+    @Override
     public synchronized void init(Properties props)
         throws BadRealmException, NoSuchRealmException
     {
@@ -134,6 +135,7 @@ public final class SolarisRealm extends IASRealm
      * @return Description of the kind of authentication that is directly
      *     supported by this realm.
      */
+    @Override
     public String getAuthType()
     {
         return AUTH_TYPE;
@@ -152,6 +154,7 @@ public final class SolarisRealm extends IASRealm
      *     support this operation - e.g. Certificate realm does not support
      *     this operation.
      */
+    @Override
     public Enumeration getGroupNames (String username)
         throws InvalidOperationException, NoSuchUserException
     {

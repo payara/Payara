@@ -77,6 +77,7 @@ public class WLServiceRefNode extends DeploymentDescriptorNode {
                         NameValuePairNode.class, "addCallProperty");
     }
 
+    @Override
     public void addDescriptor(Object desc) {
         if (desc instanceof ServiceRefPortInfo) {
             ServiceRefPortInfo newPortInfo = (ServiceRefPortInfo) desc;
@@ -89,6 +90,7 @@ public class WLServiceRefNode extends DeploymentDescriptorNode {
     /**
      * @return the descriptor instance to associate with this XMLNode
      */
+    @Override
     public Object getDescriptor() {
         return descriptor;
     }
@@ -101,6 +103,7 @@ public class WLServiceRefNode extends DeploymentDescriptorNode {
      * @param value   it's associated value
      */
 
+    @Override
     public void setElementValue(XMLElement element, String value) {
         String name = element.getQName();
         if (WebServicesTagNames.SERVICE_REF_NAME.equals(name)) {

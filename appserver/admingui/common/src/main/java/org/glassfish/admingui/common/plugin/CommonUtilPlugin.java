@@ -55,5 +55,6 @@ import java.net.URL;
 @Service
 public class CommonUtilPlugin implements ConsoleProvider {
 
+    @Override
     public URL getConfiguration() { return null; }
 }

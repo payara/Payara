@@ -61,7 +61,7 @@ import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 
 public class AdminObjectConfigParserImpl implements AdminObjectConfigParser {
 
-    private final static Logger _logger = LogDomains.getLogger(AdminObjectConfigParserImpl.class, LogDomains.RSR_LOGGER);
+    private static final Logger _logger = LogDomains.getLogger(AdminObjectConfigParserImpl.class, LogDomains.RSR_LOGGER);
 
     /**
      * Default constructor.
@@ -94,6 +94,7 @@ public class AdminObjectConfigParserImpl implements AdminObjectConfigParser {
      *                                   If no admin object intercface is found in ra.xml
      */
 
+    @Override
     public Properties getJavaBeanProps(ConnectorDescriptor desc,
                                        String adminObjectInterface, String rarName)
             throws ConnectorRuntimeException {
@@ -126,6 +127,7 @@ public class AdminObjectConfigParserImpl implements AdminObjectConfigParser {
      *                                   If no admin object intercface is found in ra.xml
      */
 
+    @Override
     public Properties getJavaBeanProps(ConnectorDescriptor desc,
                                        String adminObjectInterface, String adminObjectClass, String rarName)
             throws ConnectorRuntimeException {
@@ -201,6 +203,7 @@ public class AdminObjectConfigParserImpl implements AdminObjectConfigParser {
      * @return Array of AdminObjectInterface names as Strings
      * @throws ConnectorRuntimeException if parsing fails
      */
+    @Override
     public String[] getAdminObjectInterfaceNames(ConnectorDescriptor desc)
             throws ConnectorRuntimeException {
 
@@ -231,6 +234,7 @@ public class AdminObjectConfigParserImpl implements AdminObjectConfigParser {
      * @return Array of AdminObjectInterface names as Strings
      * @throws ConnectorRuntimeException if parsing fails
      */
+    @Override
     public String[] getAdminObjectClassNames(ConnectorDescriptor desc, String intfName)
             throws ConnectorRuntimeException {
 
@@ -261,6 +265,7 @@ public class AdminObjectConfigParserImpl implements AdminObjectConfigParser {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean hasAdminObject(ConnectorDescriptor desc, String intfName, String className)
             throws ConnectorRuntimeException {
         if (desc == null || intfName == null || className == null) {
@@ -284,6 +289,7 @@ public class AdminObjectConfigParserImpl implements AdminObjectConfigParser {
         return false;
     }
 
+    @Override
     public List<String> getConfidentialProperties(ConnectorDescriptor desc, String rarName, String... keyFields)
             throws ConnectorRuntimeException {
         if(keyFields == null || keyFields.length == 0 || keyFields[0] == null){

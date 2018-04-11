@@ -58,7 +58,7 @@ public class InstanceFactory {
      * @return an Instance of either StandAloneInstance() or ClusteredInstance()
      * depending on the type of instance the users wanted to configure/create.
      */
-    static public Instance getInstance(String instanceType) {
+    public static Instance getInstance(String instanceType) {
         if (instanceType.equalsIgnoreCase("standalone")) {
             if (stInstance == null) {
                 stInstance = new StandAloneInstance();

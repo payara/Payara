@@ -59,6 +59,7 @@ public final class ObjectNamesTest extends TestBase
     }
     
     @Before
+    @Override
     public void setUp() {
         initBootUtil();
     }

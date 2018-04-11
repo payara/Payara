@@ -95,7 +95,7 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
 
     private AnnotationTypesProvider provider = null;
 
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(AbstractEjbHandler.class);
     
     public AbstractEjbHandler() {
@@ -150,6 +150,7 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
      *
      * @param ainfo the annotation information
      */
+    @Override
     public HandlerProcessingResult processAnnotation(AnnotationInfo ainfo) 
             throws AnnotationProcessorException {
 

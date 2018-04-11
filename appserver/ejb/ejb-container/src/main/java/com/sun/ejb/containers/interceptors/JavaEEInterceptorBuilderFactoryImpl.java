@@ -64,6 +64,7 @@ public class JavaEEInterceptorBuilderFactoryImpl implements JavaEEInterceptorBui
     private static Logger _logger = LogDomains.getLogger(JavaEEInterceptorBuilderImpl.class,
             LogDomains.CORE_LOGGER);
 
+    @Override
     public JavaEEInterceptorBuilder createBuilder(InterceptorInfo info) throws Exception {
 
         Class targetObjectClass = info.getTargetClass();
@@ -105,6 +106,7 @@ public class JavaEEInterceptorBuilderFactoryImpl implements JavaEEInterceptorBui
     /**
       * Tests if a given object is a client proxy associated with an interceptor invoker.
       */
+    @Override
     public boolean isClientProxy(Object obj) {
 
         Class clazz = obj.getClass();

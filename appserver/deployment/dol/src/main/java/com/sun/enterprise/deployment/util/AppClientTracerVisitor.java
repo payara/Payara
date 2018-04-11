@@ -51,6 +51,7 @@ public class AppClientTracerVisitor extends TracerVisitor implements AppClientVi
     public AppClientTracerVisitor() {
     }
 
+    @Override
     public void accept (BundleDescriptor descriptor) {
         if (descriptor instanceof ApplicationClientDescriptor) {
             ApplicationClientDescriptor appClientDesc = (ApplicationClientDescriptor)descriptor;
@@ -64,6 +65,7 @@ public class AppClientTracerVisitor extends TracerVisitor implements AppClientVi
      * visits an app client descriptor
      * @param app client descriptor
      */
+    @Override
     public void accept(ApplicationClientDescriptor appclientDesc) {
         DOLUtils.getDefaultLogger().info("==================");
         DOLUtils.getDefaultLogger().info("\tAppClient Description " + appclientDesc.getDescription());

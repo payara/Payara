@@ -56,7 +56,7 @@ import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
 public abstract class StaxParser {
 
-    abstract protected void read() throws XMLStreamException, EndDocumentException;
+    protected abstract void read() throws XMLStreamException, EndDocumentException;
 
     public StaxParser(File f) throws XMLStreamException {
         try {

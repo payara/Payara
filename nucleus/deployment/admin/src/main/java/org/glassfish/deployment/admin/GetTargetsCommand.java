@@ -77,6 +77,7 @@ public class GetTargetsCommand implements AdminCommand {
     @Inject 
     Domain domain;
 
+    @Override
     public void execute(AdminCommandContext context) {
         
         final ActionReport report = context.getActionReport();

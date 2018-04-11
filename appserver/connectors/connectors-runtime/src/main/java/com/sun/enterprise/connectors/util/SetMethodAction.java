@@ -63,7 +63,7 @@ public final class SetMethodAction implements PrivilegedExceptionAction {
 
     private static final Logger logger =
             LogDomains.getLogger(SetMethodAction.class, LogDomains.RSR_LOGGER);
-    private final static Locale locale = Locale.getDefault();
+    private static final Locale locale = Locale.getDefault();
 
     /**
      * Accepts java bean object and properties to be set.
@@ -76,6 +76,7 @@ public final class SetMethodAction implements PrivilegedExceptionAction {
     /**
      * Executes the setter methods in the java bean.
      */
+    @Override
     public Object run() throws Exception {
         Iterator it = props.iterator();
         methods = bean.getClass().getMethods();

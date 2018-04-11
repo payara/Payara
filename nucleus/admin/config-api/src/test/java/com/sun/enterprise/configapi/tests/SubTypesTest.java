@@ -64,6 +64,7 @@ public class SubTypesTest extends ConfigApiTest {
     };
 
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }    

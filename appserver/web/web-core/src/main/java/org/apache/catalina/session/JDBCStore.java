@@ -193,6 +193,7 @@ public class JDBCStore extends StoreBase {
     /**
      * Return the info for this Store.
      */
+    @Override
     public String getInfo() {
         return(info);
     }
@@ -229,6 +230,7 @@ public class JDBCStore extends StoreBase {
     /**
      * Return the name for this Store, used for logging.
      */
+    @Override
     public String getStoreName() {
         return(storeName);
     }
@@ -423,6 +425,7 @@ public class JDBCStore extends StoreBase {
      *
      * @exception IOException if an input/output error occurred
      */
+    @Override
     public String[] keys() throws IOException {
         String keysSql =
             "SELECT " + sessionIdCol + " FROM " + sessionTable +
@@ -479,6 +482,7 @@ public class JDBCStore extends StoreBase {
      *
      * @exception IOException if an input/output error occurred
      */
+    @Override
     public int getSize() throws IOException {
         int size = 0;
         String sizeSql = 
@@ -530,6 +534,7 @@ public class JDBCStore extends StoreBase {
      * @exception ClassNotFoundException if an error occurs
      * @exception IOException if an input/output error occurred
      */
+    @Override
     public Session load(String id)
         throws ClassNotFoundException, IOException {
         ResultSet rst = null;
@@ -621,6 +626,7 @@ public class JDBCStore extends StoreBase {
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public void remove(String id) throws IOException {
         String removeSql =
             "DELETE FROM " + sessionTable + " WHERE " + sessionIdCol +
@@ -662,6 +668,7 @@ public class JDBCStore extends StoreBase {
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public void clear() throws IOException {
         String clearSql =
             "DELETE FROM " + sessionTable + " WHERE " + sessionAppCol + " = ?";
@@ -695,6 +702,7 @@ public class JDBCStore extends StoreBase {
      * @param session the session to be stored
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public void save(Session session) throws IOException {
         String saveSql =
             "INSERT INTO " + sessionTable + " (" + sessionIdCol + ", " +
@@ -819,6 +827,7 @@ public class JDBCStore extends StoreBase {
     /**
      * Called once when this Store is first started.
      */
+    @Override
     public void start() throws LifecycleException {
         super.start();
 
@@ -831,6 +840,7 @@ public class JDBCStore extends StoreBase {
      * Called once when this Store is stoping.
      *
      */
+    @Override
     public void stop() throws LifecycleException {
         super.stop();
 

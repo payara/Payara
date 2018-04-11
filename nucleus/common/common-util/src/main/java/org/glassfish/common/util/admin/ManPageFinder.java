@@ -127,10 +127,12 @@ public class ManPageFinder {
             private String helpdir = getHelpDir(cmdClass);
             private String commandName = cmdName;
 
+            @Override
             public boolean hasNext() {
                 return i < locales.length && j < sections.length;
             }
 
+            @Override
             public Object next() throws NoSuchElementException{
                 if (!hasNext()) {
                     throw new NoSuchElementException();
@@ -147,6 +149,7 @@ public class ManPageFinder {
                 return result;
             }
 
+            @Override
             public void remove() {
                 throw new UnsupportedOperationException();
             }

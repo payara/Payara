@@ -78,6 +78,7 @@ public class ClientConfigurationImpl implements ClientConfiguration {
      * @throws ClientExecuteException when the configuration
      *         is incomplete.
      */
+    @Override
     public void execute() throws ClientExecuteException {
         if (targetModuleID==null) {
             throw new ClientExecuteException(localStrings.getLocalString(

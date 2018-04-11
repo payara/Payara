@@ -55,6 +55,7 @@ import java.io.File;
  */
 public class TranslatedValuesTest extends ConfigApiTest {
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }

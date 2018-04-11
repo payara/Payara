@@ -73,6 +73,7 @@ public class GlassFishImpl implements GlassFish {
         configurator.configure(gfProps);
     }
 
+    @Override
     public synchronized void start() throws GlassFishException {
         if (status == Status.STARTED || status == Status.STARTING || status == Status.DISPOSED) {
             throw new IllegalStateException("Already in " + status + " state.");
@@ -82,6 +83,7 @@ public class GlassFishImpl implements GlassFish {
         status = Status.STARTED;
     }
 
+    @Override
     public synchronized void stop() throws GlassFishException {
         if (status == Status.STOPPED || status == Status.STOPPING || status == Status.DISPOSED) {
             throw new IllegalStateException("Already in " + status + " state.");
@@ -91,6 +93,7 @@ public class GlassFishImpl implements GlassFish {
         status = Status.STOPPED;
     }
 
+    @Override
     public synchronized void dispose() throws GlassFishException {
         if (status == Status.DISPOSED) {
             throw new IllegalStateException("Already disposed.");
@@ -107,14 +110,17 @@ public class GlassFishImpl implements GlassFish {
         this.status = Status.DISPOSED;
     }
 
+    @Override
     public Status getStatus() {
         return status;
     }
 
+    @Override
     public <T> T getService(Class<T> serviceType) throws GlassFishException {
         return getService(serviceType, null);
     }
 
+    @Override
     public synchronized <T> T getService(Class<T> serviceType, String serviceName) throws GlassFishException {
         if (status != Status.STARTED) {
             throw new IllegalArgumentException("Server is not started yet. It is in " + status + "state");
@@ -124,10 +130,12 @@ public class GlassFishImpl implements GlassFish {
                 habitat.<T>getService(serviceType);
     }
 
+    @Override
     public Deployer getDeployer() throws GlassFishException {
         return getService(Deployer.class);
     }
 
+    @Override
     public CommandRunner getCommandRunner() throws GlassFishException {
         return habitat.getService(CommandRunner.class);
     }

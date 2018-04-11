@@ -117,6 +117,7 @@ public interface ConnectorService extends ConfigExtension, ConfigBeanProxy, Prop
      */
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 
 }

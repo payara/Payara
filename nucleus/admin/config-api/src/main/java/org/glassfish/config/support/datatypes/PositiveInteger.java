@@ -59,6 +59,7 @@ public class PositiveInteger implements DataType { //could extend NonNegativeInt
      * @param value
      * @throws org.jvnet.hk2.config.ValidationException
      */
+    @Override
     public void validate(String value) throws ValidationException {
         if (value == null)
             throw new ValidationException("null value is not of type PositiveInteger");

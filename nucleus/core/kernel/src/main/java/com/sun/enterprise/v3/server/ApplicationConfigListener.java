@@ -79,9 +79,9 @@ import org.jvnet.hk2.config.types.Property;
 @RunLevel(PostStartupRunLevel.VAL)
 public class ApplicationConfigListener implements TransactionListener, PostConstruct {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationConfigListener.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationConfigListener.class);
 
-    final private Logger logger = KernelLoggerInfo.getLogger();
+    private final Logger logger = KernelLoggerInfo.getLogger();
 
     @Inject
     Transactions transactions;
@@ -106,6 +106,7 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
 
     private final static String UPGRADE_PARAM = "-upgrade";
 
+    @Override
     public void transactionCommited( final List<PropertyChangeEvent> changes) {
         boolean isUpdatingAttribute = true;
         for (PropertyChangeEvent event : changes) {
@@ -186,10 +187,12 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
         }
     }
 
+    @Override
     public void unprocessedTransactedEvents(
         List<UnprocessedChangeEvents> changes) {
     }
 
+    @Override
     public void postConstruct() {
         Properties arguments = startupContext.getArguments(); 
         if (arguments != null) {

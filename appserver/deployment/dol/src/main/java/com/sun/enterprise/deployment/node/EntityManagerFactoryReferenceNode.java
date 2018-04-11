@@ -69,6 +69,7 @@ public class EntityManagerFactoryReferenceNode extends DeploymentDescriptorNode 
      * @return the map with the element name as a key, the setter method as
      *         a value
      */    
+    @Override
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();

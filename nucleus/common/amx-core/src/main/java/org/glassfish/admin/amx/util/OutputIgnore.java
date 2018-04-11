@@ -52,14 +52,17 @@ public final class OutputIgnore implements Output
         // no need for more than one, ever
     }
 
+    @Override
     public void print(Object o)
     {
     }
 
+    @Override
     public void println(Object o)
     {
     }
 
+    @Override
     public void printError(Object o)
     {
     }
@@ -69,10 +72,12 @@ public final class OutputIgnore implements Output
         return (false);
     }
 
+    @Override
     public void printDebug(Object o)
     {
     }
 
+    @Override
     public void close()
     {
     }

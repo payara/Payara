@@ -56,6 +56,7 @@ import org.jvnet.libpam.UnixUser;
  */
 public class PamLoginModule extends AppservPasswordLoginModule {
 
+    @Override
     protected void authenticateUser() throws LoginException {
 
         // A Unix user must have a name not null so check here.

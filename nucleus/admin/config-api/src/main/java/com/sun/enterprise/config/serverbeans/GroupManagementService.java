@@ -331,5 +331,6 @@ public interface GroupManagementService extends PropertyBag, ConfigExtension {
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 }

@@ -85,11 +85,11 @@ public class HashSet
     /**
      * I18N message handlers
      */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
                              "com.sun.jdo.spi.persistence.support.sqlstore.impl.Bundle", // NOI18N
                              HashSet.class.getClassLoader());
 
-    private final static ResourceBundle messages1 = I18NHelper.loadBundle(
+    private static final ResourceBundle messages1 = I18NHelper.loadBundle(
                              "com.sun.jdo.spi.persistence.support.sqlstore.Bundle", // NOI18N
                              HashSet.class.getClassLoader());
 
@@ -153,6 +153,7 @@ public class HashSet
      * element.
      * @see java.util.HashSet
      */
+    @Override
     public boolean add(Object o)
     {
         if (allowNulls == false && o == null)
@@ -253,6 +254,7 @@ public class HashSet
      * @see java.util.AbstractCollection
      * @see java.util.HashSet
      */
+    @Override
     public boolean addAll(Collection c)
     {
         if (allowNulls == false && c.contains(null))
@@ -360,6 +362,7 @@ public class HashSet
      * @return <tt>true</tt> if the set contained the specified element.
      * @see java.util.HashSet
      */
+    @Override
     public boolean remove(Object o)
     {
     // Mark the field as dirty
@@ -426,6 +429,7 @@ public class HashSet
      * @see java.util.HashSet
      * @see java.util.AbstractCollection
      */
+    @Override
     public boolean removeAll(Collection c)
     {
         // Mark the field as dirty
@@ -497,6 +501,7 @@ public class HashSet
      * @see java.util.HashSet
      * @see java.util.AbstractCollection
      */
+    @Override
     public boolean retainAll(Collection c)
     {
         if (owner != null)
@@ -559,6 +564,7 @@ public class HashSet
      * Removes all of the elements from this set.
      * @see java.util.HashSet
      */
+    @Override
     public void clear()
     {
         if (owner != null)
@@ -616,6 +622,7 @@ public class HashSet
      * objects. In contrast to Object.clone(), this method must not throw a
      * CloneNotSupportedException.
      */
+    @Override
     public Object clone()
     {
         HashSet obj = (HashSet) super.clone();
@@ -635,6 +642,7 @@ public class HashSet
      * @return an Iterator over the elements in this set.
      * @see java.util.ConcurrentModificationException
      */
+    @Override
     public Iterator iterator() {
         return new SCOHashIterator(super.iterator(), this);
     }
@@ -649,15 +657,18 @@ public class HashSet
             _caller = cl;
         }
 
+        @Override
         public boolean hasNext() {
             return _iterator.hasNext();
         }
 
+        @Override
         public Object next() {
             lastReturned = _iterator.next();
             return  lastReturned;
         }
 
+        @Override
         public void remove() {
             // Check if called twice.
             if (lastReturned == null)
@@ -712,6 +723,7 @@ public class HashSet
      * Creates and returns a copy of this object without resetting the owner and field value.
      *
      */
+    @Override
     public Object cloneInternal()
     {
         return super.clone();
@@ -720,6 +732,7 @@ public class HashSet
     /**
      * Cleans removed and added lists
      */
+    @Override
     public void reset()
     {
         // RESOLVE: do we need to synchronize this??
@@ -733,6 +746,7 @@ public class HashSet
     /**
      * Mark this HashSet as deferred.
      */
+    @Override
     public void markDeferred()
     {
         isDeferred = true;
@@ -741,6 +755,7 @@ public class HashSet
     /**
      * Return true is this HashSet is deferred, false otherwise.
      */
+    @Override
     public boolean isDeferred()
     {
         return isDeferred;
@@ -751,6 +766,7 @@ public class HashSet
      * with c and they apply any deferred updates specified by the added and
      * removed lists.
      */
+    @Override
     public void applyDeferredUpdates(Collection c)
     {
         if (!isDeferred)
@@ -772,6 +788,7 @@ public class HashSet
       * Adds an object to the list without recording changes if the HashSet is
       * not deferred. Otherwise, add o to the added list.
      */
+    @Override
     public void addInternal(Object o)
     {
         if (isDeferred)
@@ -792,6 +809,7 @@ public class HashSet
      * Adds a Collection to the list without recording changes if the HashSet is
      * not deferred. Otherwise, add o to the removed list.
      */
+    @Override
     public void addAllInternal(Collection c)
     {
         if (c == null)
@@ -810,6 +828,7 @@ public class HashSet
     /**
      * @inheritDoc
      */
+    @Override
     public void addToBaseCollection(Object o)
     {
         super.add(o);
@@ -819,6 +838,7 @@ public class HashSet
      * Remove c from the list if the HashSet is not deferred.
      * Otherwise, add c to the removed list.
      */
+    @Override
     public void removeAllInternal(Collection c)
     {
         if (c == null)
@@ -839,6 +859,7 @@ public class HashSet
      *
      * @return added    collection of added elements
      */
+    @Override
     public Collection getAdded()
     {
         return (Collection)added;
@@ -849,6 +870,7 @@ public class HashSet
      *
      * @return removed  collection of removed elements
      */
+    @Override
     public Collection getRemoved()
     {
         return (Collection)removed;
@@ -858,6 +880,7 @@ public class HashSet
     /**
      * Clears Collection without notifing the owner
      */
+    @Override
     public void clearInternal()
     {
         super.clear();
@@ -867,6 +890,7 @@ public class HashSet
     /**
      * Removes an element without notifing the owner
      */
+    @Override
     public void removeInternal(Object o)
     {
         if (isDeferred)
@@ -886,6 +910,7 @@ public class HashSet
     /**
      * Nullifies references to the owner Object and Field
      */
+    @Override
     public void unsetOwner()
     {
         this.owner = null;
@@ -900,6 +925,7 @@ public class HashSet
      *
      * @return owner object
      */
+    @Override
     public Object getOwner()
     {
         return this.owner;
@@ -910,6 +936,7 @@ public class HashSet
      *
      * @return field name as java.lang.String
      */
+    @Override
     public String getFieldName()
     {
         return this.fieldName;
@@ -918,6 +945,7 @@ public class HashSet
     /**
      * Marks object dirty
      */
+    @Override
     public StateManager makeDirty()
     {
         StateManager stateManager = owner.jdoGetStateManager();
@@ -934,6 +962,7 @@ public class HashSet
     /**
      * Apply changes (can be a no-op)
      */
+    @Override
     public void applyUpdates(StateManager sm, boolean modified)
     {
          if (modified && sm != null)
@@ -950,6 +979,7 @@ public class HashSet
      * @param elementType the new element type as Class, or null if type
      * is not checked or not supported.
      */
+    @Override
     public void setOwner(Object owner, String fieldName, Class elementType) {
 
         if (this.owner != null) {

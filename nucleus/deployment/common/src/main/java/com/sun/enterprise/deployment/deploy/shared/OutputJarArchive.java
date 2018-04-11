@@ -84,6 +84,7 @@ public class OutputJarArchive extends JarArchive implements WritableArchive {
      *
      * @return -1 because this is getting created
      */
+    @Override
     public long getArchiveSize() throws NullPointerException, SecurityException {
         return -1;
     }
@@ -91,6 +92,7 @@ public class OutputJarArchive extends JarArchive implements WritableArchive {
     /**
      * close the abstract archive
      */
+    @Override
     public void close() throws IOException {
         if (jos != null) {
             jos.flush();
@@ -100,6 +102,7 @@ public class OutputJarArchive extends JarArchive implements WritableArchive {
         }
     }
 
+    @Override
     protected JarEntry getJarEntry(String entryName) {
         return null; 
     }
@@ -109,6 +112,7 @@ public class OutputJarArchive extends JarArchive implements WritableArchive {
      *
      * @param path the path to create the archive
      */
+    @Override
     public void create(URI path) throws IOException {
         this.uri = path;
         File file = new File(uri.getSchemeSpecificPart());
@@ -128,10 +132,12 @@ public class OutputJarArchive extends JarArchive implements WritableArchive {
      * @return an @see java.util.Enumeration of entries in this abstract
      *         archive
      */
+    @Override
     public Enumeration entries() {
         return entries.elements();
     }
 
+    @Override
     public Collection<String> getDirectories() throws IOException {
         return new Vector<String>();
     }
@@ -148,6 +154,7 @@ public class OutputJarArchive extends JarArchive implements WritableArchive {
     /**
      * @return the manifest information for this abstract archive
      */
+    @Override
     public Manifest getManifest() throws IOException {
         if (manifest == null) {
             manifest = new Manifest();
@@ -160,10 +167,12 @@ public class OutputJarArchive extends JarArchive implements WritableArchive {
      *
      * @return the path for this archive.
      */
+    @Override
     public URI getURI() {
         return uri;
     }
 
+    @Override
     public WritableArchive createSubArchive(String name) throws IOException {
         OutputStream os = putNextEntry(name);
         ZipOutputStream jos = new ZipOutputStream(os);
@@ -183,6 +192,7 @@ public class OutputJarArchive extends JarArchive implements WritableArchive {
      * @param subArchive output stream to close
      * @link Archive.getSubArchive}
      */
+    @Override
     public void closeEntry(WritableArchive subArchive) throws IOException {
         if (subArchive instanceof OutputJarArchive) {
             ((OutputJarArchive) subArchive).jos.flush();
@@ -197,6 +207,7 @@ public class OutputJarArchive extends JarArchive implements WritableArchive {
      * @returns an @see java.io.OutputStream for a new entry in this
      * current abstract archive.
      */
+    @Override
     public OutputStream putNextEntry(String name) throws java.io.IOException {
         if (jos != null) {
             ZipEntry ze = new ZipEntry(name);
@@ -210,6 +221,7 @@ public class OutputJarArchive extends JarArchive implements WritableArchive {
     /**
      * closes the current entry
      */
+    @Override
     public void closeEntry() throws IOException {
         if (jos != null) {
             jos.flush();

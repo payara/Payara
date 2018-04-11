@@ -111,7 +111,7 @@ import org.glassfish.internal.api.RelativePathResolver;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
 public class CreateAuthRealm implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(CreateAuthRealm.class);    
 
     @Param(name="classname")
@@ -165,6 +165,7 @@ public class CreateAuthRealm implements AdminCommand, AdminCommandSecurity.Preau
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
@@ -172,6 +173,7 @@ public class CreateAuthRealm implements AdminCommand, AdminCommandSecurity.Preau
         try {
             ConfigSupport.apply(new SingleConfigCode<SecurityService>() {
 
+                @Override
                 public Object run(SecurityService param) 
                 throws PropertyVetoException, TransactionFailure {
                 AuthRealm newAuthRealm = param.createChild(AuthRealm.class);

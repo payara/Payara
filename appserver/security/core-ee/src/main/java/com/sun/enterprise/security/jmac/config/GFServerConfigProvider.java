@@ -561,6 +561,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
      *                CallbackHandler instance must be initialized with any application context needed to process the
      *                required callbacks on behalf of the corresponding application.
      */
+    @Override
     public ClientAuthConfig getClientAuthConfig(String layer, String appContext, CallbackHandler handler) throws AuthException {
         return new GFClientAuthConfig(this, layer, appContext, handler);
     }
@@ -600,6 +601,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
      *                CallbackHandler instance must be initialized with any application context needed to process the
      *                required callbacks on behalf of the corresponding application.
      */
+    @Override
     public ServerAuthConfig getServerAuthConfig(String layer, String appContext, CallbackHandler handler) throws AuthException {
         return new GFServerAuthConfig(this, layer, appContext, handler);
     }
@@ -616,6 +618,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
      *                if the caller does not have permission to refresh the provider.
      */
 
+    @Override
     public void refresh() {
         loadParser(this, factory, null);
     }
@@ -699,6 +702,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
         }
 
         return (ClassLoader) AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            @Override
             public Object run() {
                 return Thread.currentThread().getContextClassLoader();
             }
@@ -739,6 +743,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
          * @return the message layer name of this configuration object, or null if the configuration object pertains to an
          *         unspecified message layer.
          */
+        @Override
         public String getMessageLayer() {
             return layer;
         }
@@ -749,6 +754,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
          * @return the String identifying the application context of this configuration object or null if the configuration
          *         object pertains to an unspecified application context.
          */
+        @Override
         public String getAppContext() {
             return appContext;
         }
@@ -771,6 +777,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
          *             if the type of the message objects incorporated in messageInfo are not compatible with the message types
          *             supported by this authentication context configuration object.
          */
+        @Override
         public String getAuthContextID(MessageInfo messageInfo) {
             if (HTTPSERVLET.equals(layer)) {
                 return Boolean.valueOf((String) messageInfo.getMap().get(IS_MANDATORY)).toString();
@@ -797,6 +804,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
          * @exception SecurityException
          *                if the caller does not have permission to refresh the configuration object.
          */
+        @Override
         public void refresh() {
             loadParser(provider, factory, null);
         }
@@ -808,6 +816,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
          * @return false when <code>getAuthContext</code> will return null for all possible values of authentication context
          *         identifier. Otherwise, this method returns true.
          */
+        @Override
         public boolean isProtected() {
             // XXX TBD
             return true;
@@ -876,6 +885,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
             super(provider, layer, appContext, handler, SERVER);
         }
 
+        @Override
         public ServerAuthContext getAuthContext(String authContextID, Subject serviceSubject, @SuppressWarnings("rawtypes") Map properties) throws AuthException {
             ServerAuthContext serverAuthContext = null;
             
@@ -902,6 +912,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
             super(provider, layer, appContext, handler, CLIENT);
         }
 
+        @Override
         public ClientAuthContext getAuthContext(String authContextID, Subject clientSubject, @SuppressWarnings("rawtypes") Map properties) throws AuthException {
             ClientAuthContext clientAuthContext = null;
             
@@ -922,7 +933,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
         }
     }
 
-    static protected class GFServerAuthContext implements ServerAuthContext {
+    protected static class GFServerAuthContext implements ServerAuthContext {
 
         private GFServerAuthConfig config;
         private ServerAuthModule module;
@@ -981,6 +992,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
             } else {
                 try {
                     doPrivileged(new PrivilegedExceptionAction<Object>() {
+                        @Override
                         public Object run() throws Exception {
                             _setCallerPrincipals(s, handler, pvcSubject);
                             return null;
@@ -994,6 +1006,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
             }
         }
 
+        @Override
         public AuthStatus validateRequest(MessageInfo messageInfo, Subject clientSubject, Subject serviceSubject) throws AuthException {
             if (module != null) {
                 return module.validateRequest(messageInfo, clientSubject, serviceSubject);
@@ -1021,6 +1034,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
             }
         }
 
+        @Override
         public AuthStatus secureResponse(MessageInfo messageInfo, Subject serviceSubject) throws AuthException {
             if (module != null) {
                 return module.secureResponse(messageInfo, serviceSubject);
@@ -1034,6 +1048,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
             }
         }
 
+        @Override
         public void cleanSubject(MessageInfo messageInfo, Subject subject) throws AuthException {
             if (module != null) {
                 module.cleanSubject(messageInfo, subject);
@@ -1045,7 +1060,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
         }
     }
 
-    static protected class GFClientAuthContext implements ClientAuthContext {
+    protected static class GFClientAuthContext implements ClientAuthContext {
 
         private GFClientAuthConfig config;
         private ClientAuthModule module;
@@ -1063,6 +1078,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
             this.oldModule = module;
         }
 
+        @Override
         public AuthStatus secureRequest(MessageInfo messageInfo, Subject clientSubject) throws AuthException {
             if (module != null) {
                 return module.secureRequest(messageInfo, clientSubject);
@@ -1076,6 +1092,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
             }
         }
 
+        @Override
         public AuthStatus validateResponse(MessageInfo messageInfo, Subject clientSubject, Subject serviceSubject) throws AuthException {
             if (module != null) {
                 return module.validateResponse(messageInfo, clientSubject, serviceSubject);
@@ -1089,6 +1106,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
             }
         }
 
+        @Override
         public void cleanSubject(MessageInfo messageInfo, Subject subject) throws AuthException {
             if (module != null) {
                 module.cleanSubject(messageInfo, subject);

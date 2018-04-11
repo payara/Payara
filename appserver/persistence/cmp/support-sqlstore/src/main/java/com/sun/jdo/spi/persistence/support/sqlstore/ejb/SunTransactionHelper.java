@@ -82,7 +82,7 @@ public class SunTransactionHelper extends TransactionHelperImpl
     {
 
     /** I18N message handler */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
         "com.sun.jdo.spi.persistence.support.sqlstore.Bundle", // NOI18N
         SunTransactionHelper.class.getClassLoader());
 
@@ -90,7 +90,7 @@ public class SunTransactionHelper extends TransactionHelperImpl
     
     private static EjbContainerUtil ejbContainerUtil;
     
-    private final static Object pmf_listSyncObject = new Object();
+    private static final Object pmf_listSyncObject = new Object();
     
     /**
      * Array of registered ApplicationLifeCycleEventListener 
@@ -119,10 +119,10 @@ public class SunTransactionHelper extends TransactionHelperImpl
     SunTransactionHelper() { }
 
     // helper class for looking up the TransactionManager instances.
-    static private class TransactionManagerFinder {
+    private static class TransactionManagerFinder {
         
         // JNDI name of the TransactionManager used for managing local transactions.
-        static private final String AS_TM_NAME = "java:appserver/TransactionManager"; //NOI18N
+        private static final String AS_TM_NAME = "java:appserver/TransactionManager"; //NOI18N
 
         // TransactionManager instance used for managing local transactions.
         static TransactionManager appserverTM = null;
@@ -137,6 +137,7 @@ public class SunTransactionHelper extends TransactionHelperImpl
     }
 
     /** SunTransactionHelper specific code */
+    @Override
     public Transaction getTransaction(){
        try{
             return TransactionManagerFinder.appserverTM.getTransaction();
@@ -148,6 +149,7 @@ public class SunTransactionHelper extends TransactionHelperImpl
     }
 
     /** SunTransactionHelper specific code */
+    @Override
     public UserTransaction getUserTransaction() {
 	try {
 	    InitialContext ctx =
@@ -160,12 +162,14 @@ public class SunTransactionHelper extends TransactionHelperImpl
     }
 
     /** SunTransactionHelper specific code */
+    @Override
     public void registerSynchronization(Transaction jta, Synchronization sync)
             throws RollbackException, SystemException {
         ejbContainerUtil.registerPMSync(jta, sync);
     }
 
     /** SunTransactionHelper specific code */
+    @Override
     public PersistenceManagerFactory replaceInternalPersistenceManagerFactory(
 	PersistenceManagerFactory pmf) {
 
@@ -190,6 +194,7 @@ public class SunTransactionHelper extends TransactionHelperImpl
      * @param info the instance to use for the name generation.
      * @return name prefix as String. 
      */   
+    @Override
     public String getDDLNamePrefix(Object info) { 
         return DeploymentHelper.getDDLNamePrefix(info);
     }
@@ -207,6 +212,7 @@ public class SunTransactionHelper extends TransactionHelperImpl
      * @return a Connection.
      * @throws java.sql.SQLException
      */
+    @Override
     public java.sql.Connection getNonTransactionalConnection(
             Object resource, String username, char[] password)
             throws java.sql.SQLException {
@@ -229,6 +235,7 @@ public class SunTransactionHelper extends TransactionHelperImpl
     }
 
     /** SunTransactionHelper specific code */
+    @Override
     public TransactionManager getLocalTransactionManager() {
         try {
             return TransactionManagerFinder.appserverTM;
@@ -240,6 +247,7 @@ public class SunTransactionHelper extends TransactionHelperImpl
     /**
      * @inheritDoc
      */ 
+    @Override
     public void registerApplicationLifeCycleEventListener(
             ApplicationLifeCycleEventListener listener) {
         synchronized(applicationLifeCycleEventListeners) {
@@ -251,6 +259,7 @@ public class SunTransactionHelper extends TransactionHelperImpl
     /**
      * @inheritDoc
      */
+    @Override
     public void notifyApplicationUnloaded(ClassLoader classLoader) {
         for (Iterator iterator = applicationLifeCycleEventListeners.iterator();
                iterator.hasNext();) {
@@ -270,6 +279,7 @@ public class SunTransactionHelper extends TransactionHelperImpl
     /**
      * @inheritDoc
      */
+    @Override
     public void connectorNamingEventPerformed(ConnectorNamingEvent event){
         if(event.getEventType() == ConnectorNamingEvent.EVENT_OBJECT_REBIND){
             String dsName = ConnectorsUtil.getPMJndiName(event.getJndiName());

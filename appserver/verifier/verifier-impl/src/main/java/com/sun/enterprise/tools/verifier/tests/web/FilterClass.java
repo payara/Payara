@@ -63,7 +63,7 @@ public abstract class FilterClass extends WebTest implements WebCheck {
      * @param filterClass is the individual filter class object to test
      * @return true if the test pass
      */    
-    abstract protected boolean runIndividualFilterTest(Result result, Class listenerClass);
+    protected abstract boolean runIndividualFilterTest(Result result, Class listenerClass);
     
     /** 
      * iterates over all declared filter in the archive file and 

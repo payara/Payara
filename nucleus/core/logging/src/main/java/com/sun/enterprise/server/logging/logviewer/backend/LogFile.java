@@ -437,6 +437,7 @@ public class LogFile implements java.io.Serializable {
             this.recordNumber = recordNumber;
         }
 
+        @Override
         public String toString() {
             return getRecordNumber() + ":" + getLoggedMessage();
         }

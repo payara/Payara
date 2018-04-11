@@ -115,7 +115,7 @@ public final class PEAccessLogValve
     /**
      * The minimum size a buffer can have.
      */
-    private final static int MIN_BUFFER_SIZE = 5120;
+    private static final int MIN_BUFFER_SIZE = 5120;
     
     
     // ----------------------------------------------------- Instance Variables

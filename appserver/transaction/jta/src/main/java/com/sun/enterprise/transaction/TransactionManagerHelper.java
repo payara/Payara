@@ -70,26 +70,31 @@ public class TransactionManagerHelper implements TransactionManager, Transaction
     @Inject
     private transient InvocationManager invocationManager;
 
+    @Override
     public void begin() throws NotSupportedException, SystemException {
         transactionManager.begin();
     }
 
     
+    @Override
     public void commit() throws RollbackException,
             HeuristicMixedException, HeuristicRollbackException, SecurityException,
             IllegalStateException, SystemException {
         transactionManager.commit();
     }
 
+    @Override
     public int getStatus() throws SystemException {
         return transactionManager.getStatus();
     }
 
+    @Override
     public Transaction getTransaction() throws SystemException {
         return transactionManager.getTransaction();
     }
 
     
+    @Override
     public void resume(Transaction tobj)
             throws InvalidTransactionException, IllegalStateException,
             SystemException {
@@ -98,24 +103,29 @@ public class TransactionManagerHelper implements TransactionManager, Transaction
     }
 
     
+    @Override
     public void rollback() throws IllegalStateException, SecurityException,
                             SystemException {
         transactionManager.rollback();
     }
 
+    @Override
     public void setRollbackOnly() throws IllegalStateException, SystemException {
         transactionManager.setRollbackOnly();
     }
 
+    @Override
     public void setTransactionTimeout(int seconds) throws SystemException {
         transactionManager.setTransactionTimeout(seconds);
     }
 
+    @Override
     public Transaction suspend() throws SystemException {
         postInvokeTx(true, false);
         return transactionManager.suspend();
     }
 
+    @Override
     public void recreate(Xid xid, long timeout) {
         final JavaEETransactionManager tm = transactionManager;
         
@@ -127,6 +137,7 @@ public class TransactionManagerHelper implements TransactionManager, Transaction
         preInvokeTx(true);
     }
 
+    @Override
     public void release(Xid xid) {
         final JavaEETransactionManager tm = transactionManager;
      
@@ -142,6 +153,7 @@ public class TransactionManagerHelper implements TransactionManager, Transaction
         } 
     }
     
+    @Override
     public XATerminator getXATerminator() {
         return transactionManager.getXATerminator();
     }
@@ -217,6 +229,7 @@ public class TransactionManagerHelper implements TransactionManager, Transaction
      * @exception SystemException Thrown if the transaction manager
      *    encounters an unexpected error condition.
      */
+    @Override
     public int getTransactionRemainingTimeout() throws SystemException {
         int timeout = 0;
         Transaction txn = getTransaction(); 
@@ -230,6 +243,7 @@ public class TransactionManagerHelper implements TransactionManager, Transaction
 
     /** {@inheritDoc}
     */
+    @Override
     public void registerRecoveryResourceHandler(XAResource xaResource) {
         transactionManager.registerRecoveryResourceHandler(xaResource);
     }

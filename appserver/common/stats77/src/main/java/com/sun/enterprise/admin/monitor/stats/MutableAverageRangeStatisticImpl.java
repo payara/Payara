@@ -81,10 +81,12 @@ public class MutableAverageRangeStatisticImpl implements AverageRangeStatistic, 
         description = initial.getDescription();        
     }
     
+    @Override
     public Statistic modifiableView() {        
         return this;
     }
     
+    @Override
     public Statistic unmodifiableView() {        
         return ( new AverageRangeStatisticImpl(
             this.getCurrent(),               // this is the actual changing statistic
@@ -102,6 +104,7 @@ public class MutableAverageRangeStatisticImpl implements AverageRangeStatistic, 
         ));        
     }    
 
+    @Override
     public void reset() {
         mutableBoundedRangeStat.reset();
         this.resetAverageStats();
@@ -112,6 +115,7 @@ public class MutableAverageRangeStatisticImpl implements AverageRangeStatistic, 
         runningTotal = 0L;
     }    
     
+    @Override
     public void setCount(long current) {
         mutableBoundedRangeStat.setCount(current);
         if(DEFAULT_MAX_BOUND - runningTotal < current) {
@@ -121,6 +125,7 @@ public class MutableAverageRangeStatisticImpl implements AverageRangeStatistic, 
         runningTotal += current;
     }
     
+    @Override
     public long getAverage() {
         if(numberOfSamples == 0) {
             return -1;
@@ -129,23 +134,28 @@ public class MutableAverageRangeStatisticImpl implements AverageRangeStatistic, 
         }
     }
     
+    @Override
     public long getCurrent() {
         return mutableBoundedRangeStat.getCurrent();
     }
     
+    @Override
     public String getDescription() {
         return description;
         //return mutableBoundedRangeStat.getDescription();
     }
     
+    @Override
     public long getHighWaterMark() {
         return mutableBoundedRangeStat.getHighWaterMark();
     }
     
+    @Override
     public long getLastSampleTime() {
         return mutableBoundedRangeStat.getLastSampleTime();
     }
     
+    @Override
     public long getLowWaterMark() {
         long result = mutableBoundedRangeStat.getLowWaterMark();
         if(result == DEFAULT_MAX_BOUND) {
@@ -154,14 +164,17 @@ public class MutableAverageRangeStatisticImpl implements AverageRangeStatistic, 
         return result;
     }
     
+    @Override
     public String getName() {
         return mutableBoundedRangeStat.getName();
     }
     
+    @Override
     public long getStartTime() {
         return mutableBoundedRangeStat.getStartTime();
     }
     
+    @Override
     public String getUnit() {
         return mutableBoundedRangeStat.getUnit();
     }

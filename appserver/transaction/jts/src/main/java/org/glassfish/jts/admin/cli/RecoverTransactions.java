@@ -85,6 +85,7 @@ public class RecoverTransactions extends RecoverTransactionsBase implements Admi
     @Inject 
     CommandRunner runner;
 
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 

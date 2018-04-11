@@ -96,6 +96,7 @@ public class SystemPropertyUpgrade implements ConfigurationUpgrade, PostConstruc
     private static final String DEFAULT_CONFIG = "default-config";
     private static final String DAS = "server";
     
+    @Override
     public void postConstruct() {
         upgradeConfigElements();
         upgradeServerElements();
@@ -126,6 +127,7 @@ public class SystemPropertyUpgrade implements ConfigurationUpgrade, PostConstruc
 
                         ConfigSupport.apply(new SingleConfigCode<SystemPropertyBag>() {
 
+                            @Override
                             public Object run(SystemPropertyBag config) throws PropertyVetoException, TransactionFailure {
 
                                 createSystemProperty(config, ADMIN, adminPort);
@@ -204,6 +206,7 @@ public class SystemPropertyUpgrade implements ConfigurationUpgrade, PostConstruc
 
                         ConfigSupport.apply(new SingleConfigCode<SystemPropertyBag>() {
 
+                            @Override
                             public Object run(SystemPropertyBag config) throws PropertyVetoException, TransactionFailure {
 
                                 createSystemProperty(config, ADMIN, adminPort);

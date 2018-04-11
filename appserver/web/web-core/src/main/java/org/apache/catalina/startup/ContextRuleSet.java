@@ -155,6 +155,7 @@ public class ContextRuleSet extends RuleSetBase {
      * @param digester Digester instance to which the new Rule instances
      *  should be added.
      */
+    @Override
     public void addRuleInstances(Digester digester) {
         
         if (create) {            
@@ -299,6 +300,7 @@ final class CreateLoaderRule extends Rule {
 
     private String loaderClass;
 
+    @Override
     public void begin(Attributes attributes) throws Exception {
 
         // Look up the required parent class loader
@@ -325,6 +327,7 @@ final class CreateLoaderRule extends Rule {
 
     }
 
+    @Override
     public void end() throws Exception {
 
         Loader loader = (Loader) digester.pop();

@@ -71,6 +71,7 @@ public class Parameter
     /**
      *
      */
+    @Override
 	public String getName()
 	{
 		return I18NHelper.getMessage(messages, "scope.parameter.getname.name"); //NOI18N
@@ -79,6 +80,7 @@ public class Parameter
     /**
      *
      */
+    @Override
     public String toString()
     {
         StringBuffer buf = new StringBuffer();

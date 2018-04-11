@@ -64,7 +64,7 @@ public class EJBQLASTFactory
     private static EJBQLASTFactory factory = new EJBQLASTFactory();
 
     /** I18N support. */
-    private final static ResourceBundle msgs = 
+    private static final ResourceBundle msgs = 
         I18NHelper.loadBundle(EJBQLASTFactory.class);
     
     /** 
@@ -87,12 +87,14 @@ public class EJBQLASTFactory
     }
     
     /** Overwrites superclass method to create the correct AST instance. */
+    @Override
     public AST create() 
     {
         return new EJBQLAST();
     }
 
     /** Overwrites superclass method to create the correct AST instance. */
+    @Override
     public AST create(AST tr) 
     { 
         return create((EJBQLAST)tr);

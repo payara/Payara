@@ -467,6 +467,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
      * Gets the instance group name
      * @return The instance group name
      */
+    @Override
     public String getInstanceGroup() {
         return instanceGroup;
     }

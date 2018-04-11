@@ -55,9 +55,11 @@ public class LDAPRealmPropertyCheckValidator
     private static final String LDAP_REALM =
         "com.sun.enterprise.security.auth.realm.ldap.LDAPRealm";
 
+    @Override
     public void initialize(final LDAPRealmPropertyCheck fqcn) {
     }
 
+    @Override
     public boolean isValid(final AuthRealm realm,
         final ConstraintValidatorContext constraintValidatorContext) {
 

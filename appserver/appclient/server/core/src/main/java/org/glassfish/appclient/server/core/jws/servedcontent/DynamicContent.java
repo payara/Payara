@@ -131,6 +131,7 @@ public interface DynamicContent extends Content {
          *Returns the time stamp associated with this content InstanceImpl.
          *@return the Date representing when this InstanceImpl was created
          */
+        @Override
         public Date getTimestamp() {
             return timestamp;
         }
@@ -139,6 +140,7 @@ public interface DynamicContent extends Content {
          *Returns the content associated with this InstanceImpl.
          *@return the text content stored in the InstanceImpl
          */
+        @Override
         public String getText() {
             return text;
         }

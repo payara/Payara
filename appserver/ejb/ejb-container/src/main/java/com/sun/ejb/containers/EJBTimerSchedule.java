@@ -140,6 +140,7 @@ public class EJBTimerSchedule extends TimerSchedule {
         return paramCount_;
     }
 
+    @Override
     public String getScheduleAsString() {
         StringBuffer s = new StringBuffer(super.getScheduleAsString())
                .append(" # ").append(automatic_);
@@ -166,10 +167,12 @@ public class EJBTimerSchedule extends TimerSchedule {
 
     }
 
+    @Override
     public int hashCode() {
         return getScheduleAsString().hashCode();
     }
 
+    @Override
     public boolean equals(Object o) {
         if (o == this)
             return true;

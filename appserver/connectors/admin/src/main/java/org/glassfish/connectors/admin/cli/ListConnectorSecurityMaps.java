@@ -85,7 +85,7 @@ import org.jvnet.hk2.config.ConfigBean;
 })
 public class ListConnectorSecurityMaps extends ConnectorSecurityMap implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ListConnectorSecurityMaps.class);
 
     @Param(name="securitymap", optional=true)
@@ -109,6 +109,7 @@ public class ListConnectorSecurityMaps extends ConnectorSecurityMap implements A
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         final ActionReport.MessagePart mp = report.getTopMessagePart();

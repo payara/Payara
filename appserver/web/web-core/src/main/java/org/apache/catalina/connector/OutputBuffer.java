@@ -235,6 +235,7 @@ public class OutputBuffer extends Writer
      * 
      * @throws IOException An underlying IOException occurred
      */
+    @Override
     public void close()
         throws IOException {
 
@@ -251,6 +252,7 @@ public class OutputBuffer extends Writer
      * 
      * @throws IOException An underlying IOException occurred
      */
+    @Override
     public void flush()
         throws IOException {
         doFlush(true);
@@ -288,6 +290,7 @@ public class OutputBuffer extends Writer
      * 
      * @throws IOException An underlying IOException occurred
      */
+    @Override
     public void realWriteBytes(byte buf[], int off, int cnt)
 	throws IOException {
 
@@ -354,6 +357,7 @@ public class OutputBuffer extends Writer
     // ------------------------------------------------- Chars Handling Methods
 
 
+    @Override
     public void write(int c)
         throws IOException {
 
@@ -366,6 +370,7 @@ public class OutputBuffer extends Writer
     }
 
 
+    @Override
     public void write(char c[])
         throws IOException {
 
@@ -377,6 +382,7 @@ public class OutputBuffer extends Writer
     }
 
 
+    @Override
     public void write(char c[], int off, int len)
         throws IOException {
 
@@ -391,6 +397,7 @@ public class OutputBuffer extends Writer
     /**
      * Append a string to the buffer
      */
+    @Override
     public void write(String s, int off, int len)
         throws IOException {
 
@@ -404,6 +411,7 @@ public class OutputBuffer extends Writer
     }
 
 
+    @Override
     public void write(String s)
         throws IOException {
 
@@ -738,6 +746,7 @@ public class OutputBuffer extends Writer
             writeListener = listener;
         }
 
+        @Override
         public void onWritePossible() {
             if (disable) {
                 return;
@@ -797,6 +806,7 @@ public class OutputBuffer extends Writer
             }
         }
 
+        @Override
         public void onError(final Throwable t) {
             if (disable) {
                 return;

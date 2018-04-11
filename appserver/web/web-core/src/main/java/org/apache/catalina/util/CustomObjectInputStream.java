@@ -109,6 +109,7 @@ public final class CustomObjectInputStream
      * @exception ClassNotFoundException if this class cannot be found
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public Class resolveClass(ObjectStreamClass classDesc)
              throws ClassNotFoundException, IOException {
         try {

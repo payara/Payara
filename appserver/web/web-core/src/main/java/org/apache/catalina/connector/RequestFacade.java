@@ -109,6 +109,7 @@ public class RequestFacade
     private final class GetAttributePrivilegedAction
             implements PrivilegedAction<Enumeration<String>> {
         
+        @Override
         public Enumeration<String> run() {
             return request.getAttributeNames();
         }            
@@ -118,6 +119,7 @@ public class RequestFacade
     private final class GetParameterMapPrivilegedAction
             implements PrivilegedAction<Map<String, String[]>> {
         
+        @Override
         public Map<String, String[]> run() {
             return request.getParameterMap();
         }        
@@ -133,6 +135,7 @@ public class RequestFacade
             this.path = path;
         }
         
+        @Override
         public RequestDispatcher run() {   
             return request.getRequestDispatcher(path);
         }           
@@ -148,6 +151,7 @@ public class RequestFacade
             this.name = name;
         }
 
+        @Override
         public String run() {       
             return request.getParameter(name);
         }           
@@ -157,6 +161,7 @@ public class RequestFacade
     private final class GetParameterNamesPrivilegedAction
             implements PrivilegedAction<Enumeration<String>> {
         
+        @Override
         public Enumeration<String> run() {          
             return request.getParameterNames();
         }           
@@ -172,6 +177,7 @@ public class RequestFacade
             this.name = name;
         }
 
+        @Override
         public String[] run() {       
             return request.getParameterValues(name);
         }           
@@ -181,6 +187,7 @@ public class RequestFacade
     private final class GetCookiesPrivilegedAction
             implements PrivilegedAction<Cookie[]> {
         
+        @Override
         public Cookie[] run() {       
             return request.getCookies();
         }           
@@ -190,6 +197,7 @@ public class RequestFacade
     private final class GetCharacterEncodingPrivilegedAction
             implements PrivilegedAction<String> {
         
+        @Override
         public String run() {       
             return request.getCharacterEncoding();
         }           
@@ -205,6 +213,7 @@ public class RequestFacade
             this.name = name;
         }
         
+        @Override
         public Enumeration<String> run() {       
             return request.getHeaders(name);
         }           
@@ -214,6 +223,7 @@ public class RequestFacade
     private final class GetHeaderNamesPrivilegedAction
             implements PrivilegedAction<Enumeration<String>> {
 
+        @Override
         public Enumeration<String> run() {       
             return request.getHeaderNames();
         }           
@@ -223,6 +233,7 @@ public class RequestFacade
     private final class GetLocalePrivilegedAction
             implements PrivilegedAction<Locale> {
 
+        @Override
         public Locale run() {       
             return request.getLocale();
         }           
@@ -232,6 +243,7 @@ public class RequestFacade
     private final class GetLocalesPrivilegedAction
             implements PrivilegedAction<Enumeration<Locale>> {
 
+        @Override
         public Enumeration<Locale> run() {       
             return request.getLocales();
         }           
@@ -246,6 +258,7 @@ public class RequestFacade
             this.create = create;
         }
                 
+        @Override
         public HttpSession run() {  
             return request.getSession(create);
         }           
@@ -254,6 +267,7 @@ public class RequestFacade
     private final class ChangeSessionIdPrivilegedAction
             implements PrivilegedAction<String> {
 
+        @Override
         public String run() {
             return request.changeSessionId();
         }
@@ -325,6 +339,7 @@ public class RequestFacade
     /**
     * Prevent cloning the facade.
     */
+    @Override
     protected Object clone()
         throws CloneNotSupportedException {
         throw new CloneNotSupportedException();

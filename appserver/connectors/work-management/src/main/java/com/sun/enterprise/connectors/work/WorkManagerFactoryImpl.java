@@ -114,6 +114,7 @@ public final class WorkManagerFactoryImpl implements WorkManagerFactory {
      * @param poolName thread pool name
      * @return WorkManager work manager that can be used by resource-adapter
      */
+    @Override
     public WorkManager createWorkManager(String poolName, String raName, ClassLoader rarCL) {
 
         String className = null;
@@ -167,6 +168,7 @@ public final class WorkManagerFactoryImpl implements WorkManagerFactory {
      * @param moduleName resource-adapter name
      * @return boolean
      */
+    @Override
     public boolean removeWorkManager(String moduleName) {
         boolean result = true;
         WorkManager wm = workManagers.remove(moduleName);
@@ -196,6 +198,7 @@ public final class WorkManagerFactoryImpl implements WorkManagerFactory {
      * @return WorkManager
      * @throws ConnectorRuntimeException when unable to get work manager
      */
+    @Override
     public WorkManager getWorkManagerProxy(String poolId, String moduleName, ClassLoader rarCL)
             throws ConnectorRuntimeException {
         WorkManager wm = retrieveWorkManager(moduleName);

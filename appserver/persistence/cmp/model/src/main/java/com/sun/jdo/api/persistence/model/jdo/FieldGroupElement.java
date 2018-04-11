@@ -87,6 +87,7 @@ public abstract class FieldGroupElement extends PersistenceMemberElement
 	 * @param field the field to be added
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void addField (PersistenceFieldElement field) 
 		throws ModelException 
 	{
@@ -98,6 +99,7 @@ public abstract class FieldGroupElement extends PersistenceMemberElement
 	 * @param fields the array of fields to be added
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void addFields(PersistenceFieldElement[] fields)
 		throws ModelException 
 	{
@@ -109,6 +111,7 @@ public abstract class FieldGroupElement extends PersistenceMemberElement
 	 * @param field the field to be removed
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void removeField (PersistenceFieldElement field)
 		throws ModelException 
 	{
@@ -120,6 +123,7 @@ public abstract class FieldGroupElement extends PersistenceMemberElement
 	 * @param fields the array of fields to be removed
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void removeFields (PersistenceFieldElement[] fields)
 		throws ModelException 
 	{
@@ -130,6 +134,7 @@ public abstract class FieldGroupElement extends PersistenceMemberElement
 	 * of an array.
 	 * @return the fields maintained by this holder
 	 */
+        @Override
 	public PersistenceFieldElement[] getFields ()
 	{
 		return getFieldGroupImpl().getFields();
@@ -140,6 +145,7 @@ public abstract class FieldGroupElement extends PersistenceMemberElement
 	 * @param fields the fields maintained by this holder
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setFields (PersistenceFieldElement[] fields)
 		throws ModelException 
 	{
@@ -151,6 +157,7 @@ public abstract class FieldGroupElement extends PersistenceMemberElement
 	 * @param name the name of the field to be found
 	 * @return the field with the supplied name, <code>null</code> if none exists
 	 */
+        @Override
 	public PersistenceFieldElement getField (String name)
 	{
 		return getFieldGroupImpl().getField(name);
@@ -160,6 +167,7 @@ public abstract class FieldGroupElement extends PersistenceMemberElement
 	 * maintained by this holder.
 	 * @param field the field to be tested
 	 */
+        @Override
 	public boolean containsField (PersistenceFieldElement field)
 	{
 		return (getFieldGroupImpl().getField(field.getName()) != null);

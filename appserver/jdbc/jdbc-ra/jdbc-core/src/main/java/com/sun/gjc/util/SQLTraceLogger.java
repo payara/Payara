@@ -65,6 +65,7 @@ public class SQLTraceLogger implements SQLTraceListener {
         
     }
     
+    @Override
     public void sqlTrace(SQLTraceRecord record) {
         _logger.log(Level.FINE, record.toString());
     }

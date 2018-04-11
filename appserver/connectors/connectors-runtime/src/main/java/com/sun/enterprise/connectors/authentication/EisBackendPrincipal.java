@@ -111,6 +111,7 @@ public class EisBackendPrincipal implements Serializable {
      * @return true if they are equal
      *         false if hey are not equal.
      */
+    @Override
     public boolean equals(Object backendPrincipal) {
 
         if (backendPrincipal == null ||
@@ -151,6 +152,7 @@ public class EisBackendPrincipal implements Serializable {
      * Generates the hashcode
      * @return a hash code value for this object
      */
+    @Override
     public int hashCode() {
         int result = 67;
         if (userName != null)

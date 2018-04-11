@@ -118,6 +118,7 @@ public class InvocationInfo {
         return asyncMethodFlag;
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("Invocation Info for ejb " + ejbName + "\t");

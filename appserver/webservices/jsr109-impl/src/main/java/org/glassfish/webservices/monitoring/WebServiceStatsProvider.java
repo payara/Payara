@@ -141,16 +141,19 @@ public class WebServiceStatsProvider {
             data = this.endpoints.values().toArray(new DeployedEndpointData[endpoints.size()]);
         }
 
+        @Override
         public Statistic getStatistic(String s) {
             return endpoints.get(s);
         }
 
+        @Override
         public String[] getStatisticNames() {
             Set<String> names = endpoints.keySet();
             return names.toArray(new String[names.size()]);
         }
 
         @ManagedAttribute
+        @Override
         public DeployedEndpointData[] getStatistics() {
             return data;
         }

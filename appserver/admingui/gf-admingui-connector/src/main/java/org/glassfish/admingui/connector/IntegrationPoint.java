@@ -188,6 +188,7 @@ public class IntegrationPoint implements Serializable {
     /**
      *	<p> Overrides the toString() method.</p>
      */
+    @Override
     public String toString() {
 	return "[IntegrationPoint: '" + id + "' = '" + content + "']";
     }

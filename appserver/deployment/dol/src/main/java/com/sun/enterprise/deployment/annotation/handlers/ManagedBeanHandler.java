@@ -70,6 +70,7 @@ public class ManagedBeanHandler extends AbstractHandler {
     public ManagedBeanHandler() {
     }
 
+    @Override
     public HandlerProcessingResult processAnnotation(AnnotationInfo element)
         throws AnnotationProcessorException {
 

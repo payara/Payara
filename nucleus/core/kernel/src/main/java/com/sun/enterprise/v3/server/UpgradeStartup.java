@@ -132,12 +132,14 @@ public class UpgradeStartup implements ModuleStartup {
 
     private List<String> sigTypeList = new ArrayList<String>(); 
 
+    @Override
     public void setStartupContext(StartupContext startupContext) {
         appservStartup.setStartupContext(startupContext);
     }
 
     // do nothing, just return, at the time the upgrade service has
     // run correctly.
+    @Override
     public void start() {
 
         // we need to disable all the applications before starting server 
@@ -160,6 +162,7 @@ public class UpgradeStartup implements ModuleStartup {
         if (enabledApps.size()>0) {
             try  {
                 ConfigSupport.apply(new ConfigCode() {
+                    @Override
                     public Object run(ConfigBeanProxy... configBeanProxies) throws PropertyVetoException, TransactionFailure {
                         for (ConfigBeanProxy proxy : configBeanProxies) {
                             Application app = (Application) proxy;
@@ -203,6 +206,7 @@ public class UpgradeStartup implements ModuleStartup {
                     logger.log(Level.INFO, "Enabling application " + app.getName());
                     try {
                         ConfigSupport.apply(new SingleConfigCode<Application>() {
+                            @Override
                             public Object run(Application param) throws PropertyVetoException, TransactionFailure {
                                 if (!Boolean.parseBoolean(param.getEnabled())) {
                                     param.setEnabled(Boolean.TRUE.toString());
@@ -235,6 +239,7 @@ public class UpgradeStartup implements ModuleStartup {
 
     }
 
+    @Override
     public void stop() {
         appservStartup.stop();
     }

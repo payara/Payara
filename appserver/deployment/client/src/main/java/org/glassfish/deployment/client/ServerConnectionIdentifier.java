@@ -205,6 +205,7 @@ public class ServerConnectionIdentifier {
     /**
     * @return true if I am the equals to the other object
     */
+    @Override
     public boolean equals(Object other) {
         if (other instanceof ServerConnectionIdentifier) {
             ServerConnectionIdentifier dci = (ServerConnectionIdentifier) other;
@@ -230,6 +231,7 @@ public class ServerConnectionIdentifier {
         }
     }     
     
+    @Override
     public int hashCode() {
         int result = 17;
         result = 37*result + (hostName == null ? 0 : hostName.hashCode());
@@ -239,6 +241,7 @@ public class ServerConnectionIdentifier {
         return result;
     }
 
+    @Override
     public String toString() {
         return getUserName()+"("+ getPassword()+")@(" + getHostName()
             + "):(" + getHostPort()+")" + ":" + getProtocol();

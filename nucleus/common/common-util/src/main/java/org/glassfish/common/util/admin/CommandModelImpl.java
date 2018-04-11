@@ -69,13 +69,13 @@ import org.jvnet.hk2.config.Attribute;
 public class CommandModelImpl extends CommandModel {
 
     // use a LinkedHashMap so params appears in the order they are declared in the class.
-    final private Map<String, CommandModel.ParamModel> params;
-    final private String commandName;
-    final private Class<?> commandClass;
-    final private ExecuteOn execOn;
-    final private I18n i18n;
-    final private boolean dashOk;
-    final private LocalStringManager localStrings;
+    private final Map<String, CommandModel.ParamModel> params;
+    private final String commandName;
+    private final Class<?> commandClass;
+    private final ExecuteOn execOn;
+    private final I18n i18n;
+    private final boolean dashOk;
+    private final LocalStringManager localStrings;
     private boolean managedJob;
 
     public CommandModelImpl(Class<?> commandType) {
@@ -229,13 +229,13 @@ public class CommandModelImpl extends CommandModel {
 
     private static class ParamModelImpl extends ParamModel {
 
-        final private String name;
-        final private Param param;
-        final private I18n i18n;
-        final private I18n parentI18n;
-        final private LocalStringManager localStrings;
-        final private Class type;
-        final private String defaultValue;
+        private final String name;
+        private final Param param;
+        private final I18n i18n;
+        private final I18n parentI18n;
+        private final LocalStringManager localStrings;
+        private final Class type;
+        private final String defaultValue;
 
 
         ParamModelImpl(AnnotatedElement e, String defaultValue, I18n parentI18n, LocalStringManager localStrings) {

@@ -83,7 +83,7 @@ public class UpgradeService implements ConfigurationUpgrade, PostConstruct {
     @Inject @Named("gmsupgrade") @Optional
     ConfigurationUpgrade precondition = null;
 
-    private final static Logger logger = Logger.getAnonymousLogger();
+    private static final Logger logger = Logger.getAnonymousLogger();
 
     private static final String MODULE_TYPE = "moduleType";
     private static final String APPCLIENT_SNIFFER_NAME = "appclient";
@@ -114,6 +114,7 @@ public class UpgradeService implements ConfigurationUpgrade, PostConstruct {
                 // we can safely assume this was a single module application
                 try {
                     ConfigSupport.apply(new SingleConfigCode<Application>() {
+                        @Override
                         public Object run(Application application) throws PropertyVetoException, TransactionFailure {
                             Module module = application.createChild(Module.class);
                             module.setName(application.getName());

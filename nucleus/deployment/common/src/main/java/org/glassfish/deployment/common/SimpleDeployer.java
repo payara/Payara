@@ -144,9 +144,9 @@ public abstract class SimpleDeployer <T extends Container,
     }
 
     // methods for implementation clsses to override
-    abstract protected void generateArtifacts(DeploymentContext dc) 
+    protected abstract void generateArtifacts(DeploymentContext dc) 
         throws DeploymentException;
-    abstract protected void cleanArtifacts(DeploymentContext dc)
+    protected abstract void cleanArtifacts(DeploymentContext dc)
         throws DeploymentException;
 
 }

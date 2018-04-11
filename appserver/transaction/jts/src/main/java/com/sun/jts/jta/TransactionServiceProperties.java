@@ -357,6 +357,7 @@ public class TransactionServiceProperties {
             this.interval = interval;
         }
 
+        @Override
         public void run() {
             ResourceRecoveryManager recoveryManager = serviceLocator.getService(ResourceRecoveryManager.class);
             if (interval <= 0) {

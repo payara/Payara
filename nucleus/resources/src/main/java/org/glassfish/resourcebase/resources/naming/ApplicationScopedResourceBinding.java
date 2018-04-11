@@ -60,10 +60,12 @@ public class ApplicationScopedResourceBinding implements JNDIBinding {
         this.name = name;
         this.value = value;
     }
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public Object getValue() {
         return value;
     }

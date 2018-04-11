@@ -98,6 +98,7 @@ public interface PortUnification extends ConfigBeanProxy, PropertyBag {
     void setStickyProtocolEnabled(final String enabled);
 
     @DuckTyped
+    @Override
     Protocol getParent();
     
     class Duck {

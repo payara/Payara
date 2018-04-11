@@ -90,6 +90,7 @@ public class DeleteJavaMailResourceTest extends ConfigApiTest {
     @After
     public void tearDown() throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode<Resources>() {
+            @Override
             public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                 Resource target = null;
                 for (Resource resource : param.getResources()) {
@@ -110,10 +111,12 @@ public class DeleteJavaMailResourceTest extends ConfigApiTest {
         parameters = new ParameterMap();
     }
 
+    @Override
     public DomDocument getDocument(ServiceLocator habitat) {
         return new TestDocument(habitat);
     }
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }

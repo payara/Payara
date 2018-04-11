@@ -92,6 +92,7 @@ public class CreateProfilerTest extends ConfigApiTest {
      *
      * @return the configuration file name
      */
+    @Override
     public String getFileName() {
         return "DomainTest";
     }    
@@ -114,6 +115,7 @@ public class CreateProfilerTest extends ConfigApiTest {
     public void tearDown() throws TransactionFailure {
        // Delete the created profiler
        ConfigSupport.apply(new SingleConfigCode<JavaConfig>() {
+            @Override
             public Object run(JavaConfig param) throws PropertyVetoException, TransactionFailure {
                 if (param.getProfiler() != null){
                     param.setProfiler(null);

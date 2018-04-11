@@ -84,6 +84,7 @@ public class CPManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      * @return DataSource of jdbc vendor
      * @throws ResourceException
      */
+    @Override
     public javax.sql.ConnectionPoolDataSource getDataSource() throws ResourceException {
         if (cpDataSourceObj == null) {
             try {
@@ -113,6 +114,7 @@ public class CPManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      * @throws ResourceAllocationException if there is an error in allocating the
      *                                     physical connection
      */
+    @Override
     public javax.resource.spi.ManagedConnection createManagedConnection(javax.security.auth.Subject subject,
                                                                         ConnectionRequestInfo cxRequestInfo) throws ResourceException {
         logFine("In createManagedConnection");
@@ -181,6 +183,7 @@ public class CPManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      *         <code>ManagedConnectionFactory</code> objects are the same
      *         false	otherwise
      */
+    @Override
     public boolean equals(Object other) {
         logFine("In equals");
         /**

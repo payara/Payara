@@ -125,11 +125,13 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
     // Used to hold managed beans in app client container
     private Map<String, NamingObjectProxy> appClientManagedBeans = new HashMap<String, NamingObjectProxy>();
 
+     @Override
     public void postConstruct() {
         events.register(this);
         processType = processEnv.getProcessType();
     }
 
+     @Override
     public void event(Event event) {
 
          if (event.is(Deployment.APPLICATION_LOADED) ) {
@@ -208,6 +210,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
         loadManagedBeans(app);
     }
 
+     @Override
     public void loadManagedBeans(Application app) {
 
         JCDIService jcdiService = habitat.getService(JCDIService.class);
@@ -298,6 +301,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
         return clz.getConstructor();
     }
 
+     @Override
     public Object getManagedBean(String globalJndiName) throws Exception {
 
         NamingObjectProxy proxy = appClientManagedBeans.get(globalJndiName);
@@ -319,6 +323,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
      * @param bundle bundle descripto
      *
      */
+     @Override
     public void registerRuntimeInterceptor(Object interceptorInstance, BundleDescriptor bundle) {
 
 
@@ -333,6 +338,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
 
     }
 
+     @Override
     public void unloadManagedBeans(Application app) {
 
         for(BundleDescriptor bundle : app.getBundleDescriptors()) {
@@ -416,6 +422,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
         return eligible;
     }
 
+     @Override
     public <T> T createManagedBean(Class<T> managedBeanClass) throws Exception {
         ManagedBeanDescriptor managedBeanDesc = null;
 
@@ -429,6 +436,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
         return createManagedBean(managedBeanDesc, managedBeanClass);
     }
 
+     @Override
     public <T> T createManagedBean(Class<T> managedBeanClass, boolean invokePostConstruct) throws Exception {
         ManagedBeanDescriptor managedBeanDesc = null;
 
@@ -449,6 +457,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
      * @return
      * @throws Exception
      */
+     @Override
     public <T> T createManagedBean(ManagedBeanDescriptor desc, Class<T> managedBeanClass) throws Exception {
 
         JCDIService jcdiService = habitat.getService(JCDIService.class);
@@ -525,6 +534,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
      * @return
      * @throws Exception
      */
+     @Override
     public <T> T createManagedBean(ManagedBeanDescriptor desc, Class<T> managedBeanClass,
         boolean invokePostConstruct) throws Exception {
 
@@ -591,6 +601,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
 
     }
 
+     @Override
     public boolean isManagedBean(Object object) {
 
         JavaEEInterceptorBuilderFactory interceptorBuilderFactory =
@@ -615,10 +626,12 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
         }
     }
 
+     @Override
     public void destroyManagedBean(Object managedBean)  {
         destroyManagedBean(managedBean, true);
     }
 
+     @Override
     public void destroyManagedBean(Object managedBean, boolean validate)  {
 
         BundleDescriptor bundle = getBundle();
@@ -659,8 +672,8 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
                 Field proxyField = managedBean.getClass().getDeclaredField("__ejb31_delegate");
 
                 final Field finalF = proxyField;
-                    java.security.AccessController.doPrivileged(
-                    new java.security.PrivilegedExceptionAction() {
+                    java.security.AccessController.doPrivileged(new java.security.PrivilegedExceptionAction() {
+                     @Override
                         public java.lang.Object run() throws Exception {
                             if( !finalF.isAccessible() ) {
                                 finalF.setAccessible(true);

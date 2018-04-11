@@ -108,6 +108,7 @@ public class ClientPasswordLoginModule implements LoginModule {
      *			<code>Configuration</code> for this particular
      *			<code>LoginModule</code>.
      */
+    @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler,
 			Map sharedState, Map options) {
  
@@ -131,6 +132,7 @@ public class ClientPasswordLoginModule implements LoginModule {
      * @exception LoginException if this <code>LoginModule</code>
      *		is unable to perform the authentication.
      */
+    @Override
     public boolean login() throws LoginException {
 
 	// prompt for a username and password
@@ -235,6 +237,7 @@ public class ClientPasswordLoginModule implements LoginModule {
      * @return true if this LoginModule's own login and commit
      *		attempts succeeded, or false otherwise.
      */
+    @Override
     public boolean commit() throws LoginException {
 	if (succeeded == false) {
 	    return false;
@@ -286,6 +289,7 @@ public class ClientPasswordLoginModule implements LoginModule {
      * @return false if this LoginModule's own login and/or commit attempts
      *		failed, and true otherwise.
      */
+    @Override
     public boolean abort() throws LoginException {
 	if (succeeded == false) {
 	    return false;
@@ -321,6 +325,7 @@ public class ClientPasswordLoginModule implements LoginModule {
      * @return true in all cases since this <code>LoginModule</code>
      *          should not be ignored.
      */
+    @Override
     public boolean logout() throws LoginException {
 
 	subject.getPrincipals().remove(userPrincipal);

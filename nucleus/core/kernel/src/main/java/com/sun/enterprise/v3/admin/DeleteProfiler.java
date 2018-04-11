@@ -90,7 +90,7 @@ import org.glassfish.api.admin.*;
 })
 public class DeleteProfiler implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
-   final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteProfiler.class);
+   private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteProfiler.class);
 
     @Param(name="target", optional=true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     String target;
@@ -118,11 +118,13 @@ public class DeleteProfiler implements AdminCommand, AdminCommandSecurity.Preaut
     *
     * @param context information
     */
+   @Override
    public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
         try {
            ConfigSupport.apply(new SingleConfigCode<JavaConfig>() {
+               @Override
                public Object run(JavaConfig param) throws PropertyVetoException, TransactionFailure {
                    if (param.getProfiler() != null) {
                        param.setProfiler(null);

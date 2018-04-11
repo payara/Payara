@@ -92,6 +92,7 @@ public class EJBQLException
      * @return the cause of this or <code>null</code> if the
      * cause is nonexistent or unknown.
      */
+    @Override
     public Throwable getCause()
     {
         return cause;
@@ -104,6 +105,7 @@ public class EJBQLException
      * <code>Throwable</code> (if any).
      * @return the <code>String</code>.
      */
+    @Override
     public String toString() {
         // calculate approximate size of the String to return
         StringBuffer sb = new StringBuffer();

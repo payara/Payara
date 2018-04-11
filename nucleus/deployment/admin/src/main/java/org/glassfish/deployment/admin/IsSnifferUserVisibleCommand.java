@@ -72,7 +72,7 @@ import org.glassfish.deployment.common.DeploymentProperties;
 @AccessRequired(resource="domain/sniffers/$sniffername", action="read")
 public class IsSnifferUserVisibleCommand implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(IsSnifferUserVisibleCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(IsSnifferUserVisibleCommand.class);
 
     @Param(primary=true)
     public String sniffername = null;
@@ -80,6 +80,7 @@ public class IsSnifferUserVisibleCommand implements AdminCommand {
     @Inject
     SnifferManager snifferManager;
 
+    @Override
     public void execute(AdminCommandContext context) {
         
         final ActionReport report = context.getActionReport();

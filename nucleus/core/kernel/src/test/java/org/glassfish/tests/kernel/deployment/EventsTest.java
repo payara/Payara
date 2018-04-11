@@ -82,13 +82,15 @@ public class EventsTest extends ConfigApiTest {
     static ServiceLocator habitat;
     static File application;
     static List<EventListener.Event> allEvents = new ArrayList<EventListener.Event>();
-    static private EventListener listener = new EventListener() {
+    private static EventListener listener = new EventListener() {
+        @Override
         public void event(Event event) {
             //System.out.println("Received event " + event.name());
             allEvents.add(event);
         }
     };
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -99,6 +101,7 @@ public class EventsTest extends ConfigApiTest {
         if (doc==null) {
             return new GlassFishDocument(habitat, Executors.newCachedThreadPool(new ThreadFactory() {
 
+                        @Override
                         public Thread newThread(Runnable r) {
                             Thread t = Executors.defaultThreadFactory().newThread(r);
                             t.setDaemon(true);
@@ -184,6 +187,7 @@ public class EventsTest extends ConfigApiTest {
         final List<EventTypes> myTestEvents = getSingletonModuleSuccessfullDeploymentEvents();
         Events events = habitat.getService(Events.class);
         EventListener listener = new EventListener() {
+            @Override
             public void event(Event event) {
                 if (myTestEvents.contains(event.type())) {
                     myTestEvents.remove(event.type());
@@ -206,6 +210,7 @@ public class EventsTest extends ConfigApiTest {
         try {
         final List<EventTypes> myTestEvents2 = getSingletonModuleSuccessfullUndeploymentEvents();
         EventListener listener2 = new EventListener() {
+            @Override
             public void event(Event event) {
                 if (myTestEvents2.contains(event.type())) {
                     myTestEvents2.remove(event.type());

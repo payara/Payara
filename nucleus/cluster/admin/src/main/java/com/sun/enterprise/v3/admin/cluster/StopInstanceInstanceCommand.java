@@ -83,6 +83,7 @@ public class StopInstanceInstanceCommand extends StopServer implements AdminComm
     @Param(optional = true, defaultValue = "true")
     private Boolean force = true;
 
+    @Override
     public void execute(AdminCommandContext context) {
 
         if (!env.isInstance()) {

@@ -91,6 +91,7 @@ public class DeveloperContentService implements PostConstruct {
     /** the always-current data reflecting what is in the on-disk file */
     private ClientJNLPConfigData configData = null;
 
+    @Override
     public void postConstruct() {
         configData = new ClientJNLPConfigData(installConfigDir(), domainConfigDir());
     }

@@ -108,6 +108,7 @@ public class MultimodeCommand extends CLICommand {
      * In the usage message modify the --printprompt option to have a default
      * based on the --interactive option.
      */
+    @Override
     protected Collection<ParamModel> usageOptions() {
         Collection<ParamModel> opts = commandModel.getParameters();
         Set<ParamModel> uopts = new LinkedHashSet<ParamModel>();

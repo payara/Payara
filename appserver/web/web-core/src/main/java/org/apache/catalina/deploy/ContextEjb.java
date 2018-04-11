@@ -81,10 +81,12 @@ public class ContextEjb extends ResourceBase {
      */
     private String description = null;
 
+    @Override
     public String getDescription() {
         return (this.description);
     }
 
+    @Override
     public void setDescription(String description) {
         this.description = description;
     }
@@ -123,10 +125,12 @@ public class ContextEjb extends ResourceBase {
      */
     private String name = null;
 
+    @Override
     public String getName() {
         return (this.name);
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -151,10 +155,12 @@ public class ContextEjb extends ResourceBase {
      */
     private String type = null;
 
+    @Override
     public String getType() {
         return (this.type);
     }
 
+    @Override
     public void setType(String type) {
         this.type = type;
     }
@@ -166,6 +172,7 @@ public class ContextEjb extends ResourceBase {
     /**
      * Return a String representation of this object.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("ContextEjb[");

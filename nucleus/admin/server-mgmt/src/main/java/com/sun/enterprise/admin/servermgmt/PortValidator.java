@@ -69,6 +69,7 @@ public class PortValidator extends Validator {
      * @param str Must be the absolute path of the File that will be validated.
      * @throws InvalidConfigException
      */
+    @Override
     public void validate(Object obj) throws InvalidConfigException
     {
         super.validate(obj);

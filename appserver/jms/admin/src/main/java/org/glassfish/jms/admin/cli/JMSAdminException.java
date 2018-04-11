@@ -94,6 +94,7 @@ public class JMSAdminException extends Exception
      * Returns the message along with the message from any linked exception.
      *
      **/
+    @Override
     public String getMessage() {
 	String retString = null;
 

@@ -1091,6 +1091,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         return returnValue;
     }
 
+    @Override
     public Query createQuery(CriteriaUpdate updateQuery) {
         // Unlike other create*Query() methods, there is not need to create a QueryWrapper for non trnsactional case here.
         // QueryWrappers are created to ensure that entities returned by query are detatched. This is an update query and thus will not return any entities.

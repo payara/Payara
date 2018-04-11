@@ -75,7 +75,7 @@ import java.util.logging.Level;
 @AnnotationHandlerFor(MailSessionDefinition.class)
 public class MailSessionDefinitionHandler extends AbstractResourceHandler {
 
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(MailSessionDefinitionHandler.class);
 
     public MailSessionDefinitionHandler() {

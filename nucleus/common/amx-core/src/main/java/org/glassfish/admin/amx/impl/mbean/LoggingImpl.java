@@ -165,6 +165,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
         return (SELF_NOTIFICATION_INFOS);
     }
 
+    @Override
     public MBeanNotificationInfo[] getNotificationInfo() {
         final MBeanNotificationInfo[] superInfos = super.getNotificationInfo();
 
@@ -568,6 +569,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
         return mLevelToNotificationTypeMap.get(level);
     }
 
+    @Override
     protected void preRegisterDone()
             throws Exception {
         initNotificationTypeToNotificationBuilderMap(getObjectName());

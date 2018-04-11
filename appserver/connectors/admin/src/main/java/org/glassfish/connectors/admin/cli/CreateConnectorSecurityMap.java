@@ -76,7 +76,7 @@ import static org.glassfish.connectors.admin.cli.CLIConstants.SM.*;
 @I18n("create.connector.security.map")
 public class CreateConnectorSecurityMap extends ConnectorSecurityMap implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateConnectorSecurityMap.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateConnectorSecurityMap.class);
 
     @Param(optional = true, obsolete = true)
     private String target = SystemPropertyConstants.DAS_SERVER_NAME;
@@ -108,6 +108,7 @@ public class CreateConnectorSecurityMap extends ConnectorSecurityMap implements 
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
@@ -190,6 +191,7 @@ public class CreateConnectorSecurityMap extends ConnectorSecurityMap implements 
         try {
             ConfigSupport.apply(new SingleConfigCode<ConnectorConnectionPool>() {
 
+                @Override
                 public Object run(ConnectorConnectionPool ccp) throws PropertyVetoException, TransactionFailure {
 
                     List<SecurityMap> securityMaps = ccp.getSecurityMap();

@@ -156,7 +156,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     ConfigSupport configSupport;
 
     protected Logger logger = KernelLoggerInfo.getLogger();
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
 
     private final ThreadLocal<Deque<ExtendedDeploymentContext>> currentDeploymentContext = new ThreadLocal<Deque<ExtendedDeploymentContext>>() {
         @Override
@@ -1488,6 +1488,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         final String tgt, final boolean appRefOnly) 
         throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode() {
+            @Override
             public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
                 // get the transaction
                 Transaction t = Transaction.getTransaction(param);
@@ -1601,6 +1602,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     public void updateAppEnabledAttributeInDomainXML(final String appName,
         final String target, final boolean enabled) throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode() {
+            @Override
             public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
                 // get the transaction
                 Transaction t = Transaction.getTransaction(param);

@@ -48,10 +48,12 @@ import java.io.PrintStream;
 
 public class InsnSingle extends Insn {
 
+  @Override
   public int nStackArgs() {
     return VMOp.ops[opcode()].nStackArgs();
   }
 
+  @Override
   public int nStackResults() {
     return VMOp.ops[opcode()].nStackResults();
   }
@@ -59,6 +61,7 @@ public class InsnSingle extends Insn {
   /**
    * What are the types of the stack operands ?
    */
+  @Override
   public String argTypes() {
     return VMOp.ops[opcode()].argTypes();
   }
@@ -66,10 +69,12 @@ public class InsnSingle extends Insn {
   /**
    * What are the types of the stack results?
    */
+  @Override
   public String resultTypes() {
     return VMOp.ops[opcode()].resultTypes();
   }
 
+  @Override
   public boolean branches() {
     switch (opcode()) {
     case opc_ireturn:
@@ -88,16 +93,19 @@ public class InsnSingle extends Insn {
 
   /* package local methods */
 
+  @Override
   void print (PrintStream out, int indent) {
     ClassPrint.spaces(out, indent);
     out.println(offset() + "  " + opName(opcode()));//NOI18N
   }
 
+  @Override
   int store(byte[] buf, int index) {
     buf[index] = (byte) opcode();
     return index+1;
   }
 
+  @Override
   int size() {
     return 1;
   }

@@ -68,6 +68,7 @@ public class MessageNode extends DeploymentDescriptorNode {
     /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
         if (descriptor == null) {
             descriptor = new MessageDescriptor();
@@ -83,6 +84,7 @@ public class MessageNode extends DeploymentDescriptorNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         if (WebServicesTagNames.OPERATION_NAME.equals(element.getQName())) {
             descriptor.setOperationName(value);

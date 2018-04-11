@@ -81,7 +81,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.JNDI_NAME;
 @I18n("create.custom.resource")
 public class CreateCustomResource implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(CreateCustomResource.class);
 
     @Param(name = "restype")
@@ -117,6 +117,7 @@ public class CreateCustomResource implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 

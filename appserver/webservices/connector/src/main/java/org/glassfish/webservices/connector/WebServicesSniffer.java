@@ -121,6 +121,7 @@ public class WebServicesSniffer extends GenericSniffer {
      * @return whether the sniffer supports the archive type
      *
      */
+    @Override
     public boolean supportsArchiveType(ArchiveType archiveType) {
         if (archiveType.toString().equals(ModuleType.WAR.toString()) ||
             archiveType.toString().equals(ModuleType.EJB.toString())) {

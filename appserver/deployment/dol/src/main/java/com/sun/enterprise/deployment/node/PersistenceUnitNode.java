@@ -103,6 +103,7 @@ public class PersistenceUnitNode extends DeploymentDescriptorNode {
      * @see super#getDispatchTable()
      * @see #initDispatchTable()
      */
+    @Override
     protected Map getDispatchTable() {
         return dispatchTable;
     }

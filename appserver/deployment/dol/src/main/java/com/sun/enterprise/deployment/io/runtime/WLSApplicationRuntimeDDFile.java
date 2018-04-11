@@ -69,6 +69,7 @@ public class WLSApplicationRuntimeDDFile extends
      * @return the location of the DeploymentDescriptor file for a
      * particular type of J2EE Archive
      */
+    @Override
     public String getDeploymentDescriptorPath() {
         return DescriptorConstants.WLS_APPLICATION_JAR_ENTRY;        
     }
@@ -79,6 +80,7 @@ public class WLSApplicationRuntimeDDFile extends
      *
      * @param the descriptor for which we need the node
      */
+    @Override
     public RootXMLNode getRootXMLNode(Descriptor descriptor) {
         if (descriptor instanceof Application) {
             Application application = (Application)descriptor;
@@ -101,6 +103,7 @@ public class WLSApplicationRuntimeDDFile extends
      * @param publicIDToDTDMap the map for storing public id to dtd mapping
      * @param versionUpgrades The list of upgrades from older versions
      */
+    @Override
     public void registerBundle(final Map<String, Class> rootNodesMap,
                                final Map<String, String> publicIDToDTDMap,
                                final Map<String, List<Class>> versionUpgrades) {
@@ -111,6 +114,7 @@ public class WLSApplicationRuntimeDDFile extends
    * Return whether this configuration file can be validated.
    * @return whether this configuration file can be validated.
    */
+    @Override
   public boolean isValidating() {
     return true;
   }

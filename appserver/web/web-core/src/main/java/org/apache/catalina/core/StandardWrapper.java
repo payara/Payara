@@ -1133,6 +1133,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *  an exception
      * @exception ServletException if a loading error occurs
      */
+    @Override
     public synchronized Servlet allocate() throws ServletException {
 
         // If we are currently unloading this servlet, throw an exception
@@ -1448,6 +1449,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                 try{
                     clazz = AccessController.doPrivileged(
                         new PrivilegedExceptionAction<Class>(){
+                            @Override
                             public Class run() throws Exception{
                                 if (fclassLoader != null) {
                                     return fclassLoader.loadClass(factualClass);

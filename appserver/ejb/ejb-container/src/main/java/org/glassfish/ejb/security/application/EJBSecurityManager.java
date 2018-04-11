@@ -714,6 +714,7 @@ public final class EJBSecurityManager
      * @return A boolean value indicating if the client should be allowed
      *         to invoke the EJB.
      */
+    @Override
     public boolean authorize(ComponentInvocation compInv) {
         if (!(compInv instanceof EjbInvocation)) {
             return false;
@@ -802,6 +803,7 @@ public final class EJBSecurityManager
      * the postSetRunAsIdentity method.
      * This method is called for EJB/MDB Containers
      */
+    @Override
     public void preInvoke(ComponentInvocation inv) {
 
         //Optimization to avoid the expensive call
@@ -831,10 +833,12 @@ public final class EJBSecurityManager
      * the run-as identity information that was set up using the
      * preSetRunAsIdentity method
      */
+    @Override
     public void postInvoke(ComponentInvocation inv) {
         if (runAs != null && inv.isPreInvokeDone()) {
             final ComponentInvocation finv = inv;
             AppservAccessController.doPrivileged(new PrivilegedAction() {
+                @Override
                 public Object run() {
                     SecurityContext.setCurrent(
                             (SecurityContext) finv.getOldSecurityContext());
@@ -853,6 +857,7 @@ public final class EJBSecurityManager
      */
     private void loginForRunAs() {
         AppservAccessController.doPrivileged(new PrivilegedAction() {
+            @Override
             public Object run() {
                 LoginContextDriver.loginPrincipal(runAs.getPrincipal(), realmName);
                 return null;
@@ -869,6 +874,7 @@ public final class EJBSecurityManager
      * @return A boolean true/false depending on whether or not the caller
      *         has the specified role.
      */
+    @Override
     public boolean isCallerInRole(String role) {
         /* In case of Run As - Should check isCallerInRole with
        * respect to the old security context.
@@ -927,6 +933,7 @@ public final class EJBSecurityManager
      * @return A Principal object of the client who made this invocation.
      *         or null if the SecurityContext has not been established by the client.
      */
+    @Override
     public Principal getCallerPrincipal() {
         SecurityContext sc = null;
         if (runAs != null) { // Run As
@@ -954,6 +961,7 @@ public final class EJBSecurityManager
         return prin;
     }
 
+    @Override
     public void destroy() {
 
         try {
@@ -993,6 +1001,7 @@ public final class EJBSecurityManager
      * @return Subject the current subject. Null if this is not the run-as
      *         case
      */
+    @Override
     public Subject getCurrentSubject() {
         // just get the security context will return the empt subject
         // of the default securityContext when appropriate.
@@ -1003,6 +1012,7 @@ public final class EJBSecurityManager
      * action as the subject encapsulated in the current
      * SecurityContext.
      */
+    @Override
     public Object doAsPrivileged(PrivilegedExceptionAction pea)
             throws Throwable {
 
@@ -1021,6 +1031,7 @@ public final class EJBSecurityManager
 
                     acc = (AccessControlContext)
                             AccessController.doPrivileged(new PrivilegedExceptionAction() {
+                        @Override
                                 public Object run() throws Exception {
                                     return new AccessControlContext
                                             (new AccessControlContext(pdArray),
@@ -1095,6 +1106,7 @@ public final class EJBSecurityManager
             }
             try {
                 AppservAccessController.doPrivileged(new PrivilegedExceptionAction() {
+                    @Override
                     public Object run() throws Exception {
                         PolicyContext.setContextID(newV);
                         return null;
@@ -1135,6 +1147,7 @@ public final class EJBSecurityManager
      *                         find its security manager.
      * @return Object, the result of the execution of the method.
      */
+    @Override
     public Object invoke(Method beanClassMethod, boolean isLocal, Object o, Object[] oa)
             throws Throwable {
 
@@ -1155,6 +1168,7 @@ public final class EJBSecurityManager
 
             PrivilegedExceptionAction pea =
                     new PrivilegedExceptionAction() {
+                @Override
                         public Object run() throws Exception {
                             return meth.invoke(obj, objArr);
                         }
@@ -1180,6 +1194,7 @@ public final class EJBSecurityManager
 
         try {
                 AppservAccessController.doPrivileged(new PrivilegedExceptionAction() {
+                    @Override
                     public Object run() throws Exception {
                          ((PolicyContextHandlerImpl)PolicyContextHandlerImpl.getInstance()).
                                  reset();

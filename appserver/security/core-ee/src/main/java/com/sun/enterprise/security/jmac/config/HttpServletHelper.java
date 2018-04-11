@@ -108,9 +108,11 @@ public class HttpServletHelper extends ConfigHelper {
     }
 
     // realmName must be set first and this is invoked inside the init()
+    @Override
     protected HandlerContext getHandlerContext(Map map) {
         final String fRealmName = realmName;
         return new HandlerContext() {
+            @Override
             public String getRealmName() {
                 return fRealmName;
             }

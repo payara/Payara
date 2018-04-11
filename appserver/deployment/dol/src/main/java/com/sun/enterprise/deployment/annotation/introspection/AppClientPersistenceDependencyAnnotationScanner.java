@@ -54,6 +54,7 @@ import javax.inject.Singleton;
 @Singleton
 public class AppClientPersistenceDependencyAnnotationScanner extends AbstractAnnotationScanner {
 
+    @Override
     protected void init(java.util.Set<String> annotationsSet) {
         annotationsSet.add("Ljavax/persistence/PersistenceUnit");
         annotationsSet.add("Ljavax/persistence/PersistenceUnits");

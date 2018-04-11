@@ -72,6 +72,7 @@ public class ConfigBeanArchive extends AbstractReadableArchive {
     /**
      * close the abstract archive
      */
+    @Override
     public void close() throws IOException {
         // nothing to do here
     }
@@ -103,6 +104,7 @@ public class ConfigBeanArchive extends AbstractReadableArchive {
     /**
      * delete the archive
      */
+    @Override
     public boolean delete() {
         return false;
     }
@@ -111,22 +113,27 @@ public class ConfigBeanArchive extends AbstractReadableArchive {
      * @return an @see java.util.Enumeration of entries in this abstract
      * archive
      */
+    @Override
     public Enumeration entries() {
         return deployObject.entries();
     }
 
+    @Override
     public Enumeration<String> entries(String prefix) {
         return null;
     }
 
+    @Override
     public Collection<String> getDirectories() throws IOException {
         return null;
     }
 
+    @Override
     public boolean isDirectory(String name) {
         return false;
     }
 
+    @Override
     public String getName() {
         return "";
     }
@@ -135,10 +142,12 @@ public class ConfigBeanArchive extends AbstractReadableArchive {
     /**
      * @return true if this archive exists
      */
+    @Override
     public boolean exists() {
         return false;
     }    
     
+    @Override
     public boolean exists(String name) throws IOException {
         if (getEntry(name) == null) {
             return false;
@@ -154,16 +163,19 @@ public class ConfigBeanArchive extends AbstractReadableArchive {
         return null;
     }
     
+    @Override
     public long getEntrySize(String name) {
         return 0;
     }
 
+    @Override
     public void open(URI uri) throws IOException {
     }
 
     /**
      * @return the archive size
      */
+    @Override
     public long getArchiveSize() throws NullPointerException, SecurityException {
         return -1;
     }
@@ -173,6 +185,7 @@ public class ConfigBeanArchive extends AbstractReadableArchive {
      *
      * @param the name of the subarchive.
      */
+    @Override
     public ReadableArchive getSubArchive(String name) throws IOException {
         throw new IOException(localStrings.getLocalString(
 		    	    "enterprise.deployapi.config.configbeanarchive.notimplemented", 
@@ -185,6 +198,7 @@ public class ConfigBeanArchive extends AbstractReadableArchive {
      * the current abstract archive
      * @param the entry name
      */
+    @Override
     public InputStream getEntry(String name) throws IOException {
         return deployObject.getEntry(name);
     }
@@ -192,6 +206,7 @@ public class ConfigBeanArchive extends AbstractReadableArchive {
     /**
      * @return the manifest information for this abstract archive
      */
+    @Override
     public Manifest getManifest() throws IOException {
         return null;
     }
@@ -201,6 +216,7 @@ public class ConfigBeanArchive extends AbstractReadableArchive {
      *
      * @param name the archive name
      */
+    @Override
     public boolean renameTo(String name) {
         return false;
     }
@@ -218,6 +234,7 @@ public class ConfigBeanArchive extends AbstractReadableArchive {
 		    	    "Operation not implemented"));
     }
     
+    @Override
     public java.net.URI getURI() {
         return null;        
     }

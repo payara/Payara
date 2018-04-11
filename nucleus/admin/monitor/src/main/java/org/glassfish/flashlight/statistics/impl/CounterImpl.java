@@ -78,10 +78,12 @@ public class CounterImpl extends AbstractTreeNode implements Counter {
         startTime = System.currentTimeMillis();
     }
 
+    @Override
     public long getCount() {
         return count.get();
     }
 
+    @Override
     public void setCount(long count) {
         if (count > max) {
             max = count;
@@ -92,6 +94,7 @@ public class CounterImpl extends AbstractTreeNode implements Counter {
     }
     // TBD: remove reference to getSampleTime -> extremely inefficient implementation
     // Will have to be replaced by Timer implemenation
+    @Override
     public void increment() {
         long cnt = this.count.incrementAndGet();
         if (cnt > max) {
@@ -102,6 +105,7 @@ public class CounterImpl extends AbstractTreeNode implements Counter {
     }
 
     //automatically add the increment to cnt
+    @Override
     public void  increment(long delta) {
         long cnt = this.count.addAndGet(delta);
         if(cnt > max) {
@@ -110,6 +114,7 @@ public class CounterImpl extends AbstractTreeNode implements Counter {
         this.lastSampleTime.set(getSampleTime());
     }
     
+    @Override
     public void decrement() {
         long cnt = this.count.decrementAndGet();
         if (cnt < min) {
@@ -117,6 +122,7 @@ public class CounterImpl extends AbstractTreeNode implements Counter {
         }
     }
 
+    @Override
     public void setReset(boolean reset) {
         if (reset) {
             this.count.set(0);
@@ -128,18 +134,22 @@ public class CounterImpl extends AbstractTreeNode implements Counter {
         return getCount();
     }
 
+    @Override
     public String getUnit() {
         return this.UNIT;
     }
 
+    @Override
     public String getDescription() {
         return this.DESCRIPTION;
     }
 
+    @Override
     public long getStartTime() {
         return this.startTime;
     }
 
+    @Override
     public long getLastSampleTime() {
         return this.lastSampleTime.longValue();
     }

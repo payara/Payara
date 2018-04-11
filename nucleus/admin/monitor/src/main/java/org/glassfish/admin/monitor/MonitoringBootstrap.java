@@ -210,6 +210,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
 
     }
 
+    @Override
     public void preDestroy() {
         //We need to do the cleanup for preventing errors from server starting in Embedded mode
         ProbeRegistry.cleanup();
@@ -220,6 +221,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
         }
     }
 
+    @Override
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_READY)) {
             // Process the XMLProviders in lib/monitor dir. Should be the last thing to do in server startup.
@@ -247,11 +249,13 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
         amxg.listenForDomainRoot(ManagementFactory.getPlatformMBeanServer(), spmd);
     }
 
+    @Override
     public void moduleResolved(Module module) {
         if (module == null) return;
         verifyModule(module);
     }
 
+    @Override
     public synchronized void moduleStarted(Module module) {
         if (module == null) return;
         verifyModule(module);
@@ -424,6 +428,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
     private void loadXMLProviders(File xmlProvidersDir) {
         // Creates a filter which will return only xml files
         FilenameFilter filter = new FilenameFilter() {
+            @Override
             public boolean accept(File dir, String name) {
                 return name.endsWith(".xml");
             }
@@ -491,6 +496,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
         }
     }*/
 
+    @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
         if (logger.isLoggable(Level.FINE))
             logger.fine(" spmd = " + spmd);
@@ -679,6 +685,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
     }
 
     private class ProcessProbes implements ProbeProviderEventListener {
+        @Override
         public <T> void probeProviderAdded(String moduleProviderName, String moduleName,
                 String probeProviderName, String invokerId, Class<T> providerClazz, T provider) {
             handleFutureStatsProviders();

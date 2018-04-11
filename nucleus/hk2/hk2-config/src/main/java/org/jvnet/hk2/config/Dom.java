@@ -155,6 +155,7 @@ public class Dom extends AbstractActiveDescriptor implements InvocationHandler, 
             this.dom = dom;
         }
 
+        @Override
         protected void writeTo(XMLStreamWriter w) throws XMLStreamException {
             dom.writeTo(name,w);
         }
@@ -187,6 +188,7 @@ public class Dom extends AbstractActiveDescriptor implements InvocationHandler, 
             this.value = value;
         }
 
+        @Override
         protected void writeTo(XMLStreamWriter w) throws XMLStreamException {
             w.writeStartElement(name);
             w.writeCharacters(value);
@@ -894,9 +896,11 @@ public class Dom extends AbstractActiveDescriptor implements InvocationHandler, 
     public <T> List<T> nodeByTypeElements(final Class<T> baseType) {
         final List<Dom> elements = domNodeByTypeElements(baseType);
         return new AbstractList<T>() {
+            @Override
             public T get(int index) {
                 return baseType.cast(elements.get(index).get());
             }
+            @Override
             public int size() {
                 return elements.size();
             }
@@ -1007,23 +1011,28 @@ public class Dom extends AbstractActiveDescriptor implements InvocationHandler, 
      * 
      * @return always true
      */
+    @Override
     public boolean isReified() {
         return true;
     }
     
+    @Override
     public Class<?> getImplementationClass() {
         Class<?> retVal = (Class<?>) model.getProxyType();
         return retVal;
     }
 
+    @Override
     public Type getImplementationType() {
         return getImplementationClass();
     }
 
+    @Override
     public void setImplementationType(Type t) {
         throw new AssertionError("Can not set type of Dom descriptor");
     }
     
+    @Override
     public Set<Type> getContractTypes() {
         HashSet<Type> retVal = new HashSet<Type>();
         
@@ -1032,6 +1041,7 @@ public class Dom extends AbstractActiveDescriptor implements InvocationHandler, 
         return retVal;
     }
     
+    @Override
     public Class<? extends Annotation> getScopeAnnotation() {
         String scope = getScope();
         if (scope != null && scope.equals(Singleton.class.getName())) {
@@ -1041,18 +1051,22 @@ public class Dom extends AbstractActiveDescriptor implements InvocationHandler, 
         return PerLookup.class;
     }
     
+    @Override
     public Set<Annotation> getQualifierAnnotations() {
         return Collections.emptySet();
     }
     
+    @Override
     public List<Injectee> getInjectees() {
         return Collections.emptyList();
     }
     
+    @Override
     public Long getFactoryServiceId() {
         return null;
     }
     
+    @Override
     public Long getFactoryLocatorId() {
         return null;
     }
@@ -1065,6 +1079,7 @@ public class Dom extends AbstractActiveDescriptor implements InvocationHandler, 
      * TODO: it might be a great performance improvement to have APT generate
      * code that does this during the development time by looking at the interface.
      */
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         // serve java.lang.Object methods by ourselves
         Class<?> clazz = method.getDeclaringClass();
@@ -1329,6 +1344,7 @@ public class Dom extends AbstractActiveDescriptor implements InvocationHandler, 
 
     Set<ConfigListener> listeners = new HashSet<ConfigListener>();
 
+    @Override
     public void addListener(ConfigListener listener) {
         if (listener==null) {
             throw new IllegalArgumentException("Listener cannot be null");
@@ -1336,6 +1352,7 @@ public class Dom extends AbstractActiveDescriptor implements InvocationHandler, 
         listeners.add(listener);
     }
 
+    @Override
     public boolean removeListener(ConfigListener listener) {
         return listeners.remove(listener);
     }
@@ -1418,10 +1435,12 @@ public class Dom extends AbstractActiveDescriptor implements InvocationHandler, 
         return retVal;
     }
     
+    @Override
     public int hashCode() {
         return System.identityHashCode(this);
     }
     
+    @Override
     public boolean equals(Object o) {
         return this == o;
     }

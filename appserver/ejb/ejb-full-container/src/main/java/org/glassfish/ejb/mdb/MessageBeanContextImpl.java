@@ -100,6 +100,7 @@ public final class MessageBeanContextImpl
     /**
      * 
      */
+    @Override
     public UserTransaction getUserTransaction()
 	throws java.lang.IllegalStateException
     {
@@ -117,6 +118,7 @@ public final class MessageBeanContextImpl
      * Doesn't make any sense to get EJBHome object for 
      * a message-driven ejb.
      */
+    @Override
     public EJBHome getEJBHome() 
     {
         RuntimeException exception = new java.lang.IllegalStateException
@@ -125,6 +127,7 @@ public final class MessageBeanContextImpl
     }
 
 
+    @Override
     protected void checkAccessToCallerSecurity()
         throws java.lang.IllegalStateException
     {
@@ -136,6 +139,7 @@ public final class MessageBeanContextImpl
 
     }
 
+    @Override
     public boolean isCallerInRole(String roleRef) {
         if ( roleRef == null )
             throw new IllegalStateException("Argument is null");
@@ -158,6 +162,7 @@ public final class MessageBeanContextImpl
 	    return sm.isCallerInRole(roleRef);
     }
     
+    @Override
     public TimerService getTimerService() 
         throws java.lang.IllegalStateException {
 
@@ -169,6 +174,7 @@ public final class MessageBeanContextImpl
         return new EJBTimerServiceWrapper(timerService, this);
     }
 
+    @Override
     public void checkTimerServiceMethodAccess() 
         throws java.lang.IllegalStateException {
 

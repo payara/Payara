@@ -601,6 +601,7 @@ final class RegistrationSupport
         {
         }
       
+        @Override
         public void handleNotification(final Notification notifIn, final Object handback)
         {
             if (!(notifIn instanceof MBeanServerNotification))

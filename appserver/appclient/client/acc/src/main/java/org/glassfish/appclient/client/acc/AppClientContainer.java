@@ -486,6 +486,7 @@ public class AppClientContainer {
             final AtomicReference<Thread> edt = new AtomicReference<Thread>();
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
                     public void run() {
                         edt.set(Thread.currentThread());
                     }

@@ -96,8 +96,9 @@ public class StatusGenerator extends AbstractResource {
     private Map<String, String> resourcesToDeleteCommands = new TreeMap<String, String>();
     private Properties propsI18N = new SortedProperties();
 
-    static private class SortedProperties extends Properties {
+    private static class SortedProperties extends Properties {
 
+        @Override
         public Enumeration keys() {
             Enumeration keysEnum = super.keys();
             Vector<String> keyList = new Vector<String>();

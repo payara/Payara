@@ -98,7 +98,7 @@ public class ListThreadpools implements AdminCommand, AdminCommandSecurity.Preau
     @Inject
     ServiceLocator habitat;
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListThreadpools.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListThreadpools.class);
 
     @AccessRequired.To("read")
     private ThreadPools threadPools;
@@ -115,6 +115,7 @@ public class ListThreadpools implements AdminCommand, AdminCommandSecurity.Preau
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         try {

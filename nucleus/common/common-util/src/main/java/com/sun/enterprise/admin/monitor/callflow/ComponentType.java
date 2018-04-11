@@ -50,38 +50,47 @@ package	com.sun.enterprise.admin.monitor.callflow;
 public enum ComponentType {
 
     SERVLET {
+        @Override
 	public String toString() { return "SERVLET"; }
     },
 
     SERVLET_FILTER {
+        @Override
 	public String toString() { return "SERVLET_FILTER"; }
     },
 
     SLSB {
+        @Override
 	public String toString() { return "STATELESS_SESSION_BEAN"; }
     },
 
     SFSB {
+        @Override
 	public String toString() { return "STATEFUL_SESSION_BEAN"; }
     },
 
     BMP	{
+        @Override
 	public String toString() { return "BEAN_MANAGED_PERSISTENCE"; }
     },
 
     CMP	{
+        @Override
 	public String toString() {
 	    return "CONTAINER_MANAGED_PERSISTENCE";
 	}
     },
 
     MDB	{
+        @Override
 	public String toString() { return "MESSAGE_DRIVEN_BEAN"; }
     },
 
     JPA	{
+        @Override
 	public String toString () { return "JAVA_PERSISTENCE";}
     };
 
+    @Override
     public abstract String toString();
 }

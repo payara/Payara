@@ -92,7 +92,7 @@ import org.jvnet.hk2.config.SingleConfigCode;
 public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Preauthorization,
         AdminCommandSecurity.AccessCheckProvider {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateResourceRef.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateResourceRef.class);
 
     @Param(optional=true, defaultValue="true")
     private Boolean enabled;
@@ -218,6 +218,7 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
     private void createResourceRef() throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode<RefContainer>() {
 
+                @Override
                 public Object run(RefContainer param) throws PropertyVetoException, TransactionFailure {
 
                     ResourceRef newResourceRef = param.createChild(ResourceRef.class);

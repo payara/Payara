@@ -137,6 +137,7 @@ public class AdminguiThemeContext extends ServletThemeContext {
     /**
      *	<p> This method delegates to <code>JSFThemeContext</code>.</p>
      */
+    @Override
     public ClassLoader getDefaultClassLoader() {
 	return jsfThemeCtx.getDefaultClassLoader();
     }
@@ -144,6 +145,7 @@ public class AdminguiThemeContext extends ServletThemeContext {
     /**
      *	<p> This method delegates to <code>JSFThemeContext</code>.</p>
      */
+    @Override
     public void setDefaultClassLoader(ClassLoader classLoader) {
 	jsfThemeCtx.setDefaultClassLoader(classLoader);
     }
@@ -151,6 +153,7 @@ public class AdminguiThemeContext extends ServletThemeContext {
     /**
      *	<p> This method delegates to <code>JSFThemeContext</code>.</p>
      */
+    @Override
     public String getRequestContextPath() {
 	return jsfThemeCtx.getRequestContextPath();
     }
@@ -158,6 +161,7 @@ public class AdminguiThemeContext extends ServletThemeContext {
     /**
      *	<p> This method delegates to <code>JSFThemeContext</code>.</p>
      */
+    @Override
     public void setRequestContextPath(String path) {
 	jsfThemeCtx.setRequestContextPath(path);
     }
@@ -165,6 +169,7 @@ public class AdminguiThemeContext extends ServletThemeContext {
     /**
      *	<p> This method delegates to <code>JSFThemeContext</code>.</p>
      */
+    @Override
     public String getResourcePath(String path) {
 	return jsfThemeCtx.getResourcePath(path);
     }

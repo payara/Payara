@@ -114,6 +114,7 @@ public class JavaWebStartAccessNode extends DeploymentDescriptorNode<JavaWebStar
      * @param the descriptor to write
      * @return the DOM tree top node
      */    
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, JavaWebStartAccessDescriptor descr) {    
 	Node accessNode = super.writeDescriptor(parent, nodeName, descr);
         appendTextChild(accessNode, RuntimeTagNames.CONTEXT_ROOT, descr.getContextRoot());

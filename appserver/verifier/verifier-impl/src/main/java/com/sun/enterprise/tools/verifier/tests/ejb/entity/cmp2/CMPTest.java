@@ -60,7 +60,7 @@ import java.lang.reflect.Modifier;
  */
 public abstract class CMPTest extends EjbTest {
 
-    abstract protected Result check(EjbCMPEntityDescriptor descriptor);
+    protected abstract Result check(EjbCMPEntityDescriptor descriptor);
     
     public Result check(EjbDescriptor descriptor) {
         Result result = getInitializedResult();

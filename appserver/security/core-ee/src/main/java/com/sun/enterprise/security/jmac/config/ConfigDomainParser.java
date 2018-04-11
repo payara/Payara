@@ -84,6 +84,7 @@ public class ConfigDomainParser implements ConfigParser {
     public ConfigDomainParser() throws IOException {
     }
 
+    @Override
     public void initialize(Object service) throws IOException {
         if (service == null && Globals.getDefaultHabitat() != null) {
             service = Globals.getDefaultHabitat().getService(SecurityService.class, DEFAULT_INSTANCE_NAME);
@@ -127,10 +128,12 @@ public class ConfigDomainParser implements ConfigParser {
         }
     }
 
+    @Override
     public Map<String, GFServerConfigProvider.InterceptEntry> getConfigMap() {
         return configMap;
     }
 
+    @Override
     public Set<String> getLayersWithDefault() {
         return layersWithDefault;
     }

@@ -139,8 +139,8 @@ public interface SecureAdmin extends ConfigBeanProxy {
 
     class Duck {
 
-        public final static String DEFAULT_INSTANCE_ALIAS = "glassfish-instance";
-        public final static String DEFAULT_ADMIN_ALIAS = "s1as";
+        public static final String DEFAULT_INSTANCE_ALIAS = "glassfish-instance";
+        public static final String DEFAULT_ADMIN_ALIAS = "s1as";
 
         public static String getInstanceAlias(final SecureAdmin secureAdmin) {
             return secureAdmin.instanceAlias();

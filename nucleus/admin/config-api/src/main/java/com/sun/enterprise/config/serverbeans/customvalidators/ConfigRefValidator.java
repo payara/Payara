@@ -64,6 +64,7 @@ public class ConfigRefValidator
     static final Logger logger = ConfigApiLoggerInfo.getLogger();
     static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ConfigRefValidator.class);
 
+    @Override
     public void initialize(final ConfigRefConstraint constraint) {       
     }
 

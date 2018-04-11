@@ -75,7 +75,7 @@ import javax.inject.Inject;
 @I18n("delete.jdbc.resource")
 public class DeleteJdbcResource implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteJdbcResource.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteJdbcResource.class);    
 
     @Param(optional=true)
     private String target = SystemPropertyConstants.DAS_SERVER_NAME;
@@ -95,6 +95,7 @@ public class DeleteJdbcResource implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();

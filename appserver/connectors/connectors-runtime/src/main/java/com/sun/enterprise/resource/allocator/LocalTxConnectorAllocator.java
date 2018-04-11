@@ -81,6 +81,7 @@ public class LocalTxConnectorAllocator extends AbstractConnectorAllocator {
         transactionCompletionMode = System.getProperty("com.sun.enterprise.in-progress-local-transaction.completion-mode");
     }
 
+    @Override
     public ResourceHandle createResource()
             throws PoolingException {
         try {
@@ -111,6 +112,7 @@ public class LocalTxConnectorAllocator extends AbstractConnectorAllocator {
         }
     }
 
+    @Override
     public void fillInResourceObjects(ResourceHandle resource)
             throws PoolingException {
         try {
@@ -126,6 +128,7 @@ public class LocalTxConnectorAllocator extends AbstractConnectorAllocator {
         }
     }
 
+    @Override
     public void destroyResource(ResourceHandle resource)
             throws PoolingException {
         try {
@@ -176,6 +179,7 @@ public class LocalTxConnectorAllocator extends AbstractConnectorAllocator {
         }
     }
 
+    @Override
     public boolean shareableWithinComponent() {
         return shareable;
     }

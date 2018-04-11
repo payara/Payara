@@ -59,68 +59,84 @@ public class WorkContextOutputAdapter implements WorkContextOutput
     this.oo = oo;
   }
 
+  @Override
   public void writeASCII(String s) throws IOException {
     writeInt(s.length());
     writeBytes(s);
   }
 
+  @Override
   public void writeContext(WorkContext ctx) throws IOException {
     writeASCII(ctx.getClass().getName());
     ctx.writeContext(this);
   }
 
+  @Override
   public void write(int i) throws IOException {
     oo.write(i);
   }
 
+  @Override
   public void write(byte[] bytes) throws IOException {
     oo.write(bytes);
   }
 
+  @Override
   public void write(byte[] bytes, int i, int i1) throws IOException {
     oo.write(bytes, i, i1);
   }
 
+  @Override
   public void writeBoolean(boolean b) throws IOException {
     oo.writeBoolean(b);
   }
 
+  @Override
   public void writeByte(int i) throws IOException {
     oo.writeByte(i);
   }
 
+  @Override
   public void writeShort(int i) throws IOException {
     oo.writeShort(i);
   }
 
+  @Override
   public void writeChar(int i) throws IOException {
     oo.writeChar(i);
   }
 
+  @Override
   public void writeInt(int i) throws IOException {
     oo.writeInt(i);
   }
 
+  @Override
   public void writeLong(long l) throws IOException {
     oo.writeLong(l);
   }
 
+  @Override
   public void writeFloat(float v) throws IOException {
     oo.writeFloat(v);
   }
 
+  @Override
   public void writeDouble(double v) throws IOException {
     oo.writeDouble(v);
   }
 
+  @Override
   public void writeBytes(String s) throws IOException {
     oo.writeBytes(s);
   }
 
+  @Override
   public void writeChars(String s) throws IOException {
     oo.writeChars(s);
   }
 
+  @Override
   public void writeUTF(String s) throws IOException {
     oo.writeUTF(s);
   }

@@ -76,6 +76,7 @@ public class SerializableObjectRefAddr extends RefAddr {
       *
       * @return The possibly null address contents.
       */
+    @Override
     public Object getContent() {
 	return contents;
     }

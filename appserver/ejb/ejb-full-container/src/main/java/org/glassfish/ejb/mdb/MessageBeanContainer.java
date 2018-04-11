@@ -412,6 +412,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
         return sbuf.toString();
     }
 
+    @Override
     public boolean userTransactionMethodsAllowed(ComponentInvocation inv) {
         boolean utMethodsAllowed = false;
         if (isBeanManagedTran) {
@@ -428,14 +429,17 @@ public final class MessageBeanContainer extends BaseContainer implements Message
         throw new Exception("Can't set EJB Home on Message-driven bean");
     }
 
+    @Override
     public EJBObjectImpl getEJBObjectImpl(byte[] instanceKey) {
         throw new EJBException("No EJBObject for message-driven beans");
     }
 
+    @Override
     public EJBObjectImpl createEJBObjectImpl() throws CreateException {
         throw new EJBException("No EJBObject for message-driven beans");
     }
 
+    @Override
     protected void removeBean(EJBLocalRemoteObject ejbo, Method removeMethod,
             boolean local) throws RemoveException, EJBException {
         throw new EJBException("not used in message-driven beans");
@@ -506,6 +510,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
      * 18.3.1 says that discarding an EJB means that no methods other than
      * finalize() should be invoked on it.
      */
+    @Override
     protected void forceDestroyBean(EJBContextImpl sc) {
         MessageBeanContextImpl mbc = (MessageBeanContextImpl)sc;
 
@@ -519,6 +524,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
     }
 
     // This particular preInvoke signature not used
+    @Override
     public void preInvoke(EjbInvocation inv) {
         throw new EJBException("preInvoke(Invocation) not supported");
     }

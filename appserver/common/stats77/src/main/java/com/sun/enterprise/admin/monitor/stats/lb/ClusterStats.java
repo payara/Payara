@@ -65,15 +65,18 @@ public class ClusterStats implements com.sun.enterprise.admin.monitor.stats.lb.C
 	}
 
 	// This attribute is mandatory
+        @Override
 	public void setId(java.lang.String value) {
 		_Id = value;
 	}
 
+        @Override
 	public java.lang.String getId() {
 		return _Id;
 	}
 
 	// This attribute is an array, possibly empty
+        @Override
 	public void setInstanceStats(com.sun.enterprise.admin.monitor.stats.lb.InstanceStats[] value) {
 		if (value == null)
 			value = new InstanceStats[0];
@@ -83,34 +86,41 @@ public class ClusterStats implements com.sun.enterprise.admin.monitor.stats.lb.C
 		}
 	}
 
+        @Override
 	public void setInstanceStats(int index, com.sun.enterprise.admin.monitor.stats.lb.InstanceStats value) {
 		_InstanceStats.set(index, value);
 	}
 
+        @Override
 	public com.sun.enterprise.admin.monitor.stats.lb.InstanceStats[] getInstanceStats() {
 		InstanceStats[] arr = new InstanceStats[_InstanceStats.size()];
 		return (InstanceStats[]) _InstanceStats.toArray(arr);
 	}
 
+        @Override
 	public java.util.List fetchInstanceStatsList() {
 		return _InstanceStats;
 	}
 
+        @Override
 	public com.sun.enterprise.admin.monitor.stats.lb.InstanceStats getInstanceStats(int index) {
 		return (InstanceStats)_InstanceStats.get(index);
 	}
 
 	// Return the number of instanceStats
+        @Override
 	public int sizeInstanceStats() {
 		return _InstanceStats.size();
 	}
 
+        @Override
 	public int addInstanceStats(com.sun.enterprise.admin.monitor.stats.lb.InstanceStats value) {
 		_InstanceStats.add(value);
 		return _InstanceStats.size()-1;
 	}
 
 	// Search from the end looking for @param value, and then remove it.
+        @Override
 	public int removeInstanceStats(com.sun.enterprise.admin.monitor.stats.lb.InstanceStats value) {
 		int pos = _InstanceStats.indexOf(value);
 		if (pos >= 0) {
@@ -119,6 +129,7 @@ public class ClusterStats implements com.sun.enterprise.admin.monitor.stats.lb.C
 		return pos;
 	}
 
+        @Override
 	public void writeNode(java.io.Writer out, String nodeName, String indent) throws java.io.IOException {
 		out.write(indent);
 		out.write("<");
@@ -143,6 +154,7 @@ public class ClusterStats implements com.sun.enterprise.admin.monitor.stats.lb.C
 		out.write("</"+nodeName+">\n");
 	}
 
+        @Override
 	public void readNode(org.w3c.dom.Node node) {
 		if (node.hasAttributes()) {
 			org.w3c.dom.NamedNodeMap attrs = node.getAttributes();
@@ -167,6 +179,7 @@ public class ClusterStats implements com.sun.enterprise.admin.monitor.stats.lb.C
 		}
 	}
 
+        @Override
 	public void validate() throws com.sun.enterprise.admin.monitor.stats.lb.LoadBalancerStats.ValidateException {
 		boolean restrictionFailure = false;
 		// Validating property id
@@ -182,6 +195,7 @@ public class ClusterStats implements com.sun.enterprise.admin.monitor.stats.lb.C
 		}
 	}
 
+        @Override
 	public void changePropertyByName(String name, Object value) {
 		if (name == null) return;
 		name = name.intern();
@@ -195,6 +209,7 @@ public class ClusterStats implements com.sun.enterprise.admin.monitor.stats.lb.C
 			throw new IllegalArgumentException(name+" is not a valid property name for ClusterStats");
 	}
 
+        @Override
 	public Object fetchPropertyByName(String name) {
 		if (name.equals("id"))
 			return getId();
@@ -204,6 +219,7 @@ public class ClusterStats implements com.sun.enterprise.admin.monitor.stats.lb.C
 	}
 
 	// Return an array of all of the properties that are beans and are set.
+        @Override
 	public com.sun.enterprise.admin.monitor.stats.lb.CommonBean[] childBeans(boolean recursive) {
 		java.util.List children = new java.util.LinkedList();
 		childBeans(recursive, children);
@@ -212,6 +228,7 @@ public class ClusterStats implements com.sun.enterprise.admin.monitor.stats.lb.C
 	}
 
 	// Put all child beans into the beans list.
+        @Override
 	public void childBeans(boolean recursive, java.util.List beans) {
 		for (java.util.Iterator it = _InstanceStats.iterator(); 
 			it.hasNext(); ) {
@@ -225,6 +242,7 @@ public class ClusterStats implements com.sun.enterprise.admin.monitor.stats.lb.C
 		}
 	}
 
+        @Override
 	public boolean equals(Object o) {
 		if (o == this)
 			return true;
@@ -246,6 +264,7 @@ public class ClusterStats implements com.sun.enterprise.admin.monitor.stats.lb.C
 		return true;
 	}
 
+        @Override
 	public int hashCode() {
 		int result = 17;
 		result = 37*result + (_Id == null ? 0 : _Id.hashCode());
@@ -253,6 +272,7 @@ public class ClusterStats implements com.sun.enterprise.admin.monitor.stats.lb.C
 		return result;
 	}
 
+        @Override
 	public String toString() {
 		java.io.StringWriter sw = new java.io.StringWriter();
 		try {

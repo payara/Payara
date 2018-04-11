@@ -75,22 +75,27 @@ public class EmbeddedAdminCtrImpl implements EmbeddedAdminContainer {
 
     private final static List<Sniffer> empty = new ArrayList<Sniffer>();
 
+    @Override
     public List<Sniffer> getSniffers() {
         return empty;
     }
 
+    @Override
     public void bind(Port port, String protocol) {
 
     }
 
+    @Override
     public void start() throws LifecycleException {
 
     }
 
+    @Override
     public void stop() throws LifecycleException {
 
     }
 
+    @Override
     public CommandExecution execute(String commandName, CommandParameters params) {
         ParameterMap props = params.getOptions();
         if (params.getOperands().size() > 0) {
@@ -100,14 +105,17 @@ public class EmbeddedAdminCtrImpl implements EmbeddedAdminContainer {
         final ActionReport report = new PlainTextActionReporter();
         CommandExecution ce = new CommandExecution() {
 
+            @Override
             public ActionReport getActionReport() {
                 return report;
             }
 
+            @Override
             public ActionReport.ExitCode getExitCode() {
                 return report.getActionExitCode();
             }
 
+            @Override
             public String getMessage() {
                 return report.getMessage();
             }
@@ -116,6 +124,7 @@ public class EmbeddedAdminCtrImpl implements EmbeddedAdminContainer {
         return ce;
     }
 
+    @Override
     public void bind(Port port) {
 
     }

@@ -90,6 +90,7 @@ public class JavaConfigSubTypesTest extends ConfigPersistence {
      *
      * @return the configuration file name
      */
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -105,12 +106,14 @@ public class JavaConfigSubTypesTest extends ConfigPersistence {
     }
     
     @Test
+    @Override
     public void doTest() throws TransactionFailure {
 
 
         JavaConfig javaConfig = habitat.getService(JavaConfig.class);
 
         ConfigSupport.apply(new SingleConfigCode<JavaConfig>() {
+            @Override
             public Object run(JavaConfig param) throws PropertyVetoException, TransactionFailure {
                 List<String> jvmOptions = param.getJvmRawOptions();
                 jvmOptions.add("-XFooBar=true");
@@ -120,6 +123,7 @@ public class JavaConfigSubTypesTest extends ConfigPersistence {
 
     }
 
+    @Override
     public boolean assertResult(String s) {
         return s.indexOf("-XFooBar")!=-1;
     }

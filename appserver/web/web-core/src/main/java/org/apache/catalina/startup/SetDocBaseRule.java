@@ -106,6 +106,7 @@ public class SetDocBaseRule extends Rule {
      *
      * @exception Exception if a processing error occurs
      */
+    @Override
     public void begin(Attributes attributes) throws Exception {
 
         Context child = (Context) digester.peek(0);

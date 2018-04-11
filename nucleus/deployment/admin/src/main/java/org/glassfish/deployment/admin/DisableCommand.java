@@ -112,7 +112,7 @@ import org.glassfish.deployment.versioning.VersioningUtils;
 public class DisableCommand extends UndeployCommandParameters implements AdminCommand, 
         DeploymentTargetResolver, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DisableCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DisableCommand.class);
     
     final static String DISABLE_ACTION = "disable";
 
@@ -266,6 +266,7 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
      * Entry point from the framework into the command execution
      * @param context context for the command.
      */
+    @Override
     public void execute(AdminCommandContext context) {
         if (origin == Origin.unload && command == Command.disable) {
             // we should only validate this for the disable command
@@ -424,6 +425,7 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
         }
     }        
 
+    @Override
     public String getTarget(ParameterMap parameters) {
         return DeploymentCommandUtils.getTarget(parameters, origin, deployment);
     }

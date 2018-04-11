@@ -100,7 +100,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
     
     private final Logger LOG = getLogger();
     
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(CreateModuleConfigCommand.class);
 
     @Inject

@@ -138,6 +138,7 @@ public class DeploymentFactoryInstaller {
         final URL[] urls = new URL[]{installedDM.toURI().toURL()};
         URLClassLoader urlClassLoader;
         urlClassLoader = AccessController.doPrivileged(new PrivilegedAction<URLClassLoader>() {
+          @Override
           public URLClassLoader run() {
               return new java.net.URLClassLoader(urls, getClass().getClassLoader());
           }

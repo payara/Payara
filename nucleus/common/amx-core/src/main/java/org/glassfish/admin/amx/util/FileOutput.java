@@ -98,18 +98,21 @@ public final class FileOutput implements Output
         }
     }
 
+    @Override
     public void print(final Object o)
     {
         lazyInit();
         mOut.print(o.toString());
     }
 
+    @Override
     public void println(Object o)
     {
         lazyInit();
         mOut.println(o.toString());
     }
 
+    @Override
     public void printError(final Object o)
     {
         lazyInit();
@@ -122,12 +125,14 @@ public final class FileOutput implements Output
         return (false);
     }
 
+    @Override
     public void printDebug(final Object o)
     {
         lazyInit();
         println("DEBUG: " + o);
     }
 
+    @Override
     public void close()
     {
         if (mOut != null)

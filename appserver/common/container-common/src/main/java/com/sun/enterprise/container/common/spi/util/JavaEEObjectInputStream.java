@@ -67,6 +67,7 @@ public class JavaEEObjectInputStream
         this.handlers = handlers;
     }
 
+    @Override
     protected Object resolveObject(Object obj)
         throws IOException {
 

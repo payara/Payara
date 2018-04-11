@@ -83,7 +83,7 @@ public class GetRelativeJWSURICommand implements AdminCommand {
     private static final String MODULENAME_OPTION = "modulename";
     private static final String URI_PROPERTY_NAME = "relative-uri";
 
-    private final static LocalStringManager localStrings =
+    private static final LocalStringManager localStrings =
             new LocalStringManagerImpl(GetRelativeJWSURICommand.class);
 
     @Param(name = APPNAME_OPTION, optional=false)

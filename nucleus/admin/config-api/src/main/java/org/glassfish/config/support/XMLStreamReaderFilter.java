@@ -58,6 +58,7 @@ abstract class XMLStreamReaderFilter extends StreamReaderDelegate {
     XMLStreamReaderFilter() {
     }
 
+    @Override
     public int next() throws XMLStreamException {
         while(true) {
             int r = super.next();
@@ -67,6 +68,7 @@ abstract class XMLStreamReaderFilter extends StreamReaderDelegate {
         }
     }
 
+    @Override
     public int nextTag() throws XMLStreamException {
         while(true) {
             // Fix for issue 9127
@@ -105,7 +107,7 @@ abstract class XMLStreamReaderFilter extends StreamReaderDelegate {
 
     }
 
-    final static String getEventTypeString(int eventType) {
+    static final String getEventTypeString(int eventType) {
         switch (eventType) {
             case XMLEvent.START_ELEMENT:
                 return "START_ELEMENT";

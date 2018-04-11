@@ -155,6 +155,7 @@ public abstract class BaseNotificationConfigurer<C extends NotifierConfiguration
             }
             else {
                 ConfigSupport.apply(new SingleConfigCode<C>() {
+                    @Override
                     public Object run(C cProxy) throws PropertyVetoException, TransactionFailure {
                         applyValues(cProxy);
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);

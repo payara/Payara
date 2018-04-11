@@ -74,6 +74,7 @@ final class ReadOnlyBeanInfo
 
     Object	cachedEjbObject;	    //Cached only for findByPK
 
+    @Override
     public String toString() {
         
         StringBuffer buffer = new StringBuffer();

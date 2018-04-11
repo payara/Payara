@@ -113,14 +113,17 @@ public class AppTest {
             NamingObjectFactory factory = new NamingObjectFactory() {
                 private int counter = 1;
 
+                @Override
                 public boolean isCreateResultCacheable() {
                     return true;
                 }
 
+                @Override
                 public Object create(Context ic) {
                     return ("FACTORY_Created: " + counter++);
                 }
 
+                @Override
                 public String toString() {
                     return "Huh? ";
                 }
@@ -152,6 +155,7 @@ public class AppTest {
             this.value = value;
         }
 
+        @Override
         public String getName() {
             return logicalName;
         }
@@ -160,6 +164,7 @@ public class AppTest {
             return null;
         }
 
+        @Override
         public Object getValue() {
             return value;
         }
@@ -206,14 +211,17 @@ public class AppTest {
             NamingObjectFactory intFactory = new NamingObjectFactory() {
                 private int counter = 1;
 
+                @Override
                 public boolean isCreateResultCacheable() {
                     return false;
                 }
 
+                @Override
                 public Object create(Context ic) {
                     return new Integer(++counter);
                 }
 
+                @Override
                 public String toString() {
                     return "Huh? ";
                 }
@@ -234,14 +242,17 @@ public class AppTest {
             NamingObjectFactory floatFactory = new NamingObjectFactory() {
                 private int counter = 1;
 
+                @Override
                 public boolean isCreateResultCacheable() {
                     return false;
                 }
 
+                @Override
                 public Object create(Context ic) {
                     return Float.valueOf(("7" + (++counter)) + "." + 2323);
                 }
 
+                @Override
                 public String toString() {
                     return "Huh? ";
                 }

@@ -54,11 +54,11 @@ import com.sun.enterprise.tools.verifier.util.XMLValidationHandler;
 
 public class NameToken {
 
-    final static String XMLtop =
+    static final String XMLtop =
             "<!DOCTYPE NameToken [ <!ELEMENT NameToken EMPTY> <!ATTLIST NameToken value NMTOKEN #REQUIRED>]> <NameToken value=\""; // NOI18N
 
 
-    final static String XMLbottom = "\"/>"; // NOI18N
+    static final String XMLbottom = "\"/>"; // NOI18N
 
     // Logger to log messages
     private static Logger logger = LogDomains.getLogger(

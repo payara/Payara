@@ -61,6 +61,7 @@ public class JdbcConnectionPoolValidator
     
     protected ConnectionPoolErrorMessages poolFaults;
     
+    @Override
     public void initialize(final JdbcConnectionPoolConstraint constraint) {
         this.poolFaults = constraint.value();
     }

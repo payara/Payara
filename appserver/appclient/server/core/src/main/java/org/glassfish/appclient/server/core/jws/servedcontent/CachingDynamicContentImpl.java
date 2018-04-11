@@ -128,10 +128,12 @@ public class CachingDynamicContentImpl extends Content.Adapter implements Dynami
      * null if no such instance already exists for this CachingDynamicContentImpl and createIfAbsent
      * was false.
      */
+    @Override
     public Instance getExistingInstance(final Properties tokenValues) {
         return getOrCreateInstance(tokenValues, false);
     }
 
+    @Override
     public Instance getOrCreateInstance(final Properties tokenValues) {
         return getOrCreateInstance(tokenValues, true);
     }
@@ -192,6 +194,7 @@ public class CachingDynamicContentImpl extends Content.Adapter implements Dynami
      * Returns the MIME type associated with this content.
      * @return the MIME type for this content
      */
+    @Override
     public String getMimeType() {
         return mimeType;
     }

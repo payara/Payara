@@ -123,9 +123,9 @@ class RegisteredResources {
     // private static String commitRetryVar =
     //     Configuration.getPropertyValue(Configuration.COMMIT_RETRY);
 
-    // private final static long COMMIT_RETRY_WAIT = 60000; // moved to Configuration.java
-    private final static String LOG_SECTION_NAME = "RR"/*#Frozen*/;
-    private final static String HEURISTIC_LOG_SECTION_NAME = "RRH"/*#Frozen*/;
+    // private static final long COMMIT_RETRY_WAIT = 60000; // moved to Configuration.java
+    private static final String LOG_SECTION_NAME = "RR"/*#Frozen*/;
+    private static final String HEURISTIC_LOG_SECTION_NAME = "RRH"/*#Frozen*/;
 
 	/*
 		Logger to log transaction messages

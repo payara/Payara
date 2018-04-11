@@ -49,10 +49,12 @@ import org.glassfish.deployment.common.Descriptor;
  * @author Sanjeeb.Sahoo@Sun.COM
  */
 public class PersistenceDeploymentDescriptorFile extends DeploymentDescriptorFile {
+    @Override
     public String getDeploymentDescriptorPath() {
         return DescriptorConstants.PERSISTENCE_DD_ENTRY;
     }
 
+    @Override
     public RootXMLNode getRootXMLNode(Descriptor descriptor) {
         // This method is called from SaxParserHandler.startElement() method
         // as well as DeploymentDescriptorFile.getDefaultSchemaSource().

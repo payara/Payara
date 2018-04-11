@@ -263,6 +263,7 @@ public class Parser {
         return operands;
     }
 
+    @Override
     public String toString() {
         return "CLI parser: Options = " + optionsMap +
                 "; Operands = " + operands;

@@ -180,10 +180,12 @@ public class UndeployedLaunchable implements Launchable {
         }
     }
 
+    @Override
     public URI getURI() {
         return clientRA.getURI();
     }
 
+    @Override
     public String getAnchorDir() {
         return null;
     }
@@ -214,6 +216,7 @@ public class UndeployedLaunchable implements Launchable {
         this.archivist = completeInit(archivist);
     }
 
+    @Override
     public Class getMainClass() throws ClassNotFoundException {
         try {
             String mainClassName = mainClassNameToLaunch();
@@ -243,6 +246,7 @@ public class UndeployedLaunchable implements Launchable {
         return mf.getMainAttributes().getValue(Attributes.Name.MAIN_CLASS);
     }
 
+    @Override
     public ApplicationClientDescriptor getDescriptor(final URLClassLoader loader) throws IOException, SAXParseException {
         this.classLoader = loader;
         if (acDesc == null) {
@@ -292,6 +296,7 @@ public class UndeployedLaunchable implements Launchable {
         return archivist;
     }
 
+    @Override
     public void validateDescriptor() {
         try {
             getArchivist(classLoader).validate(classLoader);

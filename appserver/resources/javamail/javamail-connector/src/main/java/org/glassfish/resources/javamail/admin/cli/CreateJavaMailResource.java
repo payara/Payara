@@ -80,7 +80,7 @@ import java.util.logging.Logger;
 @I18n("create.javamail.resource")
 public class CreateJavaMailResource implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(CreateJavaMailResource.class);
 
     @Param(name="mailhost", alias="host")
@@ -142,6 +142,7 @@ public class CreateJavaMailResource implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();

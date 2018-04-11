@@ -241,12 +241,14 @@ public final class AMXConfigLoader
         }
     }
 
+    @Override
     public void transactionCommited(final List<PropertyChangeEvent> changes) {
         //final PropertyChangeEvent[] changesArray = new PropertyChangeEvent[changes.size()];
         //changes.toArray( changesArray );
         sortAndDispatch(changes, System.currentTimeMillis());
     }
 
+    @Override
     public void unprocessedTransactedEvents(List<UnprocessedChangeEvents> changes) {
         // not interested...
     }
@@ -392,6 +394,7 @@ public final class AMXConfigLoader
             return objectName;
         }
 
+        @Override
         public void run() {
             try {
                 doRun();

@@ -75,6 +75,7 @@ public interface ResourcePool extends Resource, Payload {
     public void setName(String value) throws PropertyVetoException;
 
     @DuckTyped
+    @Override
     String getIdentity();
 
     class Duck {

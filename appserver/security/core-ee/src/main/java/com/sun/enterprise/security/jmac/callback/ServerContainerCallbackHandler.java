@@ -70,6 +70,7 @@ final class ServerContainerCallbackHandler
     ServerContainerCallbackHandler() {
     }
 
+    @Override
     protected void handleSupportedCallbacks(Callback[] callbacks) 
             throws IOException, UnsupportedCallbackException { 
         for (int i=0; i < callbacks.length; i++) {
@@ -77,6 +78,7 @@ final class ServerContainerCallbackHandler
         }
     }
 
+    @Override
     protected boolean isSupportedCallback(Callback callback) {
         boolean isSupported = false;
         if (callback instanceof CertStoreCallback ||

@@ -92,7 +92,7 @@ public class AdminObjectManager implements ResourceManager {
 
     private static final String DESCRIPTION = ServerTags.DESCRIPTION;
 
-    final private static LocalStringManagerImpl localStrings = 
+    private static final LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(AdminObjectManager.class);
 
     private String resType = null;
@@ -109,10 +109,12 @@ public class AdminObjectManager implements ResourceManager {
     public AdminObjectManager() {
     }
 
+    @Override
     public String getResourceType() {
         return ServerTags.ADMIN_OBJECT_RESOURCE;
     }
 
+    @Override
     public ResourceStatus create(Resources resources, HashMap attributes, final Properties properties, String target)
             throws Exception {
         setAttributes(attributes, target);
@@ -125,6 +127,7 @@ public class AdminObjectManager implements ResourceManager {
         try {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
 
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     return createResource(param, properties);
                 }
@@ -329,6 +332,7 @@ public class AdminObjectManager implements ResourceManager {
 
         return status;
     }
+    @Override
     public Resource createConfigBean(Resources resources, HashMap attributes, Properties properties, boolean validate) throws Exception{
         setAttributes(attributes, null);
         ResourceStatus status = null;

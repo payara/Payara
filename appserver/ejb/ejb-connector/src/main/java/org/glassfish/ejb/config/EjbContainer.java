@@ -434,5 +434,6 @@ public interface EjbContainer extends ConfigBeanProxy, PropertyBag, ConfigExtens
         @PropertyDesc(name = "prestart-all-core-threads")
     })
     @Element
+    @Override
     List<Property> getProperty();
 }

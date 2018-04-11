@@ -228,11 +228,13 @@ public class ReadOnlyBeanContainer
         
     }
 
+    @Override
     protected void callEJBStore(EntityBean ejb, EntityContextImpl context) {
         // this method in the ReadOnlyBean case should be a no-op 
         // and should not throw any exception.
     }
     
+    @Override
     protected ComponentContext _getContext(EjbInvocation inv) {
         ComponentContext ctx = super._getContext(inv);
 
@@ -249,6 +251,7 @@ public class ReadOnlyBeanContainer
         return ctx;
     }
     
+    @Override
     protected void callEJBLoad(EntityBean ejb, EntityContextImpl entityCtx,
                                boolean activeTx)
         throws Exception
@@ -384,6 +387,7 @@ public class ReadOnlyBeanContainer
 
     }
     
+    @Override
     protected void callEJBRemove(EntityBean ejb, EntityContextImpl context)
         throws Exception
     {
@@ -397,6 +401,7 @@ public class ReadOnlyBeanContainer
         
     }
     
+    @Override
     protected void doConcreteContainerShutdown(boolean appBeingUndeployed) {
 
         this.distributedReadOnlyBeanService.removeReadOnlyBeanRefreshEventHandler(
@@ -414,6 +419,7 @@ public class ReadOnlyBeanContainer
     // Called from BaseContainer just before invoking a business method
     // whose tx attribute is TX_NEVER / TX_NOT_SUPPORTED / TX_SUPPORTS 
     // without a client tx.
+    @Override
     protected void preInvokeNoTx(EjbInvocation inv) {
         EntityContextImpl context = (EntityContextImpl)inv.context;
         
@@ -443,6 +449,7 @@ public class ReadOnlyBeanContainer
         }
     }
     
+    @Override
     protected void afterNewlyActivated(EntityContextImpl context) {
         // In the case of ReadOnlyBean store the Context into the list
         ReadOnlyBeanInfo robInfo = addToCache(context.getPrimaryKey(), true);
@@ -455,6 +462,7 @@ public class ReadOnlyBeanContainer
         readOnlyContext.setReadOnlyBeanInfo(robInfo);       
     }
     
+    @Override
     protected void addPooledEJB(EntityContextImpl ctx) {
         try {
             // ReadOnlyContextImpl should always be used in conjunction with ReadOnlyBeanContainer
@@ -478,6 +486,7 @@ public class ReadOnlyBeanContainer
         }
     }
     
+    @Override
     protected void forceDestroyBean(EJBContextImpl context) {
         
         try {
@@ -501,6 +510,7 @@ public class ReadOnlyBeanContainer
         }
     }
 
+    @Override
     public void preInvoke(EjbInvocation inv) {
 
         // Overriding preInvoke is the best way to interpose on the 
@@ -538,6 +548,7 @@ public class ReadOnlyBeanContainer
         }
     }
 
+    @Override
     protected Object invokeTargetBeanMethod(Method beanClassMethod, EjbInvocation inv, 
                                   Object target, Object[] params, 
                                   com.sun.enterprise.security.SecurityManager mgr) 
@@ -589,6 +600,7 @@ public class ReadOnlyBeanContainer
         return returnValue;
     }
 
+    @Override
     protected void removeBean(EJBLocalRemoteObject ejbo, Method removeMethod,
                               boolean local)
         throws RemoveException, EJBException, RemoteException
@@ -624,6 +636,7 @@ public class ReadOnlyBeanContainer
         }        
     }
     
+    @Override
     protected void initializeHome()
         throws Exception
     {
@@ -661,6 +674,7 @@ public class ReadOnlyBeanContainer
         }
     }
         
+    @Override
     public void handleRefreshRequest(Object primaryKey) {    
         // Lookup the read-only bean info for this pk. 
         // If there is no entry for this pk, do nothing.
@@ -701,11 +715,13 @@ public class ReadOnlyBeanContainer
         }
     }
     
+    @Override
     public void handleRefreshAllRequest() {
     	_logger.log(Level.FINE, "Received refreshAll request...");
         updateBeanLevelRefresh();
     }
 
+    @Override
     protected EntityContextImpl createEntityContextInstance(EntityBean ejb,
         EntityContainer entityContainer)
     {
@@ -775,6 +791,7 @@ public class ReadOnlyBeanContainer
     //Called from InvocationHandler for findByPrimaryKey
     //The super class (EntityContainer) also defines this method whcih is where
     //	the real work (of finding it from the database) is done.
+    @Override
     protected Object invokeFindByPrimaryKey(Method method, EjbInvocation inv,
 		Object[] args)
 	throws Throwable
@@ -800,6 +817,7 @@ public class ReadOnlyBeanContainer
 	return returnValue;
     }
 
+    @Override
     public Object postFind(EjbInvocation inv, Object primaryKeys, 
                            Object[] findParams)
         throws FinderException
@@ -874,6 +892,7 @@ public class ReadOnlyBeanContainer
 
     private final class RefreshTask extends TimerTask {
 
+        @Override
         public void run() {            
             updateBeanLevelRefresh();
         }
@@ -881,6 +900,7 @@ public class ReadOnlyBeanContainer
 
     private final class CurrentTimeRefreshTask extends TimerTask {
 
+        @Override
         public void run() {            
             currentTimeInMillis = System.currentTimeMillis();
         }
@@ -919,6 +939,7 @@ public class ReadOnlyBeanContainer
             }
         }
         
+        @Override
         public int hashCode() {
             return hc;
         }
@@ -927,6 +948,7 @@ public class ReadOnlyBeanContainer
         	return this.extendedHC;
         }
 
+        @Override
         public boolean equals(Object o) {
 
             boolean equal = false;

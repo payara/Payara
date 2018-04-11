@@ -64,6 +64,7 @@ public final class BasicResourceAllocator extends AbstractConnectorAllocator {
     public BasicResourceAllocator() {
     }
 
+    @Override
     public ResourceHandle createResource()
             throws PoolingException {
         throw new UnsupportedOperationException();
@@ -107,29 +108,35 @@ public final class BasicResourceAllocator extends AbstractConnectorAllocator {
     }
 
 
+    @Override
     public void closeUserConnection(ResourceHandle resourceHandle)
             throws PoolingException {
         throw new UnsupportedOperationException();
     }
 
 
+    @Override
     public boolean matchConnection(ResourceHandle resourceHandle) {
         return false;
     }
 
+    @Override
     public boolean supportsReauthentication() {
         return false;
     }
 
+    @Override
     public void cleanup(ResourceHandle resourceHandle)
             throws PoolingException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public Set getInvalidConnections(Set connectionSet) throws ResourceException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public boolean isConnectionValid(ResourceHandle resource) {
         throw new UnsupportedOperationException();
     }

@@ -70,6 +70,7 @@ public class JavaEEObjectOutputStream
         this.handlers = handlers;
     }
 
+    @Override
     protected Object replaceObject(Object obj)
         throws IOException {
 

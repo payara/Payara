@@ -78,7 +78,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class DeleteJMSResource implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteJMSResource.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteJMSResource.class);
     @Param(optional = true)
     String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
     @Param(name = "jndi_name", primary = true)

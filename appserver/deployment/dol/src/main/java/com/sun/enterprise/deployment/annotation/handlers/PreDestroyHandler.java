@@ -61,6 +61,7 @@ public class PreDestroyHandler extends AbstractResourceHandler {
     public PreDestroyHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {

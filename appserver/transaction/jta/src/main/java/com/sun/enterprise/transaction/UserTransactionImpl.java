@@ -152,6 +152,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable
         }
     }
 
+    @Override
     public void begin() throws NotSupportedException, SystemException
     {
         if (!initialized) init();
@@ -192,6 +193,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable
         }
     }
 
+    @Override
     public void commit() throws RollbackException,
             HeuristicMixedException, HeuristicRollbackException, SecurityException,
             IllegalStateException, SystemException {
@@ -219,6 +221,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable
         }
     }
 
+    @Override
     public void rollback() throws IllegalStateException, SecurityException,
             SystemException {
         if (!initialized) init();
@@ -245,6 +248,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable
         }
     }
 
+    @Override
     public void setRollbackOnly() throws IllegalStateException, SystemException {
         if (!initialized) init();
 
@@ -261,6 +265,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable
         transactionManager.setRollbackOnly();
     }
 
+    @Override
     public int getStatus() throws SystemException {
         if (!initialized) init();
 
@@ -276,6 +281,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable
         return transactionManager.getStatus();
     }
 
+    @Override
     public void setTransactionTimeout(int seconds) throws SystemException {
         if (!initialized) init();
 

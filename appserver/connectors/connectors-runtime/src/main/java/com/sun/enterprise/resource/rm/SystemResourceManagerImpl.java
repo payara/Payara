@@ -72,6 +72,7 @@ public class SystemResourceManagerImpl implements ResourceManager {
      * @exception <code>PoolingException<code> If exception is thrown
      *         while getting the transaction.
      */
+    @Override
     public Transaction getTransaction() throws PoolingException {
         try {
             return ConnectorRuntime.getRuntime().getTransaction();
@@ -84,6 +85,7 @@ public class SystemResourceManagerImpl implements ResourceManager {
     /**
      * Return null for System Resource.
      */
+    @Override
     public Object getComponent() {        
         return null;
     }
@@ -95,6 +97,7 @@ public class SystemResourceManagerImpl implements ResourceManager {
      * @exception <code>PoolingException</code> If there is any error while 
      *        enlisting.
      */    
+    @Override
     public void enlistResource(ResourceHandle handle) throws PoolingException{
         try {
             JavaEETransactionManager tm = ConnectorRuntime.getRuntime().getTransactionManager();
@@ -111,10 +114,12 @@ public class SystemResourceManagerImpl implements ResourceManager {
     /**
      * Dont do any thing for System Resource.
      */
+    @Override
     public void registerResource(ResourceHandle handle) 
          throws PoolingException {
     }
     
+    @Override
     public void rollBackTransaction() {
         try {
             JavaEETransactionManager tm = ConnectorRuntime.getRuntime().getTransactionManager();
@@ -137,6 +142,7 @@ public class SystemResourceManagerImpl implements ResourceManager {
      *        be XAResource.TMSUCCESS or XAResource.TMFAIL     
      * @exception <code>PoolingException</code>
      */       
+    @Override
     public void delistResource(ResourceHandle h, int xaresFlag) {
         try {
         JavaEETransactionManager tm = ConnectorRuntime.getRuntime().getTransactionManager();
@@ -154,6 +160,7 @@ public class SystemResourceManagerImpl implements ResourceManager {
     /**
      * Dont do any thing for System Resource.
      */
+    @Override
     public void unregisterResource(ResourceHandle resource,
                                    int xaresFlag) {        
     }

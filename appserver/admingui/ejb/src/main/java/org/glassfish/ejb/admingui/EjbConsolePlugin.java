@@ -63,6 +63,7 @@ public class EjbConsolePlugin implements ConsoleProvider {
  *
  *  @return URL of configration file.
  */
+    @Override
     public URL getConfiguration(){ 
             return null;
     }

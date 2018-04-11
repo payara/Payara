@@ -71,11 +71,13 @@ public class DerbyLifecycle implements LifecyclePolicy {
      * or set up access to resources
      * @param module the module instance
      */
+    @Override
     public void start(Module module) {
    
         try {
             final Module myModule = module;
             Thread thread = new Thread() {
+                @Override
                 public void run() {
                     try {
                         try {                     
@@ -108,6 +110,7 @@ public class DerbyLifecycle implements LifecyclePolicy {
      * free all the module resources and returned to a {@link ModuleState#NEW NEW} state.
      * @param module the module instance
      */
+    @Override
     public void stop(Module module) {
     
     }

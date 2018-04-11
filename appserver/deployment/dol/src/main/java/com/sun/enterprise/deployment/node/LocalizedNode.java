@@ -70,6 +70,7 @@ public class LocalizedNode extends DeploymentDescriptorNode {
     /**
      * @return the descriptor for this node
      */
+    @Override
     public Object getDescriptor() {
         return getParentNode().getDescriptor();
     }
@@ -77,6 +78,7 @@ public class LocalizedNode extends DeploymentDescriptorNode {
     /**
      * notification of element start with attributes.
      */
+    @Override
     public void startElement(XMLElement element, Attributes attributes) {
         if (attributes.getLength()>0) {
             for (int i=0;i<attributes.getLength();i++) {
@@ -93,6 +95,7 @@ public class LocalizedNode extends DeploymentDescriptorNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         if (element.equals(getXMLRootTag())) {
             localizedValue=value;

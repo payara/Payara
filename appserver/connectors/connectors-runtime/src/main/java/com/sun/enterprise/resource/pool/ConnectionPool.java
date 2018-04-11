@@ -76,9 +76,9 @@ import java.util.logging.Logger;
 public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
         ResourceHandler, PoolProperties {
 
-    protected final static StringManager localStrings =
+    protected static final StringManager localStrings =
             StringManager.getManager(ConnectionPool.class);
-    protected final static Logger _logger = LogDomains.getLogger(ConnectionPool.class,LogDomains.RSR_LOGGER);
+    protected static final Logger _logger = LogDomains.getLogger(ConnectionPool.class,LogDomains.RSR_LOGGER);
 
 
     //pool life-cycle config properties
@@ -333,6 +333,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
      *                          - or the pool has reached its max size and the
      *                          max-connection-wait-time-in-millis has expired.
      */
+    @Override
     public ResourceHandle getResource(ResourceSpec spec, ResourceAllocator alloc, Transaction txn)
             throws PoolingException, RetryableUnavailableException  {
         //Note: this method should not be synchronized or the
@@ -944,14 +945,17 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
     }
 
 
+    @Override
     public void setPoolLifeCycleListener(PoolLifeCycleListener listener) {
         this.poolLifeCycleListener = listener;
     }
 
+    @Override
     public void removePoolLifeCycleListener() {
         poolLifeCycleListener = null;
     }
 
+    @Override
     public void deleteResource(ResourceHandle resourceHandle) {
         try {
             resourceHandle.getResourceAllocator().destroyResource(resourceHandle);
@@ -991,6 +995,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
      * this method is called to indicate that the resource is
      * not used by a bean/application anymore
      */
+    @Override
     public void resourceClosed(ResourceHandle h)
             throws IllegalStateException {
         if (_logger.isLoggable(Level.FINE)) {
@@ -1087,6 +1092,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
         return cleanupSuccessful;
     }
 
+    @Override
     public void resourceErrorOccurred(ResourceHandle h)
             throws IllegalStateException {
         if (_logger.isLoggable(Level.FINE)) {
@@ -1156,6 +1162,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
      * @param tran     Transaction
      * @param resource ResourceHandle
      */
+    @Override
     public void resourceEnlisted(Transaction tran, ResourceHandle resource)
             throws IllegalStateException {
             poolTxHelper.resourceEnlisted(tran, resource);
@@ -1167,6 +1174,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
      * @param tran   Transaction
      * @param status status of transaction
      */
+    @Override
     public void transactionCompleted(Transaction tran, int status) throws IllegalStateException {
         List<ResourceHandle> delistedResources = poolTxHelper.transactionCompleted(tran, status, poolInfo);
         for (ResourceHandle resource : delistedResources) {
@@ -1182,6 +1190,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
     }
 
 
+    @Override
     public ResourceHandle createResource(ResourceAllocator alloc) throws PoolingException {
         //NOTE : Pool should not call this method directly, it should be called only by pool-datastructure
         ResourceHandle result = createSingleResource(alloc);
@@ -1197,18 +1206,22 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
         return result;
     }
 
+    @Override
     public void createResourceAndAddToPool() throws PoolingException {
         createResourceAndAddToPool(allocator);
     }
 
+    @Override
     public Set getInvalidConnections(Set connections) throws ResourceException {
         return allocator.getInvalidConnections(connections);
     }
 
+    @Override
     public void invalidConnectionDetected(ResourceHandle h) {
         incrementNumConnFailedValidation();
     }
 
+    @Override
     public void resizePool(boolean forced) {
         resizerTask.resizePool(forced);
     }
@@ -1253,6 +1266,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
         return h.getResourceState();
     }
 
+    @Override
     public void emptyPool() {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "EmptyPool: Name = " + poolInfo);
@@ -1260,6 +1274,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
         ds.removeAll();
     }
 
+    @Override
     public void emptyFreeConnectionsInPool() {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "Emptying free connections in pool : " + poolInfo);
@@ -1271,6 +1286,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
         }
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer("Pool [");
         sb.append(poolInfo);
@@ -1290,6 +1306,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
     /**
      * @inheritDoc
      */
+    @Override
     public void blockRequests(long waitTimeout){
         blocked = true;
         this.reconfigWaitTime = waitTimeout;
@@ -1298,6 +1315,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
     /**
      * @inheritDoc
      */
+    @Override
     public PoolWaitQueue getPoolWaitQueue(){
         return waitQueue;
     }
@@ -1305,11 +1323,13 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
     /**
      * @inheritDoc
      */
+    @Override
     public PoolWaitQueue getReconfigWaitQueue(){
         return reconfigWaitQueue;
     }
 
 
+    @Override
     public long getReconfigWaitTime() {
         return reconfigWaitTime;
     }
@@ -1320,6 +1340,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
      * 
      * @throws com.sun.appserv.connectors.internal.api.PoolingException
      */
+    @Override
     public synchronized boolean flushConnectionPool() throws PoolingException {
 
         logFine("Flush Connection Pool entered");        
@@ -1355,6 +1376,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
      *                     the new pool properties
      * @throws PoolingException if the pool resizing fails
      */
+    @Override
     public synchronized void reconfigurePool(ConnectorConnectionPool poolResource)
             throws PoolingException {
         int _idleTime = Integer.parseInt(poolResource.getIdleTimeoutInSeconds())
@@ -1513,6 +1535,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
     /**
      * Switch on matching of connections in the pool.
      */
+    @Override
     public void switchOnMatching() {
         matchConnections = true;
     }
@@ -1522,10 +1545,12 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
      *
      * @return the name of this pool
      */
+    @Override
     public PoolInfo getPoolInfo() {
         return poolInfo;
     }
 
+    @Override
     public synchronized void cancelResizerTask() {
 
         logFine("Cancelling resizer");
@@ -1558,27 +1583,33 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
     }
 
     //Self management methods
+    @Override
     public int getMaxPoolSize() {
         return maxPoolSize;
     }
 
+    @Override
     public int getResizeQuantity() {
         return resizeQuantity;
     }
 
+    @Override
     public long getIdleTimeout() {
         return idletime;
     }
 
+    @Override
     public int getWaitQueueLength() {
         return waitQueue.getQueueLength();
     }
 
+    @Override
     public int getSteadyPoolSize() {
         return steadyPoolSize;
     }
 
 
+    @Override
     public void setMaxPoolSize(int size) {
         if (size < ds.getResourcesSize()) {
             synchronized (this) {
@@ -1599,10 +1630,12 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
         maxPoolSize = size;
     }
 
+    @Override
     public void setSteadyPoolSize(int size) {
         steadyPoolSize = size;
     }
 
+    @Override
     public void setSelfManaged(boolean selfManaged) {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "Setting selfManaged to : " + selfManaged + " in pool : " + poolInfo);
@@ -1614,11 +1647,13 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
         return selfManaged_;
     }
 
+    @Override
     public void potentialConnectionLeakFound() {
         if (poolLifeCycleListener != null)
             poolLifeCycleListener.foundPotentialConnectionLeak();
     }
 
+    @Override
     public void printConnectionLeakTrace(StringBuffer stackTrace) {
         if (poolLifeCycleListener != null) {
             String msg = localStrings.getStringWithDefault("monitoring.statistics", "Monitoring Statistics :");
@@ -1630,6 +1665,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
         }
     }
 
+    @Override
     public void reclaimConnection(ResourceHandle handle) {
         //all reclaimed connections must be killed instead of returning them
         //to the pool 
@@ -1650,6 +1686,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
 
      * @return PoolStatus object
      */
+    @Override
     public PoolStatus getPoolStatus() {
         PoolStatus poolStatus = new PoolStatus(this.poolInfo);
         int numFree = (this.poolInitialized) ? ds.getFreeListSize() : 0;

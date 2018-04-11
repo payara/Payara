@@ -1042,12 +1042,14 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
             }
         }
 
+        @Override
         public boolean hasMoreElements() {
             return (specialNames != null && specialNames.hasNext())
                     || (next != null) 
                     || ((next = findNext()) != null);
         }
 
+        @Override
         public String nextElement() {
 
             if (specialNames != null && specialNames.hasNext()) {

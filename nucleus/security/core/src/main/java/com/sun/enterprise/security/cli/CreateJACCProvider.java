@@ -96,7 +96,7 @@ import org.jvnet.hk2.config.types.Property;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
 public class CreateJACCProvider implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
-    final private static LocalStringManagerImpl localStrings =
+    private final static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(CreateJACCProvider.class);
 
     @Param(name="policyconfigfactoryclass", alias="policyConfigurationFactoryProvider")
@@ -153,6 +153,7 @@ public class CreateJACCProvider implements AdminCommand, AdminCommandSecurity.Pr
         try {
             ConfigSupport.apply(new SingleConfigCode<SecurityService>() {
 
+                @Override
                 public Object run(SecurityService param)
                         throws PropertyVetoException, TransactionFailure {
                     JaccProvider newJacc = param.createChild(JaccProvider.class);

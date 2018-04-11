@@ -55,6 +55,7 @@ import java.util.Locale;
 
 public class JavaBeanFactory implements Serializable, ObjectFactory {
 
+    @Override
     public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
         Reference reference = (Reference) obj;
 

@@ -221,6 +221,7 @@ public class NamingContextListener
      *
      * @param event LifecycleEvent that has occurred
      */
+    @Override
     public void lifecycleEvent(LifecycleEvent event) {
 
         container = event.getLifecycle();
@@ -339,6 +340,7 @@ public class NamingContextListener
      *
      * @param event ContainerEvent that has occurred
      */
+    @Override
     public void containerEvent(ContainerEvent event) {
 
         if (!initialized)
@@ -490,6 +492,7 @@ public class NamingContextListener
      *
      * @param event The property change event that has occurred
      */
+    @Override
     public void propertyChange(PropertyChangeEvent event) {
 
         if (!initialized)

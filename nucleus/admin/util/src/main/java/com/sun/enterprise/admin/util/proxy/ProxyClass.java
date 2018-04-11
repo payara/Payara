@@ -53,6 +53,7 @@ public class ProxyClass implements InvocationHandler {
 
     private static InheritableThreadLocal
             callStackHolder = new InheritableThreadLocal() {
+        @Override
         protected synchronized Object initialValue() {
             return new CallStack();
         }
@@ -69,6 +70,7 @@ public class ProxyClass implements InvocationHandler {
         this.interceptor = interceptor;
     }
     
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args)
             throws Throwable {
         Call call = new Call(method, args);

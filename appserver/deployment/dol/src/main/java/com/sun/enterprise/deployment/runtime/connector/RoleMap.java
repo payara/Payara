@@ -58,9 +58,9 @@ import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 public class RoleMap extends RuntimeDescriptor
 {
     
-    static public final String DESCRIPTION = "Description";	// NOI18N
-    static public final String MAP_ELEMENT = "MapElement";	// NOI18N
-    static public final String MAP_ID = "MapId";
+    public static final String DESCRIPTION = "Description";	// NOI18N
+    public static final String MAP_ELEMENT = "MapElement";	// NOI18N
+    public static final String MAP_ID = "MapId";
     
     // This attribute is an array, possibly empty
     public void setMapElement(int index, MapElement value)

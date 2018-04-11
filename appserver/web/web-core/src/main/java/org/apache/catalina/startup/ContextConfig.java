@@ -318,6 +318,7 @@ public class ContextConfig
      *
      * @param event The lifecycle event that has occurred
      */
+    @Override
     public void lifecycleEvent(LifecycleEvent event)
             throws LifecycleException {
 
@@ -1280,14 +1281,17 @@ public class ContextConfig
     protected class ContextErrorHandler
         implements ErrorHandler {
 
+        @Override
         public void error(SAXParseException exception) {
             parseException = exception;
         }
 
+        @Override
         public void fatalError(SAXParseException exception) {
             parseException = exception;
         }
 
+        @Override
         public void warning(SAXParseException exception) {
             parseException = exception;
         }

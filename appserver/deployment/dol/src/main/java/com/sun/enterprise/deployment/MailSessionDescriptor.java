@@ -72,6 +72,7 @@ public class MailSessionDescriptor extends ResourceDescriptor {
     }
 
 
+    @Override
     public String getName() {
         return name;
     }
@@ -83,6 +84,7 @@ public class MailSessionDescriptor extends ResourceDescriptor {
         return thisName;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -167,6 +169,7 @@ public class MailSessionDescriptor extends ResourceDescriptor {
         return deployed;
     }
 
+    @Override
     public boolean equals(Object object) {
         if (object instanceof MailSessionDescriptor) {
             MailSessionDescriptor reference = (MailSessionDescriptor) object;
@@ -175,6 +178,7 @@ public class MailSessionDescriptor extends ResourceDescriptor {
         return false;
     }
 
+    @Override
     public int hashCode() {
         int result = 17;
         result = 37 * result + getName().hashCode();

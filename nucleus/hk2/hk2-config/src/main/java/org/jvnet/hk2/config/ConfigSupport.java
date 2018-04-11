@@ -117,6 +117,7 @@ public class ConfigSupport implements ConfigurationUtilities {
         //ConfigBeanProxy[] objects = { param };
         return apply((new ConfigCode() {
             @SuppressWarnings("unchecked")
+            @Override
             public Object run(ConfigBeanProxy... objects) throws PropertyVetoException, TransactionFailure {
                 return code.run((T) objects[0]);
             }
@@ -347,7 +348,7 @@ public class ConfigSupport implements ConfigurationUtilities {
     }
 
     // kind of insane, just to get the proper return type for my properties.
-    static private List<String> defaultPropertyValue() {
+    private static List<String> defaultPropertyValue() {
         return null;
     }
 
@@ -532,6 +533,7 @@ public class ConfigSupport implements ConfigurationUtilities {
         ConfigBeanProxy readableView = parent.getProxy(parent.getProxyType());
         ConfigBeanProxy readableChild = (ConfigBeanProxy)
                 apply(new SingleConfigCode<ConfigBeanProxy>() {
+            @Override
             public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
                 return addChildWithAttributes(param, parent, childType, attributes, runnable);
             }
@@ -587,6 +589,7 @@ public class ConfigSupport implements ConfigurationUtilities {
         ConfigBeanProxy readableView = parent.getProxy(parent.getProxyType());
         apply(new SingleConfigCode<ConfigBeanProxy>() {
 
+            @Override
             public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
 
 
@@ -700,6 +703,7 @@ public class ConfigSupport implements ConfigurationUtilities {
             values[0] = value;
         }
 
+        @Override
         String[] values() {
             return values;
         }
@@ -713,6 +717,7 @@ public class ConfigSupport implements ConfigurationUtilities {
             this.values = values;
         }
 
+        @Override
         String[] values() {
             return values;
         }

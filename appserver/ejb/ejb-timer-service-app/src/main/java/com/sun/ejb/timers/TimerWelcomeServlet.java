@@ -126,6 +126,7 @@ public class TimerWelcomeServlet extends HttpServlet {
     * @param request servlet request
     * @param response servlet response
     */
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         processRequest(request, response);
@@ -136,6 +137,7 @@ public class TimerWelcomeServlet extends HttpServlet {
     * @param request servlet request
     * @param response servlet response
     */
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         processRequest(request, response);
@@ -144,6 +146,7 @@ public class TimerWelcomeServlet extends HttpServlet {
     /** 
     * Returns a short description of the servlet.
     */
+    @Override
     public String getServletInfo() {
         return "Timer Application Servlet";
     }

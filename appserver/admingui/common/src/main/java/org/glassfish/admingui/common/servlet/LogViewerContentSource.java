@@ -64,6 +64,7 @@ public class LogViewerContentSource  implements DownloadServlet.ContentSource {
      *      {@link DownloadServlet#getContentSource(String)} when using the
      *      {@link DownloadServlet}.</p>
      */
+    @Override
     public String getId() {
         return "LogViewer";                                 // NOI18N
     }
@@ -75,6 +76,7 @@ public class LogViewerContentSource  implements DownloadServlet.ContentSource {
      *      {@link DownloadServlet#CONTENT_SOURCES}, such as {@link DownloadServlet#EXTENSION} or
      *      {@link DownloadServlet#CONTENT_TYPE}.</p>
      */
+    @Override
     public InputStream getInputStream(DownloadServlet.Context ctx) {
         // Set the extension so it can be mapped to a MIME type
         ctx.setAttribute(DownloadServlet.EXTENSION, "asc");
@@ -116,6 +118,7 @@ public class LogViewerContentSource  implements DownloadServlet.ContentSource {
      *      will be invoked after the <code>InputStream</code> has been
      *      completely read.</p>
      */
+    @Override
     public void cleanUp(DownloadServlet.Context ctx) {
         // Nothing to do
     }
@@ -127,6 +130,7 @@ public class LogViewerContentSource  implements DownloadServlet.ContentSource {
      *
      *  @return -1
      */
+    @Override
     public long getLastModified(DownloadServlet.Context context) {
         return -1;
     }

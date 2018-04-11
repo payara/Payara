@@ -56,7 +56,9 @@ import java.beans.PropertyVetoException;
 public interface ConnectionPoolChecker extends Checker, ThresholdDiagnosticsChecker {
 
     @Attribute(defaultValue = "CONP")
+    @Override
     String getName();
+    @Override
     void setName(String value) throws PropertyVetoException;
 
     @Attribute

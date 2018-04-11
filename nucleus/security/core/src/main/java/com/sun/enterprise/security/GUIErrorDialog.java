@@ -69,6 +69,7 @@ public class GUIErrorDialog extends javax.swing.JDialog {
 	errorLbl.setAlignmentX (CENTER_ALIGNMENT);
 	getContentPane().setLayout (new javax.swing.BoxLayout (getContentPane (),BoxLayout.Y_AXIS));
         addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 closeDialog(evt);
             }
@@ -76,11 +77,13 @@ public class GUIErrorDialog extends javax.swing.JDialog {
         okButton.setActionCommand("okButton");
         okButton.setText("OK");
         okButton.addActionListener (new ActionListener (){
+                @Override
 		public void actionPerformed (ActionEvent e){
 		    dispose ();
 		}
 	    });
 	super.addWindowListener (new WindowAdapter (){
+                @Override
 		public void windowClosing (WindowEvent we){
 		    dispose ();
 		}

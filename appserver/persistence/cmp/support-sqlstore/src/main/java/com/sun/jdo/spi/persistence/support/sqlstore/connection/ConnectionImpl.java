@@ -153,24 +153,28 @@ public class ConnectionImpl implements Connection, Linkable {
     // @return     A StatementImpl wrapper object.
     // @exception  SQLException  if a database error occurs.
     //
+    @Override
     public synchronized Statement createStatement()
             throws SQLException {
         this.checkXact();
         return connection.createStatement();
     }
 
+    @Override
     public Statement createStatement(int resultSetType,
                                      int resultSetConcurrency)
             throws SQLException {
         return (null);
     }
 
+    @Override
     public PreparedStatement prepareStatement(String sql, int resultSetType,
                                               int resultSetConcurrency)
             throws SQLException {
         return (null);
     }
 
+    @Override
     public CallableStatement prepareCall(String sql,
                                          int resultSetType,
                                          int resultSetConcurrency)
@@ -186,6 +190,7 @@ public class ConnectionImpl implements Connection, Linkable {
     // @return    A StatementImpl wrapper object.
     // @exception SQLException  if a database error occurs.
     //
+    @Override
     public synchronized PreparedStatement prepareStatement(String sql)
             throws SQLException {
         checkXact();
@@ -199,11 +204,13 @@ public class ConnectionImpl implements Connection, Linkable {
     // @return a ForteCallableStatement wrapper object.
     // @exception SQLException if a database error occurs.
     //
+    @Override
     public synchronized CallableStatement prepareCall(String sql)
             throws SQLException {
         return connection.prepareCall(sql);
     }
 
+    @Override
     public synchronized String nativeSQL(String sql) throws SQLException {
         try {
             return (this.connection.nativeSQL(sql));
@@ -212,6 +219,7 @@ public class ConnectionImpl implements Connection, Linkable {
         }
     }
 
+    @Override
     public synchronized void setAutoCommit(boolean autoCommit)
             throws SQLException {
         try {
@@ -221,6 +229,7 @@ public class ConnectionImpl implements Connection, Linkable {
         }
     }
 
+    @Override
     public synchronized boolean getAutoCommit() throws SQLException {
         try {
             return (this.connection.getAutoCommit());
@@ -229,6 +238,7 @@ public class ConnectionImpl implements Connection, Linkable {
         }
     }
 
+    @Override
     public synchronized void commit() throws SQLException {
 
         try {
@@ -255,6 +265,7 @@ public class ConnectionImpl implements Connection, Linkable {
         }
     }
 
+    @Override
     public synchronized void rollback() throws SQLException {
         logger.finest("sqlstore.connectionimpl.rollback"); // NOI18N
 
@@ -278,6 +289,7 @@ public class ConnectionImpl implements Connection, Linkable {
         }
     }
 
+    @Override
     public synchronized void close() throws SQLException {
         if (EJBHelper.isManaged()) {
             logger.finest("sqlstore.connectionimpl.close"); // NOI18N
@@ -347,6 +359,7 @@ public class ConnectionImpl implements Connection, Linkable {
         logger.finest("sqlstore.connectionimpl.close.connrelease"); // NOI18N
     }
 
+    @Override
     public synchronized boolean isClosed() throws SQLException {
         try {
             return (this.connection.isClosed());
@@ -355,6 +368,7 @@ public class ConnectionImpl implements Connection, Linkable {
         }
     }
 
+    @Override
     public synchronized DatabaseMetaData getMetaData() throws SQLException {
         try {
             return (this.connection.getMetaData());
@@ -363,6 +377,7 @@ public class ConnectionImpl implements Connection, Linkable {
         }
     }
 
+    @Override
     public synchronized void setReadOnly(boolean readOnly) throws SQLException {
         try {
             this.connection.setReadOnly(readOnly);
@@ -371,6 +386,7 @@ public class ConnectionImpl implements Connection, Linkable {
         }
     }
 
+    @Override
     public synchronized boolean isReadOnly() throws SQLException {
         try {
             return (this.connection.isReadOnly());
@@ -379,6 +395,7 @@ public class ConnectionImpl implements Connection, Linkable {
         }
     }
 
+    @Override
     public synchronized void setCatalog(String catalog) throws SQLException {
         try {
             this.connection.setCatalog(catalog);
@@ -387,6 +404,7 @@ public class ConnectionImpl implements Connection, Linkable {
         }
     }
 
+    @Override
     public synchronized String getCatalog() throws SQLException {
         try {
             return (this.connection.getCatalog());
@@ -395,6 +413,7 @@ public class ConnectionImpl implements Connection, Linkable {
         }
     }
 
+    @Override
     public synchronized void setTransactionIsolation(int level)
             throws SQLException {
         try {
@@ -404,6 +423,7 @@ public class ConnectionImpl implements Connection, Linkable {
         }
     }
 
+    @Override
     public synchronized int getTransactionIsolation() throws SQLException {
         try {
             return (this.connection.getTransactionIsolation());
@@ -412,6 +432,7 @@ public class ConnectionImpl implements Connection, Linkable {
         }
     }
 
+    @Override
     public synchronized SQLWarning getWarnings() throws SQLException {
         try {
             return (this.connection.getWarnings());
@@ -420,6 +441,7 @@ public class ConnectionImpl implements Connection, Linkable {
         }
     }
 
+    @Override
     public synchronized void clearWarnings() throws SQLException {
         try {
             this.connection.clearWarnings();
@@ -428,6 +450,7 @@ public class ConnectionImpl implements Connection, Linkable {
         }
     }
 
+    @Override
     public synchronized java.util.Map getTypeMap()
             throws SQLException {
         try {
@@ -437,6 +460,7 @@ public class ConnectionImpl implements Connection, Linkable {
         }
     }
 
+    @Override
     public synchronized void setTypeMap(java.util.Map map)
             throws SQLException {
         try {
@@ -448,30 +472,35 @@ public class ConnectionImpl implements Connection, Linkable {
 
     //-------------Begin New methods added in JDBC 3.0 --------------
 
+    @Override
     public synchronized void setHoldability(int holdability)
                     throws SQLException {
 
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public synchronized int getHoldability()
                     throws SQLException {
 
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public synchronized Savepoint setSavepoint()
                        throws SQLException {
 
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public synchronized Savepoint setSavepoint(String name)
                        throws SQLException {
 
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public synchronized void rollback(Savepoint savepoint)
               throws SQLException {
 
@@ -479,12 +508,14 @@ public class ConnectionImpl implements Connection, Linkable {
 
     }
 
+    @Override
     public synchronized void releaseSavepoint(Savepoint savepoint)
                       throws SQLException {
 
        throw new UnsupportedOperationException();
     }
 
+    @Override
     public synchronized Statement createStatement(int resultSetType,
                                  int resultSetConcurrency,
                                  int resultSetHoldability)
@@ -493,6 +524,7 @@ public class ConnectionImpl implements Connection, Linkable {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public synchronized PreparedStatement prepareStatement(String sql,
                                           int resultSetType,
                                           int resultSetConcurrency,
@@ -502,6 +534,7 @@ public class ConnectionImpl implements Connection, Linkable {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public synchronized CallableStatement prepareCall(String sql,
                                      int resultSetType,
                                      int resultSetConcurrency,
@@ -511,6 +544,7 @@ public class ConnectionImpl implements Connection, Linkable {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public synchronized PreparedStatement prepareStatement(String sql,
                                           int autoGeneratedKeys)
                                    throws SQLException {
@@ -518,6 +552,7 @@ public class ConnectionImpl implements Connection, Linkable {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public synchronized PreparedStatement prepareStatement(String sql,
                                           int[] columnIndexes)
                                    throws SQLException {
@@ -525,6 +560,7 @@ public class ConnectionImpl implements Connection, Linkable {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public synchronized PreparedStatement prepareStatement(String sql,
                                           String[] columnNames)
                                    throws SQLException {
@@ -534,54 +570,67 @@ public class ConnectionImpl implements Connection, Linkable {
     //-------------End New methods added in JDBC 3.0 --------------
                                    
     //-------------Begin New methods added in JDBC 4.0 --------------
+    @Override
     public Clob createClob() throws SQLException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public Blob createBlob() throws SQLException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public NClob createNClob() throws SQLException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public SQLXML createSQLXML() throws SQLException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public boolean isValid(int timeout) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void setClientInfo(String name, String value) throws SQLClientInfoException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void setClientInfo(Properties properties) throws SQLClientInfoException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public String getClientInfo(String name) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public Properties getClientInfo() throws SQLException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         throw new UnsupportedOperationException();
     }
@@ -695,6 +744,7 @@ public class ConnectionImpl implements Connection, Linkable {
      * <p>
      * @return The previous ConnectionImpl in a chain.
      */
+    @Override
     public Linkable getPrevious() {
         return (this.previous);
     }
@@ -704,6 +754,7 @@ public class ConnectionImpl implements Connection, Linkable {
      * <p>
      * @param  conn  The ConnectionImpl to hook on the chain.
      */
+    @Override
     public void setPrevious(Linkable conn) {
         this.previous = conn;
     }
@@ -713,6 +764,7 @@ public class ConnectionImpl implements Connection, Linkable {
      * <p>
      * @return The next ConnectionImpl in a chain.
      */
+    @Override
     public Linkable getNext() {
         return (this.next);
     }
@@ -722,6 +774,7 @@ public class ConnectionImpl implements Connection, Linkable {
      * <p>
      * @param  conn  The ConnectionImpl to hook on the chain.
      */
+    @Override
     public void setNext(Linkable conn) {
         this.next = conn;
     }
@@ -848,6 +901,7 @@ public class ConnectionImpl implements Connection, Linkable {
      * @return  String describing contents of this ConnectionImpl
      *          object.
      */
+    @Override
     public synchronized String toString() {
         int xactIsolation = 0;
         String buffer = "Connect@"; // NOI18N
@@ -871,6 +925,7 @@ public class ConnectionImpl implements Connection, Linkable {
         return buffer;
     }
 
+    @Override
     protected void finalize() {
         try {
             this.connection.close();
@@ -880,22 +935,27 @@ public class ConnectionImpl implements Connection, Linkable {
         }
     }
 
+    @Override
     public void setSchema(String schema) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public String getSchema() throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void abort(Executor executor) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public int getNetworkTimeout() throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }

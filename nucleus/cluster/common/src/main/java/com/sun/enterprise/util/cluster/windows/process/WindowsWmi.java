@@ -157,6 +157,7 @@ public class WindowsWmi {
 
             // todo is this needed?
             comObj.registerUnreferencedHandler(new IJIUnreferenced() {
+                @Override
                 public void unReferenced() {
                 }
             });

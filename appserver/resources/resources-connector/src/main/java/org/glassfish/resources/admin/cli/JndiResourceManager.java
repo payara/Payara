@@ -70,7 +70,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 @PerLookup
 @I18n("create.jndi.resource")
 public class JndiResourceManager implements ResourceManager {
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(JndiResourceManager.class);
     private static final String DESCRIPTION = ServerTags.DESCRIPTION;
 
@@ -88,10 +88,12 @@ public class JndiResourceManager implements ResourceManager {
     private String description;
     private String jndiName;
 
+    @Override
     public String getResourceType() {
         return ServerTags.EXTERNAL_JNDI_RESOURCE;
     }
 
+    @Override
     public ResourceStatus create(Resources resources, HashMap attributes, final Properties properties,
                                  String target) throws Exception {
         setAttributes(attributes, target);
@@ -103,6 +105,7 @@ public class JndiResourceManager implements ResourceManager {
         try {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
 
+                @Override
                 public Object run(Resources param) throws PropertyVetoException,
                         TransactionFailure {
 
@@ -201,6 +204,7 @@ public class JndiResourceManager implements ResourceManager {
         return newResource;
     }
 
+    @Override
     public Resource createConfigBean(Resources resources, HashMap attributes, Properties properties, boolean validate)
             throws Exception {
         setAttributes(attributes, null);

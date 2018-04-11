@@ -106,6 +106,7 @@ class LogicErrorException extends Exception {
      *
      * @see
      */
+    @Override
     public String toString() {
         return super.toString() + ", reason("/*#Frozen*/ + reason + ")"/*#Frozen*/;
     }

@@ -135,11 +135,13 @@ class Jar
     }
 
     // Override hashCode and equals as this object is used in Set
+    @Override
     public int hashCode()
     {
         return uri == null ? 0 : uri.hashCode();
     }
 
+    @Override
     public boolean equals(Object obj)
     {
         if (obj == null || !(obj instanceof Jar)) return false;

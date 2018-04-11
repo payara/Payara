@@ -61,6 +61,7 @@ public class EmailNotifierExecutionOptionsFactory extends NotifierExecutionOptio
         register(NotifierType.EMAIL, this);
     }
 
+    @Override
     public NotifierExecutionOptions build(EmailNotifier notifier) {
         EmailNotifierExecutionOptions executionOptions = new EmailNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));

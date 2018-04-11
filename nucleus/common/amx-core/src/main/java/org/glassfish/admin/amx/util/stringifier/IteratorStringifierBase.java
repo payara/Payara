@@ -79,6 +79,7 @@ public abstract class IteratorStringifierBase implements Stringifier
 		mElementStringifier	= elementStringifier;
 	}
 	
+        @Override
 		public String
 	stringify( Object o )
 	{

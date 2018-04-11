@@ -77,13 +77,13 @@ public final class SecurityConfig{
     private static final Logger log = LogFacade.getLogger();
 
     
-    private final static String PACKAGE_ACCESS =  "sun.,"
+    private static final String PACKAGE_ACCESS =  "sun.,"
                                                 + "org.apache.catalina." 
                                                 + ",org.apache.jasper."
                                                 + ",org.glassfish.grizzly.tcp."
                                                 + ",org.glassfish.grizzly.";
     
-    private final static String PACKAGE_DEFINITION= "java.,sun."
+    private static final String PACKAGE_DEFINITION= "java.,sun."
                                                 + ",org.apache.catalina." 
                                                 + ",org.glassfish.grizzly.tcp."
                                                 + ",org.glassfish.grizzly."

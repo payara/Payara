@@ -85,6 +85,7 @@ public abstract class DigestRealmBase extends IASRealm implements DigestRealm {
            
         }
 
+        @Override
         protected final boolean validate(Password passwd, DigestAlgorithmParameter[] params) throws NoSuchAlgorithmException {
 
              for (int i = 0; i < params.length; i++) {

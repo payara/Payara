@@ -76,6 +76,7 @@ public class AsynchronousHandler extends AbstractAttributeHandler
     public AsynchronousHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
         
@@ -98,6 +99,7 @@ public class AsynchronousHandler extends AbstractAttributeHandler
      * require to be processed (if present) before it processes it's own 
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         
         return new Class[] {
@@ -105,6 +107,7 @@ public class AsynchronousHandler extends AbstractAttributeHandler
                 
     }
 
+    @Override
     protected boolean supportTypeInheritance() {
         return true;
     }
@@ -115,6 +118,7 @@ public class AsynchronousHandler extends AbstractAttributeHandler
      * Class type annotation applies to all EJB 3.x Local/Remote/no-interface 
      * views in which  that  business method is exposed for that bean. 
      */
+    @Override
     public void postProcessAnnotation(AnnotationInfo ainfo, EjbContext ejbContext)
             throws AnnotationProcessorException {
         EjbDescriptor ejbDesc = (EjbDescriptor) ejbContext.getDescriptor();

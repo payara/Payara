@@ -107,6 +107,7 @@ public class CoyoteReader
     /**
     * Prevent cloning the facade.
     */
+    @Override
     protected Object clone()
         throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
@@ -127,6 +128,7 @@ public class CoyoteReader
     // --------------------------------------------------------- Reader Methods
 
 
+    @Override
     public void close()
         throws IOException {
         // Disallow operation if the object has gone out of scope
@@ -137,6 +139,7 @@ public class CoyoteReader
     }
 
 
+    @Override
     public int read()
         throws IOException {
         // Disallow operation if the object has gone out of scope
@@ -147,6 +150,7 @@ public class CoyoteReader
     }
 
 
+    @Override
     public int read(char[] cbuf)
         throws IOException {
         // Disallow operation if the object has gone out of scope
@@ -157,6 +161,7 @@ public class CoyoteReader
     }
 
 
+    @Override
     public int read(char[] cbuf, int off, int len)
         throws IOException {
         // Disallow operation if the object has gone out of scope
@@ -167,6 +172,7 @@ public class CoyoteReader
     }
 
 
+    @Override
     public long skip(long n)
         throws IOException {
         // Disallow operation if the object has gone out of scope
@@ -177,6 +183,7 @@ public class CoyoteReader
     }
 
 
+    @Override
     public boolean ready()
         throws IOException {
         // Disallow operation if the object has gone out of scope
@@ -187,6 +194,7 @@ public class CoyoteReader
     }
 
 
+    @Override
     public boolean markSupported() {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
@@ -196,6 +204,7 @@ public class CoyoteReader
     }
 
 
+    @Override
     public void mark(int readAheadLimit)
         throws IOException {
         // Disallow operation if the object has gone out of scope
@@ -206,6 +215,7 @@ public class CoyoteReader
     }
 
 
+    @Override
     public void reset()
         throws IOException {
         // Disallow operation if the object has gone out of scope
@@ -216,6 +226,7 @@ public class CoyoteReader
     }
 
 
+    @Override
     public String readLine()
         throws IOException {
 

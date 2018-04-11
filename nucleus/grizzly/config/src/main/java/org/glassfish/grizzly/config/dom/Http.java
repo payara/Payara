@@ -548,6 +548,7 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     void setHttp2PushEnabled(boolean pushEnabled);
 
     @DuckTyped
+    @Override
     Protocol getParent();
 
     class Duck {

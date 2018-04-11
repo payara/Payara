@@ -63,6 +63,7 @@ public class EjbInterceptorContext extends ResourceContainerContextImpl {
         descriptor = ejbInterceptor;
     }
 
+    @Override
     public void endElement(ElementType type, AnnotatedElement element) {
         
         if (ElementType.TYPE.equals(type)) {

@@ -109,6 +109,7 @@ public class SecurityConfig {
     /**
      * Returns a formatted string of the state.
      */
+    @Override
     public String toString() {
         StringBuffer toStringBuffer = new StringBuffer();
         toStringBuffer.append("SecurityConfig: ");

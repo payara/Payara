@@ -66,7 +66,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 @ExecuteOn(RuntimeType.DAS)
 public class StopDomainCommand extends StopServer implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(StopDomainCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(StopDomainCommand.class);
     @Inject
     ServiceLocator habitat;
     @Inject
@@ -80,6 +80,7 @@ public class StopDomainCommand extends StopServer implements AdminCommand {
      * All running services are stopped. 
      * LookupManager is flushed.
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         if (!env.isDas()) {

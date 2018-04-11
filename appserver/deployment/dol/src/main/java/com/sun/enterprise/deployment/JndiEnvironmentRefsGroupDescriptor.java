@@ -132,36 +132,44 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
         return (getCallbackDescriptors(type).size() > 0);
     }
 
+    @Override
     public void addPostConstructDescriptor(LifecycleCallbackDescriptor lcDesc) {
         addCallbackDescriptor(CallbackType.POST_CONSTRUCT, lcDesc);
     }
 
+    @Override
     public LifecycleCallbackDescriptor getPostConstructDescriptorByClass(String className) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public Set<LifecycleCallbackDescriptor> getPostConstructDescriptors() {
         return getCallbackDescriptors(CallbackType.POST_CONSTRUCT);
     }
 
+    @Override
     public void addPreDestroyDescriptor(LifecycleCallbackDescriptor lcDesc) {
         addCallbackDescriptor(CallbackType.PRE_DESTROY, lcDesc);
     }
 
+    @Override
     public LifecycleCallbackDescriptor getPreDestroyDescriptorByClass(String className) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public Set<LifecycleCallbackDescriptor> getPreDestroyDescriptors() {
         return getCallbackDescriptors(CallbackType.PRE_DESTROY);
     }
 
     // ejb ref
+    @Override
     public void addEjbReferenceDescriptor(EjbReference ejbReference) {
 	    this.getEjbReferenceDescriptors().add(ejbReference);
 	    ejbReference.setReferringBundleDescriptor(getBundleDescriptor());
     }
 
+    @Override
     public EjbReference getEjbReference(String name) {
 	for (Iterator itr = this.getEjbReferenceDescriptors().iterator(); itr.hasNext();) {
 	    EjbReference er = (EjbReference) itr.next();
@@ -175,6 +183,7 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
                 new Object[] {name}));
     }
 
+    @Override
     public Set getEjbReferenceDescriptors() {
 	if (this.ejbReferences == null) {
 	    this.ejbReferences = new OrderedSet();
@@ -182,12 +191,14 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
 	return this.ejbReferences = new OrderedSet(this.ejbReferences);
     }
 
+    @Override
     public void removeEjbReferenceDescriptor(EjbReference ejbReference) {
 	this.getEjbReferenceDescriptors().remove(ejbReference);
 	ejbReference.setReferringBundleDescriptor(null);
     }
 
     // message destination ref
+    @Override
     public void addMessageDestinationReferenceDescriptor(MessageDestinationReferenceDescriptor msgDestReference) {
         if( getBundleDescriptor() != null ) {
             msgDestReference.setReferringBundleDescriptor
@@ -196,6 +207,7 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
         this.getMessageDestinationReferenceDescriptors().add(msgDestReference);
     }
 
+    @Override
     public MessageDestinationReferenceDescriptor getMessageDestinationReferenceByName(String name) {
 	for (Iterator itr = 
                  this.getMessageDestinationReferenceDescriptors().iterator(); 
@@ -212,6 +224,7 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
                 new Object[] {name}));
     }
 
+    @Override
     public Set getMessageDestinationReferenceDescriptors() {
         if( this.messageDestReferences == null ) {
             this.messageDestReferences = new OrderedSet();
@@ -220,16 +233,19 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
             new OrderedSet(this.messageDestReferences);
     }
 
+    @Override
     public void removeMessageDestinationReferenceDescriptor
         (MessageDestinationReferenceDescriptor msgDestRef) { 
         this.getMessageDestinationReferenceDescriptors().remove(msgDestRef);
     }
 
     // env property
+    @Override
     public void addEnvironmentProperty(EnvironmentProperty environmentProperty) {
 	this.getEnvironmentProperties().add(environmentProperty);
     }
 
+    @Override
     public Set getEnvironmentProperties() {
 	if (this.environmentProperties == null) {
 	    this.environmentProperties = new OrderedSet();
@@ -237,6 +253,7 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
 	return this.environmentProperties = new OrderedSet(this.environmentProperties);
     }
 
+    @Override
     public EnvironmentProperty getEnvironmentPropertyByName(String name) {
 	for (Iterator itr = this.getEnvironmentProperties().iterator(); itr.hasNext();) {
 	    EnvironmentProperty ev = (EnvironmentProperty) itr.next();
@@ -250,18 +267,21 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
                 new Object[] {name}));
     }
 
+    @Override
     public void removeEnvironmentProperty(
 			EnvironmentProperty environmentProperty) {
 	this.getEnvironmentProperties().remove(environmentProperty);
     }
 
     // service ref
+    @Override
     public void addServiceReferenceDescriptor(
 	        ServiceReferenceDescriptor serviceReference) {
         serviceReference.setBundleDescriptor(getBundleDescriptor());
         this.getServiceReferenceDescriptors().add(serviceReference);
     }
 
+    @Override
     public Set getServiceReferenceDescriptors() {
         if( this.serviceReferences == null ) {
             this.serviceReferences = new OrderedSet();
@@ -269,6 +289,7 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
         return this.serviceReferences = new OrderedSet(this.serviceReferences);
     }
 
+    @Override
     public ServiceReferenceDescriptor getServiceReferenceByName(String name) {
 	for (Iterator itr = this.getServiceReferenceDescriptors().iterator(); 
              itr.hasNext();) {
@@ -284,17 +305,20 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
                 new Object[] {name}));
     }
 
+    @Override
     public void removeServiceReferenceDescriptor(
 		ServiceReferenceDescriptor serviceReference) {
         this.getServiceReferenceDescriptors().remove(serviceReference);
     }
 
     // resource ref
+    @Override
     public void addResourceReferenceDescriptor(
 			ResourceReferenceDescriptor resourceReference) {
 	this.getResourceReferenceDescriptors().add(resourceReference);
     }
 
+    @Override
     public Set getResourceReferenceDescriptors() {
 	if (this.resourceReferences == null) {
 	    this.resourceReferences = new OrderedSet();
@@ -302,6 +326,7 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
 	return this.resourceReferences = new OrderedSet(this.resourceReferences);
     }
 
+    @Override
     public ResourceReferenceDescriptor getResourceReferenceByName(String name) {
 	for (Iterator itr = this.getResourceReferenceDescriptors().iterator(); itr.hasNext();) {
 	    ResourceReferenceDescriptor next = (ResourceReferenceDescriptor) itr.next();
@@ -315,17 +340,20 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
                 new Object[] {name}));
     }
 
+    @Override
     public void removeResourceReferenceDescriptor(
 			ResourceReferenceDescriptor resourceReference) {
 	this.getResourceReferenceDescriptors().remove(resourceReference);
     }
 
     // resource environment ref
+    @Override
     public void addResourceEnvReferenceDescriptor(
 		ResourceEnvReferenceDescriptor resourceEnvinationReference) {
 	this.getResourceEnvReferenceDescriptors().add(resourceEnvinationReference);
     }
 
+    @Override
     public Set getResourceEnvReferenceDescriptors() {
 	if (this.resourceEnvReferences == null) {
 	    this.resourceEnvReferences = new OrderedSet();
@@ -333,6 +361,7 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
 	return this.resourceEnvReferences = new OrderedSet(this.resourceEnvReferences);
     }
 
+    @Override
     public ResourceEnvReferenceDescriptor getResourceEnvReferenceByName(String name) {
 	for (Iterator itr = this.getResourceEnvReferenceDescriptors().iterator(); itr.hasNext();) {
 	    ResourceEnvReferenceDescriptor jdr = (ResourceEnvReferenceDescriptor) itr.next();
@@ -346,12 +375,14 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
                 new Object[] {name}));
     }
 
+    @Override
     public void removeResourceEnvReferenceDescriptor(
 		ResourceEnvReferenceDescriptor resourceEnvinationReference) {
 	this.getResourceEnvReferenceDescriptors().remove(resourceEnvinationReference);
     }
 
     // entity manager factory ref 
+    @Override
     public void addEntityManagerFactoryReferenceDescriptor(
                 EntityManagerFactoryReferenceDescriptor reference) {
         if( getBundleDescriptor() != null ) {
@@ -361,6 +392,7 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
         this.getEntityManagerFactoryReferenceDescriptors().add(reference);
     }
 
+    @Override
     public Set<EntityManagerFactoryReferenceDescriptor> getEntityManagerFactoryReferenceDescriptors() {
         if( this.entityManagerFactoryReferences == null ) {
             this.entityManagerFactoryReferences = 
@@ -369,6 +401,7 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
         return entityManagerFactoryReferences; 
     }
 
+    @Override
     public EntityManagerFactoryReferenceDescriptor getEntityManagerFactoryReferenceByName(String name) {
 	for (EntityManagerFactoryReferenceDescriptor next :
              getEntityManagerFactoryReferenceDescriptors()) {
@@ -384,6 +417,7 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
     }
 
     //  entity manager ref
+    @Override
     public void addEntityManagerReferenceDescriptor(
                 EntityManagerReferenceDescriptor reference) {
         if( getBundleDescriptor() != null ) {
@@ -393,6 +427,7 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
         this.getEntityManagerReferenceDescriptors().add(reference);
     }
 
+    @Override
     public Set<EntityManagerReferenceDescriptor> getEntityManagerReferenceDescriptors() {
         if( this.entityManagerReferences == null ) {
             this.entityManagerReferences = 
@@ -401,6 +436,7 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
         return entityManagerReferences; 
     }
 
+    @Override
     public EntityManagerReferenceDescriptor getEntityManagerReferenceByName(String name) {
 	for (EntityManagerReferenceDescriptor next :
              getEntityManagerReferenceDescriptors()) {
@@ -415,10 +451,12 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
                 new Object[] {name}));
     }
 
+    @Override
     public List<InjectionCapable> getInjectableResourcesByClass(String className) {
         throw new UnsupportedOperationException();
     }    
 
+    @Override
     public InjectionInfo getInjectionInfoByClass(Class clazz) {
         throw new UnsupportedOperationException();
     }

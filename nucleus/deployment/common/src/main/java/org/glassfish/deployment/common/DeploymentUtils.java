@@ -95,7 +95,7 @@ public class DeploymentUtils {
 
     public static final String DEPLOYMENT_PROPERTY_JAVA_WEB_START_ENABLED = "java-web-start-enabled";
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeploymentUtils.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeploymentUtils.class);
 
     private static final String V2_COMPATIBILITY = "v2";
 

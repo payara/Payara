@@ -176,6 +176,7 @@ public final class TextLoginDialog implements LoginDialog {
     /**
      * @return The username of the user.
      */
+    @Override
     public String getUserName() {
         return username;
     }
@@ -183,6 +184,7 @@ public final class TextLoginDialog implements LoginDialog {
     /**
      *@return The password of the user in plain text...
      */
+    @Override
     public final char[] getPassword() {
         return (password == null) ? null : Arrays.copyOf(password, password.length);
     }

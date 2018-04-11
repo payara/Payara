@@ -53,7 +53,7 @@ public class PersistentNew extends LifeCycleState {
     /**
      * I18N message handler
      */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
             "com.sun.jdo.spi.persistence.support.sqlstore.Bundle", // NOI18N
             PersistentNew.class.getClassLoader());
 
@@ -80,15 +80,18 @@ public class PersistentNew extends LifeCycleState {
     }
 
 
+    @Override
     public LifeCycleState transitionDeletePersistent() {
         return changeState(P_NEW_DELETED);
     }
 
 
+    @Override
     public LifeCycleState transitionFlushed() {
         return changeState(P_NEW_FLUSHED);
     }
 
+    @Override
     public LifeCycleState transitionCommit(boolean retainValues) {
         if (retainValues) {
             return changeState(P_NON_TX);
@@ -97,10 +100,12 @@ public class PersistentNew extends LifeCycleState {
         }
     }
 
+    @Override
     public LifeCycleState transitionRollback(boolean retainValues) {
         return changeState(TRANSIENT);
     }
 
+    @Override
     public boolean needsRestoreOnRollback(boolean retainValues) {
         //
         // This is a special case where retores doesn't depend on

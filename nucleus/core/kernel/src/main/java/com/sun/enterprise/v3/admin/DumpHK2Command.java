@@ -81,6 +81,7 @@ public class DumpHK2Command implements AdminCommand {
     @Inject
     ModulesRegistry modulesRegistry;
     
+    @Override
     public void execute(AdminCommandContext context) {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

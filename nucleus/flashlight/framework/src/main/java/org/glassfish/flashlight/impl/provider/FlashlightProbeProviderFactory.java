@@ -108,10 +108,12 @@ public class FlashlightProbeProviderFactory
         }
     };
 
+    @Override
     public void postConstruct() {
         FlashlightUtils.initialize(habitat, monitoringServiceConfig);
     }
 
+    @Override
     public void dtraceEnabledChanged(boolean newValue) {
         FlashlightUtils.setDTraceEnabled(newValue);
 
@@ -141,6 +143,7 @@ public class FlashlightProbeProviderFactory
         }
     }
 
+    @Override
     public void monitoringEnabledChanged(boolean newValue) {
         FlashlightUtils.setMonitoringEnabled(newValue);
 
@@ -152,11 +155,13 @@ public class FlashlightProbeProviderFactory
             dtraceEnabledChanged(true);
     }
 
+    @Override
     public <T> T getProbeProvider(Class<T> providerClazz)
             throws InstantiationException, IllegalAccessException {
         return getProbeProvider(providerClazz, null);
     }
 
+    @Override
     public <T> T getProbeProvider(Class<T> providerClazz, String invokerId)
             throws InstantiationException, IllegalAccessException {
 
@@ -201,6 +206,7 @@ public class FlashlightProbeProviderFactory
         }
     }
 
+    @Override
     public <T> T getProbeProvider(String moduleName, String providerName, String appName,
                                   Class<T> clazz)
             throws InstantiationException, IllegalAccessException {
@@ -367,6 +373,7 @@ public class FlashlightProbeProviderFactory
 
     }
 
+    @Override
     public void unregisterProbeProvider(Object probeProvider) {
         try {
             ProbeProviderRegistry ppRegistry = ProbeProviderRegistry.getInstance();
@@ -399,6 +406,7 @@ public class FlashlightProbeProviderFactory
         }
     }
 
+    @Override
     public void processXMLProbeProviders(ClassLoader cl, String xml, boolean inBundle) {
         if (logger.isLoggable(Level.FINE))
             logger.fine("processProbeProviderXML for " + xml);

@@ -58,6 +58,7 @@ class TxInflowCoordinator extends TopCoordinator {
      * @return a RecoveryCoordinator object that could be used by a subordinate
      * TopCoordinator to replay completion.
      */
+    @Override
     public RecoveryCoordinator register_resource(Resource res) {
         return new TxInflowRecoveryCoordinator();
     }
@@ -69,5 +70,6 @@ class TxInflowCoordinator extends TopCoordinator {
      * 
      * @see XATerminatorImpl
      */
+    @Override
     public void register_synchronization(Synchronization sync) {}  
 }

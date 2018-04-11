@@ -91,7 +91,7 @@ import javax.management.openmbean.CompositeData;
         description="change-master-broker")
 })
 public class ChangeMasterBrokerCommand extends JMSDestination implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ChangeMasterBrokerCommand.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ChangeMasterBrokerCommand.class);
     // [usemasterbroker] [availability-enabled] [dbvendor] [dbuser] [dbpassword admin] [jdbcurl] [properties props] clusterName
 
     private static enum BrokerStatusCode {
@@ -134,6 +134,7 @@ public class ChangeMasterBrokerCommand extends JMSDestination implements AdminCo
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         final String newMB = newMasterBroker;
@@ -242,6 +243,7 @@ public class ChangeMasterBrokerCommand extends JMSDestination implements AdminCo
               }*/
 
             ConfigSupport.apply(new SingleConfigCode<JmsService>() {
+                @Override
                 public Object run(JmsService param) throws PropertyVetoException, TransactionFailure {
 
                     param.setMasterBroker(newMB);

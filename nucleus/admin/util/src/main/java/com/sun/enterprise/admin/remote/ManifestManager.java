@@ -65,6 +65,7 @@ class ManifestManager implements ResponseManager {
         return response.getMainAtts();
     }
 
+    @Override
     public void process() throws RemoteException {
         logger.finer("PROCESSING MANIFEST...");
 

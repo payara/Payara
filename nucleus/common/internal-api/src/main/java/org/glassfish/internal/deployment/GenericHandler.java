@@ -85,6 +85,7 @@ public abstract class GenericHandler implements ArchiveHandler {
      * @param context deployment context
      * @throws IOException when the archive is corrupted
      */
+    @Override
     public void expand(ReadableArchive source, WritableArchive target,
         DeploymentContext context) throws IOException {
 
@@ -130,6 +131,7 @@ public abstract class GenericHandler implements ArchiveHandler {
      * @param context deployment context
      * @return the default application name for the specified archive
      */
+    @Override
     public String getDefaultApplicationName(ReadableArchive archive, 
         DeploymentContext context) {
         // first try to get the name from ApplicationInfoProvider if 
@@ -170,6 +172,7 @@ public abstract class GenericHandler implements ArchiveHandler {
         return appName;
     }
 
+    @Override
     public String getDefaultApplicationName(ReadableArchive archive) {
         return getDefaultApplicationName(archive, null);
     }
@@ -181,6 +184,7 @@ public abstract class GenericHandler implements ArchiveHandler {
      *
      * @return null
      */
+    @Override
     public String getVersionIdentifier(ReadableArchive archive){
         return null;
     }
@@ -193,6 +197,7 @@ public abstract class GenericHandler implements ArchiveHandler {
      * @param archive file
      * @return manifest instance or null if this archive has no manifest
      */
+    @Override
     public Manifest getManifest(ReadableArchive archive) throws IOException {
         return archive.getManifest();
     }
@@ -203,6 +208,7 @@ public abstract class GenericHandler implements ArchiveHandler {
      * @param archive file
      * @return classpath URIs for this archive
      */
+    @Override
     public List<URI> getClassPathURIs(ReadableArchive archive) {
         List<URI> uris = new ArrayList<URI>();
         // add the archive itself
@@ -216,6 +222,7 @@ public abstract class GenericHandler implements ArchiveHandler {
      * @param archive file
      * @return whether this archive requires annotation scanning
      */
+    @Override
     public boolean requiresAnnotationScanning(ReadableArchive archive) {
         return true;
     }

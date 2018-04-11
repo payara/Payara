@@ -81,6 +81,7 @@ public interface ProtocolFinder extends ConfigBeanProxy, PropertyBag {
     Protocol findProtocol();
 
     @DuckTyped
+    @Override
     PortUnification getParent();
 
     class Duck {

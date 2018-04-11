@@ -67,14 +67,17 @@ public class DomainCreationStartup implements ModuleStartup {
     @Inject
     ServerEnvironmentImpl env;
 
+    @Override
     public void setStartupContext(StartupContext startupContext) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public void start() {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public void stop() {
         try {
             env.setStatus(ServerEnvironment.Status.stopped);

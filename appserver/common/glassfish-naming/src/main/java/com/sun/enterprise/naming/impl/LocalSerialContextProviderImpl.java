@@ -88,6 +88,7 @@ public class LocalSerialContextProviderImpl extends SerialContextProviderImpl {
      * the copies of the method arguments get passed and not the real objects.
      */
 
+    @Override
     public void bind(String name, Object obj)
             throws NamingException, RemoteException {
         Object copyOfObj = namingUtils.makeCopyOfObject(obj);
@@ -103,12 +104,14 @@ public class LocalSerialContextProviderImpl extends SerialContextProviderImpl {
      * the copies of the method arguments get passed and not the real objects.
      */
 
+    @Override
     public void rebind(String name, Object obj)
             throws NamingException, RemoteException {
         Object copyOfObj = namingUtils.makeCopyOfObject(obj);
         super.rebind(name, copyOfObj);
     }
 
+    @Override
     public Object lookup(String name)
             throws NamingException, RemoteException {
         Object obj = super.lookup(name);

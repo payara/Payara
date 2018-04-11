@@ -53,6 +53,7 @@ class GeneratedManPageManager implements ResponseManager{
         this.response = response;
     }
 
+    @Override
     public void process() throws RemoteException {
         String usageText = response.getValue(AdminCommandResponse.SYNOPSIS);
 

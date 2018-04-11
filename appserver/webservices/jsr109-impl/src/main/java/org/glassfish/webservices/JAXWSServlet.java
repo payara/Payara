@@ -89,6 +89,7 @@ public class JAXWSServlet extends HttpServlet {
     private String urlPattern;
     private RequestTracingService requestTracing;
 
+    @Override
     public void init(ServletConfig servletConfig) throws ServletException {
         String servletName = "unknown";
 
@@ -148,12 +149,14 @@ public class JAXWSServlet extends HttpServlet {
         requestTracing = org.glassfish.internal.api.Globals.getDefaultHabitat().getService(RequestTracingService.class);
     }
 
+    @Override
     public void destroy() {
         synchronized (this) {
             wsEngine_.removeHandler(endpoint);
         }
     }
 
+    @Override
     protected void doPost(HttpServletRequest request,
                           HttpServletResponse response)
             throws ServletException {
@@ -221,6 +224,7 @@ public class JAXWSServlet extends HttpServlet {
 
     }
 
+    @Override
     protected void doGet(HttpServletRequest request,
                          HttpServletResponse response)
             throws ServletException, IOException {

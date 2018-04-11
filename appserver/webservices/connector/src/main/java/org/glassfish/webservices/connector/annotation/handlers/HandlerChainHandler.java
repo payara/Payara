@@ -103,6 +103,7 @@ public class HandlerChainHandler extends AbstractHandler {
      * require to be processed (if present) before it processes it's own
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         Class<? extends Annotation>[] dependencies = new Class[3];
         dependencies[0] = WebService.class;
@@ -111,6 +112,7 @@ public class HandlerChainHandler extends AbstractHandler {
         return dependencies;
     }    
     
+    @Override
     public HandlerProcessingResult processAnnotation(AnnotationInfo annInfo)
         throws AnnotationProcessorException {
         

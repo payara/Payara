@@ -44,6 +44,7 @@ import org.glassfish.admin.amx.util.ClassUtil;
 
 public class ClassNameStringifier implements Stringifier
 {
+                @Override
 		public String
 	stringify( Object o )
 	{

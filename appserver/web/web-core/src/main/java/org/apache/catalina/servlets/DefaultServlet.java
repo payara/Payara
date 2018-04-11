@@ -333,6 +333,7 @@ public class DefaultServlet
     /**
      * Finalize this servlet.
      */
+    @Override
     public void destroy() {
         // NOOP
     }
@@ -341,6 +342,7 @@ public class DefaultServlet
     /**
      * Initialize this servlet.
      */
+    @Override
     public void init() throws ServletException {
         ServletConfig sc = getServletConfig();
         if (sc.getInitParameter("debug") != null)
@@ -499,6 +501,7 @@ public class DefaultServlet
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet-specified error occurs
      */
+    @Override
     protected void doGet(HttpServletRequest request,
                          HttpServletResponse response)
         throws IOException, ServletException {
@@ -518,6 +521,7 @@ public class DefaultServlet
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet-specified error occurs
      */
+    @Override
     protected void doHead(HttpServletRequest request,
                           HttpServletResponse response)
         throws IOException, ServletException {
@@ -537,6 +541,7 @@ public class DefaultServlet
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet-specified error occurs
      */
+    @Override
     protected void doPost(HttpServletRequest request,
                           HttpServletResponse response)
         throws IOException, ServletException {
@@ -553,6 +558,7 @@ public class DefaultServlet
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet-specified error occurs
      */
+    @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp)
         throws ServletException, IOException {
 
@@ -706,6 +712,7 @@ public class DefaultServlet
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet-specified error occurs
      */
+    @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
         throws ServletException, IOException {
 
@@ -2614,6 +2621,7 @@ public class DefaultServlet
             this.dirName = dirName;
         }
 
+        @Override
         public int compare(NameClassPair p1, NameClassPair p2) {
 
             CacheEntry ce1 = resources.lookupCache(
@@ -2650,6 +2658,7 @@ public class DefaultServlet
             this.dirName = dirName;
         }
 
+        @Override
         public int compare(NameClassPair p1, NameClassPair p2) {
 
             CacheEntry ce1 = resources.lookupCache(
@@ -2674,18 +2683,21 @@ public class DefaultServlet
      */
     private static class SecureEntityResolver implements EntityResolver2  {
 
+        @Override
         public InputSource resolveEntity(String publicId, String systemId)
                 throws SAXException, IOException {
             throw new SAXException(
                     MessageFormat.format(rb.getString(LogFacade.BLOCK_EXTERNAL_ENTITY), publicId, systemId));
         }
 
+        @Override
         public InputSource getExternalSubset(String name, String baseURI)
                 throws SAXException, IOException {
             throw new SAXException(
                     MessageFormat.format(rb.getString(LogFacade.BLOCK_EXTERNAL_SUBSET), name, baseURI));
         }
 
+        @Override
         public InputSource resolveEntity(String name, String publicId,
                 String baseURI, String systemId) throws SAXException,
                 IOException {

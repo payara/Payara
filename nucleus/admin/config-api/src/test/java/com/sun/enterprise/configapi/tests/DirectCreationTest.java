@@ -91,6 +91,7 @@ public class DirectCreationTest extends ConfigPersistence {
     	return getBaseServiceLocator();
     }
     
+    @Override
     public void doTest() throws TransactionFailure {
 
         AdminService service = habitat.getService(AdminService.class);
@@ -145,6 +146,7 @@ public class DirectCreationTest extends ConfigPersistence {
         assertTrue(foundOne);
     }
 
+    @Override
     public boolean assertResult(String s) {
         return s.contains("autodeploy-dir=\"funky-dir\"");
     }

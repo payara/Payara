@@ -55,7 +55,7 @@ import java.util.Set;
  * @author  Jerome Dochez
  * @version 
  */
-abstract public class CmpFieldTest extends CMPTest {
+public abstract class CmpFieldTest extends CMPTest {
 
 
     /**

@@ -73,6 +73,7 @@ public final class UnprocessedChangeEvents {
     
     public int size() { return mUnprocessed == null ? 0 : mUnprocessed.size(); }
     
+    @Override
     public String toString() {
         StringBuffer result = new StringBuffer("UnprocessedChangeEvents: " + size());
         if ( size() != 0 ) {

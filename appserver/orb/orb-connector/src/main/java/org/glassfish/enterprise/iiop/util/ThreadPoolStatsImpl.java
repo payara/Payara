@@ -169,6 +169,7 @@ public class ThreadPoolStatsImpl
 
     @ManagedAttribute(id = "currentbusythreads")
     @Description("Total number of busy threads")
+    @Override
     public synchronized CountStatistic getNumberOfBusyThreads() {
         int numBusyThreads = threadPool.numberOfBusyThreads();
         numberOfBusyThreads.setCount(numBusyThreads);
@@ -177,6 +178,7 @@ public class ThreadPoolStatsImpl
 
     @ManagedAttribute
     @Description("Total number of available threads")
+    @Override
     public synchronized CountStatistic getNumberOfAvailableThreads() {
         long numAvailableThreads = (long) threadPool.numberOfAvailableThreads();
 
@@ -187,6 +189,7 @@ public class ThreadPoolStatsImpl
 
     @ManagedAttribute
     @Description("Total number of current threads")
+    @Override
     public synchronized BoundedRangeStatistic getCurrentNumberOfThreads() {
         int numCurrentThreads = threadPool.currentNumberOfThreads();
         currentNumberOfThreads.setCurrent(numCurrentThreads);
@@ -195,6 +198,7 @@ public class ThreadPoolStatsImpl
 
     @ManagedAttribute
     @Description("Average time to complete work")
+    @Override
     public synchronized RangeStatistic getAverageWorkCompletionTime() {
         long avgWorkCompletionTime = threadPool.averageWorkCompletionTime();
         averageWorkCompletionTime.setCurrent(avgWorkCompletionTime);
@@ -203,6 +207,7 @@ public class ThreadPoolStatsImpl
 
     @ManagedAttribute
     @Description("Total number of work items added to the queue")
+    @Override
     public synchronized CountStatistic getTotalWorkItemsAdded() {
         long totWorkItemsAdded = workQueue.totalWorkItemsAdded();
         totalWorkItemsAdded.setCount(totWorkItemsAdded);
@@ -211,6 +216,7 @@ public class ThreadPoolStatsImpl
 
     @ManagedAttribute
     @Description("Total number of work items in the queue")
+    @Override
     public synchronized BoundedRangeStatistic getNumberOfWorkItemsInQueue() {
         int totWorkItemsInQueue = workQueue.workItemsInQueue();
         numberOfWorkItemsInQueue.setCurrent(totWorkItemsInQueue);
@@ -219,6 +225,7 @@ public class ThreadPoolStatsImpl
 
     @ManagedAttribute
     @Description("Average time in queue")
+    @Override
     public synchronized RangeStatistic getAverageTimeInQueue() {
         long avgTimeInQueue = workQueue.averageTimeInQueue();
         averageTimeInQueue.setCurrent(avgTimeInQueue);

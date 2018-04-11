@@ -282,5 +282,6 @@ public interface HttpService extends ConfigBeanProxy, PropertyBag, ConfigExtensi
             "do not define this property. Must be a valid IANA character set name")
 })
     @Element("property")
+    @Override
     List<Property> getProperty();
 }

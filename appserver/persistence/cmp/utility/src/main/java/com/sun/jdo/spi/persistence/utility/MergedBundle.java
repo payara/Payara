@@ -75,6 +75,7 @@ public class MergedBundle extends ResourceBundle
 		_parentBundle = parentBundle;
 	}
 
+        @Override
 	public Enumeration getKeys () { return mergeKeys(); }
 
 	private Enumeration mergeKeys ()
@@ -100,6 +101,7 @@ public class MergedBundle extends ResourceBundle
 		return returnList;
 	}
 
+        @Override
 	protected Object handleGetObject (String key)
 		throws MissingResourceException
 	{

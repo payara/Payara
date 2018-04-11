@@ -98,6 +98,7 @@ public class XAManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      * @throws ResourceAllocationException if there is an error in allocating the
      *                                     physical connection
      */
+    @Override
     public javax.resource.spi.ManagedConnection createManagedConnection(javax.security.auth.Subject subject,
                                                                         ConnectionRequestInfo cxRequestInfo) throws ResourceException {
         logFine("In createManagedConnection");
@@ -161,6 +162,7 @@ public class XAManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      * @return DataSource of jdbc vendor
      * @throws ResourceException
      */
+    @Override
     public javax.sql.XADataSource getDataSource() throws ResourceException {
         if (xaDataSourceObj == null) {
             try {
@@ -182,6 +184,7 @@ public class XAManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      *         <code>ManagedConnectionFactory</code> objects are the same
      *         false	otherwise
      */
+    @Override
     public boolean equals(Object other) {
         logFine("In equals");
         /**

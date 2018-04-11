@@ -100,7 +100,7 @@ import java.util.logging.Logger;
 @I18n("delete.module.config")
 public final class DeleteModuleConfigCommand extends AbstractConfigModularityCommand implements AdminCommand, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
     private final Logger LOG = getLogger();
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteModuleConfigCommand.class);
     private static final String DEFAULT_FORMAT = "";
     private ActionReport report;

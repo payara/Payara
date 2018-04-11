@@ -55,7 +55,7 @@ public class ConnectorTimerProxy extends Timer {
     private boolean timerException = false;
     private final Object getTimerLock = new Object();
     
-    private final static Logger _logger = LogDomains.getLogger(ConnectorTimerProxy.class, 
+    private static final Logger _logger = LogDomains.getLogger(ConnectorTimerProxy.class, 
             LogDomains.RSR_LOGGER);
 
     private ConnectorTimerProxy(boolean isDaemon) {

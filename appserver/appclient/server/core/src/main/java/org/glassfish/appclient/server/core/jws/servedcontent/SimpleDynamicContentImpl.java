@@ -65,10 +65,12 @@ public class SimpleDynamicContentImpl extends Content.Adapter implements Dynamic
         this.isMain = isMain;
     }
 
+    @Override
     public Instance getExistingInstance(Properties tokenValues) {
         return getOrCreateInstance(tokenValues, false);
     }
 
+    @Override
     public Instance getOrCreateInstance(Properties tokenValues) {
         return getOrCreateInstance(tokenValues, true);
     }
@@ -82,6 +84,7 @@ public class SimpleDynamicContentImpl extends Content.Adapter implements Dynamic
         return instance;
     }
 
+    @Override
     public String getMimeType() {
         return mimeType;
     }

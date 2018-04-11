@@ -143,6 +143,7 @@ public class UpdateStatement extends Statement implements Cloneable {
     }
 
     /** @inheritDoc */
+    @Override
     public QueryPlan getQueryPlan() {
          return plan;
     }
@@ -150,6 +151,7 @@ public class UpdateStatement extends Statement implements Cloneable {
     /**
      * @inheritDoc
      */
+    @Override
     protected void generateStatementText() {
 
         statementText = new StringBuffer();
@@ -294,6 +296,7 @@ public class UpdateStatement extends Statement implements Cloneable {
      * Redefines processConstraintValue in order to skip the creation of
      * an InputValue in the case of batch.
      */
+    @Override
     protected void processConstraintValue(ConstraintValue node, StringBuffer result) {
         result.append("?"); // NOI18N
         if (!batch)

@@ -257,6 +257,7 @@ class LogLSN implements Serializable {
      *
      * @see
      */
+    @Override
     public final String toString() {
         return "LSN(ext="/*#Frozen*/+extent+",off="/*#Frozen*/+offset+")"/*#Frozen*/;
     }

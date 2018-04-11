@@ -81,6 +81,7 @@ public interface ComponentContext
     /**
      * Get the resources associated with this Context.
      */
+    @Override
     List getResourceList();
     
 }

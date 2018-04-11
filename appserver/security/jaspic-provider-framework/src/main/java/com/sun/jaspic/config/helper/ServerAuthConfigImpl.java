@@ -68,8 +68,8 @@ import javax.security.auth.message.module.ServerAuthModule;
  */
 public class ServerAuthConfigImpl extends BaseAuthConfigImpl implements ServerAuthConfig {
 
-    private final static AuthStatus[] validateRequestSuccessValues = { SUCCESS, SEND_SUCCESS };
-    private final static AuthStatus[] secureResponseSuccessValues = { SEND_SUCCESS };
+    private static final AuthStatus[] validateRequestSuccessValues = { SUCCESS, SEND_SUCCESS };
+    private static final AuthStatus[] secureResponseSuccessValues = { SEND_SUCCESS };
 
     private Map<String, Map<Integer, ServerAuthContext>> contextMap;
     private BaseAuthContextImpl authContextHelperHelper;

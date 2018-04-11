@@ -57,7 +57,7 @@ import java.util.logging.Logger;
 public class LocalTransactionImpl implements javax.resource.spi.LocalTransaction {
 
     private ManagedConnectionImpl mc;
-    protected final static Logger _logger;
+    protected static final Logger _logger;
 
     static {
         _logger = LogDomains.getLogger(LocalTransactionImpl.class, LogDomains.RSR_LOGGER);
@@ -81,6 +81,7 @@ public class LocalTransactionImpl implements javax.resource.spi.LocalTransaction
      *                                   the autocommit mode of the physical
      *                                   connection
      */
+    @Override
     public void begin() throws ResourceException {
         //GJCINT
         mc.transactionStarted();
@@ -101,6 +102,7 @@ public class LocalTransactionImpl implements javax.resource.spi.LocalTransaction
      *                                   the autocommit mode of the physical
      *                                   connection or committing the transaction
      */
+    @Override
     public void commit() throws ResourceException {
         try {
             mc.getActualConnection().commit();
@@ -123,6 +125,7 @@ public class LocalTransactionImpl implements javax.resource.spi.LocalTransaction
      *                                   the autocommit mode of the physical
      *                                   connection or rolling back the transaction
      */
+    @Override
     public void rollback() throws ResourceException {
         try {
             mc.getActualConnection().rollback();

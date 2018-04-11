@@ -137,6 +137,7 @@ class InvokerHttpRequest extends HttpServletRequestWrapper {
     /**
      * Override the <code>getPathInfo()</code> method of the wrapped request.
      */
+    @Override
     public String getPathInfo() {
 
         return (this.pathInfo);
@@ -148,6 +149,7 @@ class InvokerHttpRequest extends HttpServletRequestWrapper {
      * Override the <code>getPathTranslated()</code> method of the
      * wrapped request.
      */
+    @Override
     public String getPathTranslated() {
 
         return (this.pathTranslated);
@@ -158,6 +160,7 @@ class InvokerHttpRequest extends HttpServletRequestWrapper {
     /**
      * Override the <code>getRequestURI()</code> method of the wrapped request.
      */
+    @Override
     public String getRequestURI() {
 
         return (this.requestURI);
@@ -169,6 +172,7 @@ class InvokerHttpRequest extends HttpServletRequestWrapper {
      * Override the <code>getServletPath()</code> method of the wrapped
      * request.
      */
+    @Override
     public String getServletPath() {
 
         return (this.servletPath);

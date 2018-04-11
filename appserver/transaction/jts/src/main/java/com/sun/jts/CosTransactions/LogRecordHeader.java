@@ -78,7 +78,7 @@ class LogRecordHeader implements Serializable {
     /**
      * This constant holds the size of the LogRecordHeader object.
      */
-    final static int SIZEOF = 3 * LogLSN.SIZEOF + 8;
+    static final int SIZEOF = 3 * LogLSN.SIZEOF + 8;
 
     int    recordType   = 0;
     LogLSN currentLSN   = null;
@@ -172,6 +172,7 @@ class LogRecordHeader implements Serializable {
      *
      * @see
      */
+    @Override
     public final String toString() {
         return "LRH(type="/*#Frozen*/ + recordType + ",curr="/*#Frozen*/ + currentLSN +
                ",prev="/*#Frozen*/ + previousLSN + ",next="/*#Frozen*/ + nextLSN +

@@ -117,6 +117,7 @@ public final class EJBObjectInvocationHandler
     /**
      * This entry point is only used for the Remote Home view.
      */
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args) 
         throws Throwable {
 

@@ -74,30 +74,36 @@ public class EntityManagerReferenceDescriptor extends
 
     public EntityManagerReferenceDescriptor() {}
 
+    @Override
     public void setUnitName(String unitName) {
         
         this.unitName = unitName;
     }
 
+    @Override
     public String getUnitName() {
 
         return unitName;
 
     }
 
+    @Override
     public String getInjectResourceType() {
         return "javax.persistence.EntityManager";
     }
 
+    @Override
     public void setInjectResourceType(String resourceType) {
     }
 
+    @Override
     public void setPersistenceContextType(PersistenceContextType type) {
 
         contextType = type;
 
     }
 
+    @Override
     public PersistenceContextType getPersistenceContextType() {
 
         return contextType;
@@ -105,11 +111,13 @@ public class EntityManagerReferenceDescriptor extends
     }
 
 
+    @Override
     public SynchronizationType getSynchronizationType() {
         return synchronizationType;
     }
 
 
+    @Override
     public void setSynchronizationType(SynchronizationType synchronizationType) {
         this.synchronizationType = synchronizationType;
     }
@@ -118,15 +126,18 @@ public class EntityManagerReferenceDescriptor extends
         properties.put(name, value);
     }
 
+    @Override
     public Map<String,String> getProperties() {
         return new HashMap<String,String>(properties);
     }
 
+    @Override
     public void setReferringBundleDescriptor(BundleDescriptor referringBundle)
     {
 	this.referringBundle = referringBundle;
     }
 
+    @Override
     public BundleDescriptor getReferringBundleDescriptor()
     {
 	return referringBundle;

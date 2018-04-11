@@ -69,10 +69,12 @@ public class ListIiopListenersTest extends org.glassfish.tests.utils.ConfigApiTe
     private CommandRunner cr;
     private AdminCommandContext context;
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
 
+    @Override
     public DomDocument getDocument(ServiceLocator services) {
         return new TestDocument(services);
     }

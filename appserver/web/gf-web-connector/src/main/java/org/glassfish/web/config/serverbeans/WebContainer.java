@@ -97,5 +97,6 @@ public interface WebContainer extends ConfigBeanProxy, PropertyBag, ConfigExtens
     }
     )
     @Element
+    @Override
     List<Property> getProperty();
 }

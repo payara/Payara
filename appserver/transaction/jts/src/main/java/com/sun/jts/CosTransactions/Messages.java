@@ -416,6 +416,7 @@ public class Messages extends ListResourceBundle  {
     /**
      * Return the contents of the ResourceBundle.
      */
+    @Override
     protected Object[][] getContents() { return contents; }
 
     /**

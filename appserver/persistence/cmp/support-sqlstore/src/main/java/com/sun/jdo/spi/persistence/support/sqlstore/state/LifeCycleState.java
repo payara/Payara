@@ -57,7 +57,7 @@ public abstract class LifeCycleState {
     /**
      * I18N message handler
      */
-    protected final static ResourceBundle messages = I18NHelper.loadBundle(
+    protected static final ResourceBundle messages = I18NHelper.loadBundle(
             "com.sun.jdo.spi.persistence.support.sqlstore.Bundle", // NOI18N
             LifeCycleState.class.getClassLoader());
 
@@ -94,7 +94,7 @@ public abstract class LifeCycleState {
     /**
      * Constants to specify database operation to be executed
      */
-    final static protected int
+    final protected static int
             NO_OP = 0,
     INSERT_OP = 1,
     UPDATE_OP = 2,
@@ -103,7 +103,7 @@ public abstract class LifeCycleState {
     /**
      * Constants to specify the life cycle state type
      */
-    final static public int
+    public static final int
             HOLLOW = 0,
     P_NON_TX = 1,
     P_CLEAN = 2,
@@ -407,6 +407,7 @@ public abstract class LifeCycleState {
         return (stateTypes[newStateType]);
     }
 
+    @Override
     public String toString() {
         switch (stateType) {
             case HOLLOW:

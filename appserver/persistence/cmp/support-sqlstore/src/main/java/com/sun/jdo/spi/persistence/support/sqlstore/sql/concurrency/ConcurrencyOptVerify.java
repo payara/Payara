@@ -63,6 +63,7 @@ public class ConcurrencyOptVerify extends ConcurrencyCheckDirty {
      * Find all the local fields that have been updated
      * and use their concurrencyGroup to set the verifyGroupMask.
      */
+    @Override
     protected BitSet prepareVerifyGroupMask(UpdateQueryPlan plan) {
         ArrayList fields;
         BitSet verifyGroupMask = new BitSet();
@@ -102,6 +103,7 @@ public class ConcurrencyOptVerify extends ConcurrencyCheckDirty {
         return verifyGroupMask;
     }
 
+    @Override
     protected boolean isFieldVerificationRequired(LocalFieldDesc lf,
                                                   BitSet verifyGroupMask) {
         boolean fieldVerificationRequired = true;
@@ -119,6 +121,7 @@ public class ConcurrencyOptVerify extends ConcurrencyCheckDirty {
         return fieldVerificationRequired;
     }
 
+    @Override
     public Object clone() {
         return new ConcurrencyOptVerify();
     }

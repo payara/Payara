@@ -157,10 +157,12 @@ public abstract class NameMapper extends AbstractNameMapper
 		}
 	}
 
+        @Override
 	protected Map getGeneratedFieldsMap ()
 	{
 		return _generatedRelToInverseRelMap;
 	}
+        @Override
 	protected Map getInverseFieldsMap () { return _relToInverseGeneratedRelMap; }
 
 	// isCMPField does not return true for relationships, so we use getTypeFor
@@ -196,13 +198,14 @@ public abstract class NameMapper extends AbstractNameMapper
 	 * @param name the name of the ejb
 	 * @return the EjbCMPEntityDescriptor which represents the ejb.
 	 */
-	abstract public EjbCMPEntityDescriptor getDescriptorForEjbName (
+	public abstract EjbCMPEntityDescriptor getDescriptorForEjbName (
 		String name);
 
 	/** Get the type of key class of this ejb.
 	 * @return the key class type, one of {@link #USER_DEFINED_KEY_CLASS}, 
 	 * {@link #PRIMARY_KEY_FIELD}, or {@link #UNKNOWN_KEY_CLASS}
 	 */
+        @Override
 	public int getKeyClassTypeForEjbName (String name)
 	{
 		String keyClass = getKeyClassForEjbName(name);
@@ -223,12 +226,12 @@ public abstract class NameMapper extends AbstractNameMapper
 	 * @param schemaName the name of the abstract schema
 	 * @return the name of the ejb for the specified abstract schema
 	 */
-	abstract public String getEjbNameForAbstractSchema (String schemaName);
+	public abstract String getEjbNameForAbstractSchema (String schemaName);
 
 	/** Gets the name of the concrete bean class which corresponds to the 
 	 * specified ejb.
 	 * @param name the name of the ejb
 	 * @return the name of the concrete bean for the specified ejb
 	 */
-	abstract public String getConcreteBeanClassForEjbName (String name);
+	public abstract String getConcreteBeanClassForEjbName (String name);
 }

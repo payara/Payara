@@ -108,7 +108,7 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext.Phase;
 public class EnableCommand extends StateCommandParameters implements AdminCommand, 
         DeploymentTargetResolver, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EnableCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EnableCommand.class);
     
     final static String ENABLE_ACTION = "enable";
 
@@ -186,6 +186,7 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
      * Entry point from the framework into the command execution
      * @param context context for the command.
      */
+    @Override
     public void execute(AdminCommandContext context) {
         deployment.validateSpecifiedTarget(target);
         InterceptorNotifier notifier = new InterceptorNotifier(habitat, null);
@@ -285,6 +286,7 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
         } 
     }        
 
+    @Override
     public String getTarget(ParameterMap parameters) {
         return DeploymentCommandUtils.getTarget(parameters, OpsParams.Origin.load, deployment);
     }

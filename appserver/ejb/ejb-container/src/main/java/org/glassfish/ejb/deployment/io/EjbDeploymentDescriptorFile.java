@@ -61,6 +61,7 @@ public class EjbDeploymentDescriptorFile extends DeploymentDescriptorFile {
      * @return the location of the DeploymentDescriptor file for a
      * particular type of J2EE Archive
      */
+    @Override
     public String getDeploymentDescriptorPath() {
         return DOLUtils.warType().equals(getArchiveType()) ?
         		DescriptorConstants.EJB_IN_WAR_ENTRY : DescriptorConstants.EJB_JAR_ENTRY;
@@ -72,6 +73,7 @@ public class EjbDeploymentDescriptorFile extends DeploymentDescriptorFile {
      *
      * @param descriptor the descriptor for which we need the node
      */
+    @Override
     public RootXMLNode<EjbBundleDescriptorImpl> getRootXMLNode(Descriptor descriptor) {
         return new EjbBundleNode();
     }

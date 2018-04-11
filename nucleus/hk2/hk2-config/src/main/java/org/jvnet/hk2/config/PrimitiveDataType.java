@@ -57,6 +57,7 @@ public final class PrimitiveDataType implements DataType {
         this.realType = realType;
     }
     
+    @Override
     public void validate(String value) throws ValidationException {
         if (value.startsWith("${") && value.endsWith("}")) //it's a token
           return;

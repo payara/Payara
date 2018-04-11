@@ -149,6 +149,7 @@ class CoordinatorSynchronizationImpl extends SynchronizationPOA {
      *
      * @see
      */
+    @Override
     public void before_completion() 
         throws SystemException {
 
@@ -177,6 +178,7 @@ class CoordinatorSynchronizationImpl extends SynchronizationPOA {
      *
      * @see
      */
+    @Override
     public void after_completion( Status status )
         throws SystemException {
 

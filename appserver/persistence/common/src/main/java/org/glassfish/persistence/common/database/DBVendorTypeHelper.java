@@ -63,61 +63,61 @@ import com.sun.logging.LogDomains;
  */
 public class DBVendorTypeHelper {
     //Enum that corresponds to unknown database.
-    public final static int OTHER_ENUM       = -1;
+    public static final int OTHER_ENUM       = -1;
 
     //Known databases.
-    public final static int DEFAULT_DB_ENUM  = 0;
-    public final static int ORACLE_ENUM      = 1;
-    public final static int POINTBASE_ENUM   = 2;
-    public final static int MSSQL_ENUM       = 3;
-    public final static int SYBASE_ENUM      = 4;
-    public final static int DB2_ENUM         = 5;
-    public final static int MYSQL_ENUM       = 6;
-    public final static int INFORMIX_ENUM    = 7;
-    public final static int INGRES_ENUM      = 8;
-    public final static int DERBY_ENUM       = 9;
-    public final static int SYMFOWARE_ENUM   = 10;
+    public static final int DEFAULT_DB_ENUM  = 0;
+    public static final int ORACLE_ENUM      = 1;
+    public static final int POINTBASE_ENUM   = 2;
+    public static final int MSSQL_ENUM       = 3;
+    public static final int SYBASE_ENUM      = 4;
+    public static final int DB2_ENUM         = 5;
+    public static final int MYSQL_ENUM       = 6;
+    public static final int INFORMIX_ENUM    = 7;
+    public static final int INGRES_ENUM      = 8;
+    public static final int DERBY_ENUM       = 9;
+    public static final int SYMFOWARE_ENUM   = 10;
 
     //Please increment following when a new known database is added.
-    public final static int MAX_KNOWN_DB     = 11;
+    public static final int MAX_KNOWN_DB     = 11;
 
     /**
      * Array that defines mapping from given string name to enum.
      * Please make sure that array indexes and enum values are kept in sync.
      */
-    private final static String enumToStringMapping[] =
+    private static final String enumToStringMapping[] =
         {"SQL92", "ORACLE", "POINTBASE", "MSSQL", "SYBASE", "DB2", "MYSQL", 
          "INFORMIX", "INGRES", "DERBY", "SYMFOWARE"}; // NOI18N
 
-    public final static String DEFAULT_DB  = enumToStringMapping[DEFAULT_DB_ENUM];
-    public final static String ORACLE      = enumToStringMapping[ORACLE_ENUM];
-    public final static String POINTBASE   = enumToStringMapping[POINTBASE_ENUM];
-    public final static String MSSQL       = enumToStringMapping[MSSQL_ENUM];
-    public final static String SYBASE      = enumToStringMapping[SYBASE_ENUM];
-    public final static String DB2         = enumToStringMapping[DB2_ENUM];
-    public final static String MYSQL       = enumToStringMapping[MYSQL_ENUM];
-    public final static String INFORMIX    = enumToStringMapping[INFORMIX_ENUM];
-    public final static String INGRES      = enumToStringMapping[INGRES_ENUM];
-    public final static String DERBY       = enumToStringMapping[DERBY_ENUM];
-    public final static String SYMFOWARE   = enumToStringMapping[SYMFOWARE_ENUM];
+    public static final String DEFAULT_DB  = enumToStringMapping[DEFAULT_DB_ENUM];
+    public static final String ORACLE      = enumToStringMapping[ORACLE_ENUM];
+    public static final String POINTBASE   = enumToStringMapping[POINTBASE_ENUM];
+    public static final String MSSQL       = enumToStringMapping[MSSQL_ENUM];
+    public static final String SYBASE      = enumToStringMapping[SYBASE_ENUM];
+    public static final String DB2         = enumToStringMapping[DB2_ENUM];
+    public static final String MYSQL       = enumToStringMapping[MYSQL_ENUM];
+    public static final String INFORMIX    = enumToStringMapping[INFORMIX_ENUM];
+    public static final String INGRES      = enumToStringMapping[INGRES_ENUM];
+    public static final String DERBY       = enumToStringMapping[DERBY_ENUM];
+    public static final String SYMFOWARE   = enumToStringMapping[SYMFOWARE_ENUM];
 
-    private final static String PROPERTY_PATH = "org/glassfish/persistence/common/"; // NOI18N
+    private static final String PROPERTY_PATH = "org/glassfish/persistence/common/"; // NOI18N
 
-    private final static String VENDOR_NAME_TO_TYPE_RESOURCE_DEFAULT_NAME =
+    private static final String VENDOR_NAME_TO_TYPE_RESOURCE_DEFAULT_NAME =
         PROPERTY_PATH + "VendorNameToTypeMapping.properties";  //NOI18N
 
     // Preserve old names even though this class is now in a different package
-    private final static String VENDOR_NAME_TO_TYPE_PROPERTY =
+    private static final String VENDOR_NAME_TO_TYPE_PROPERTY =
         "com.sun.jdo.spi.persistence.utility.database.VENDOR_NAME_TO_TYPE"; //NOI18N
-    private final static String VENDOR_NAME_TO_TYPE_RESOURCE_PROPERTY =
+    private static final String VENDOR_NAME_TO_TYPE_RESOURCE_PROPERTY =
         "com.sun.jdo.spi.persistence.utility.database.VENDOR_NAME_TO_TYPE_RESOURCE";  //NOI18N
 
     /** The logger */
-    private final static Logger logger = LogDomains.getLogger(
+    private static final Logger logger = LogDomains.getLogger(
             DBVendorTypeHelper.class, LogDomains.JDO_LOGGER);
 
     /** I18N message handler */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
         "org.glassfish.persistence.common.LogStrings", //NOI18N
          DBVendorTypeHelper.class.getClassLoader());
 

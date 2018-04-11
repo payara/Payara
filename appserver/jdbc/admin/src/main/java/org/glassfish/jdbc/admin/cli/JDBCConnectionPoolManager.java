@@ -73,7 +73,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
 
     private static final String DESCRIPTION = ServerTags.DESCRIPTION;
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(JDBCConnectionPoolManager.class);
 
     private String datasourceclassname = null;
@@ -117,10 +117,12 @@ public class JDBCConnectionPoolManager implements ResourceManager {
     public JDBCConnectionPoolManager() {
     }
 
+    @Override
     public String getResourceType() {
         return ServerTags.JDBC_CONNECTION_POOL;
     }
 
+    @Override
     public ResourceStatus create(Resources resources, HashMap attributes, final Properties properties,
                                  String target) throws Exception {
         setAttributes(attributes);
@@ -133,6 +135,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
         try {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
 
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     return createResource(param, properties);
                 }
@@ -357,6 +360,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
 
             // delete jdbc connection pool
             if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     JdbcConnectionPool cp = (JdbcConnectionPool)
                             ConnectorsUtil.getResourceByName(resources, JdbcConnectionPool.class, poolName);
@@ -390,6 +394,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
                                            final boolean cascade, final String poolName) throws TransactionFailure {
         if (cascade) {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     Collection<BindableResource> referringResources = JdbcResourcesUtil.getResourcesOfPool(param, poolName);
                     for (BindableResource referringResource : referringResources) {
@@ -429,6 +434,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
         }
     }
 
+    @Override
     public Resource createConfigBean(Resources resources, HashMap attributes, Properties properties, boolean validate)
             throws Exception {
         setAttributes(attributes);

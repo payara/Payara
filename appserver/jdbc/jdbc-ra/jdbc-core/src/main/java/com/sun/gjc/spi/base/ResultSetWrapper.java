@@ -61,7 +61,7 @@ public abstract class ResultSetWrapper implements ResultSet {
     protected ResultSet resultSet = null;
     protected Statement statement = null;
     private MethodExecutor executor = null;
-    protected final static Logger _logger;
+    protected static final Logger _logger;
     private ResultSetClosedEventListener eventListener = null;
 
     static {
@@ -99,6 +99,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         <code>false</code> if there are no more rows
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean next() throws SQLException {
         return resultSet.next();
     }
@@ -118,6 +119,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void close() throws SQLException {
         resultSet.close();
         if (eventListener != null) {
@@ -137,6 +139,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         <code>NULL</code> and <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean wasNull() throws SQLException {
         return resultSet.wasNull();
     }
@@ -151,6 +154,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>null</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getString(int columnIndex) throws SQLException {
         return resultSet.getString(columnIndex);
     }
@@ -165,6 +169,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>false</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean getBoolean(int columnIndex) throws SQLException {
         return resultSet.getBoolean(columnIndex);
     }
@@ -179,6 +184,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>0</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public byte getByte(int columnIndex) throws SQLException {
         return resultSet.getByte(columnIndex);
     }
@@ -193,6 +199,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>0</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public short getShort(int columnIndex) throws SQLException {
         return resultSet.getShort(columnIndex);
     }
@@ -207,6 +214,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>0</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getInt(int columnIndex) throws SQLException {
         return resultSet.getInt(columnIndex);
     }
@@ -221,6 +229,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>0</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public long getLong(int columnIndex) throws SQLException {
         return resultSet.getLong(columnIndex);
     }
@@ -235,6 +244,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>0</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public float getFloat(int columnIndex) throws SQLException {
         return resultSet.getFloat(columnIndex);
     }
@@ -249,6 +259,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>0</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public double getDouble(int columnIndex) throws SQLException {
         return resultSet.getDouble(columnIndex);
     }
@@ -266,6 +277,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @deprecated
      */
     @Deprecated
+    @Override
     public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
         return resultSet.getBigDecimal(columnIndex, scale);
     }
@@ -281,6 +293,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>null</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public byte[] getBytes(int columnIndex) throws SQLException {
         return resultSet.getBytes(columnIndex);
     }
@@ -295,6 +308,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>null</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public Date getDate(int columnIndex) throws SQLException {
         return resultSet.getDate(columnIndex);
     }
@@ -309,6 +323,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>null</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public Time getTime(int columnIndex) throws SQLException {
         return resultSet.getTime(columnIndex);
     }
@@ -323,6 +338,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>null</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public Timestamp getTimestamp(int columnIndex) throws SQLException {
         return resultSet.getTimestamp(columnIndex);
     }
@@ -350,6 +366,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>null</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public InputStream getAsciiStream(int columnIndex) throws SQLException {
         return resultSet.getAsciiStream(columnIndex);
     }
@@ -383,6 +400,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *             <code>getUnicodeStream</code>
      */
     @Deprecated
+    @Override
     public InputStream getUnicodeStream(int columnIndex) throws SQLException {
         return resultSet.getUnicodeStream(columnIndex);
     }
@@ -408,6 +426,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         <code>null</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public InputStream getBinaryStream(int columnIndex) throws SQLException {
         return resultSet.getBinaryStream(columnIndex);
     }
@@ -422,6 +441,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>null</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getString(String columnName) throws SQLException {
         return resultSet.getString(columnName);
     }
@@ -436,6 +456,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>false</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean getBoolean(String columnName) throws SQLException {
         return resultSet.getBoolean(columnName);
     }
@@ -450,6 +471,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>0</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public byte getByte(String columnName) throws SQLException {
         return resultSet.getByte(columnName);
     }
@@ -464,6 +486,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>0</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public short getShort(String columnName) throws SQLException {
         return resultSet.getShort(columnName);
     }
@@ -478,6 +501,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>0</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getInt(String columnName) throws SQLException {
         return resultSet.getInt(columnName);
     }
@@ -492,6 +516,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>0</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public long getLong(String columnName) throws SQLException {
         return resultSet.getLong(columnName);
     }
@@ -506,6 +531,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>0</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public float getFloat(String columnName) throws SQLException {
         return resultSet.getFloat(columnName);
     }
@@ -520,6 +546,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>0</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public double getDouble(String columnName) throws SQLException {
         return resultSet.getDouble(columnName);
     }
@@ -537,6 +564,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @deprecated
      */
     @Deprecated
+    @Override
     public BigDecimal getBigDecimal(String columnName, int scale) throws SQLException {
         return resultSet.getBigDecimal(columnName, scale);
     }
@@ -552,6 +580,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>null</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public byte[] getBytes(String columnName) throws SQLException {
         return resultSet.getBytes(columnName);
     }
@@ -566,6 +595,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>null</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public Date getDate(String columnName) throws SQLException {
         return resultSet.getDate(columnName);
     }
@@ -581,6 +611,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         the value returned is <code>null</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public Time getTime(String columnName) throws SQLException {
         return resultSet.getTime(columnName);
     }
@@ -595,6 +626,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         value returned is <code>null</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public Timestamp getTimestamp(String columnName) throws SQLException {
         return resultSet.getTimestamp(columnName);
     }
@@ -621,6 +653,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         the value returned is <code>null</code>.
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public InputStream getAsciiStream(String columnName) throws SQLException {
         return resultSet.getAsciiStream(columnName);
     }
@@ -653,6 +686,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @deprecated use <code>getCharacterStream</code> instead
      */
     @Deprecated
+    @Override
     public InputStream getUnicodeStream(String columnName) throws SQLException {
         return resultSet.getUnicodeStream(columnName);
     }
@@ -678,6 +712,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *         if the value is SQL <code>NULL</code>, the result is <code>null</code>
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public InputStream getBinaryStream(String columnName) throws SQLException {
         return resultSet.getBinaryStream(columnName);
     }
@@ -705,6 +740,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs or this method is
      *                               called on a closed result set
      */
+    @Override
     public SQLWarning getWarnings() throws SQLException {
         return resultSet.getWarnings();
     }
@@ -717,6 +753,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void clearWarnings() throws SQLException {
         resultSet.clearWarnings();
     }
@@ -744,6 +781,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @return the SQL name for this <code>ResultSet</code> object's cursor
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getCursorName() throws SQLException {
         return resultSet.getCursorName();
     }
@@ -755,6 +793,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @return the description of this <code>ResultSet</code> object's columns
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public ResultSetMetaData getMetaData() throws SQLException {
         return resultSet.getMetaData();
     }
@@ -785,6 +824,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @return a <code>java.lang.Object</code> holding the column value
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public Object getObject(int columnIndex) throws SQLException {
         return resultSet.getObject(columnIndex);
     }
@@ -815,6 +855,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @return a <code>java.lang.Object</code> holding the column value
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public Object getObject(String columnName) throws SQLException {
         return resultSet.getObject(columnName);
     }
@@ -828,6 +869,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if the <code>ResultSet</code> object
      *                               does not contain <code>columnName</code> or a database access error occurs
      */
+    @Override
     public int findColumn(String columnName) throws SQLException {
         return resultSet.findColumn(columnName);
     }
@@ -844,6 +886,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Reader getCharacterStream(int columnIndex) throws SQLException {
         return resultSet.getCharacterStream(columnIndex);
     }
@@ -860,6 +903,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Reader getCharacterStream(String columnName) throws SQLException {
         return resultSet.getCharacterStream(columnName);
     }
@@ -876,6 +920,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
         return resultSet.getBigDecimal(columnIndex);
     }
@@ -892,6 +937,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public BigDecimal getBigDecimal(String columnName) throws SQLException {
         return resultSet.getBigDecimal(columnName);
     }
@@ -906,6 +952,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public boolean isBeforeFirst() throws SQLException {
         return resultSet.isBeforeFirst();
     }
@@ -920,6 +967,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public boolean isAfterLast() throws SQLException {
         return resultSet.isAfterLast();
     }
@@ -933,6 +981,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public boolean isFirst() throws SQLException {
         return resultSet.isFirst();
     }
@@ -950,6 +999,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public boolean isLast() throws SQLException {
         return resultSet.isLast();
     }
@@ -963,6 +1013,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *                               occurs or the result set type is <code>TYPE_FORWARD_ONLY</code>
      * @since 1.2
      */
+    @Override
     public void beforeFirst() throws SQLException {
         resultSet.beforeFirst();
     }
@@ -976,6 +1027,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *                               occurs or the result set type is <code>TYPE_FORWARD_ONLY</code>
      * @since 1.2
      */
+    @Override
     public void afterLast() throws SQLException {
         resultSet.afterLast();
     }
@@ -990,6 +1042,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *                               occurs or the result set type is <code>TYPE_FORWARD_ONLY</code>
      * @since 1.2
      */
+    @Override
     public boolean first() throws SQLException {
         return resultSet.first();
     }
@@ -1004,6 +1057,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *                               occurs or the result set type is <code>TYPE_FORWARD_ONLY</code>
      * @since 1.2
      */
+    @Override
     public boolean last() throws SQLException {
         return resultSet.last();
     }
@@ -1016,6 +1070,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public int getRow() throws SQLException {
         return resultSet.getRow();
     }
@@ -1054,6 +1109,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *                               occurs, or the result set type is <code>TYPE_FORWARD_ONLY</code>
      * @since 1.2
      */
+    @Override
     public boolean absolute(int row) throws SQLException {
         return resultSet.absolute(row);
     }
@@ -1080,6 +1136,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *                               <code>TYPE_FORWARD_ONLY</code>
      * @since 1.2
      */
+    @Override
     public boolean relative(int rows) throws SQLException {
         return resultSet.relative(rows);
     }
@@ -1094,6 +1151,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *                               occurs or the result set type is <code>TYPE_FORWARD_ONLY</code>
      * @since 1.2
      */
+    @Override
     public boolean previous() throws SQLException {
         return resultSet.previous();
     }
@@ -1117,6 +1175,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @see #getFetchDirection
      * @since 1.2
      */
+    @Override
     public void setFetchDirection(int direction) throws SQLException {
         resultSet.setFetchDirection(direction);
     }
@@ -1130,6 +1189,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @see #setFetchDirection
      * @since 1.2
      */
+    @Override
     public int getFetchDirection() throws SQLException {
         return resultSet.getFetchDirection();
     }
@@ -1150,6 +1210,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @see #getFetchSize
      * @since 1.2
      */
+    @Override
     public void setFetchSize(int rows) throws SQLException {
         resultSet.setFetchSize(rows);
     }
@@ -1163,6 +1224,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @see #setFetchSize
      * @since 1.2
      */
+    @Override
     public int getFetchSize() throws SQLException {
         return resultSet.getFetchSize();
     }
@@ -1178,6 +1240,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public int getType() throws SQLException {
         return resultSet.getType();
     }
@@ -1193,6 +1256,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public int getConcurrency() throws SQLException {
         return resultSet.getConcurrency();
     }
@@ -1207,6 +1271,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @see java.sql.DatabaseMetaData#updatesAreDetected
      * @since 1.2
      */
+    @Override
     public boolean rowUpdated() throws SQLException {
         return resultSet.rowUpdated();
     }
@@ -1222,6 +1287,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @see java.sql.DatabaseMetaData#insertsAreDetected
      * @since 1.2
      */
+    @Override
     public boolean rowInserted() throws SQLException {
         return resultSet.rowInserted();
     }
@@ -1238,6 +1304,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @see java.sql.DatabaseMetaData#deletesAreDetected
      * @since 1.2
      */
+    @Override
     public boolean rowDeleted() throws SQLException {
         return resultSet.rowDeleted();
     }
@@ -1254,6 +1321,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateNull(int columnIndex) throws SQLException {
         resultSet.updateNull(columnIndex);
     }
@@ -1270,6 +1338,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateBoolean(int columnIndex, boolean x) throws SQLException {
         resultSet.updateBoolean(columnIndex, x);
     }
@@ -1286,6 +1355,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateByte(int columnIndex, byte x) throws SQLException {
         resultSet.updateByte(columnIndex, x);
     }
@@ -1302,6 +1372,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateShort(int columnIndex, short x) throws SQLException {
         resultSet.updateShort(columnIndex, x);
     }
@@ -1318,6 +1389,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateInt(int columnIndex, int x) throws SQLException {
         resultSet.updateInt(columnIndex, x);
     }
@@ -1334,6 +1406,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateLong(int columnIndex, long x) throws SQLException {
         resultSet.updateLong(columnIndex, x);
     }
@@ -1350,6 +1423,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateFloat(int columnIndex, float x) throws SQLException {
         resultSet.updateFloat(columnIndex, x);
     }
@@ -1366,6 +1440,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateDouble(int columnIndex, double x) throws SQLException {
         resultSet.updateDouble(columnIndex, x);
     }
@@ -1383,6 +1458,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateBigDecimal(int columnIndex, BigDecimal x) throws SQLException {
         resultSet.updateBigDecimal(columnIndex, x);
     }
@@ -1399,6 +1475,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateString(int columnIndex, String x) throws SQLException {
         resultSet.updateString(columnIndex, x);
     }
@@ -1415,6 +1492,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateBytes(int columnIndex, byte x[]) throws SQLException {
         resultSet.updateBytes(columnIndex, x);
     }
@@ -1431,6 +1509,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateDate(int columnIndex, Date x) throws SQLException {
         resultSet.updateDate(columnIndex, x);
     }
@@ -1447,6 +1526,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateTime(int columnIndex, Time x) throws SQLException {
         resultSet.updateTime(columnIndex, x);
     }
@@ -1464,6 +1544,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateTimestamp(int columnIndex, Timestamp x) throws SQLException {
         resultSet.updateTimestamp(columnIndex, x);
     }
@@ -1481,6 +1562,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateAsciiStream(int columnIndex, InputStream x, int length) throws SQLException {
         resultSet.updateAsciiStream(columnIndex, x, length);
     }
@@ -1498,6 +1580,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateBinaryStream(int columnIndex, InputStream x, int length) throws SQLException {
         resultSet.updateBinaryStream(columnIndex, x, length);
     }
@@ -1515,6 +1598,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateCharacterStream(int columnIndex, Reader x, int length) throws SQLException {
         resultSet.updateCharacterStream(columnIndex, x, length);
     }
@@ -1535,6 +1619,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateObject(int columnIndex, Object x, int scale) throws SQLException {
         resultSet.updateObject(columnIndex, x, scale);
     }
@@ -1551,6 +1636,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateObject(int columnIndex, Object x) throws SQLException {
         resultSet.updateObject(columnIndex, x);
     }
@@ -1566,6 +1652,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateNull(String columnName) throws SQLException {
         resultSet.updateNull(columnName);
     }
@@ -1582,6 +1669,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateBoolean(String columnName, boolean x) throws SQLException {
         resultSet.updateBoolean(columnName, x);
     }
@@ -1598,6 +1686,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateByte(String columnName, byte x) throws SQLException {
         resultSet.updateByte(columnName, x);
     }
@@ -1614,6 +1703,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateShort(String columnName, short x) throws SQLException {
         resultSet.updateShort(columnName, x);
     }
@@ -1630,6 +1720,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateInt(String columnName, int x) throws SQLException {
         resultSet.updateInt(columnName, x);
     }
@@ -1646,6 +1737,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateLong(String columnName, long x) throws SQLException {
         resultSet.updateLong(columnName, x);
     }
@@ -1662,6 +1754,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateFloat(String columnName, float x) throws SQLException {
         resultSet.updateFloat(columnName, x);
     }
@@ -1678,6 +1771,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateDouble(String columnName, double x) throws SQLException {
         resultSet.updateDouble(columnName, x);
     }
@@ -1695,6 +1789,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateBigDecimal(String columnName, BigDecimal x) throws SQLException {
         resultSet.updateBigDecimal(columnName, x);
     }
@@ -1711,6 +1806,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateString(String columnName, String x) throws SQLException {
         resultSet.updateString(columnName, x);
     }
@@ -1728,6 +1824,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateBytes(String columnName, byte x[]) throws SQLException {
         resultSet.updateBytes(columnName, x);
     }
@@ -1744,6 +1841,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateDate(String columnName, Date x) throws SQLException {
         resultSet.updateDate(columnName, x);
     }
@@ -1760,6 +1858,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateTime(String columnName, Time x) throws SQLException {
         resultSet.updateTime(columnName, x);
     }
@@ -1777,6 +1876,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateTimestamp(String columnName, Timestamp x) throws SQLException {
         resultSet.updateTimestamp(columnName, x);
     }
@@ -1794,6 +1894,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateAsciiStream(String columnName, InputStream x, int length) throws SQLException {
         resultSet.updateAsciiStream(columnName, x, length);
     }
@@ -1811,6 +1912,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateBinaryStream(String columnName, InputStream x, int length) throws SQLException {
         resultSet.updateBinaryStream(columnName, x, length);
     }
@@ -1829,6 +1931,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateCharacterStream(String columnName, Reader reader, int length) throws SQLException {
         resultSet.updateCharacterStream(columnName, reader, length);
     }
@@ -1849,6 +1952,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateObject(String columnName, Object x, int scale) throws SQLException {
         resultSet.updateObject(columnName, x, scale);
     }
@@ -1865,6 +1969,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public void updateObject(String columnName, Object x) throws SQLException {
         resultSet.updateObject(columnName, x);
     }
@@ -1880,6 +1985,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *                               the insert row have been given a value
      * @since 1.2
      */
+    @Override
     public void insertRow() throws SQLException {
         resultSet.insertRow();
     }
@@ -1893,6 +1999,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *                               if this method is called when the cursor is on the insert row
      * @since 1.2
      */
+    @Override
     public void updateRow() throws SQLException {
         resultSet.updateRow();
     }
@@ -1906,6 +2013,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *                               or if this method is called when the cursor is on the insert row
      * @since 1.2
      */
+    @Override
     public void deleteRow() throws SQLException {
         resultSet.deleteRow();
     }
@@ -1935,6 +2043,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *                               occurs or if this method is called when the cursor is on the insert row
      * @since 1.2
      */
+    @Override
     public void refreshRow() throws SQLException {
         resultSet.refreshRow();
     }
@@ -1954,6 +2063,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *                               on the insert row
      * @since 1.2
      */
+    @Override
     public void cancelRowUpdates() throws SQLException {
         resultSet.cancelRowUpdates();
     }
@@ -1979,6 +2089,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *                               or the result set is not updatable
      * @since 1.2
      */
+    @Override
     public void moveToInsertRow() throws SQLException {
         resultSet.moveToInsertRow();
     }
@@ -1992,6 +2103,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *                               or the result set is not updatable
      * @since 1.2
      */
+    @Override
     public void moveToCurrentRow() throws SQLException {
         resultSet.moveToCurrentRow();
     }
@@ -2009,6 +2121,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Statement getStatement() throws SQLException {
         return statement;
     }
@@ -2041,6 +2154,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Object getObject(int i, Map<String, Class<?>> map) throws SQLException {
         return resultSet.getObject(i, map);
     }
@@ -2056,6 +2170,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Ref getRef(int i) throws SQLException {
         return resultSet.getRef(i);
     }
@@ -2071,6 +2186,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Blob getBlob(int i) throws SQLException {
         return resultSet.getBlob(i);
     }
@@ -2086,6 +2202,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Clob getClob(int i) throws SQLException {
         return resultSet.getClob(i);
     }
@@ -2101,6 +2218,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Array getArray(int i) throws SQLException {
         return resultSet.getArray(i);
     }
@@ -2122,6 +2240,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Object getObject(String colName, Map<String, Class<?>> map) throws SQLException {
         return resultSet.getObject(colName, map);
     }
@@ -2137,6 +2256,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Ref getRef(String colName) throws SQLException {
         return resultSet.getRef(colName);
     }
@@ -2152,6 +2272,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Blob getBlob(String colName) throws SQLException {
         return resultSet.getBlob(colName);
     }
@@ -2167,6 +2288,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Clob getClob(String colName) throws SQLException {
         return resultSet.getClob(colName);
     }
@@ -2182,6 +2304,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Array getArray(String colName) throws SQLException {
         return resultSet.getArray(colName);
     }
@@ -2203,6 +2326,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Date getDate(int columnIndex, Calendar cal) throws SQLException {
         return resultSet.getDate(columnIndex, cal);
     }
@@ -2224,6 +2348,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Date getDate(String columnName, Calendar cal) throws SQLException {
         return resultSet.getDate(columnName, cal);
     }
@@ -2245,6 +2370,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Time getTime(int columnIndex, Calendar cal) throws SQLException {
         return resultSet.getTime(columnIndex, cal);
     }
@@ -2266,6 +2392,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Time getTime(String columnName, Calendar cal) throws SQLException {
         return resultSet.getTime(columnName, cal);
     }
@@ -2287,6 +2414,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
         return resultSet.getTimestamp(columnIndex, cal);
     }
@@ -2308,6 +2436,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Timestamp getTimestamp(String columnName, Calendar cal) throws SQLException {
         return resultSet.getTimestamp(columnName, cal);
     }
@@ -2325,6 +2454,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *                               or if a URL is malformed
      * @since 1.4
      */
+    @Override
     public URL getURL(int columnIndex) throws SQLException {
         return resultSet.getURL(columnIndex);
     }
@@ -2342,6 +2472,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      *                               or if a URL is malformed
      * @since 1.4
      */
+    @Override
     public URL getURL(String columnName) throws SQLException {
         return resultSet.getURL(columnName);
     }
@@ -2358,6 +2489,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public void updateRef(int columnIndex, Ref x) throws SQLException {
         resultSet.updateRef(columnIndex, x);
     }
@@ -2374,6 +2506,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public void updateRef(String columnName, Ref x) throws SQLException {
         resultSet.updateRef(columnName, x);
     }
@@ -2390,6 +2523,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public void updateBlob(int columnIndex, Blob x) throws SQLException {
         resultSet.updateBlob(columnIndex, x);
     }
@@ -2406,6 +2540,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public void updateBlob(String columnName, Blob x) throws SQLException {
         resultSet.updateBlob(columnName, x);
     }
@@ -2422,6 +2557,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public void updateClob(int columnIndex, Clob x) throws SQLException {
         resultSet.updateClob(columnIndex, x);
     }
@@ -2438,6 +2574,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public void updateClob(String columnName, Clob x) throws SQLException {
         resultSet.updateClob(columnName, x);
     }
@@ -2454,6 +2591,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public void updateArray(int columnIndex, Array x) throws SQLException {
         resultSet.updateArray(columnIndex, x);
     }
@@ -2470,6 +2608,7 @@ public abstract class ResultSetWrapper implements ResultSet {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public void updateArray(String columnName, Array x) throws SQLException {
         resultSet.updateArray(columnName, x);
     }

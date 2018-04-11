@@ -105,7 +105,7 @@ public abstract class ConnectionHolder implements Connection {
      * an exception is thrown.
      */
 
-    protected final static StringManager sm = StringManager.getManager(
+    protected static final StringManager sm = StringManager.getManager(
             DataSourceObjectBuilder.class);
 
 
@@ -192,6 +192,7 @@ public abstract class ConnectionHolder implements Connection {
      *
      * @throws SQLException In case of a database error.
      */
+    @Override
     public void clearWarnings() throws SQLException {
         checkValidity();
         con.clearWarnings();
@@ -202,6 +203,7 @@ public abstract class ConnectionHolder implements Connection {
      *
      * @throws SQLException In case of a database error.
      */
+    @Override
     public void close() throws SQLException {
         if (isClosed) {
             if (_logger.isLoggable(Level.FINE)) {
@@ -239,6 +241,7 @@ public abstract class ConnectionHolder implements Connection {
      *
      * @throws SQLException In case of a database error.
      */
+    @Override
     public void commit() throws SQLException {
         checkValidity();
         con.commit();
@@ -250,6 +253,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return <code>Statement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public Statement createStatement() throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -272,6 +276,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return <code>Statement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -295,6 +300,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return <code>Statement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public Statement createStatement(int resultSetType, int resultSetConcurrency,
                                      int resultSetHoldability) throws SQLException {
         checkValidity();
@@ -317,6 +323,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return The current state of connection's auto-commit mode.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public boolean getAutoCommit() throws SQLException {
         checkValidity();
         return con.getAutoCommit();
@@ -328,6 +335,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return Catalog Name.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public String getCatalog() throws SQLException {
         checkValidity();
         return con.getCatalog();
@@ -340,6 +348,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return holdability value.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public int getHoldability() throws SQLException {
         checkValidity();
         return con.getHoldability();
@@ -352,6 +361,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return <code>DatabaseMetaData</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public DatabaseMetaData getMetaData() throws SQLException {
         checkValidity();
         return con.getMetaData();
@@ -363,6 +373,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return Transaction level
      * @throws SQLException In case of a database error.
      */
+    @Override
     public int getTransactionIsolation() throws SQLException {
         checkValidity();
         return con.getTransactionIsolation();
@@ -375,6 +386,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return TypeMap set in this object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public Map<String, Class<?>> getTypeMap() throws SQLException {
         checkValidity();
         return con.getTypeMap();
@@ -387,6 +399,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return First <code> SQLWarning</code> Object or null.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public SQLWarning getWarnings() throws SQLException {
         checkValidity();
         return con.getWarnings();
@@ -399,6 +412,7 @@ public abstract class ConnectionHolder implements Connection {
      *         if it is closed.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public boolean isClosed() throws SQLException {
         return isClosed;
     }
@@ -420,6 +434,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return true if <code> Connection </code> is read-only, false other-wise
      * @throws SQLException In case of a database error.
      */
+    @Override
     public boolean isReadOnly() throws SQLException {
         checkValidity();
         return con.isReadOnly();
@@ -432,6 +447,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return Converted SQL string.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public String nativeSQL(String sql) throws SQLException {
         checkValidity();
         return con.nativeSQL(sql);
@@ -445,6 +461,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return <code> CallableStatement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public CallableStatement prepareCall(String sql) throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -465,6 +482,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return <code> CallableStatement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public CallableStatement prepareCall(String sql, int resultSetType,
                                          int resultSetConcurrency) throws SQLException {
         checkValidity();
@@ -487,6 +505,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return <code> CallableStatement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public CallableStatement prepareCall(String sql, int resultSetType,
                                          int resultSetConcurrency,
                                          int resultSetHoldability) throws SQLException {
@@ -508,6 +527,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return <code> PreparedStatement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public PreparedStatement prepareStatement(final String sql) throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -531,6 +551,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return <code> PreparedStatement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public PreparedStatement prepareStatement(final String sql, int autoGeneratedKeys) throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -555,6 +576,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return <code> PreparedStatement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public PreparedStatement prepareStatement(final String sql, int[] columnIndexes) throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -579,6 +601,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return <code> PreparedStatement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public PreparedStatement prepareStatement(final String sql, int resultSetType,
                                               int resultSetConcurrency) throws SQLException {
         checkValidity();
@@ -605,6 +628,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return <code> PreparedStatement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public PreparedStatement prepareStatement(final String sql, int resultSetType,
                                               int resultSetConcurrency,
                                               int resultSetHoldability) throws SQLException {
@@ -631,6 +655,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return <code> PreparedStatement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public PreparedStatement prepareStatement(final String sql, String[] columnNames) throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -651,6 +676,7 @@ public abstract class ConnectionHolder implements Connection {
      * @param savepoint <code>Savepoint</code> object
      * @throws SQLException In case of a database error.
      */
+    @Override
     public void releaseSavepoint(Savepoint savepoint) throws SQLException {
         checkValidity();
         con.releaseSavepoint(savepoint);
@@ -661,6 +687,7 @@ public abstract class ConnectionHolder implements Connection {
      *
      * @throws SQLException In case of a database error.
      */
+    @Override
     public void rollback() throws SQLException {
         checkValidity();
         con.rollback();
@@ -671,6 +698,7 @@ public abstract class ConnectionHolder implements Connection {
      *
      * @throws SQLException In case of a database error.
      */
+    @Override
     public void rollback(Savepoint savepoint) throws SQLException {
         checkValidity();
         con.rollback(savepoint);
@@ -682,6 +710,7 @@ public abstract class ConnectionHolder implements Connection {
      * @param autoCommit boolean value indicating the auto-commit mode.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public void setAutoCommit(boolean autoCommit) throws SQLException {
         checkValidity();
         con.setAutoCommit(autoCommit);
@@ -694,6 +723,7 @@ public abstract class ConnectionHolder implements Connection {
      * @param catalog Catalog name.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public void setCatalog(String catalog) throws SQLException {
         checkValidity();
         con.setCatalog(catalog);
@@ -706,6 +736,7 @@ public abstract class ConnectionHolder implements Connection {
      * @param holdability A <code>ResultSet</code> holdability constant
      * @throws SQLException In case of a database error.
      */
+    @Override
     public void setHoldability(int holdability) throws SQLException {
         checkValidity();
         con.setHoldability(holdability);
@@ -718,6 +749,7 @@ public abstract class ConnectionHolder implements Connection {
      * @param readOnly true enables read-only mode, false disables it.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public void setReadOnly(boolean readOnly) throws SQLException {
         checkValidity();
         con.setReadOnly(readOnly);
@@ -729,6 +761,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return <code>Savepoint</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public Savepoint setSavepoint() throws SQLException {
         checkValidity();
         return con.setSavepoint();
@@ -741,6 +774,7 @@ public abstract class ConnectionHolder implements Connection {
      * @return <code>Savepoint</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public Savepoint setSavepoint(String name) throws SQLException {
         checkValidity();
         return con.setSavepoint(name);
@@ -752,6 +786,7 @@ public abstract class ConnectionHolder implements Connection {
      * @param level transaction isolation level.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public void setTransactionIsolation(int level) throws SQLException {
         checkValidity();
         con.setTransactionIsolation(level);
@@ -860,6 +895,7 @@ public abstract class ConnectionHolder implements Connection {
      * @param map <code>Map</code> a Map object to install.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public void setTypeMap(java.util.Map<String, Class<?>> map) throws SQLException {
         checkValidity();
         con.setTypeMap(map);

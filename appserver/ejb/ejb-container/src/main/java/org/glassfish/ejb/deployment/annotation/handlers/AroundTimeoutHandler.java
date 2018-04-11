@@ -63,6 +63,7 @@ public class AroundTimeoutHandler extends AroundInvokeHandler {
     public AroundTimeoutHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 
@@ -78,6 +79,7 @@ public class AroundTimeoutHandler extends AroundInvokeHandler {
         return getDefaultProcessedResult();
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbInterceptorContext ejbInterceptorContext)
             throws AnnotationProcessorException {

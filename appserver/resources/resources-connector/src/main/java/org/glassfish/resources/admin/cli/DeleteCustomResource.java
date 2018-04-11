@@ -78,7 +78,7 @@ import java.beans.PropertyVetoException;
 @I18n("delete.custom.resource")
 public class DeleteCustomResource implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteCustomResource.class);
 
     @Param(optional=true, defaultValue=SystemPropertyConstants.DAS_SERVER_NAME)
@@ -102,6 +102,7 @@ public class DeleteCustomResource implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
@@ -154,6 +155,7 @@ public class DeleteCustomResource implements AdminCommand {
             // delete custom-resource
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
 
+                @Override
                 public Object run(Resources param) throws PropertyVetoException,
                         TransactionFailure {
                     CustomResource resource = (CustomResource)

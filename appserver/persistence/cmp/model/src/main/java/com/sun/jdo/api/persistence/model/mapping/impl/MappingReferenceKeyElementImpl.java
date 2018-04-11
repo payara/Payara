@@ -101,12 +101,14 @@ public class MappingReferenceKeyElementImpl extends MappingMemberElementImpl
 	/** Get the name of this element.
 	 * @return the name
 	 */
+        @Override
 	public String getKeyName () { return getName(); }
 
 	/** Set the name of this element.
 	 * @param name the name
 	 * @throws ModelException if impossible
 	 */
+        @Override
 	public void setKeyName (String name) throws ModelException
 	{
 		setName(name.toString());
@@ -117,12 +119,14 @@ public class MappingReferenceKeyElementImpl extends MappingMemberElementImpl
 	/** Returns the mapping table element for this referencing key.
 	 * @return the meta data table for this referencing key
 	 */
+        @Override
 	public MappingTableElement getTable () { return _table; }
 	
 	/** Set the mapping table for this referencing key to the supplied table.
 	 * @param table mapping table element to be used with this key.
 	 * @exception ModelException if impossible
 	 */
+        @Override
 	public void setTable (MappingTableElement table) throws ModelException
 	{
 		MappingTableElement old = getTable();
@@ -168,6 +172,7 @@ public class MappingReferenceKeyElementImpl extends MappingMemberElementImpl
 	 * @return the table that owns this reference key element, or 
 	 * <code>null</code> if the element is not attached to any table
 	 */
+        @Override
 	public TableElement getDeclaringTable ()
 	{
 		ArrayList locals = getReferencingKey();
@@ -190,6 +195,7 @@ public class MappingReferenceKeyElementImpl extends MappingMemberElementImpl
 	 * only be used when a ReferenceKey object is used or by the runtime.
 	 * @param tableElement mapping table element to be used with this key.
 	 */
+        @Override
 	public void setDeclaringTable (TableElement tableElement)
 	{
 		throw new UnsupportedOperationException();
@@ -201,6 +207,7 @@ public class MappingReferenceKeyElementImpl extends MappingMemberElementImpl
 	 * the runtime.
 	 * @return the referenced table
 	 */
+        @Override
 	public TableElement getReferencedTable ()
 	{
 		ColumnPairElement[] columnPairs = getColumnPairs();
@@ -229,6 +236,7 @@ public class MappingReferenceKeyElementImpl extends MappingMemberElementImpl
 	/** Returns the list of relative column pair names in this referencing key. 
 	 * @return the names of the column pairs in this referencing key
 	 */
+        @Override
 	public ArrayList getColumnPairNames ()
 	{
 		ArrayList locals = getReferencingKey();
@@ -296,6 +304,7 @@ public class MappingReferenceKeyElementImpl extends MappingMemberElementImpl
 	 * the runtime.
 	 * @return the columns
 	 */
+        @Override
 	public ColumnElement[] getLocalColumns ()
 	{
 		ColumnPairElement[] columnPairs = getColumnPairs();
@@ -314,6 +323,7 @@ public class MappingReferenceKeyElementImpl extends MappingMemberElementImpl
 	 * the runtime.
 	 * @return the columns
 	 */
+        @Override
 	public ColumnElement[] getReferencedColumns ()
 	{
 		ColumnPairElement[] columnPairs = getColumnPairs();
@@ -331,6 +341,7 @@ public class MappingReferenceKeyElementImpl extends MappingMemberElementImpl
 	 * @param pairName the relative name of the column pair to remove
 	 * @throws ModelException if impossible
 	 */
+        @Override
 	public void removeColumnPair (String pairName) throws ModelException
 	{
 		ArrayList pairNames = new ArrayList(1);
@@ -344,6 +355,7 @@ public class MappingReferenceKeyElementImpl extends MappingMemberElementImpl
 	 * @param pairNames the relative names of the column pairs to remove
 	 * @throws ModelException if impossible
 	 */
+        @Override
 	public void removeColumnPairs (ArrayList pairNames) throws ModelException
 	{
 		ArrayList refKey = getReferencingKey();
@@ -396,6 +408,7 @@ public class MappingReferenceKeyElementImpl extends MappingMemberElementImpl
 	 * @param pair the pair to add
 	 * @throws ModelException if impossible
 	 */
+        @Override
 	public void addColumnPair (ColumnPairElement pair) throws ModelException
 	{
 		addColumnPairs(new ColumnPairElement[]{pair});
@@ -405,6 +418,7 @@ public class MappingReferenceKeyElementImpl extends MappingMemberElementImpl
 	 * @param pairs the column pairs to add
 	 * @throws ModelException if impossible
 	 */
+        @Override
 	public void addColumnPairs (ColumnPairElement[] pairs) throws ModelException
 	{
 		MappingTableElementImpl table = (MappingTableElementImpl)getTable();
@@ -441,6 +455,7 @@ public class MappingReferenceKeyElementImpl extends MappingMemberElementImpl
 	 * @param pair the column pair to remove
 	 * @throws ModelException if impossible
 	 */
+        @Override
 	public void removeColumnPair (ColumnPairElement pair) throws ModelException
 	{
 		removeColumnPairs(new ColumnPairElement[]{pair});
@@ -450,6 +465,7 @@ public class MappingReferenceKeyElementImpl extends MappingMemberElementImpl
 	 * @param pairs the column pairs to remove
 	 * @throws ModelException if impossible
 	 */
+        @Override
 	public void removeColumnPairs (ColumnPairElement[] pairs)
 		throws ModelException
 	{
@@ -472,6 +488,7 @@ public class MappingReferenceKeyElementImpl extends MappingMemberElementImpl
 	 * @param pairs the new column pairs
 	 * @throws ModelException if impossible
 	 */
+        @Override
 	public void setColumnPairs (ColumnPairElement[] pairs) throws ModelException
 	{
 		removeColumnPairs(getColumnPairNames());	// remove the old ones
@@ -481,6 +498,7 @@ public class MappingReferenceKeyElementImpl extends MappingMemberElementImpl
 	/** Get all column pairs in this holder.
 	 * @return the column pairs
 	 */
+        @Override
 	public ColumnPairElement[] getColumnPairs ()
 	{
 		ArrayList pairNames = getColumnPairNames();
@@ -505,6 +523,7 @@ public class MappingReferenceKeyElementImpl extends MappingMemberElementImpl
 	 * @param name the name of the column pair for which to look
 	 * @return the column pair or <code>null</code> if not found
 	 */
+        @Override
 	public ColumnPairElement getColumnPair (DBIdentifier name)
 	{
 		ColumnPairElement[] myPairs = getColumnPairs();

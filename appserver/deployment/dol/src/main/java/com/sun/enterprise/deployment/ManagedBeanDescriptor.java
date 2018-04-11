@@ -97,10 +97,12 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
 	*/
     public ManagedBeanDescriptor() {}
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -403,6 +405,7 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
 	/**
 	* Returns a formatted String of the attributes of this object.
 	*/
+    @Override
     public void print(StringBuffer toStringBuffer) {
 
 	// toStringBuffer.append("\n homeClassName ").append(homeClassName);

@@ -82,7 +82,7 @@ import javax.inject.Named;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class CreateJMSHost implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateJMSHost.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateJMSHost.class);
     //[target target] [mqhost localhost] [mqport 7676] [mquser admin] [mqpassword admin] jms_host_name
 
     @Param(name="mqHost", alias="host", defaultValue="localhost")
@@ -127,6 +127,7 @@ public class CreateJMSHost implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         Config targetConfig = domain.getConfigNamed(target);
@@ -181,6 +182,7 @@ public class CreateJMSHost implements AdminCommand {
 
         try {
             ConfigSupport.apply(new SingleConfigCode<JmsService>() {
+                @Override
                 public Object run(JmsService param) throws PropertyVetoException, TransactionFailure {
 
                     JmsHost jmsHost = param.createChild(JmsHost.class); //TODO: need a way to create a JmsHost instance

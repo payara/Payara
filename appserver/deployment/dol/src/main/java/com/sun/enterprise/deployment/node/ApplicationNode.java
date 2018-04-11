@@ -76,27 +76,27 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
    /** 
     * The public ID.
     */
-    public final static String PUBLIC_DTD_ID = "-//Sun Microsystems, Inc.//DTD J2EE Application 1.3//EN";
-    public final static String PUBLIC_DTD_ID_12 = "-//Sun Microsystems, Inc.//DTD J2EE Application 1.2//EN";
+    public static final String PUBLIC_DTD_ID = "-//Sun Microsystems, Inc.//DTD J2EE Application 1.3//EN";
+    public static final String PUBLIC_DTD_ID_12 = "-//Sun Microsystems, Inc.//DTD J2EE Application 1.2//EN";
     /** 
      * The system ID.
      */
-    public final static String SYSTEM_ID = "http://java.sun.com/dtd/application_1_3.dtd";
-    public final static String SYSTEM_ID_12 = "http://java.sun.com/dtd/application_1_2.dtd";
+    public static final String SYSTEM_ID = "http://java.sun.com/dtd/application_1_3.dtd";
+    public static final String SYSTEM_ID_12 = "http://java.sun.com/dtd/application_1_2.dtd";
     
-    public final static String SCHEMA_ID_14 = "application_1_4.xsd";
+    public static final String SCHEMA_ID_14 = "application_1_4.xsd";
 
-    public final static String SCHEMA_ID_15 = "application_5.xsd";
-    public final static String SCHEMA_ID_16 = "application_6.xsd";
-    public final static String SCHEMA_ID_17 = "application_7.xsd";
-    public final static String SCHEMA_ID = "application_8.xsd";
-    public final static String SPEC_VERSION = "8";
-    private final static List<String> systemIDs = initSystemIDs();
+    public static final String SCHEMA_ID_15 = "application_5.xsd";
+    public static final String SCHEMA_ID_16 = "application_6.xsd";
+    public static final String SCHEMA_ID_17 = "application_7.xsd";
+    public static final String SCHEMA_ID = "application_8.xsd";
+    public static final String SPEC_VERSION = "8";
+    private static final List<String> systemIDs = initSystemIDs();
      
     // The XML tag associated with this Node
-    public final static XMLElement tag = new XMLElement(ApplicationTagNames.APPLICATION);
+    public static final XMLElement tag = new XMLElement(ApplicationTagNames.APPLICATION);
 
-    private final static List<String> initSystemIDs() {
+    private static final List<String> initSystemIDs() {
         List<String> systemIDs = new ArrayList<String>();
         systemIDs.add(SCHEMA_ID);
         systemIDs.add(SCHEMA_ID_14);
@@ -115,6 +115,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
      * @param publicIDToDTD is a mapping between xml Public-ID to DTD 
      * @return the doctype tag name
      */
+    @Override
     public String registerBundle(Map publicIDToDTD) {
         publicIDToDTD.put(PUBLIC_DTD_ID, SYSTEM_ID);
         publicIDToDTD.put(PUBLIC_DTD_ID_12, SYSTEM_ID_12);
@@ -183,6 +184,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return tag;
     }    
@@ -193,6 +195,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         Application application = getDescriptor();
         if (element.getQName().equals(
@@ -214,6 +217,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
      *
      * @param newDescriptor the new descriptor
      */
+    @Override
     public void addDescriptor(Object newDescriptor) {
         if (newDescriptor instanceof BundleDescriptor) {
 	        if(DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {
@@ -230,6 +234,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
    /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Application getDescriptor() {
         if (descriptor==null) {        	
             descriptor = Application.createApplication();
@@ -240,6 +245,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     /**
      * @return the DOCTYPE  of the XML file
      */    
+    @Override
     public String getDocType() {
         return null;
     }
@@ -247,6 +253,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     /**
      * @return the SystemID of the XML file
      */
+    @Override
     public String getSystemID() {
         return SCHEMA_ID;
     }
@@ -254,6 +261,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     /**
      * @return the list of SystemID of the XML schema supported
      */
+    @Override
     public List<String> getSystemIDs() {
         return systemIDs;
     }
@@ -265,6 +273,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
      * @param application  to write
      * @return the DOM tree top node
      */    
+    @Override
     public Node writeDescriptor(Node parent, Application application) {
         Node appNode = super.writeDescriptor(parent, application);
 
@@ -324,6 +333,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     /**
      * @return the default spec version level this node complies to
      */
+    @Override
     public String getSpecVersion() {
         return SPEC_VERSION;
     }

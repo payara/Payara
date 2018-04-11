@@ -103,6 +103,7 @@ public class NotificationService implements EventListener, ConfigListener {
         }
     }
 
+    @Override
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_READY)) {
             bootstrapNotificationService();

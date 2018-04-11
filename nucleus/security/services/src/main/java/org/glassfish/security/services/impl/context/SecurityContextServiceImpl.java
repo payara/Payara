@@ -53,6 +53,7 @@ public class SecurityContextServiceImpl implements SecurityContextService {
 
 	private Attributes envAttributes = new AttributesImpl();
 	
+        @Override
 	public Attributes getEnvironmentAttributes() {
 		return envAttributes;
 	}

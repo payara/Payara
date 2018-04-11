@@ -76,7 +76,7 @@ import java.util.logging.Logger;
 @I18n("delete.connector.connection.pool")
 public class DeleteConnectorConnectionPool implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteConnectorConnectionPool.class);
 
     private @Param(optional=true, obsolete = true)
@@ -103,6 +103,7 @@ public class DeleteConnectorConnectionPool implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         
@@ -139,6 +140,7 @@ public class DeleteConnectorConnectionPool implements AdminCommand {
 
             // delete connector connection pool
             if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     ConnectorConnectionPool cp = (ConnectorConnectionPool)
                             ConnectorsUtil.getResourceByName(domain.getResources(),ConnectorConnectionPool.class, poolname);
@@ -175,6 +177,7 @@ public class DeleteConnectorConnectionPool implements AdminCommand {
                                            final boolean cascade, final String poolName) throws TransactionFailure {
         if (cascade) {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     Collection<BindableResource> referringResources = ConnectorsUtil.getResourcesOfPool(param, poolName);
                     for (BindableResource referringResource : referringResources) {

@@ -77,15 +77,18 @@ public class TxIORInterceptor extends LocalObject implements IORInterceptor {
         habitat = h;
     }
     
+    @Override
     public void destroy() {
     }
     
+    @Override
     public String name() {
         return "TxIORInterceptor";
     }
     
     // Note: this is called for all remote refs created from this ORB,
     // including EJBs and COSNaming objects.
+    @Override
     public void establish_components(IORInfo iorInfo) {
         try {
             _logger.log(Level.FINE, "TxIORInterceptor.establish_components->:");

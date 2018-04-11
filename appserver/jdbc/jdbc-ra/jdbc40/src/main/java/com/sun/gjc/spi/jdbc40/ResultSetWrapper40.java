@@ -58,7 +58,7 @@ import javax.resource.ResourceException;
  */
 public class ResultSetWrapper40 extends ResultSetWrapper {
 
-    protected final static StringManager localStrings =
+    protected static final StringManager localStrings =
             StringManager.getManager(ManagedConnectionFactoryImpl.class);
 
     /**
@@ -87,6 +87,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public RowId getRowId(int columnIndex) throws SQLException {
         return resultSet.getRowId(columnIndex);
     }
@@ -108,10 +109,12 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public RowId getRowId(String columnLabel) throws SQLException {
         return resultSet.getRowId(columnLabel);
     }
 
+    @Override
     public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
             Class<?>[] valueTypes = new Class<?>[]{Integer.TYPE, Class.class};
@@ -125,6 +128,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
         throw new UnsupportedOperationException("Operation not supported in this runtime.");
     }
 
+    @Override
     public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
             Class<?>[] valueTypes = new Class<?>[]{String.class, Class.class};
@@ -156,6 +160,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateRowId(int columnIndex, RowId x) throws SQLException {
         resultSet.updateRowId(columnIndex, x);
     }
@@ -179,6 +184,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateRowId(String columnLabel, RowId x) throws SQLException {
         resultSet.updateRowId(columnLabel, x);
     }
@@ -191,6 +197,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      or this method is called on a closed result set
      * @since 1.6
      */
+    @Override
     public int getHoldability() throws SQLException {
         return resultSet.getHoldability();
     }
@@ -203,6 +210,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * @throws SQLException if a database access error occurs
      * @since 1.6
      */
+    @Override
     public boolean isClosed() throws SQLException {
         return resultSet.isClosed();
     }
@@ -229,6 +237,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNString(int columnIndex, String nString) throws SQLException {
         resultSet.updateNString(columnIndex, nString);
     }
@@ -256,6 +265,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNString(String columnLabel, String nString) throws SQLException {
         resultSet.updateNString(columnLabel, nString);
     }
@@ -280,6 +290,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNClob(int columnIndex, NClob nClob) throws SQLException {
         resultSet.updateNClob(columnIndex, nClob);
     }
@@ -305,6 +316,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNClob(String columnLabel, NClob nClob) throws SQLException {
         resultSet.updateNClob(columnLabel, nClob);
     }
@@ -327,6 +339,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public NClob getNClob(int columnIndex) throws SQLException {
         return resultSet.getNClob(columnIndex);
     }
@@ -350,6 +363,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public NClob getNClob(String columnLabel) throws SQLException {
         return resultSet.getNClob(columnLabel);
     }
@@ -369,6 +383,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public SQLXML getSQLXML(int columnIndex) throws SQLException {
         return resultSet.getSQLXML(columnIndex);
     }
@@ -389,6 +404,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public SQLXML getSQLXML(String columnLabel) throws SQLException {
         return resultSet.getSQLXML(columnLabel);
     }
@@ -419,6 +435,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateSQLXML(int columnIndex, SQLXML xmlObject) throws SQLException {
         resultSet.updateSQLXML(columnIndex, xmlObject);
     }
@@ -450,6 +467,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateSQLXML(String columnLabel, SQLXML xmlObject) throws SQLException {
         resultSet.updateSQLXML(columnLabel, xmlObject);
     }
@@ -473,6 +491,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public String getNString(int columnIndex) throws SQLException {
         return resultSet.getNString(columnIndex);
     }
@@ -497,6 +516,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public String getNString(String columnLabel) throws SQLException {
         return resultSet.getNString(columnLabel);
     }
@@ -521,6 +541,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public Reader getNCharacterStream(int columnIndex) throws SQLException {
         return resultSet.getNCharacterStream(columnIndex);
     }
@@ -546,6 +567,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public Reader getNCharacterStream(String columnLabel) throws SQLException {
         return resultSet.getNCharacterStream(columnLabel);
     }
@@ -575,6 +597,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNCharacterStream(int columnIndex, Reader x, long length) throws SQLException {
         resultSet.updateNCharacterStream(columnIndex, x, length);
     }
@@ -606,6 +629,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNCharacterStream(String columnLabel, Reader reader, long length) throws SQLException {
         resultSet.updateNCharacterStream(columnLabel, reader, length);
     }
@@ -631,6 +655,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateAsciiStream(int columnIndex, InputStream x, long length) throws SQLException {
         resultSet.updateAsciiStream(columnIndex, x, length);
     }
@@ -656,6 +681,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateBinaryStream(int columnIndex, InputStream x, long length) throws SQLException {
         resultSet.updateBinaryStream(columnIndex, x, length);
     }
@@ -681,6 +707,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateCharacterStream(int columnIndex, Reader x, long length) throws SQLException {
         resultSet.updateCharacterStream(columnIndex, x, length);
     }
@@ -707,6 +734,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateAsciiStream(String columnLabel, InputStream x, long length) throws SQLException {
         resultSet.updateAsciiStream(columnLabel, x, length);
     }
@@ -733,6 +761,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateBinaryStream(String columnLabel, InputStream x, long length) throws SQLException {
         resultSet.updateBinaryStream(columnLabel, x, length);
     }
@@ -760,6 +789,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateCharacterStream(String columnLabel, Reader reader, long length) throws SQLException {
         resultSet.updateCharacterStream(columnLabel, reader, length);
     }
@@ -787,6 +817,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateBlob(int columnIndex, InputStream inputStream, long length) throws SQLException {
         resultSet.updateBlob(columnIndex, inputStream, length);
     }
@@ -815,6 +846,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateBlob(String columnLabel, InputStream inputStream, long length) throws SQLException {
         resultSet.updateBlob(columnLabel, inputStream, length);
     }
@@ -845,6 +877,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateClob(int columnIndex, Reader reader, long length) throws SQLException {
         resultSet.updateClob(columnIndex, reader, length);
     }
@@ -876,6 +909,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateClob(String columnLabel, Reader reader, long length) throws SQLException {
         resultSet.updateClob(columnLabel, reader, length);
     }
@@ -908,6 +942,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNClob(int columnIndex, Reader reader, long length) throws SQLException {
         resultSet.updateNClob(columnIndex, reader, length);
     }
@@ -941,6 +976,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNClob(String columnLabel, Reader reader, long length) throws SQLException {
         resultSet.updateNClob(columnLabel, reader, length);
     }
@@ -974,6 +1010,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNCharacterStream(int columnIndex, Reader x) throws SQLException {
         resultSet.updateNCharacterStream(columnIndex, x);
     }
@@ -1009,6 +1046,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNCharacterStream(String columnLabel, Reader reader) throws SQLException {
         resultSet.updateNCharacterStream(columnLabel, reader);
     }
@@ -1038,6 +1076,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateAsciiStream(int columnIndex, InputStream x) throws SQLException {
         resultSet.updateAsciiStream(columnIndex, x);
     }
@@ -1067,6 +1106,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateBinaryStream(int columnIndex, InputStream x) throws SQLException {
         resultSet.updateBinaryStream(columnIndex, x);
     }
@@ -1096,6 +1136,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateCharacterStream(int columnIndex, Reader x) throws SQLException {
         resultSet.updateCharacterStream(columnIndex, x);
     }
@@ -1126,6 +1167,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateAsciiStream(String columnLabel, InputStream x) throws SQLException {
         resultSet.updateAsciiStream(columnLabel, x);
     }
@@ -1156,6 +1198,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateBinaryStream(String columnLabel, InputStream x) throws SQLException {
         resultSet.updateBinaryStream(columnLabel, x);
     }
@@ -1186,6 +1229,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateCharacterStream(String columnLabel, Reader reader) throws SQLException {
         resultSet.updateCharacterStream(columnLabel, reader);
     }
@@ -1214,6 +1258,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateBlob(int columnIndex, InputStream inputStream) throws SQLException {
         resultSet.updateBlob(columnIndex, inputStream);
     }
@@ -1243,6 +1288,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateBlob(String columnLabel, InputStream inputStream) throws SQLException {
         resultSet.updateBlob(columnLabel, inputStream);
     }
@@ -1275,6 +1321,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateClob(int columnIndex, Reader reader) throws SQLException {
         resultSet.updateClob(columnIndex, reader);
     }
@@ -1307,6 +1354,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateClob(String columnLabel, Reader reader) throws SQLException {
         resultSet.updateClob(columnLabel, reader);
     }
@@ -1341,6 +1389,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNClob(int columnIndex, Reader reader) throws SQLException {
         resultSet.updateNClob(columnIndex, reader);
     }
@@ -1375,6 +1424,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNClob(String columnLabel, Reader reader) throws SQLException {
         resultSet.updateNClob(columnLabel, reader);
     }
@@ -1396,6 +1446,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * @throws java.sql.SQLException If no object found that implements the interface
      * @since 1.6
      */
+    @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
         T result;
         if (iface.isInstance(this)) {
@@ -1421,6 +1472,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                               for an object with the given interface.
      * @since 1.6
      */
+    @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         boolean result;
         if (iface.isInstance(this)) {

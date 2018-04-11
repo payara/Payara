@@ -93,10 +93,12 @@ public class WebServiceReferenceManagerImpl implements WebServiceReferenceManage
 
     protected Logger logger = LogUtils.getLogger();
 
+    @Override
     public Object getWSContextObject() {
         return new WebServiceContextImpl();
     }
 
+    @Override
     public Object resolveWSReference(ServiceReferenceDescriptor desc, Context context)
             throws NamingException {
 

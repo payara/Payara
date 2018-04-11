@@ -157,6 +157,7 @@ public class AutoDeploymentOperation extends AutoOperation {
     /**
      * {@inheritDoc}
      */
+    @Override
     protected String getMessageString(AutodeploymentStatus ds, File file) {
         return localStrings.getLocalString(
                 ds.deploymentMessageKey, 
@@ -167,6 +168,7 @@ public class AutoDeploymentOperation extends AutoOperation {
     /**
      * {@inheritDoc}
      */
+    @Override
     protected void markFiles(AutodeploymentStatus ds, File file) {
         /*
          * One reason an auto-deployment may fail is if the auto-deployed

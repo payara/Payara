@@ -111,6 +111,7 @@ public class SystemInterceptorProxy
 
          java.security.AccessController
                         .doPrivileged(new java.security.PrivilegedExceptionAction() {
+                    @Override
                     public java.lang.Object run() throws Exception {
                         if (!m.isAccessible()) {
                             m.setAccessible(true);

@@ -86,8 +86,8 @@ class LogCursor {
 
     /**Constants used to identify browse direction.
      */
-    final static int ASCENDING  = 0;
-    final static int DESCENDING = 1;
+    static final int ASCENDING  = 0;
+    static final int DESCENDING = 1;
 
     /**Internal instance members.
      */

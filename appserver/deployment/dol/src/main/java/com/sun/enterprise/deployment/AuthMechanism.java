@@ -91,6 +91,7 @@ public class AuthMechanism extends Descriptor {
     * Get the description
     * @return description.
     */
+    @Override
     public String getDescription(){
         return super.getDescription();
     }
@@ -99,6 +100,7 @@ public class AuthMechanism extends Descriptor {
      * Sets the description
      * @param description.
      */
+    @Override
     public void setDescription(String description){
         super.setDescription(description);
     }

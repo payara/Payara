@@ -81,7 +81,7 @@ import static org.glassfish.connectors.admin.cli.CLIConstants.WSM.*;
 @I18n("create.connector.work.security.map")
 public class CreateConnectorWorkSecurityMap implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(CreateConnectorWorkSecurityMap.class);
 
     @Param(name=WSM_RA_NAME)
@@ -113,6 +113,7 @@ public class CreateConnectorWorkSecurityMap implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
@@ -185,6 +186,7 @@ public class CreateConnectorWorkSecurityMap implements AdminCommand {
         try {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
 
+                @Override
                 public Object run(Resources param) throws PropertyVetoException,
                         TransactionFailure {
 

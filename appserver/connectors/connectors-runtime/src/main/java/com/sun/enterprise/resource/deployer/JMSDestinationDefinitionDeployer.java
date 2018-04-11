@@ -76,12 +76,14 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
     private Provider<org.glassfish.resourcebase.resources.util.ResourceManagerFactory> resourceManagerFactoryProvider;
 
     private static Logger _logger = LogDomains.getLogger(JMSDestinationDefinitionDeployer.class, LogDomains.RSR_LOGGER);
-    final static String PROPERTY_PREFIX = "org.glassfish.jms-destination.";
+    static final String PROPERTY_PREFIX = "org.glassfish.jms-destination.";
 
+    @Override
     public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
         //TODO ASR
     }
 
+    @Override
     public void deployResource(Object resource) throws Exception {
 
         final JMSDestinationDefinitionDescriptor desc = (JMSDestinationDefinitionDescriptor) resource;
@@ -100,6 +102,7 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource) {
         if (handles(resource)) {
             if (!postApplicationDeployment) {
@@ -112,6 +115,7 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void validatePreservedResource(com.sun.enterprise.config.serverbeans.Application oldApp,
                                           com.sun.enterprise.config.serverbeans.Application newApp,
                                           Resource resource,
@@ -129,10 +133,12 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
         return new JMSDestinationProperty(name, value);
     }
 
+    @Override
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
         //TODO ASR
     }
 
+    @Override
     public void undeployResource(Object resource) throws Exception {
 
         final JMSDestinationDefinitionDescriptor desc = (JMSDestinationDefinitionDescriptor)resource;
@@ -149,18 +155,22 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
 
     }
 
+    @Override
     public void redeployResource(Object resource) throws Exception {
         throw new UnsupportedOperationException("redeploy() not supported for jms-destination-definition type");
     }
 
+    @Override
     public void enableResource(Object resource) throws Exception {
         throw new UnsupportedOperationException("enable() not supported for jms-destination-definition type");
     }
 
+    @Override
     public void disableResource(Object resource) throws Exception {
         throw new UnsupportedOperationException("disable() not supported for jms-destination-definition type");
     }
 
+    @Override
     public boolean handles(Object resource) {
         return resource instanceof JMSDestinationDefinitionDescriptor;
     }
@@ -168,6 +178,7 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
     /**
      * @inheritDoc
      */
+    @Override
     public boolean supportsDynamicReconfiguration() {
         return false;
     }
@@ -176,24 +187,29 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
      * @inheritDoc
      */
     @SuppressWarnings("rawtypes")
+    @Override
     public Class[] getProxyClassesForDynamicReconfiguration() {
         return new Class[0];
     }
 
     abstract class FakeConfigBean implements ConfigBeanProxy {
 
+        @Override
         public ConfigBeanProxy deepCopy(ConfigBeanProxy parent) {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public ConfigBeanProxy getParent() {
             return null;
         }
 
+        @Override
         public <T extends ConfigBeanProxy> T getParent(Class<T> tClass) {
             return null;
         }
 
+        @Override
         public <T extends ConfigBeanProxy> T createChild(Class<T> tClass) throws TransactionFailure {
             return null;
         }
@@ -210,26 +226,32 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
             this.value = value;
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public void setName(String value) throws PropertyVetoException {
             this.name = value;
         }
 
+        @Override
         public String getValue() {
             return (String) TranslatedConfigView.getTranslatedValue(value);
         }
 
+        @Override
         public void setValue(String value) throws PropertyVetoException {
             this.value = value;
         }
 
+        @Override
         public String getDescription() {
             return description;
         }
 
+        @Override
         public void setDescription(String value) throws PropertyVetoException {
             this.description = value;
         }
@@ -259,10 +281,12 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
             //To change body of implemented methods use File | Settings | File Templates.
         }
 
+        @Override
         public String getIdentity() {
             return name;
         }
 
+        @Override
         public String getResAdapter() {
             String resourceAdapter = desc.getResourceAdapter();
             if (resourceAdapter != null && !resourceAdapter.equals("")) {
@@ -271,14 +295,17 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
             return ConnectorConstants.DEFAULT_JMS_ADAPTER;
         }
 
+        @Override
         public void setResAdapter(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getDescription() {
             return desc.getDescription();
         }
 
+        @Override
         public void setDescription(String value) throws PropertyVetoException {
             //do nothing
         }
@@ -323,6 +350,7 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
             //do nothing
         }
 
+        @Override
         public List<Property> getProperty() {
             String destinationName = desc.getDestinationName();
             boolean destinationNameSet = false;
@@ -367,15 +395,18 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public Property getProperty(String name) {
             String value = desc.getProperty(name);
             return new JMSDestinationProperty(name, value);
         }
 
+        @Override
         public String getPropertyValue(String name) {
             return desc.getProperty(name);
         }
 
+        @Override
         public String getPropertyValue(String name, String defaultValue) {
             String value = desc.getProperty(name);
             if (value != null) {
@@ -388,10 +419,12 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
             //do nothing
         }
 
+        @Override
         public String getDeploymentOrder() {
             return null;
         }
 
+        @Override
         public void setDeploymentOrder(String value) {
             //do nothing
         }

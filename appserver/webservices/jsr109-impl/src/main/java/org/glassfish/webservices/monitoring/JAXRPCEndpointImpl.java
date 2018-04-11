@@ -63,6 +63,7 @@ public class JAXRPCEndpointImpl extends EndpointImpl implements SystemHandlerDel
         super(endpointSelector, type);
     }
     
+    @Override
     public boolean processRequest(SOAPMessageContext messageContext) {
 
 	boolean status = true;
@@ -116,6 +117,7 @@ public class JAXRPCEndpointImpl extends EndpointImpl implements SystemHandlerDel
         return status;
     }
 
+    @Override
     public void processResponse(SOAPMessageContext messageContext) {   
 
         // let's get our thread local context

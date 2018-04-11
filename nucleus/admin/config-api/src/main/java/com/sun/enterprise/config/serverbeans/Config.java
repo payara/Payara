@@ -537,6 +537,7 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
         public static void createResourceRef(Config config, final String enabled, final String refName) throws TransactionFailure {
             ConfigSupport.apply(new SingleConfigCode<Config>() {
 
+                @Override
                 public Object run(Config param) throws PropertyVetoException, TransactionFailure {
 
                     ResourceRef newResourceRef = param.createChild(ResourceRef.class);
@@ -566,6 +567,7 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
             if (ref != null) {
                 ConfigSupport.apply(new SingleConfigCode<Config>() {
 
+                    @Override
                     public Object run(Config param) {
                         return param.getResourceRef().remove(ref);
                     }

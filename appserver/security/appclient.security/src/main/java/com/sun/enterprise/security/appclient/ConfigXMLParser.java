@@ -108,10 +108,12 @@ public class ConfigXMLParser implements ConfigParser {
 
     }
 
+    @Override
     public Map getConfigMap() {
         return configMap;
     }
 
+    @Override
     public Set<String> getLayersWithDefault() {
         return layersWithDefault;
     }
@@ -238,6 +240,7 @@ public class ConfigXMLParser implements ConfigParser {
         return AuthMessagePolicy.getMessagePolicy(authSource, authRecipient);
     }
 
+    @Override
     public void initialize(Object config) throws IOException {
         String sun_acc = System.getProperty(ACC_XML, "glassfish-acc.xml");
         List<MessageSecurityConfig> msgconfigs = null;

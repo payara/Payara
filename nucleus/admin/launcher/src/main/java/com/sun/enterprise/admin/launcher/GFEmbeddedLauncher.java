@@ -155,6 +155,7 @@ class GFEmbeddedLauncher extends GFLauncher {
 
     }
 
+    @Override
     public String getLogFilename() throws GFLauncherException {
         return logFilename;
     }

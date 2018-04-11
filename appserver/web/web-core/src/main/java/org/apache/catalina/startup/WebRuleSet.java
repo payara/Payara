@@ -149,6 +149,7 @@ public class WebRuleSet extends RuleSetBase {
      * @param digester Digester instance to which the new Rule instances
      *  should be added.
      */
+    @Override
     public void addRuleInstances(Digester digester) {
         sessionConfig = new SetSessionConfig(digester);
         jspConfig = new SetJspConfig(digester);
@@ -496,6 +497,7 @@ final class SetLoginConfig extends Rule {
         super(digester);
     }
 
+    @Override
     public void begin(Attributes attributes) throws Exception {
         if (isLoginConfigSet){
             throw new IllegalArgumentException(
@@ -517,6 +519,7 @@ final class SetJspConfig extends Rule {
         super(digester);
     }
 
+    @Override
     public void begin(Attributes attributes) throws Exception {
         if (isJspConfigSet){
             throw new IllegalArgumentException(
@@ -538,6 +541,7 @@ final class SetSessionConfig extends Rule {
         super(digester);
     }
 
+    @Override
     public void begin(Attributes attributes) throws Exception {
         if (isSessionConfigSet){
             throw new IllegalArgumentException(
@@ -560,6 +564,7 @@ final class SetAuthConstraintRule extends Rule {
         super(digester);
     }
 
+    @Override
     public void begin(Attributes attributes) throws Exception {
         SecurityConstraint securityConstraint =
             (SecurityConstraint) digester.peek();
@@ -582,6 +587,7 @@ final class SetDistributableRule extends Rule {
         super(digester);
     }
 
+    @Override
     public void begin(Attributes attributes) throws Exception {
         Context context = (Context) digester.peek();
         context.setDistributable(true);
@@ -607,6 +613,7 @@ final class SetPublicIdRule extends Rule {
 
     private String method = null;
 
+    @Override
     public void begin(Attributes attributes) throws Exception {
 
         Object top = digester.peek();
@@ -645,6 +652,7 @@ final class WrapperCreateRule extends Rule {
         super(digester);
     }
 
+    @Override
     public void begin(Attributes attributes) throws Exception {
         Context context =
             (Context) digester.peek(digester.getCount() - 1);
@@ -654,6 +662,7 @@ final class WrapperCreateRule extends Rule {
             digester.log("new " + wrapper.getClass().getName());
     }
 
+    @Override
     public void end() throws Exception {
         Wrapper wrapper = (Wrapper) digester.pop();
         if (digester.getDebug() > 0)

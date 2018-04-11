@@ -84,7 +84,7 @@ import java.io.*;
 class LogControlDescriptor implements Serializable {
     /**This constant holds the size of the LogControlDescriptor object.
      */
-    final static int SIZEOF = 3*LogLSN.SIZEOF;
+    static final int SIZEOF = 3*LogLSN.SIZEOF;
 
     LogLSN headLSN = new LogLSN();
     LogLSN tailLSN = new LogLSN();
@@ -146,6 +146,7 @@ class LogControlDescriptor implements Serializable {
      *
      * @see
      */
+    @Override
     public final String toString() {
         return "LCD(head="/*#Frozen*/+headLSN+",tail="/*#Frozen*/+tailLSN+",next="/*#Frozen*/+nextLSN+")"/*#Frozen*/;
     }

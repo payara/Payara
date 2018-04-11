@@ -72,13 +72,14 @@ public class DynamicResourceReconfigurator implements InvocationHandler, Dynamic
     private boolean invalid = false;
     private long resourceInfoVersion = 0;
 
-    protected final static Logger _logger = LogDomains.getLogger(DynamicResourceReconfigurator.class,LogDomains.RSR_LOGGER);
+    protected static final Logger _logger = LogDomains.getLogger(DynamicResourceReconfigurator.class,LogDomains.RSR_LOGGER);
 
     public DynamicResourceReconfigurator(Object actualObject, ResourceInfo resourceInfo){
         this.actualObject = actualObject;
         this.resourceInfo = resourceInfo;
     }
 
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
         if (invalid) {
@@ -152,10 +153,12 @@ public class DynamicResourceReconfigurator implements InvocationHandler, Dynamic
             throw actualException;
     }
 
+    @Override
     public void setDelegate(Object o) {
         actualObject = o;
     }
 
+    @Override
     public void setInvalid() {
         invalid = true;
     }

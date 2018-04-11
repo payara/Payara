@@ -667,6 +667,7 @@ public class ProgramOptions {
      * String representation of the asadmin program options.
      * Included in the --echo output.
      */
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         if (ok(getHost()))

@@ -396,6 +396,7 @@ public final class ExtendedAccessLogValve
     /**
      * Return descriptive information about this implementation.
      */
+    @Override
     public String getInfo() {
 
         return (this.info);
@@ -572,6 +573,7 @@ public final class ExtendedAccessLogValve
      * @exception IOException if an input/output error has occurred
      * @exception ServletException if a servlet error has occurred
      */
+    @Override
      public int invoke(Request request, Response response)
          throws IOException, ServletException {
 
@@ -582,6 +584,7 @@ public final class ExtendedAccessLogValve
     }
 
 
+    @Override
     public void postInvoke(Request request, Response response)
                                     throws IOException, ServletException{
 
@@ -1115,6 +1118,7 @@ public final class ExtendedAccessLogValve
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
 
         // Validate and update our current component state
@@ -1166,6 +1170,7 @@ public final class ExtendedAccessLogValve
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
     public void stop() throws LifecycleException {
 
         // Validate and update our current component state

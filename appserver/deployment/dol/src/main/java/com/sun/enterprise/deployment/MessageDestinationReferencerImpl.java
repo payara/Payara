@@ -93,6 +93,7 @@ public class MessageDestinationReferencerImpl implements
     /**
      * True if the owner is a message destination reference.
      */ 
+    @Override
     public boolean ownedByMessageDestinationRef() {
         return (ownerMsgDestRef != null);
     }
@@ -100,6 +101,7 @@ public class MessageDestinationReferencerImpl implements
     /**
      * Get the descriptor for the message destination reference owner.
      */ 
+    @Override
     public MessageDestinationReferenceDescriptor getMessageDestinationRefOwner
         () {
         return ownerMsgDestRef;
@@ -108,6 +110,7 @@ public class MessageDestinationReferencerImpl implements
     /**
      * True if the owner is a message-driven bean.
      */ 
+    @Override
     public boolean ownedByMessageBean() {
         return (ownerMsgBean != null);
     }
@@ -116,6 +119,7 @@ public class MessageDestinationReferencerImpl implements
     /**
      * Get the descriptor for the message-driven bean owner.
      */ 
+    @Override
     public EjbMessageBeanDescriptor getMessageBeanOwner() {
         return ownerMsgBean;
     }
@@ -124,6 +128,7 @@ public class MessageDestinationReferencerImpl implements
      * True if this reference has been resolved to a valid MessageDestination
      * object.
      */
+    @Override
     public boolean isLinkedToMessageDestination() {
 	return (messageDestination != null);
     }
@@ -140,6 +145,7 @@ public class MessageDestinationReferencerImpl implements
      * name of the target message destination, since the message destination 
      * could be defined in a different module.
      */
+    @Override
     public String getMessageDestinationLinkName() {
         return messageDestinationLinkName;
     }
@@ -150,6 +156,7 @@ public class MessageDestinationReferencerImpl implements
      * alternate version of setMessageDestinationLinkName or resolveLink
      * if link resolution is required.
      */
+    @Override
     public void setMessageDestinationLinkName(String linkName) {
         setMessageDestinationLinkName(linkName, false);
     }    
@@ -163,6 +170,7 @@ public class MessageDestinationReferencerImpl implements
      * @return MessageDestination to which link was resolved, or null if 
      * link name resolution failed.
      */
+    @Override
     public MessageDestinationDescriptor setMessageDestinationLinkName
         (String linkName, boolean resolve) {
                                                             
@@ -182,6 +190,7 @@ public class MessageDestinationReferencerImpl implements
      * @return MessageDestination to which link was resolved, or null if 
      * link name resolution failed.
      */
+    @Override
     public MessageDestinationDescriptor resolveLinkName() {
         MessageDestinationDescriptor msgDest = null;
 
@@ -263,6 +272,7 @@ public class MessageDestinationReferencerImpl implements
     /** 
      * @return the message destination to which I refer. Can be NULL.
     */
+    @Override
     public MessageDestinationDescriptor getMessageDestination() {
 	return messageDestination;
     }  
@@ -270,6 +280,7 @@ public class MessageDestinationReferencerImpl implements
     /**
      * @param messageDestiation the message destination to which I refer.
      */
+    @Override
     public void setMessageDestination(MessageDestinationDescriptor newMsgDest) {
         if( messageDestination != null ) {
             messageDestination.removeReferencer(this);

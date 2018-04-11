@@ -61,34 +61,34 @@ import java.io.IOException;
 public class JDKServiceTag {
 
     // Service Tag Node names
-    private final static String ST_NODE_SERVICE_TAG = "service_tag";
-    private final static String ST_NODE_INSTANCE_URN = "instance_urn";
-    private final static String ST_NODE_PRODUCT_NAME = "product_name";
-    private final static String ST_NODE_PRODUCT_VERSION = "product_version";
-    private final static String ST_NODE_PRODUCT_URN = "product_urn";
-    private final static String ST_NODE_PRODUCT_PARENT_URN = "product_parent_urn";
-    private final static String ST_NODE_PRODUCT_PARENT = "product_parent";
-    private final static String ST_NODE_PRODUCT_DEFINED_INST_ID = "product_defined_inst_id";
-    private final static String ST_NODE_PRODUCT_VENDOR = "product_vendor";
-    private final static String ST_NODE_PLATFORM_ARCH = "platform_arch";
-    private final static String ST_NODE_CONTAINER = "container";
-    private final static String ST_NODE_SOURCE = "source";
+    private static final String ST_NODE_SERVICE_TAG = "service_tag";
+    private static final String ST_NODE_INSTANCE_URN = "instance_urn";
+    private static final String ST_NODE_PRODUCT_NAME = "product_name";
+    private static final String ST_NODE_PRODUCT_VERSION = "product_version";
+    private static final String ST_NODE_PRODUCT_URN = "product_urn";
+    private static final String ST_NODE_PRODUCT_PARENT_URN = "product_parent_urn";
+    private static final String ST_NODE_PRODUCT_PARENT = "product_parent";
+    private static final String ST_NODE_PRODUCT_DEFINED_INST_ID = "product_defined_inst_id";
+    private static final String ST_NODE_PRODUCT_VENDOR = "product_vendor";
+    private static final String ST_NODE_PLATFORM_ARCH = "platform_arch";
+    private static final String ST_NODE_CONTAINER = "container";
+    private static final String ST_NODE_SOURCE = "source";
 
     // Swordfish entry for JDK 6
-    private final static String JDK_6_URN = "urn:uuid:b58ef9a8-5ae8-11db-a023-080020a9ed93";
-    private final static String JDK_6_NAME = "Java SE 6 Development Kit";
-    private final static String JRE_6_URN = "urn:uuid:92d1de8c-1e59-42c6-a280-1c379526bcbc";
-    private final static String JRE_6_NAME = "Java SE 6 Runtime Environment";
-    private final static String PARENT_6_URN = "urn:uuid:fdc90b21-018d-4cab-b866-612c7c119ed3";
-    private final static String PARENT_6_NAME = "Java Platform Standard Edition 6 (Java SE 6)";
+    private static final String JDK_6_URN = "urn:uuid:b58ef9a8-5ae8-11db-a023-080020a9ed93";
+    private static final String JDK_6_NAME = "Java SE 6 Development Kit";
+    private static final String JRE_6_URN = "urn:uuid:92d1de8c-1e59-42c6-a280-1c379526bcbc";
+    private static final String JRE_6_NAME = "Java SE 6 Runtime Environment";
+    private static final String PARENT_6_URN = "urn:uuid:fdc90b21-018d-4cab-b866-612c7c119ed3";
+    private static final String PARENT_6_NAME = "Java Platform Standard Edition 6 (Java SE 6)";
 
     // Swordfish entry for JDK 5
-    private final static String JDK_5_URN = "urn:uuid:d5bed446-05f2-42ed-ba0a-153105a52413";
-    private final static String JDK_5_NAME = "J2SE 5.0 Development Kit";
-    private final static String JRE_5_URN = "urn:uuid:5c6686aa-fd05-46a6-ba3e-700e2d5f7043";
-    private final static String JRE_5_NAME = "J2SE 5.0 Runtime Environment";
-    private final static String PARENT_5_URN = "urn:uuid:f3c20172-557a-11d7-93d0-d6a41ea318df";
-    private final static String PARENT_5_NAME = "Java 2 Platform, Standard Edition 5.0";
+    private static final String JDK_5_URN = "urn:uuid:d5bed446-05f2-42ed-ba0a-153105a52413";
+    private static final String JDK_5_NAME = "J2SE 5.0 Development Kit";
+    private static final String JRE_5_URN = "urn:uuid:5c6686aa-fd05-46a6-ba3e-700e2d5f7043";
+    private static final String JRE_5_NAME = "J2SE 5.0 Runtime Environment";
+    private static final String PARENT_5_URN = "urn:uuid:f3c20172-557a-11d7-93d0-d6a41ea318df";
+    private static final String PARENT_5_NAME = "Java 2 Platform, Standard Edition 5.0";
 
     private JDKServiceTag() {
     }

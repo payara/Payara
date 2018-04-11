@@ -121,11 +121,13 @@ public class ServiceInterfaceGenerator extends Generator
      * as the bean class, NOT the remote/local interface.
      * @return the name of the generated class.
      */
+    @Override
     public String getGeneratedClass() {
         return serviceIntfName;
     }
 
     // For corba codegen infrastructure
+    @Override
     public String className() {
         return getGeneratedClass();
     }
@@ -154,6 +156,7 @@ public class ServiceInterfaceGenerator extends Generator
         return list.toArray(new Method[list.size()]);
     }
 
+    @Override
     public void evaluate() {
 
         _clear();

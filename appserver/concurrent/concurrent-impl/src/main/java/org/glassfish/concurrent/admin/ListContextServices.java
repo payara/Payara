@@ -79,7 +79,7 @@ import org.glassfish.concurrent.runtime.deployer.DefaultContextService;
 })
 public class ListContextServices implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListContextServices.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListContextServices.class);    
 
     @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     private String target ;
@@ -102,6 +102,7 @@ public class ListContextServices implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();

@@ -100,7 +100,7 @@ import org.glassfish.config.support.TargetType;
 })
 public class UpdateFileUser implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(UpdateFileUser.class);    
 
     @Param(name="groups", optional=true, separator=':')
@@ -171,6 +171,7 @@ public class UpdateFileUser implements AdminCommand, AdminCommandSecurity.Preaut
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         
         final ActionReport report = context.getActionReport();

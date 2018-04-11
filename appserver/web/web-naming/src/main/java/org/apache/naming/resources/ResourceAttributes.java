@@ -173,7 +173,7 @@ public class ResourceAttributes implements Attributes {
     public static final String COLLECTION_TYPE = "<collection/>";
     
     
-    protected final static TimeZone gmtZone = TimeZone.getTimeZone("GMT");
+    protected static final TimeZone gmtZone = TimeZone.getTimeZone("GMT");
 
 
     /**

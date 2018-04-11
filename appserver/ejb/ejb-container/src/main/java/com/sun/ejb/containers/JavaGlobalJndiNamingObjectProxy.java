@@ -59,6 +59,7 @@ public class JavaGlobalJndiNamingObjectProxy
         this.intfName = intfName;
     }
 
+    @Override
     public Object create(Context ic) {
         GenericEJBLocalHome genericLocalHome =
                 container.getEJBLocalBusinessHome(intfName);

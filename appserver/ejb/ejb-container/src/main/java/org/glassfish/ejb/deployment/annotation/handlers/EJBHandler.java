@@ -74,7 +74,7 @@ import static com.sun.enterprise.util.StringUtils.ok;
 @AnnotationHandlerFor(EJB.class)
 public class EJBHandler extends AbstractResourceHandler {
 
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(EJBHandler.class);
     
     public EJBHandler() {
@@ -90,6 +90,7 @@ public class EJBHandler extends AbstractResourceHandler {
      * @param rcContexts an array of ResourceContainerContext
      * @return HandlerProcessingResult
      */
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {

@@ -90,7 +90,7 @@ import org.jvnet.hk2.config.ConfigListener;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class DeleteMessageSecurityProvider implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(DeleteMessageSecurityProvider.class);
 
     @Param(name="providername", primary=true)
@@ -143,6 +143,7 @@ public class DeleteMessageSecurityProvider implements AdminCommand, AdminCommand
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         
         ActionReport report = context.getActionReport();
@@ -152,9 +153,9 @@ public class DeleteMessageSecurityProvider implements AdminCommand, AdminCommand
             if (pc.getProviderId().equals(providerId)) { 
                 thePC = pc;
                 try {
-                    ConfigSupport.apply(
-                        new SingleConfigCode<MessageSecurityConfig>() {
+                    ConfigSupport.apply(new SingleConfigCode<MessageSecurityConfig>() {
                         
+                        @Override
                         public Object run(MessageSecurityConfig param) 
                         throws PropertyVetoException, TransactionFailure {
 

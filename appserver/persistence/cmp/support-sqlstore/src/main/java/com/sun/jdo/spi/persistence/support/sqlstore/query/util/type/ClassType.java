@@ -127,6 +127,7 @@ public class ClassType
      * false otherwise.
      * @see Type#isCompatibleWith(Type)
      */
+    @Override
     public boolean isCompatibleWith(Type type)
     {
         boolean result = false;
@@ -143,6 +144,7 @@ public class ClassType
      * @return true if an order is defined for this;
      * false otherwise.
      */
+    @Override
         public boolean isOrderable()
         {
         Type comparable = typetab.checkType("java.lang.Comparable"); //NOI18N
@@ -175,6 +177,7 @@ public class ClassType
         final Class cl = clazz;
 
         Field[] fields =  (Field[]) AccessController.doPrivileged(new PrivilegedAction() {
+                                @Override
                                 public Object run () {
                                         return cl.getDeclaredFields();
                                 }
@@ -205,6 +208,7 @@ public class ClassType
                 final Class cl = clazz;
                 Field field = (Field) AccessController.doPrivileged(new PrivilegedAction()
                     {
+                        @Override
                         public Object run ()
                         {
                             try

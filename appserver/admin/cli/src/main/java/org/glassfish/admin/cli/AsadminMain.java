@@ -60,6 +60,7 @@ public class AsadminMain extends AdminMain {
         System.exit(code);
     }
 
+    @Override
     protected String getCommandName() {
         return "asadmin";
     }

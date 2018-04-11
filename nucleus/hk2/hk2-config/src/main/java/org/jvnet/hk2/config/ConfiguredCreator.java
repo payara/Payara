@@ -57,6 +57,7 @@ class ConfiguredCreator<T> implements Creator<T> {
         this.dom = dom;
     }
 
+    @Override
     public T create() {
         T retVal = core.create();
         initialize(retVal);

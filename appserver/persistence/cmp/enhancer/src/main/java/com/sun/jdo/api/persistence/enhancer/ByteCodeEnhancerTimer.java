@@ -66,6 +66,7 @@ public final class ByteCodeEnhancerTimer
         this.delegate = delegate;
     }
 
+    @Override
     public boolean enhanceClassFile(InputStream inByteCode,
                                     OutputStream outByteCode)
         throws EnhancerUserException, EnhancerFatalError
@@ -78,6 +79,7 @@ public final class ByteCodeEnhancerTimer
         }
     }
 
+    @Override
     public boolean enhanceClassFile(InputStream         inByteCode,
                                     OutputStreamWrapper outByteCode)
         throws EnhancerUserException, EnhancerFatalError

@@ -107,6 +107,7 @@ public class SqlDate
      * @param   time   the number of milliseconds.
      * @see     java.sql.Date
      */  
+    @Override
     public void setTime(long time) {
 	this.makeDirty();
 	super.setTime(time);
@@ -120,6 +121,7 @@ public class SqlDate
      * objects. In contrast to Object.clone(), this method must not throw a
      * CloneNotSupportedException.
      */
+    @Override
     public Object clone()
     {
         SqlDate obj = (SqlDate) super.clone();
@@ -142,6 +144,7 @@ public class SqlDate
      * @deprecated As of JDK version 1.1,
      * replaced by <code>Calendar.set(Calendar.YEAR, year + 1900)</code>.
      */  
+    @Override
     public void setYear(int year) {
 	this.makeDirty(); 
         super.setYear(year);
@@ -155,6 +158,7 @@ public class SqlDate
      * @deprecated As of JDK version 1.1,
      * replaced by <code>Calendar.set(Calendar.MONTH, int month)</code>.
      */
+    @Override
     public void setMonth(int month) {
 	this.makeDirty(); 
         super.setMonth(month);
@@ -170,6 +174,7 @@ public class SqlDate
      * @deprecated As of JDK version 1.1,
      * replaced by <code>Calendar.set(Calendar.DAY_OF_MONTH, int date)</code>.
      */  
+    @Override
     public void setDate(int date) {
 	this.makeDirty(); 
         super.setDate(date);
@@ -181,6 +186,7 @@ public class SqlDate
      * Creates and returns a copy of this object without resetting the owner and field value.
      *   
      */  
+    @Override
     public Object cloneInternal()
     {
         return super.clone();
@@ -193,6 +199,7 @@ public class SqlDate
      * @param   time   the number of milliseconds.
      * @see     java.sql.Date
      */  
+    @Override
     public void setTimeInternal(long time) {
 	super.setTime(time);
     }
@@ -202,6 +209,7 @@ public class SqlDate
 	 * NOTE: This method should be called under the locking of
 	 * the owener' state manager.
      */
+    @Override
     public void unsetOwner() 
     { 
 		this.owner = null; 
@@ -213,6 +221,7 @@ public class SqlDate
      * 
      * @return owner object 
      */ 
+    @Override
     public Object getOwner()
     {    
         return this.owner; 
@@ -223,6 +232,7 @@ public class SqlDate
      *   
      * @return field name as java.lang.String
      */  
+    @Override
     public String getFieldName()
     {
         return this.fieldName;
@@ -231,6 +241,7 @@ public class SqlDate
     /**
      * Marks object dirty
      */
+    @Override
     public StateManager makeDirty()
     {
 		if (owner != null)
@@ -269,6 +280,7 @@ public class SqlDate
     /**
      * Apply changes (no-op)
      */  
+    @Override
     public void applyUpdates(StateManager sm, boolean modified)
     {
     }

@@ -63,7 +63,7 @@ import org.jvnet.hk2.annotations.Service;
 @AnnotationHandlerFor(JMSConnectionFactoryDefinitions.class)
 public class JMSConnectionFactoryDefinitionsHandler extends AbstractResourceHandler {
 
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(JMSConnectionFactoryDefinitionsHandler.class);
 
 
@@ -98,6 +98,7 @@ public class JMSConnectionFactoryDefinitionsHandler extends AbstractResourceHand
     }
 
 
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAndWebAnnotationTypes();
     }

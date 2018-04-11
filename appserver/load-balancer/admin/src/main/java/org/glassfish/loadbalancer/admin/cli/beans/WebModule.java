@@ -52,13 +52,13 @@ import java.util.*;
 public class WebModule extends org.netbeans.modules.schema2beans.BaseBean {
 
     static Vector comparators = new Vector();
-    static public final String CONTEXTROOT = "ContextRoot";	// NOI18N
-    static public final String ENABLED = "Enabled";	// NOI18N
-    static public final String DISABLETIMEOUTINMINUTES = "DisableTimeoutInMinutes";	// NOI18N
-    static public final String ERRORURL = "ErrorUrl";	// NOI18N
-    static public final String IDEMPOTENT_URL_PATTERN = "IdempotentUrlPattern";	// NOI18N
-    static public final String IDEMPOTENTURLPATTERNURLPATTERN = "IdempotentUrlPatternUrlPattern";	// NOI18N
-    static public final String IDEMPOTENTURLPATTERNNOOFRETRIES = "IdempotentUrlPatternNoOfRetries";	// NOI18N
+    public static final String CONTEXTROOT = "ContextRoot";	// NOI18N
+    public static final String ENABLED = "Enabled";	// NOI18N
+    public static final String DISABLETIMEOUTINMINUTES = "DisableTimeoutInMinutes";	// NOI18N
+    public static final String ERRORURL = "ErrorUrl";	// NOI18N
+    public static final String IDEMPOTENT_URL_PATTERN = "IdempotentUrlPattern";	// NOI18N
+    public static final String IDEMPOTENTURLPATTERNURLPATTERN = "IdempotentUrlPatternUrlPattern";	// NOI18N
+    public static final String IDEMPOTENTURLPATTERNNOOFRETRIES = "IdempotentUrlPatternNoOfRetries";	// NOI18N
 
     public WebModule() {
         this(Common.USE_DEFAULT_VALUES);

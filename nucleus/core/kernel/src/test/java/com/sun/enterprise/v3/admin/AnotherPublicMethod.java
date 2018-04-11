@@ -52,6 +52,7 @@ import org.glassfish.api.ActionReport;
  */
 @Service(name="notannoated-public-command")
 public class AnotherPublicMethod implements AdminCommand {
+    @Override
     public void execute(AdminCommandContext context) {
         context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }

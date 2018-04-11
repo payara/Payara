@@ -72,7 +72,7 @@ import java.util.logging.Logger;
  */
 public class AdministeredObjectResource extends JavaEEResourceBase {
 
-    private final static Logger _logger = LogDomains.getLogger(AdministeredObjectResource.class, LogDomains.RSR_LOGGER);
+    private static final Logger _logger = LogDomains.getLogger(AdministeredObjectResource.class, LogDomains.RSR_LOGGER);
 
     private String resadapter_;
     private String adminObjectClass_;
@@ -84,6 +84,7 @@ public class AdministeredObjectResource extends JavaEEResourceBase {
         super(resourceInfo);
     }
 
+    @Override
     protected JavaEEResource doClone(ResourceInfo resourceInfo) {
         AdministeredObjectResource clone =
                 new AdministeredObjectResource(resourceInfo);
@@ -93,6 +94,7 @@ public class AdministeredObjectResource extends JavaEEResourceBase {
     }
 
 
+    @Override
     public int getType() {
         // FIX ME
         return 0;
@@ -163,6 +165,7 @@ public class AdministeredObjectResource extends JavaEEResourceBase {
                 // use context class loader
                 jcl = (ClassLoader) AccessController.doPrivileged
                         (new PrivilegedAction() {
+                            @Override
                             public Object run() {
                                 return
                                         Thread.currentThread().getContextClassLoader();
@@ -203,6 +206,7 @@ public class AdministeredObjectResource extends JavaEEResourceBase {
         }
     }
 
+    @Override
     public String toString() {
         return "< Administered Object : " + getResourceInfo() +
                 " , " + getResourceAdapter() +

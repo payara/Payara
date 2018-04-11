@@ -72,12 +72,14 @@ public class SyntheticAttribute extends ClassAttribute {
     return new SyntheticAttribute(attrName);
   }
 
+  @Override
   void write(DataOutputStream out) throws IOException {
     out.writeShort(attrName().getIndex());
     final int attributeBytesLength = 0;
     out.writeInt(attributeBytesLength);
   }
 
+  @Override
   void print(PrintStream out, int indent) {
     ClassPrint.spaces(out, indent);
     out.println(expectedAttrName);

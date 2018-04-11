@@ -280,6 +280,7 @@ public class ControlImpl extends JControlPOA implements Control {
      *
      * @see
      */
+    @Override
     synchronized public otid_t getGlobalTID( StatusHolder status )
     throws SystemException {
         
@@ -319,6 +320,7 @@ public class ControlImpl extends JControlPOA implements Control {
      *
      * @see
      */
+    @Override
     synchronized public long getLocalTID( StatusHolder status )
     throws SystemException {
         
@@ -435,6 +437,7 @@ public class ControlImpl extends JControlPOA implements Control {
      * @see
      */
     
+    @Override
     synchronized public Terminator get_terminator()
     throws Unavailable, SystemException {
         
@@ -519,6 +522,7 @@ public class ControlImpl extends JControlPOA implements Control {
      *
      * @see
      */
+    @Override
     synchronized public Coordinator get_coordinator()
     throws Unavailable, SystemException {
         
@@ -707,6 +711,7 @@ public class ControlImpl extends JControlPOA implements Control {
      *
      * @see
      */
+    @Override
     synchronized public Status getTranState(){
         Status result = tranState;
         return result;
@@ -721,6 +726,7 @@ public class ControlImpl extends JControlPOA implements Control {
      *
      * @see
      */
+    @Override
     synchronized public void setTranState( Status newState ) {
         tranState = newState;
     }
@@ -945,6 +951,7 @@ public class ControlImpl extends JControlPOA implements Control {
      *
      * @see
      */
+    @Override
     public boolean equals(java.lang.Object o) {
         return this == o;
     }
@@ -963,41 +970,49 @@ public class ControlImpl extends JControlPOA implements Control {
      * interface method implementation below shall be discarded.
      */
     
+    @Override
     public org.omg.CORBA.Object _duplicate() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
         
     }
     
+    @Override
     public void _release() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
         
     }
     
+    @Override
     public boolean _is_a(String repository_id) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
         
     }
     
+    @Override
     public boolean _is_equivalent(org.omg.CORBA.Object that) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
         
     }
     
+    @Override
     public boolean _non_existent() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
         
     }
     
+    @Override
     public int _hash(int maximum) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
         
     }
     
+    @Override
     public Request _request(String operation) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
         
     }
     
+    @Override
     public Request _create_request(Context ctx,
     String operation,
     NVList arg_list,
@@ -1006,6 +1021,7 @@ public class ControlImpl extends JControlPOA implements Control {
         
     }
     
+    @Override
     public Request _create_request(Context ctx,
     String operation,
     NVList arg_list,
@@ -1016,21 +1032,25 @@ public class ControlImpl extends JControlPOA implements Control {
         
     }
     
+    @Override
     public org.omg.CORBA.Object _get_interface_def() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
         
     }
     
+    @Override
     public org.omg.CORBA.Policy _get_policy(int policy_type) {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
         
     }
     
+    @Override
     public org.omg.CORBA.DomainManager[] _get_domain_managers() {
         throw new org.omg.CORBA.NO_IMPLEMENT("This is a locally constrained object.");
         
     }
     
+    @Override
     public org.omg.CORBA.Object _set_policy_override(
     org.omg.CORBA.Policy[] policies,
     org.omg.CORBA.SetOverrideType set_add) {

@@ -78,6 +78,7 @@ public class ServiceRefNode extends DeploymentDescriptorNode {
              NameValuePairNode.class, "addCallProperty");
     }
     
+    @Override
     public void addDescriptor(Object desc) {
         if( desc instanceof ServiceRefPortInfo ) {
             ServiceRefPortInfo newPortInfo = (ServiceRefPortInfo) desc;
@@ -90,6 +91,7 @@ public class ServiceRefNode extends DeploymentDescriptorNode {
     /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
         return descriptor;
     }   
@@ -100,6 +102,7 @@ public class ServiceRefNode extends DeploymentDescriptorNode {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */    
+    @Override
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
         table.put(WebServicesTagNames.SERVICE_IMPL_CLASS, 
@@ -114,6 +117,7 @@ public class ServiceRefNode extends DeploymentDescriptorNode {
      * @param value it's associated value
      */
 
+    @Override
     public void setElementValue(XMLElement element, String value) {
         String name = element.getQName();
         if (WebServicesTagNames.SERVICE_REF_NAME.equals(name)) {

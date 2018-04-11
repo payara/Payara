@@ -47,10 +47,12 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name="org.glassfish.javaee.full.deployment.EarContainer")
 public class EarContainer implements Container {
 
+    @Override
     public Class<? extends Deployer> getDeployer() {
         return EarDeployer.class;
     }
 
+    @Override
     public String getName() {
         return "application";
     }                                                                     

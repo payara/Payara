@@ -67,6 +67,7 @@ public final class RemoteListenerConnector implements NotificationListener, java
         proxyAddress = address;
     }
 
+    @Override
     public synchronized void handleNotification(Notification evt, Object h) {
         try {
             debug("RemoteListenerConnector.handleNotification()");

@@ -222,10 +222,11 @@ public interface Transport extends ConfigBeanProxy, PropertyBag {
     List<NetworkListener> findNetworkListeners();
 
     @DuckTyped
+    @Override
     Transports getParent();
 
     class Duck {
-        static public List<NetworkListener> findNetworkListeners(Transport transport) {
+        public static List<NetworkListener> findNetworkListeners(Transport transport) {
             NetworkListeners networkListeners =
                     transport.getParent().getParent().getNetworkListeners();
             List<NetworkListener> refs = new ArrayList<NetworkListener>();

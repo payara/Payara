@@ -42,10 +42,12 @@ package com.sun.enterprise.connectors.work.context;
 
 
 public class CustomWorkContext_B extends CustomWorkContext_A{
+    @Override
     public String getName() {
         return "CustomWorkContext_B";
     }
 
+    @Override
     public String getDescription() {
         return "CustomWorkContext_B";
     }

@@ -114,7 +114,7 @@ public final class QueryMgrTest
         checkSetsEqual(msg, set1ObjectNames, set2);
     }
 
-    static final private Set<String> RESOURCE_TYPES = GSetUtil.newUnmodifiableStringSet(
+    private static final Set<String> RESOURCE_TYPES = GSetUtil.newUnmodifiableStringSet(
             JDBCResourceConfig.J2EE_TYPE,
             MailResourceConfig.J2EE_TYPE,
             CustomResourceConfig.J2EE_TYPE,

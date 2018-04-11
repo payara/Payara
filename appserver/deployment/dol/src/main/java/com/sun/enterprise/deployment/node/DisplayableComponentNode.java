@@ -70,6 +70,7 @@ public abstract class DisplayableComponentNode<T extends Descriptor> extends Dep
      * @param the descriptor to write
      * @return the DOM tree top node
      */    
+    @Override
     public Node writeDescriptor(Node parent, T descriptor) {
         Node node = super.writeDescriptor(parent, descriptor);        
         

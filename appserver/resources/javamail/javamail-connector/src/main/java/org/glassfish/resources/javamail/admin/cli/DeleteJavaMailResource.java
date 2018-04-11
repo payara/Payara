@@ -80,7 +80,7 @@ import java.beans.PropertyVetoException;
 @I18n("delete.javamail.resource")
 public class DeleteJavaMailResource implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteJavaMailResource.class);
 
     @Param(optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
@@ -104,6 +104,7 @@ public class DeleteJavaMailResource implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
@@ -155,6 +156,7 @@ public class DeleteJavaMailResource implements AdminCommand {
 
             // delete java-mail-resource
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                @Override
                 public Object run(Resources param) throws PropertyVetoException,
                         TransactionFailure {
                     MailResource resource = (MailResource)

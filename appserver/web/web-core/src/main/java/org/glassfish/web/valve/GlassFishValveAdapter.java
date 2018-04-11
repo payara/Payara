@@ -78,6 +78,7 @@ public class GlassFishValveAdapter implements GlassFishValve {
                                                         Response.class);
     }
 
+    @Override
     public String getInfo() {
         return gfValve.getInfo();
     }
@@ -85,6 +86,7 @@ public class GlassFishValveAdapter implements GlassFishValve {
     /**
      * Delegates to the invoke() of the wrapped GlassFish-style valve.
      */
+    @Override
     public int invoke(Request request,
                       Response response)
                 throws IOException, ServletException {
@@ -98,6 +100,7 @@ public class GlassFishValveAdapter implements GlassFishValve {
     /**
      * Delegates to the postInvoke() of the wrapped GlassFish-style valve.
      */
+    @Override
     public void postInvoke(Request request, Response response)
                 throws IOException, ServletException {
         try {

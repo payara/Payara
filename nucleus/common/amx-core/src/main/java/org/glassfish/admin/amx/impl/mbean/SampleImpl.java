@@ -122,6 +122,7 @@ public final class SampleImpl extends AMXImplBase {
         return (JMXUtil.newMBeanInfo(baseMBeanInfo, attrInfos));
     }
 
+    @Override
     public synchronized MBeanInfo getMBeanInfo() {
         if (mExtendedMBeanInfo == null) {
             mExtendedMBeanInfo = createMBeanInfo(super.getMBeanInfo());
@@ -130,6 +131,7 @@ public final class SampleImpl extends AMXImplBase {
         return (mExtendedMBeanInfo);
     }
 
+    @Override
     protected Serializable getAttributeManually(final String name) {
         if (!mAttributes.containsKey(name)) {
             throw new RuntimeException(new AttributeNotFoundException(name));
@@ -137,6 +139,7 @@ public final class SampleImpl extends AMXImplBase {
         return mAttributes.get(name);
     }
 
+    @Override
     protected void setAttributeManually(final Attribute attr) {
         mAttributes.put(attr.getName(), Serializable.class.cast(attr.getValue()));
     }
@@ -153,6 +156,7 @@ public final class SampleImpl extends AMXImplBase {
             mIntervalMillis = intervalMillis;
         }
 
+        @Override
         public void run() {
             for (int i = 0; i < mNumNotifs; ++i) {
                 sendNotification(Sample.SAMPLE_NOTIFICATION_TYPE, Sample.USER_DATA_KEY, mData);

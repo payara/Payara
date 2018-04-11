@@ -437,7 +437,7 @@ public class AugmentationTest
         return NEGATIVE;
     }
 
-    static private final String[] transientPrefixes
+    private static final String[] transientPrefixes
         = {"java.",
            "javax.",
            "com.sun.jdo."};
@@ -695,7 +695,7 @@ public class AugmentationTest
         out.println();
     }
 
-    static public void main(String[] argv)
+    public static void main(String[] argv)
     {
         // parse args
         boolean verbose = false;

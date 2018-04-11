@@ -102,6 +102,7 @@ public class MemoryMappedArchive extends JarArchive implements ReadableArchive {
         
     }
     
+    @Override
     public void open(URI uri) throws IOException {
         File in = new File(uri);
         if (!in.exists()) {
@@ -138,12 +139,14 @@ public class MemoryMappedArchive extends JarArchive implements ReadableArchive {
     /**
      * close the abstract archive
      */
+    @Override
     public void close() throws IOException {
     }
         
     /**
      * delete the archive
      */
+    @Override
     public boolean delete() {
         return false;
     }
@@ -152,11 +155,13 @@ public class MemoryMappedArchive extends JarArchive implements ReadableArchive {
      * @return an @see java.util.Enumeration of entries in this abstract
      * archive
      */
+    @Override
     public Enumeration entries() {
         return entries(false).elements();
     }
 
 
+    @Override
     public Collection<String> getDirectories() throws IOException {
         return entries(true);
     }
@@ -193,6 +198,7 @@ public class MemoryMappedArchive extends JarArchive implements ReadableArchive {
     /**
      * @return true if this archive exists
      */
+    @Override
     public boolean exists() {
         return false;
     }
@@ -208,10 +214,12 @@ public class MemoryMappedArchive extends JarArchive implements ReadableArchive {
      * Get the size of the archive
      * @return tje the size of this archive or -1 on error
      */
+    @Override
     public long getArchiveSize() throws NullPointerException, SecurityException {
         return(file.length);
     }
     
+    @Override
     public URI getURI() {
         return uri;
     }
@@ -225,6 +233,7 @@ public class MemoryMappedArchive extends JarArchive implements ReadableArchive {
      *
      * @param name the name of the embedded archive.
      */
+    @Override
     public ReadableArchive getSubArchive(String name) throws IOException {
         InputStream is = getEntry(name);
         if (is!=null) {
@@ -242,6 +251,7 @@ public class MemoryMappedArchive extends JarArchive implements ReadableArchive {
      * @param name the file name relative to the root of the module.
      * @return the existence the given entry name.
      */
+    @Override
     public boolean exists(String name) throws IOException {
         return (getEntry(name) != null);
     }
@@ -251,6 +261,7 @@ public class MemoryMappedArchive extends JarArchive implements ReadableArchive {
      * the current abstract archive
      * @param name the entry name
      */
+    @Override
     public InputStream getEntry(String name) throws IOException {
         JarInputStream jis = new JarInputStream(new ByteArrayInputStream(file));
         ZipEntry ze;
@@ -261,6 +272,7 @@ public class MemoryMappedArchive extends JarArchive implements ReadableArchive {
         return null;        
     }
 
+    @Override
     public JarEntry getJarEntry(String name) {
         try {
             JarInputStream jis = new JarInputStream(new ByteArrayInputStream(file));
@@ -282,6 +294,7 @@ public class MemoryMappedArchive extends JarArchive implements ReadableArchive {
      * @param name the entry name
      * @return the entry size
      */
+    @Override
     public long getEntrySize(String name) {
         try {
             JarInputStream jis = new JarInputStream(new ByteArrayInputStream(file));
@@ -300,6 +313,7 @@ public class MemoryMappedArchive extends JarArchive implements ReadableArchive {
     /**
      * @return the manifest information for this abstract archive
      */
+    @Override
     public Manifest getManifest() throws IOException {
         JarInputStream jis = new JarInputStream(new ByteArrayInputStream(file));
         Manifest m = jis.getManifest();
@@ -312,6 +326,7 @@ public class MemoryMappedArchive extends JarArchive implements ReadableArchive {
      *
      * @param name the archive name
      */
+    @Override
     public boolean renameTo(String name) {
         return false;
     }        

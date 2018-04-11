@@ -162,6 +162,7 @@ public abstract class EJBObjectImpl
      **************************************************************************/
     /**
      */
+    @Override
     public boolean isIdentical(EJBObject ejbo) throws RemoteException {
         container.authorizeRemoteMethod(BaseContainer.EJBObject_isIdentical);
         
@@ -171,6 +172,7 @@ public abstract class EJBObjectImpl
     
     /**
      */
+    @Override
     public Object getPrimaryKey() throws RemoteException {
         container.authorizeRemoteGetPrimaryKey(this);
         return primaryKey;
@@ -179,6 +181,7 @@ public abstract class EJBObjectImpl
     /**
      *
      */
+    @Override
     public final EJBHome getEJBHome() throws RemoteException {
         container.authorizeRemoteMethod(BaseContainer.EJBObject_getEJBHome);
         
@@ -191,6 +194,7 @@ public abstract class EJBObjectImpl
      * Since there is no generated code in the *_EJBObjectImpl class
      * for remove, we need to call preInvoke, postInvoke etc here.
      */
+    @Override
     public final void remove() throws RemoteException, RemoveException {
 
         // authorization is performed within container
@@ -202,6 +206,7 @@ public abstract class EJBObjectImpl
      * This is called when the EJB client does ejbref.getHandle().
      * Return a serializable implementation of javax.ejb.Handle.
      */
+    @Override
     public final Handle getHandle() throws RemoteException {
         container.authorizeRemoteMethod(BaseContainer.EJBObject_getHandle);
 

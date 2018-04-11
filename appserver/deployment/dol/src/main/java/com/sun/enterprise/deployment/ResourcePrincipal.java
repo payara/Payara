@@ -51,7 +51,7 @@ import org.glassfish.security.common.PrincipalImpl;
 public class ResourcePrincipal extends  PrincipalImpl {
     private String password;
 
-    static private final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
+    private static final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
 
     public ResourcePrincipal(String name, String password) {
         super(name);
@@ -62,6 +62,7 @@ public class ResourcePrincipal extends  PrincipalImpl {
         return password;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null) return false;
@@ -73,6 +74,7 @@ public class ResourcePrincipal extends  PrincipalImpl {
         return false;
     }
 
+    @Override
     public int hashCode() {
         int result = NULL_HASH_CODE;
         String name = getName();

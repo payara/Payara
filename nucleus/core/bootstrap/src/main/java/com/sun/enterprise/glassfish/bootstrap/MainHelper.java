@@ -281,6 +281,7 @@ public class MainHelper {
 
     private static File getDefaultDomain(File domainsDir) {
         File[] domains = domainsDir.listFiles(new FileFilter() {
+            @Override
             public boolean accept(File f) { return f.isDirectory(); }
         });
 
@@ -790,6 +791,7 @@ public class MainHelper {
          * */
         private static File pluginsDir = null;
 
+        @Override
         protected void setFwDir() {
             String fwPath = System.getenv("EQUINOX_HOME");
             if (fwPath == null) {
@@ -833,6 +835,7 @@ public class MainHelper {
          */
         public static final String GF_KF_HOME = "osgi/knopflerfish.org/osgi/";
 
+        @Override
         protected void setFwDir() {
             String fwPath = System.getenv(KF_HOME);
             if (fwPath == null) {

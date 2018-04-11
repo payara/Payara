@@ -60,6 +60,7 @@ public class ResourcePropertyNode extends DeploymentDescriptorNode<ResourcePrope
 
     private ResourcePropertyDescriptor descriptor = null;
 
+    @Override
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
@@ -98,6 +99,7 @@ public class ResourcePropertyNode extends DeploymentDescriptorNode<ResourcePrope
     }
 
 
+    @Override
     public ResourcePropertyDescriptor getDescriptor() {
         if (descriptor == null) {
             descriptor = new ResourcePropertyDescriptor();

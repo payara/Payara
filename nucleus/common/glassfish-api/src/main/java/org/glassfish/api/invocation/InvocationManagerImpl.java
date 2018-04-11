@@ -104,10 +104,12 @@ public class InvocationManagerImpl implements InvocationManager {
 
         frames = new InheritableThreadLocal<InvocationArray<ComponentInvocation>>() {
 
+            @Override
             protected InvocationArray<ComponentInvocation> initialValue() {
                 return new InvocationArray<>();
             }
 
+            @Override
             protected InvocationArray<ComponentInvocation> childValue(InvocationArray<ComponentInvocation> parentValue) {
                 return computeChildTheadInvocation(parentValue);
             }
@@ -120,6 +122,7 @@ public class InvocationManagerImpl implements InvocationManager {
         frames.set(computeChildTheadInvocation((InvocationArray<ComponentInvocation>) parentValue));
     }
 
+    @Override
     public <T extends ComponentInvocation> void preInvoke(T invocation) throws InvocationException {
 
         InvocationArray<ComponentInvocation> invocationArray = frames.get();
@@ -164,6 +167,7 @@ public class InvocationManagerImpl implements InvocationManager {
 
     }
 
+    @Override
     public <T extends ComponentInvocation> void postInvoke(T invocation) throws InvocationException {
 
         // Get this thread's ArrayList

@@ -86,7 +86,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 })
 public class CreateProfiler implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateProfiler.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateProfiler.class);
 
     @Param(optional=true)
     String classpath;
@@ -130,6 +130,7 @@ public class CreateProfiler implements AdminCommand, AdminCommandSecurity.Preaut
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
@@ -145,6 +146,7 @@ public class CreateProfiler implements AdminCommand, AdminCommandSecurity.Preaut
         try {
             ConfigSupport.apply(new SingleConfigCode<JavaConfig>() {
 
+                @Override
                 public Object run(JavaConfig param) throws PropertyVetoException, TransactionFailure {
                     Profiler newProfiler = param.createChild(Profiler.class);
                     newProfiler.setName(name);

@@ -71,7 +71,7 @@ import java.util.logging.Logger;
 @I18n("delete.jdbc.connection.pool")
 public class DeleteJdbcConnectionPool implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteJdbcConnectionPool.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteJdbcConnectionPool.class);    
 
     @Param(optional=true, defaultValue="false")
     private Boolean cascade;
@@ -97,6 +97,7 @@ public class DeleteJdbcConnectionPool implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 

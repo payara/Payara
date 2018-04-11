@@ -65,6 +65,7 @@ public class EJBContextNamingProxy
     static final String EJB_CONTEXT
             = "java:comp/EJBContext";
 
+    @Override
     public Object handle(String name) throws NamingException {
 
         if (EJB_CONTEXT.equals(name)) {

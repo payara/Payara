@@ -96,6 +96,7 @@ public  final class RANode extends DeploymentDescriptorNode {
    /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
         if (descriptor == null) {
 	    descriptor = (ConnectorDescriptor)getParentNode().getDescriptor();
@@ -109,6 +110,7 @@ public  final class RANode extends DeploymentDescriptorNode {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */    
+    @Override
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();

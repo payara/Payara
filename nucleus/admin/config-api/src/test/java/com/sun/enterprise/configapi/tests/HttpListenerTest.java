@@ -59,6 +59,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 public class HttpListenerTest extends ConfigApiTest {
 
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -91,6 +92,7 @@ public class HttpListenerTest extends ConfigApiTest {
     public void validTransaction() throws TransactionFailure {
         
         ConfigSupport.apply(new SingleConfigCode<Transport>() {
+            @Override
             public Object run(Transport okToChange) {
                 okToChange.setAcceptorThreads("2");
                 logger.fine("ID inside the transaction is " + okToChange.getName());

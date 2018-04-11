@@ -73,7 +73,7 @@ import org.jvnet.hk2.config.types.Property;
  */
 public class JmsRaUtil {
 
-    private final static String MQ_RAR = "imqjmsra.rar";
+    private static final String MQ_RAR = "imqjmsra.rar";
 
     private final String SYSTEM_APP_DIR =
         "lib" + File.separator + "install" + File.separator + "applications";
@@ -83,7 +83,7 @@ public class JmsRaUtil {
         + File.separator + "MANIFEST.MF";
 
     // Manifest version tag.
-    private final static String MANIFEST_TAG = "Implementation-Version";
+    private static final String MANIFEST_TAG = "Implementation-Version";
 
     private static final String propName_reconnect_delay_in_seconds =
         "reconnect-delay-in-seconds";

@@ -108,6 +108,7 @@ public class ExtensionElementDescriptor extends Descriptor implements Observer {
      * notification of changed from our attributes/elements
      * storage
      */
+    @Override
     public void update(Observable o, Object arg) {
         setChanged();
         notifyObservers();
@@ -116,6 +117,7 @@ public class ExtensionElementDescriptor extends Descriptor implements Observer {
     /**
      * @return a meaningful string describing myself
      */
+    @Override
     public void print(StringBuffer toStringBuffer) {
         toStringBuffer.append("ExtensionElementDescriptor");
         toStringBuffer.append("\n");

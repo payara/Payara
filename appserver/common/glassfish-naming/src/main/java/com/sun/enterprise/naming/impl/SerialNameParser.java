@@ -64,6 +64,7 @@ public class SerialNameParser implements NameParser {
      *         of this parser.
      * @throws NamingException If a naming exception was encountered.
      */
+    @Override
     public Name parse(String name) throws NamingException {
         return new CompoundName(name, syntax);
     }

@@ -109,6 +109,7 @@ public class InterceptorImpl extends org.omg.CORBA.LocalObject
 
     public static final ThreadLocal otsThreadLocal =
         new ThreadLocal() {
+            @Override
             protected java.lang.Object initialValue() {
                 Object[] threadLocalState = new Object[2];
                 // IASRI 4698847 START
@@ -203,14 +204,17 @@ public class InterceptorImpl extends org.omg.CORBA.LocalObject
 
     // implementation of the Interceptor interface.
 
+    @Override
     public String name() {
 	return InterceptorImpl.name;
     }
 
+    @Override
     public void destroy() {}
 
     // implementation of the ClientInterceptor interface.
 
+    @Override
    public void send_request(ClientRequestInfo ri) throws ForwardRequest {
 
         // do IOR policy checking.
@@ -350,10 +354,12 @@ public class InterceptorImpl extends org.omg.CORBA.LocalObject
         ri.add_request_service_context(svc, false);
     }
 
+    @Override
     public void send_poll(ClientRequestInfo ri) {
         // do nothing.
     }
 
+    @Override
     public void receive_reply(ClientRequestInfo ri) {
 
         // check if a tx svc context was received.
@@ -419,6 +425,7 @@ public class InterceptorImpl extends org.omg.CORBA.LocalObject
 	}
     }
 
+    @Override
     public void receive_exception(ClientRequestInfo ri) throws ForwardRequest {
 
         // check if a tx svc context was received.
@@ -497,6 +504,7 @@ public class InterceptorImpl extends org.omg.CORBA.LocalObject
 	}
     }
 
+    @Override
     public void receive_other(ClientRequestInfo ri) throws ForwardRequest {
 
         // check if a tx svc context was received.
@@ -558,6 +566,7 @@ public class InterceptorImpl extends org.omg.CORBA.LocalObject
 
     // implementation of the ServerInterceptor interface.
 
+    @Override
     public void receive_request_service_contexts(ServerRequestInfo ri)
             throws ForwardRequest {
 
@@ -704,6 +713,7 @@ public class InterceptorImpl extends org.omg.CORBA.LocalObject
         }
     }
 
+    @Override
     public void receive_request(ServerRequestInfo ri)
             throws ForwardRequest {
         // do nothing.
@@ -766,10 +776,12 @@ public class InterceptorImpl extends org.omg.CORBA.LocalObject
         ri.add_reply_service_context(svc, false);
     }
 
+    @Override
     public void send_reply(ServerRequestInfo ri) {
         processServerSendPoint(ri, CompletionStatus.COMPLETED_YES);
     }
 
+    @Override
     public void send_exception(ServerRequestInfo ri) throws ForwardRequest {
         Any any = ri.sending_exception();
         InputStream strm = any.create_input_stream();
@@ -781,6 +793,7 @@ public class InterceptorImpl extends org.omg.CORBA.LocalObject
         processServerSendPoint(ri, completionStatus);
     }
 
+    @Override
     public void send_other(ServerRequestInfo ri) throws ForwardRequest {
         processServerSendPoint(ri, CompletionStatus.COMPLETED_NO);
     }

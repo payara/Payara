@@ -82,6 +82,7 @@ public class RuntimeDescriptorNode<T> extends DeploymentDescriptorNode<T>
     }     
     
     @SuppressWarnings("unchecked")
+    @Override
     protected Object createDescriptor() {
         return RuntimeDescriptorFactory.getDescriptor(getXMLPath());
     }
@@ -92,6 +93,7 @@ public class RuntimeDescriptorNode<T> extends DeploymentDescriptorNode<T>
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
 	if (getDispatchTable().containsKey(element.getQName())) {
 	    super.setElementValue(element, value);

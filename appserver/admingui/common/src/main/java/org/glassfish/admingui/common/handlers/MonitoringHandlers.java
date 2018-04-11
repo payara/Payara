@@ -72,7 +72,7 @@ import org.glassfish.admingui.common.util.RestUtil;
  */
 public class MonitoringHandlers {
   
-    final private static List<String> levels = new ArrayList();
+    private static final List<String> levels = new ArrayList();
     static {
         levels.add("OFF");
         levels.add("LOW");
@@ -111,7 +111,7 @@ public class MonitoringHandlers {
 
     public static final String DEPLOYMENT = GuiUtil.getCommonMessage("monitoring.module.Deployment");
 
-    final private static List monDisplayList = new ArrayList();
+    private static final List monDisplayList = new ArrayList();
 
     static {
         monDisplayList.add(JVM);
@@ -131,7 +131,7 @@ public class MonitoringHandlers {
         monDisplayList.add(JERSEY);
         monDisplayList.add(DEPLOYMENT);
     }
-    final private static List monNamesList = new ArrayList();
+    private static final List monNamesList = new ArrayList();
 
     static {
         monNamesList.add("jvm");
@@ -151,9 +151,9 @@ public class MonitoringHandlers {
         monNamesList.add("jersey");
         monNamesList.add("deployment");
     }
-    final private static List containerDispList = new ArrayList();
+    private static final List containerDispList = new ArrayList();
 
-    final private static List containerNameList = new ArrayList();
+    private static final List containerNameList = new ArrayList();
     
     
     @Handler(id = "gf.getMonitorLevels",

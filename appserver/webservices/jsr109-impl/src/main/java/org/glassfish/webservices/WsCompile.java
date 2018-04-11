@@ -117,6 +117,7 @@ public final class WsCompile extends CompileToolDelegate {
      * com.sun.xml.rpc.spi.tools.wscompile.CompileToolDelegate overrides.
      */
 
+    @Override
     public Configuration createConfiguration() {
         Configuration configuration = null;
         if( modelInfo != null ) {
@@ -130,10 +131,12 @@ public final class WsCompile extends CompileToolDelegate {
         return configuration;
     }
 
+    @Override
     public void preOnError() {
         error = true;
     }
 
+    @Override
     public void postRegisterProcessorActions() {
 
         if( !error) {
@@ -146,6 +149,7 @@ public final class WsCompile extends CompileToolDelegate {
         }
     }
 
+    @Override
     public void postRun() {
         generatedFiles = new HashSet();
 

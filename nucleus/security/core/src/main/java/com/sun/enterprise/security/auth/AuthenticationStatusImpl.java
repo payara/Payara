@@ -71,6 +71,7 @@ public class AuthenticationStatusImpl implements AuthenticationStatus {
      * This method returns the status of the authentication
      * @return An integer value indicating the status of the authentication
      */
+    @Override
     public int getStatus() {
 	return status;
     }
@@ -80,6 +81,7 @@ public class AuthenticationStatusImpl implements AuthenticationStatus {
      * no continuation data needed for passphrase based authentication.
      * @return A byte array of zero length.
      */
+    @Override
     public byte[] getContinuationData() {
 	return new byte[0];
     }
@@ -89,6 +91,7 @@ public class AuthenticationStatusImpl implements AuthenticationStatus {
      * no auth specific data needed for passphrase based authentication.
      * @return A byte array of zero length.
      */
+    @Override
     public byte[] getAuthSpecificData() {
 	return new byte[0];
     }

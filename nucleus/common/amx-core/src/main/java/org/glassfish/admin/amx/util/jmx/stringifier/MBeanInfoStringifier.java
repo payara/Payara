@@ -98,6 +98,7 @@ public class MBeanInfoStringifier extends MBeanFeatureInfoStringifier implements
         return (new MBeanNotificationInfoStringifier(options));
     }
 
+    @Override
     public String stringify(Object o)
     {
         String result = "";

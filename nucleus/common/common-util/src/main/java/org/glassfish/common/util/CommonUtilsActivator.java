@@ -52,12 +52,14 @@ import org.osgi.framework.BundleContext;
  */
 public class CommonUtilsActivator implements BundleActivator
 {
+    @Override
     public void start(BundleContext context) throws Exception
     {
         ObjectInputOutputStreamFactoryFactory.setFactory(
                 new OSGiObjectInputOutputStreamFactoryImpl(context));
     }
 
+    @Override
     public void stop(BundleContext context) throws Exception
     {
     }

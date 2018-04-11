@@ -54,9 +54,9 @@ public class CmrFieldMapping extends org.netbeans.modules.schema2beans.BaseBean
 	static Vector comparators = new Vector();
 	private static final org.netbeans.modules.schema2beans.Version runtimeVersion = new org.netbeans.modules.schema2beans.Version(5, 0, 0);
 
-	static public final String CMR_FIELD_NAME = "CmrFieldName";	// NOI18N
-	static public final String COLUMN_PAIR = "ColumnPair";	// NOI18N
-	static public final String FETCHED_WITH = "FetchedWith";	// NOI18N
+	public static final String CMR_FIELD_NAME = "CmrFieldName";	// NOI18N
+	public static final String COLUMN_PAIR = "ColumnPair";	// NOI18N
+	public static final String FETCHED_WITH = "FetchedWith";	// NOI18N
 
 	public CmrFieldMapping() {
 		this(Common.USE_DEFAULT_VALUES);
@@ -137,11 +137,13 @@ public class CmrFieldMapping extends org.netbeans.modules.schema2beans.BaseBean
 	}
 
 	// This attribute is optional
+        @Override
 	public void setFetchedWith(FetchedWith value) {
 		this.setValue(FETCHED_WITH, value);
 	}
 
 	//
+        @Override
 	public FetchedWith getFetchedWith() {
 		return (FetchedWith)this.getValue(FETCHED_WITH);
 	}
@@ -195,6 +197,7 @@ public class CmrFieldMapping extends org.netbeans.modules.schema2beans.BaseBean
 	}
 
 	// Dump the content of this bean returning it as a String
+        @Override
 	public void dump(StringBuffer str, String indent){
 		String s;
 		Object o;
@@ -232,6 +235,7 @@ public class CmrFieldMapping extends org.netbeans.modules.schema2beans.BaseBean
 		this.dumpAttributes(FETCHED_WITH, 0, str, indent);
 
 	}
+        @Override
 	public String dumpBeanNode(){
 		StringBuffer str = new StringBuffer();
 		str.append("CmrFieldMapping\n");	// NOI18N

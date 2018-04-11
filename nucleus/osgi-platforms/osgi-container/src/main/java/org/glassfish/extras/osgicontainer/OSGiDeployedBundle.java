@@ -59,18 +59,22 @@ public class OSGiDeployedBundle implements ApplicationContainer<OSGiContainer> {
         this.bundle = bundle;
     }
 
+    @Override
     public OSGiContainer getDescriptor() {
         return null;
     }
 
+    @Override
     public boolean start(ApplicationContext startupContext) throws Exception {
         return resume();
     }
 
+    @Override
     public boolean stop(ApplicationContext stopContext) {
         return suspend();
     }
 
+    @Override
     public boolean suspend() {
         if (!isFragment(bundle)) {
             stopBundle();
@@ -78,6 +82,7 @@ public class OSGiDeployedBundle implements ApplicationContainer<OSGiContainer> {
         return true;
     }
 
+    @Override
     public boolean resume() throws Exception {
         if (!isFragment(bundle)) {
             startBundle();
@@ -85,6 +90,7 @@ public class OSGiDeployedBundle implements ApplicationContainer<OSGiContainer> {
         return true;
     }
 
+    @Override
     public ClassLoader getClassLoader() {
         // return a non-null class loader. This will be set as TCL before the bundle is started or stopped
         // so that operations like JNDI lookup can be successful, as those operations in GlassFish requires
@@ -165,11 +171,13 @@ class BundleClassLoader extends ClassLoader
             resources = new Enumeration<URL>()
             {
 
+                @Override
                 public boolean hasMoreElements()
                 {
                     return false;
                 }
 
+                @Override
                 public URL nextElement()
                 {
                     throw new NoSuchElementException();

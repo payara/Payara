@@ -162,6 +162,7 @@ public class WebContainerStarter
      * that can be handled only by the web container, and if so, starts
      * the web container
      */ 
+    @Override
     public void postConstruct() {
         domainProvider.get();
         Config serverConfig = serverConfigProvider.get();
@@ -186,8 +187,10 @@ public class WebContainerStarter
         }
     }
 
+    @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         return ConfigSupport.sortAndDispatch(events, new Changed() {
+            @Override
             public <T extends ConfigBeanProxy> NotProcessed changed(
                     TYPE type, Class<T> tClass, T t) {
                 if (tClass == HttpService.class) {

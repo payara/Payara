@@ -105,6 +105,7 @@ public class DomainRootImpl extends AMXImplBase // implements DomainRoot
         return child(BulkAccess.class);
     }
 
+    @Override
     protected ObjectName preRegisterHook(final MBeanServer server,
             final ObjectName selfObjectName)
             throws Exception {
@@ -118,6 +119,7 @@ public class DomainRootImpl extends AMXImplBase // implements DomainRoot
         return selfObjectName;
     }
 
+    @Override
     public void preRegisterDone()
             throws Exception {
         super.preRegisterDone();

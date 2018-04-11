@@ -62,11 +62,11 @@ import java.util.Set;
  * @author Shing Wai Chan
  */
 public class ComponentDefinition implements ComponentInfo {
-    final private Class clazz;
-    final private List<Constructor> constructors = new ArrayList<Constructor>();
-    final private List<Class> classes = new ArrayList<Class>();
-    final private List<Field> fields = new ArrayList<Field>();
-    final private Map<MethodKey, Method> methodMap = new HashMap<MethodKey, Method>();
+    private final Class clazz;
+    private final List<Constructor> constructors = new ArrayList<Constructor>();
+    private final List<Class> classes = new ArrayList<Class>();
+    private final List<Field> fields = new ArrayList<Field>();
+    private final Map<MethodKey, Method> methodMap = new HashMap<MethodKey, Method>();
 
     public ComponentDefinition(Class clazz) {
         this.clazz = clazz;
@@ -76,14 +76,17 @@ public class ComponentDefinition implements ComponentInfo {
         initializeMethods();
     }
 
+    @Override
     public Field[] getFields() {
         return fields.toArray(new Field[fields.size()]);
     }
 
+    @Override
     public Method[] getMethods() {
         return methodMap.values().toArray(new Method[methodMap.size()]);
     }
 
+    @Override
     public Constructor[] getConstructors() {
         return constructors.toArray(new Constructor[constructors.size()]);
     }
@@ -151,6 +154,7 @@ public class ComponentDefinition implements ComponentInfo {
             classPackage = m.getDeclaringClass().getPackage();
         }
 
+        @Override
         public int hashCode() { 
 
             return hashCode;
@@ -161,6 +165,7 @@ public class ComponentDefinition implements ComponentInfo {
          * We depends on java compiler to rule out irrelvant cases here.
          * @return true for overriding and false otherwise
          */
+        @Override
         public boolean equals(Object o) {
             if (!(o instanceof MethodKey)) {
                 return false;

@@ -71,6 +71,7 @@ public interface ProtocolFilter extends ConfigBeanProxy, PropertyBag {
     Protocol findProtocol();
 
     @DuckTyped
+    @Override
     ProtocolChain getParent();
 
     class Duck {

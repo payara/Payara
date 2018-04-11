@@ -138,6 +138,7 @@ public interface WorkSecurityMap  extends /*Named,*/ ConfigBeanProxy, Resource {
     public void setName(String value) throws PropertyVetoException;
 
     @DuckTyped
+    @Override
     String getIdentity();
 
     class Duck {

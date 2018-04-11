@@ -105,6 +105,7 @@ public class GlassFishNamingBuilder implements InitialContextFactoryBuilder, Pos
      */
     private static final String ALLOW_JNDI_FROM_OSGI = "com.sun.enterprise.naming.allowJndiLookupFromOSGi";
 
+    @Override
     public InitialContextFactory createInitialContextFactory(Hashtable<?, ?> environment) throws NamingException
     {
         if (environment != null)
@@ -160,6 +161,7 @@ public class GlassFishNamingBuilder implements InitialContextFactoryBuilder, Pos
         }
     }
 
+    @Override
     public void postConstruct()
     {
         try
@@ -171,6 +173,7 @@ public class GlassFishNamingBuilder implements InitialContextFactoryBuilder, Pos
                 {
                     AccessController.doPrivileged(new PrivilegedExceptionAction<Void>()
                     {
+                        @Override
                         public Void run() throws NamingException
                         {
                             if (isUsingBuilder()) {
@@ -198,11 +201,13 @@ public class GlassFishNamingBuilder implements InitialContextFactoryBuilder, Pos
         }
     }
 
+    @Override
     public void preDestroy()
     {
         SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
             AccessController.doPrivileged(new PrivilegedAction<Void>(){
+                @Override
                 public Void run() {
                     if (isUsingBuilder()) {
                         resetInitialContextFactoryBuilder();

@@ -54,25 +54,31 @@ import com.sun.enterprise.module.Module;
 @Service
 public class GenericDeployer<T extends Container> implements Deployer<T, GenericApplicationContainer> {
 
+    @Override
     public MetaData getMetaData() {
         return null;
     }
 
+    @Override
     public <V> V loadMetaData(Class<V> type, DeploymentContext context) {
         return null;
     }
 
+    @Override
     public boolean prepare(DeploymentContext context) {
         return true;
     }
 
+    @Override
     public GenericApplicationContainer load(T container, DeploymentContext context) {
         return new GenericApplicationContainer(context.getFinalClassLoader());
     }
 
+    @Override
     public void unload(GenericApplicationContainer appContainer, DeploymentContext context) {
     }
 
+    @Override
     public void clean(DeploymentContext context) {        
     }
 }

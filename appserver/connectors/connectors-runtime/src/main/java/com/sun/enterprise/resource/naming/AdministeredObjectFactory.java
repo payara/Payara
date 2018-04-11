@@ -69,6 +69,7 @@ public class AdministeredObjectFactory implements ObjectFactory {
     //required by ObjectFactory
     public AdministeredObjectFactory() {}
 
+    @Override
     public Object getObjectInstance(Object obj,
 				    Name name,
 				    Context nameCtx,

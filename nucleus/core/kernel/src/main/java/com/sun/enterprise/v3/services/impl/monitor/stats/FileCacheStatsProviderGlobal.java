@@ -61,46 +61,55 @@ public class FileCacheStatsProviderGlobal extends FileCacheStatsProvider {
     }
 
     @ProbeListener("glassfish:kernel:file-cache:countHitEvent")
+    @Override
     public void countHitEvent(@ProbeParam("fileCacheName") String fileCacheName) {
         hitsCount.increment();
     }
 
     @ProbeListener("glassfish:kernel:file-cache:countMissEvent")
+    @Override
     public void countMissEvent(@ProbeParam("fileCacheName") String fileCacheName) {
         missesCount.increment();
     }
 
     @ProbeListener("glassfish:kernel:file-cache:countInfoHitEvent")
+    @Override
     public void countInfoHitEvent(@ProbeParam("fileCacheName") String fileCacheName) {
         infoHitsCount.increment();
     }
 
     @ProbeListener("glassfish:kernel:file-cache:countInfoMissEvent")
+    @Override
     public void countInfoMissEvent(@ProbeParam("fileCacheName") String fileCacheName) {
         infoMissesCount.increment();
     }
 
     @ProbeListener("glassfish:kernel:file-cache:countContentHitEvent")
+    @Override
     public void countContentHitEvent(@ProbeParam("fileCacheName") String fileCacheName) {
         contentHitsCount.increment();
     }
 
     @ProbeListener("glassfish:kernel:file-cache:countContentMissEvent")
+    @Override
     public void countContentMissEvent(@ProbeParam("fileCacheName") String fileCacheName) {
         contentMissesCount.increment();
     }
 
     @ProbeListener("glassfish:kernel:file-cache:incOpenCacheEntriesEvent")
+    @Override
     public void incOpenCacheEntriesEvent(@ProbeParam("fileCacheName") String fileCacheName) {
         openCacheEntriesCount.increment();
     }
 
     @ProbeListener("glassfish:kernel:file-cache:decOpenCacheEntriesEvent")
+    @Override
     public void decOpenCacheEntriesEvent(@ProbeParam("fileCacheName") String fileCacheName) {
         openCacheEntriesCount.decrement();
     }
 
     @ProbeListener("glassfish:kernel:file-cache:addHeapSizeEvent")
+    @Override
     public void addHeapSizeEvent(@ProbeParam("fileCacheName") String fileCacheName,
             @ProbeParam("size") long size) {
         final long newSize = heapSize.addAndGet(size);
@@ -117,12 +126,14 @@ public class FileCacheStatsProviderGlobal extends FileCacheStatsProvider {
     }
 
     @ProbeListener("glassfish:kernel:file-cache:subHeapSizeEvent")
+    @Override
     public void subHeapSizeEvent(@ProbeParam("fileCacheName") String fileCacheName,
             @ProbeParam("size") long size) {
         heapSize.addAndGet(-size);
     }
 
     @ProbeListener("glassfish:kernel:file-cache:addMappedMemorySizeEvent")
+    @Override
     public void addMappedMemorySizeEvent(
             @ProbeParam("fileCacheName") String fileCacheName,
             @ProbeParam("size") long size) {
@@ -140,6 +151,7 @@ public class FileCacheStatsProviderGlobal extends FileCacheStatsProvider {
     }
 
     @ProbeListener("glassfish:kernel:file-cache:subMappedMemorySizeEvent")
+    @Override
     public void subMappedMemorySizeEvent(
             @ProbeParam("fileCacheName") String fileCacheName,
             @ProbeParam("size") long size) {

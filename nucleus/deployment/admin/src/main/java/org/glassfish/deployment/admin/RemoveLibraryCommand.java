@@ -98,7 +98,7 @@ public class RemoveLibraryCommand implements AdminCommand, AdminCommandSecurity.
     @Inject
     UnprocessedConfigListener ucl;
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(RemoveLibraryCommand.class);    
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(RemoveLibraryCommand.class);    
 
     @Override
     public Collection<? extends AccessCheck> getAccessChecks() {
@@ -110,6 +110,7 @@ public class RemoveLibraryCommand implements AdminCommand, AdminCommandSecurity.
     }
     
     
+    @Override
     public void execute(AdminCommandContext context) {
         
         final ActionReport report = context.getActionReport();

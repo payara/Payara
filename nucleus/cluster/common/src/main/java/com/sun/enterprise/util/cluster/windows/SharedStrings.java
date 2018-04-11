@@ -50,18 +50,18 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  * @author Byron Nevins
  */
 
-final public class SharedStrings {
+public final class SharedStrings {
     private SharedStrings() {
         // no instances allowed!
     }
 
-    final public static String get(String indexString) {
+    public final static String get(String indexString) {
         return strings.get(indexString);
     }
 
-    final public static String get(String indexString, Object... objects) {
+    public final static String get(String indexString, Object... objects) {
         return strings.get(indexString, objects);
     }
 
-    final private static LocalStringsImpl strings = new LocalStringsImpl(SharedStrings.class);
+    private final static LocalStringsImpl strings = new LocalStringsImpl(SharedStrings.class);
 }

@@ -71,6 +71,7 @@ public final class GlassFishConfigBean extends ConfigBean {
 
         Transformer rawTransformer = new Transformer() {
             @SuppressWarnings("unchecked")
+            @Override
             public <T  extends ConfigBeanProxy> T transform(T source) {
                     final ConfigView handler = (ConfigView) Proxy.getInvocationHandler(source);
                     return (T) handler.getMasterView().getProxy(handler.getMasterView().getProxyType());
@@ -118,6 +119,7 @@ public final class GlassFishConfigBean extends ConfigBean {
         }
     }
     
+     @Override
     public String toString() {
         //final Set<String> attrNames = getAttributeNames();
         return "GlassFishConfigBean." + getProxyType().getName();

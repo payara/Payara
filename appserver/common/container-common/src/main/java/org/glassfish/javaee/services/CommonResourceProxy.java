@@ -71,6 +71,7 @@ public class CommonResourceProxy implements NamingObjectProxy.InitializationNami
     protected ResourceDescriptor desc;
     protected String actualResourceName;
 
+    @Override
     public synchronized Object create(Context ic) throws NamingException {
         if (actualResourceName == null) {
 

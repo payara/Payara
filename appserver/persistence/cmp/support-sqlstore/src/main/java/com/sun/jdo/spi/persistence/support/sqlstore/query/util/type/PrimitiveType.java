@@ -72,6 +72,7 @@ public class PrimitiveType
     /**
      *
      */
+    @Override
     public boolean isCompatibleWith(Type type)
     {
         if (type instanceof PrimitiveType)

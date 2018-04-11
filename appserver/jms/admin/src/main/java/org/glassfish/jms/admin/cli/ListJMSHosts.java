@@ -81,7 +81,7 @@ import org.glassfish.api.admin.*;
         description="list-jms-hosts")
 })
 public class ListJMSHosts implements AdminCommand {
-        final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListJMSHosts.class);
+        private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListJMSHosts.class);
 
     @Param(name="target", optional=true)
     String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
@@ -97,6 +97,7 @@ public class ListJMSHosts implements AdminCommand {
      *
      * @param context information
      */
+        @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();

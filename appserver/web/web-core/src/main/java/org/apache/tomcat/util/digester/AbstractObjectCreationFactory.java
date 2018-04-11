@@ -66,7 +66,7 @@ import org.xml.sax.Attributes;
  * <p>Abstract base class for <code>ObjectCreationFactory</code>
  * implementations.</p>
  */
-abstract public class AbstractObjectCreationFactory implements ObjectCreationFactory {
+public abstract class AbstractObjectCreationFactory implements ObjectCreationFactory {
 
 
     // ----------------------------------------------------- Instance Variables
@@ -90,6 +90,7 @@ abstract public class AbstractObjectCreationFactory implements ObjectCreationFac
      *
      * @throws Exception any exception thrown will be propagated upwards
      */
+    @Override
     public abstract Object createObject(Attributes attributes) throws Exception;
 
 
@@ -97,6 +98,7 @@ abstract public class AbstractObjectCreationFactory implements ObjectCreationFac
      * <p>Returns the {@link Digester} that was set by the
      * {@link FactoryCreateRule} upon initialization.
      */
+    @Override
     public Digester getDigester() {
 
         return (this.digester);
@@ -110,6 +112,7 @@ abstract public class AbstractObjectCreationFactory implements ObjectCreationFac
      *
      * @param digester parent Digester object
      */
+    @Override
     public void setDigester(Digester digester) {
 
         this.digester = digester;

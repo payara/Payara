@@ -159,6 +159,7 @@ public class SunDeploymentManager implements DeploymentManager {
     *           user may select for application deployment or 'null'
     *           if there are none.
     */
+    @Override
     public Target[] getTargets() throws IllegalStateException {
         verifyConnected();
         try {
@@ -191,6 +192,7 @@ public class SunDeploymentManager implements DeploymentManager {
     * @throws TargetException An invalid Target designator
     *                   encountered.
     */
+    @Override
     public TargetModuleID[] getRunningModules(ModuleType moduleType,
 		Target[] targetList) throws TargetException, IllegalStateException {
 
@@ -218,6 +220,7 @@ public class SunDeploymentManager implements DeploymentManager {
     * @throws TargetException An invalid Target designator
     *                   encountered.
     */
+    @Override
     public TargetModuleID[] getNonRunningModules(ModuleType moduleType,
 			Target[] targetList) throws TargetException, IllegalStateException {
         return getModules(moduleType, targetList, DFDeploymentProperties.NON_RUNNING);
@@ -243,6 +246,7 @@ public class SunDeploymentManager implements DeploymentManager {
     * @throws TargetException An invalid Target designator
     *                   encountered.
     */
+    @Override
     public TargetModuleID[] getAvailableModules(ModuleType moduleType,
 			Target[] targetList) throws TargetException,
             IllegalStateException {
@@ -450,6 +454,7 @@ public class SunDeploymentManager implements DeploymentManager {
     *                      configuration tool.
     */
 
+    @Override
     public DeploymentConfiguration createConfiguration(DeployableObject dObj)
             throws InvalidModuleException
     {
@@ -484,6 +489,7 @@ public class SunDeploymentManager implements DeploymentManager {
     *                       status of the distribution process.
     */
 
+    @Override
     public ProgressObject distribute(Target[] targetList,
            File moduleArchive, File deploymentPlan)
            throws IllegalStateException
@@ -510,6 +516,7 @@ public class SunDeploymentManager implements DeploymentManager {
     *                       status of the distribution process.
     *
     */
+    @Override
     public ProgressObject distribute(Target[] targetList,
            InputStream moduleArchive, InputStream deploymentPlan)
            throws IllegalStateException 
@@ -538,6 +545,7 @@ public class SunDeploymentManager implements DeploymentManager {
      *
      */
     
+    @Override
     public ProgressObject distribute(Target[] targetList, ModuleType type,
             InputStream moduleArchive, InputStream deploymentPlan)
             throws IllegalStateException
@@ -564,6 +572,7 @@ public class SunDeploymentManager implements DeploymentManager {
     *                       status of the start operation.
     */
 
+    @Override
     public ProgressObject start(TargetModuleID[] moduleIDList)
              throws IllegalStateException
     {
@@ -587,6 +596,7 @@ public class SunDeploymentManager implements DeploymentManager {
     *                       status of the stop operation.
     */
 
+    @Override
     public ProgressObject stop(TargetModuleID [] moduleIDList)
              throws IllegalStateException 
     {
@@ -612,6 +622,7 @@ public class SunDeploymentManager implements DeploymentManager {
     *                       status of the stop operation.
     */
 
+    @Override
     public ProgressObject undeploy(TargetModuleID[] moduleIDList)
                throws IllegalStateException 
     {
@@ -628,6 +639,7 @@ public class SunDeploymentManager implements DeploymentManager {
     *                   vendor's DeploymentManager.  False means it
     *                   is not.
     */
+    @Override
     public boolean isRedeploySupported() {
         return true;
     }
@@ -668,6 +680,7 @@ public class SunDeploymentManager implements DeploymentManager {
     *         is not supported by this implementation.
     */
 
+    @Override
     public ProgressObject redeploy(TargetModuleID[] moduleIDList,
            File moduleArchive, File deploymentPlan)
            throws UnsupportedOperationException, IllegalStateException 
@@ -739,6 +752,7 @@ public class SunDeploymentManager implements DeploymentManager {
     *         is not supported by this implementation.
     */
 
+    @Override
     public ProgressObject redeploy(TargetModuleID[] moduleIDList,
            InputStream moduleArchive, InputStream deploymentPlan)
            throws UnsupportedOperationException, IllegalStateException 
@@ -795,6 +809,7 @@ public class SunDeploymentManager implements DeploymentManager {
     * 
     */
 
+    @Override
     public void release() {
         /*
          *Make sure multiple releases are handled gracefully.
@@ -810,6 +825,7 @@ public class SunDeploymentManager implements DeploymentManager {
     *
     * @return Locale the default locale for this implementation.
     */
+    @Override
     public Locale getDefaultLocale() {
         return defaultLocale;
     }
@@ -820,6 +836,7 @@ public class SunDeploymentManager implements DeploymentManager {
     *
     * @return Locale the active locale of this implementation.
     */
+    @Override
     public Locale getCurrentLocale() {
         return currentLocale;
     }
@@ -831,6 +848,7 @@ public class SunDeploymentManager implements DeploymentManager {
     * @throws UnsupportedOperationException the provide locale is
     *      not supported.
     */
+    @Override
     public void setLocale(Locale locale) throws UnsupportedOperationException {
         for (int i=0;i<supportedLocales.length;i++) {
             if (supportedLocales[i] == locale) {
@@ -848,6 +866,7 @@ public class SunDeploymentManager implements DeploymentManager {
     *
     * @return Locale[] the list of supported locales.
     */
+    @Override
     public Locale[] getSupportedLocales() {
         return supportedLocales;
     }
@@ -858,6 +877,7 @@ public class SunDeploymentManager implements DeploymentManager {
     * @return  A value of 'true' means it is support and 'false' it is
     *      not.
     */
+    @Override
     public boolean isLocaleSupported(Locale locale) {
         Locale[] locales = getSupportedLocales();
         for (int i=0;i<locales.length;i++) {
@@ -876,6 +896,7 @@ public class SunDeploymentManager implements DeploymentManager {
     * @return a DConfigBeanVersionType object representing the 
     * platform version number for which these beans are provided.
     */
+    @Override
    public DConfigBeanVersionType getDConfigBeanVersion() {
        return DConfigBeanVersionType.V5;
    }
@@ -889,6 +910,7 @@ public class SunDeploymentManager implements DeploymentManager {
     *	J2EE platform version for which support is requested.
     * @return 'true' if the version is supported and 'false if not.
     */
+    @Override
    public boolean isDConfigBeanVersionSupported(DConfigBeanVersionType version) {
        return version.getValue()==getDConfigBeanVersion().getValue();
    }
@@ -902,6 +924,7 @@ public class SunDeploymentManager implements DeploymentManager {
     * @throws DConfigBeanVersionUnsupportedException when the
     *        requested bean version is not supported.
     */
+    @Override
    public void setDConfigBeanVersion(DConfigBeanVersionType version) throws
             DConfigBeanVersionUnsupportedException {
                                

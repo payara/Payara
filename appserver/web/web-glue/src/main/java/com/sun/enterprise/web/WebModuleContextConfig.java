@@ -82,20 +82,20 @@ public class WebModuleContextConfig extends ContextConfig {
     protected static final ResourceBundle rb = logger.getResourceBundle();
 
 
-    public final static int CHILDREN = 0;
-    public final static int SERVLET_MAPPINGS = 1;
-    public final static int LOCAL_EJBS = 2;
-    public final static int EJBS = 3;
-    public final static int ENVIRONMENTS = 4;
-    public final static int ERROR_PAGES = 5;
-    public final static int FILTER_DEFS = 6;
-    public final static int FILTER_MAPS = 7;
-    public final static int APPLICATION_LISTENERS = 8;
-    public final static int RESOURCES = 9;
-    public final static int APPLICATION_PARAMETERS = 10;
-    public final static int MESSAGE_DESTINATIONS = 11;
-    public final static int MESSAGE_DESTINATION_REFS = 12;
-    public final static int MIME_MAPPINGS = 13;
+    public static final int CHILDREN = 0;
+    public static final int SERVLET_MAPPINGS = 1;
+    public static final int LOCAL_EJBS = 2;
+    public static final int EJBS = 3;
+    public static final int ENVIRONMENTS = 4;
+    public static final int ERROR_PAGES = 5;
+    public static final int FILTER_DEFS = 6;
+    public static final int FILTER_MAPS = 7;
+    public static final int APPLICATION_LISTENERS = 8;
+    public static final int RESOURCES = 9;
+    public static final int APPLICATION_PARAMETERS = 10;
+    public static final int MESSAGE_DESTINATIONS = 11;
+    public static final int MESSAGE_DESTINATION_REFS = 12;
+    public static final int MIME_MAPPINGS = 13;
     
     protected ServiceLocator services;
         

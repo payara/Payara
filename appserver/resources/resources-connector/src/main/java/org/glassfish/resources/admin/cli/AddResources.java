@@ -78,7 +78,7 @@ import java.util.logging.Logger;
 })
 public class AddResources implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AddResources.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AddResources.class);    
 
     @Param(optional=true)
     private String target = SystemPropertyConstants.DAS_SERVER_NAME;
@@ -98,6 +98,7 @@ public class AddResources implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         

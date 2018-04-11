@@ -64,6 +64,7 @@ import java.util.Iterator;
  */
 public class ConcurrencyCheckDirty extends ConcurrencyDBNative {
 
+    @Override
     public void commit(UpdateObjectDesc updateDesc,
                        SQLStateManager beforeImage,
                        SQLStateManager afterImage,
@@ -72,6 +73,7 @@ public class ConcurrencyCheckDirty extends ConcurrencyDBNative {
         this.afterImage = afterImage;
     }
 
+    @Override
     public void update(UpdateQueryPlan plan) {
         boolean debug = logger.isLoggable();
 
@@ -156,6 +158,7 @@ public class ConcurrencyCheckDirty extends ConcurrencyDBNative {
         }
     }
 
+    @Override
     public Object clone() {
         return new ConcurrencyCheckDirty();
     }

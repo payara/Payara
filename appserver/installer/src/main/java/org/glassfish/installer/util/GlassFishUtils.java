@@ -64,7 +64,7 @@ public class GlassFishUtils {
         LOGGER = Logger.getLogger(ClassUtils.getClassName());
     }
     /* Move it to Resources */
-    static public String windowsCopyRightNoticeText =
+    public static String windowsCopyRightNoticeText =
             "@echo off\n"
             + "REM DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.\n"
             + "REM\n"
@@ -74,7 +74,7 @@ public class GlassFishUtils {
             + "REM\n";
 
     /* Move it to Resources */
-    static public String unixCopyRightNoticeText =
+    public static String unixCopyRightNoticeText =
             "#!/bin/sh\n"
             + "#\n"
             + "# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.\n"
@@ -99,7 +99,7 @@ public class GlassFishUtils {
      * @return String a colon separated list of ports to be used as a value
      * for --domainproperties of create-domain command.
      */
-    static public String getDomainProperties(String adminPort, String httpPort, String[][] glassfishPortArray) {
+    public static String getDomainProperties(String adminPort, String httpPort, String[][] glassfishPortArray) {
         String domainProperties = "";
         /* Check admin and http port given by user against
         the list of default ports used by asadmin. */
@@ -136,7 +136,7 @@ public class GlassFishUtils {
      * @return String[] that can be passed to Runtime.exec)( to create the domain.
      * 
      */
-    static public String[] assembleCreateDomainCommand(Product productRef,
+    public static String[] assembleCreateDomainCommand(Product productRef,
             Domain glassfishDomain) {
         String[] asadminCommandArray = {productRef.getAdminScript(),
             "--user", glassfishDomain.getAdminUser(),
@@ -161,7 +161,7 @@ public class GlassFishUtils {
      * @return ExecuteCommand, a pre-assembled executecommand object that can
      * be executed to create the instance.
      */
-    static public ExecuteCommand assembleCreateInstanceCommand(Product productRef, Instance glassfishInstance) {
+    public static ExecuteCommand assembleCreateInstanceCommand(Product productRef, Instance glassfishInstance) {
         try {
             ExecuteCommand asadminExecuteCommand = null;
             // Command line to create a clustered instance.
@@ -192,7 +192,7 @@ public class GlassFishUtils {
     /* @param installDir root of the installation directory.
      * @return String path to the config file based on OS.
      */
-    static public String getGlassfishConfigFilePath(String installDir) {
+    public static String getGlassfishConfigFilePath(String installDir) {
         if (OSUtils.isWindows()) {
             return installDir + "\\glassfish\\config\\asenv.bat";
         }
@@ -203,7 +203,7 @@ public class GlassFishUtils {
     /* @param installDir root of the installation directory.
      * @return String path to the domain admin script based on OS.
      */
-    static public String getGlassfishAdminScriptPath(String installDir) {
+    public static String getGlassfishAdminScriptPath(String installDir) {
         if (OSUtils.isWindows()) {
             return installDir + "\\glassfish\\bin\\asadmin.bat";
         }
@@ -217,7 +217,7 @@ public class GlassFishUtils {
      * be executed to create the service.
      *
      */
-    static public ExecuteCommand assembleCreateServiceCommand(Service serviceRef, Domain associatedDomain) {
+    public static ExecuteCommand assembleCreateServiceCommand(Service serviceRef, Domain associatedDomain) {
         // Create a Service Object that sets up the service object and does create.
         ExecuteCommand asadminExecuteCommand = null;
         try {
@@ -264,7 +264,7 @@ public class GlassFishUtils {
      * @return ExecuteCommand, a pre-assembled executecommand object that can
      * be executed to create the cluster.
      */
-    static public ExecuteCommand assembleCreateClusterCommand(Product productRef, Domain domainRef, Cluster clusterRef) {
+    public static ExecuteCommand assembleCreateClusterCommand(Product productRef, Domain domainRef, Cluster clusterRef) {
         try {
             ExecuteCommand asadminExecuteCommand = null;
             asadminExecuteCommand = new ExecuteCommand(new String[]{
@@ -284,7 +284,7 @@ public class GlassFishUtils {
      * @return ExecuteCommand, a pre-assembled executecommand object that can
      * be executed to list the domains.
      */
-    static public ExecuteCommand assembleListDomainsCommand(Product productRef) {
+    public static ExecuteCommand assembleListDomainsCommand(Product productRef) {
         try {
             ExecuteCommand asadminExecuteCommand = null;
             asadminExecuteCommand = new ExecuteCommand(new String[]{
@@ -302,7 +302,7 @@ public class GlassFishUtils {
      * @return ExecuteCommand, a pre-assembled executecommand object that can
      * be executed to start the specified domain.
      */
-    static public ExecuteCommand assembleStartDomainCommand(Product productRef, String domainName) {
+    public static ExecuteCommand assembleStartDomainCommand(Product productRef, String domainName) {
         try {
             ExecuteCommand asadminExecuteCommand = null;
             asadminExecuteCommand = new ExecuteCommand(new String[]{
@@ -316,7 +316,7 @@ public class GlassFishUtils {
         return null;
     }
 
-    static public boolean isGlassFishInstalledHere(String installDir) {
+    public static boolean isGlassFishInstalledHere(String installDir) {
 
         return FileUtils.isFileExist(getGlassfishAdminScriptPath(installDir))
                 || FileUtils.isFileExist(getGlassfishConfigFilePath(installDir));

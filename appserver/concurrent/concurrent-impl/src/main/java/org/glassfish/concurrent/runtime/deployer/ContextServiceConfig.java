@@ -51,6 +51,7 @@ public class ContextServiceConfig extends BaseConfig {
         super(config.getJndiName(), config.getContextInfo(), config.getContextInfoEnabled());
     }
 
+    @Override
     public TYPE getType() {
         return TYPE.CONTEXT_SERVICE;
     }

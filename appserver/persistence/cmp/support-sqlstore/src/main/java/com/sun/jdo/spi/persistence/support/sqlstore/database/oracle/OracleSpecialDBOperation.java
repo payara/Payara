@@ -131,6 +131,7 @@ public class OracleSpecialDBOperation extends BaseSpecialDBOperation {
      */
     private abstract class OracleDriverHandlerFactory
         implements DBDriverHandlerFactory {
+        @Override
         public boolean supportsDefineColumnType() {
             return true;
         }
@@ -167,6 +168,7 @@ public class OracleSpecialDBOperation extends BaseSpecialDBOperation {
      * Initializes driver specific behavior classes by determining the
      * characteristics of the jdbc driver used with this DataSource.
      */
+    @Override
     public void initialize(DatabaseMetaData metaData,
         String identifier) throws SQLException {
         Connection con = metaData.getConnection();
@@ -202,10 +204,12 @@ public class OracleSpecialDBOperation extends BaseSpecialDBOperation {
         } else */{
             // This DataSource uses a non oracle driver.
             dBDriverHandlerFactory = new DBDriverHandlerFactory() {
+                @Override
                 public DBDriverHandler createDBDriverHandler(PreparedStatement ps) {
                     return new NonOracleHandler(ps);
                 }
 
+                @Override
                 public boolean supportsDefineColumnType() {
                     return false;
                 }
@@ -225,6 +229,7 @@ public class OracleSpecialDBOperation extends BaseSpecialDBOperation {
     /**
      * Defines Column type for result for specified ps.
      */
+    @Override
     public void defineColumnTypeForResult(
         PreparedStatement ps, List columns) throws SQLException {
         if(dBDriverHandlerFactory.supportsDefineColumnType()) {
@@ -262,6 +267,7 @@ public class OracleSpecialDBOperation extends BaseSpecialDBOperation {
     /**
      * Implements special handling of char columns on Oracle.
      */
+    @Override
     public void bindFixedCharColumn(PreparedStatement stmt,
         int index, String strVal, int length) throws SQLException {
         DBDriverHandler driverHandler =
@@ -278,6 +284,7 @@ public class OracleSpecialDBOperation extends BaseSpecialDBOperation {
         final String finalClassName = className;
         return  (Class)AccessController.doPrivileged(
             new PrivilegedAction() {
+                @Override
                 public Object run() {
                     try {
                         if (finalLoader != null) {
@@ -356,10 +363,14 @@ public class OracleSpecialDBOperation extends BaseSpecialDBOperation {
         private NonOracleHandler(PreparedStatement ps) {
             this.ps = ps;
         }
+        @Override
         public void defineColumnType(int index, int type) throws SQLException {}
+        @Override
         public void defineColumnType( int index, int type,int length)
             throws SQLException {}
+        @Override
         public void clearDefines() throws SQLException {}
+        @Override
         public void bindFixedCharColumn(int index, String strVal, int length)
             throws SQLException {
             // We are running on an Oracle database but not using an

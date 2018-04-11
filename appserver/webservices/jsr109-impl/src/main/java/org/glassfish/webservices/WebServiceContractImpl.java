@@ -97,6 +97,7 @@ public class WebServiceContractImpl implements WebServicesContract{
 
     private static final Logger logger = LogUtils.getLogger();
 
+    @Override
     public ComponentEnvManager getComponentEnvManager() {
         return compEnvManager;  
     }
@@ -124,6 +125,7 @@ public class WebServiceContractImpl implements WebServicesContract{
         return wscImpl;
     }
 
+    @Override
     public Logger getLogger() {
         return logger;
     }

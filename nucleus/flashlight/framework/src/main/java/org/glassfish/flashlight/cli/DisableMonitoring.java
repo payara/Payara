@@ -90,7 +90,7 @@ public class DisableMonitoring implements AdminCommand, AdminCommandSecurity.Pre
     @Param(optional=true)
     private String modules;
 
-    final private LocalStringManagerImpl localStrings = 
+    private final LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(DisableMonitoring.class);
 
     @AccessRequired.To("update")

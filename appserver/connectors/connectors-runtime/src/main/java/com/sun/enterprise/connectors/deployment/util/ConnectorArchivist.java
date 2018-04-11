@@ -108,6 +108,7 @@ public class ConnectorArchivist extends Archivist<ConnectorDescriptor> {
      * @return the list of the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
+    @Override
     public List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles() {
         if (confDDFiles == null) {
             confDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>();

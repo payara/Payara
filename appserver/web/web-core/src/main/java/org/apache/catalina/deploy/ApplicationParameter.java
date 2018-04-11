@@ -140,6 +140,7 @@ public class ApplicationParameter implements Serializable {
     /**
      * Return a String representation of this object.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("ApplicationParameter[");
@@ -159,6 +160,7 @@ public class ApplicationParameter implements Serializable {
     }
 
 
+    @Override
     public boolean equals(Object obj) {
         if (name == null) {
             throw new IllegalStateException();
@@ -174,6 +176,7 @@ public class ApplicationParameter implements Serializable {
     }
 
 
+    @Override
     public int hashCode() {
         if (name == null) {
             throw new IllegalStateException();

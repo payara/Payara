@@ -82,12 +82,12 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
     private static final String INVALID_ZIP_FILE = "NCLS-DEPLOYMENT-00020";
 
     // the file we are currently mapped to 
-    volatile protected JarFile jarFile=null;
+    protected volatile JarFile jarFile=null;
     
     // in case this abstraction is dealing with a jar file
     // within a jar file, the jarFile will be null and this
     // JarInputStream will contain the 
-    volatile protected JarInputStream jarIS=null;
+    protected volatile JarInputStream jarIS=null;
     
     // the archive Uri
     volatile private URI uri;
@@ -105,6 +105,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      * Get the size of the archive
      * @return tje the size of this archive or -1 on error
      */
+    @Override
     public long getArchiveSize() throws NullPointerException, SecurityException {
         if(uri == null) {
             return -1;
@@ -124,6 +125,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
     /** 
      * close the abstract archive
      */
+    @Override
     public synchronized void close() throws IOException {
         for (EntryEnumeration e : entryEnumerations.keySet()) {
             e.closeNoRemove();
@@ -216,6 +218,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
   	return entries();
     }
 
+    @Override
     public JarEntry getJarEntry(String name) {
         if (jarFile!=null) {
             return jarFile.getJarEntry(name);
@@ -229,6 +232,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      *
      * @param name the file name relative to the root of the module.          * @return the existence the given entry name.
      */
+    @Override
     public boolean exists(String name) throws IOException {
         if (jarFile!=null) {
             ZipEntry ze = jarFile.getEntry(name);
@@ -244,6 +248,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      * the current abstract archive
      * @param entryName entry name
      */
+    @Override
     public InputStream getEntry(String entryName) throws IOException {
         if (jarFile!=null) {
             ZipEntry ze = jarFile.getEntry(entryName);
@@ -286,6 +291,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      * @param name the entry name
      * @return the entry size
      */
+    @Override
     public long getEntrySize(String name) {
         if (jarFile!=null) {
             ZipEntry ze = jarFile.getEntry(name);
@@ -299,6 +305,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
     /** Open an abstract archive
      * @param uri the path to the archive
      */
+    @Override
     public void open(URI uri) throws IOException {
        this.uri = uri;
        jarFile = getJarFile(uri);
@@ -333,6 +340,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
     /** 
      * @return the manifest information for this abstract archive
      */
+    @Override
     public Manifest getManifest() throws IOException {
         if (jarFile!=null) {
             return jarFile.getManifest();
@@ -366,6 +374,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      *
      * @return the path for this archive.
      */
+    @Override
     public URI getURI() {
         return uri;
     }
@@ -374,6 +383,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      * @return true if this abstract archive maps to an existing 
      * jar file
      */
+    @Override
     public boolean exists() {
         return jarFile!=null;
     }
@@ -381,6 +391,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
     /**
      * deletes the underlying jar file
      */
+    @Override
     public boolean delete() {
         if (jarFile==null) {
             return false;
@@ -397,6 +408,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
     /**
      * rename the underlying jar file
      */
+    @Override
     public boolean renameTo(String name) {
         if (jarFile==null) {
             return false;
@@ -414,6 +426,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      * @return an Archive for an embedded archive indentified with
      * the name parameter
      */
+    @Override
     public ReadableArchive getSubArchive(String name) throws IOException {
         if (jarFile!=null) {
             // for now, I only support one level down embedded archives

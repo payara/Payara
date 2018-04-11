@@ -77,6 +77,7 @@ public class UnifiedX509TrustManager implements X509TrustManager {
     }
 
     // ---------- implements X509TrustManager -----------
+    @Override
     public void checkClientTrusted(X509Certificate[] chain, String authType)
             throws CertificateException {
         CertificateException cex = null;
@@ -94,6 +95,7 @@ public class UnifiedX509TrustManager implements X509TrustManager {
         }
     }
 
+    @Override
     public void checkServerTrusted(X509Certificate[] chain, String authType)
             throws CertificateException {
         CertificateException cex = null;
@@ -111,6 +113,7 @@ public class UnifiedX509TrustManager implements X509TrustManager {
         }
     }
 
+    @Override
     public X509Certificate[] getAcceptedIssuers() {
         return issuers;
     }

@@ -75,11 +75,11 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
         SaxParserHandler.registerBundleNode(this, WLWebServicesTagNames.WEB_SERVICES);
     }
 
-    private final static XMLElement ROOT_ELEMENT = new XMLElement(WLWebServicesTagNames.WEB_SERVICES);
+    private static final XMLElement ROOT_ELEMENT = new XMLElement(WLWebServicesTagNames.WEB_SERVICES);
 
-    private final static String SCHEMA_ID = WLDescriptorConstants.WL_WEBSERVICES_XML_SCHEMA;
-    private final static String SPEC_VERSION = "1.0";
-    private final static List<String> systemIDs = initSystemIDs();
+    private static final String SCHEMA_ID = WLDescriptorConstants.WL_WEBSERVICES_XML_SCHEMA;
+    private static final String SPEC_VERSION = "1.0";
+    private static final List<String> systemIDs = initSystemIDs();
 
     private static List<String> initSystemIDs() {
         List<String> systemIDs = new ArrayList<String>();
@@ -93,6 +93,7 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
     /**
      * @return the DOCTYPE of the XML file
      */
+    @Override
     public String getDocType() {
         return null;
     }
@@ -100,6 +101,7 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
     /**
      * @return the SystemID of the XML file
      */
+    @Override
     public String getSystemID() {
         return SCHEMA_ID;
     }
@@ -107,6 +109,7 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
     /**
      * @return the list of SystemID of the XML schema supported
      */
+    @Override
     public List<String> getSystemIDs() {
         return systemIDs;
     }
@@ -125,6 +128,7 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
     /**
      * @return the complete URL for J2EE schemas
      */
+    @Override
     protected String getSchemaURL() {
         return WLDescriptorConstants.WL_WEBSERVICES_SCHEMA_LOCATION;
     }
@@ -132,6 +136,7 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return ROOT_ELEMENT;
     }
@@ -181,10 +186,12 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
     /**
      * @return the descriptor instance to associate with this XMLNode
      */
+    @Override
     public WebServicesDescriptor getDescriptor() {
         return parentDescriptor;
     }
 
+    @Override
     public Node writeDescriptor(Node parent, RootDeploymentDescriptor descriptor) {
         Node bundleNode;
         if (getDocType() == null) {
@@ -236,6 +243,7 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
     /**
      * @return the default spec version level this node complies to
      */
+    @Override
     public String getSpecVersion() {
         return SPEC_VERSION;
     }

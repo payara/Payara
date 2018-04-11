@@ -85,12 +85,13 @@ public class ConnectorObjectFactory implements ObjectFactory {
     private ConnectorRuntime runtime ;
 
     private static Logger _logger = LogDomains.getLogger(ConnectorObjectFactory.class, LogDomains.JNDI_LOGGER, false);
-    protected final static StringManager localStrings =
+    protected static final StringManager localStrings =
             StringManager.getManager(ConnectorRuntime.class);
 
     public ConnectorObjectFactory() {
     }
 
+    @Override
     public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable env) throws Exception {
 
         Reference ref = (Reference) obj;

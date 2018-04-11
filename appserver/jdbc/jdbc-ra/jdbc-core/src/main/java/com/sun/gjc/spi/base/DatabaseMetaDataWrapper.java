@@ -56,7 +56,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
     protected DatabaseMetaData databaseMetaData = null;
     protected Connection connection = null;
     private MethodExecutor executor = null;
-    protected final static Logger _logger;
+    protected static final Logger _logger;
 
     static {
         _logger = LogDomains.getLogger(MethodExecutor.class, LogDomains.RSR_LOGGER);
@@ -81,6 +81,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean allProceduresAreCallable() throws SQLException {
         return databaseMetaData.allProceduresAreCallable();
     }
@@ -93,6 +94,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean allTablesAreSelectable() throws SQLException {
         return databaseMetaData.allTablesAreSelectable();
     }
@@ -104,6 +106,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         generated
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getURL() throws SQLException {
         return databaseMetaData.getURL();
     }
@@ -114,6 +117,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return the database user name
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getUserName() throws SQLException {
         return databaseMetaData.getUserName();
     }
@@ -124,6 +128,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean isReadOnly() throws SQLException {
         return databaseMetaData.isReadOnly();
     }
@@ -140,6 +145,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean nullsAreSortedHigh() throws SQLException {
         return databaseMetaData.nullsAreSortedHigh();
     }
@@ -156,6 +162,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean nullsAreSortedLow() throws SQLException {
         return databaseMetaData.nullsAreSortedLow();
     }
@@ -167,6 +174,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean nullsAreSortedAtStart() throws SQLException {
         return databaseMetaData.nullsAreSortedAtStart();
     }
@@ -178,6 +186,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean nullsAreSortedAtEnd() throws SQLException {
         return databaseMetaData.nullsAreSortedAtEnd();
     }
@@ -188,6 +197,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return database product name
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getDatabaseProductName() throws SQLException {
         return databaseMetaData.getDatabaseProductName();
     }
@@ -198,6 +208,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return database version number
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getDatabaseProductVersion() throws SQLException {
         return databaseMetaData.getDatabaseProductVersion();
     }
@@ -208,6 +219,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return JDBC driver name
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getDriverName() throws SQLException {
         return databaseMetaData.getDriverName();
     }
@@ -218,6 +230,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return JDBC driver version
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getDriverVersion() throws SQLException {
         return databaseMetaData.getDriverVersion();
     }
@@ -227,6 +240,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *
      * @return JDBC driver major version
      */
+    @Override
     public int getDriverMajorVersion() {
         return databaseMetaData.getDriverMajorVersion();
     }
@@ -236,6 +250,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *
      * @return JDBC driver minor version number
      */
+    @Override
     public int getDriverMinorVersion() {
         return databaseMetaData.getDriverMinorVersion();
     }
@@ -246,6 +261,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean usesLocalFiles() throws SQLException {
         return databaseMetaData.usesLocalFiles();
     }
@@ -257,6 +273,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean usesLocalFilePerTable() throws SQLException {
         return databaseMetaData.usesLocalFilePerTable();
     }
@@ -268,6 +285,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsMixedCaseIdentifiers() throws SQLException {
         return databaseMetaData.supportsMixedCaseIdentifiers();
     }
@@ -279,6 +297,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean storesUpperCaseIdentifiers() throws SQLException {
         return databaseMetaData.storesUpperCaseIdentifiers();
     }
@@ -290,6 +309,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean storesLowerCaseIdentifiers() throws SQLException {
         return databaseMetaData.storesLowerCaseIdentifiers();
     }
@@ -301,6 +321,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean storesMixedCaseIdentifiers() throws SQLException {
         return databaseMetaData.storesMixedCaseIdentifiers();
     }
@@ -312,6 +333,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsMixedCaseQuotedIdentifiers() throws SQLException {
         return databaseMetaData.supportsMixedCaseQuotedIdentifiers();
     }
@@ -323,6 +345,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean storesUpperCaseQuotedIdentifiers() throws SQLException {
         return databaseMetaData.storesUpperCaseQuotedIdentifiers();
     }
@@ -334,6 +357,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean storesLowerCaseQuotedIdentifiers() throws SQLException {
         return databaseMetaData.storesLowerCaseQuotedIdentifiers();
     }
@@ -345,6 +369,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean storesMixedCaseQuotedIdentifiers() throws SQLException {
         return databaseMetaData.storesMixedCaseQuotedIdentifiers();
     }
@@ -356,6 +381,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return the quoting string or a space if quoting is not supported
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getIdentifierQuoteString() throws SQLException {
         return databaseMetaData.getIdentifierQuoteString();
     }
@@ -368,6 +394,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         SQL92 keywords
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getSQLKeywords() throws SQLException {
         return databaseMetaData.getSQLKeywords();
     }
@@ -380,6 +407,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return the list of math functions supported by this database
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getNumericFunctions() throws SQLException {
         return databaseMetaData.getNumericFunctions();
     }
@@ -392,6 +420,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return the list of string functions supported by this database
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getStringFunctions() throws SQLException {
         return databaseMetaData.getStringFunctions();
     }
@@ -404,6 +433,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return a list of system functions supported by this database
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getSystemFunctions() throws SQLException {
         return databaseMetaData.getSystemFunctions();
     }
@@ -415,6 +445,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return the list of time and date functions supported by this database
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getTimeDateFunctions() throws SQLException {
         return databaseMetaData.getTimeDateFunctions();
     }
@@ -432,6 +463,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return the string used to escape wildcard characters
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getSearchStringEscape() throws SQLException {
         return databaseMetaData.getSearchStringEscape();
     }
@@ -443,6 +475,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return the string containing the extra characters
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getExtraNameCharacters() throws SQLException {
         return databaseMetaData.getExtraNameCharacters();
     }
@@ -454,6 +487,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsAlterTableWithAddColumn() throws SQLException {
         return databaseMetaData.supportsAlterTableWithAddColumn();
     }
@@ -465,6 +499,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsAlterTableWithDropColumn() throws SQLException {
         return databaseMetaData.supportsAlterTableWithDropColumn();
     }
@@ -479,6 +514,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsColumnAliasing() throws SQLException {
         return databaseMetaData.supportsColumnAliasing();
     }
@@ -491,6 +527,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean nullPlusNonNullIsNull() throws SQLException {
         return databaseMetaData.nullPlusNonNullIsNull();
     }
@@ -502,6 +539,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsConvert() throws SQLException {
         return databaseMetaData.supportsConvert();
     }
@@ -518,6 +556,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @see java.sql.Types
      */
+    @Override
     public boolean supportsConvert(int fromType, int toType) throws SQLException {
         return databaseMetaData.supportsConvert(fromType, toType);
     }
@@ -528,6 +567,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsTableCorrelationNames() throws SQLException {
         return databaseMetaData.supportsTableCorrelationNames();
     }
@@ -539,6 +579,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsDifferentTableCorrelationNames() throws SQLException {
         return databaseMetaData.supportsDifferentTableCorrelationNames();
     }
@@ -550,6 +591,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsExpressionsInOrderBy() throws SQLException {
         return databaseMetaData.supportsExpressionsInOrderBy();
     }
@@ -562,6 +604,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsOrderByUnrelated() throws SQLException {
         return databaseMetaData.supportsOrderByUnrelated();
     }
@@ -573,6 +616,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsGroupBy() throws SQLException {
         return databaseMetaData.supportsGroupBy();
     }
@@ -585,6 +629,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsGroupByUnrelated() throws SQLException {
         return databaseMetaData.supportsGroupByUnrelated();
     }
@@ -598,6 +643,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsGroupByBeyondSelect() throws SQLException {
         return databaseMetaData.supportsGroupByBeyondSelect();
     }
@@ -609,6 +655,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsLikeEscapeClause() throws SQLException {
         return databaseMetaData.supportsLikeEscapeClause();
     }
@@ -621,6 +668,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsMultipleResultSets() throws SQLException {
         return databaseMetaData.supportsMultipleResultSets();
     }
@@ -632,6 +680,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsMultipleTransactions() throws SQLException {
         return databaseMetaData.supportsMultipleTransactions();
     }
@@ -642,6 +691,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsNonNullableColumns() throws SQLException {
         return databaseMetaData.supportsNonNullableColumns();
     }
@@ -652,6 +702,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsMinimumSQLGrammar() throws SQLException {
         return databaseMetaData.supportsMinimumSQLGrammar();
     }
@@ -662,6 +713,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsCoreSQLGrammar() throws SQLException {
         return databaseMetaData.supportsCoreSQLGrammar();
     }
@@ -672,6 +724,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsExtendedSQLGrammar() throws SQLException {
         return databaseMetaData.supportsExtendedSQLGrammar();
     }
@@ -683,6 +736,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsANSI92EntryLevelSQL() throws SQLException {
         return databaseMetaData.supportsANSI92EntryLevelSQL();
     }
@@ -693,6 +747,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsANSI92IntermediateSQL() throws SQLException {
         return databaseMetaData.supportsANSI92IntermediateSQL();
     }
@@ -703,6 +758,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsANSI92FullSQL() throws SQLException {
         return databaseMetaData.supportsANSI92FullSQL();
     }
@@ -714,6 +770,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsIntegrityEnhancementFacility() throws SQLException {
         return databaseMetaData.supportsIntegrityEnhancementFacility();
     }
@@ -724,6 +781,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsOuterJoins() throws SQLException {
         return databaseMetaData.supportsOuterJoins();
     }
@@ -734,6 +792,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsFullOuterJoins() throws SQLException {
         return databaseMetaData.supportsFullOuterJoins();
     }
@@ -746,6 +805,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsLimitedOuterJoins() throws SQLException {
         return databaseMetaData.supportsLimitedOuterJoins();
     }
@@ -756,6 +816,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return the vendor term for "schema"
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getSchemaTerm() throws SQLException {
         return databaseMetaData.getSchemaTerm();
     }
@@ -766,6 +827,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return the vendor term for "procedure"
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getProcedureTerm() throws SQLException {
         return databaseMetaData.getProcedureTerm();
     }
@@ -776,6 +838,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return the vendor term for "catalog"
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getCatalogTerm() throws SQLException {
         return databaseMetaData.getCatalogTerm();
     }
@@ -788,6 +851,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         of a fully qualified table name; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean isCatalogAtStart() throws SQLException {
         return databaseMetaData.isCatalogAtStart();
     }
@@ -799,6 +863,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return the separator string
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public String getCatalogSeparator() throws SQLException {
         return databaseMetaData.getCatalogSeparator();
     }
@@ -809,6 +874,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsSchemasInDataManipulation() throws SQLException {
         return databaseMetaData.supportsSchemasInDataManipulation();
     }
@@ -819,6 +885,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsSchemasInProcedureCalls() throws SQLException {
         return databaseMetaData.supportsSchemasInProcedureCalls();
     }
@@ -829,6 +896,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsSchemasInTableDefinitions() throws SQLException {
         return databaseMetaData.supportsSchemasInTableDefinitions();
     }
@@ -839,6 +907,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsSchemasInIndexDefinitions() throws SQLException {
         return databaseMetaData.supportsSchemasInIndexDefinitions();
     }
@@ -849,6 +918,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsSchemasInPrivilegeDefinitions() throws SQLException {
         return databaseMetaData.supportsSchemasInPrivilegeDefinitions();
     }
@@ -859,6 +929,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsCatalogsInDataManipulation() throws SQLException {
         return databaseMetaData.supportsCatalogsInDataManipulation();
     }
@@ -869,6 +940,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsCatalogsInProcedureCalls() throws SQLException {
         return databaseMetaData.supportsCatalogsInProcedureCalls();
     }
@@ -879,6 +951,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsCatalogsInTableDefinitions() throws SQLException {
         return databaseMetaData.supportsCatalogsInTableDefinitions();
     }
@@ -889,6 +962,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsCatalogsInIndexDefinitions() throws SQLException {
         return databaseMetaData.supportsCatalogsInIndexDefinitions();
     }
@@ -899,6 +973,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsCatalogsInPrivilegeDefinitions() throws SQLException {
         return databaseMetaData.supportsCatalogsInPrivilegeDefinitions();
     }
@@ -910,6 +985,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsPositionedDelete() throws SQLException {
         return databaseMetaData.supportsPositionedDelete();
     }
@@ -921,6 +997,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsPositionedUpdate() throws SQLException {
         return databaseMetaData.supportsPositionedUpdate();
     }
@@ -932,6 +1009,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsSelectForUpdate() throws SQLException {
         return databaseMetaData.supportsSelectForUpdate();
     }
@@ -943,6 +1021,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsStoredProcedures() throws SQLException {
         return databaseMetaData.supportsStoredProcedures();
     }
@@ -954,6 +1033,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsSubqueriesInComparisons() throws SQLException {
         return databaseMetaData.supportsSubqueriesInComparisons();
     }
@@ -965,6 +1045,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsSubqueriesInExists() throws SQLException {
         return databaseMetaData.supportsSubqueriesInExists();
     }
@@ -976,6 +1057,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsSubqueriesInIns() throws SQLException {
         return databaseMetaData.supportsSubqueriesInIns();
     }
@@ -987,6 +1069,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsSubqueriesInQuantifieds() throws SQLException {
         return databaseMetaData.supportsSubqueriesInQuantifieds();
     }
@@ -997,6 +1080,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsCorrelatedSubqueries() throws SQLException {
         return databaseMetaData.supportsCorrelatedSubqueries();
     }
@@ -1007,6 +1091,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsUnion() throws SQLException {
         return databaseMetaData.supportsUnion();
     }
@@ -1017,6 +1102,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsUnionAll() throws SQLException {
         return databaseMetaData.supportsUnionAll();
     }
@@ -1029,6 +1115,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         <code>false</code> if they might not remain open
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsOpenCursorsAcrossCommit() throws SQLException {
         return databaseMetaData.supportsOpenCursorsAcrossCommit();
     }
@@ -1041,6 +1128,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         <code>false</code> if they might not remain open
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsOpenCursorsAcrossRollback() throws SQLException {
         return databaseMetaData.supportsOpenCursorsAcrossRollback();
     }
@@ -1053,6 +1141,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         <code>false</code> if they might not remain open
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsOpenStatementsAcrossCommit() throws SQLException {
         return databaseMetaData.supportsOpenStatementsAcrossCommit();
     }
@@ -1065,6 +1154,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         <code>false</code> if they might not remain open
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsOpenStatementsAcrossRollback() throws SQLException {
         return databaseMetaData.supportsOpenStatementsAcrossRollback();
     }
@@ -1078,6 +1168,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         is not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxBinaryLiteralLength() throws SQLException {
         return databaseMetaData.getMaxBinaryLiteralLength();
     }
@@ -1091,6 +1182,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxCharLiteralLength() throws SQLException {
         return databaseMetaData.getMaxCharLiteralLength();
     }
@@ -1104,6 +1196,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         is not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxColumnNameLength() throws SQLException {
         return databaseMetaData.getMaxColumnNameLength();
     }
@@ -1117,6 +1210,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         is not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxColumnsInGroupBy() throws SQLException {
         return databaseMetaData.getMaxColumnsInGroupBy();
     }
@@ -1129,6 +1223,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         is not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxColumnsInIndex() throws SQLException {
         return databaseMetaData.getMaxColumnsInIndex();
     }
@@ -1142,6 +1237,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         is not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxColumnsInOrderBy() throws SQLException {
         return databaseMetaData.getMaxColumnsInOrderBy();
     }
@@ -1155,6 +1251,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         is not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxColumnsInSelect() throws SQLException {
         return databaseMetaData.getMaxColumnsInSelect();
     }
@@ -1167,6 +1264,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         is not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxColumnsInTable() throws SQLException {
         return databaseMetaData.getMaxColumnsInTable();
     }
@@ -1180,6 +1278,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         is not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxConnections() throws SQLException {
         return databaseMetaData.getMaxConnections();
     }
@@ -1193,6 +1292,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         is not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxCursorNameLength() throws SQLException {
         return databaseMetaData.getMaxCursorNameLength();
     }
@@ -1207,6 +1307,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         is not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxIndexLength() throws SQLException {
         return databaseMetaData.getMaxIndexLength();
     }
@@ -1220,6 +1321,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         is not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxSchemaNameLength() throws SQLException {
         return databaseMetaData.getMaxSchemaNameLength();
     }
@@ -1233,6 +1335,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         is not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxProcedureNameLength() throws SQLException {
         return databaseMetaData.getMaxProcedureNameLength();
     }
@@ -1246,6 +1349,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         is not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxCatalogNameLength() throws SQLException {
         return databaseMetaData.getMaxCatalogNameLength();
     }
@@ -1258,6 +1362,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         zero means that there is no limit or the limit is not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxRowSize() throws SQLException {
         return databaseMetaData.getMaxRowSize();
     }
@@ -1270,6 +1375,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean doesMaxRowSizeIncludeBlobs() throws SQLException {
         return databaseMetaData.doesMaxRowSizeIncludeBlobs();
     }
@@ -1283,6 +1389,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         is not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxStatementLength() throws SQLException {
         return databaseMetaData.getMaxStatementLength();
     }
@@ -1296,6 +1403,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         is not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxStatements() throws SQLException {
         return databaseMetaData.getMaxStatements();
     }
@@ -1309,6 +1417,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         is not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxTableNameLength() throws SQLException {
         return databaseMetaData.getMaxTableNameLength();
     }
@@ -1322,6 +1431,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         the limit is not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxTablesInSelect() throws SQLException {
         return databaseMetaData.getMaxTablesInSelect();
     }
@@ -1335,6 +1445,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         is not known
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public int getMaxUserNameLength() throws SQLException {
         return databaseMetaData.getMaxUserNameLength();
     }
@@ -1347,6 +1458,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @see java.sql.Connection
      */
+    @Override
     public int getDefaultTransactionIsolation() throws SQLException {
         return databaseMetaData.getDefaultTransactionIsolation();
     }
@@ -1360,6 +1472,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsTransactions() throws SQLException {
         return databaseMetaData.supportsTransactions();
     }
@@ -1373,6 +1486,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @see java.sql.Connection
      */
+    @Override
     public boolean supportsTransactionIsolationLevel(int level) throws SQLException {
         return databaseMetaData.supportsTransactionIsolationLevel(level);
     }
@@ -1384,6 +1498,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsDataDefinitionAndDataManipulationTransactions() throws SQLException {
         return databaseMetaData.supportsDataDefinitionAndDataManipulationTransactions();
     }
@@ -1395,6 +1510,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean supportsDataManipulationTransactionsOnly() throws SQLException {
         return databaseMetaData.supportsDataManipulationTransactionsOnly();
     }
@@ -1406,6 +1522,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean dataDefinitionCausesTransactionCommit() throws SQLException {
         return databaseMetaData.dataDefinitionCausesTransactionCommit();
     }
@@ -1417,6 +1534,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>true</code> if so; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean dataDefinitionIgnoredInTransactions() throws SQLException {
         return databaseMetaData.dataDefinitionIgnoredInTransactions();
     }
@@ -1460,6 +1578,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @see #getSearchStringEscape
      */
+    @Override
     public ResultSet getProcedures(String catalog, String schemaPattern,
                                    String procedureNamePattern) throws SQLException {
         return databaseMetaData.getProcedures(catalog, schemaPattern, procedureNamePattern);
@@ -1528,6 +1647,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @see #getSearchStringEscape
      */
+    @Override
     public ResultSet getProcedureColumns(String catalog, String schemaPattern, String procedureNamePattern,
                                          String columnNamePattern) throws SQLException {
         return databaseMetaData.getProcedureColumns(catalog, schemaPattern, procedureNamePattern, columnNamePattern);
@@ -1576,6 +1696,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @see #getSearchStringEscape
      */
+    @Override
     public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern,
                                String types[]) throws SQLException {
         return databaseMetaData.getTables(catalog, schemaPattern, tableNamePattern, types);
@@ -1595,6 +1716,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         schema decription
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public ResultSet getSchemas() throws SQLException {
         return databaseMetaData.getSchemas();
     }
@@ -1612,6 +1734,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         single <code>String</code> column that is a catalog name
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public ResultSet getCatalogs() throws SQLException {
         return databaseMetaData.getCatalogs();
     }
@@ -1631,6 +1754,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         single <code>String</code> column that is a table type
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public ResultSet getTableTypes() throws SQLException {
         return databaseMetaData.getTableTypes();
     }
@@ -1703,6 +1827,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @see #getSearchStringEscape
      */
+    @Override
     public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern,
                                 String columnNamePattern) throws SQLException {
         return databaseMetaData.getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
@@ -1744,6 +1869,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @see #getSearchStringEscape
      */
+    @Override
     public ResultSet getColumnPrivileges(String catalog, String schema, String table,
                                          String columnNamePattern) throws SQLException {
         return databaseMetaData.getColumnPrivileges(catalog, schema, table, columnNamePattern);
@@ -1787,6 +1913,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @see #getSearchStringEscape
      */
+    @Override
     public ResultSet getTablePrivileges(String catalog, String schemaPattern,
                                         String tableNamePattern) throws SQLException {
         return databaseMetaData.getTablePrivileges(catalog, schemaPattern, tableNamePattern);
@@ -1835,6 +1962,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>ResultSet</code> - each row is a column description
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public ResultSet getBestRowIdentifier(String catalog, String schema, String table, int scope,
                                           boolean nullable) throws SQLException {
         return databaseMetaData.getBestRowIdentifier(catalog, schema, table, scope, nullable);
@@ -1877,6 +2005,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         column description
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public ResultSet getVersionColumns(String catalog, String schema, String table) throws SQLException {
         return databaseMetaData.getVersionColumns(catalog, schema, table);
     }
@@ -1908,6 +2037,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>ResultSet</code> - each row is a primary key column description
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public ResultSet getPrimaryKeys(String catalog, String schema, String table) throws SQLException {
         return databaseMetaData.getPrimaryKeys(catalog, schema, table);
     }
@@ -1985,6 +2115,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @see #getExportedKeys
      */
+    @Override
     public ResultSet getImportedKeys(String catalog, String schema, String table) throws SQLException {
         return databaseMetaData.getImportedKeys(catalog, schema, table);
     }
@@ -2063,6 +2194,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @see #getImportedKeys
      */
+    @Override
     public ResultSet getExportedKeys(String catalog, String schema, String table) throws SQLException {
         return databaseMetaData.getExportedKeys(catalog, schema, table);
     }
@@ -2149,6 +2281,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @see #getImportedKeys
      */
+    @Override
     public ResultSet getCrossReference(String primaryCatalog, String primarySchema, String primaryTable,
                                        String foreignCatalog, String foreignSchema, String foreignTable)
             throws SQLException {
@@ -2203,6 +2336,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      *         type description
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public ResultSet getTypeInfo() throws SQLException {
         return databaseMetaData.getTypeInfo();
     }
@@ -2265,6 +2399,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @return <code>ResultSet</code> - each row is an index column description
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public ResultSet getIndexInfo(String catalog, String schema, String table, boolean unique,
                                   boolean approximate) throws SQLException {
         return databaseMetaData.getIndexInfo(catalog, schema, table, unique, approximate);
@@ -2279,6 +2414,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @see java.sql.Connection
      * @since 1.2
      */
+    @Override
     public boolean supportsResultSetType(int type) throws SQLException {
         return databaseMetaData.supportsResultSetType(type);
     }
@@ -2294,6 +2430,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @see java.sql.Connection
      * @since 1.2
      */
+    @Override
     public boolean supportsResultSetConcurrency(int type, int concurrency) throws SQLException {
         return databaseMetaData.supportsResultSetConcurrency(type, concurrency);
     }
@@ -2311,6 +2448,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public boolean ownUpdatesAreVisible(int type) throws SQLException {
         return databaseMetaData.ownUpdatesAreVisible(type);
     }
@@ -2327,6 +2465,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public boolean ownDeletesAreVisible(int type) throws SQLException {
         return databaseMetaData.ownDeletesAreVisible(type);
     }
@@ -2343,6 +2482,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public boolean ownInsertsAreVisible(int type) throws SQLException {
         return databaseMetaData.ownInsertsAreVisible(type);
     }
@@ -2360,6 +2500,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public boolean othersUpdatesAreVisible(int type) throws SQLException {
         return databaseMetaData.othersUpdatesAreVisible(type);
     }
@@ -2377,6 +2518,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public boolean othersDeletesAreVisible(int type) throws SQLException {
         return databaseMetaData.othersDeletesAreVisible(type);
     }
@@ -2394,6 +2536,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public boolean othersInsertsAreVisible(int type) throws SQLException {
         return databaseMetaData.othersInsertsAreVisible(type);
     }
@@ -2411,6 +2554,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public boolean updatesAreDetected(int type) throws SQLException {
         return databaseMetaData.updatesAreDetected(type);
     }
@@ -2430,6 +2574,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public boolean deletesAreDetected(int type) throws SQLException {
         return databaseMetaData.deletesAreDetected(type);
     }
@@ -2447,6 +2592,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public boolean insertsAreDetected(int type) throws SQLException {
         return databaseMetaData.insertsAreDetected(type);
     }
@@ -2459,6 +2605,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public boolean supportsBatchUpdates() throws SQLException {
         return databaseMetaData.supportsBatchUpdates();
     }
@@ -2510,6 +2657,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public ResultSet getUDTs(String catalog, String schemaPattern, String typeNamePattern, int[] types) throws SQLException {
         return databaseMetaData.getUDTs(catalog, schemaPattern, typeNamePattern, types);
     }
@@ -2522,6 +2670,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Connection getConnection() throws SQLException {
         return connection;
     }
@@ -2544,6 +2693,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public boolean supportsSavepoints() throws SQLException {
         return databaseMetaData.supportsSavepoints();
     }
@@ -2557,6 +2707,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public boolean supportsNamedParameters() throws SQLException {
         return databaseMetaData.supportsNamedParameters();
     }
@@ -2572,6 +2723,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a datanase access error occurs
      * @since 1.4
      */
+    @Override
     public boolean supportsMultipleOpenResults() throws SQLException {
         return databaseMetaData.supportsMultipleOpenResults();
     }
@@ -2585,6 +2737,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public boolean supportsGetGeneratedKeys() throws SQLException {
         return databaseMetaData.supportsGetGeneratedKeys();
     }
@@ -2629,6 +2782,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public ResultSet getSuperTypes(String catalog, String schemaPattern, String typeNamePattern) throws SQLException {
         return databaseMetaData.getSuperTypes(catalog, schemaPattern, typeNamePattern);
     }
@@ -2666,6 +2820,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public ResultSet getSuperTables(String catalog, String schemaPattern, String tableNamePattern) throws SQLException {
         return databaseMetaData.getSuperTables(catalog, schemaPattern, tableNamePattern);
     }
@@ -2741,6 +2896,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public ResultSet getAttributes(String catalog, String schemaPattern, String typeNamePattern,
                                    String attributeNamePattern) throws SQLException {
         return databaseMetaData.getAttributes(catalog, schemaPattern, typeNamePattern, attributeNamePattern);
@@ -2757,6 +2913,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @see java.sql.Connection
      * @since 1.4
      */
+    @Override
     public boolean supportsResultSetHoldability(int holdability) throws SQLException {
         return databaseMetaData.supportsResultSetHoldability(holdability);
     }
@@ -2771,6 +2928,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public int getResultSetHoldability() throws SQLException {
         return databaseMetaData.getResultSetHoldability();
     }
@@ -2782,6 +2940,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public int getDatabaseMajorVersion() throws SQLException {
         return databaseMetaData.getDatabaseMajorVersion();
     }
@@ -2793,6 +2952,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public int getDatabaseMinorVersion() throws SQLException {
         return databaseMetaData.getDatabaseMinorVersion();
     }
@@ -2805,6 +2965,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public int getJDBCMajorVersion() throws SQLException {
         return databaseMetaData.getJDBCMajorVersion();
     }
@@ -2817,6 +2978,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public int getJDBCMinorVersion() throws SQLException {
         return databaseMetaData.getJDBCMinorVersion();
     }
@@ -2831,6 +2993,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public int getSQLStateType() throws SQLException {
         return databaseMetaData.getSQLStateType();
     }
@@ -2844,6 +3007,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public boolean locatorsUpdateCopy() throws SQLException {
         return databaseMetaData.locatorsUpdateCopy();
     }
@@ -2855,6 +3019,7 @@ public abstract class DatabaseMetaDataWrapper implements DatabaseMetaData {
      * @throws SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public boolean supportsStatementPooling() throws SQLException {
         return databaseMetaData.supportsStatementPooling();
     }

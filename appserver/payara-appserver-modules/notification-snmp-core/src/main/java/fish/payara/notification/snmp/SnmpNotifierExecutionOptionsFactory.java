@@ -61,6 +61,7 @@ public class SnmpNotifierExecutionOptionsFactory extends NotifierExecutionOption
         register(NotifierType.SNMP, this);
     }
 
+    @Override
     public NotifierExecutionOptions build(SnmpNotifier notifier) {
         SnmpNotifierExecutionOptions executionOptions = new SnmpNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));

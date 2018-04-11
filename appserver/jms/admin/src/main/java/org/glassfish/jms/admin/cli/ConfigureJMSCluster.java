@@ -91,18 +91,18 @@ import org.jvnet.hk2.config.TransactionFailure;
         })
 })
 public class ConfigureJMSCluster implements AdminCommand {
-    final private static String SUPPORTED_DB_VENDORS = "oracle|postgresql|mysql|derby|db2";
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ConfigureJMSCluster.class);
-    final private static String MASTER_BROKER = "masterbroker";
-    final private static String SHARED_DB = "shareddb";
-    final private static String FILE = "file";
-    final private static String JDBC = "jdbc";
-    final private static String CONVENTIONAL = "conventional";
-    final private static String ENHANCED = "enhanced";
-    final private static String LOCAL = "LOCAL";
-    final private static String REMOTE = "REMOTE";
-    final private static String EMBEDDED = "EMBEDDED";
-    final private static String PASSWORD_KEY="AS_ADMIN_JMSDBPASSWORD";
+    private static final String SUPPORTED_DB_VENDORS = "oracle|postgresql|mysql|derby|db2";
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ConfigureJMSCluster.class);
+    private static final String MASTER_BROKER = "masterbroker";
+    private static final String SHARED_DB = "shareddb";
+    private static final String FILE = "file";
+    private static final String JDBC = "jdbc";
+    private static final String CONVENTIONAL = "conventional";
+    private static final String ENHANCED = "enhanced";
+    private static final String LOCAL = "LOCAL";
+    private static final String REMOTE = "REMOTE";
+    private static final String EMBEDDED = "EMBEDDED";
+    private static final String PASSWORD_KEY="AS_ADMIN_JMSDBPASSWORD";
     // [usemasterbroker] [availability-enabled] [dbvendor] [dbuser] [dbpassword admin] [jdbcurl] [properties props] clusterName
     /*
     configure-jms-cluster [--clustertype =conventional | enhanced] [--messagestoretype=jdbc | file] [--configstoretype=masterbroker | shareddb] [--dbvendor] [--dbuser] [--dbpassword]  [--dburl] [--force] [--property (name=value)[:name-value]*] clusterName
@@ -160,6 +160,7 @@ public class ConfigureJMSCluster implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
        // Server targetServer = domain.getServerNamed(target);
@@ -250,6 +251,7 @@ public class ConfigureJMSCluster implements AdminCommand {
         if(EMBEDDED.equalsIgnoreCase(integrationMode) && ENHANCED.equalsIgnoreCase(clusterType)) {
             try {
                 ConfigSupport.apply(new SingleConfigCode<JmsService>() {
+                    @Override
                     public Object run(JmsService param) throws PropertyVetoException, TransactionFailure {
                         param.setType(LOCAL);
                         return param;
@@ -313,6 +315,7 @@ public class ConfigureJMSCluster implements AdminCommand {
 
         try {
             ConfigSupport.apply(new SingleConfigCode<JmsAvailability>() {
+                @Override
                 public Object run(JmsAvailability param) throws PropertyVetoException, TransactionFailure {
                     param.setAvailabilityEnabled(availabilityEnabled.toString());
                     if(availabilityEnabled.booleanValue()){

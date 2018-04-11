@@ -72,6 +72,7 @@ public abstract class QueueBasedNotifierService<E extends NotificationEvent,
 
     protected void initializeExecutor() {
         executor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
+            @Override
             public Thread newThread(Runnable r) {
                 return new Thread(r, prefix + threadNumber.getAndIncrement());
             }

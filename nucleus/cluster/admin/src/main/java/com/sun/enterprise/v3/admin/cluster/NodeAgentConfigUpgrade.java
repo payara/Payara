@@ -83,6 +83,7 @@ public class NodeAgentConfigUpgrade implements ConfigurationUpgrade, PostConstru
     @Inject
     Servers servers;
 
+    @Override
     public void postConstruct() {
 
         final NodeAgents nodeAgents = domain.getNodeAgents();
@@ -98,6 +99,7 @@ public class NodeAgentConfigUpgrade implements ConfigurationUpgrade, PostConstru
         }
         try {
             ConfigSupport.apply(new SingleConfigCode<Domain>() {
+                @Override
                 public Object run(Domain d) throws PropertyVetoException, TransactionFailure {
 
                     Nodes nodes=d.createChild(Nodes.class);
@@ -162,6 +164,7 @@ public class NodeAgentConfigUpgrade implements ConfigurationUpgrade, PostConstru
     private void createDefaultNodeList() {
         try {
             ConfigSupport.apply(new SingleConfigCode<Domain>() {
+                @Override
                 public Object run(Domain d) throws PropertyVetoException, TransactionFailure {
 
                     Nodes nodes=d.createChild(Nodes.class);

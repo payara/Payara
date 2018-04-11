@@ -76,16 +76,19 @@ public class EJBMetaDataModelImpl extends JDOMetaDataModelImpl
 
 
     //methods from ExtendedJDOMetaData, not in JDOMetaData
+    @Override
     public String[] getKnownClasses()
             throws JDOMetaDataUserException, JDOMetaDataFatalError {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public String[] getKnownFields(String classPath)
             throws JDOMetaDataUserException, JDOMetaDataFatalError {
         return getManagedFields(classPath);
     }
 
+    @Override
     public String getFieldType(String classPath, String fieldName)
             throws JDOMetaDataUserException, JDOMetaDataFatalError {
         final String className = pathToName(classPath);
@@ -94,17 +97,20 @@ public class EJBMetaDataModelImpl extends JDOMetaDataModelImpl
         return nameToPath(ftype);
     }
 
+    @Override
     public int getClassModifiers(String classPath)
             throws JDOMetaDataUserException, JDOMetaDataFatalError {
         return Modifier.PUBLIC;
     }
 
+    @Override
     public int getFieldModifiers(String classPath, String fieldName)
             throws JDOMetaDataUserException, JDOMetaDataFatalError {
         final String className = pathToName(classPath);
         return model.getModifiers(model.getField(className, fieldName));
     }
 
+    @Override
     public String getKeyClass(String classPath)
             throws JDOMetaDataUserException, JDOMetaDataFatalError {
         final String className = pathToName(classPath);
@@ -116,23 +122,27 @@ public class EJBMetaDataModelImpl extends JDOMetaDataModelImpl
         return nameToPath(keyClass);
     }
 
+    @Override
     public boolean isKnownNonManagedField(String classPath,
             String fieldName, String fieldSig)
             throws JDOMetaDataUserException, JDOMetaDataFatalError {
         return !isPersistentField(classPath, fieldName);
     }
 
+    @Override
     public boolean isManagedField(String classPath, String fieldName)
             throws JDOMetaDataUserException, JDOMetaDataFatalError {
         return (isPersistentField(classPath, fieldName)
                 || isTransactionalField(classPath, fieldName));
     }
 
+    @Override
     public boolean isKeyField(String classPath, String fieldName)
             throws JDOMetaDataUserException, JDOMetaDataFatalError {
         return isPrimaryKeyField(classPath, fieldName);
     }
 
+    @Override
     public boolean isPrimaryKeyField(String classPath, String fieldName)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -146,6 +156,7 @@ public class EJBMetaDataModelImpl extends JDOMetaDataModelImpl
         }
     }
 
+    @Override
     public int getFieldFlags(String classPath, String fieldName)
             throws JDOMetaDataUserException, JDOMetaDataFatalError {
         if (!isManagedField(classPath, fieldName)) {
@@ -185,6 +196,7 @@ public class EJBMetaDataModelImpl extends JDOMetaDataModelImpl
         return MEDIATE_READ | MEDIATE_WRITE;
     }
 
+    @Override
     public int[] getFieldFlags(String classPath, String[] fieldNames)
            throws JDOMetaDataUserException, JDOMetaDataFatalError {
         final int n = (fieldNames != null ? fieldNames.length : 0);
@@ -195,6 +207,7 @@ public class EJBMetaDataModelImpl extends JDOMetaDataModelImpl
         return flags;
     }
 
+    @Override
     public String[] getFieldType(String className, String[] fieldNames)
             throws JDOMetaDataUserException, JDOMetaDataFatalError {
         final int n = (fieldNames != null ? fieldNames.length : 0);
@@ -205,6 +218,7 @@ public class EJBMetaDataModelImpl extends JDOMetaDataModelImpl
         return types;
     }
 
+    @Override
     public int[] getFieldNo(String classPath, String[] fieldNames)
             throws JDOMetaDataUserException, JDOMetaDataFatalError {
         final int n = (fieldNames != null ? fieldNames.length : 0);
@@ -215,6 +229,7 @@ public class EJBMetaDataModelImpl extends JDOMetaDataModelImpl
         return flags;
     }
 
+    @Override
     public String[] getKeyFields(String classPath)
             throws JDOMetaDataUserException, JDOMetaDataFatalError {
         final List keys = new ArrayList();
@@ -228,11 +243,13 @@ public class EJBMetaDataModelImpl extends JDOMetaDataModelImpl
         return (String[])keys.toArray(new String[keys.size()]);
     }
 
+    @Override
     public String getPersistenceCapableSuperClass(String classPath)
             throws JDOMetaDataUserException, JDOMetaDataFatalError {
         return null;
     }
 
+    @Override
     public String getSuperKeyClass(String classPath)
             throws JDOMetaDataUserException, JDOMetaDataFatalError {
         return null;

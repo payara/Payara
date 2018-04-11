@@ -62,10 +62,10 @@ import java.util.StringTokenizer;
 public abstract class AbstractBundleNode<T extends RootDeploymentDescriptor>
         extends DisplayableComponentNode<T> implements BundleNode, RootXMLNode<T> {
     
-    public final static String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
-    public final static String W3C_XML_SCHEMA_INSTANCE = "http://www.w3.org/2001/XMLSchema-instance";
+    public static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
+    public static final String W3C_XML_SCHEMA_INSTANCE = "http://www.w3.org/2001/XMLSchema-instance";
         
-    protected final static String SCHEMA_LOCATION_TAG = "xsi:schemaLocation";
+    protected static final String SCHEMA_LOCATION_TAG = "xsi:schemaLocation";
     
     protected String docType;
     
@@ -73,6 +73,7 @@ public abstract class AbstractBundleNode<T extends RootDeploymentDescriptor>
      * set the DOCTYPE as read in the input XML File
      * @param docType for the xml
      */
+    @Override
     public void setDocType(String docType) {
         this.docType = docType;
         setSpecVersion();
@@ -105,6 +106,7 @@ public abstract class AbstractBundleNode<T extends RootDeploymentDescriptor>
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
       if (! DOLUtils.setElementValue(element, value, getDescriptor())) {
         super.setElementValue(element, value);
@@ -118,6 +120,7 @@ public abstract class AbstractBundleNode<T extends RootDeploymentDescriptor>
      * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */    
+    @Override
     public Node writeDescriptor(Node parent, T descriptor) {
         Node bundleNode;
         if (getDocType()==null) {
@@ -226,6 +229,7 @@ public abstract class AbstractBundleNode<T extends RootDeploymentDescriptor>
     /**
      * notify of a new prefix mapping used in this document
      */
+    @Override
     public void addPrefixMapping(String prefix, String uri) {
         // we don't care about the default ones...
         if (uri.equals(TagNames.J2EE_NAMESPACE)) 

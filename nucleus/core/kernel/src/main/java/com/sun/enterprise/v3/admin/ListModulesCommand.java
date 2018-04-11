@@ -76,6 +76,7 @@ public class ListModulesCommand implements AdminCommand {
     @Inject
     ModulesRegistry registry;
 
+    @Override
     public void execute(AdminCommandContext context) {
 
         ActionReport report = context.getActionReport();

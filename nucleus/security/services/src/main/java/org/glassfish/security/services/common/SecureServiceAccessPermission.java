@@ -356,6 +356,7 @@ public class SecureServiceAccessPermission extends BasicPermission {
         return  getName();
     }
 
+    @Override
     public PermissionCollection newPermissionCollection() {
         return new SecurityAccessPermissionCollection(this.getClass(), _log, localStrings);
     }
@@ -420,6 +421,7 @@ final class SecurityAccessPermissionCollection extends PermissionCollection  {
          *                readonly
          */
 
+        @Override
         public void add(Permission permission) {
                 if (!(permission instanceof SecureServiceAccessPermission))
                         throw new IllegalArgumentException("invalid permission: "
@@ -467,6 +469,7 @@ final class SecurityAccessPermissionCollection extends PermissionCollection  {
          *         set, false if not.
          */
 
+        @Override
         public boolean implies(Permission permission) {
                 if (!(permission instanceof SecureServiceAccessPermission))
                         return false;
@@ -534,6 +537,7 @@ final class SecurityAccessPermissionCollection extends PermissionCollection  {
          * @return an enumeration of all the SecureServiceAccessPermission objects.
          */
 
+        @Override
         public Enumeration<Permission> elements() {
                 // Convert Iterator of Map values into an Enumeration
                 synchronized (this) {

@@ -168,6 +168,7 @@ class CoordinatorResourceImpl extends CoordinatorResourcePOA
      *
      * @see CompletionHandler
      */
+    @Override
     public void setCompleted( boolean aborted,
                               boolean heuristicDamage ) {
 
@@ -199,6 +200,7 @@ class CoordinatorResourceImpl extends CoordinatorResourcePOA
      *
      * @see Resource
      */
+    @Override
     public Vote prepare()
         throws SystemException, HeuristicMixed, HeuristicHazard {
 
@@ -295,6 +297,7 @@ class CoordinatorResourceImpl extends CoordinatorResourcePOA
      *
      * @see Resource
      */
+    @Override
     public void commit()
         throws HeuristicRollback, HeuristicMixed, HeuristicHazard, NotPrepared,
         SystemException {
@@ -403,6 +406,7 @@ class CoordinatorResourceImpl extends CoordinatorResourcePOA
      *
      * @see Resource
      */
+    @Override
     public void commit_one_phase()
         throws TRANSACTION_ROLLEDBACK, HeuristicHazard, SystemException {
 
@@ -557,6 +561,7 @@ class CoordinatorResourceImpl extends CoordinatorResourcePOA
      *
      * @see Resource
      *///----------------------------------------------------------------------------
+    @Override
          public void rollback()
              throws HeuristicCommit, HeuristicMixed,
              HeuristicHazard, SystemException {
@@ -651,6 +656,7 @@ class CoordinatorResourceImpl extends CoordinatorResourcePOA
      *
      * @see
      */
+    @Override
     public void forget() throws SystemException {
 
         // Forget operations should only come in for top-level transactions.
@@ -685,6 +691,7 @@ class CoordinatorResourceImpl extends CoordinatorResourcePOA
      *
      * @see
      */
+    @Override
     public void commit_subtransaction( Coordinator parent )
         throws TRANSACTION_ROLLEDBACK, SystemException {
 
@@ -773,6 +780,7 @@ class CoordinatorResourceImpl extends CoordinatorResourcePOA
      * @see
      */
 
+    @Override
     public void rollback_subtransaction() throws SystemException {
 
         // If no global identifier has been set up, we can do nothing.

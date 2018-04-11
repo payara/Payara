@@ -75,6 +75,7 @@ public class SlackNotificationConfigurer extends BaseNotificationConfigurer<Slac
     @Param(name = "token3")
     private String token3;
 
+    @Override
     protected void applyValues(SlackNotifierConfiguration configuration) throws PropertyVetoException {
         if(this.enabled != null) {
             configuration.enabled(this.enabled);

@@ -112,6 +112,7 @@ public abstract class PasswordLoginModule extends BasePasswordLoginModule
      * calls authenticateUser
      * @throws LoginException
      */
+    @Override
     protected final void authenticateUser () throws LoginException{
         authenticate();
     }
@@ -125,6 +126,6 @@ public abstract class PasswordLoginModule extends BasePasswordLoginModule
      * @throws com.sun.enterprise.security.LoginException on authentication failure.
      *
      */
-    abstract protected void authenticate()
+    protected abstract void authenticate()
         throws LoginException;
 }

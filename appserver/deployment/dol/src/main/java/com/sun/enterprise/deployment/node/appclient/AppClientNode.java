@@ -70,23 +70,23 @@ import org.w3c.dom.Node;
 public class AppClientNode extends AbstractBundleNode<ApplicationClientDescriptor> {
 
     //app client 1.2
-    public final static String PUBLIC_DTD_ID_12 = "-//Sun Microsystems, Inc.//DTD J2EE Application Client 1.2//EN";
-    public final static String SYSTEM_ID_12 = "http://java.sun.com/dtd/application-client_1_2.dtd";
+    public static final String PUBLIC_DTD_ID_12 = "-//Sun Microsystems, Inc.//DTD J2EE Application Client 1.2//EN";
+    public static final String SYSTEM_ID_12 = "http://java.sun.com/dtd/application-client_1_2.dtd";
     
     //app client 1.3
-    public final static String PUBLIC_DTD_ID = "-//Sun Microsystems, Inc.//DTD J2EE Application Client 1.3//EN";
-    public final static String SYSTEM_ID = "http://java.sun.com/dtd/application-client_1_3.dtd";
+    public static final String PUBLIC_DTD_ID = "-//Sun Microsystems, Inc.//DTD J2EE Application Client 1.3//EN";
+    public static final String SYSTEM_ID = "http://java.sun.com/dtd/application-client_1_3.dtd";
     
-    public final static String SCHEMA_ID_14 = "application-client_1_4.xsd";
+    public static final String SCHEMA_ID_14 = "application-client_1_4.xsd";
     
-    public final static String SCHEMA_ID_15 = "application-client_5.xsd";
-    public final static String SCHEMA_ID_16 = "application-client_6.xsd";
-    public final static String SCHEMA_ID_17 = "application-client_7.xsd";
-    public final static String SCHEMA_ID = "application-client_8.xsd";
-    public final static String SPEC_VERSION = "8";
-    private final static List<String> systemIDs = initSystemIDs();
+    public static final String SCHEMA_ID_15 = "application-client_5.xsd";
+    public static final String SCHEMA_ID_16 = "application-client_6.xsd";
+    public static final String SCHEMA_ID_17 = "application-client_7.xsd";
+    public static final String SCHEMA_ID = "application-client_8.xsd";
+    public static final String SPEC_VERSION = "8";
+    private static final List<String> systemIDs = initSystemIDs();
  
-    public final static XMLElement tag = new XMLElement(ApplicationClientTagNames.APPLICATION_CLIENT_TAG);
+    public static final XMLElement tag = new XMLElement(ApplicationClientTagNames.APPLICATION_CLIENT_TAG);
 
     private static List<String> initSystemIDs() {
         final ArrayList<String> systemIDs = new ArrayList<String>();

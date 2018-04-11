@@ -219,6 +219,7 @@ public class EjbFutureTask<V>
         return resultException;
     }
 
+    @Override
     public String toString() {
 
         StringBuffer sbuf = new StringBuffer();

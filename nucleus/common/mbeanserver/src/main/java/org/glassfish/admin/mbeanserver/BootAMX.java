@@ -140,6 +140,7 @@ final class BootAMX implements BootAMXMBean
     For now though, assume that a well-known MBean is available through other means via
     the amx-impl module.
      */
+    @Override
     public synchronized ObjectName bootAMX()
     {
         if (mDomainRootObjectName == null)
@@ -172,6 +173,7 @@ final class BootAMX implements BootAMXMBean
     /**
     Return the JMXServiceURLs for all connectors we've loaded.
      */
+    @Override
     public JMXServiceURL[] getJMXServiceURLs()
     {
         return JMXStartupService.getJMXServiceURLs(mMBeanServer);

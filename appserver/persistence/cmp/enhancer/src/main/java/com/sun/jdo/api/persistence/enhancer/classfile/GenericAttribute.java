@@ -63,12 +63,14 @@ public class GenericAttribute extends ClassAttribute {
     attributeBytes = attrBytes;
   }
 
+  @Override
   void write(DataOutputStream out) throws IOException {
     out.writeShort(attrName().getIndex());
     out.writeInt(attributeBytes.length);
     out.write(attributeBytes, 0, attributeBytes.length);
   }
 
+  @Override
   void print(PrintStream out, int indent) {
     ClassPrint.spaces(out, indent);
     out.println("Generic Attribute(" + attrName().asString() + "): " +//NOI18N

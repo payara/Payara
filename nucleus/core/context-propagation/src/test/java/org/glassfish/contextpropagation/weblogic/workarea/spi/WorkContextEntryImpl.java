@@ -91,14 +91,17 @@ public final class WorkContextEntryImpl implements WorkContextEntry
     context = in.readContext();
   }
   
+  @Override
   public WorkContext getWorkContext() {
     return context;
   }
   
+  @Override
   public int hashCode() {
     return name.hashCode();
   }
 
+  @Override
   public boolean equals(Object obj) {
     if (obj instanceof WorkContextEntry) {
       return ((WorkContextEntry)obj).getName().equals(name);
@@ -106,18 +109,22 @@ public final class WorkContextEntryImpl implements WorkContextEntry
     return false;
   }
   
+  @Override
   public String getName() {
     return name;
   }
 
+  @Override
   public int getPropagationMode() {
     return propagationMode;
   }
 
+  @Override
   public boolean isOriginator() {
     return originator;
   }
 
+  @Override
   public void write(WorkContextOutput out) throws IOException 
   {
     if (this == NULL_CONTEXT) {
@@ -143,6 +150,7 @@ public final class WorkContextEntryImpl implements WorkContextEntry
     }
   }
   
+  @Override
   public String toString() {
     StringBuffer sb = new StringBuffer(name);
     sb.append(", ");

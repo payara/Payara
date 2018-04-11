@@ -167,6 +167,7 @@ public class ServiceReferenceNode extends DisplayableComponentNode implements Jn
         }
     }
 
+    @Override
     public Node writeDeploymentDescriptor( Node parent,ServiceReferenceDescriptor descriptor) {
 
         Node serviceRefNode =
@@ -241,11 +242,13 @@ public class ServiceReferenceNode extends DisplayableComponentNode implements Jn
 
     }
 
+    @Override
     public ServiceReferenceDescriptor getDescriptor(){
         return (ServiceReferenceDescriptor) super.getDescriptor();
 
     }
 
+    @Override
     public String getTagName() {
         return WebServicesTagNames.SERVICE_REF;
     }

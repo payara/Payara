@@ -64,6 +64,7 @@ public class WSDolSupportImpl implements WSDolSupport {
     public static final String SOAP12_MTOM_TOKEN = "##SOAP12_HTTP_MTOM";
     public static final String XML_TOKEN = "##XML_HTTP";
     
+    @Override
     public String getProtocolBinding(String value) {
         if (value==null) {
             return SOAPBinding.SOAP11HTTP_BINDING ;
@@ -82,6 +83,7 @@ public class WSDolSupportImpl implements WSDolSupport {
         }
     }
 
+    @Override
     public String getSoapAddressPrefix(String protocolBinding) {
         if((SOAPBinding.SOAP12HTTP_BINDING.equals(protocolBinding)) ||
             (SOAPBinding.SOAP12HTTP_MTOM_BINDING.equals(protocolBinding)) ||
@@ -93,6 +95,7 @@ public class WSDolSupportImpl implements WSDolSupport {
         return "soap";
     }
 
+    @Override
     public void setServiceRef(Class annotatedClass, ServiceReferenceDescriptor ref) {
         WebServiceClient wsc = (WebServiceClient)annotatedClass.getAnnotation(javax.xml.ws.WebServiceClient.class);
         if (wsc != null) {
@@ -102,6 +105,7 @@ public class WSDolSupportImpl implements WSDolSupport {
         }    
     }
 
+    @Override
     public Class getType(String className) throws ClassNotFoundException {
         return this.getClass().getClassLoader().loadClass(className);
     }

@@ -68,7 +68,7 @@ public class RWLockDataStructure implements DataStructure {
     private ReentrantReadWriteLock.ReadLock readLock = reentrantLock.readLock();
     private ReentrantReadWriteLock.WriteLock writeLock = reentrantLock.writeLock();
 
-    protected final static Logger _logger =
+    protected static final Logger _logger =
             LogDomains.getLogger(RWLockDataStructure.class,LogDomains.RSR_LOGGER);
 
     public RWLockDataStructure(String parameters, int maxSize,
@@ -89,6 +89,7 @@ public class RWLockDataStructure implements DataStructure {
     /**
      * {@inheritDoc}
      */
+    @Override
     public int addResource(ResourceAllocator allocator, int count) throws PoolingException {
         int numResAdded = 0;
         writeLock.lock();
@@ -112,6 +113,7 @@ public class RWLockDataStructure implements DataStructure {
     /**
      * {@inheritDoc}
      */
+    @Override
     public ResourceHandle getResource() {
         readLock.lock();
         for(int i=0; i<resources.size(); i++){
@@ -141,6 +143,7 @@ public class RWLockDataStructure implements DataStructure {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void removeResource(ResourceHandle resource) {
         boolean removed = false;
         writeLock.lock();
@@ -157,6 +160,7 @@ public class RWLockDataStructure implements DataStructure {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void returnResource(ResourceHandle resource) {
         writeLock.lock();
         try{
@@ -169,6 +173,7 @@ public class RWLockDataStructure implements DataStructure {
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getFreeListSize() {
         //inefficient implementation.
         int free = 0;
@@ -190,6 +195,7 @@ public class RWLockDataStructure implements DataStructure {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void removeAll() {
         writeLock.lock();
         try {
@@ -207,6 +213,7 @@ public class RWLockDataStructure implements DataStructure {
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getResourcesSize() {
         return resources.size();
     }
@@ -217,6 +224,7 @@ public class RWLockDataStructure implements DataStructure {
      * 
      * @param maxSize
      */
+    @Override
     public void setMaxSize(int maxSize) {
         this.maxSize = maxSize;
     }

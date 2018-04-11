@@ -71,6 +71,7 @@ public class DatadogNotificationConfigurer extends BaseNotificationConfigurer<Da
     @Param(name = "key")
     private String key;
 
+    @Override
     protected void applyValues(DatadogNotifierConfiguration configuration) throws PropertyVetoException {
         if(this.enabled != null) {
             configuration.enabled(this.enabled);

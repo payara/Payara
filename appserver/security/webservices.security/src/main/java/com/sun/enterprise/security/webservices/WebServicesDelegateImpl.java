@@ -84,6 +84,7 @@ public class WebServicesDelegateImpl implements WebServicesDelegate {
     private static final String DEFAULT_WEBSERVICES_PROVIDER=
             "com.sun.xml.wss.provider.wsit.WSITAuthConfigProvider";
     
+    @Override
      public MessageSecurityBindingDescriptor getBinding(ServiceReferenceDescriptor svcRef, Map properties) {
         MessageSecurityBindingDescriptor binding = null;
         WSDLPort p = (WSDLPort) properties.get("WSDL_MODEL");
@@ -100,15 +101,18 @@ public class WebServicesDelegateImpl implements WebServicesDelegate {
         return binding;
     }
 
+    @Override
     public void removeListener(AuthConfigRegistrationWrapper listener) {
         //TODO:V3 convert the pipes to Tubes.
         ClientPipeCloser.getInstance().removeListenerWrapper(listener);
     }
 
+    @Override
     public String getDefaultWebServicesProvider() {
         return DEFAULT_WEBSERVICES_PROVIDER;
     }
 
+    @Override
     public String getAuthContextID(MessageInfo messageInfo) {
 
         // make this more efficient by operating on packet 
@@ -140,6 +144,7 @@ public class WebServicesDelegateImpl implements WebServicesDelegate {
 
     }
 
+    @Override
     public AuthParam newSOAPAuthParam(MessageInfo messageInfo) {
         return new SOAPAuthParam((SOAPMessage)
                                   messageInfo.getRequestMessage(),
@@ -211,6 +216,7 @@ public class WebServicesDelegateImpl implements WebServicesDelegate {
         return rvalue;
     }
 
+    @Override
     public Object getSOAPMessage(ComponentInvocation inv) {
         /*V3 commented getting this from EJBPolicyContextDelegate instead
          * currently getting this from EjbPolicyContextDelegate which might be OK

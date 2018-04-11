@@ -53,12 +53,12 @@ public class EntityMapping extends org.netbeans.modules.schema2beans.BaseBean
 	static Vector comparators = new Vector();
 	private static final org.netbeans.modules.schema2beans.Version runtimeVersion = new org.netbeans.modules.schema2beans.Version(5, 0, 0);
 
-	static public final String EJB_NAME = "EjbName";	// NOI18N
-	static public final String TABLE_NAME = "TableName";	// NOI18N
-	static public final String CMP_FIELD_MAPPING = "CmpFieldMapping";	// NOI18N
-	static public final String CMR_FIELD_MAPPING = "CmrFieldMapping";	// NOI18N
-	static public final String SECONDARY_TABLE = "SecondaryTable";	// NOI18N
-	static public final String CONSISTENCY = "Consistency";	// NOI18N
+	public static final String EJB_NAME = "EjbName";	// NOI18N
+	public static final String TABLE_NAME = "TableName";	// NOI18N
+	public static final String CMP_FIELD_MAPPING = "CmpFieldMapping";	// NOI18N
+	public static final String CMR_FIELD_MAPPING = "CmrFieldMapping";	// NOI18N
+	public static final String SECONDARY_TABLE = "SecondaryTable";	// NOI18N
+	public static final String CONSISTENCY = "Consistency";	// NOI18N
 
 	public EntityMapping() {
 		this(Common.USE_DEFAULT_VALUES);
@@ -331,6 +331,7 @@ public class EntityMapping extends org.netbeans.modules.schema2beans.BaseBean
 	}
 
 	// Dump the content of this bean returning it as a String
+        @Override
 	public void dump(StringBuffer str, String indent){
 		String s;
 		Object o;
@@ -405,6 +406,7 @@ public class EntityMapping extends org.netbeans.modules.schema2beans.BaseBean
 		this.dumpAttributes(CONSISTENCY, 0, str, indent);
 
 	}
+        @Override
 	public String dumpBeanNode(){
 		StringBuffer str = new StringBuffer();
 		str.append("EntityMapping\n");	// NOI18N

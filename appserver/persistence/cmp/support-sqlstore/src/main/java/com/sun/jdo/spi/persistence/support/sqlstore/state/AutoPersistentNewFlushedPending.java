@@ -54,7 +54,7 @@ public class AutoPersistentNewFlushedPending extends AutoPersistentNewFlushed {
     /**
      * I18N message handler
      */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
             "com.sun.jdo.spi.persistence.support.sqlstore.Bundle",   // NOI18N
             AutoPersistentNewFlushedPending.class.getClassLoader());
 
@@ -64,6 +64,7 @@ public class AutoPersistentNewFlushedPending extends AutoPersistentNewFlushed {
         stateType = AP_NEW_FLUSHED_PENDING;
     }
 
+    @Override
     public LifeCycleState transitionDeletePersistent() {
         throw new JDOUserException(I18NHelper.getMessage(messages,
                 "jdo.lifecycle.deleted.accessField")); // NOI18N

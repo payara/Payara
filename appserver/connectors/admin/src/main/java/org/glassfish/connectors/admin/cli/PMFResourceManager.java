@@ -64,11 +64,12 @@ import java.util.Properties;
 @I18n("create.pmf.resource")
 public class PMFResourceManager implements ResourceManager {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(PMFResourceManager.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(PMFResourceManager.class);
 
     /**
      * @inheritDoc
      */
+    @Override
     public ResourceStatus create(Resources resources, HashMap attributes, Properties properties, String target)
             throws Exception {
         return new ResourceStatus(ResourceStatus.WARNING, getWarningMessage(attributes));
@@ -88,6 +89,7 @@ public class PMFResourceManager implements ResourceManager {
     /**
      * @inheritDoc
      */
+    @Override
     public Resource createConfigBean(Resources resources, HashMap attributes, Properties properties, boolean validate)
             throws Exception {
         throw new ResourceException(getWarningMessage(attributes));
@@ -96,6 +98,7 @@ public class PMFResourceManager implements ResourceManager {
     /**
      * @inheritDoc
      */
+    @Override
     public String getResourceType() {
         return ServerTags.PERSISTENCE_MANAGER_FACTORY_RESOURCE;
     }

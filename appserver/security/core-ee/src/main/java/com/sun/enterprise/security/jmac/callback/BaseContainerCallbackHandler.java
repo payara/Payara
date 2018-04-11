@@ -123,7 +123,7 @@ abstract class BaseContainerCallbackHandler
     private static final String CLIENT_SECRET_KEYSTORE_PASSWORD =
         "com.sun.appserv.client.secretKeyStorePassword";
     
-    protected final static Logger _logger = LogDomains.getLogger(BaseContainerCallbackHandler.class, LogDomains.SECURITY_LOGGER);
+    protected static final Logger _logger = LogDomains.getLogger(BaseContainerCallbackHandler.class, LogDomains.SECURITY_LOGGER);
 
     protected HandlerContext handlerContext = null;
 
@@ -145,6 +145,7 @@ abstract class BaseContainerCallbackHandler
         }
     }
     
+    @Override
     public void setHandlerContext(HandlerContext handlerContext) {
         this.handlerContext = handlerContext;
     }
@@ -168,6 +169,7 @@ abstract class BaseContainerCallbackHandler
     protected abstract void handleSupportedCallbacks(Callback[] callbacks)
             throws IOException, UnsupportedCallbackException; 
     
+    @Override
     public void handle(Callback[] callbacks) 
             throws IOException, UnsupportedCallbackException {
         if (callbacks == null) {
@@ -278,6 +280,7 @@ abstract class BaseContainerCallbackHandler
              * this method uses 4 (numbered) criteria to determine if the
              * argument WebPrincipal can be reused
              */
+            @Override
             public Boolean run() {
 
                 /*
@@ -444,6 +447,7 @@ abstract class BaseContainerCallbackHandler
         final DistinguishedPrincipalCredential fdpc =
                 new DistinguishedPrincipalCredential(principal);
         AppservAccessController.doPrivileged(new PrivilegedAction(){
+            @Override
             public java.lang.Object run() {
                 fs.getPrincipals().add(fprin);
                 Iterator iter = fs.getPublicCredentials().iterator();
@@ -464,6 +468,7 @@ abstract class BaseContainerCallbackHandler
         final String[] groups = gpCallback.getGroups();
         if (groups != null && groups.length > 0) {
             AppservAccessController.doPrivileged(new PrivilegedAction(){
+                @Override
                 public java.lang.Object run() {
                     for (String group : groups) {
                         fs.getPrincipals().add(new Group(group));
@@ -473,6 +478,7 @@ abstract class BaseContainerCallbackHandler
             });
         } else if (groups == null) {
             AppservAccessController.doPrivileged(new PrivilegedAction(){
+                @Override
                 public java.lang.Object run() {
                     Set<Principal> principalSet = fs.getPrincipals();
                     principalSet.removeAll(fs.getPrincipals(Group.class));

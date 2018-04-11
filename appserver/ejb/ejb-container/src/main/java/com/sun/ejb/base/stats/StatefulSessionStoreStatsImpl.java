@@ -193,6 +193,7 @@ public class StatefulSessionStoreStatsImpl
     /**
      * Returns the number of passivated / checkpointed sessions in the store
      */
+    @Override
     public RangeStatistic getCurrentSize() {
 	synchronized (currentSizeLock) {
 	    currentSize.setCount(provider.getCurrentStoreSize());
@@ -203,6 +204,7 @@ public class StatefulSessionStoreStatsImpl
     /**
      * Returns the total number of sessions activated from the store
      */
+    @Override
     public CountStatistic getActivationCount() {
 	synchronized (activationCountLock) {
 	    activationCount.setCount(activationCountVal);
@@ -213,6 +215,7 @@ public class StatefulSessionStoreStatsImpl
     /**
      * Returns the total number of sessions successfully Activated from the store
      */
+    @Override
     public CountStatistic getActivationSuccessCount() {
 	synchronized (activationCountLock) {
 	    activationSuccessCount.setCount(activationSuccessCountVal);
@@ -223,6 +226,7 @@ public class StatefulSessionStoreStatsImpl
     /**
      * Returns the total number of sessions that couldn't be Activated from the store
      */
+    @Override
     public CountStatistic getActivationErrorCount() {
 	synchronized (activationCountLock) {
 	    activationErrorCount.setCount(activationErrorCountVal);
@@ -233,6 +237,7 @@ public class StatefulSessionStoreStatsImpl
     /**
      * Returns the total number of sessions passivated using this store
      */
+    @Override
     public CountStatistic getPassivationCount() {
 	synchronized (passivationCountLock) {
 	    passivationCount.setCount(passivationCountVal);
@@ -243,6 +248,7 @@ public class StatefulSessionStoreStatsImpl
     /**
      * Returns the total number of sessions successfully Passivated using the store
      */
+    @Override
     public CountStatistic getPassivationSuccessCount() {
 	synchronized (passivationCountLock) {
 	    passivationSuccessCount.setCount(passivationSuccessCountVal);
@@ -253,6 +259,7 @@ public class StatefulSessionStoreStatsImpl
     /**
      * Returns the total number of sessions that couldn't be Passivated using the store
      */
+    @Override
     public CountStatistic getPassivationErrorCount() {
 	synchronized (passivationCountLock) {
 	    passivationErrorCount.setCount(passivationErrorCountVal);
@@ -263,6 +270,7 @@ public class StatefulSessionStoreStatsImpl
     /**
      * Returns the total number of expired sessions that were removed by this store
      */
+    @Override
     public CountStatistic getExpiredSessionCount() {
 	synchronized (expiredSessionCountLock) {
 	    expiredSessionCount.setCount(expiredSessionCountVal);
@@ -274,6 +282,7 @@ public class StatefulSessionStoreStatsImpl
     /**
      * Returns the total number of bytes activated by this store including total, min, maximum
      */
+    @Override
     public AverageRangeStatistic getActivatedBeanSize() {
 	synchronized (activationSizeLock) {
 	    return (AverageRangeStatistic) activationSize.unmodifiableView();
@@ -283,6 +292,7 @@ public class StatefulSessionStoreStatsImpl
     /**
      * Returns the time spent on activating beans from the store including total, min, max
      */
+    @Override
     public AverageRangeStatistic getActivationTime() {
 	synchronized (activationTimeLock) {
 	    return (AverageRangeStatistic) activationTime.unmodifiableView();
@@ -292,6 +302,7 @@ public class StatefulSessionStoreStatsImpl
     /**
      * Returns the total number of bytes passivated by this store including total, min, maximum
      */
+    @Override
     public AverageRangeStatistic getPassivatedBeanSize() {
 	synchronized (passivationSizeLock) {
 	    return (AverageRangeStatistic) passivationSize.unmodifiableView();
@@ -301,6 +312,7 @@ public class StatefulSessionStoreStatsImpl
     /**
      * Returns the time spent on passivating beans to the store including total, min, max
      */
+    @Override
     public AverageRangeStatistic getPassivationTime() {
 	synchronized (passivationTimeLock) {
 	    return (AverageRangeStatistic) passivationTime.unmodifiableView();

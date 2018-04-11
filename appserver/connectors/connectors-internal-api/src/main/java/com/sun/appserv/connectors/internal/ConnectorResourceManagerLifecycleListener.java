@@ -172,6 +172,7 @@ public class ConnectorResourceManagerLifecycleListener implements org.glassfish.
         return true; // to be safe
     }
 
+    @Override
     public void resourceManagerLifecycleEvent(EVENT event){
         if(EVENT.STARTUP.equals(event)){
             resourceManagerStarted();
@@ -200,6 +201,7 @@ public class ConnectorResourceManagerLifecycleListener implements org.glassfish.
         }
     }
 
+    @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
             return ConfigSupport.sortAndDispatch(events, new ConfigChangeHandler(), logger);
     }
@@ -216,6 +218,7 @@ public class ConnectorResourceManagerLifecycleListener implements org.glassfish.
          * @param changedType     type of the configuration object
          * @param changedInstance changed instance.
          */
+        @Override
         public <T extends ConfigBeanProxy> NotProcessed changed(Changed.TYPE type, Class<T> changedType,
                                                                 T changedInstance) {
             NotProcessed np = null;

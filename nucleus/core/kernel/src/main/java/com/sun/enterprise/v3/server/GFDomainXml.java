@@ -64,10 +64,12 @@ public class GFDomainXml extends DomainXml {
      *
      * @return an instance of a DomDocument (or subclass)
      */
+    @Override
     protected DomDocument getDomDocument() {
         return new GlassFishDocument(habitat,
                     Executors.newCachedThreadPool(new ThreadFactory() {
 
+            @Override
                         public Thread newThread(Runnable r) {
                             Thread t = Executors.defaultThreadFactory().newThread(r);
                             t.setDaemon(true);

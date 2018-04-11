@@ -120,6 +120,7 @@ public class UberMain {
     private void addShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(
                 "GlassFish Shutdown Hook") {
+            @Override
             public void run() {
                 try {
                     if (gf != null) {

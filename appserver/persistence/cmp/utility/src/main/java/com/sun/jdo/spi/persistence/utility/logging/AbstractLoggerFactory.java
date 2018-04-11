@@ -54,11 +54,11 @@ import java.util.HashMap;
  * @author Rochelle Raccah
  * @version %I%
  */
-abstract public class AbstractLoggerFactory implements LoggerFactory
+public abstract class AbstractLoggerFactory implements LoggerFactory
 {
-	private final static String _domainPrefix = "com.sun.jdo."; //NOI18N
+	private static final String _domainPrefix = "com.sun.jdo."; //NOI18N
 
-	private final static Map _loggerCache = new HashMap();
+	private static final Map _loggerCache = new HashMap();
 
 	private static final String _bundleName =
 		"com.sun.jdo.spi.persistence.utility.logging.Bundle"; // NOI18N
@@ -82,6 +82,7 @@ abstract public class AbstractLoggerFactory implements LoggerFactory
 	 * @param loader the class loader used to load the resource bundle, or null
 	 * @return the logger
 	 */
+        @Override
 	public synchronized Logger getLogger (String relativeLoggerName, 
 		String bundleName, ClassLoader loader)
 	{
@@ -108,7 +109,7 @@ abstract public class AbstractLoggerFactory implements LoggerFactory
 	 * @param loader the class loader used to load the resource bundle, or null
 	 * @return the logger
 	 */
-	abstract protected Logger createLogger (String absoluteLoggerName, 
+	protected abstract Logger createLogger (String absoluteLoggerName, 
 		String bundleName, ClassLoader loader);
 
 	protected String getDomainRoot () { return _domainPrefix; }

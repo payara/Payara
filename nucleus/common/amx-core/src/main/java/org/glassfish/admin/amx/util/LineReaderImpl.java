@@ -56,6 +56,7 @@ public class LineReaderImpl implements LineReader
         mInputStreamReader = new InputStreamReader(inputStream);
     }
 
+    @Override
     public String readLine(String prompt)
             throws java.io.IOException
     {

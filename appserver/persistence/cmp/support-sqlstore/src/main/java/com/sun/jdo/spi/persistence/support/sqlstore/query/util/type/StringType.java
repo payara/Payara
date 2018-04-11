@@ -67,6 +67,7 @@ public class StringType
     /**
      * String defines an ordering.
      */
+    @Override
 	public boolean isOrderable()
 	{
 		return true;

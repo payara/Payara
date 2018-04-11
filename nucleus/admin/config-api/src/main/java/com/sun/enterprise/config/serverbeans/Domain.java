@@ -372,6 +372,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     }
     )
     @Element
+    @Override
     List<SystemProperty> getSystemProperty();
 
     /**
@@ -380,6 +381,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 
 
@@ -510,7 +512,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     public List<DeploymentGroup> getDeploymentGroupsForInstance(String namedInstance);
 
     class Duck {
-        private final static Logger logger=ConfigApiLoggerInfo.getLogger();
+        private static final Logger logger=ConfigApiLoggerInfo.getLogger();
         public static String getName(Domain domain) {
             return domain.getPropertyValue(DOMAIN_NAME_PROPERTY);
         }

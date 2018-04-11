@@ -60,6 +60,7 @@ public class ServerLoginCBHUtil {
         final String[] groups = gpCallback.getGroups();
         if (groups != null && groups.length > 0) {
             AppservAccessController.doPrivileged(new PrivilegedAction(){
+                @Override
                 public java.lang.Object run() {
                     for (String group : groups) {
                         fs.getPrincipals().add(new Group(group));
@@ -69,6 +70,7 @@ public class ServerLoginCBHUtil {
             });
         } else if (groups == null) {
             AppservAccessController.doPrivileged(new PrivilegedAction(){
+                @Override
                 public java.lang.Object run() {
                     Set<Principal> principalSet = fs.getPrincipals();
                     principalSet.removeAll(fs.getPrincipals(Group.class));

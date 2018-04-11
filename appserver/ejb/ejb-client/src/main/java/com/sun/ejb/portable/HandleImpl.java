@@ -68,6 +68,7 @@ public final class HandleImpl implements Handle, Serializable
     }
 
     // This is the public API from javax.ejb.Handle
+    @Override
     public EJBObject getEJBObject() throws RemoteException
     {
 	return ejbObject;

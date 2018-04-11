@@ -101,6 +101,7 @@ public class CoyoteInputStream
     /**
     * Prevent cloning the facade.
     */
+    @Override
     protected Object clone()
         throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
@@ -121,6 +122,7 @@ public class CoyoteInputStream
     // --------------------------------------------- ServletInputStream Methods
 
 
+    @Override
     public int read()
         throws IOException {      
 
@@ -134,9 +136,9 @@ public class CoyoteInputStream
             
             try{
                 Integer result = 
-                    AccessController.doPrivileged(
-                        new PrivilegedExceptionAction<Integer>(){
+                    AccessController.doPrivileged(new PrivilegedExceptionAction<Integer>(){
 
+                    @Override
                             public Integer run() throws IOException{
                                 Integer integer = Integer.valueOf(ib.readByte());
                                 return integer;
@@ -157,6 +159,7 @@ public class CoyoteInputStream
         }   
     }
 
+    @Override
     public int available() throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
@@ -166,9 +169,9 @@ public class CoyoteInputStream
         if (SecurityUtil.isPackageProtectionEnabled()){
             try{
                 Integer result = 
-                    AccessController.doPrivileged(
-                        new PrivilegedExceptionAction<Integer>(){
+                    AccessController.doPrivileged(new PrivilegedExceptionAction<Integer>(){
 
+                    @Override
                             public Integer run() throws IOException{
                                 Integer integer = Integer.valueOf(ib.available());
                                 return integer;
@@ -189,6 +192,7 @@ public class CoyoteInputStream
         }           
     }
 
+    @Override
     public int read(final byte[] b) throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
@@ -198,9 +202,9 @@ public class CoyoteInputStream
         if (SecurityUtil.isPackageProtectionEnabled()){
             try{
                 Integer result = 
-                    AccessController.doPrivileged(
-                        new PrivilegedExceptionAction<Integer>(){
+                    AccessController.doPrivileged(new PrivilegedExceptionAction<Integer>(){
 
+                    @Override
                             public Integer run() throws IOException{
                                 Integer integer = 
                                     Integer.valueOf(ib.read(b, 0, b.length));
@@ -223,6 +227,7 @@ public class CoyoteInputStream
     }
 
 
+    @Override
     public int read(final byte[] b, final int off, final int len)
         throws IOException {
 
@@ -234,9 +239,9 @@ public class CoyoteInputStream
         if (SecurityUtil.isPackageProtectionEnabled()){
             try{
                 Integer result = 
-                    AccessController.doPrivileged(
-                        new PrivilegedExceptionAction<Integer>(){
+                    AccessController.doPrivileged(new PrivilegedExceptionAction<Integer>(){
 
+                    @Override
                             public Integer run() throws IOException{
                                 Integer integer = 
                                     Integer.valueOf(ib.read(b, off, len));
@@ -259,6 +264,7 @@ public class CoyoteInputStream
     }
 
     
+    @Override
     public int readLine(byte[] b, int off, int len) throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
@@ -269,6 +275,7 @@ public class CoyoteInputStream
     }
 
 
+    @Override
     public boolean isFinished() {
         if (ib == null) {
             throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
@@ -278,6 +285,7 @@ public class CoyoteInputStream
     }
 
 
+    @Override
     public boolean isReady() {
         if (ib == null) {
             throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
@@ -287,6 +295,7 @@ public class CoyoteInputStream
     }
 
 
+    @Override
     public void setReadListener(ReadListener readListener) {
         if (ib == null) {
             throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
@@ -305,6 +314,7 @@ public class CoyoteInputStream
      * Since we re-cycle, we can't allow the call to super.close()
      * which would permanently disable us.
      */
+    @Override
     public void close() throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ib == null) {
@@ -313,9 +323,9 @@ public class CoyoteInputStream
 
         if (SecurityUtil.isPackageProtectionEnabled()){
             try{
-                AccessController.doPrivileged(
-                    new PrivilegedExceptionAction<Void>(){
+                AccessController.doPrivileged(new PrivilegedExceptionAction<Void>(){
 
+                    @Override
                         public Void run() throws IOException{
                             ib.close();
                             return null;

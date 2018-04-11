@@ -58,6 +58,7 @@ public class HipchatNotifierConfigurationExecutionOptionsFactoryTest {
 
 class HipchatNotifierConfigurationExecutionOptionsFactoryMock extends HipchatNotifierConfigurationExecutionOptionsFactory {
 
+    @Override
     public NotifierConfigurationExecutionOptionsFactoryStore getStore() {
         return mock(NotifierConfigurationExecutionOptionsFactoryStore.class);
     }

@@ -60,14 +60,14 @@ import com.oracle.hk2.devtest.cdi.ejb1.BasicEjb;
  *
  */
 public class BasicCDITest extends NucleusStartStopTest {
-    private final static String EJB1_JAR = "cdi/basic/ejb1/target/ejb1.jar";
-    private final static String EJB1_APP_NAME = "ejb1";
-    private final static String BASIC_EJB_JNDI_NAME = "java:global/ejb1/EjbInjectedWithServiceLocator!" +
+    private static final String EJB1_JAR = "cdi/basic/ejb1/target/ejb1.jar";
+    private static final String EJB1_APP_NAME = "ejb1";
+    private static final String BASIC_EJB_JNDI_NAME = "java:global/ejb1/EjbInjectedWithServiceLocator!" +
       BasicEjb.class.getName();
-    private final static String SOURCE_HOME = System.getProperty("source.home", "$");
-    private final static String SOURCE_HOME_EJB = "/appserver/tests/hk2/" + EJB1_JAR;
-    private final static String GLASSFISH_HOME = System.getProperty("glassfish.home");
-    private final static String RELATIVE_FILE_PATH = "domains/domain1/config/destroyed-ejb1.txt";
+    private static final String SOURCE_HOME = System.getProperty("source.home", "$");
+    private static final String SOURCE_HOME_EJB = "/appserver/tests/hk2/" + EJB1_JAR;
+    private static final String GLASSFISH_HOME = System.getProperty("glassfish.home");
+    private static final String RELATIVE_FILE_PATH = "domains/domain1/config/destroyed-ejb1.txt";
     
     private boolean deployed1;
     private Context context;

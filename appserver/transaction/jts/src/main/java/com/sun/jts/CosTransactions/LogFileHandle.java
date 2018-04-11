@@ -87,31 +87,31 @@ class LogFileHandle {
 
     /**The log file should be accessed in read only mode.
      */
-    final static int OPEN_RDONLY = 0x00000001;
+    static final int OPEN_RDONLY = 0x00000001;
 
     /**The log file should be accessed in read/write mode.
      */
-    final static int OPEN_RDWR   = 0x00000002;
+    static final int OPEN_RDWR   = 0x00000002;
 
     /**The log file should be opened as a new file if necessary.
      */
-    final static int OPEN_CREAT  = 0x00000004;
+    static final int OPEN_CREAT  = 0x00000004;
 
     /**The log file should be synchronized with the file system.
      */
-    final static int OPEN_SYNC   = 0x00000008;
+    static final int OPEN_SYNC   = 0x00000008;
 
     /**Seek relative location to the current position.
      */
-    final static int SEEK_RELATIVE = 0;
+    static final int SEEK_RELATIVE = 0;
 
     /**Seek absolute location in the file.
      */
-    final static int SEEK_ABSOLUTE = 1;
+    static final int SEEK_ABSOLUTE = 1;
 
     /**Open options string for file read only.
      */
-    final static String MODE_READONLY     = "r"/*#Frozen*/;     // rb
+    static final String MODE_READONLY     = "r"/*#Frozen*/;     // rb
 
     /**Open options string for file read/write, old file.
      */
@@ -123,16 +123,16 @@ class LogFileHandle {
 
     static String dsyncProp = null;
 
-    final static String DSYNC_PROPERTY = "com.sun.appserv.transaction.nofdsync";
+    static final String DSYNC_PROPERTY = "com.sun.appserv.transaction.nofdsync";
 
     /**The maximum length of a file name.
      */
-    //!final static int LOG_FNAME_MAX = FILENAME_MAX;
-    final static int LOG_FNAME_MAX = 252;
+    //!static final int LOG_FNAME_MAX = FILENAME_MAX;
+    static final int LOG_FNAME_MAX = 252;
 
     /**The size of a block in the file system.
      */
-    final static int FILESYSTEM_BLOCKSIZE = 4096;
+    static final int FILESYSTEM_BLOCKSIZE = 4096;
 
     /**Instance information.
      */
@@ -222,6 +222,7 @@ class LogFileHandle {
             fileClose();
     }
 
+    @Override
     protected void finalize()
         throws LogException {
 

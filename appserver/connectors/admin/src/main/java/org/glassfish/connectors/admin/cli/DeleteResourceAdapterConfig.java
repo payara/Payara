@@ -73,7 +73,7 @@ import javax.inject.Inject;
 @I18n("delete.resource.adapter.config")
 public class DeleteResourceAdapterConfig implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteResourceAdapterConfig.class);
 
     @Param(name="raname", primary=true)
@@ -91,6 +91,7 @@ public class DeleteResourceAdapterConfig implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
@@ -112,6 +113,7 @@ public class DeleteResourceAdapterConfig implements AdminCommand {
         try {
             // delete resource-adapter-config
             if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     ResourceAdapterConfig resource = (ResourceAdapterConfig)
                             ConnectorsUtil.getResourceByName(domain.getResources(), ResourceAdapterConfig.class, raName);

@@ -86,7 +86,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
         /**
          * I18N message handler
          */
-        private transient final static ResourceBundle messages = I18NHelper.loadBundle(
+        private transient static final ResourceBundle messages = I18NHelper.loadBundle(
                                 ConnectionFactoryImpl.class);
 
 	
@@ -151,6 +151,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * Sets JDBC driver name
    * @param driverName    JDBC driver name
    */
+        @Override
   public void setDriverName (String driverName)
   {
 	// REMOVE WHEN SUPPORTED:
@@ -176,6 +177,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * Returns JDBC driver name
    * @return      driver name
    */
+        @Override
   public String getDriverName ()
   {
 	return driverName;
@@ -187,6 +189,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * Sets JDBC connection URL
    * @param URL   connection URL
    */
+        @Override
   public void setURL (String URL)
   {
 	// REMOVE WHEN SUPPORTED:
@@ -212,6 +215,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * Returns connection URL
    * @return      connection URL
    */
+        @Override
   public String getURL ()
   {
 	return URL;
@@ -223,6 +227,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * Sets database user
    * @param userName      database user
    */
+        @Override
   public void setUserName (String userName)
   {
 	// REMOVE WHEN SUPPORTED:
@@ -248,6 +253,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * Returns database user name
    * @return      current database user name
    */
+        @Override
   public String getUserName ()
   {
 	return userName;
@@ -259,6 +265,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * Sets database user password
    * @param password      database user password
    */
+        @Override
   public void setPassword (char[] password)
   {
 	// REMOVE WHEN SUPPORTED:
@@ -285,6 +292,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * Sets minimum number of connections in the connection pool
    * @param minPool       minimum number of connections
    */
+        @Override
   public void setMinPool (int minPool)
   {
 	assertNotConfigured();
@@ -306,6 +314,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * Returns minimum number of connections in the connection pool
    * @return      connection minPool
    */
+        @Override
   public int getMinPool ()
   {
 	return minPool;
@@ -317,6 +326,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * Sets maximum number of connections in the connection pool
    * @param maxPool       maximum number of connections
    */
+        @Override
   public void setMaxPool (int maxPool)
   {
 	assertNotConfigured();
@@ -338,6 +348,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * Returns maximum number of connections in the connection pool
    * @return      connection maxPool
    */
+        @Override
   public int getMaxPool ()
   {
 	return maxPool;
@@ -351,6 +362,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * @param msInterval    the interval between attempts to get a database
    *                      connection, in milliseconds.
    */
+        @Override
   public void setMsInterval (int msInterval)
   {
 	assertNotConfigured();
@@ -373,6 +385,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * manager's attempts to get a pooled connection.
    * @return      the length of the interval between tries in milliseconds
    */
+        @Override
   public int getMsInterval ()
   {
 	if (connectionManager == null)
@@ -387,6 +400,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * from the connection pool before throwing an exception
    * @param msWait        number in milliseconds
    */
+        @Override
   public void setMsWait (int msWait)
   {
 	assertNotConfigured();
@@ -409,6 +423,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * from the connection pool before throwing an exception
    * @return      number in milliseconds
    */
+        @Override
   public int getMsWait ()
   {
 	if (connectionManager == null)
@@ -422,6 +437,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * Sets the LogWriter to which messages should be sent
    * @param logWriter            logWriter
    */
+        @Override
   public void setLogWriter (PrintWriter logWriter)
   {
 	assertNotConfigured();
@@ -432,6 +448,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * Returns the LogWriter to which messages should be sent
    * @return      logWriter
    */
+        @Override
   public PrintWriter getLogWriter ()
   {
 	return logWriter;
@@ -443,6 +460,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * established to the data source
    * @param loginTimeout           wait time in seconds
    */
+        @Override
   public void setLoginTimeout (int loginTimeout)
   {
 	assertNotConfigured();
@@ -465,6 +483,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * established to the data source
    * @return      wait time in seconds
    */
+        @Override
   public int getLoginTimeout ()
   {
 	if (connectionManager == null)
@@ -485,6 +504,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    *
    * @param level - one of the java.sql.Connection.TRANSACTION_* isolation values
    */
+        @Override
   public void setTransactionIsolation (int level)
   {
 	assertNotConfigured();
@@ -522,6 +542,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * Gets this ConnectionFactory's current transaction isolation level.
    * @return      the current transaction isolation mode value as java.sql.Connection.TRANSACTION_*
    */
+        @Override
   public int getTransactionIsolation ()
   {
 	if (connectionManager == null)
@@ -558,6 +579,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * Returns java.sql.Connection
    * @return      connection as java.sql.Connection
    */
+        @Override
   public Connection getConnection() 
   {
 	// Delegate to ConnectionManager
@@ -596,6 +618,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
   * @param obj The possibly null object to check.
   * @return true if obj is equal to this ConnectionFactoryImpl; false otherwise.
   */
+        @Override
   public boolean equals(Object obj) {
 	if ((obj != null) && (obj instanceof ConnectionFactoryImpl) ) {
 		ConnectionFactoryImpl cf = (ConnectionFactoryImpl)obj;
@@ -609,6 +632,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
   *
   * @return A hash code of the owning ConnectionFactoryImpl as an int.
   */
+        @Override
   public int hashCode() {
   	return URL.hashCode() + userName.hashCode() + Arrays.hashCode(password) + driverName.hashCode();
   }

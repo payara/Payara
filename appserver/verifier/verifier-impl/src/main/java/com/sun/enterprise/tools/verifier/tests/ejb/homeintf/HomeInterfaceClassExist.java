@@ -54,11 +54,11 @@ import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
  * Verify that the bean home interface class exist and is loadable.
  * @author Sheetal Vartak
  */
-abstract public class HomeInterfaceClassExist extends EjbTest { 
+public abstract class HomeInterfaceClassExist extends EjbTest { 
 
     /** Method tells the name of the home interface class that called this test
      */
-    abstract protected String getHomeInterfaceName(EjbDescriptor descriptor);
+    protected abstract String getHomeInterfaceName(EjbDescriptor descriptor);
 
     /** 
      * Home Interface test.  

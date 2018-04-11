@@ -71,9 +71,10 @@ import org.jvnet.hk2.annotations.Service;
 @AnnotationHandlerFor(AuthenticationMechanism.class)
 public class AuthenticationMechanismHandler extends AbstractHandler {
 
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(AuthenticationMechanismHandler.class);
 
+    @Override
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();
         AuthenticationMechanism authMechanism = (AuthenticationMechanism) element.getAnnotation();
@@ -114,6 +115,7 @@ public class AuthenticationMechanismHandler extends AbstractHandler {
         return c.getAnnotation(Connector.class) != null;
     }
 
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getConnectorAnnotationTypes();
     }
@@ -121,6 +123,7 @@ public class AuthenticationMechanismHandler extends AbstractHandler {
     /**
      * @return a default processed result
      */
+    @Override
     protected HandlerProcessingResult getDefaultProcessedResult() {
         return HandlerProcessingResultImpl.getDefaultResult(
                 getAnnotationType(), ResultType.PROCESSED);

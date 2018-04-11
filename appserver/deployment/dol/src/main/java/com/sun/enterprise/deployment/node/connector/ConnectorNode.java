@@ -78,24 +78,24 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     public static final String SYSTEM_ID_10 = "http://java.sun.com/dtd/connector_1_0.dtd";
 
     //connector1.5
-    public final static String PUBLIC_DTD_ID_15 = "-//Sun Microsystems, Inc.//DTD Connector 1.5//EN";
+    public static final String PUBLIC_DTD_ID_15 = "-//Sun Microsystems, Inc.//DTD Connector 1.5//EN";
     public final  static String SYSTEM_ID_15 = "http://java.sun.com/dtd/connector_1_5.dtd";
-    public final static String SCHEMA_ID_15 = "connector_1_5.xsd";
+    public static final String SCHEMA_ID_15 = "connector_1_5.xsd";
 
     //connector1.6
-    public final static String PUBLIC_DTD_ID_16 = "-//Sun Microsystems, Inc.//DTD Connector 1.6//EN";
+    public static final String PUBLIC_DTD_ID_16 = "-//Sun Microsystems, Inc.//DTD Connector 1.6//EN";
     public final  static String SYSTEM_ID_16 = "http://java.sun.com/dtd/connector_1_6.dtd" ;
-    public final static String SCHEMA_ID_16 = "connector_1_6.xsd";
+    public static final String SCHEMA_ID_16 = "connector_1_6.xsd";
 
-    public final static String PUBLIC_DTD_ID = PUBLIC_DTD_ID_16;
-    public final static String SYSTEM_ID = SYSTEM_ID_16;
-    public final static String SCHEMA_ID_17 = "connector_1_7.xsd";
-    public final static String SCHEMA_ID = SCHEMA_ID_17;
-    public final static String SPEC_VERSION = VERSION_17;
+    public static final String PUBLIC_DTD_ID = PUBLIC_DTD_ID_16;
+    public static final String SYSTEM_ID = SYSTEM_ID_16;
+    public static final String SCHEMA_ID_17 = "connector_1_7.xsd";
+    public static final String SCHEMA_ID = SCHEMA_ID_17;
+    public static final String SPEC_VERSION = VERSION_17;
 
-    private final static List<String> systemIDs = initSystemIDs();
+    private static final List<String> systemIDs = initSystemIDs();
 
-    public final static XMLElement tag = new XMLElement(ConnectorTagNames.CONNECTOR);
+    public static final XMLElement tag = new XMLElement(ConnectorTagNames.CONNECTOR);
 
     private static List<String> initSystemIDs() {
         List<String> systemIDs = new ArrayList<String>();
@@ -109,6 +109,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
      * @param publicIDToDTD is a mapping between xml Public-ID to DTD 
      * @return the doctype tag name
      */
+    @Override
     public String registerBundle(Map<String,String> publicIDToDTD) {
         publicIDToDTD.put(PUBLIC_DTD_ID, SYSTEM_ID);
         publicIDToDTD.put(PUBLIC_DTD_ID_10, SYSTEM_ID_10);
@@ -134,6 +135,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
    /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public ConnectorDescriptor getDescriptor() {
         if (descriptor == null) {
             descriptor = (ConnectorDescriptor) DescriptorFactory.getDescriptor(getXMLPath());
@@ -149,6 +151,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
      * @param the attribute value
      * @return true if the attribute was processed
      */
+    @Override
     protected boolean setAttributeValue(XMLElement elementName, 
         XMLElement attributeName, String value) {
         getDescriptor();
@@ -176,6 +179,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         getDescriptor();
         if (descriptor == null) {
@@ -203,6 +207,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
      *  @return true if the element tag can be handled by any registered sub nodes of the
      * current XMLNode
      */
+    @Override
     public boolean handlesElement(XMLElement element) {
 	if (ConnectorTagNames.RESOURCE_ADAPTER.equals(element.getQName())) {
             return false;
@@ -213,6 +218,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     /**
      * @return the handler registered for the subtag element of the curent  XMLNode
      */
+    @Override
     public  XMLNode getHandlerFor(XMLElement element) {
 	if (ConnectorTagNames.RESOURCE_ADAPTER.equals(element.getQName())) {
 	    /** For resourceadapter tag, we need to find out what version of DTD we are handling 
@@ -236,6 +242,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return tag;
     }
@@ -246,6 +253,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
      *
      * @param descriptor the new descriptor
      */
+    @Override
     public void addDescriptor(Object newDescriptor) {
     }
         
@@ -255,6 +263,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */    
+    @Override
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
@@ -271,6 +280,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     /**
      * @return the DOCTYPE of the XML file
      */
+    @Override
     public String getDocType() {
 	return null;
     }
@@ -278,6 +288,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     /**
      * @return the SystemID of the XML file
      */
+    @Override
     public String getSystemID() {
 	    return SCHEMA_ID;
     } 
@@ -285,6 +296,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     /**
      * @return the list of SystemID of the XML schema supported
      */
+    @Override
     public List<String> getSystemIDs() {
         return systemIDs;
     }
@@ -296,6 +308,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
      * @param the descriptor to write
      * @return the DOM tree top node
      */    
+    @Override
     public Node writeDescriptor(Node parent, ConnectorDescriptor conDesc) {
 	conDesc.setSpecVersion(VERSION_17);
         Node connectorNode = super.writeDescriptor(parent, conDesc);      
@@ -323,6 +336,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     /**
      * @return the default spec version level this node complies to
      */
+    @Override
     public String getSpecVersion() {
         return SPEC_VERSION;
     }
@@ -330,6 +344,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     /**
      * @return the schema URL
      */
+    @Override
     protected String getSchemaURL() {
         return TagNames.JAVAEE_NAMESPACE + "/" + getSystemID();
     }

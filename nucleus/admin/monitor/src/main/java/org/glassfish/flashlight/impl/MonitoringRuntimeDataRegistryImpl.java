@@ -70,6 +70,7 @@ public class MonitoringRuntimeDataRegistryImpl
     public MonitoringRuntimeDataRegistryImpl (){      
     }
     
+    @Override
     public void add(String name, TreeNode node) {
         if (name != null )
              children.put(name, node);
@@ -83,6 +84,7 @@ public class MonitoringRuntimeDataRegistryImpl
             children.remove(name);
     }
 
+    @Override
     public TreeNode get (String name) {
         TreeNode node = (name != null)? children.get(name): null;
         return node;

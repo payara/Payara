@@ -58,6 +58,7 @@ public class ConstInteger extends ConstValue {
   /**
    * The tag of this constant entry
    */
+  @Override
   public int tag () { return MyTag; }
 
   /**
@@ -70,6 +71,7 @@ public class ConstInteger extends ConstValue {
   /**
    * Return the descriptor string for the constant type.
    */
+  @Override
   public String descriptor() {
       return "I";//NOI18N
   }
@@ -77,6 +79,7 @@ public class ConstInteger extends ConstValue {
   /**
    * A printable representation
    */
+  @Override
   public String toString () {
       return "CONSTANTInteger(" + indexAsString() + "): " + //NOI18N
           "intValue(" + Integer.toString(intValue) + ")";//NOI18N
@@ -88,6 +91,7 @@ public class ConstInteger extends ConstValue {
     intValue = i;
   }
 
+  @Override
   void formatData (DataOutputStream b) throws IOException {
     b.writeInt(intValue);
   }
@@ -96,6 +100,7 @@ public class ConstInteger extends ConstValue {
     return new ConstInteger (input.readInt());
   }
 
+  @Override
   void resolve (ConstantPool p) { }
 
 }

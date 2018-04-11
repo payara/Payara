@@ -48,6 +48,7 @@ public class TransactedJMSContextManager extends AbstractJMSContextManager {
         super();
     }
 
+    @Override
     public String getType() {
         return "TransactionScoped";
     }

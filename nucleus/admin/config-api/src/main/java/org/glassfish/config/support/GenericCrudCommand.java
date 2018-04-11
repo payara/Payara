@@ -143,6 +143,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
     	return findInMe.get(0);
     }
 
+    @Override
     public void postConstruct() {
         commandName = myself.getName();
         

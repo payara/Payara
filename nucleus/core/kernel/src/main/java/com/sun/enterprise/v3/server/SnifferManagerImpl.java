@@ -67,7 +67,7 @@ import java.util.List;
  */
 @Service
 public class SnifferManagerImpl implements SnifferManager {
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SnifferManagerImpl.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SnifferManagerImpl.class);
 
     @Inject
     protected ServiceLocator habitat;
@@ -77,6 +77,7 @@ public class SnifferManagerImpl implements SnifferManager {
      *
      * @return Collection (possibly empty but never null) of Sniffer
      */
+    @Override
     public Collection<Sniffer> getSniffers() {
         // this is a little bit of a hack, sniffers are now ordered by their names
         // which is useful since connector is before ejb which is before web so if
@@ -88,6 +89,7 @@ public class SnifferManagerImpl implements SnifferManager {
         List<Sniffer> sniffers = new ArrayList<Sniffer>();
         sniffers.addAll(habitat.<Sniffer>getAllServices(Sniffer.class));
         Collections.sort(sniffers, new Comparator<Sniffer>() {
+            @Override
             public int compare(Sniffer o1, Sniffer o2) {
                 return o1.getModuleType().compareTo(o2.getModuleType());
             }
@@ -99,10 +101,12 @@ public class SnifferManagerImpl implements SnifferManager {
     /**
      * Check if there's any {@link Sniffer} installed at all.
      */
+    @Override
     public final boolean hasNoSniffers() {
         return getSniffers().isEmpty();
     }
 
+    @Override
     public Sniffer getSniffer(String appType) {
         assert appType!=null;
         for (Sniffer sniffer :  getSniffers()) {
@@ -124,6 +128,7 @@ public class SnifferManagerImpl implements SnifferManager {
      * @return possibly empty collection of sniffers that handle the passed
      * archive.
      */
+    @Override
     public Collection<Sniffer> getSniffers(DeploymentContext context) {
         ReadableArchive archive = context.getSource();
         ArchiveHandler handler = context.getArchiveHandler();
@@ -132,6 +137,7 @@ public class SnifferManagerImpl implements SnifferManager {
         return getSniffers(context, uris, types);
     }
 
+    @Override
     public Collection<Sniffer> getSniffers(DeploymentContext context, List<URI> uris, Types types) {
         // it is important to keep an ordered sequence here to keep sniffers
         Collection<Sniffer> regularSniffers = getSniffers();

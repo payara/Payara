@@ -56,6 +56,7 @@ import java.beans.*;
 public class ApplicationsTest extends ConfigApiTest {
 
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -94,6 +95,7 @@ public class ApplicationsTest extends ConfigApiTest {
         Applications apps = getHabitat().getService(Applications.class);
         try {
             ConfigSupport.apply(new SingleConfigCode<Applications>() {
+                @Override
                 public Object run(Applications param) throws PropertyVetoException, TransactionFailure {
                     List<Application> appList = param.getApplications();
                     for (Application application : param.getApplicationsWithSnifferType("web")) {

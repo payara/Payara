@@ -189,6 +189,7 @@ public class LocalFieldDesc extends FieldDesc {
      * Calls the superclass method and disables concurrency checking
      * for certain field types.
      */
+    @Override
     protected void setupDesc(Field f) {
         super.setupDesc(f);
 
@@ -434,6 +435,7 @@ public class LocalFieldDesc extends FieldDesc {
         primaryTrackedField.sqlProperties &= ~FieldDesc.PROP_SECONDARY_TRACKED_FIELD;
     }
 
+    @Override
     void computeTrackedRelationshipFields() {
 
         if (((sqlProperties & FieldDesc.PROP_REF_INTEGRITY_UPDATES) == 0) &&

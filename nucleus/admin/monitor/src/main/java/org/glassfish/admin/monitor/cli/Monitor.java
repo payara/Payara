@@ -74,10 +74,11 @@ public class Monitor implements AdminCommand {
     @Inject
     private ServiceLocator habitat;
 
-    final private LocalStringManagerImpl localStrings = 
+    private final LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(Monitor.class);
 
 
+    @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         MonitorContract mContract = null;

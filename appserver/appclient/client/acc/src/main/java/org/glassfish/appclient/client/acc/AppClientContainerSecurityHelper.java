@@ -331,6 +331,7 @@ public class AppClientContainerSecurityHelper {
             delegate = handler;
         }
 
+        @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             return method.invoke(delegate, args);
         }

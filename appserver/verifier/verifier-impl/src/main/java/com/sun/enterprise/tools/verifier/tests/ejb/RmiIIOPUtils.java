@@ -298,7 +298,7 @@ public class RmiIIOPUtils {
      *         Here is an example of a conforming RMI/IDL value type: 
      *           // Java 
      *           public class Point implements java.io.Serializable { 
-     *             public final static int CONSTANT_FOO = 3+3; 
+     *             public static final int CONSTANT_FOO = 3+3; 
      *             private int x; 
      *             private int y; 
      *             public Point(int x, y) { ... } 

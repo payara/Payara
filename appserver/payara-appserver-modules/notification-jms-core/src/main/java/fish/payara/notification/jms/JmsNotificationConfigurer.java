@@ -89,6 +89,7 @@ public class JmsNotificationConfigurer extends BaseNotificationConfigurer<JmsNot
         super.execute(context);
     }
 
+    @Override
     protected void applyValues(JmsNotifierConfiguration configuration) throws PropertyVetoException {
         if(this.enabled != null) {
             configuration.enabled(this.enabled);

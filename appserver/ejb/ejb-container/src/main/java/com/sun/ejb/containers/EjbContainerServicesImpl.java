@@ -71,6 +71,7 @@ public class EjbContainerServicesImpl implements EjbContainerServices {
 
 
 
+    @Override
     public <S> S  getBusinessObject(Object ejbRef, java.lang.Class<S> businessInterface) {
 
         EJBLocalObjectImpl localObjectImpl = getEJBLocalObject(ejbRef);
@@ -113,6 +114,7 @@ public class EjbContainerServicesImpl implements EjbContainerServices {
 
     }
 
+    @Override
     public void remove(Object ejbRef) {
 
         EJBLocalObjectImpl localObjectImpl = getEJBLocalObject(ejbRef);
@@ -155,6 +157,7 @@ public class EjbContainerServicesImpl implements EjbContainerServices {
     }
 
 
+    @Override
     public boolean isRemoved(Object ejbRef) {
 
         EJBLocalObjectImpl localObjectImpl = getEJBLocalObject(ejbRef);
@@ -223,6 +226,7 @@ public class EjbContainerServicesImpl implements EjbContainerServices {
                      final Field finalF = proxyField;
                         java.security.AccessController.doPrivileged(
                         new java.security.PrivilegedExceptionAction() {
+                            @Override
                             public java.lang.Object run() throws Exception {
                                 if( !finalF.isAccessible() ) {
                                     finalF.setAccessible(true);
@@ -252,6 +256,7 @@ public class EjbContainerServicesImpl implements EjbContainerServices {
         return (localObj != null) ?  localObj.getDelegate() : null;
     }
 
+    @Override
     public boolean isEjbManagedObject(Object desc, Class c) {
 
         String className = c.getName();

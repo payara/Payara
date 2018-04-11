@@ -82,8 +82,8 @@ import javax.inject.Inject;
 @SuppressWarnings({"deprecation"})
 @Service(name="grizzlyconfigupgrade")
 public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostConstruct {
-    private final static String SSL_CONFIGURATION_WANTAUTH = "org.glassfish.grizzly.ssl.auth";
-    private final static String SSL_CONFIGURATION_SSLIMPL = "org.glassfish.grizzly.ssl.sslImplementation";
+    private static final String SSL_CONFIGURATION_WANTAUTH = "org.glassfish.grizzly.ssl.auth";
+    private static final String SSL_CONFIGURATION_SSLIMPL = "org.glassfish.grizzly.ssl.sslImplementation";
     @Inject
     private Configs configs;
     private Config currentConfig = null;
@@ -95,6 +95,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
 
     static final Logger logger = ConfigApiLoggerInfo.getLogger();
     
+    @Override
     public void postConstruct() {
         for (Config config : configs.getConfig()) {
             currentConfig = config;
@@ -129,6 +130,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
         Protocol adminProtocol = protocols.findProtocol(ASADMIN_LISTENER);
         if (adminProtocol == null) {
             adminProtocol = (Protocol) ConfigSupport.apply(new SingleConfigCode<Protocols>() {
+                @Override
                 public Object run(Protocols param) throws TransactionFailure {
                     final Protocol protocol = param.createChild(Protocol.class);
                     param.getProtocol().add(protocol);
@@ -182,6 +184,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
 
     private ThreadPools createThreadPools() throws TransactionFailure {
         return (ThreadPools) ConfigSupport.apply(new SingleConfigCode<Config>() {
+            @Override
             public Object run(Config param) throws PropertyVetoException, TransactionFailure {
                 final ThreadPools threadPools = param.createChild(ThreadPools.class);
                 param.setThreadPools(threadPools);
@@ -194,6 +197,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
         NetworkConfig config = currentConfig.getNetworkConfig();
         if (config == null) {
             config = (NetworkConfig) ConfigSupport.apply(new SingleConfigCode<Config>() {
+                @Override
                 public Object run(Config param) throws PropertyVetoException, TransactionFailure {
                     final NetworkConfig netConfig = param.createChild(NetworkConfig.class);
                     netConfig.setProtocols(netConfig.createChild(Protocols.class));
@@ -211,6 +215,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
         Protocols protocols = config.getProtocols();
         if (protocols == null) {
             protocols = (Protocols) ConfigSupport.apply(new SingleConfigCode<NetworkConfig>() {
+                @Override
                 public Object run(NetworkConfig param) throws TransactionFailure {
                     final Protocols child = param.createChild(Protocols.class);
                     param.setProtocols(child);
@@ -226,6 +231,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
         final NetworkListeners networkListeners = config.getNetworkConfig().getNetworkListeners();
         threadPools.getThreadPool().addAll(networkListeners.getThreadPool());
         ConfigSupport.apply(new SingleConfigCode<NetworkListeners>() {
+            @Override
             public Object run(NetworkListeners param) {
                 param.getThreadPool().clear();
                 return null;
@@ -245,6 +251,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
                     HTTP_THREAD_POOL.equals(pool.getThreadPoolId()) || HTTP_THREAD_POOL.equals(pool.getName());
                 if (pool.getName() == null) {
                     ConfigSupport.apply(new SingleConfigCode<ThreadPool>() {
+                        @Override
                         public Object run(ThreadPool param) {
                             param.setName(param.getThreadPoolId());
                             param.setThreadPoolId(null);
@@ -259,6 +266,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
             }
             if (!httpListenerFound) {
                 ConfigSupport.apply(new SingleConfigCode<ThreadPools>() {
+                    @Override
                     public Object run(ThreadPools param) throws TransactionFailure {
                         final ThreadPool pool = param.createChild(ThreadPool.class);
                         pool.setName(HTTP_THREAD_POOL);
@@ -274,6 +282,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
             if (networkListeners != null) {
                 if (networkListeners.getThreadPool() != null && !networkListeners.getThreadPool().isEmpty()) {
                     ConfigSupport.apply(new SingleConfigCode<ThreadPools>() {
+                        @Override
                         public Object run(ThreadPools param) throws TransactionFailure {
                             migrateThreadPools(param);
                             return null;

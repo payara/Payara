@@ -73,6 +73,7 @@ public class CDIEventbusNotificationConfigurer extends BaseNotificationConfigure
     @Param(name = "hazelcastEnabled", defaultValue = "false", optional = true)
     private Boolean hazelcastEnabled;
 
+    @Override
     protected void applyValues(CDIEventbusNotifierConfiguration configuration) throws PropertyVetoException {
         if(this.enabled != null) {
             configuration.enabled(this.enabled);

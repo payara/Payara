@@ -89,6 +89,7 @@ public class ManagedConnectionMetaDataImpl implements javax.resource.spi.Managed
      * @return Product name of the EIS instance
      * @throws <code>ResourceException</code>
      */
+    @Override
     public String getEISProductName() throws ResourceException {
         try {
             return dmd.getDatabaseProductName();
@@ -105,6 +106,7 @@ public class ManagedConnectionMetaDataImpl implements javax.resource.spi.Managed
      * @return Product version of the EIS instance
      * @throws <code>ResourceException</code>
      */
+    @Override
     public String getEISProductVersion() throws ResourceException {
         try {
             return dmd.getDatabaseProductVersion();
@@ -121,6 +123,7 @@ public class ManagedConnectionMetaDataImpl implements javax.resource.spi.Managed
      * @return Maximum limit for number of active concurrent connections
      * @throws <code>ResourceException</code>
      */
+    @Override
     public int getMaxConnections() throws ResourceException {
         try {
             return dmd.getMaxConnections();
@@ -138,6 +141,7 @@ public class ManagedConnectionMetaDataImpl implements javax.resource.spi.Managed
      * @return name of the user
      * @throws <code>ResourceException</code>
      */
+    @Override
     public String getUserName() throws ResourceException {
         javax.resource.spi.security.PasswordCredential pc = mc.getPasswordCredential();
         if (pc != null) {

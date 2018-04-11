@@ -82,6 +82,7 @@ public class LocalPasswordImpl implements PostConstruct, LocalPassword {
     /**
      * Generate a local password and save it in the local-password file.
      */
+    @Override
     public void postConstruct() {
         logger.fine("Generating local password");
         SecureRandom random = new SecureRandom();
@@ -140,6 +141,7 @@ public class LocalPasswordImpl implements PostConstruct, LocalPassword {
     /**
      * Is the given password the local password?
      */
+    @Override
     public boolean isLocalPassword(String p) {
         return password != null && password.equals(p);
     }
@@ -147,6 +149,7 @@ public class LocalPasswordImpl implements PostConstruct, LocalPassword {
     /**
      * Get the local password.
      */
+    @Override
     public String getLocalPassword() {
         return password;
     }

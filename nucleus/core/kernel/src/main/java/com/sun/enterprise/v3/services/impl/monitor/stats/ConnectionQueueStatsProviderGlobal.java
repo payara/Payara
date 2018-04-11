@@ -62,6 +62,7 @@ public class ConnectionQueueStatsProviderGlobal extends ConnectionQueueStatsProv
 
     // ---------------- Connection related listeners -----------
     @ProbeListener("glassfish:kernel:connection-queue:connectionAcceptedEvent")
+    @Override
     public void connectionAcceptedEvent(
             @ProbeParam("listenerName") String listenerName,
             @ProbeParam("connection") int connectionId,
@@ -71,6 +72,7 @@ public class ConnectionQueueStatsProviderGlobal extends ConnectionQueueStatsProv
     }
 
     @ProbeListener("glassfish:kernel:connection-queue:connectionClosedEvent")
+    @Override
     public void connectionClosedEvent(
             @ProbeParam("listenerName") String listenerName,
             @ProbeParam("connection") int connectionId) {
@@ -80,6 +82,7 @@ public class ConnectionQueueStatsProviderGlobal extends ConnectionQueueStatsProv
     // -----------------------------------------------------------------------
 
     @ProbeListener("glassfish:kernel:connection-queue:setMaxTaskQueueSizeEvent")
+    @Override
     public void setMaxTaskQueueSizeEvent(
             @ProbeParam("listenerName") String listenerName,
             @ProbeParam("size") int size) {
@@ -87,6 +90,7 @@ public class ConnectionQueueStatsProviderGlobal extends ConnectionQueueStatsProv
     }
 
     @ProbeListener("glassfish:kernel:connection-queue:onTaskQueuedEvent")
+    @Override
     public void onTaskQueuedEvent(
             @ProbeParam("listenerName") String listenerName,
             @ProbeParam("task") String taskId) {
@@ -109,6 +113,7 @@ public class ConnectionQueueStatsProviderGlobal extends ConnectionQueueStatsProv
     }
 
     @ProbeListener("glassfish:kernel:connection-queue:onTaskDequeuedEvent")
+    @Override
     public void onTaskDequeuedEvent(
             @ProbeParam("listenerName") String listenerName,
             @ProbeParam("task") String taskId) {
@@ -116,6 +121,7 @@ public class ConnectionQueueStatsProviderGlobal extends ConnectionQueueStatsProv
     }
 
     @ProbeListener("glassfish:kernel:connection-queue:onTaskQueueOverflowEvent")
+    @Override
     public void onTaskQueueOverflowEvent(
             @ProbeParam("listenerName") String listenerName) {
         countOverflows.increment();

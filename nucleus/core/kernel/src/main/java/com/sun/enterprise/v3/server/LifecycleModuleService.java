@@ -104,6 +104,7 @@ public class LifecycleModuleService implements PreDestroy, PostConstruct, EventL
     
     List<Future<Result<Thread>>> futures = new ArrayList();
 
+    @Override
     public void postConstruct() {
         events.register(this);
         try {
@@ -113,6 +114,7 @@ public class LifecycleModuleService implements PreDestroy, PostConstruct, EventL
         }
     }
 
+    @Override
     public void preDestroy() {
         try {
             onTermination();
@@ -121,10 +123,12 @@ public class LifecycleModuleService implements PreDestroy, PostConstruct, EventL
         }
     }
 
+    @Override
     public List<Future<Result<Thread>>> getFutures() {
         return futures;
     }
 
+    @Override
     public void event(Event event) {
         try {
             if (event.is(EventTypes.SERVER_STARTUP)) {
@@ -216,6 +220,7 @@ public class LifecycleModuleService implements PreDestroy, PostConstruct, EventL
          // set the common class loader as the thread context class loader
         java.security.AccessController.doPrivileged(
             new java.security.PrivilegedAction() {
+                @Override
                 public Object run() {
                     Thread.currentThread().setContextClassLoader(c);
                     return null;

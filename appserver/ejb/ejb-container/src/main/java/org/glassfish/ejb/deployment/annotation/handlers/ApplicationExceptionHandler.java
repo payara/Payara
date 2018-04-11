@@ -65,6 +65,7 @@ public class ApplicationExceptionHandler extends AbstractHandler {
     public ApplicationExceptionHandler() {
     }
     
+    @Override
      public HandlerProcessingResult processAnnotation
          (AnnotationInfo ainfo) throws AnnotationProcessorException {
 

@@ -76,7 +76,7 @@ public class ExtentCollection
     /**
      * I18N message handler
      */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
            ExtentCollection.class);
 
     /**
@@ -115,6 +115,7 @@ public class ExtentCollection
     /**
      *
      */
+    @Override
     public int size() {
         throw new JDOUnsupportedOptionException(
                 I18NHelper.getMessage(messages, "jdo.extentcollection.methodnotsupported", "size"));// NOI18N
@@ -123,6 +124,7 @@ public class ExtentCollection
     /**
      *
      */
+    @Override
     public boolean isEmpty() {
         throw new JDOUnsupportedOptionException(
                 I18NHelper.getMessage(messages, "jdo.extentcollection.methodnotsupported", "isEmpty"));// NOI18N
@@ -131,6 +133,7 @@ public class ExtentCollection
     /**
      *
      */
+    @Override
     public boolean contains(Object o) {
         throw new JDOUnsupportedOptionException(
                 I18NHelper.getMessage(messages, "jdo.extentcollection.methodnotsupported", "contains"));// NOI18N
@@ -139,6 +142,7 @@ public class ExtentCollection
     /**
      *
      */
+    @Override
     public Iterator iterator() {
         RetrieveDesc rd = pm.getRetrieveDesc(persistenceCapableClass);
         return ((Collection)pm.retrieve(rd)).iterator();
@@ -147,6 +151,7 @@ public class ExtentCollection
     /**
      *
      */
+    @Override
     public Object[] toArray() {
         throw new JDOUnsupportedOptionException(
                 I18NHelper.getMessage(messages, "jdo.extentcollection.methodnotsupported", "toArray"));// NOI18N
@@ -155,6 +160,7 @@ public class ExtentCollection
     /**
      *
      */
+    @Override
     public Object[] toArray(Object a[]) {
         throw new JDOUnsupportedOptionException(
                 I18NHelper.getMessage(messages, "jdo.extentcollection.methodnotsupported", "toArray"));// NOI18N
@@ -163,6 +169,7 @@ public class ExtentCollection
     /**
      * Extent collection is unmodifiable => throw UnsupportedOperationException
      */
+    @Override
     public boolean add(Object o) {
         throw new UnsupportedOperationException(
                 I18NHelper.getMessage(messages, "jdo.extentcollection.illegalmodification", // NOI18N
@@ -172,6 +179,7 @@ public class ExtentCollection
     /**
      * Extent collection is unmodifiable => throw UnsupportedOperationException
      */
+    @Override
     public boolean remove(Object o) {
         throw new UnsupportedOperationException(
                 I18NHelper.getMessage(messages, "jdo.extentcollection.illegalmodification", // NOI18N
@@ -181,6 +189,7 @@ public class ExtentCollection
     /**
      *
      */
+    @Override
     public boolean containsAll(Collection c) {
         throw new JDOUnsupportedOptionException(
                 I18NHelper.getMessage(messages, "jdo.extentcollection.methodnotsupported", "containsAll"));// NOI18N
@@ -189,6 +198,7 @@ public class ExtentCollection
     /**
      * Extent collection is unmodifiable => throw UnsupportedOperationException
      */
+    @Override
     public boolean addAll(Collection c) {
         throw new UnsupportedOperationException(
                 I18NHelper.getMessage(messages, "jdo.extentcollection.illegalmodification", // NOI18N
@@ -198,6 +208,7 @@ public class ExtentCollection
     /**
      * Extent collection is unmodifiable => throw UnsupportedOperationException
      */
+    @Override
     public boolean removeAll(Collection c) {
         throw new UnsupportedOperationException(
                 I18NHelper.getMessage(messages, "jdo.extentcollection.illegalmodification", // NOI18N
@@ -207,6 +218,7 @@ public class ExtentCollection
     /**
      * Extent collection is unmodifiable => throw UnsupportedOperationException
      */
+    @Override
     public boolean retainAll(Collection c) {
         throw new UnsupportedOperationException(
                 I18NHelper.getMessage(messages, "jdo.extentcollection.illegalmodification", // NOI18N
@@ -216,6 +228,7 @@ public class ExtentCollection
     /**
      * Extent collection is unmodifiable => throw UnsupportedOperationException
      */
+    @Override
     public void clear() {
         throw new UnsupportedOperationException(
                 I18NHelper.getMessage(messages, "jdo.extentcollection.illegalmodification", // NOI18N
@@ -225,6 +238,7 @@ public class ExtentCollection
     /**
      * Two extent collections are equal, iff the names of their persistence capable class are equal
      */
+    @Override
     public boolean equals(Object o) {
         if (o == this)
             return true;
@@ -238,6 +252,7 @@ public class ExtentCollection
     /**
      * The hashCode is mapped to the hashCode of the name of the extent collection's persistence capable class
      */
+    @Override
     public int hashCode() {
         return persistenceCapableClass.getName().hashCode();
     }

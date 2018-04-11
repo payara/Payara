@@ -224,6 +224,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 
 			// When needed, setup the Context ClassLoader so JAAS can load the LoginModule(s)
 			tcl = (ClassLoader) AppservAccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+                                @Override
 				public ClassLoader run() {
 					return Thread.currentThread().getContextClassLoader();
 				}
@@ -231,6 +232,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 			final ClassLoader ccl = serverContext.getCommonClassLoader();
 			if (!ccl.equals(tcl)) {
 				AppservAccessController.doPrivileged(new PrivilegedAction<Object>() {
+                                        @Override
 					public Object run() {
 						Thread.currentThread().setContextClassLoader(ccl);
 						return null;
@@ -253,6 +255,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 			if (restoreTcl) {
 				final ClassLoader cl = tcl;
 				AppservAccessController.doPrivileged(new PrivilegedAction<Object>() {
+                                        @Override
 					public Object run() {
 						Thread.currentThread().setContextClassLoader(cl);
 						return null;
@@ -330,6 +333,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 		final Subject s = subject;
 		final PasswordCredential pc = new PasswordCredential(username, password, realmName);
 		AppservAccessController.doPrivileged(new PrivilegedAction<Object>() {
+                        @Override
 			public Object run() {
 				s.getPrivateCredentials().add(pc);
 				return null;

@@ -105,6 +105,7 @@ public class AppLibClassLoaderServiceImpl {
 
         final ClassLoader commonCL = commonCLS.getCommonClassLoader();
         DelegatingClassLoader applibCL = AccessController.doPrivileged(new PrivilegedAction<DelegatingClassLoader>() {
+                       @Override
                        public DelegatingClassLoader run() {
                            return new DelegatingClassLoader(commonCL);
                        }
@@ -147,6 +148,7 @@ public class AppLibClassLoaderServiceImpl {
             throws MalformedURLException {
         final ClassLoader commonCL = commonCLS.getCommonClassLoader();
         DelegatingClassLoader appLibClassFinder = AccessController.doPrivileged(new PrivilegedAction<DelegatingClassLoader>() {
+            @Override
             public DelegatingClassLoader run() {
                 return new AppLibClassFinder(commonCL);
             }

@@ -63,16 +63,19 @@ public final class  ClientNamingConfiguratorImpl
     private ServiceLocator defaultServices;
 
 
+    @Override
     public void postConstruct() {
 
         SerialInitContextFactory.setDefaultServices(defaultServices);
 
     }
 
+    @Override
     public void setDefaultHost(String host) {
          SerialInitContextFactory.setDefaultHost(host);
     }
 
+    @Override
     public void setDefaultPort(String port) {
          SerialInitContextFactory.setDefaultPort(port);
     }

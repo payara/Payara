@@ -54,14 +54,17 @@ public class CSIv2Policy extends org.omg.CORBA.LocalObject
 	this.ejbDescriptor = ejbDescriptor;
     }
 
+    @Override
     public int policy_type() {
 	return POARemoteReferenceFactory.CSIv2_POLICY_TYPE;
     }
 
+    @Override
     public org.omg.CORBA.Policy copy() {
 	return new CSIv2Policy(ejbDescriptor);
     }
 
+    @Override
     public void destroy() {
     }
 

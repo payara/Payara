@@ -127,7 +127,7 @@ class SuperiorInfo {
     private java.lang.Object logSection = null;
     private int              resyncRetries = 0;
 
-    private final static String LOG_SECTION_NAME = "SI"/*#Frozen*/;
+    private static final String LOG_SECTION_NAME = "SI"/*#Frozen*/;
 
     /**
      * Default SuperiorInfo constructor.

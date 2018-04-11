@@ -126,6 +126,7 @@ public abstract class DomainConfigValidator extends Validator
      * </ul>
      * @throws InvalidConfigException If invalid domainConfig is supplied.
      */
+    @Override
     public void validate(Object domainConfig) 
         throws InvalidConfigException
     {

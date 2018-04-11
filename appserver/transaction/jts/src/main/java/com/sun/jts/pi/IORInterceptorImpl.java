@@ -83,6 +83,7 @@ public class IORInterceptorImpl extends LocalObject implements IORInterceptor {
 
     // org.omg.PortableInterceptors.IORInterceptorOperations implementation
 
+    @Override
     public void establish_components (IORInfo info) {
 
         // get the OTSPolicy and InvocationPolicy objects
@@ -151,10 +152,12 @@ public class IORInterceptorImpl extends LocalObject implements IORInterceptor {
 
     // org.omg.PortableInterceptors.InterceptorOperations implementation
 
+    @Override
     public String name(){
         return IORInterceptorImpl.name;
     }
 
+    @Override
     public void destroy() {}
 }
 

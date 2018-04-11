@@ -62,6 +62,7 @@ public class AppClientContext extends ResourceContainerContextImpl {
         return (ApplicationClientDescriptor)descriptor;
     }
     
+    @Override
     public HandlerChainContainer[] 
             getHandlerChainContainers(boolean serviceSideHandlerChain, Class declaringClass) {
         if(serviceSideHandlerChain) {

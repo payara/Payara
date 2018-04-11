@@ -52,7 +52,7 @@ public final class PropertyKeys {
     private PropertyKeys() {}
 
 
-    private final static String BASE = "amxtest";
+    private static final String BASE = "amxtest";
     public static final String DEFAULT_PROPERTIES_FILE = BASE + ".properties";
 
     public static final String CONNECT_KEY = BASE + ".connect";

@@ -89,6 +89,7 @@ public class XATerminatorImpl implements XATerminator {
      *  one of the XA_RB* exceptions. Upon return, the resource manager has
      *  rolled back the branch's work and has released all held resources.
      */
+    @Override
     public void commit(Xid xid, boolean onePhase) throws XAException {
         
         check(xid); // check if xid is valid
@@ -194,6 +195,7 @@ public class XATerminatorImpl implements XATerminator {
      * values are XAER_RMERR, XAER_RMFAIL, XAER_NOTA, XAER_INVAL, or
      * XAER_PROTO.
      */
+    @Override
     public void forget(Xid xid) throws XAException {}
     
     /** 
@@ -214,6 +216,7 @@ public class XATerminatorImpl implements XATerminator {
      * transaction, it should do so by raising an appropriate XAException
      * in the prepare method.
      */
+    @Override
     public int prepare(Xid xid) throws XAException {
         
         check(xid); // check if xid is valid
@@ -302,6 +305,7 @@ public class XATerminatorImpl implements XATerminator {
      * operation, the resource manager should throw the appropriate
      * XAException.
      */
+    @Override
     public Xid[] recover(int flag) throws XAException {
         
         // wait for recovery to be completed.
@@ -325,6 +329,7 @@ public class XATerminatorImpl implements XATerminator {
      * the resource manager has rolled back the branch's work and has released
      * all held resources.
      */
+    @Override
     public void rollback(Xid xid) throws XAException {
         
         check(xid); // check if xid is valid
@@ -371,12 +376,12 @@ public class XATerminatorImpl implements XATerminator {
         }              
     }
 
-    static private final TransactionImport tim = getTransactionImportManager();
+    private static final TransactionImport tim = getTransactionImportManager();
 
    // no standardized JNDI name exists across as implementations for TM, this is Sun App Server specific.
     private static final String AS_TXN_MGR_JNDI_NAME = "java:appserver/TransactionManager";
     
-    static private Object jndiLookup(final String jndiName) {
+    private static Object jndiLookup(final String jndiName) {
         Object result = null;
         try {
             final Context ctx = new InitialContext();
@@ -385,17 +390,17 @@ public class XATerminatorImpl implements XATerminator {
         return result;
     }
     
-    static private TransactionImport getTransactionImportManager() {
+    private static TransactionImport getTransactionImportManager() {
         return (TransactionImport)jndiLookup(AS_TXN_MGR_JNDI_NAME);
     }
 
-    static private void recreate(Xid xid, int timeout) {
+    private static void recreate(Xid xid, int timeout) {
         if (tim != null) {
             tim.recreate(xid, timeout);
         }
     }
 
-    static private void release(Xid xid) {
+    private static void release(Xid xid) {
         if (tim != null) {
             tim.release(xid);
         }

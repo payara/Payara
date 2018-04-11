@@ -142,6 +142,7 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
     /**
      * @see CMPGenerator#init(org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl, DeploymentContext, String, String)
      */
+    @Override
     public void init(EjbBundleDescriptorImpl bundle, DeploymentContext ctx,
         String bundlePathName, String generatedXmlsPathName) 
         throws GeneratorException {
@@ -166,6 +167,7 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
      *
      * @deprecated
      */
+    @Override
     public void init(EjbBundleDescriptorImpl bundle, ClassLoader loader,
         String bundlePathName) throws GeneratorException {
 
@@ -209,6 +211,7 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
    /**
     * @see CMPGenerator#validate(IASEjbCMPEntityDescriptor descr)
     */
+    @Override
     public Collection validate(IASEjbCMPEntityDescriptor descr) {
 
         Collection c = new ArrayList();
@@ -320,6 +323,7 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
     /**
      * @see CMPGenerator#generate(IASEjbCMPEntityDescriptor, File, File)
      */
+    @Override
     public void generate(IASEjbCMPEntityDescriptor ejbcmp, File srcout, 
         File classout) 
         throws GeneratorException {
@@ -466,6 +470,7 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
    /*
     * @see CMPGenerator#cleanup()
     */
+    @Override
     public Collection cleanup() throws GeneratorException { 
         // Remove the strong references to MappingClassElements
         // needed during deployment. The mapping class cache

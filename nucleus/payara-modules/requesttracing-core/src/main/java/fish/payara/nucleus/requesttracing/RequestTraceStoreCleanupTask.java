@@ -48,7 +48,7 @@ import java.util.Collection;
 /**
  * @author mertcaliskan
  */
-final public class RequestTraceStoreCleanupTask implements Runnable {
+public final class RequestTraceStoreCleanupTask implements Runnable {
 
     /**
      * Limit for how long traces can remain in store in seconds

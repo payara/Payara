@@ -77,7 +77,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.THREAD_POOL_ID
 @I18n("create.resource.adapter.config")
 public class CreateResourceAdapterConfig implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(CreateResourceAdapterConfig.class);
 
     @Param(name=RAC_RA_NAME, primary=true)
@@ -107,6 +107,7 @@ public class CreateResourceAdapterConfig implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 

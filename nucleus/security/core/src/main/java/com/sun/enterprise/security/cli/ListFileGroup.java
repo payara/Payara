@@ -97,7 +97,7 @@ CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 })
 public class ListFileGroup implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
-    final private static LocalStringManagerImpl localStrings =
+    private final static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(ListFileGroup.class);
 
     @Param(name="authrealmname", optional=true)
@@ -158,6 +158,7 @@ public class ListFileGroup implements AdminCommand, AdminCommandSecurity.Preauth
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();

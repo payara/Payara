@@ -534,6 +534,7 @@ public final class ConfigModularityUtils {
                     final SystemPropertyBag bag = (SystemPropertyBag) curParent;
                     final List<ConfigCustomizationToken> tokens = configBeanDefaultValue.getCustomizationTokens();
                     ConfigSupport.apply(new SingleConfigCode<SystemPropertyBag>() {
+                        @Override
                         public Object run(SystemPropertyBag param) throws PropertyVetoException, TransactionFailure {
                             addSystemPropertyForToken(tokens, bag);
                             return param;

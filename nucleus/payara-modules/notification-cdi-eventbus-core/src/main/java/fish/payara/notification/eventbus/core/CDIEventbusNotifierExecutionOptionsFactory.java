@@ -61,6 +61,7 @@ public class CDIEventbusNotifierExecutionOptionsFactory extends NotifierExecutio
         register(NotifierType.CDIEVENTBUS, this);
     }
 
+    @Override
     public NotifierExecutionOptions build(CDIEventbusNotifier notifier) {
         CDIEventbusNotifierExecutionOptions executionOptions = new CDIEventbusNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));

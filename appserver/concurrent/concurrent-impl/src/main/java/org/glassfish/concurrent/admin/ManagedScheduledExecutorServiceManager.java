@@ -62,10 +62,12 @@ import java.util.Properties;
 @ConfiguredBy(Resources.class)
 public class ManagedScheduledExecutorServiceManager extends ManagedExecutorServiceBaseManager {
 
+    @Override
     public String getResourceType () {
         return ServerTags.MANAGED_SCHEDULED_EXECUTOR_SERVICE;
     }
 
+    @Override
     protected ManagedExecutorServiceBase createConfigBean(Resources param, Properties properties) throws PropertyVetoException, TransactionFailure {
         ManagedScheduledExecutorService managedExecutorService = param.createChild(ManagedScheduledExecutorService.class);
         setAttributesOnConfigBean(managedExecutorService, properties);

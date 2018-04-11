@@ -80,6 +80,7 @@ public class ResourceInjectorImpl extends ResourceInjector {
 
     }
     
+    @Override
     public void inject(WSWebServiceContext context, Object instance)
                     throws WebServiceException {
 

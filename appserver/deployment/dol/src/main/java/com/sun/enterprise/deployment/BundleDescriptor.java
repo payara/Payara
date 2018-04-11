@@ -71,14 +71,14 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(BundleDescriptor.class);
 
-    private final static String DEPLOYMENT_DESCRIPTOR_DIR = "META-INF";
-    private final static String WSDL_DIR = "wsdl";
+    private static final String DEPLOYMENT_DESCRIPTOR_DIR = "META-INF";
+    private static final String WSDL_DIR = "wsdl";
 
      // the spec versions we should start to look at annotations
-    private final static double ANNOTATION_RAR_VER = 1.6;
-    private final static double ANNOTATION_EJB_VER = 3.0;
-    private final static double ANNOTATION_WAR_VER = 2.5;
-    private final static double ANNOTATION_CAR_VER = 5.0;
+    private static final double ANNOTATION_RAR_VER = 1.6;
+    private static final double ANNOTATION_EJB_VER = 3.0;
+    private static final double ANNOTATION_WAR_VER = 2.5;
+    private static final double ANNOTATION_CAR_VER = 5.0;
 
     private boolean fullFlag = false;
     private boolean fullAttribute = false;
@@ -160,6 +160,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     /**
      * @return true if this module is an application object
      */
+    @Override
     public boolean isApplication() {
         return false;
     }
@@ -349,6 +350,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
      * Return the set of com.sun.enterprise.deployment.Role objects
      * I have plus the ones from application
      */
+    @Override
     public Set<Role> getRoles() {
         if (roles == null) {
             roles = new OrderedSet<Role>();
@@ -363,6 +365,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     /**
      * Adds a role object to me.
      */
+    @Override
     public void addRole(Role role) {
         this.getRoles().add(role);
     }
@@ -388,6 +391,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     /**
      * Removes a role object from me.
      */
+    @Override
     public void removeRole(Role role) {
         this.getRoles().remove(role);
     }
@@ -447,10 +451,12 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
             hc = beanName.hashCode();
         }
 
+        @Override
         public int hashCode() {
             return hc;
         }
 
+        @Override
         public boolean equals(Object o) {
             boolean result = false;
             if (o instanceof InjectionInfoCacheKey) {
@@ -600,6 +606,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     /**
      * @return the class loader associated with this module
      */
+    @Override
     public ClassLoader getClassLoader() {
         if (classLoader != null) {
             return classLoader;
@@ -614,6 +621,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     /**
      * Prints a formatted string representing my state.
      */
+    @Override
     public void print(StringBuffer toStringBuffer) {
         toStringBuffer.append("\n");
         super.print(toStringBuffer);
@@ -627,6 +635,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     /**
      * @return the  type of this bundle descriptor
      */
+    @Override
     public abstract ArchiveType getModuleType();
 
     /**
@@ -646,6 +655,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     /**
      * @return the module ID for this module descriptor
      */
+    @Override
     public String getModuleID() {
         if (moduleID == null) {
             moduleID = getModuleDescriptor().getArchiveUri();

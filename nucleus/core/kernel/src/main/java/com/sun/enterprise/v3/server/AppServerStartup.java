@@ -130,6 +130,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
     ModulesRegistry systemRegistry;
 
     @Inject
+    @Override
     public void setStartupContext(StartupContext context) {
         this.context = context;
     }
@@ -490,6 +491,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
     public synchronized void stop() {
         if(env.getStatus() == ServerEnvironment.Status.stopped) {
             // During shutdown because of shutdown hooks, we can be stopped multiple times.

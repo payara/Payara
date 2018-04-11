@@ -93,6 +93,7 @@ public class SimpleEjbResourceHandlerImpl
         return rh;
     }
 
+    @Override
     public List getResourceList() {
         if (tx == null) {
             checkTransaction();
@@ -104,10 +105,12 @@ public class SimpleEjbResourceHandlerImpl
         return l;
     }
 
+    @Override
     public void beforeCompletion() {
         // do nothing
     }
 
+    @Override
     public void afterCompletion(int status) {
         if (tx != null) {
             _resourceHandlers.remove(tx);

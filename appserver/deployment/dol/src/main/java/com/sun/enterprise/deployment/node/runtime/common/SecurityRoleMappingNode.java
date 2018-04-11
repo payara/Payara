@@ -75,6 +75,7 @@ public class SecurityRoleMappingNode extends RuntimeDescriptorNode {
      * @param element the xml element                
      * @param value it's associated value
      */    
+    @Override
     public void setElementValue(XMLElement element, String value) {   
         SecurityRoleMapping srm = (SecurityRoleMapping) getDescriptor();
         if (RuntimeTagNames.ROLE_NAME.equals(element.getQName())) {

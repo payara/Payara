@@ -52,11 +52,13 @@ public class RangeValidator implements ConstraintValidator<Range, String> {
     private int min;
     private int max;
 
+    @Override
     public void initialize(final Range range) {
         min = range.min();
         max = range.max();
     }
 
+    @Override
     public boolean isValid(final String s, final ConstraintValidatorContext constraintValidatorContext) {
         if (s == null) {
             return true;

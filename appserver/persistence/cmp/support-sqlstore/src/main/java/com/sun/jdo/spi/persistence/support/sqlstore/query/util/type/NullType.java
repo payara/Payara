@@ -69,6 +69,7 @@ public class NullType
      * - an object of type NullType (to itself)
      * - an object of type ClassType
      */
+    @Override
     public boolean isCompatibleWith(Type type)
     {
         return (type.equals(TypeTable.errorType) ||

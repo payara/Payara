@@ -79,7 +79,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 
 public class CreateThreadpool implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
-    final private static LocalStringManagerImpl localStrings = new
+    private final static LocalStringManagerImpl localStrings = new
             LocalStringManagerImpl(CreateThreadpool.class);
 
     // TODO:  Once Grizzly provides constants for default values, update this class to use those
@@ -141,6 +141,7 @@ public class CreateThreadpool implements AdminCommand, AdminCommandSecurity.Prea
      * @param context information
      */
 
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         if (workqueues != null) {
@@ -150,6 +151,7 @@ public class CreateThreadpool implements AdminCommand, AdminCommandSecurity.Prea
 
         try {
             ConfigSupport.apply(new SingleConfigCode<ThreadPools>() {
+                @Override
                 public Object run(ThreadPools param) throws PropertyVetoException, TransactionFailure {
                     ThreadPool newPool = param.createChild(ThreadPool.class);
                     newPool.setName(threadpool_id);

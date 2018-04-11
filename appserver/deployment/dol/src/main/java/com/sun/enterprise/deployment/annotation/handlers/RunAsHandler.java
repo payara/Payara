@@ -68,6 +68,7 @@ public class RunAsHandler extends AbstractCommonAttributeHandler {
     public RunAsHandler() {
     }
     
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
         
@@ -94,6 +95,7 @@ public class RunAsHandler extends AbstractCommonAttributeHandler {
         return getDefaultProcessedResult();
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             WebComponentContext[] webCompContexts) throws AnnotationProcessorException {
         RunAs runAsAn = (RunAs)ainfo.getAnnotation();
@@ -116,6 +118,7 @@ public class RunAsHandler extends AbstractCommonAttributeHandler {
         return getDefaultProcessedResult();
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
              WebBundleContext webBundleContext)
              throws AnnotationProcessorException {
@@ -124,6 +127,7 @@ public class RunAsHandler extends AbstractCommonAttributeHandler {
     }
 
 
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAndWebAnnotationTypes();
     }

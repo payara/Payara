@@ -68,6 +68,7 @@ public class DirectAccessTest extends ConfigPersistence {
      *
      * @return the configuration file name
      */
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -83,6 +84,7 @@ public class DirectAccessTest extends ConfigPersistence {
     	return getBaseServiceLocator();
     }
     
+    @Override
     public void doTest() throws TransactionFailure {
         NetworkConfig networkConfig = habitat.getService(NetworkConfig.class);
         final NetworkListener listener = networkConfig.getNetworkListeners()
@@ -108,6 +110,7 @@ public class DirectAccessTest extends ConfigPersistence {
         getHabitat().<ConfigSupport>getService(ConfigSupport.class).apply(changes);
     }
 
+    @Override
     public boolean assertResult(String s) {
         return s.contains("max-age-seconds=\"12543\"")
             && s.contains("http2-enabled=\"false\"")

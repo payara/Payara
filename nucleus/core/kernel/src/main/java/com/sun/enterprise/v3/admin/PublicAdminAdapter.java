@@ -60,10 +60,12 @@ public class PublicAdminAdapter extends AdminAdapter {
         super(Public.class);
     }
 
+    @Override
     public String getContextRoot() {
         return PREFIX_URI;
     }
 
+    @Override
     protected boolean validatePrivacy(AdminCommand command) {
         Visibility visibility =  command.getClass().getAnnotation(Visibility.class);
         return (visibility==null?true:visibility.value().equals(Public.class));

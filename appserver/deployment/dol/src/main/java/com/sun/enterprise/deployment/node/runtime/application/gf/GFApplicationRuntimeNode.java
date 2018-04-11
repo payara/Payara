@@ -61,6 +61,7 @@ public class GFApplicationRuntimeNode extends ApplicationRuntimeNode {
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return new XMLElement(RuntimeTagNames.GF_APPLICATION_RUNTIME_TAG);
     }    
@@ -68,6 +69,7 @@ public class GFApplicationRuntimeNode extends ApplicationRuntimeNode {
     /** 
      * @return the DOCTYPE that should be written to the XML file
      */
+    @Override
     public String getDocType() {
         return DTDRegistry.GF_APPLICATION_601_DTD_PUBLIC_ID;
     }
@@ -75,6 +77,7 @@ public class GFApplicationRuntimeNode extends ApplicationRuntimeNode {
     /**
      * @return the SystemID of the XML file
      */
+    @Override
     public String getSystemID() {
         return DTDRegistry.GF_APPLICATION_601_DTD_SYSTEM_ID;
     }

@@ -96,6 +96,7 @@ public interface MonitoringService extends ConfigExtension, PropertyBag {
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 
     /**
@@ -203,7 +204,7 @@ public interface MonitoringService extends ConfigExtension, PropertyBag {
             return null;
         }
 
-        private final static List<String> getMethods = new ArrayList<String>();
+        private static final List<String> getMethods = new ArrayList<String>();
         
         private static void populateGetMethods() {
             // We need to use reflection to compare the given name with the
@@ -293,7 +294,7 @@ public interface MonitoringService extends ConfigExtension, PropertyBag {
             return rv;
         }
 
-        private final static List<String> setMethods = new ArrayList<String>();
+        private static final List<String> setMethods = new ArrayList<String>();
 
         public static boolean setMonitoringLevel(MonitoringService ms, String name, String level) throws PropertyVetoException, TransactionFailure {
 

@@ -258,6 +258,7 @@ public class InterceptorDescriptor extends JndiEnvironmentRefsGroupDescriptor
 
     }
 
+    @Override
     public String toString() {
         return "InterceptorDescriptor class = " + getInterceptorClassName();
     }

@@ -74,6 +74,7 @@ public class MessageSecurityNode extends DeploymentDescriptorNode {
     /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
        if (descriptor == null) {
             descriptor = new MessageSecurityDescriptor();

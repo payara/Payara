@@ -60,6 +60,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 public class DuplicateKeyedElementTest extends ConfigApiTest {
     boolean result = false;
 
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -79,6 +80,7 @@ public class DuplicateKeyedElementTest extends ConfigApiTest {
         assertNotNull(target);
         final Property prop = target.getProperty().get(0);
         Property newProp = (Property) ConfigSupport.apply(new SingleConfigCode<VirtualServer>() {
+            @Override
             public Object run(VirtualServer param) throws PropertyVetoException, TransactionFailure {
                 // first one is fine...
                 Property dupProp = param.createChild(Property.class);
@@ -108,6 +110,7 @@ public class DuplicateKeyedElementTest extends ConfigApiTest {
         }
         assertNotNull(target);
         Property newProp = (Property) ConfigSupport.apply(new SingleConfigCode<VirtualServer>() {
+            @Override
             public Object run(VirtualServer param) throws PropertyVetoException, TransactionFailure {
                 // first one is fine...
                 Property firstProp = param.createChild(Property.class);

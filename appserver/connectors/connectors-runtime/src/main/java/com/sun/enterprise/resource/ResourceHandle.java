@@ -65,7 +65,7 @@ public class ResourceHandle implements
         com.sun.appserv.connectors.internal.api.ResourceHandle, TransactionalResource {
 
     // unique ID for resource handles
-    static private long idSequence;
+    private static long idSequence;
 
     private long id;
     private ClientSecurityInfo info;
@@ -97,7 +97,7 @@ public class ResourceHandle implements
     private int usageCount; //holds the no. of times the handle(connection) is used so far.
     private int partition;
 
-    static private long getNextId() {
+    private static long getNextId() {
         synchronized (ResourceHandle.class) {
             idSequence++;
             return idSequence;
@@ -159,6 +159,7 @@ public class ResourceHandle implements
     /**
      * Does this resource need enlistment to transaction manager?
      */
+    @Override
     public boolean isTransactional() {
         return alloc.isTransactional();
     }
@@ -169,10 +170,12 @@ public class ResourceHandle implements
      *
      * @return boolean
      */
+    @Override
     public boolean isEnlistmentSuspended() {
         return enlistmentSuspended;
     }
 
+    @Override
     public void setEnlistmentSuspended(boolean enlistmentSuspended) {
         this.enlistmentSuspended = enlistmentSuspended;
     }
@@ -190,6 +193,7 @@ public class ResourceHandle implements
         return markedReclaim;
     }
 
+    @Override
     public boolean supportsXA() {
         return supportsXAResource;
     }
@@ -214,6 +218,7 @@ public class ResourceHandle implements
         return spec;
     }
 
+    @Override
     public XAResource getXAResource() {
         return xares;
     }
@@ -222,14 +227,17 @@ public class ResourceHandle implements
         return usercon;
     }
 
+    @Override
     public void setComponentInstance(Object instance) {
         this.instance = instance;
     }
 
+    @Override
     public void closeUserConnection() throws PoolingException {
         getResourceAllocator().closeUserConnection(this);
     }
 
+    @Override
     public Object getComponentInstance() {
         return instance;
     }
@@ -287,6 +295,7 @@ public class ResourceHandle implements
         return subject;
     }
 
+    @Override
     public boolean equals(Object other) {
         if (other == null) return false;
         if (other instanceof ResourceHandle) {
@@ -295,10 +304,12 @@ public class ResourceHandle implements
         return false;
     }
 
+    @Override
     public int hashCode() {
         return Long.valueOf(id).hashCode();
     }
 
+    @Override
     public String toString() {
         return String.valueOf(id);
     }
@@ -329,14 +340,17 @@ public class ResourceHandle implements
         return listener;
     }
 
+    @Override
     public boolean isShareable() {
         return alloc.shareableWithinComponent();
     }
 
+    @Override
     public void destroyResource() {
         throw new UnsupportedOperationException("Transaction is not supported yet");
     }
 
+    @Override
     public boolean isEnlisted() {
         return state != null && state.isEnlisted();
     }
@@ -365,6 +379,7 @@ public class ResourceHandle implements
         this.partition = partition;
     }
 
+    @Override
     public String getName() {
         return spec.getResourceId();
     }
@@ -377,6 +392,7 @@ public class ResourceHandle implements
         return supportsLazyAssoc_;
     }
 
+    @Override
     public void enlistedInTransaction(Transaction tran) throws IllegalStateException {
         ConnectorRuntime.getRuntime().getPoolManager().resourceEnlisted(tran, this);
     }

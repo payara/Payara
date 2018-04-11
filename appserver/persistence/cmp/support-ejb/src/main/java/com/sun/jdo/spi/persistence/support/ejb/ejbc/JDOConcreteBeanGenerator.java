@@ -129,7 +129,7 @@ abstract class JDOConcreteBeanGenerator {
     /**
      * I18N message handler
      */
-    final static ResourceBundle messages = I18NHelper.loadBundle(
+    static final ResourceBundle messages = I18NHelper.loadBundle(
         JDOConcreteBeanGenerator.class);
 
     /** Name of the SUPPORT_TRAILING_SPACES_IN_VARCHAR_PK_COLUMNS property. */

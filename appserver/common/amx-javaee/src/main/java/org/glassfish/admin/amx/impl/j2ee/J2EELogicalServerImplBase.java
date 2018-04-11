@@ -60,6 +60,7 @@ public class J2EELogicalServerImplBase
         super(parentObjectName, meta, intf);
     }
 
+    @Override
     public int getstate() {
         throw new RuntimeException(new AttributeNotFoundException("state"));
     }

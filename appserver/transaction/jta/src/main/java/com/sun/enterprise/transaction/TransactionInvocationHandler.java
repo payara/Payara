@@ -71,10 +71,12 @@ public class TransactionInvocationHandler implements ComponentInvocationHandler 
         }
     }
 
+    @Override
     public void beforePreInvoke(ComponentInvocationType invType,
             ComponentInvocation prevInv, ComponentInvocation newInv) throws InvocationException {
     }
 
+    @Override
     public void afterPreInvoke(ComponentInvocationType invType,
             ComponentInvocation prevInv, ComponentInvocation curInv) throws InvocationException {
 
@@ -82,12 +84,14 @@ public class TransactionInvocationHandler implements ComponentInvocationHandler 
         tm.preInvoke(prevInv);
     }
 
+    @Override
     public void beforePostInvoke(ComponentInvocationType invType,
             ComponentInvocation prevInv, ComponentInvocation curInv) throws InvocationException {
         init();
         tm.postInvoke(curInv, prevInv);
     }
 
+    @Override
     public void afterPostInvoke(ComponentInvocationType invType,
             ComponentInvocation prevInv, ComponentInvocation curInv) throws InvocationException {
     }

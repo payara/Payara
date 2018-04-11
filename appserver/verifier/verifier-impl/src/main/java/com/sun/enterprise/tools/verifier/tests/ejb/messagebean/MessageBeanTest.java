@@ -54,7 +54,7 @@ import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
  * @author  Jerome Dochez
  * @version 
  */
-abstract public class MessageBeanTest extends EjbTest {
+public abstract class MessageBeanTest extends EjbTest {
     
     /** 
      * Run a verifier test against an individual declared message
@@ -64,7 +64,7 @@ abstract public class MessageBeanTest extends EjbTest {
      *   
      * @return <code>Result</code> the results for this assertion
      */    
-    abstract public Result check(EjbMessageBeanDescriptor descriptor);
+    public abstract Result check(EjbMessageBeanDescriptor descriptor);
     ComponentNameConstructor compName = null;
 
     /** 

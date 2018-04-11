@@ -82,6 +82,7 @@ public abstract class PersistenceMemberElementImpl
 	 * @param o old value
 	 * @param n new value
 	 */
+        @Override
 	protected final void firePropertyChange (String name, Object o, Object n)
 	{
 		// even though o == null and n == null will signify a change, that 
@@ -105,6 +106,7 @@ public abstract class PersistenceMemberElementImpl
 	 * @param n new value
 	 * @exception PropertyVetoException when the change is vetoed by a listener
 	 */
+        @Override
 	protected final void fireVetoableChange (String name, Object o, Object n)
 		throws PropertyVetoException
 	{

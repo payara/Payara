@@ -65,6 +65,7 @@ class DistributedReadOnlyBeanServiceImpl
     
     private DistributedReadOnlyBeanNotifier robNotifier;
     
+        @Override
     public void setDistributedReadOnlyBeanNotifier(
             DistributedReadOnlyBeanNotifier notifier) {
         this.robNotifier = notifier;
@@ -72,6 +73,7 @@ class DistributedReadOnlyBeanServiceImpl
                 + notifier);
     }
     
+        @Override
     public void addReadOnlyBeanRefreshEventHandler(
             long ejbID, ClassLoader loader,
             ReadOnlyBeanRefreshEventHandler handler) {
@@ -81,10 +83,12 @@ class DistributedReadOnlyBeanServiceImpl
                 + ejbID + "; " + handler);
     }
 
+        @Override
     public void removeReadOnlyBeanRefreshEventHandler(long ejbID) {
         refreshHandlers.remove(ejbID);
     }
 
+        @Override
     public void notifyRefresh(long ejbID, Object pk) {
         if (robNotifier != null) {
             byte[] pkData = null;
@@ -119,6 +123,7 @@ class DistributedReadOnlyBeanServiceImpl
         }
     }
 
+        @Override
     public void notifyRefreshAll(long ejbID) {
         if (robNotifier != null) {
             robNotifier.notifyRefreshAll(ejbID);
@@ -131,10 +136,12 @@ class DistributedReadOnlyBeanServiceImpl
         }
     }
     
+        @Override
     public void handleRefreshRequest(long ejbID, byte[] pkData) {
         refreshRequestReceived(false, ejbID, pkData);
     }
     
+        @Override
     public void handleRefreshAllRequest(long ejbID) {
         refreshRequestReceived(true, ejbID, null);
     }
@@ -157,6 +164,7 @@ class DistributedReadOnlyBeanServiceImpl
             } else {
                 java.security.AccessController.doPrivileged(
                         new java.security.PrivilegedAction() {
+                    @Override
                     public java.lang.Object run() {
                         currentThread.setContextClassLoader(info.loader);
                         return null;
@@ -209,6 +217,7 @@ class DistributedReadOnlyBeanServiceImpl
             } else {
                 java.security.AccessController.doPrivileged(
                         new java.security.PrivilegedAction() {
+                    @Override
                     public java.lang.Object run() {
                         currentThread.setContextClassLoader(prevClassLoader);
                         return null;

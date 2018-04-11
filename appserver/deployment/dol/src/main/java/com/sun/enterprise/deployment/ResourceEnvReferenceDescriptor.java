@@ -51,7 +51,7 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 
 public class ResourceEnvReferenceDescriptor extends EnvironmentProperty implements NamedDescriptor, ResourceEnvReference { 
 
-    static private final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
+    private static final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
 
     private String refType;
 

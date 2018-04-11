@@ -138,8 +138,10 @@ public abstract class WebComponentDescriptor extends Descriptor {
 
     //public abstract void print(StringBuffer toStringBuffer);
 
+    @Override
     public abstract boolean equals(Object other);
 
+    @Override
     public abstract int hashCode();
 
     public abstract void add(WebComponentDescriptor other);

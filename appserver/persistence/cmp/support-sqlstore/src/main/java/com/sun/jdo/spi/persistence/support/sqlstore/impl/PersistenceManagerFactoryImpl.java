@@ -112,7 +112,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	/**
      	 * I18N message handler
      	 */
-	private final static ResourceBundle messages = I18NHelper.loadBundle(
+	private static final ResourceBundle messages = I18NHelper.loadBundle(
                                 PersistenceManagerFactoryImpl.class);
 
 	/**
@@ -148,6 +148,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 * Sets database user
 	 * @param userName      database user
 	 */
+        @Override
 	public void setConnectionUserName (String userName) {
 		assertNotConfigured();
 		this.userName = userName;
@@ -157,6 +158,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 * Returns database user name
 	 * @return	current database user name
 	 */
+        @Override
 	public String getConnectionUserName()
 	{
 		if (connectionFactory != null)
@@ -170,6 +172,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 * Sets database user password
 	 * @param password      database user password
 	 */
+        @Override
 	public void setConnectionPassword (char[] password) {
 		assertNotConfigured();
 		this.password = password;
@@ -180,6 +183,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 * Sets JDBC connection URL
 	 * @param URL	connection URL
 	 */
+        @Override
 	public void setConnectionURL (String URL) {
 		assertNotConfigured();
 		this.URL = URL;
@@ -189,6 +193,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 * Returns connection URL
 	 * @return	connection URL
 	 */
+        @Override
 	public String getConnectionURL()
 	{
 		if (connectionFactory != null)
@@ -202,6 +207,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 * Sets JDBC driver name
 	 * @param driverName	JDBC driver name
 	 */
+        @Override
 	public void setConnectionDriverName (String driverName) {
 		assertNotConfigured();
 		this.driverName = driverName;
@@ -211,6 +217,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 * Returns JDBC driver name
 	 * @return	driver name
 	 */
+        @Override
 	public String getConnectionDriverName()
 	{
 		if (connectionFactory != null)
@@ -224,6 +231,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 * <a href="ConnectionFactory.html">ConnectionFactory</a> or javax.sql.DataSource
 	 * @param connectionFactory	as java.lang.Object
 	 */
+        @Override
 	public void setConnectionFactory (Object connectionFactory) {
 		assertNotConfigured();
 		if (connectionFactory == null) {
@@ -249,6 +257,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 * Returns ConnectionFactory
 	 * @return	ConnectionFactory
 	 */
+        @Override
 	public Object getConnectionFactory() {
 		if (dataSource != null)
 			return dataSource;
@@ -260,6 +269,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * Sets ConnectionFactory name
          * @param connectionFactoryName     ConnectionFactory name
          */
+        @Override
         public void setConnectionFactoryName (String connectionFactoryName)
 	{
 		assertNotConfigured();
@@ -270,6 +280,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * Returns ConnectionFactory name
          * @return      ConnectionFactoryName
          */
+        @Override
         public String getConnectionFactoryName ()
 	{
 		return connectionFactoryName;
@@ -282,6 +293,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 * PersistenceManagerFactories are initialized in a system.
 	 * @param identifier
 	 */
+        @Override
 	public void setIdentifier(String identifier) {
 		assertNotConfigured();
 		this.identifier = identifier;
@@ -294,6 +306,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 * PersistenceManagerFactories are initialized in a system.
 	 * @return identifier
 	 */
+        @Override
 	public String getIdentifier() {
 		return identifier;
 	}
@@ -302,6 +315,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * Sets maximum number of connections in the connection pool
          * @param MaxPool	maximum number of connections
          */
+        @Override
 	public  void setConnectionMaxPool (int MaxPool)
 	{
 		assertNotConfigured();
@@ -313,6 +327,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * Returns maximum number of connections in the connection pool
          * @return      connectionMaxPool
          */
+        @Override
   	public int getConnectionMaxPool ()
 	{
 		if (connectionFactory != null)
@@ -326,6 +341,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * @param MinPool	minimum number of connections
          */
 
+        @Override
 	public  void setConnectionMinPool (int MinPool)
 	{
 		assertNotConfigured();
@@ -337,6 +353,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * Returns minimum number of connections in the connection pool
          * @return      connectionMinPool
          */
+        @Override
   	public int getConnectionMinPool ()
 	{
 		if (connectionFactory != null)
@@ -351,6 +368,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * @param MsWait	number in milliseconds
          */
 
+        @Override
   	public void setConnectionMsWait (int MsWait)
 	{
 		assertNotConfigured();
@@ -363,6 +381,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * from the connection pool before throwing an exception
          * @return      number in milliseconds
          */
+        @Override
   	public int getConnectionMsWait ()
 	{
 		if (connectionFactory != null)
@@ -375,6 +394,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * Returns maximum number of PersistenceManager instances in the pool
          * @return maxPool
          */
+        @Override
 	public  int getMaxPool () {
 		return maxPool;
 	}
@@ -384,6 +404,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * Sets maximum number of PersistenceManager instances in the pool
          * @param MaxPool	maximum number of PersistenceManager instances
          */
+        @Override
 	public  void setMaxPool (int MaxPool) {
 		assertNotConfigured();
 		this.maxPool = MaxPool;
@@ -393,6 +414,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * Returns minimum number of PersistenceManager instances in the pool
          * @return minPool
          */
+        @Override
 	public  int getMinPool () {
 		return minPool;
 	}
@@ -402,6 +424,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * Sets minimum number of PersistenceManager instances in the pool
          * @param MinPool	minimum number of PersistenceManager instances
          */
+        @Override
 	public  void setMinPool (int MinPool) {
 		assertNotConfigured();
 		this.minPool = MinPool;
@@ -416,6 +439,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 *			connection, in milliseconds.
 
          */
+        @Override
   	public void setConnectionMsInterval (int MsInterval)
 	{
 		assertNotConfigured();
@@ -428,6 +452,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * manager's attempts to get a pooled connection.
          * @return      the length of the interval between tries in milliseconds
          */
+        @Override
   	public int getConnectionMsInterval ()
 	{
 		if (connectionFactory != null)
@@ -443,6 +468,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * @param LoginTimeout		 wait time in seconds
          */
 
+        @Override
   	public void setConnectionLoginTimeout (int LoginTimeout)
 	{
 		assertNotConfigured();
@@ -455,6 +481,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * established to the data source
          * @return      wait time in seconds
          */
+        @Override
   	public int getConnectionLoginTimeout ()
 	{
 		if (connectionFactory != null) {
@@ -473,6 +500,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * Sets the LogWriter to which messages should be sent
 	 * @param pw 		LogWriter
 	 */
+        @Override
 	public  void setConnectionLogWriter(PrintWriter pw)
 	{
 		assertNotConfigured();
@@ -483,6 +511,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * Returns the LogWriter to which messages should be sent
 	 * @return      LogWriter
 	 */
+        @Override
         public PrintWriter getConnectionLogWriter ()
 	{
 		return connectionLogWriter;
@@ -502,6 +531,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
    	 * to execute in the datastore associated with this PersistenceManagerFactory.
    	 * @param timeout          new timout value in seconds; zero means unlimited
    	 */
+        @Override
   	public void setQueryTimeout (int timeout)
 	{
 		assertNotConfigured();
@@ -513,6 +543,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
    	 * to execute in the datastore associated with this PersistenceManagerFactory.
    	 * @return      timout value in seconds; zero means unlimited
    	 */
+        @Override
   	public int getQueryTimeout ()
 	{
 		return queryTimeout;
@@ -532,6 +563,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * to execute in the datastore associated with this PersistenceManagerFactory.
          * @param timeout          new timout value in seconds; zero means unlimited
          */
+        @Override
         public void setUpdateTimeout (int timeout)
         {
                 assertNotConfigured();
@@ -543,6 +575,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * to execute in the datastore associated with this PersistenceManagerFactory.
          * @return      timout value in seconds; zero means unlimited
          */
+        @Override
         public int getUpdateTimeout()
         {
                 return updateTimeout;
@@ -557,6 +590,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
    	 *
    	 * @param level - one of the java.sql.Connection.TRANSACTION_* isolation values
    	 */
+        @Override
   	public void setConnectionTransactionIsolation (int level)
 	{
 		assertNotConfigured();
@@ -567,6 +601,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 * Returns current transaction isolation level for connections of this PersistenceManagerFactory.
    	 * @return      the current transaction isolation mode value as java.sql.Connection.TRANSACTION_*
    	 */
+        @Override
   	public int getConnectionTransactionIsolation ()
 	{
 		if (connectionFactory != null)
@@ -588,6 +623,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * Sets the optimistic flag for all PersistenceManagers
 	 * @param flag		boolean optimistic flag
 	 */
+        @Override
 	public void setOptimistic (boolean flag)
 	{
 		assertNotConfigured();
@@ -602,6 +638,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * Returns the boolean value of the optimistic flag for all PersistenceManagers
 	 * @return      boolean optimistic flag
 	 */
+        @Override
   	public boolean getOptimistic ()
 	{
 		return optimistic;
@@ -620,6 +657,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * Sets flag that will not cause the eviction of persistent instances after transaction completion.
 	 * @param flag          boolean flag passed
          */
+        @Override
   	public void setRetainValues (boolean flag)
 	{
 		assertNotConfigured();
@@ -636,6 +674,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 * instances after transaction completion.
          * @return      boolean setting for the flag
          */
+        @Override
   	public boolean getRetainValues ()
 	{
 		return retainValues;
@@ -654,6 +693,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * Sets the flag that allows non-transactional instances to be managed in the cache.
          * @param flag          boolean flag passed
          */
+        @Override
   	public void setNontransactionalRead (boolean flag)
 	{
 		assertNotConfigured();
@@ -672,6 +712,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 * to be managed in the cache.
          * @return      boolean setting for the flag
          */
+        @Override
   	public boolean getNontransactionalRead ()
 	{
 		return nontransactionalRead;
@@ -691,6 +732,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 * approximate results by ignoring changed values in the cache.
          * @param flag          boolean flag passed
          */
+        @Override
   	public void setIgnoreCache (boolean flag)
 	{
 		assertNotConfigured();
@@ -704,6 +746,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 * be optimized to return approximate results by ignoring changed values in the cache.
 	 * @return      boolean setting for the flag
          */
+        @Override
   	public boolean getIgnoreCache ()
 	{
 		return ignoreCache;
@@ -714,6 +757,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          * Returns non-operational properties to be available to the application via a Properties instance.
          * @return      Properties object
          */
+        @Override
   	public Properties getProperties ()
 	{
 		if (pmFactory != null)
@@ -730,6 +774,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	 * Creates new <a href="PersistenceManager.html">PersistenceManager</a> without extra info
 	 * @return	the persistence manager
 	 */
+        @Override
 	public PersistenceManager getPersistenceManager() {
 		return getPersistenceManager(null, null);
 	}
@@ -741,6 +786,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
      * Object Id.
      * @return      boolean supersedeDeletedInstance flag
      */
+        @Override
     public boolean getSupersedeDeletedInstance () {
         return supersedeDeletedInstance;
     }
@@ -750,6 +796,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
      * Sets the supersedeDeletedInstance flag for all PersistenceManagers.
      * @param flag          boolean supersedeDeletedInstance flag
      */
+        @Override
     public void setSupersedeDeletedInstance (boolean flag) {
         assertNotConfigured();
         supersedeDeletedInstance = flag;
@@ -765,6 +812,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
       * @see PersistenceManager#getObjectById(Object oid)
       * @return      boolean requireCopyObjectId flag
       */
+        @Override
      public boolean getRequireCopyObjectId() {
         return requireCopyObjectId;
     }
@@ -780,6 +828,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
       * @see PersistenceManager#getObjectById(Object oid)
       * @param flag          boolean requireCopyObjectId flag
       */
+        @Override
      public void setRequireCopyObjectId (boolean flag) {
         assertNotConfigured();
         requireCopyObjectId = flag;
@@ -793,6 +842,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
      *
      * @return      boolean requireTrackedSCO flag
      */
+        @Override
     public boolean getRequireTrackedSCO() {
         return requireTrackedSCO;
     }
@@ -805,6 +855,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
      *
      * @param flag          boolean requireTrackedSCO flag
      */
+        @Override
     public void setRequireTrackedSCO (boolean flag) {
         assertNotConfigured();
         requireTrackedSCO = flag;
@@ -818,6 +869,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
    * @param       passwd      datasource user password
    * @return      the persistence manager
    */
+        @Override
   public PersistenceManager getPersistenceManager (String username, char[] passwd){
 	    synchronized (this) {
 
@@ -942,6 +994,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
       	 * @param obj The possibly null object to check.
       	 * @return true if obj is equal to this PersistenceManagerFactoryImpl; false otherwise.
       	 */
+        @Override
 	public boolean equals(Object obj) {
        		if ((obj == null) || !(obj instanceof PersistenceManagerFactoryImpl)) {
 			return false;
@@ -975,6 +1028,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
          *
          * @return A hash code of the owning PersistenceManagerFactory as an int.
          */
+        @Override
         public int hashCode() {
                 if (providedConnectionFactory == SET_AS_CONNECTIONFACTORY) {
 			return connectionFactory.hashCode();

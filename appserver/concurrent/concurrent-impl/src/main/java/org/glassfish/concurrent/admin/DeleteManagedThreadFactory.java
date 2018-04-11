@@ -70,7 +70,7 @@ import javax.inject.Inject;
 @I18n("delete.managed.thread.factory")
 public class DeleteManagedThreadFactory implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteManagedThreadFactory.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteManagedThreadFactory.class);    
 
     @Param(optional=true)
     private String target = SystemPropertyConstants.DAS_SERVER_NAME;
@@ -90,6 +90,7 @@ public class DeleteManagedThreadFactory implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();

@@ -67,17 +67,20 @@ public class CommitCEntityContainer
         super(desc, loader, sm);
     }
     
+    @Override
     protected EntityContextImpl getReadyEJB(EjbInvocation inv) {
         Object primaryKey = getInvocationKey(inv);
         return activateEJBFromPool(primaryKey, inv);
     }
     
+    @Override
     protected void createReadyStore(int cacheSize, int numberOfVictimsToSelect,
             float loadFactor, long idleTimeout)
     {
         readyStore = null;
     }
     
+    @Override
     protected void createEJBObjectStores(int cacheSize,
             int numberOfVictimsToSelect, long idleTimeout) throws Exception
     {
@@ -86,14 +89,17 @@ public class CommitCEntityContainer
     }
     
     // called from releaseContext, afterCompletion
+    @Override
     protected void addReadyEJB(EntityContextImpl context) {
         passivateAndPoolEJB(context);
     }
     
+    @Override
     protected void destroyReadyStoreOnUndeploy() {
         readyStore = null;
     }
     
+    @Override
     protected void removeContextFromReadyStore(Object primaryKey,
             EntityContextImpl context)
     {

@@ -165,6 +165,7 @@ public class NameMapper extends
 	 * @return <code>true</code> if this name represents an ejb; 
 	 * <code>false</code> otherwise.
 	 */
+        @Override
 	public boolean isEjbName (String name)
 	{
 		return mapContainsKey(EJB_NAME, name);
@@ -175,6 +176,7 @@ public class NameMapper extends
 	 * @param name the name of the ejb
 	 * @return the EjbCMPEntityDescriptor which represents the ejb.
 	 */
+        @Override
 	public EjbCMPEntityDescriptor getDescriptorForEjbName (String name)
 	{
 		Map ejbMap = (Map)getMap().get(EJB_NAME);
@@ -199,6 +201,7 @@ public class NameMapper extends
 	 * @param name the name of the ejb
 	 * @return the name of the abstract bean for the specified ejb
 	 */
+        @Override
 	public String getAbstractBeanClassForEjbName (String name)
 	{
 		EjbCMPEntityDescriptor descriptor = getDescriptorForEjbName(name);
@@ -211,6 +214,7 @@ public class NameMapper extends
 	 * @param name the name of the ejb
 	 * @return the name of the key class for the ejb
 	 */
+        @Override
 	public String getKeyClassForEjbName (String name)
 	{
 		EjbCMPEntityDescriptor descriptor = getDescriptorForEjbName(name);
@@ -224,6 +228,7 @@ public class NameMapper extends
 	 * @param schemaName the name of the abstract schema
 	 * @return the name of the ejb for the specified abstract schema
 	 */
+        @Override
 	public String getEjbNameForAbstractSchema (String schemaName)
 	{
 		Map abstractSchemaMap = (Map)getMap().get(ABSTRACT_SCHEMA_NAME);
@@ -236,6 +241,7 @@ public class NameMapper extends
 	 * @param name the name of the ejb
 	 * @return the name of the abstract schema for the specified ejb
 	 */
+        @Override
 	public String getAbstractSchemaForEjbName (String name)
 	{
 		EjbCMPEntityDescriptor descriptor = getDescriptorForEjbName(name);
@@ -249,6 +255,7 @@ public class NameMapper extends
 	 * @param name the name of the ejb
 	 * @return the name of the concrete bean for the specified ejb
 	 */
+        @Override
 	public String getConcreteBeanClassForEjbName (String name)
 	{
 		IASEjbCMPEntityDescriptor descriptor = 
@@ -285,6 +292,7 @@ public class NameMapper extends
 	 * @param className the name of the persistence-capable
 	 * @return the name of the ejb for the specified persistence-capable
 	 */
+        @Override
 	public String getEjbNameForPersistenceClass (String className)
 	{
 		Map pcMap = (Map)getMap().get(PERSISTENCE_NAME);
@@ -297,6 +305,7 @@ public class NameMapper extends
 	 * @param name the name of the ejb
 	 * @return the name of the persistence-capable for the specified ejb
 	 */
+        @Override
 	public String getPersistenceClassForEjbName (String name)
 	{
 		EjbCMPEntityDescriptor descriptor = getDescriptorForEjbName(name);
@@ -336,6 +345,7 @@ public class NameMapper extends
 	 * @return <code>true</code> if this name represents a local interface; 
 	 * <code>false</code> otherwise.
 	 */
+        @Override
 	public boolean isLocalInterface (String name)
 	{
 		return mapContainsKey(LOCAL_NAME, name);
@@ -349,6 +359,7 @@ public class NameMapper extends
 	 * @param interfaceName the name of the local interface
 	 * @return the name of the ejb for the specified local interface
 	 */
+        @Override
 	public String getEjbNameForLocalInterface (String ejbName, 
 		String fieldName, String interfaceName)
 	{
@@ -365,6 +376,7 @@ public class NameMapper extends
 	 * @param name the name of the ejb
 	 * @return the name of the local interface for the specified ejb
 	 */
+        @Override
 	public String getLocalInterfaceForEjbName (String name)
 	{
 		EjbCMPEntityDescriptor descriptor = getDescriptorForEjbName(name);
@@ -377,6 +389,7 @@ public class NameMapper extends
 	 * @return <code>true</code> if this name represents a remote interface; 
 	 * <code>false</code> otherwise.
 	 */
+        @Override
 	public boolean isRemoteInterface (String name)
 	{
 		return mapContainsKey(REMOTE_NAME, name);
@@ -390,6 +403,7 @@ public class NameMapper extends
 	 * @param interfaceName the name of the remote interface
 	 * @return the name of the ejb for the specified remote interface
 	 */
+        @Override
 	public String getEjbNameForRemoteInterface (String ejbName, 
 		String fieldName, String interfaceName)
 	{
@@ -406,6 +420,7 @@ public class NameMapper extends
 	 * @param name the name of the ejb
 	 * @return the name of the remote interface for the specified ejb
 	 */
+        @Override
 	public String getRemoteInterfaceForEjbName (String name)
 	{
 		EjbCMPEntityDescriptor descriptor = getDescriptorForEjbName(name);
@@ -439,6 +454,7 @@ public class NameMapper extends
 	 * @return the name of the field in the ejb for the specified 
 	 * persistence-capable field
 	 */
+        @Override
 	public String getEjbFieldForPersistenceField (String className, 
 		String fieldName)
 	{
@@ -452,6 +468,7 @@ public class NameMapper extends
 	 * @return the name of the field in the persistence-capable for the 
 	 * specified ejb field
 	 */
+        @Override
 	public String getPersistenceFieldForEjbField (String name, String fieldName)
 	{
 		return fieldName;

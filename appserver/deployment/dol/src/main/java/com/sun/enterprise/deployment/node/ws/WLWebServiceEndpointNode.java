@@ -64,7 +64,7 @@ import java.util.logging.Level;
 public class WLWebServiceEndpointNode extends DeploymentDescriptorNode {
     private WebServiceEndpoint descriptor = null;
 
-    private final static XMLElement tag =
+    private static final XMLElement tag =
             new XMLElement(WebServicesTagNames.PORT_COMPONENT);
 
     private static final List<String> UNSUPPORTED_TAGS = new ArrayList();
@@ -135,6 +135,7 @@ public class WLWebServiceEndpointNode extends DeploymentDescriptorNode {
         return descriptor;
     }
 
+    @Override
     public void addDescriptor(Object childdescriptor) {
         if(childdescriptor instanceof ReliabilityConfig) {
             descriptor.setReliabilityConfig(((ReliabilityConfig)childdescriptor));
@@ -216,14 +217,17 @@ public class WLWebServiceEndpointNode extends DeploymentDescriptorNode {
         }
 
 
+        @Override
         protected XMLElement getXMLRootTag() {
             return tag;
         }
 
+        @Override
         public Object getDescriptor() {
             return descriptor;
         }
 
+        @Override
         protected Map getDispatchTable() {
             Map table = super.getDispatchTable();
             table.put(WLWebServicesTagNames.WSDL_EXPOSED, "setWsdlExposed");
@@ -266,14 +270,17 @@ public class WLWebServiceEndpointNode extends DeploymentDescriptorNode {
         }
 
 
+        @Override
         protected XMLElement getXMLRootTag() {
             return tag;
         }
 
+        @Override
         public Object getDescriptor() {
             return descriptor;
         }
 
+        @Override
         protected Map getDispatchTable() {
             Map table = super.getDispatchTable();
             return table;

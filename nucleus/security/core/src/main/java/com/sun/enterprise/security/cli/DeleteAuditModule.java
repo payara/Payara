@@ -90,7 +90,7 @@ import org.glassfish.config.support.TargetType;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class DeleteAuditModule implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(DeleteAuditModule.class);
 
     @Param(name="auditmodulename", primary=true)
@@ -126,6 +126,7 @@ public class DeleteAuditModule implements AdminCommand, AdminCommandSecurity.Pre
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         
         ActionReport report = context.getActionReport();
@@ -140,6 +141,7 @@ public class DeleteAuditModule implements AdminCommand, AdminCommandSecurity.Pre
             }
 
             ConfigSupport.apply(new SingleConfigCode<SecurityService>() {
+                @Override
                 public Object run(SecurityService param) 
                 throws PropertyVetoException, TransactionFailure {
                     

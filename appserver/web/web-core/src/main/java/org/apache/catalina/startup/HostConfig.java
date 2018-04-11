@@ -346,6 +346,7 @@ public class HostConfig
      *
      * @param event The lifecycle event that has occurred
      */
+    @Override
     public void lifecycleEvent(LifecycleEvent event) {
 
         if (event.getType().equals("check"))

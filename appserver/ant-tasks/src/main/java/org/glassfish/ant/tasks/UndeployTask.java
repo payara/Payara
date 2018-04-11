@@ -81,6 +81,7 @@ public class UndeployTask extends AdminTask {
         return component;
     }
 
+    @Override
     public void execute() throws BuildException {
         if (components.size() == 0 && name == null) {
             log("name attribute or component must be specified", Project.MSG_WARN);

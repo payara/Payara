@@ -50,7 +50,7 @@ import java.util.Map;
 import java.util.logging.Level;
 
 public class ConnectionFactoryDefinitionNode extends DeploymentDescriptorNode<ConnectionFactoryDefinitionDescriptor> {
-    public final static XMLElement tag = new XMLElement(TagNames.CONNECTION_FACTORY);
+    public static final XMLElement tag = new XMLElement(TagNames.CONNECTION_FACTORY);
     
     private ConnectionFactoryDefinitionDescriptor descriptor = null;
     
@@ -59,6 +59,7 @@ public class ConnectionFactoryDefinitionNode extends DeploymentDescriptorNode<Co
                 "addConnectionFactoryPropertyDescriptor");
     }
 
+    @Override
     protected Map<String, String> getDispatchTable() {
         // no need to be synchronized for now
         Map<String, String> table = super.getDispatchTable();
@@ -80,6 +81,7 @@ public class ConnectionFactoryDefinitionNode extends DeploymentDescriptorNode<Co
             )
     private static final String RESOURCE_ADAPTER_NAME_INVALID = "AS-DEPLOYMENT-00023";
 
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, ConnectionFactoryDefinitionDescriptor desc) {
         Node node = appendChild(parent, nodeName);
         appendTextChild(node, TagNames.CONNECTION_FACTORY_DESCRIPTION, desc.getDescription());
@@ -112,6 +114,7 @@ public class ConnectionFactoryDefinitionNode extends DeploymentDescriptorNode<Co
         return node;
     }
     
+    @Override
     public ConnectionFactoryDefinitionDescriptor getDescriptor() {
         if(descriptor == null){
             descriptor = new ConnectionFactoryDefinitionDescriptor();

@@ -50,13 +50,13 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  */
 public class AnnotationProcessorException extends Exception {
     
-    final private String message;
+    private final String message;
     
-    transient final private AnnotationInfo locator; // TODO if this class is meant for serialization, make sure all its constituents are serializable.
+    transient private final AnnotationInfo locator; // TODO if this class is meant for serialization, make sure all its constituents are serializable.
     
     boolean isFatal = false;
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AnnotationProcessorException.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AnnotationProcessorException.class);
 
 
     /** 
@@ -83,6 +83,7 @@ public class AnnotationProcessorException extends Exception {
      * Return a meaningful string explaining the exception cause
      * @return the exception reason
      */
+    @Override
     public String getMessage() {
         return message;
     }
@@ -99,6 +100,7 @@ public class AnnotationProcessorException extends Exception {
     /**
      * @return a meaningful description
      */
+    @Override
     public String toString() {
         if (locator == null) {
             return message;

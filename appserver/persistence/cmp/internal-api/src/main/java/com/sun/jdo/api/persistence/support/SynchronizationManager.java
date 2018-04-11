@@ -145,6 +145,7 @@ public class SynchronizationManager implements Synchronization {
      * This method in turn calls each registered instance beforeCompletion 
      * method.
      */
+    @Override
     public void beforeCompletion() {
         int size = synchronizations.size();
         for (int i = 0; i < size; ++i) {
@@ -162,6 +163,7 @@ public class SynchronizationManager implements Synchronization {
      * transaction instance.
      * @param status the completion status of the transaction
      */    
+    @Override
     public void afterCompletion(int status) {
         int size = synchronizations.size();
         StringBuffer sb = null;

@@ -64,6 +64,7 @@ public class AgentFormatterDelegate implements FormatterDelegate {
         this.agent = agent;
     }
 
+    @Override
     public void format(StringBuilder buf, Level level) {
 
 

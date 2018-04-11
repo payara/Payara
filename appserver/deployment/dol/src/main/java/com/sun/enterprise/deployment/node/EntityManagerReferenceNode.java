@@ -79,6 +79,7 @@ public class EntityManagerReferenceNode extends DeploymentDescriptorNode {
      * @return the map with the element name as a key, the setter method as
      *         a value
      */    
+    @Override
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
@@ -93,6 +94,7 @@ public class EntityManagerReferenceNode extends DeploymentDescriptorNode {
      * @param element the xml element
      * @param value it's associated value
      */    
+    @Override
     public void setElementValue(XMLElement element, String value) {
         if (TagNames.PERSISTENCE_CONTEXT_TYPE.equals(element.getQName())) {
             EntityManagerReferenceDescriptor entityMgrReferenceDescriptor =

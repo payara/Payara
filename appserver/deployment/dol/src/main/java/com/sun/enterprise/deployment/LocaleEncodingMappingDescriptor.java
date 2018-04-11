@@ -95,6 +95,7 @@ public class LocaleEncodingMappingDescriptor extends Descriptor {
     /**
      * @return a string describing the values I hold
      */
+    @Override
     public void print(StringBuffer toStringBuffer) {
         toStringBuffer.append("\nProp : ").append(getLocale()).append("->").append(getEncoding());
     }

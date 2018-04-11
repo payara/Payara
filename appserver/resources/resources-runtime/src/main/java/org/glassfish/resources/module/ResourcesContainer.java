@@ -57,7 +57,7 @@ import java.util.logging.Logger;
 @Service(name = "org.glassfish.resources.module.ResourcesContainer")
 public class ResourcesContainer implements Container, PostConstruct, PreDestroy {
 
-    private final static Logger _logger = LogDomains.getLogger(ResourcesContainer.class, LogDomains.RSR_LOGGER);
+    private static final Logger _logger = LogDomains.getLogger(ResourcesContainer.class, LogDomains.RSR_LOGGER);
 
     @Override
     public void postConstruct() {

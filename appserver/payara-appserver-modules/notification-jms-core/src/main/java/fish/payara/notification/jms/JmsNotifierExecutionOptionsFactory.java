@@ -61,6 +61,7 @@ public class JmsNotifierExecutionOptionsFactory extends NotifierExecutionOptions
         register(NotifierType.JMS, this);
     }
 
+    @Override
     public NotifierExecutionOptions build(JmsNotifier notifier) {
         JmsNotifierExecutionOptions executionOptions = new JmsNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));

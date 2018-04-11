@@ -69,6 +69,7 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
     public JMSConnectionFactoryDefinitionHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
         JMSConnectionFactoryDefinition jmsConnectionFactoryDefnAn =

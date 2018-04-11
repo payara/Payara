@@ -82,14 +82,17 @@ public class TimeStatsNanosImpl extends TimeStatsAbstractImpl
         return getTime();
     }
 
+    @Override
     public String getUnit() {
         return this.UNIT;
     }
 
+    @Override
     public String getDescription() {
         return this.DESCRIPTION;
     }
 
+    @Override
     public String toString() {
         return "Statistic " + getClass().getName() + NEWLINE +
                 "Name: " + getName() + NEWLINE +

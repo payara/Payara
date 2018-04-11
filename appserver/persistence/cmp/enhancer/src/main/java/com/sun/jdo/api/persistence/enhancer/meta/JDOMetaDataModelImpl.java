@@ -86,6 +86,7 @@ public class JDOMetaDataModelImpl extends Support
     /**
      * Tests whether a class is known to be transient.
      */
+    @Override
     public boolean isTransientClass(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -102,6 +103,7 @@ public class JDOMetaDataModelImpl extends Support
     /**
      * Tests whether a class is known to be persistence-capable.
      */
+    @Override
     public boolean isPersistenceCapableClass(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -115,6 +117,7 @@ public class JDOMetaDataModelImpl extends Support
     /**
      * Tests whether a class is known as a persistence-capable root class.
      */
+    @Override
     public boolean isPersistenceCapableRootClass(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -128,6 +131,7 @@ public class JDOMetaDataModelImpl extends Support
     /**
      * Returns the name of the persistence-capable root class of a class.
      */
+    @Override
     public String getPersistenceCapableRootClass(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -141,6 +145,7 @@ public class JDOMetaDataModelImpl extends Support
      * @param classPath the JVM-qualified name of the class
      * @return the name of the superclass.
      */
+    @Override
     public String getSuperClass(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -151,6 +156,7 @@ public class JDOMetaDataModelImpl extends Support
     /**
      * Tests whether a type is known for Second Class Objects.
      */
+    @Override
     public boolean isSecondClassObjectType(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -161,6 +167,7 @@ public class JDOMetaDataModelImpl extends Support
     /**
      * Tests whether a type is known for Mutable Second Class Objects.
      */
+    @Override
     public boolean isMutableSecondClassObjectType(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -171,6 +178,7 @@ public class JDOMetaDataModelImpl extends Support
     /**
      * Tests whether a field of a class is known to be persistent.
      */
+    @Override
     public boolean isPersistentField(String classPath, String fieldName)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -181,6 +189,7 @@ public class JDOMetaDataModelImpl extends Support
     /**
      * Tests whether a field of a class is known to be transactional.
      */
+    @Override
     public boolean isTransactionalField(String classPath, String fieldName)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -191,6 +200,7 @@ public class JDOMetaDataModelImpl extends Support
     /**
      * Tests whether a field of a class is known to be Primary Key.
      */
+    @Override
     public boolean isPrimaryKeyField(String classPath, String fieldName)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -203,6 +213,7 @@ public class JDOMetaDataModelImpl extends Support
      * Default Fetch Group. Please note that for a relationship field, this
      * method always returns false.
      */
+    @Override
     public boolean isDefaultFetchGroupField(String classPath, String fieldName)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -231,6 +242,7 @@ public class JDOMetaDataModelImpl extends Support
      * Returns the unique field index of a declared, persistent field of a
      * class.
      */
+    @Override
     public int getFieldNo(String classPath, String fieldName)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
@@ -286,13 +298,14 @@ public class JDOMetaDataModelImpl extends Support
      * Returns an array of field names of all declared persistent and
      * transactional fields of a class.
      */
+    @Override
     public String[] getManagedFields(String classPath)
         throws JDOMetaDataUserException, JDOMetaDataFatalError
     {
         return getPersistentFields(classPath);
     }
 
-    static protected String pathToName(String classPath) {
+    protected static String pathToName(String classPath) {
         if (classPath != null) {
             return classPath.replace('/', '.');
         } else {
@@ -300,7 +313,7 @@ public class JDOMetaDataModelImpl extends Support
         }
     }
 
-    static protected String nameToPath(String className) {
+    protected static String nameToPath(String className) {
         if (className != null) {
             return className.replace('.', '/');
         } else {

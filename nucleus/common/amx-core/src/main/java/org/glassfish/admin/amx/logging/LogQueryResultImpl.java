@@ -85,12 +85,14 @@ public final class LogQueryResultImpl
         }
     }
     
+    @Override
         public String[]
     getFieldNames()
     {
         return mFieldNames;
     }
     
+    @Override
         public LogQueryEntry[]
     getEntries()
     {
@@ -103,6 +105,7 @@ public final class LogQueryResultImpl
         Output a tab-delimited String with a header line. Each
         subsequent line represents another log record.
      */
+    @Override
         public String
     toString()
     {
@@ -129,12 +132,14 @@ public final class LogQueryResultImpl
         return builder.toString();
     }
     
+    @Override
  	    public int
  	hashCode()
  	{
  	    return ObjectUtil.hashCode( getFieldNames(), getEntries() );
  	}
     
+    @Override
         public boolean
     equals( final Object rhs )
     {

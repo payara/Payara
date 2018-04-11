@@ -74,8 +74,8 @@ public class ToolsImpl extends AMXImplBase // implements Tools
         }
         return null;
     }
-    static private final String WILD_SUFFIX = ",*";
-    static private final String WILD_ALL = "*";
+    private static final String WILD_SUFFIX = ",*";
+    private static final String WILD_ALL = "*";
 
     public String getInfo() {
         return info("*");

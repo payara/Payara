@@ -92,9 +92,10 @@ public final class DeleteConfigCommand implements AdminCommand {
     Domain domain;
 
 
-    final private static LocalStringManagerImpl localStrings =
+    private final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteConfigCommand.class);
 
+    @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);

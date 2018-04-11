@@ -77,10 +77,12 @@ public class GrizzlyApp implements ApplicationContainer {
         this.cl = cl;
     }
 
+    @Override
     public Object getDescriptor() {
         return null;
     }
 
+    @Override
     public boolean start(ApplicationContext startupContext) throws Exception {
         for (Adapter module : modules) {
             dispatcher.registerEndpoint(module.contextRoot, module.service, this);
@@ -88,6 +90,7 @@ public class GrizzlyApp implements ApplicationContainer {
         return true;
     }
 
+    @Override
     public boolean stop(ApplicationContext stopContext) {
         boolean success = true;
         for (Adapter module : modules) {
@@ -102,14 +105,17 @@ public class GrizzlyApp implements ApplicationContainer {
         return success;
     }
 
+    @Override
     public boolean suspend() {
         return false;
     }
 
+    @Override
     public boolean resume() throws Exception {
         return false;
     }
 
+    @Override
     public ClassLoader getClassLoader() {
         return cl;
     }

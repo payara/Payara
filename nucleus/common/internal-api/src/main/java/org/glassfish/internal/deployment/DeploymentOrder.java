@@ -86,6 +86,7 @@ public class DeploymentOrder {
    * deployment types).
    */
   public final static Comparator APPLICATION_COMPARATOR = new Comparator() {
+    @Override
     public int compare(Object o1, Object o2) {
       if (o1 == o2) {
         return 0;

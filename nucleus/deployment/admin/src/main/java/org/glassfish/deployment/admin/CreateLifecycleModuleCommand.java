@@ -142,7 +142,7 @@ public class CreateLifecycleModuleCommand implements AdminCommand, AdminCommandS
     @Inject
     Applications apps;
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateLifecycleModuleCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateLifecycleModuleCommand.class);
 
     @Override
     public Collection<? extends AccessCheck> getAccessChecks() {
@@ -161,6 +161,7 @@ public class CreateLifecycleModuleCommand implements AdminCommand, AdminCommandS
     }
    
     
+    @Override
     public void execute(AdminCommandContext context) {
         
         ActionReport report = context.getActionReport();

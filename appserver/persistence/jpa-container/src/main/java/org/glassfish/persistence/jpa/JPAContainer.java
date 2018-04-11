@@ -46,10 +46,12 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name = "org.glassfish.persistence.jpa.JPAContainer")
 public class JPAContainer implements org.glassfish.api.container.Container {
 
+    @Override
     public Class<? extends Deployer> getDeployer() {
         return JPADeployer.class;
     }
 
+    @Override
     public String getName() {
         return "JPA";
     }

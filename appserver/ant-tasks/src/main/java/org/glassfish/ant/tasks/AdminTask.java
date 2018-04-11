@@ -105,6 +105,7 @@ public class AdminTask extends Task {
         return installDir;
     }
 
+    @Override
     public void execute() throws BuildException {
         execute(this.command);
     }

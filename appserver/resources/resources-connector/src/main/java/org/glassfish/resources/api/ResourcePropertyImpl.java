@@ -60,22 +60,27 @@ public class ResourcePropertyImpl implements ResourceProperty,
         value_ = value;
     }
 
+    @Override
     public String getName() {
         return name_;
     }
 
+    @Override
     public Object getValue() {
         return value_;
     }
 
+    @Override
     public void setValue(Object value) {
         value_ = value;
     }
 
+    @Override
     public int hashCode() {
         return name_.hashCode();
     }
 
+    @Override
     public boolean equals(Object other) {
         boolean equal = false;
         if( other instanceof ResourceProperty ) {
@@ -85,6 +90,7 @@ public class ResourcePropertyImpl implements ResourceProperty,
         return equal;
     }
 
+    @Override
     public String toString() {
         return "ResourceProperty : < " + getName() + " , " + getValue() +
             " >";

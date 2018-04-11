@@ -210,6 +210,7 @@ public final class QueryDescriptor extends Descriptor {
         return returnTypeMapping;
     }
     
+    @Override
     public void print(StringBuffer toStringBuffer) {
         toStringBuffer.append("Query ");
         if(getQueryMethodDescriptor()  != null)

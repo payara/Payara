@@ -117,7 +117,7 @@ import org.jvnet.hk2.config.ConfigListener;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class CreateMessageSecurityProvider implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(CreateMessageSecurityProvider.class);    
     
     private static final String SERVER = "server";
@@ -191,6 +191,7 @@ public class CreateMessageSecurityProvider implements AdminCommand, AdminCommand
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
@@ -226,6 +227,7 @@ public class CreateMessageSecurityProvider implements AdminCommand, AdminCommand
             // No duplicate message security providers found. So add one.
             try {
                 ConfigSupport.apply(new SingleConfigCode<MessageSecurityConfig>() {
+                    @Override
                     public Object run(MessageSecurityConfig param) 
                     throws PropertyVetoException, TransactionFailure {                        
                         ProviderConfig newPC = param.createChild(ProviderConfig.class);
@@ -269,6 +271,7 @@ public class CreateMessageSecurityProvider implements AdminCommand, AdminCommand
         else {
             try {
                 ConfigSupport.apply(new SingleConfigCode<SecurityService>() {
+                    @Override
                     public Object run(SecurityService param) 
                     throws PropertyVetoException, TransactionFailure {                        
                         MessageSecurityConfig newMSC = param.createChild(MessageSecurityConfig.class);

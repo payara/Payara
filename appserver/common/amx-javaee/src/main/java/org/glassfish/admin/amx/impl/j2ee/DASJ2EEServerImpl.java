@@ -80,7 +80,7 @@ public class DASJ2EEServerImpl extends J2EEServerImpl
     }
     
     /*
-    static private final Class[]	DOMAIN_STATUS_INTERFACES	=
+    private static final Class[]	DOMAIN_STATUS_INTERFACES	=
     new Class[] { DomainStatusMBean.class };
 
     protected DomainStatusMBean
@@ -124,13 +124,16 @@ public class DASJ2EEServerImpl extends J2EEServerImpl
         }
     }
 
+    @Override
     public void handleNotification(final Notification notif, final Object ignore) {
     }
 
+    @Override
     protected String getServerName() {
         return Util.getNameProp(getObjectName());
     }
 
+    @Override
     public boolean isstateManageable() {
         return false;
     }
@@ -169,6 +172,7 @@ public class DASJ2EEServerImpl extends J2EEServerImpl
     return state;
     }
      */
+    @Override
     public int getstate() {
         int state = STATE_STOPPED;
         try {
@@ -183,6 +187,7 @@ public class DASJ2EEServerImpl extends J2EEServerImpl
         return state;
     }
 
+    @Override
     public void start() {
         if (remoteServerIsStartable()) {
             startRemoteServer();
@@ -191,6 +196,7 @@ public class DASJ2EEServerImpl extends J2EEServerImpl
         }
     }
 
+    @Override
     public void startRecursive() {
         start();
     }
@@ -204,6 +210,7 @@ public class DASJ2EEServerImpl extends J2EEServerImpl
         return DAS_SERVER_NAME.equals(getName());
     }
 
+    @Override
     public void stop() {
         if (isDASJ2EEServer()) {
             //getDelegate().invoke( "stop", (Object[])null, (String[])null);

@@ -103,6 +103,7 @@ public class SynchronizeFiles implements AdminCommand {
     private final static LocalStringManagerImpl strings =
         new LocalStringManagerImpl(SynchronizeFiles.class);
 
+    @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         logger = context.getLogger();

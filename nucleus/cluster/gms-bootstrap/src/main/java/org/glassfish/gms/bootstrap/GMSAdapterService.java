@@ -136,11 +136,11 @@ public class GMSAdapterService implements PostConstruct, ConfigListener {
     @Inject
     private Provider<GMSAdapter> gmsAdapterProvider;
     
-    static private final Object lock = new Object();
+    private static final Object lock = new Object();
 
     List<GMSAdapter> gmsAdapters = new LinkedList<GMSAdapter>();
 
-    final static private Level TRACE_LEVEL = LogLevel.FINE;
+    final private static Level TRACE_LEVEL = LogLevel.FINE;
 
     /**
      * Starts the application loader service.

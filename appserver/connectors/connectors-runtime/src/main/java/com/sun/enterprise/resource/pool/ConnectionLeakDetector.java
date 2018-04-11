@@ -72,8 +72,8 @@ public class ConnectionLeakDetector {
     //Lock on HashMap to trace connection leaks
     private final Object connectionLeakLock;
 
-    private final static Logger _logger = LogDomains.getLogger(ConnectionLeakDetector.class, LogDomains.RSR_LOGGER);
-    private final static StringManager localStrings =
+    private static final Logger _logger = LogDomains.getLogger(ConnectionLeakDetector.class, LogDomains.RSR_LOGGER);
+    private static final StringManager localStrings =
             StringManager.getManager(ConnectionPool.class);
 
 
@@ -221,6 +221,7 @@ public class ConnectionLeakDetector {
             this.resourceHandle = resourceHandle;
         }
 
+        @Override
         public void run() {
             potentialConnectionLeakFound(resourceHandle);
         }

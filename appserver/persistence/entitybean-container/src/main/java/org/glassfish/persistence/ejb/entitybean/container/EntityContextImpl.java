@@ -154,6 +154,7 @@ public class EntityContextImpl
     /**
      * Implementation of EntityContext method.
      */
+    @Override
     public Object getPrimaryKey() throws IllegalStateException {
         if ( ejbObjectImpl == null && ejbLocalObjectImpl == null ) {
             // There is no ejbObjectImpl/localObject in ejbCreate, ejbFind,
@@ -167,6 +168,7 @@ public class EntityContextImpl
     /**
      * Implementation of EntityContext method, overrides EJBContextImpl method.
      */
+    @Override
     public EJBObject getEJBObject()
         throws IllegalStateException
     {
@@ -182,6 +184,7 @@ public class EntityContextImpl
         return ejbStub;
     }
 
+    @Override
     public TimerService getTimerService() throws IllegalStateException {
         if( state == BeanState.CREATED || inUnsetEntityContext || inFinder() ) {
             throw new IllegalStateException("Operation not allowed");
@@ -191,6 +194,7 @@ public class EntityContextImpl
         return new EJBTimerServiceWrapper(timerService, (EntityContext) this);
     }
     
+    @Override
     protected void checkAccessToCallerSecurity()
         throws IllegalStateException
     {
@@ -208,6 +212,7 @@ public class EntityContextImpl
         }
     }
     
+    @Override
     public void checkTimerServiceMethodAccess()
         throws IllegalStateException
     {
@@ -228,6 +233,7 @@ public class EntityContextImpl
         return cascadeDeleteAfterSuperEJBRemove;
     }
 
+    @Override
     public final void setCascadeDeleteAfterSuperEJBRemove(boolean value) {
         this.cascadeDeleteAfterSuperEJBRemove = value;
     }

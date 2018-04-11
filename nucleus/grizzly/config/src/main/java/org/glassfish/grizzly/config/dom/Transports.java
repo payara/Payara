@@ -63,6 +63,7 @@ public interface Transports extends ConfigBeanProxy, PropertyBag {
     List<Transport> getTransport();
 
     @DuckTyped
+    @Override
     NetworkConfig getParent();
     
     class Duck {

@@ -236,6 +236,7 @@ public class GlobalTID extends Object {
      *
      * @see
      */
+    @Override
     public final boolean equals( Object other ) {
         return isSameTIDInternal(other);
     }
@@ -298,6 +299,7 @@ public class GlobalTID extends Object {
      * @see
      */
 
+    @Override
     public final int hashCode() {
 
         // If the hash code has already been calculated, then return the value.
@@ -428,6 +430,7 @@ public class GlobalTID extends Object {
      * @see
      */
 
+    @Override
     public final String toString() {
 
         // Return a string for the null transaction id.
