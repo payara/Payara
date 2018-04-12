@@ -135,9 +135,9 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
             cl = getClassLoaderForEnvironment(compEnvMgr.getJndiNameEnvironment(componentId));
         }
         if (cl != null) {
-            return new ContextImpl.ClassLoaderContext(Utility.setContextClassLoader(cl));
+            return new ContextImpl.ClassLoaderContext(Utility.setContextClassLoader(cl), true);
         }
-        return new ContextImpl.ClassLoaderContext(null);
+        return new ContextImpl.ClassLoaderContext(null, false);
     }
 
     @Override
