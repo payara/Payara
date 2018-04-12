@@ -180,7 +180,6 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.10.3</version>
                     <configuration>
                         <failOnError>false</failOnError>
                         <additionalparam>${javadoc.options}</additionalparam>
@@ -226,7 +225,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>${maven.compiler.plugin.version}</version>
                         <configuration>
                             <useIncrementalCompilation>false</useIncrementalCompilation>
                             <showWarnings>true</showWarnings>
