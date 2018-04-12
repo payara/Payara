@@ -513,7 +513,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     protected static final int CONTAINER_UNDEPLOYED = 3;
     protected static final int CONTAINER_ON_HOLD = 4;
     
-    protected int containerState = CONTAINER_INITIALIZING;
+    protected volatile int containerState = CONTAINER_INITIALIZING;
     
     protected HashMap			    methodMonitorMap;
     protected boolean			    monitorOn = false;
@@ -592,7 +592,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     protected EJBContainerStateManager containerStateManager;
     protected EJBContainerTransactionManager containerTransactionManager;
     
-    private JCDIService jcdiService;
+    protected JCDIService jcdiService;
 
     /**
      * This constructor is called from ContainerFactoryImpl when an
@@ -625,12 +625,12 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
             isBeanManagedTran = ejbDescriptor.getTransactionType().equals("Bean");
 
-            if( ejbDescriptor instanceof EjbSessionDescriptor) 
+            if ( ejbDescriptor instanceof EjbSessionDescriptor)
             {
                 isSession = true;
                 EjbSessionDescriptor sd = (EjbSessionDescriptor) ejbDescriptor;
     
-                if( !sd.isSessionTypeSet() ) {
+                if ( !sd.isSessionTypeSet() ) {
                     throw new RuntimeException(localStrings.getLocalString(
                             "ejb.session_type_not_set", 
                             "Invalid ejb Descriptor. Session type not set for {0}: {1}",
@@ -643,7 +643,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                     isStatelessSession = sd.isStateless();
                     isStatefulSession  = !isStatelessSession;
   
-                    if( isStatefulSession ) {
+                    if ( isStatefulSession ) {
  
                         /**
                          * If bean class isn't explicitly marked Serializable, generate
@@ -651,7 +651,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                          * ASM directly instead of the CORBA codegen library since none
                          * of the corba .jars are part of the Web Profile.
                          */
-                        if( !Serializable.class.isAssignableFrom(ejbClass) ) {
+                        if ( !Serializable.class.isAssignableFrom(ejbClass) ) {
 
                             sfsbSerializedClass = EJBUtils.loadGeneratedSerializableClass(ejbClass.getClassLoader(),
                                     ejbClass.getName());
@@ -688,7 +688,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
             }
                 
-            if( ejbDescriptor.isRemoteBusinessInterfacesSupported() ) {
+            if ( ejbDescriptor.isRemoteBusinessInterfacesSupported() ) {
                     
                 isRemote = true;
                 hasRemoteBusinessView = true;
@@ -740,7 +740,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 localIntf = loader.loadClass (ejbDescriptor.getLocalClassName());
             }
 
-            if( ejbDescriptor.isLocalBusinessInterfacesSupported() ) {
+            if ( ejbDescriptor.isLocalBusinessInterfacesSupported() ) {
                 isLocal = true;
                 hasLocalBusinessView = true;
 
@@ -753,7 +753,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 }
             }
 
-            if( ejbDescriptor.isLocalBean() ) {
+            if ( ejbDescriptor.isLocalBean() ) {
                 isLocal = true;
                 hasOptionalLocalBusinessView = true;
 
@@ -767,13 +767,13 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 ejbGeneratedOptionalLocalBusinessIntfClass = optIntfClassLoader.loadClass(optIntfClassName);
             }
 
-            if( isStatelessSession || isSingleton ) {
+            if ( isStatelessSession || isSingleton ) {
                 EjbBundleDescriptorImpl bundle = ejbDescriptor.getEjbBundleDescriptor();
                 WebServicesDescriptor webServices = bundle.getWebServices();
                 Collection endpoints = webServices.getEndpointsImplementedBy(ejbDescriptor);
                 // JSR 109 doesn't require support for a single ejb
                 // implementing multiple port ex.
-                if( endpoints.size() == 1 ) {
+                if ( endpoints.size() == 1 ) {
 
                     assertFullProfile("is a Web Service Endpoint");
 
@@ -818,7 +818,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                                 ejbClass.getName(), schd.getTimeoutMethod().getFormattedString()));
                     }
 
-                    if( _logger.isLoggable(Level.FINE) ) {
+                    if ( _logger.isLoggable(Level.FINE) ) {
 	                _logger.log(Level.FINE, "... processing " + method );
                     }
                     processEjbTimeoutMethod(method);
@@ -853,7 +853,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             
             initializeEjbInterfaceMethods();
 
-            if( needSystemInterceptorProxy() ) {
+            if ( needSystemInterceptorProxy() ) {
                 addSystemInterceptorProxy();
             }
 
@@ -947,7 +947,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
     public final void setStartedState() {
 
-        if( containerState == CONTAINER_STARTED ) {
+        if ( containerState == CONTAINER_STARTED ) {
             return;
         }
 
@@ -980,7 +980,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     }
 
     private void setInterceptorChain(InvocationInfo info) {
-        if( info.aroundMethod != null ) {
+        if ( info.aroundMethod != null ) {
             if (info.isEjbTimeout) {
                 MethodDescriptor md = new MethodDescriptor(info.aroundMethod, MethodDescriptor.TIMER_METHOD);
                 info.interceptorChain =
@@ -1142,7 +1142,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             currentThread.getContextClassLoader();
         final ClassLoader myClassLoader = loader;
 	try {
-            if(System.getSecurityManager() == null) {
+            if (System.getSecurityManager() == null) {
                 currentThread.setContextClassLoader(myClassLoader);
             } else {
                 java.security.AccessController.doPrivileged(
@@ -1154,7 +1154,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 });
             }
             java.rmi.Remote remoteRef = null;
-            if( generatedRemoteBusinessIntf == null ) {
+            if ( generatedRemoteBusinessIntf == null ) {
                 remoteRef = remoteHomeRefFactory.createRemoteReference
                     (instanceKey);
             } else {
@@ -1167,7 +1167,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             }
             return remoteRef;
         } finally {
-            if(System.getSecurityManager() == null) {
+            if (System.getSecurityManager() == null) {
                 currentThread.setContextClassLoader(previousClassLoader);
             } else {
                 java.security.AccessController.doPrivileged(
@@ -1183,7 +1183,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
 
     private void assertFullProfile(String description) {
-        if( ejbContainerUtilImpl.isEJBLite() ) {
+        if ( ejbContainerUtilImpl.isEJBLite() ) {
             throw new RuntimeException(localStrings.getLocalString(
                     "ejb.assert_full_profile", 
                     "Invalid application.  EJB {0} {1}. This feature is not part of the EJB 3.1 Lite API",
@@ -1192,7 +1192,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     }
 
     private void warnIfNotFullProfile(String description) {
-        if( ejbContainerUtilImpl.isEJBLite() ) {
+        if ( ejbContainerUtilImpl.isEJBLite() ) {
             _logger.log(Level.WARNING, WARN_FEATURE_REQUIRES_FULL_PROFILE, description);
         }
     }
@@ -1205,7 +1205,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         throws Exception
     {
 
-        if( isWebServiceEndpoint ) {
+        if ( isWebServiceEndpoint ) {
 
             EjbBundleDescriptorImpl bundle =
                 ejbDescriptor.getEjbBundleDescriptor();
@@ -1274,7 +1274,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         if (isRemote) {
             boolean disableNonPortableJndiName = false;
             Boolean disableInDD = ejbDescriptor.getEjbBundleDescriptor().getDisableNonportableJndiNames();
-            if(disableInDD != null) {  // explicitly set in glassfish-ejb-jar.xml
+            if (disableInDD != null) {  // explicitly set in glassfish-ejb-jar.xml
                 disableNonPortableJndiName = disableInDD;
             } else {
                 String disableInServer = ejbContainerUtilImpl.getEjbContainer().
@@ -1299,7 +1299,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 }
             }
             
-            if( hasRemoteHomeView ) {
+            if ( hasRemoteHomeView ) {
                 this.ejbHomeImpl = instantiateEJBHomeImpl();
                 this.ejbHome = ejbHomeImpl.getEJBHome();           
 
@@ -1349,7 +1349,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 // If there's a glassfish-specific JNDI name, any 2.x Home object is always
                 // regsitered under that name.  This preserves backward compatibility since
                 // this was the original use of the jndi name.
-                if( glassfishSpecificJndiName != null ) {
+                if ( glassfishSpecificJndiName != null ) {
 
                     JndiInfo jndiInfo = JndiInfo.newNonPortableRemote(glassfishSpecificJndiName, ejbHomeStub);
                     jndiInfoMap.put(jndiInfo.name, jndiInfo);
@@ -1358,7 +1358,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             }
 
             
-            if( hasRemoteBusinessView ) {
+            if ( hasRemoteBusinessView ) {
                 this.ejbRemoteBusinessHomeImpl = 
                     instantiateEJBRemoteBusinessHomeImpl();
 
@@ -1389,7 +1389,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                     // associated with one of the remote business interfaces.
                     // It doesn't matter which remote reference factory is
                     // selected, so just do it the first time through the loop.
-                    if( ejbRemoteBusinessHomeStub == null ) {
+                    if ( ejbRemoteBusinessHomeStub == null ) {
                         ejbRemoteBusinessHomeStub = (EJBHome) next.referenceFactory.
                             createHomeReference(homeInstanceKey);
                     }
@@ -1403,7 +1403,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 // glassfish-specific remote business JNDI names
                 String remoteBusinessHomeJndiName = null;
 
-                if( glassfishSpecificJndiName != null ) {
+                if ( glassfishSpecificJndiName != null ) {
 
                     remoteBusinessHomeJndiName =
                         EJBUtils.getRemote30HomeJndiName(glassfishSpecificJndiName);
@@ -1418,7 +1418,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 // interfaces.
                 String simpleRemoteBusinessJndiName = null;
 
-                if( (glassfishSpecificJndiName != null) && !hasRemoteHomeView &&
+                if ( (glassfishSpecificJndiName != null) && !hasRemoteHomeView &&
                         remoteBusinessIntfInfo.size() == 1) {
 
                     simpleRemoteBusinessJndiName = glassfishSpecificJndiName;
@@ -1440,7 +1440,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                         
                     getProtocolManager().validateTargetObjectInterfaces(dummyEJBObject);
 
-                    if( glassfishSpecificJndiName != null ) {
+                    if ( glassfishSpecificJndiName != null ) {
 
                         next.jndiName = EJBUtils.getRemoteEjbJndiName
                             (true, next.remoteBusinessIntf.getName(), glassfishSpecificJndiName);
@@ -1455,7 +1455,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                         jndiInfoMap.put(jndiInfo.name, jndiInfo);
                     }
 
-                    if( simpleRemoteBusinessJndiName != null ) {
+                    if ( simpleRemoteBusinessJndiName != null ) {
 
                         Reference remoteBusRef = new Reference
                             (next.remoteBusinessIntf.getName(),
@@ -1479,7 +1479,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 }
 
 
-                if( remoteBusinessHomeJndiName != null ) {
+                if ( remoteBusinessHomeJndiName != null ) {
                     // Glassfish-specific JNDI name for internal generated
                     // home object used by container
                     JndiInfo jndiInfo = JndiInfo.newNonPortableRemote
@@ -1497,7 +1497,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
                 // If there isn't any jndi name from the descriptor, set one so the
                 // lookup logic that depends on ejbDescriptor.getJndiName() will work.
-                if( glassfishSpecificJndiName == null ) {
+                if ( glassfishSpecificJndiName == null ) {
                     ejbDescriptor.setJndiName(javaGlobalName);
                 }
             }
@@ -1505,7 +1505,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
         if (isLocal) {
 
-            if( hasLocalHomeView ) {
+            if ( hasLocalHomeView ) {
                 this.ejbLocalHomeImpl = instantiateEJBLocalHomeImpl();
                 this.ejbLocalHome = ejbLocalHomeImpl.getEJBLocalHome();
 
@@ -1528,7 +1528,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 intfsForPortableJndi.put(localHomeIntf.getName(), namingProxy);
             }
 
-            if( hasLocalBusinessView ) {
+            if ( hasLocalBusinessView ) {
                 ejbLocalBusinessHomeImpl =
                     instantiateEJBLocalBusinessHomeImpl();
                 ejbLocalBusinessHome = (GenericEJBLocalHome)
@@ -1557,7 +1557,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
             }
 
-            if(hasOptionalLocalBusinessView) {
+            if (hasOptionalLocalBusinessView) {
                 EJBLocalHomeImpl obj = instantiateEJBOptionalLocalBusinessHomeImpl();
                 ejbOptionalLocalBusinessHomeImpl = (EJBLocalHomeImpl) obj;
 
@@ -1620,11 +1620,11 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             try {
                 jndiInfo.publish(this.namingManager);
 
-                if( jndiInfo.internal ) {
+                if ( jndiInfo.internal ) {
                     publishedInternalGlobalJndiNames.add(jndiInfo.name);
                 } else {
 
-                    if( jndiInfo.portable ) {
+                    if ( jndiInfo.portable ) {
                         publishedPortableGlobalJndiNames.add(jndiInfo.name);
                     }  else {
                         publishedNonPortableGlobalJndiNames.add(jndiInfo.name);
@@ -1638,15 +1638,15 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             }
         }
 
-        if( !publishedPortableGlobalJndiNames.isEmpty() ) {
+        if ( !publishedPortableGlobalJndiNames.isEmpty() ) {
             _logger.log(Level.INFO, PORTABLE_JNDI_NAMES, new Object[]{this.ejbDescriptor.getName(), publishedPortableGlobalJndiNames});
         }
 
-        if( !publishedNonPortableGlobalJndiNames.isEmpty() ) {
+        if ( !publishedNonPortableGlobalJndiNames.isEmpty() ) {
             _logger.log(Level.INFO, GLASSFISH_SPECIFIC_JNDI_NAMES, new Object[]{this.ejbDescriptor.getName(), publishedNonPortableGlobalJndiNames});
         }
 
-        if( !publishedInternalGlobalJndiNames.isEmpty() ) {
+        if ( !publishedInternalGlobalJndiNames.isEmpty() ) {
             _logger.log(Level.FINE, "Internal container JNDI names for EJB {0}: {1}", new Object[]{this.ejbDescriptor.getName(), publishedInternalGlobalJndiNames});
         }
         
@@ -1694,9 +1694,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     }
 
     protected EJBContextImpl createEjbInstanceAndContext() throws Exception {
-        EjbBundleDescriptorImpl ejbBundle = ejbDescriptor.getEjbBundleDescriptor();
-
-        JCDIService.JCDIInjectionContext<Object> jcdiCtx = null;
+        JCDIService.JCDIInjectionContext<?> jcdiCtx = null;
         Object instance = null;
 
         EJBContextImpl ctx = _constructEJBContextImpl(null);
@@ -1705,15 +1703,14 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         try {
             ejbInv = createEjbInvocation(null, ctx);
             invocationManager.preInvoke(ejbInv);
-            
-            if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle) && this.ejbClass.getAnnotation(Vetoed.class) == null) {
+
+            if (isJCDIEnabled()) {
                 jcdiCtx = jcdiService.createJCDIInjectionContext(ejbDescriptor);
-                if(jcdiCtx == null) {
+                if (jcdiCtx != null) {
+                    instance = jcdiCtx.getInstance();
+                } else {
                     jcdiService = null;
                 }
-            }
-            if(jcdiCtx != null) {
-                instance = jcdiCtx.getInstance();
             } else {
                 injectEjbInstance(ctx);
                 intercept(CallbackType.AROUND_CONSTRUCT, ctx);
@@ -1747,6 +1744,18 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         return contextImpl;
     }
 
+    protected boolean isJCDIEnabled() {
+        return jcdiService != null && jcdiService.isJCDIEnabled(ejbDescriptor.getEjbBundleDescriptor()) && (this.ejbClass.getAnnotation(Vetoed.class) == null);
+    }
+
+    protected JCDIService.JCDIInjectionContext<?> _createJCDIInjectionContext(AbstractSessionContextImpl sessionContext, Object ejb) {
+        JCDIService.JCDIInjectionContext<?> context = jcdiService.createJCDIInjectionContext(ejbDescriptor, ejb);
+        if (context == null) {
+            jcdiService = null;
+        }
+        return context;
+    }
+
     protected EJBContextImpl _constructEJBContextImpl(Object instance) {
 	// Overridden for any container that supports injection
 	throw new IllegalStateException();
@@ -1757,13 +1766,10 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     }
 
     protected void injectEjbInstance(EJBContextImpl context) throws Exception {
-
-        EjbBundleDescriptorImpl ejbBundle = ejbDescriptor.getEjbBundleDescriptor();
-
         Object[] interceptorInstances = null;
 
-        if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle) && this.ejbClass.getAnnotation(Vetoed.class) == null) {
-	    jcdiService.injectEJBInstance(context.getJCDIInjectionContext());
+        if (isJCDIEnabled()) {
+            jcdiService.injectEJBInstance(context.getJCDIInjectionContext());
             Class[] interceptorClasses = interceptorManager.getInterceptorClasses();
             interceptorInstances = new Object[interceptorClasses.length];
 
@@ -1790,7 +1796,6 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         }
 
         context.setInterceptorInstances(interceptorInstances);
-
     }
 
     protected void cleanupInstance(EJBContextImpl context) {
@@ -1822,16 +1827,16 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             EJBObjectImpl ejbObjectImpl  = null;
 
 
-            if( remoteHomeView ) {
+            if ( remoteHomeView ) {
                 ejbObjectImpl = getEJBObjectImpl(instanceKey);
                 // In rare cases for sfsbs and entity beans, this can be null.
-                if( ejbObjectImpl != null ) {
+                if ( ejbObjectImpl != null ) {
                     targetObject = ejbObjectImpl.getEJBObject();
                 }
             } else {
                 ejbObjectImpl = getEJBRemoteBusinessObjectImpl(instanceKey);
                 // In rare cases for sfsbs and entity beans, this can be null.
-                if( ejbObjectImpl != null ) {
+                if ( ejbObjectImpl != null ) {
                     targetObject = ejbObjectImpl.
                         getEJBObject(generatedRemoteBusinessIntf);
                 }
@@ -1937,7 +1942,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
      */
     public void preInvoke(EjbInvocation inv) {
 
-        if( _logger.isLoggable(Level.FINE) ) {
+        if ( _logger.isLoggable(Level.FINE) ) {
             _logger.log(Level.FINE, "Entering BaseContainer::preInvoke : " + inv);
         }
 
@@ -1949,15 +1954,15 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                         containerStateToString(containerState)));
             }
             
-            if( inv.method == null ) {
+            if ( inv.method == null ) {
                 throw new EJBException(localStrings.getLocalString(
                         "ejb.null_invocation_method", 
                         "Attempt to invoke container with null invocation method"));
             }
 
-            if( inv.invocationInfo == null ) {
+            if ( inv.invocationInfo == null ) {
                 inv.invocationInfo = getInvocationInfo(inv);
-                if( inv.invocationInfo == null ) {
+                if ( inv.invocationInfo == null ) {
                     throw new EJBException(localStrings.getLocalString(
                         "ejb.null_invocation_info", 
                         "EjbInvocation Info lookup failed for method {0}", inv.method));
@@ -2085,7 +2090,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             }
             
             try {
-                if( doTxProcessing ) {
+                if ( doTxProcessing ) {
                     postInvokeTx(inv);
                 }
             } catch (Exception ex) {
@@ -2111,7 +2116,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             // Log system exceptions by default and application exceptions only
             // when log level is FINE or higher.
 
-            if( isSystemUncheckedException(inv.exception) ) {
+            if ( isSystemUncheckedException(inv.exception) ) {
                 _logger.log(Level.WARNING, SYSTEM_EXCEPTION, new Object[]{ejbDescriptor.getName(), inv.beanMethod});
                 _logger.log(Level.WARNING, "", inv.exception);
             } else {
@@ -2121,7 +2126,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             
             if ( inv.isRemote ) {
 
-                if( protocolMgr != null ) {
+                if ( protocolMgr != null ) {
                     // For remote business case, exception mapping is performed
                     // in client wrapper.
                     // TODO need extra logic to handle implementation-specific ejb exceptions
@@ -2136,7 +2141,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
             } else {
 
-                if( inv.isBusinessInterface ) {
+                if ( inv.isBusinessInterface ) {
                     inv.exception = 
                         mapLocal3xException(inv.exception);
                 }
@@ -2154,7 +2159,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         }
         */
 
-        if( _logger.isLoggable(Level.FINE) ) {
+        if ( _logger.isLoggable(Level.FINE) ) {
             _logger.log(Level.FINE, "Leaving BaseContainer::postInvoke : " + inv);
         }
     }
@@ -2223,7 +2228,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             if (m.getName().equals(ts.getTimerMethodName()) &&
                     m.getParameterTypes().length == ts.getMethodParamCount()) {
                 scheduleIds.put(timerId, m);
-                if( _logger.isLoggable(Level.FINE) ) {
+                if ( _logger.isLoggable(Level.FINE) ) {
                     _logger.log(Level.FINE, "Adding schedule: " +
                             ts.getScheduleAsString() + " FOR method: " + m);
                 }
@@ -2236,7 +2241,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
      */
     private void processEjbTimeoutMethod(Method method) throws Exception {
         Class[] params = method.getParameterTypes();
-        if( (params.length == 0 || 
+        if ( (params.length == 0 ||
             (params.length == 1 && params[0] == javax.ejb.Timer.class)) &&
             (method.getReturnType() == Void.TYPE) ) {
             
@@ -2245,15 +2250,15 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             final Method ejbTimeoutAccessible = method;
             // Since timeout method can have any kind of access
             // setAccessible to true.
-            if(System.getSecurityManager() == null) {
-                if( !ejbTimeoutAccessible.isAccessible() ) {
+            if (System.getSecurityManager() == null) {
+                if ( !ejbTimeoutAccessible.isAccessible() ) {
                     ejbTimeoutAccessible.setAccessible(true);
                 }
             } else {
                 java.security.AccessController.doPrivileged(
                         new java.security.PrivilegedExceptionAction() {
                     public java.lang.Object run() throws Exception {
-                        if( !ejbTimeoutAccessible.isAccessible() ) {
+                        if ( !ejbTimeoutAccessible.isAccessible() ) {
                             ejbTimeoutAccessible.setAccessible(true);
                         }
                         return null;
@@ -2290,15 +2295,15 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         // flow over the wire as a remote exception from the orb's perspective.
         // If it's asychronous we know it's a remote business interface, not the
         // 2.x client view.
-        if( inv.invocationInfo.isAsynchronous() ) {
+        if ( inv.invocationInfo.isAsynchronous() ) {
 
 
-            if( java.rmi.Remote.class.isAssignableFrom(inv.clientInterface) ) {
+            if ( java.rmi.Remote.class.isAssignableFrom(inv.clientInterface) ) {
                 mappedException = protocolMgr.mapException(originalException);
 
-                if( mappedException == originalException) {
+                if ( mappedException == originalException) {
 
-                    if( originalException instanceof EJBException ) {
+                    if ( originalException instanceof EJBException ) {
                         mappedException = new RemoteException
                              (originalException.getMessage(),originalException);
                     }
@@ -2318,20 +2323,20 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             mappedException = protocolMgr.mapException(originalException);
 
             // If no mapping happened
-            if( mappedException == originalException) {
+            if ( mappedException == originalException) {
 
 
-                if( inv.isBusinessInterface ) {
+                if ( inv.isBusinessInterface ) {
 
                     // Wrap it up in a special exception so the
                     // client can unwrap it and ensure that the client receives EJBException.
-                    if(originalException instanceof EJBException) {
+                    if (originalException instanceof EJBException) {
                         mappedException = new InternalEJBContainerException
                             (originalException.getMessage(), originalException);
                     }
 
                 } else {
-                    if( originalException instanceof EJBException ) {
+                    if ( originalException instanceof EJBException ) {
                         mappedException = new RemoteException
                             (originalException.getMessage(), originalException);
                     }                
@@ -2340,7 +2345,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             
         }
 
-        if( _logger.isLoggable(Level.FINE)) {
+        if ( _logger.isLoggable(Level.FINE)) {
 
             _logger.log(Level.FINE, "Mapped original remote exception " +
                     originalException + " to exception " + mappedException +
@@ -2355,16 +2360,16 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
         Throwable mappedException = null;
 
-        if( t instanceof TransactionRolledbackLocalException ) {
+        if ( t instanceof TransactionRolledbackLocalException ) {
             mappedException = new EJBTransactionRolledbackException();
             mappedException.initCause(t);
-        } else if( t instanceof TransactionRequiredLocalException ) {
+        } else if ( t instanceof TransactionRequiredLocalException ) {
             mappedException = new EJBTransactionRequiredException();
             mappedException.initCause(t);
-        } else if( t instanceof NoSuchObjectLocalException ) {
+        } else if ( t instanceof NoSuchObjectLocalException ) {
             mappedException = new NoSuchEJBException();
             mappedException.initCause(t);
-        } else if( t instanceof AccessLocalException ) {
+        } else if ( t instanceof AccessLocalException ) {
             mappedException = new EJBAccessException();
             mappedException.initCause(t);
         }
@@ -2387,7 +2392,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         // does not depend on it being set.  So, try to set
         // invocationInfo but in this case don't treat it as
         // an error if it's not available.  
-        if( inv.invocationInfo == null ) {
+        if ( inv.invocationInfo == null ) {
             
             inv.invocationInfo = getInvocationInfo(inv);
                         
@@ -2395,7 +2400,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
         // Internal methods for 3.0 bean creation so there won't 
         // be corresponding permissions in the security policy file.  
-        if( (inv.method.getDeclaringClass() == localBusinessHomeIntf) 
+        if ( (inv.method.getDeclaringClass() == localBusinessHomeIntf)
             ||
             (inv.method.getDeclaringClass() == remoteBusinessHomeIntf) ) {
             return true;
@@ -2403,9 +2408,9 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
        
         boolean authorized = securityManager.authorize(inv);
         
-        if( !authorized ) {
+        if ( !authorized ) {
 
-            if( inv.context != null ) {
+            if ( inv.context != null ) {
                 // This means that an enterprise bean context was created
                 // during the authorization call because of a callback from
                 // a JACC enterprise bean handler. Since the invocation will 
@@ -2452,7 +2457,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             new Class[]{javax.ejb.EJBObject.class});
             
             if ( isStatelessSession ) {
-                if( hasRemoteHomeView ) {
+                if ( hasRemoteHomeView ) {
                     ejbIntfMethods[ EJBHome_create ] =
                         homeIntf.getMethod("create", NO_PARAMS);
                 }
@@ -2475,7 +2480,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             new Class[]{javax.ejb.EJBLocalObject.class});
             
             if ( isStatelessSession ) {
-                if( hasLocalHomeView ) {
+                if ( hasLocalHomeView ) {
                     Method m = localHomeIntf.getMethod("create", NO_PARAMS);
                     ejbIntfMethods[ EJBLocalHome_create ] = m;
                 }
@@ -2485,20 +2490,20 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     }
     
     protected void cancelTimers(Object key) {
-        if( isTimedObject() ) {
+        if ( isTimedObject() ) {
             // EJBTimerService should be accessed only if needed
             // not to cause it to be loaded if it's not used.
             EJBTimerService timerService = EJBTimerService.getEJBTimerService();
-            if( timerService != null ) {
+            if ( timerService != null ) {
                 timerService.cancelTimersByKey(getContainerId(), key);
             }
         }
     }
 
     private void stopTimers() {
-        if( isTimedObject() ) {
+        if ( isTimedObject() ) {
             EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService();
-            if( ejbTimerService != null ) {
+            if ( ejbTimerService != null ) {
                 ejbTimerService.stopTimers(getContainerId());
             }
         }
@@ -2696,7 +2701,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         // Access to an enterprise bean instance is undefined for
         // anything but business method invocations through
         // Remote , Local, and ServiceEndpoint interfaces.
-        if( ( (inv.invocationInfo != null) && 
+        if ( ( (inv.invocationInfo != null) &&
               inv.invocationInfo.isBusinessMethod )
             || 
             inv.isWebService ) {
@@ -2706,7 +2711,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             // There are some cases where it is ok for it to have been
             // set, e.g. if the policy provider invokes the callback
             // twice within the same authorization decision.
-            if( inv.context == null ) {
+            if ( inv.context == null ) {
 
                 try {
                     inv.context = getContext(inv);
@@ -2744,7 +2749,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         boolean valid = false;
         String errorMsg = "";
 
-        if( (o != null) && (o instanceof EJBLocalObject) ) {
+        if ( (o != null) && (o instanceof EJBLocalObject) ) {
             // Given object is always the client view EJBLocalObject.
             // Use utility method to translate it to EJBLocalObjectImpl
             // so we handle both the generated and proxy case.
@@ -2752,7 +2757,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 EJBLocalObjectImpl.toEJBLocalObjectImpl( (EJBLocalObject) o);
             BaseContainer otherContainer = 
                 (BaseContainer) ejbLocalObjImpl.getContainer();
-            if( otherContainer.getContainerId() == getContainerId() ) {
+            if ( otherContainer.getContainerId() == getContainerId() ) {
                 valid = true;
             } else {
                 errorMsg = "Local objects of ejb-name " + otherContainer.ejbDescriptor.getName() +
@@ -2769,7 +2774,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
              "A null parameter is not a valid local interface of bean " +  ejbDescriptor.getName();
         }
         
-        if( !valid ) {
+        if ( !valid ) {
             throw new EJBException(errorMsg);
         }
             
@@ -2785,7 +2790,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         String errorMsg = "";
 	    Exception causeException = null;
 
-        if( (o != null) && (o instanceof EJBObject) ) {
+        if ( (o != null) && (o instanceof EJBObject) ) {
             String className = o.getClass().getName();
 
             // Given object must be an instance of the remote stub class for
@@ -2816,7 +2821,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         }
 
 
-        if( !valid ) {
+        if ( !valid ) {
             if (causeException != null) {
 		        throw new EJBException(errorMsg, causeException);
 	        } else {
@@ -2973,7 +2978,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 beanMethod = method;
             }
 
-            if( beanMethod != null ) {
+            if ( beanMethod != null ) {
                 // Can't set AroundInvoke/AroundTimeout chains here, but set up some
                 // state on info object so it can be done right after InterceptorManager
                 // is initialized. 
@@ -2990,10 +2995,10 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 boolean isAsync = ((EjbSessionDescriptor) ejbDescriptor).
                         isAsynchronousMethod(targetMethod);
 
-                if( isAsync ) {
+                if ( isAsync ) {
 
                     // Check return type
-                    if( optionalLocalBusView ) {
+                    if ( optionalLocalBusView ) {
 
                         boolean beanMethodReturnTypeVoid = beanMethod.getReturnType().equals(Void.TYPE);
                         boolean beanMethodReturnTypeFuture = beanMethod.getReturnType().equals(Future.class);
@@ -3017,7 +3022,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                                 beanMethod + "' on bean " + ejbDescriptor.getName());
                         }
 
-                        if( beanMethod == null ) {
+                        if ( beanMethod == null ) {
 
                             throw new RuntimeException("No matching bean class method for async method '" +
                                 intfMethod + "' on bean " + ejbDescriptor.getName());
@@ -3034,13 +3039,13 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
                         boolean valid = false;
 
-                        if( bothVoid ) {
+                        if ( bothVoid ) {
                             valid = true;
-                        } else if( bothFuture ) {
+                        } else if ( bothFuture ) {
                             valid = true;
                         }
 
-                        if( !valid ) {
+                        if ( !valid ) {
                             throw new RuntimeException("Invalid asynchronous bean class / interface " +
                                     "method signatures for bean " + ejbDescriptor.getName() +
                                     ". beanMethod = '" + beanMethod + "' , interface method = '"
@@ -3054,7 +3059,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             }
         }
         
-        if( methodIntf.equals(MethodDescriptor.EJB_WEB_SERVICE) ) {
+        if ( methodIntf.equals(MethodDescriptor.EJB_WEB_SERVICE) ) {
             webServiceInvocationInfoMap.put(method, info);
         } else {
             invocationInfoMap.put(method, info);        
@@ -3067,7 +3072,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
         boolean eligibleForAsync = false;
 
-        if( methodIntf.equals(MethodDescriptor.EJB_LOCAL) ||
+        if ( methodIntf.equals(MethodDescriptor.EJB_LOCAL) ||
             methodIntf.equals(MethodDescriptor.EJB_REMOTE) ) {
 
             boolean is2xClientView = (EJBObject.class.isAssignableFrom(originalIntf) ||
@@ -3107,27 +3112,27 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             method.getName().startsWith("findByPrimaryKey");
         invInfo.flushEnabled = flushEnabled;
 
-        if( methodIntf.equals(MethodDescriptor.EJB_LOCALHOME) ) {
-            if( method.getDeclaringClass() != EJBLocalHome.class ) {
+        if ( methodIntf.equals(MethodDescriptor.EJB_LOCALHOME) ) {
+            if ( method.getDeclaringClass() != EJBLocalHome.class ) {
                 setHomeTargetMethodInfo(invInfo, true);
             }
-        } else if( methodIntf.equals(MethodDescriptor.EJB_HOME) ) {
-            if( method.getDeclaringClass() != EJBHome.class ) {
+        } else if ( methodIntf.equals(MethodDescriptor.EJB_HOME) ) {
+            if ( method.getDeclaringClass() != EJBHome.class ) {
                 setHomeTargetMethodInfo(invInfo, false);
             }
-        } else if( methodIntf.equals(MethodDescriptor.EJB_LOCAL) ) {
-            if( method.getDeclaringClass() != EJBLocalObject.class ) {
+        } else if ( methodIntf.equals(MethodDescriptor.EJB_LOCAL) ) {
+            if ( method.getDeclaringClass() != EJBLocalObject.class ) {
                 setEJBObjectTargetMethodInfo(invInfo, true, originalIntf);
             }
-        } else if( methodIntf.equals(MethodDescriptor.EJB_REMOTE) ) {
-            if( method.getDeclaringClass() != EJBObject.class ) {
+        } else if ( methodIntf.equals(MethodDescriptor.EJB_REMOTE) ) {
+            if ( method.getDeclaringClass() != EJBObject.class ) {
                 setEJBObjectTargetMethodInfo(invInfo, false, originalIntf);
             }
         } 
 
         setConcurrencyInvInfo(method, methodIntf, invInfo);
 
-        if( _logger.isLoggable(Level.FINE) ) {
+        if ( _logger.isLoggable(Level.FINE) ) {
             _logger.log(Level.FINE, invInfo.toString());
         }
 
@@ -3151,7 +3156,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         MethodLockInfo lockInfo = null;
 
         // Set READ/WRITE lock info.  Only applies to singleton beans.
-        if( isSingleton ) {
+        if ( isSingleton ) {
             EjbSessionDescriptor singletonDesc = (EjbSessionDescriptor) ejbDescriptor;
             List<MethodDescriptor> readLockMethods = singletonDesc.getReadLockMethods();
             List<MethodDescriptor> writeLockMethods = singletonDesc.getWriteLockMethods();
@@ -3161,7 +3166,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
             for(MethodDescriptor readLockMethodDesc : readLockMethods) {
                 Method readLockMethod = readLockMethodDesc.getMethod(singletonDesc);
-                if(implMethodMatchesInvInfoMethod(invInfoMethod, methodIntf, readLockMethod)) {
+                if (implMethodMatchesInvInfoMethod(invInfoMethod, methodIntf, readLockMethod)) {
 
                     lockInfo = new MethodLockInfo();
                     switch(distLockType) {
@@ -3180,10 +3185,10 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 }
             }
 
-            if( lockInfo == null ) {
+            if ( lockInfo == null ) {
                 for(MethodDescriptor writeLockMethodDesc : writeLockMethods) {
                     Method writeLockMethod = writeLockMethodDesc.getMethod(singletonDesc);
-                    if(implMethodMatchesInvInfoMethod(invInfoMethod, methodIntf, writeLockMethod)) {
+                    if (implMethodMatchesInvInfoMethod(invInfoMethod, methodIntf, writeLockMethod)) {
 
                         lockInfo = new MethodLockInfo();
                         lockInfo.setLockType(LockType.WRITE, distLockType != DistributedLockType.LOCK_NONE);
@@ -3194,7 +3199,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         }
 
         // Set AccessTimeout info
-        if( isSingleton || isStatefulSession ) {
+        if ( isSingleton || isStatefulSession ) {
 
             EjbSessionDescriptor sessionDesc = (EjbSessionDescriptor) ejbDescriptor;
             List<EjbSessionDescriptor.AccessTimeoutHolder> accessTimeoutInfo =
@@ -3204,9 +3209,9 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             for(EjbSessionDescriptor.AccessTimeoutHolder accessTimeoutHolder : accessTimeoutInfo) {
                 MethodDescriptor accessTimeoutMethodDesc = accessTimeoutHolder.method;
                 Method accessTimeoutMethod = accessTimeoutMethodDesc.getMethod(sessionDesc);
-                if(implMethodMatchesInvInfoMethod(invInfoMethod, methodIntf, accessTimeoutMethod)) {
+                if (implMethodMatchesInvInfoMethod(invInfoMethod, methodIntf, accessTimeoutMethod)) {
 
-                    if( lockInfo == null ) {
+                    if ( lockInfo == null ) {
                         lockInfo = new MethodLockInfo();
                     }
 
@@ -3217,7 +3222,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             }
         }
 
-        if( lockInfo != null) {
+        if ( lockInfo != null) {
             invInfo.methodLockInfo = lockInfo;
         }
 
@@ -3228,7 +3233,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
         boolean match = false;
 
-        if( methodIntf.equals(MethodDescriptor.EJB_BEAN) ) {
+        if ( methodIntf.equals(MethodDescriptor.EJB_BEAN) ) {
             // Declaring class must match in addition to signature
             match = ( implMethod.getDeclaringClass().equals(invInfoMethod.getDeclaringClass()) &&
                       TypeUtil.sameMethodSignature(implMethod, invInfoMethod) );
@@ -3277,7 +3282,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         }
 
         try {
-            if( invInfo.startsWithCreate ) {
+            if ( invInfo.startsWithCreate ) {
                 
                 String extraCreateChars = 
                     methodName.substring("create".length());
@@ -3304,7 +3309,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             }
         } catch(NoSuchMethodException nsme) {
             
-            if( (methodClass == localBusinessHomeIntf) ||
+            if ( (methodClass == localBusinessHomeIntf) ||
                 (methodClass == remoteBusinessHomeIntf) ||
                 (methodClass == ejbOptionalLocalBusinessHomeIntf ||
                 (methodClass == GenericEJBHome.class)) ) {
@@ -3318,14 +3323,14 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             } else {
 
                 Method initMethod = null;
-                if( isSession ) {
+                if ( isSession ) {
                     EjbSessionDescriptor sessionDesc = 
                         (EjbSessionDescriptor) ejbDescriptor;
 
                     for(EjbInitInfo next : sessionDesc.getInitMethods()) {
                         MethodDescriptor beanMethod = next.getBeanMethod();
                         Method m = beanMethod.getMethod(sessionDesc);
-                        if( next.getCreateMethod().getName().equals(methodName)
+                        if ( next.getCreateMethod().getName().equals(methodName)
                             &&
                             TypeUtil.sameParamTypes(m, invInfo.method) ) {
                             initMethod = m;
@@ -3334,7 +3339,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                     }
                 }
                 
-                if( initMethod != null ) {
+                if ( initMethod != null ) {
                     invInfo.targetMethod1 = initMethod;
                 } else {
                     Object[] params = { logParams[0], 
@@ -3366,7 +3371,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
         // Check for 2.x Remote/Local bean attempts to override 
         // EJBObject/EJBLocalObject operations.  
-        if( ejbIntfClazz.isAssignableFrom(originalIntf) ) {
+        if ( ejbIntfClazz.isAssignableFrom(originalIntf) ) {
             try {
                 Method m = ejbIntfClazz.getMethod(methodName, paramTypes);
                 // Attempt to override EJBObject/EJBLocalObject method.  Print 
@@ -3383,7 +3388,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         try {
             invInfo.targetMethod1 = ejbClass.getMethod(methodName, paramTypes);
 
-            if( isSession && isStatefulSession ) {
+            if ( isSession && isStatefulSession ) {
                 MethodDescriptor methodDesc = new MethodDescriptor
                     (invInfo.targetMethod1, MethodDescriptor.EJB_BEAN);
 
@@ -3449,7 +3454,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     {
         if ( isRemote ) {
 
-            if( hasRemoteHomeView ) {
+            if ( hasRemoteHomeView ) {
                 // Process Remote intf
                 Method[] methods = remoteIntf.getMethods();
                 for ( int i=0; i<methods.length; i++ ) {
@@ -3467,7 +3472,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 }
             }
 
-            if( hasRemoteBusinessView ) {
+            if ( hasRemoteBusinessView ) {
 
                 for(RemoteBusinessIntfInfo next : 
                         remoteBusinessIntfInfo.values()) {
@@ -3494,7 +3499,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         }
 
         if ( isLocal ) {
-            if( hasLocalHomeView ) {
+            if ( hasLocalHomeView ) {
                 // Process Local interface
                 Method[] methods = localIntf.getMethods();
                 for ( int i=0; i<methods.length; i++ ) {
@@ -3514,7 +3519,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 }
             }
 
-            if( hasLocalBusinessView ) {
+            if ( hasLocalBusinessView ) {
 
                 // Process Local Business interfaces
                 for(Class localBusinessIntf : localBusinessIntfs) {
@@ -3563,7 +3568,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
             }
 
-            if( !hasLocalHomeView ) {
+            if ( !hasLocalHomeView ) {
                 // Add dummy local business interface remove method so that internal
                 // container remove operations will work.  (needed for internal 299 contract)
                 addInvocationInfo(this.ejbIntfMethods[EJBLocalObject_remove],
@@ -3586,7 +3591,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             }
         }
         
-        if( isTimedObject() ) {
+        if ( isTimedObject() ) {
             if (ejbTimeoutMethod != null) {
                 processTxAttrForScheduledTimeoutMethod(ejbTimeoutMethod);
             }
@@ -3629,7 +3634,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
      */
     private void processTxAttrForScheduledTimeoutMethod(Method m) {
         int txAttr = containerTransactionManager.findTxAttr(new MethodDescriptor(m, MethodDescriptor.TIMER_METHOD));
-        if( isBeanManagedTran ||
+        if ( isBeanManagedTran ||
             txAttr == TX_REQUIRED ||
             txAttr == TX_REQUIRES_NEW ||
             txAttr == TX_NOT_SUPPORTED ) {
@@ -4016,7 +4021,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                     this);
 
         // By now all existing timers should have been restored.
-        if( isTimedObject_ ) {
+        if ( isTimedObject_ ) {
             // EJBTimerService should be accessed only if needed 
             // not to cause it to be loaded if it's not used.
             EJBTimerService timerService = EJBTimerService.getEJBTimerService();
@@ -4073,7 +4078,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             // AroundTimeout interceptors will be checked for timeout methods
             intercept(inv);
      
-            if( !isBeanManagedTran && (transactionManager.getStatus() ==
+            if ( !isBeanManagedTran && (transactionManager.getStatus() ==
                                        Status.STATUS_MARKED_ROLLBACK) ) {
                 redeliver = true;
                 _logger.log(Level.FINE, "ejbTimeout called setRollbackOnly");
@@ -4095,7 +4100,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         } finally {
 
             // Only call postEjbTimeout if there are no errors so far.
-            if( !redeliver ) {
+            if ( !redeliver ) {
                 boolean success = postEjbTimeout(timerState, timerService);
                 redeliver = !success;
             }
@@ -4103,11 +4108,11 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             postInvoke(inv);
 
             // If transaction commit fails, set redeliver flag.
-            if( (redeliver == false) && (inv.exception != null) ) {
+            if ( (redeliver == false) && (inv.exception != null) ) {
                 redeliver = true;
             }
 
-            if( originalClassLoader != null ) {
+            if ( originalClassLoader != null ) {
                 Utility.setContextClassLoader(originalClassLoader);
             }
 
@@ -4361,12 +4366,12 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
     private void doContainerCleanup() {
 
-        if( baseContainerCleanupDone ) {
+        if ( baseContainerCleanupDone ) {
             return;
         }
 
         try {
-            if( isWebServiceEndpoint && (webServiceEndpoint != null) ) {
+            if ( isWebServiceEndpoint && (webServiceEndpoint != null) ) {
                 String endpointAddress =
                     webServiceEndpoint.getEndpointAddressUri();
                 if (wsejbEndpointRegistry != null) {
@@ -4383,7 +4388,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         }
 
 
-        if( hasAsynchronousInvocations ) {
+        if ( hasAsynchronousInvocations ) {
             EjbAsyncInvocationManager asyncManager =
                 ((EjbContainerUtilImpl) ejbContainerUtilImpl).getEjbAsyncInvocationManager();
             asyncManager.cleanupContainerTasks(this);
@@ -4407,7 +4412,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         }
 
         try {
-            if(System.getSecurityManager() == null) {
+            if (System.getSecurityManager() == null) {
                 currentThread.setContextClassLoader(loader);
             } else {
                 java.security.AccessController.doPrivileged(
@@ -4422,7 +4427,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             if ( isRemote ) {
                 try {
 
-                    if( hasRemoteHomeView ) {
+                    if ( hasRemoteHomeView ) {
 
                         remoteHomeRefFactory.destroyReference(ejbHomeStub,
                                                               ejbHome);
@@ -4437,7 +4442,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                         remoteHomeRefFactory.destroy();
                     }
 
-                    if( hasRemoteBusinessView ) {
+                    if ( hasRemoteBusinessView ) {
 
                         // Home related cleanup
                         RemoteReferenceFactory remoteBusinessRefFactory =
@@ -4481,7 +4486,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             unregisterProbeListeners();
 
         } finally {
-            if(System.getSecurityManager() == null) {
+            if (System.getSecurityManager() == null) {
                 currentThread.setContextClassLoader(previousClassLoader);
             } else {
                 java.security.AccessController.doPrivileged(
@@ -4563,7 +4568,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
             inv.invocationInfo = getInvocationInfo(inv);
 
-            if( inv.invocationInfo == null ) {
+            if ( inv.invocationInfo == null ) {
                 throw new EJBException("EjbInvocation Info lookup failed for " +
                                        "method " + inv.method);
             } else {
@@ -4689,7 +4694,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             while (clazz != null) {
                 String eClassName = clazz.getName();
                 if (appExceptions.containsKey(eClassName)) {
-                    if( exceptionClassName.equals(eClassName)) {
+                    if ( exceptionClassName.equals(eClassName)) {
                         // Exact exception is specified as an ApplicationException
                         return false;
                     } else {
@@ -4743,16 +4748,16 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         int txAttr =  isBeanManagedTran ?
                 Container.TX_BEAN_MANAGED : defaultTxAttr;
 
-        if( !isBeanManagedTran ) {
+        if ( !isBeanManagedTran ) {
             for(LifecycleCallbackDescriptor lcd : lifecycleCallbackDescriptors) {
-                if( lcd.getLifecycleCallbackClass().equals(ejbDescriptor.getEjbClassName())) {
+                if ( lcd.getLifecycleCallbackClass().equals(ejbDescriptor.getEjbClassName())) {
 
                     Method callbackMethod = lcd.getLifecycleCallbackMethodObject(loader);
                     int lcTxAttr = containerTransactionManager.findTxAttr(
                         new MethodDescriptor(callbackMethod, MethodDescriptor.LIFECYCLE_CALLBACK));
                     // Since default attribute is set up, override the value if it's validateTxAttr
                     for (int t : validateTxAttr) {
-                        if( lcTxAttr == t ) {
+                        if ( lcTxAttr == t ) {
                             txAttr = t;
                             if (_logger.isLoggable(Level.FINE)) {
 	                        _logger.log(Level.FINE, "Found callback method " + ejbDescriptor.getEjbClassName() + 
@@ -4929,7 +4934,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     }
 
     protected void registerTimerMonitorableComponent() {
-        if( isTimedObject() ) {
+        if ( isTimedObject() ) {
             String invokerId = EjbMonitoringUtils.getInvokerId(containerInfo.appName, containerInfo.modName, containerInfo.ejbName);
             try {
                 ProbeProviderFactory probeFactory = ejbContainerUtilImpl.getProbeProviderFactory();
@@ -4999,7 +5004,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             // portable JNDI name.
             boolean rebind = portable;
 
-            if( cosNaming ) {
+            if ( cosNaming ) {
                 nm.publishCosNamingObject(name, object, rebind);
             } else {
                 nm.publishObject(name, object, rebind);
@@ -5011,8 +5016,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
         void unpublish(GlassfishNamingManager nm) throws NamingException {
 
-            if( publishedSuccessfully ) {
-                if( cosNaming ) {
+            if ( publishedSuccessfully ) {
+                if ( cosNaming ) {
                     nm.unpublishCosNamingObject(name);
                 } else {
                     nm.unpublishObject(name);

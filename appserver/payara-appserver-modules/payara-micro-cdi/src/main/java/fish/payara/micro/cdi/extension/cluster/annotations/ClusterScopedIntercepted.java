@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,52 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.cluster;
+package fish.payara.micro.cdi.extension.cluster.annotations;
 
 import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
+import static java.lang.annotation.ElementType.TYPE;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import javax.interceptor.InterceptorBinding;
 
 /**
- * This annotation can be added to @Singleton EJB beans
- * and @ApplicationScoped CDI beans to specify that they are
- * cluster-wide singletons, not just a singleton per server instance
+ * Interceptor binding that forces the singleton to refresh the cluster
+ * upon every method call
  *
  * @author lprimak
  */
-@Documented
 @Inherited
+@InterceptorBinding
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Clustered {
-    /**
-     * key in the distributed map to bind this clustered object to.
-     * Default is the name of the bean
-     */
-    String keyName() default "";
+@Target(TYPE)
+@Documented
+public @interface ClusterScopedIntercepted {
 
-    /**
-     * specifies the type of distributed locking to be performed
-     * For EJB beans, only INHERIT and LOCK_NONE are valid
-     * for CDI beans, INHERIT is equivalent to NONE,
-     * and the other valid value for CDI beans is LOCK
-     */
-    DistributedLockType lock() default DistributedLockType.INHERIT;
-
-    /**
-     * Specifies whether to call @PostConstruct when the singleton is attached to a cluster
-     * and this singleton already exists on the other node. (not truly created)
-     * Default is true
-     */
-    boolean callPostConstructOnAttach() default true;
-
-    /**
-     * Specifies whether to call @PreDestroy when the singleton is detached from a cluster
-     * and this singleton also exists on the other node. (not truly destroyed)
-     * Default is true
-     */
-    boolean callPreDestoyOnDetach () default true;
 }

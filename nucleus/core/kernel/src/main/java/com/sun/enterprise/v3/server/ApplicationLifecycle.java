@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -154,7 +154,14 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     ConfigSupport configSupport;
 
     protected Logger logger = KernelLoggerInfo.getLogger();
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);      
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
+
+    private final ThreadLocal<Deque<ExtendedDeploymentContext>> currentDeploymentContext = new ThreadLocal<Deque<ExtendedDeploymentContext>>() {
+        @Override
+        protected Deque<ExtendedDeploymentContext> initialValue() {
+            return new ArrayDeque<>(5);
+        }
+    };
     
     protected <T extends Container, U extends ApplicationContainer> Deployer<T, U> getDeployer(EngineInfo<T, U> engineInfo) {
         return engineInfo.getDeployer();
@@ -225,6 +232,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         long operationStartTime = Calendar.getInstance().getTimeInMillis();
 
         events.send(new Event<DeploymentContext>(Deployment.DEPLOYMENT_START, context), false);
+        currentDeploymentContext.get().push(context);
         final ActionReport report = context.getActionReport();
 
         final DeployCommandParameters commandParams = context.getCommandParameters(DeployCommandParameters.class);
@@ -530,6 +538,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             } else {
                 events.send(new Event<DeploymentContext>(Deployment.DEPLOYMENT_FAILURE, context));
             }
+            currentDeploymentContext.get().pop();
         }
     }
 
@@ -2273,4 +2282,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 });
     }
 
+    @Override
+    public ExtendedDeploymentContext getCurrentDeploymentContext() {
+        return currentDeploymentContext.get().peek();
+    }
 }
