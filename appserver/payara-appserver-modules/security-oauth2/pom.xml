@@ -68,27 +68,39 @@
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.security.enterprise</groupId>
             <artifactId>javax.security.enterprise-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.web</groupId>
+            <artifactId>weld-integration</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.enterprise</groupId>
             <artifactId>cdi-api</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
     
@@ -113,11 +125,9 @@
                                     javax.enterprise.inject.spi,
                                     javax.enterprise.util,
                                     javax.security.enterprise,
-                                    javax.servlet.http,
-                                    com.sun.enterprise.deployment.annotation.handlers,
-                                    org.glassfish.apf,
-                                    org.glassfish.hk2.runlevel,
-                                    org.jvnet.hk2.annotations
+                                    javax.security.enterprise.authentication.mechanism.http,
+                                    javax.security.enterprise.identitystore,
+                                    javax.servlet.http
                                 </Import-Package>
                                 <Export-Package>
                                     fish.payara.security.oauth2
@@ -128,6 +138,15 @@
                 </executions>
             </plugin>
         </plugins>
+        
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/javax.enterprise.inject.spi.Extension</include>
+                </includes>
+            </resource>
+        </resources>
     </build>
     
 </project>

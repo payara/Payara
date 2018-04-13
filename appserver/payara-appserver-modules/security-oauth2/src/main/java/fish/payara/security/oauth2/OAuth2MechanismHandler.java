@@ -39,72 +39,74 @@
  */
 package fish.payara.security.oauth2;
 
-import java.util.function.Function;
 import java.util.logging.Level;
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
-
-import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
-
 import fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition;
-
-import org.glassfish.apf.AnnotationHandlerFor;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.apf.ResultType;
-import org.glassfish.apf.impl.HandlerProcessingResultImpl;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
+import javax.enterprise.inject.spi.BeforeBeanDiscovery;
+import javax.enterprise.inject.spi.ProcessBean;
 
 /**
  * Handles the {@link OAuth2AuthenticationDefinition} annotation
+ *
  * @author jonathan
  * @since 4.1.2.172
  */
-@Service
-@RunLevel(StartupRunLevel.VAL)
-@AnnotationHandlerFor(OAuth2AuthenticationDefinition.class)
-public class OAuth2MechanismHandler extends AbstractHandler implements Extension {
+public class OAuth2MechanismHandler implements Extension {
 
-    private OAuth2AuthenticationDefinition annotation;
-    
-    
+//    private List<OAuth2AuthenticationDefinition> annotations;
+    private Logger logger = Logger.getLogger("OAuthMechanism-Handler");
 
-    @Override
-    public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
-        
-        logger.log(Level.SEVERE, "Processing OAuth2AuthenticationDefinition Annotation");
-
-        if (annotation != null) {
-            throw new AnnotationProcessorException("An OAuth 2 Authentication Mechanism is already defined", element);
+    public OAuth2MechanismHandler() {
+        StringBuilder stacktrace = new StringBuilder();
+        for (StackTraceElement element: Thread.currentThread().getStackTrace()){
+            stacktrace.append(element.toString()).append("\n");
         }
-
-        annotation = (OAuth2AuthenticationDefinition) element.getAnnotation();
+       
+        logger.log(Level.SEVERE, "Created OAuth2AuthenicationMechanism Handler at \n{0}", stacktrace.toString());
         
-        return HandlerProcessingResultImpl.getDefaultResult(getAnnotationType(), ResultType.PROCESSED);
+        //annotations = new ArrayList<>();
+    }
+    
+    /**
+     * This method tries to find the {@link OAuth2AuthenticationDefinition} annotation and if does flags that fact.
+     * 
+     * @param <T>
+     * @param eventIn
+     * @param beanManager
+     */
+    public <T> void findOAuth2DefinitionAnnotation(@Observes ProcessBean<T> eventIn, BeanManager beanManager) {
+        
+        logger.log(Level.SEVERE, "OAuth2Handler Processing annotations...");
+        Logger.getAnonymousLogger().log(Level.SEVERE, "Anonymouse logging");
+//        ProcessBean<T> event = eventIn; // JDK8 u60 workaround
+//        
+//        
+//        OAuth2AuthenticationDefinition annotation = event.getAnnotated().getAnnotation(OAuth2AuthenticationDefinition.class);
+//        if (annotation != null && !annotations.contains(annotation)) {
+//            logger.log(Level.SEVERE, "Processing annotation {0}", annotation);
+//            annotations.add(annotation);
+//        }
+    }
+    
+    public void beforeBeanDiscovery(@Observes BeforeBeanDiscovery event, BeanManager manager) {
+        logger.log(Level.SEVERE, "OAuth2Handler - BeforeBeanDiscovery" + event.toString());
+        event.addAnnotatedType(manager.createAnnotatedType(OAuth2AuthenticationMechanism.class), "OAuth2 Mechanism");
     }
 
     public void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBean, BeanManager beanManager) {
         logger.log(Level.SEVERE, "Creating OAuth2 Mechanism");
-        afterBean.addBean(new OAuth2Producer<>(annotation));
-        logger.log(Level.SEVERE, "OAuth2 Mechanism created successfully");
-    }
-
-    public class FunctionApply implements Function<Instance<Object>, OAuth2AuthenticationMechanism> {
-
-        @Override
-        public OAuth2AuthenticationMechanism apply(Instance<Object> definition) {
-            OAuth2AuthenticationDefinition truedefintion = (OAuth2AuthenticationDefinition) definition.get();
-            OAuth2AuthenticationMechanism mechanism = new OAuth2AuthenticationMechanism();
-            mechanism.setAuthEndpoint(truedefintion.authEndpoint());
-            return mechanism;
-        }
-
+//        for (OAuth2AuthenticationDefinition annotation : annotations) {
+//            afterBean.addBean(new OAuth2Producer<>(annotation));
+//            annotations.remove(annotation);
+//            logger.log(Level.SEVERE, "OAuth2 Mechanism created successfully");
+//
+//        }
     }
 
 }
