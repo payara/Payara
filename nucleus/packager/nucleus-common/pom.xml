@@ -38,7 +38,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-
+    Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>4.1.2.181-SNAPSHOT</version>
+        <version>5.182-SNAPSHOT</version>
     </parent>
     <artifactId>nucleus-common</artifactId>
     <name>Nucleus Commons Package</name>
@@ -74,18 +74,6 @@
             <version>${project.version}</version>
            <optional>true</optional>
         </dependency>
-        <!-- gms-bootstrap module -->
-       <dependency>
-            <groupId>org.glassfish.main.cluster</groupId>
-            <artifactId>gms-bootstrap</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-       </dependency>
-       <dependency>
-            <groupId>org.shoal</groupId>
-            <artifactId>shoal-gms-api</artifactId>
-            <optional>true</optional>
-       </dependency>
     </dependencies>
 </project>
 

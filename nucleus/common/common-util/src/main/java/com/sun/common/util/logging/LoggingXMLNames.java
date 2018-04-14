@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.common.util.logging;
 
 import com.sun.logging.LogDomains;
@@ -49,10 +51,16 @@ import java.util.Map;
 public class LoggingXMLNames {
 
     public static final String file = "file";
+    
+    public static final String payaraNotificationFile = "payara-notification-file";
 
     public static final String logRotationLimitInBytes = "log-rotation-limit-in-bytes";
+    
+    public static final String payaraNotificationLogRotationLimitInBytes = "payara-notification-log-rotation-limit-in-bytes";
 
     public static final String logRotationTimelimitInMinutes = "log-rotation-timelimit-in-minutes";
+    
+    public static final String payaraNotificationLogRotationTimelimitInMinutes = "payara-notification-log-rotation-timelimit-in-minutes";
 
     public static final String logFormatter = "log-formatter";
 
@@ -61,6 +69,10 @@ public class LoggingXMLNames {
     public static final String useSystemLogging = "use-system-logging";
 
     public static final String logFilter = "log-filter";
+    
+    public static final String logToFile = "log-to-file";
+    
+    public static final String payaraNotificationLogToFile = "payara-notification-log-to-file";
 
     public static final String logToConsole = "log-to-console";
 
@@ -106,13 +118,18 @@ public class LoggingXMLNames {
     public static final Map<String, String> xmltoPropsMap =
             new HashMap<String, String>() {{
                 put(logRotationLimitInBytes, LoggingPropertyNames.logRotationLimitInBytes);
+                put(payaraNotificationLogRotationLimitInBytes, LoggingPropertyNames.payaraNotificationLogRotationLimitInBytes);
                 put(logRotationTimelimitInMinutes, LoggingPropertyNames.logRotationTimelimitInMinutes);
+                put(payaraNotificationLogRotationTimelimitInMinutes, LoggingPropertyNames.payaraNotificationLogRotationTimelimitInMinutes);
                 put(file, LoggingPropertyNames.file);
+                put(payaraNotificationFile, LoggingPropertyNames.payaraNotificationFile);
                 put(logFormatter, LoggingPropertyNames.logFormatter);
                 put(logHandler, LoggingPropertyNames.logHandler);
                 put(useSystemLogging, LoggingPropertyNames.useSystemLogging);
                 put(retainErrorStatisticsForHours, LoggingPropertyNames.retainErrorStatisticsForHours);
                 put(logFilter, LoggingPropertyNames.logFilter);
+                put(logToFile, LoggingPropertyNames.logToFile);
+                put(payaraNotificationLogToFile, LoggingPropertyNames.payaraNotificationLogToFile);
                 put(logToConsole, LoggingPropertyNames.logToConsole);
                 put(alarms, LoggingPropertyNames.alarms);
                 put(root, LogDomains.DOMAIN_ROOT + "level");

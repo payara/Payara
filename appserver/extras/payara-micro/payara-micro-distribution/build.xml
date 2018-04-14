@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2017] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2018] [Payara Foundation] -->
 
 <project name="payara-micro" default="new.create" basedir=".">
     <property name="rootdir" value="target"/>
@@ -101,12 +101,8 @@
 	<delete file="${runtimedir}/javahelp.jar"/>
 	<delete file="${runtimedir}/upgrade-tool.jar"/>
 	<delete file="${runtimedir}/web-gui-plugin-common.jar"/>
-	<delete file="${runtimedir}/ha-shoal-cache-store.jar"/>
-	<delete file="${runtimedir}/ha-shoal-cache-bootstrap.jar"/>
 	<delete file="${runtimedir}/ha-file-store.jar"/>
 	<delete file="${runtimedir}/payara-console-extras.jar"/>
-	<delete file="${runtimedir}/shoal-cache.jar"/>
-	<delete file="${runtimedir}/shoal-gms-api.jar"/>
 	<delete file="${runtimedir}/load-balancer-admin.jar"/>
 	<delete file="${runtimedir}/gf-load-balancer-connector.jar"/>
 	<delete file="${runtimedir}/backup.jar"/>
@@ -117,11 +113,10 @@
 	  <fileset dir="${runtimedir}" includes="console-**-plugin.jar"/>
 	  <!-- skip the domain creation template jar files viz., nucleus-domain.jar, appserver-domain.jar -->
 	  <fileset dir="${runtimedir}" includes="**/appserver-domain*.jar"/>
-	  <fileset dir="${runtimedir}" includes="**/payara-domain*.jar"/>
+	  <fileset dir="${runtimedir}" includes="**/production-domain*.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/nucleus-domain.jar"/>
-	  <fileset dir="${runtimedir}" includes="**/weld-se-core.jar"/>
+	  <fileset dir="${runtimedir}" includes="**/weld-se-shaded.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/weld-environment-common.jar"/>
-	  <fileset dir="${runtimedir}" includes="**/derbyLocale*.jar"/>
 	</delete>
 	<delete file="${runtimedir}/autostart/osgi-cdi.jar" failonerror="false"/>
      </target>
@@ -137,7 +132,8 @@
                 <include name="*payara-micro-boot*.jar"/>      
             </fileset>
         </delete>
-        <replace file="${domaindir}/branding/glassfish-version.properties" token="@@@PRODUCT@@@" value="Payara Micro"/>
+	<replace file="${domaindir}/branding/glassfish-version.properties" token="@@@PRODUCT@@@" value="Payara Micro"/>
+	<replace file="${domaindir}/branding/glassfish-version.properties" token="@@@BUILD_NUMBER@@@" value="${build.number}"/>
      </target>
      
     <target name="addSchemas" >
@@ -191,12 +187,13 @@
     <target name="addKeystores">
         <unzip dest="${tempdir}">
             <fileset dir="${runtimedir}/${install.dir.name}/glassfish/common/templates/gf">
-                <include name="payara-domain.jar"/>      
+                <include name="production-domain.jar"/>
             </fileset>
         </unzip>
         <copy todir="${domaindir}">
             <fileset dir="${tempdir}/config">
                 <include name="*.jks"/>
+                <include name="keyfile"/>
             </fileset>
         </copy>       
     </target>

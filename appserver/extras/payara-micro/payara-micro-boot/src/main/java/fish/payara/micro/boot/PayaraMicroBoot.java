@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,6 @@ package fish.payara.micro.boot;
 import fish.payara.micro.BootstrapException;
 import fish.payara.micro.PayaraMicroRuntime;
 import java.io.File;
-import java.net.URL;
 
 /**
  *
@@ -227,6 +226,12 @@ public interface PayaraMicroBoot {
      * @return The HTTPS port
      */
     int getSslPort();
+    
+    /**
+     * The name of the SSL certificate to use in the keystore
+     * @return 
+     */
+    String getSslCert();
 
     /**
      * The UberJar to create
@@ -466,6 +471,13 @@ public interface PayaraMicroBoot {
      * @return
      */
     PayaraMicroBoot setSslPort(int sslPort);
+    
+    /**
+     * Sets the name of the certificate to use in the keystore
+     * @param alias the name of the certificate in the keystore
+     * @return 
+     */
+    PayaraMicroBoot setSslCert(String alias);
 
     /**
      * Set user defined file for the Log entries
@@ -501,8 +513,17 @@ public interface PayaraMicroBoot {
      * Adds the library to the classloader and loads it
      * 
      * @param lib The library to add
+     * @return 
      * @since 4.1.2.173
      */
-    public void addLibrary(File lib);
+    public PayaraMicroBoot addLibrary(File lib);
+
+    /**
+     * Sets whether SNI enabled for SSL
+     * @param value true to enable SNI
+     * @return 
+     * @since 4.1.2.182 5.1.2.182
+     */
+    public PayaraMicroBoot setSniEnabled(boolean value);
     
 }

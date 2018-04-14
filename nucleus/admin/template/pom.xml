@@ -42,11 +42,13 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
     <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>org.glassfish.main.admin</groupId>
         <artifactId>nucleus-admin</artifactId>
-        <version>4.1.2.181-SNAPSHOT</version>
+        <version>5.182-SNAPSHOT</version>
     </parent>
+    
     <artifactId>nucleus-domain</artifactId>
     <name>Nucleus template</name>
     <description>This pom describes how to create jar template</description>
@@ -83,6 +85,7 @@
                     </execution>
                 </executions>
             </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -93,7 +96,9 @@
                             <goal>single</goal>
                         </goals>
                         <configuration>
-                            <descriptor>src/main/assembly/${project.artifactId}.xml</descriptor>
+                            <descriptors>
+                                <descriptor>src/main/assembly/${project.artifactId}.xml</descriptor>
+                            </descriptors>
                             <finalName>classes</finalName>
                             <attach>false</attach>
                             <appendAssemblyId>false</appendAssemblyId>
@@ -102,6 +107,7 @@
                     </execution>
                 </executions>
             </plugin>
+            
             <plugin>
               <artifactId>maven-antrun-plugin</artifactId>
               <executions>

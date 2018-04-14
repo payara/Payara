@@ -38,9 +38,11 @@
  * holder.
  */
 
-// Portions Copyright [2014-2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2018] [Payara Foundation and/or its affiliates]
  
 package com.sun.common.util.logging;
+
+import static com.sun.common.util.logging.LoggingXMLNames.xmltoPropsMap;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -360,6 +362,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
                 //System.out.println("Debug "+key+ " " + props.getProperty(key));
                 m.put(key, props.getProperty(key));
             }
+            m = checkForLoggingProperties(m, targetConfigName);
             return m;
         } catch (IOException ex) {
             throw ex;
@@ -386,12 +389,90 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
                 //System.out.println("Debug "+key+ " " + props.getProperty(key));
                 m.put(key, props.getProperty(key));
             }
+            m = checkForLoggingProperties(m, "");
             return m;
         } catch (IOException ex) {
             throw ex;
         }
     }
+    
+    public synchronized Map<String, String> checkForLoggingProperties(Map<String, String> loggingProperties, String targetConfigName) throws IOException {
 
+        if (!loggingProperties.containsKey(Constants.GF_HANDLER_LOG_TO_FILE)) {
+            loggingProperties.put(Constants.GF_HANDLER_LOG_TO_FILE, Constants.GF_HANDLER_LOG_TO_FILE_DEFAULT_VALUE);
+
+            if (targetConfigName == null || targetConfigName.isEmpty()) {
+                setLoggingProperty(Constants.GF_HANDLER_LOG_TO_FILE, Constants.GF_HANDLER_LOG_TO_FILE_DEFAULT_VALUE);
+            } else {
+                setLoggingProperty(Constants.GF_HANDLER_LOG_TO_FILE, Constants.GF_HANDLER_LOG_TO_FILE_DEFAULT_VALUE, targetConfigName);
+            }
+        }
+
+        if (!loggingProperties.containsKey(Constants.PY_HANDLER_LOG_TO_FILE)) {
+            loggingProperties.put(Constants.PY_HANDLER_LOG_TO_FILE, Constants.PY_HANDLER_LOG_TO_FILE_DEFAULT_VALUE);
+            if (targetConfigName == null || targetConfigName.isEmpty()) {
+                setLoggingProperty(Constants.PY_HANDLER_LOG_TO_FILE, Constants.PY_HANDLER_LOG_TO_FILE_DEFAULT_VALUE);
+            } else {
+                setLoggingProperty(Constants.PY_HANDLER_LOG_TO_FILE, Constants.PY_HANDLER_LOG_TO_FILE_DEFAULT_VALUE, targetConfigName);
+            }
+        }
+
+        if (!loggingProperties.containsKey(Constants.PY_HANDLER_LOG_FILE)) {
+            loggingProperties.put(Constants.PY_HANDLER_LOG_FILE, Constants.PY_HANDLER_LOG_FILE_DEFAULT_VALUE);
+            if (targetConfigName == null || targetConfigName.isEmpty()) {
+                setLoggingProperty(Constants.PY_HANDLER_LOG_FILE, Constants.PY_HANDLER_LOG_FILE_DEFAULT_VALUE);
+            } else {
+                setLoggingProperty(Constants.PY_HANDLER_LOG_FILE, Constants.PY_HANDLER_LOG_FILE_DEFAULT_VALUE, targetConfigName);
+            }
+        }
+
+        if (!loggingProperties.containsKey(Constants.PY_HANDLER_MAXIMUM_FILES)) {
+            loggingProperties.put(Constants.PY_HANDLER_MAXIMUM_FILES, Constants.PY_HANDLER_MAXIMUM_FILES_DEFAULT_VALUE);
+            if (targetConfigName == null || targetConfigName.isEmpty()) {
+                setLoggingProperty(Constants.PY_HANDLER_MAXIMUM_FILES, Constants.PY_HANDLER_MAXIMUM_FILES_DEFAULT_VALUE);
+            } else {
+                setLoggingProperty(Constants.PY_HANDLER_MAXIMUM_FILES, Constants.PY_HANDLER_MAXIMUM_FILES_DEFAULT_VALUE, targetConfigName);
+            }
+        }
+
+        if (!loggingProperties.containsKey(Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE)) {
+            loggingProperties.put(Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE, Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE_DEFAULT_VALUE);
+            if (targetConfigName == null || targetConfigName.isEmpty()) {
+                setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE, Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE_DEFAULT_VALUE);
+            } else {
+                setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE, Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE_DEFAULT_VALUE, targetConfigName);
+            }
+        }
+
+        if (!loggingProperties.containsKey(Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE)) {
+            loggingProperties.put(Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE, Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE_DEFAULT_VALUE);
+            if (targetConfigName == null || targetConfigName.isEmpty()) {
+                setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE, Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE_DEFAULT_VALUE);
+            } else {
+                setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE, Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE_DEFAULT_VALUE, targetConfigName);
+            }
+        }
+
+        if (!loggingProperties.containsKey(Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT)) {
+            loggingProperties.put(Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT, Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT_DEFAULT_VALUE);
+            if (targetConfigName == null || targetConfigName.isEmpty()) {
+                setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT, Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT_DEFAULT_VALUE);
+            } else {
+                setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT, Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT_DEFAULT_VALUE, targetConfigName);
+            }
+        }
+
+        if (!loggingProperties.containsKey(Constants.PY_HANDLER_COMPRESS_ON_ROTATION)) {
+            loggingProperties.put(Constants.PY_HANDLER_COMPRESS_ON_ROTATION, Constants.PY_HANDLER_COMPRESS_ON_ROTATION_DEFAULT_VALUE);
+            if (targetConfigName == null || targetConfigName.isEmpty()) {
+                setLoggingProperty(Constants.PY_HANDLER_COMPRESS_ON_ROTATION, Constants.PY_HANDLER_COMPRESS_ON_ROTATION_DEFAULT_VALUE);
+            } else {
+                setLoggingProperty(Constants.PY_HANDLER_COMPRESS_ON_ROTATION, Constants.PY_HANDLER_COMPRESS_ON_ROTATION_DEFAULT_VALUE, targetConfigName);
+            }
+        }
+        return loggingProperties;
+    }
+    
     /* delete the properties from logging.properties file.  properties is a Map of names of properties and
       * their cooresponding value.
       *
@@ -637,14 +718,15 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
     public synchronized String getLoggingFileDetails() throws IOException {
         try {
             loadLoggingProperties();
-            Enumeration e = props.propertyNames();
+            
+            @SuppressWarnings("unchecked")
+            Enumeration<String> loggingPropertyNames = (Enumeration<String>) props.propertyNames();
 
-            while (e.hasMoreElements()) {
-                String key = (String) e.nextElement();
-                // convert the name in domain.xml to the name in logging.properties if needed
-                if (LoggingXMLNames.xmltoPropsMap.get(key) != null) {
-                    key = LoggingXMLNames.xmltoPropsMap.get(key);
-                }
+            while (loggingPropertyNames.hasMoreElements()) {
+                String key = loggingPropertyNames.nextElement();
+                
+                // Convert the name in domain.xml to the name in logging.properties if needed
+                key = xmltoPropsMap.getOrDefault(key, key);
 
                 if (key != null && key.equals("com.sun.enterprise.server.logging.GFFileHandler.file")) {
                     return props.getProperty(key);
@@ -653,7 +735,10 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
         } catch (IOException ex) {
             throw ex;
         }
-        return null;
+        
+        // If "com.sun.enterprise.server.logging.GFFileHandler.file" not found, check "java.util.logging.FileHandler.pattern"
+        // This property can have been set by Payara Micro when using the --logtofile
+        return props.getProperty("java.util.logging.FileHandler.pattern");
     }
 
     /* Return a logging file details  in the logging.properties file for given target.
@@ -711,6 +796,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             }
             m.put(key, propsLoggingTempleate.getProperty(key));
         }
+        m = checkForLoggingProperties(m, "");
         return m;
     }
 }

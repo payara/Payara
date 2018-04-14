@@ -42,23 +42,47 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.glassfish.main.resources</groupId>
         <artifactId>resources</artifactId>
-        <version>4.1.2.181-SNAPSHOT</version>
+        <version>5.182-SNAPSHOT</version>
     </parent>
+
     <artifactId>javamail</artifactId>
     <packaging>pom</packaging>
     <name>JavaMail Resources Support related modules</name>
+
     <modules>
         <module>javamail-connector</module>
         <module>javamail-runtime</module>
         <module>javamail-connector-l10n</module>
-  </modules>
-  <dependencies>
-	<dependency>
+    </modules>
+    
+    <build>
+        <plugins>
+           <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <useSystemClassLoader>true</useSystemClassLoader>
+                    <forkCount>1</forkCount>
+                    <reuseForks>true</reuseForks>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
             <groupId>javax.mail</groupId>
             <artifactId>javax.mail-api</artifactId>
         </dependency>
-  </dependencies>
+        <dependency>
+            <groupId>org.glassfish.main.security</groupId>
+            <artifactId>security-services</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+  
 </project>

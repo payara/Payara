@@ -37,12 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.Utility;
@@ -62,14 +65,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
+import fish.payara.notification.requesttracing.EventType;
 import org.glassfish.internal.api.Globals;
 
 public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     private transient InvocationManager invocationManager;
     private transient Deployment deployment;
+    private transient ComponentEnvManager compEnvMgr;
     private transient Applications applications;
     // transactionManager should be null for ContextService since it uses TransactionSetupProviderImpl
     private transient JavaEETransactionManager transactionManager;
@@ -87,11 +92,13 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     public ContextSetupProviderImpl(InvocationManager invocationManager,
                                     Deployment deployment,
+                                    ComponentEnvManager compEnvMgr,
                                     Applications applications,
                                     JavaEETransactionManager transactionManager,
                                     CONTEXT_TYPE... contextTypes) {
         this.invocationManager = invocationManager;
         this.deployment = deployment;
+        this.compEnvMgr = compEnvMgr;
         this.applications = applications;
         this.transactionManager = transactionManager;
         
@@ -164,6 +171,26 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (handle.getInvocation() != null) {
             appName = handle.getInvocation().getAppName();
         }
+        if(appName == null && handle.getInvocation().getJNDIEnvironment() != null) {
+            appName = DOLUtils.getApplicationFromEnv((JndiNameEnvironment)handle.getInvocation().getJNDIEnvironment()).getName();
+        }
+        ClassLoader backupClassLoader = null;
+        if (appName == null) {
+            // try to get environment from component ID
+            if(handle.getInvocation().getComponentId() != null && compEnvMgr != null) {
+                JndiNameEnvironment currJndiEnv = compEnvMgr.getJndiNameEnvironment(handle.getInvocation().getComponentId());
+                if(currJndiEnv != null) {
+                    com.sun.enterprise.deployment.Application appInfo = DOLUtils.getApplicationFromEnv(currJndiEnv);
+                    if(appInfo != null) {
+                        appName = appInfo.getName();
+                        // cache JNDI environment
+                        handle.getInvocation().setJNDIEnvironment(currJndiEnv);
+                        backupClassLoader = appInfo.getClassLoader();
+                    }
+                }
+            }
+        }
+
         // Check whether the application component submitting the task is still running. Throw IllegalStateException if not.
         if (!isApplicationEnabled(appName)) {
             throw new IllegalStateException("Module " + appName + " is disabled");
@@ -174,6 +201,10 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (handle.getContextClassLoader() != null) {
             resetClassLoader = Utility.setContextClassLoader(handle.getContextClassLoader());
         }
+        else if(backupClassLoader != null) {
+            resetClassLoader = Utility.setContextClassLoader(backupClassLoader);
+        }
+
         if (handle.getSecurityContext() != null) {
             resetSecurityContext = SecurityContext.getCurrent();
             SecurityContext.setCurrent(handle.getSecurityContext());
@@ -190,8 +221,8 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         }
         
         if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
-            RequestEvent requestEvent = constructConcurrentContextEvent(invocation);
-            requestTracing.traceRequestEvent(requestEvent);
+            RequestTraceSpan span = constructConcurrentContextSpan(invocation);
+            requestTracing.startTrace(span);
         }
         
         if (stuckThreads != null){
@@ -201,17 +232,19 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         return new InvocationContext(invocation, resetClassLoader, resetSecurityContext, handle.isUseTransactionOfExecutionThread());
     }
 
-    private RequestEvent constructConcurrentContextEvent(ComponentInvocation invocation) {
-        requestTracing.startTrace();
-        RequestEvent requestEvent = new RequestEvent("ConcurrentContextTrace");
+    private RequestTraceSpan constructConcurrentContextSpan(ComponentInvocation invocation) {
+        RequestTraceSpan span = new RequestTraceSpan(EventType.TRACE_START, "executeConcurrentContext");
         
-        requestEvent.addProperty("App Name", invocation.getAppName());
-        requestEvent.addProperty("Component ID", invocation.getComponentId());
-        requestEvent.addProperty("Module Name", invocation.getModuleName());
-        requestEvent.addProperty("Class Name", invocation.getInstance().getClass().getName());
-        requestEvent.addProperty("Thread Name", Thread.currentThread().getName());
+        span.addSpanTag("App Name", invocation.getAppName());
+        span.addSpanTag("Component ID", invocation.getComponentId());
+        span.addSpanTag("Module Name", invocation.getModuleName());
+        Object instance = invocation.getInstance();
+        if (instance != null) {
+            span.addSpanTag("Class Name", instance.getClass().getName());
+        }
+        span.addSpanTag("Thread Name", Thread.currentThread().getName());
         
-        return requestEvent;
+        return span;
     }
     
     @Override
@@ -267,8 +300,12 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                 // if app is null then it is likely that appId is still deploying
                 // and its enabled status has not been written to the domain.xml yet
                 // this can happen for example with a Startup EJB submitting something
-                // it its startup method. Reference Payara GitHub issue 204              
-                logger.info("Job submitted for " + appId + " likely during deployment. Continuing...");
+                // it its startup method. Reference Payara GitHub issue 204
+                if(applications.getApplications().stream().filter(it -> it.getName().startsWith(appId))
+                        .noneMatch(versionedApp -> deployment.isAppEnabled(versionedApp))) {
+                    // if any version application is enabled, don't print this message
+                    logger.log(Level.INFO, "Job submitted for {0} likely during deployment. Continuing...", appId);
+                }
                 result = true;
             }
         }
@@ -276,19 +313,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     }
 
     private ComponentInvocation createComponentInvocation(ComponentInvocation currInv) {
-//        ComponentInvocation newInv = new ComponentInvocation(
-//                currInv.getComponentId(),
-//                ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION,
-//                currInv.getContainer(),
-//                currInv.getAppName(),
-//                currInv.getModuleName()
-//        );
         ComponentInvocation newInv = currInv.clone();
         newInv.setResourceTableKey(null);
         newInv.instance = currInv.getInstance();
-//        if (naming) {
-//            newInv.setJNDIEnvironment(currInv.getJNDIEnvironment());
-//        }
         if (!naming) {
             newInv.setJNDIEnvironment(null);
         }
@@ -319,6 +346,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         invocationManager = concurrentRuntime.getInvocationManager();
         deployment = concurrentRuntime.getDeployment();
         applications = concurrentRuntime.getApplications();
+        compEnvMgr = concurrentRuntime.getCompEnvMgr();
         if (!nullTransactionManager) {
             transactionManager = concurrentRuntime.getTransactionManager();
         }

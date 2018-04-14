@@ -89,7 +89,7 @@ public class DomainBuilder {
     /** The filename contains basic template information. */
     private final static String TEMPLATE_INFO_XML = "template-info.xml";
     private final static String META_DIR_NAME = "META-INF";
-    private final static String DEFUALT_TEMPLATE_RELATIVE_PATH = "common" + File.separator + "templates" + File.separator + "gf";
+    private final static String DEFAULT_TEMPLATE_RELATIVE_PATH = "common" + File.separator + "templates" + File.separator + "gf";
 
     private DomainConfig _domainConfig;
     private JarFile _templateJar;
@@ -124,7 +124,7 @@ public class DomainBuilder {
             }
             Map<String, String> envProperties = new ASenvPropertyReader().getProps();
             templateJarPath = envProperties.get(SystemPropertyConstants.INSTALL_ROOT_PROPERTY) + File.separator
-                    + DEFUALT_TEMPLATE_RELATIVE_PATH + File.separator + defaultTemplateName;
+                    + DEFAULT_TEMPLATE_RELATIVE_PATH + File.separator + defaultTemplateName;
         }
         File template = new File(templateJarPath);
         if (!template.exists() || !template.getName().endsWith(".jar")) {

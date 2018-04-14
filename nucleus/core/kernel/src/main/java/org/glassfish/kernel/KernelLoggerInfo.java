@@ -36,8 +36,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.kernel;
 
@@ -589,7 +590,7 @@ public class KernelLoggerInfo {
     public static final String badAddress = LOGMSG_PREFIX + "-00086";
 
     @LogMessageInfo(
-            message = "Grizzly Framework {0} started in: {1}ms - bound to [{2}]",
+            message = "Grizzly {0} started in: {1}ms - bound to {2}",
             level = "INFO")
     public static final String grizzlyStarted = LOGMSG_PREFIX + "-00087";
     
@@ -649,8 +650,30 @@ public class KernelLoggerInfo {
     public static final String checkpointAutoResumeDone = LOGMSG_PREFIX + "-00096";
 
     @LogMessageInfo(
-            message = "Grizzly Framework {0} could not start - unable to bind to [{1}]",
+            message = "Network Listener `{0}` could not start - unable to bind to [{1}]",
             level = "INFO")
-    public static final String grizzlyUnableToBind = LOGMSG_PREFIX + "-00097";
+    public static final String listenerUnableToBind = LOGMSG_PREFIX + "-00097";
+    
+    @LogMessageInfo(
+            message = "Cannot find h2db client jar file, h2 jdbc driver will not be available by default.",
+            level = "INFO")
+    public static final String cantFindH2 = LOGMSG_PREFIX + "-00098";
+            
+    @LogMessageInfo(
+            message = "Propagated trace ID \"{0}\" is not a valid UUID - starting a new trace instead",
+            cause="The trace ID extracted from the request header is not a valid UUID",
+            level = "WARNING")
+    public static final String invalidPropagatedTraceId = LOGMSG_PREFIX + "-00099";
+    
+    @LogMessageInfo(
+            message = "Propagated parent ID \"{0}\" is not a valid UUID - starting a new trace instead",
+            cause="The parent ID extracted from the request header is either null or not a valid UUID",
+            level = "WARNING")
+    public static final String invalidPropagatedParentId = LOGMSG_PREFIX + "-00100";
+
+    @LogMessageInfo(
+            message = "Network Listener {0} started in: {1}ms - bound to [{2}]",
+            level = "INFO")
+    public static final String listenerStarted = LOGMSG_PREFIX + "-00101";
     
 }

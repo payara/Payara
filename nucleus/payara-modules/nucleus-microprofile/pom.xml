@@ -38,18 +38,20 @@ and therefore, elected the GPL Version 2 license, then the option applies
 only if the new code is made subject to such option by the copyright
 holder.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"> <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>fish.payara.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>4.1.2.181-SNAPSHOT</version>
+        <version>5.182-SNAPSHOT</version>
     </parent>
+    
     <groupId>fish.payara.nucleus.microprofile</groupId>
     <artifactId>nucleus-microprofile</artifactId>
     <description>Parent POM for all Nucleus Microprofile related modules</description>
     <name>Microprofile Nucleus Services</name>
     <packaging>pom</packaging>
+    
     <modules>
         <module>config-service</module>
     </modules>

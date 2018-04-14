@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.concurrent.runtime.deployer;
 
-import com.sun.logging.LogDomains;
 import org.glassfish.concurrent.runtime.ConcurrentRuntime;
 import org.glassfish.enterprise.concurrent.*;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
@@ -56,15 +56,12 @@ import java.util.logging.Logger;
 
 public class ConcurrentObjectFactory implements ObjectFactory {
 
-    private static Logger _logger = LogDomains.getLogger(ConcurrentObjectFactory.class, LogDomains.JNDI_LOGGER);
+    private static final Logger LOGGER = Logger.getLogger("javax.enterprise.concurrent","org.glassfish.concurrent.LogMessages");
 
     @Override
     public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
         Reference ref = (Reference) obj;
-        if(_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE,"ConcurrentNamingObjectFactory: " + ref +
-                    " Name:" + name);
-        }
+        LOGGER.log(Level.FINE, "ConcurrentNamingObjectFactory: {0} Name:{1}", new Object[]{ref, name});
         BaseConfig config = (BaseConfig) ref.get(0).getContent();
         ResourceInfo resourceInfo = (ResourceInfo) ref.get(1).getContent();
 

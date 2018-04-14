@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] [Payara Foundation]
  */
 package org.glassfish.admin.rest.generator;
 
@@ -231,6 +233,8 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
         if (beanName.equals("Property")) {
             classWriter.createGetChildResource("property", "PropertiesBagResource");
+        } else if (beanName.equals("MonitoredAttribute")) {
+            classWriter.createGetChildResource("monitored-attribute", "MonitoredAttributeBagResource");
         } else {
             String childResourceClassName = getClassName(beanName);
             if (childElement.isCollection()) {

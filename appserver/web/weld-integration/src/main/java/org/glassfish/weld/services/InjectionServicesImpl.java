@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.services;
 
 import com.sun.enterprise.deployment.*;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.ejb.api.EjbContainerServices;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.weld.DeploymentImpl;
@@ -67,6 +68,7 @@ import javax.xml.ws.WebServiceRef;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import org.glassfish.api.invocation.ComponentInvocation;
 
 /**
  * Class to provide actual injection of an annotation and related services
@@ -111,6 +113,12 @@ public class InjectionServicesImpl implements InjectionServices {
             EjbContainerServices containerServices = serviceLocator.getService(EjbContainerServices.class);
 
             JndiNameEnvironment componentEnv = compEnvManager.getCurrentJndiNameEnvironment();
+            if(componentEnv == null) {
+                InvocationManager invMgr = serviceLocator.getService(InvocationManager.class);
+                if (invMgr.getCurrentInvocation() != null) {
+                    componentEnv = (JndiNameEnvironment)invMgr.<ComponentInvocation>getCurrentInvocation().getJNDIEnvironment();
+                }
+            }
 
             ManagedBeanDescriptor mbDesc = null;
 
@@ -121,7 +129,8 @@ public class InjectionServicesImpl implements InjectionServices {
             String targetClassName = targetClass.getName();
             Object target = injectionContext.getTarget();
 
-            if ( isInterceptor( targetClass ) && ( ! componentEnv.equals(injectionEnv) ) ) {
+            if ( isInterceptor( targetClass )
+                    && (componentEnv != null && !componentEnv.equals(injectionEnv)) ) {
               // Resources injected into interceptors must come from the environment in which the interceptor is
               // intercepting, not the environment in which the interceptor resides (for everything else!)
               // Must use the injectionEnv to get the injection info to determine where in jndi to look for the objects to inject.

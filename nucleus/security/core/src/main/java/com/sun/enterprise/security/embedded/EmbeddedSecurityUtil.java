@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.embedded;
 
 import com.sun.enterprise.config.serverbeans.AuthRealm;
@@ -189,7 +189,6 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
                 : XMLInputFactory.newInstance(XMLInputFactory.class.getName(),
                 XMLInputFactory.class.getClassLoader());
 
-
         private static final String AUTH_REALM = "auth-realm";
         private static final String CONFIG = "config";
         private static final String CLASSNAME = "classname";
@@ -201,8 +200,9 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
         private static final String INSTANCE_DIR_PLACEHOLDER = "${com.sun.aas.instanceRoot}";
 
         DomainXmlSecurityParser(File domainXml) throws XMLStreamException, FileNotFoundException {
+            xif.setProperty("javax.xml.stream.isSupportingExternalEntities", false);
+            xif.setProperty("javax.xml.stream.isValidating", true);
             xmlReader = xif.createXMLStreamReader(new FileReader(domainXml));
-
         }
 
         private String replaceInstanceDir(String fromInstanceDir, String keyFileName) {

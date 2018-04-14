@@ -51,6 +51,7 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 
 
@@ -69,7 +70,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
 
         private String URL = null;
         private String userName = null;
-        private String password = null;
+        private char[] password = null;
         private String driverName = null;
         private int maxPool = 0;
         private int minPool = 0;
@@ -108,7 +109,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
   public ConnectionFactoryImpl(
 		String URL, 
 		String userName, 
-		String password, 
+		char[] password,
 		String driverName
 		)
   {
@@ -131,7 +132,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
   public ConnectionFactoryImpl(
 		String URL, 
 		String userName, 
-		String password, 
+		char[] password,
 		String driverName,
 		int    minPool,
                 int    maxPool
@@ -258,7 +259,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
    * Sets database user password
    * @param password      database user password
    */
-  public void setPassword (String password)
+  public void setPassword (char[] password)
   {
 	// REMOVE WHEN SUPPORTED:
 	//unsupported();
@@ -598,7 +599,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
   public boolean equals(Object obj) {
 	if ((obj != null) && (obj instanceof ConnectionFactoryImpl) ) {
 		ConnectionFactoryImpl cf = (ConnectionFactoryImpl)obj;
-		return (cf.URL.equals(this.URL) && cf.userName.equals(this.userName) && cf.driverName.equals(this.driverName) && cf.password.equals(this.password));
+		return (cf.URL.equals(this.URL) && cf.userName.equals(this.userName) && cf.driverName.equals(this.driverName) && Arrays.equals(cf.password,this.password));
 	}
 	return false;
   }
@@ -609,7 +610,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory, java.io.Seriali
   * @return A hash code of the owning ConnectionFactoryImpl as an int.
   */
   public int hashCode() {
-  	return URL.hashCode() + userName.hashCode() + password.hashCode() + driverName.hashCode();
+  	return URL.hashCode() + userName.hashCode() + Arrays.hashCode(password) + driverName.hashCode();
   }
 
 

@@ -43,6 +43,12 @@
 package org.glassfish.weld.services;
 
 import static javax.transaction.Status.STATUS_ACTIVE;
+import static javax.transaction.Status.STATUS_COMMITTING;
+import static javax.transaction.Status.STATUS_MARKED_ROLLBACK;
+import static javax.transaction.Status.STATUS_PREPARED;
+import static javax.transaction.Status.STATUS_PREPARING;
+import static javax.transaction.Status.STATUS_ROLLING_BACK;
+import static javax.transaction.Status.STATUS_UNKNOWN;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -51,8 +57,9 @@ import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import org.glassfish.hk2.api.ServiceLocator;
-import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import org.jboss.weld.transaction.spi.TransactionServices;
+
+import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 
 /**
  * Implements the services related to transactional behaviour used in JSR-299, if that behaviour is going to be
@@ -60,7 +67,7 @@ import org.jboss.weld.transaction.spi.TransactionServices;
  */
 public class TransactionServicesImpl implements TransactionServices {
 
-    private JavaEETransactionManager transactionManager = null;
+    private JavaEETransactionManager transactionManager;
 
     public TransactionServicesImpl(ServiceLocator services) {
         transactionManager = services.getService(JavaEETransactionManager.class);
@@ -72,7 +79,18 @@ public class TransactionServicesImpl implements TransactionServices {
     @Override
     public boolean isTransactionActive() {
         try {
-            return transactionManager.getStatus() == STATUS_ACTIVE;
+            switch (transactionManager.getStatus()) {
+                case STATUS_ACTIVE:
+                case STATUS_MARKED_ROLLBACK:
+                case STATUS_PREPARED:
+                case STATUS_UNKNOWN:
+                case STATUS_PREPARING:
+                case STATUS_COMMITTING:
+                case STATUS_ROLLING_BACK:
+                    return true;
+                default:
+                    return false;
+            }
         } catch (SystemException e) {
             throw new RuntimeException("Unable to determine transaction status", e);
         }
@@ -83,17 +101,14 @@ public class TransactionServicesImpl implements TransactionServices {
         try {
             transactionManager.registerSynchronization(observer);
         } catch (Exception e) {
-            throw new RuntimeException("Unable to register synchronization " + observer + 
-            " for current transaction", e);
+            throw new RuntimeException("Unable to register synchronization " + observer + " for current transaction", e);
         }
     }
 
     @Override
     public UserTransaction getUserTransaction() {
         try {
-            InitialContext c = new InitialContext();
-            UserTransaction ut = (UserTransaction)c.lookup("java:comp/UserTransaction");
-            return ut;
+            return (UserTransaction) new InitialContext().lookup("java:comp/UserTransaction");
         } catch (NamingException e) {
             return null;
         }
@@ -102,4 +117,3 @@ public class TransactionServicesImpl implements TransactionServices {
     @Override
     public void cleanup() {}
 }
-

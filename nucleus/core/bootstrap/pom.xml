@@ -42,12 +42,14 @@
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>org.glassfish.main.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>4.1.2.181-SNAPSHOT</version>
+        <version>5.182-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
+    
     <artifactId>glassfish</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -73,7 +75,8 @@
                 <role>developer</role>
             </roles>
         </developer>
-    </developers>    
+    </developers> 
+       
     <build>
         <plugins>
             <plugin>
@@ -82,13 +85,15 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-			    <classpathLayoutType>custom</classpathLayoutType>
-			    <customClasspathLayout>$${artifact.artifactId}.$${artifact.extension}</customClasspathLayout>
+			                <classpathLayoutType>custom</classpathLayoutType>
+			                <customClasspathLayout>${artifact.artifactId}.${artifact.extension}</customClasspathLayout>
                             <mainClass>com.sun.enterprise.glassfish.bootstrap.ASMain</mainClass>
                         </manifest>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
                     </archive>
                 </configuration>
             </plugin>
+            
             <plugin>
                 <!-- We package simple-glassfish-api classes in this bundle for embedded scenario,
                      we expect user to just bootstrap the runtime by installing glassfish.jar alone
@@ -119,6 +124,7 @@
             </plugin>
         </plugins>
     </build>
+    
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -140,11 +146,12 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <!-- Although we package simple-glassfish-api bundle's content in glassfish.jar,
-                 in standalone mode, we have to create a launcher classloader that has the 
-                 launching APIs and OSGi APIs in same level. SO, we need this jar to be
-                 part of distribution. Making it a compile scoped dependency forces this jar
-                 to be part of all distribution.
+            <!-- 
+                Although we package simple-glassfish-api bundle's content in glassfish.jar,
+                in standalone mode, we have to create a launcher classloader that has the 
+                launching APIs and OSGi APIs in same level. SO, we need this jar to be
+                part of distribution. Making it a compile scoped dependency forces this jar
+                to be part of all distribution.
             -->
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>simple-glassfish-api</artifactId>

@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>4.1.2.181-SNAPSHOT</version>
+        <version>5.182-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>logging</artifactId>
@@ -89,9 +89,9 @@
 	<version>${project.version}</version>
       </dependency>
         <dependency>
-            <groupId>org.codehaus.jettison</groupId>
-            <artifactId>jettison</artifactId>
-            <type>jar</type>
+            <groupId>javax.json</groupId>
+            <artifactId>javax.json-api</artifactId>
+            <version>${jsonp.version}</version>
         </dependency>
     </dependencies>
     <build>

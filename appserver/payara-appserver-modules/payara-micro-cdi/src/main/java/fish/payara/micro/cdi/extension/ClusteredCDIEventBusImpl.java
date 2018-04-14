@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,8 @@
  */
 package fish.payara.micro.cdi.extension;
 
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.Utility;
 import fish.payara.micro.cdi.Outbound;
 import fish.payara.micro.cdi.Inbound;
@@ -66,10 +68,11 @@ import javax.enterprise.inject.spi.EventMetadata;
 import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.servlet.ServletContext;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.internal.api.JavaEEContextUtil.Context;
+import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 
 /**
  *
@@ -95,50 +98,32 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     
     @PostConstruct
     void postConstruct() {
-        runtime.addCDIListener(this);
         ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
-        if (managedExecutorService == null) {
-            try {
-                InitialContext ctx = new InitialContext();
-                managedExecutorService = (ManagedExecutorService) ctx.lookup("java:comp/DefaultManagedExecutorService");
-            } catch (NamingException ex) {
-                Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
+        ExtendedDeploymentContext dc = Globals.getDefaultHabitat().getService(Deployment.class).getCurrentDeploymentContext();
+        ctxUtil.setInstanceComponentId(DOLUtils.getComponentEnvId((JndiNameEnvironment)DOLUtils.getCurrentBundleForContext(dc)));
+        try {
+            InitialContext ctx = new InitialContext();
+            managedExecutorService = (ManagedExecutorService) ctx.lookup("java:comp/DefaultManagedExecutorService");
+        } catch (NamingException ex) {
+            throw new RuntimeException(ex);
+        }
+        runtime.addCDIListener(this);
+        if (runtime.isClustered()) {
+            Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.INFO, "Clustered CDI Event bus initialized");
         }
     }
 
     @PreDestroy
     void preDestroy() {
         runtime.removeCDIListener(this);
-        ctxUtil = null;
     }
-    
-    public void onStart(@Observes @Initialized(ApplicationScoped.class) ServletContext init) {
-       initialize();
-       if (runtime.isClustered()) {
-            Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.INFO, "Clustered CDI Event bus initialized for " + init.getContextPath());
-        }
+
+    public void onStart(@Observes @Initialized(ApplicationScoped.class) Object init) {
     }
-    
+
     @Override
     public void initialize() {
-        
-        // try again
-
-        if (ctxUtil.getInvocationComponentId() == null) {
-            ctxUtil.setInstanceContext();
-        }
-        
-        if (managedExecutorService == null) {
-            try {
-                InitialContext ctx = new InitialContext();
-                managedExecutorService = (ManagedExecutorService) ctx.lookup("java:comp/DefaultManagedExecutorService");
-            } catch (NamingException ex) {
-                Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-        }
+        // deprecated now
     }
 
     @Override
@@ -197,7 +182,9 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                         Annotation annotations[] = qualifiers.toArray(new Annotation[0]);
                         bm.fireEvent(eventPayload,annotations);
                     } catch (IOException | ClassNotFoundException ex) {
-                        Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.INFO, "Received Event but could not process it", ex);
+                        Logger.getLogger(ClusteredCDIEventBusImpl.class.getName())
+                                .log(ex.getCause() instanceof IllegalStateException? Level.FINE : Level.INFO,
+                                        "Received Event but could not process it", ex);
                     } finally {
                         Utility.setContextClassLoader(oldCL);
                     }
@@ -206,35 +193,32 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
         }
     }
 
-    void onOutboundEvent(@Observes @Outbound Serializable event, EventMetadata meta) {
+    void onOutboundEvent(@Observes @Outbound Serializable event, EventMetadata meta) throws IOException {
         PayaraClusteredCDIEvent clusteredEvent;
-        
+
         // read the metadata on the Outbound Annotation to set data into the event
-        try {
-            boolean loopBack = false;
-            String eventName = "";
-            String[] instanceName = new String[0];
-            for (Annotation annotation : meta.getQualifiers()) {
-                if (annotation instanceof Outbound) {
-                    Outbound outboundattn = (Outbound)annotation;
-                    eventName = outboundattn.eventName();
-                    loopBack = outboundattn.loopBack();
-                    instanceName = outboundattn.instanceName();
-                }
+        boolean loopBack = false;
+        String eventName = "";
+        String[] instanceName = new String[0];
+        for (Annotation annotation : meta.getQualifiers()) {
+            if (annotation instanceof Outbound) {
+                Outbound outboundattn = (Outbound) annotation;
+                eventName = outboundattn.eventName();
+                loopBack = outboundattn.loopBack();
+                instanceName = outboundattn.instanceName();
             }
-            clusteredEvent = new PayaraClusteredCDIEventImpl(runtime.getLocalDescriptor(), event);
-            clusteredEvent.setLoopBack(loopBack);
-            clusteredEvent.setProperty(EVENT_PROPERTY, eventName);
-            clusteredEvent.setProperty(INSTANCE_PROPERTY, serializeArray(instanceName));
-            
-            Set<Annotation> qualifiers = meta.getQualifiers();
-            if (qualifiers != null && !qualifiers.isEmpty()) {
-                clusteredEvent.addQualifiers(qualifiers);
-            }
-            
-            runtime.publishCDIEvent(clusteredEvent);
-        } catch (IOException ex) {
         }
+        clusteredEvent = new PayaraClusteredCDIEventImpl(runtime.getLocalDescriptor(), event);
+        clusteredEvent.setLoopBack(loopBack);
+        clusteredEvent.setProperty(EVENT_PROPERTY, eventName);
+        clusteredEvent.setProperty(INSTANCE_PROPERTY, serializeArray(instanceName));
+
+        Set<Annotation> qualifiers = meta.getQualifiers();
+        if (qualifiers != null && !qualifiers.isEmpty()) {
+            clusteredEvent.addQualifiers(qualifiers);
+        }
+
+        runtime.publishCDIEvent(clusteredEvent);
     }
 
     private static final String ITEM_SEPARATOR = ",,,";  // 3 commas in case an instance name contains a comma
@@ -257,5 +241,4 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     private String[] deserializeToArray(String serializedItems) {
         return serializedItems.split(ITEM_SEPARATOR);
     }
-
 }

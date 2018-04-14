@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -555,8 +555,8 @@ public class ApplicationContext implements ServletContext {
 
         // Name cannot be null
         if (name == null)
-            throw new IllegalArgumentException
-                    (rb.getString(LogFacade.ILLEGAL_ARGUMENT_EXCEPTION));
+            throw new NullPointerException
+                    (rb.getString(LogFacade.NULL_NAME_EXCEPTION));
 
         // Null value is the same as removeAttribute()
         if (value == null) {
@@ -683,6 +683,20 @@ public class ApplicationContext implements ServletContext {
                     rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.addServlet(servletName, servletClass);
+    }
+
+    /*
+     * Adds the servlet with the given name and jsp file to this
+     * servlet context.
+    */
+    @Override
+    public ServletRegistration.Dynamic addJspFile(
+            String servletName, String jspFile) {
+        if (isRestricted) {
+            throw new UnsupportedOperationException(
+                    rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
+        }
+        return context.addJspFile(servletName, jspFile);
     }
 
     /**
@@ -961,6 +975,59 @@ public class ApplicationContext implements ServletContext {
         }
         return context.getVirtualServerName();
     }
+
+    @Override
+    public int getSessionTimeout() {
+        if (isRestricted) {
+            throw new UnsupportedOperationException(
+                    rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
+        }
+        return context.getSessionTimeout();
+    }
+
+    @Override
+    public void setSessionTimeout(int sessionTimeout) {
+        if (isRestricted) {
+            throw new UnsupportedOperationException(
+                    rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
+        }
+        context.setSessionTimeout(sessionTimeout);
+    }
+    
+	@Override
+	public String getRequestCharacterEncoding() {
+		if (isRestricted) {
+			throw new UnsupportedOperationException(rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
+		}
+		return context.getRequestCharacterEncoding();
+	}
+
+	@Override
+	public void setRequestCharacterEncoding(String encoding) {
+		if (isRestricted) {
+			throw new UnsupportedOperationException(rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
+		}
+		context.setRequestCharacterEncoding(encoding);
+	}
+
+	@Override
+	public String getResponseCharacterEncoding() {
+		if (isRestricted) {
+			throw new UnsupportedOperationException(rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
+		}
+		return context.getResponseCharacterEncoding();
+	}
+    
+    
+        @Override
+        public void setResponseCharacterEncoding(String encoding) {
+            if (isRestricted) {
+                throw new UnsupportedOperationException(
+                        rb.getString(LogFacade.UNSUPPORTED_OPERATION_EXCEPTION));
+            }
+            context.setResponseCharacterEncoding(encoding);
+        }
+    
 
     // START PWC 1.2
     /**

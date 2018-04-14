@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>fish.payara.payara-modules</groupId>
+        <artifactId>payara-nucleus-modules</artifactId>
+        <version>5.182-SNAPSHOT</version>
+    </parent>
+    <artifactId>rest-client-tracing</artifactId>
+    <packaging>glassfish-jar</packaging>
+    
+    <name>Payara REST Client Tracing</name>
+    
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>requesttracing-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+        </dependency>
+    </dependencies>
+</project>

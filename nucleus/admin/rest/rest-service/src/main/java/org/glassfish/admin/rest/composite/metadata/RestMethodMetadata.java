@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.composite.metadata;
 
@@ -48,6 +50,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -55,9 +62,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.Suspended;
 
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.OptionsCapable;
 import org.glassfish.admin.rest.composite.RestCollection;
 import org.glassfish.admin.rest.composite.RestModel;
@@ -160,61 +164,61 @@ public class RestMethodMetadata {
     public String toString() {
         try {
             return toJson().toString();
-        } catch (JSONException ex) {
+        } catch (JsonException ex) {
             return ex.getMessage();
         }
     }
 
     /**
-     * Build and return a JSON object representing the metadata for the resource method
+     * Build and return a Json object representing the metadata for the resource method
      * @return
-     * @throws JSONException
+     * @throws JsonException
      */
-    public JSONObject toJson() throws JSONException {
-        JSONObject o = new JSONObject();
+    public JsonObject toJson() throws JsonException {
+        JsonObjectBuilder o = Json.createObjectBuilder();
         if (path != null) {
-            o.put("path", path);
+            o.add("path", path);
         }
 
-        JSONObject queryParamJson = new JSONObject();
+        JsonObjectBuilder queryParamJson = Json.createObjectBuilder();
         for (ParamMetadata pmd : queryParameters) {
-            queryParamJson.put(pmd.getName(), pmd.toJson());
+            queryParamJson.add(pmd.getName(), pmd.toJson());
         }
 
         if (consumes != null) {
-            JSONArray array = new JSONArray();
+            JsonArrayBuilder array = Json.createArrayBuilder();
             for (String type : consumes) {
-                array.put(type);
+                array.add(type);
             }
-            o.put("accepts", array);
+            o.add("accepts", array);
         }
         if (produces != null) {
-            JSONArray array = new JSONArray();
+            JsonArrayBuilder array = Json.createArrayBuilder();
             for (String type : produces) {
-                array.put(type);
+                array.add(type);
             }
-            o.put("produces", array);
+            o.add("produces", array);
         }
 
-        o.put("queryParams", queryParamJson);
+        o.add("queryParams", queryParamJson);
 
         if (requestPayload != null) {
-            JSONObject requestProps = new JSONObject();
-            requestProps.put("isCollection", isCollection);
-            requestProps.put("dataType", getTypeString(requestPayload));
-            requestProps.put("properties", getProperties(requestPayload));
-            o.put("request", requestProps);
+            JsonObjectBuilder requestProps = Json.createObjectBuilder();
+            requestProps.add("isCollection", isCollection);
+            requestProps.add("dataType", getTypeString(requestPayload));
+            requestProps.add("properties", getProperties(requestPayload));
+            o.add("request", requestProps);
         }
 
         if (returnPayload != null) {
-            JSONObject returnProps = new JSONObject();
-            returnProps.put("isCollection", isCollection);
-            returnProps.put("dataType", getTypeString(returnPayload));
-            returnProps.put("properties", getProperties(returnPayload));
-            o.put("response", returnProps);
+            JsonObjectBuilder returnProps = Json.createObjectBuilder();
+            returnProps.add("isCollection", isCollection);
+            returnProps.add("dataType", getTypeString(returnPayload));
+            returnProps.add("properties", getProperties(returnPayload));
+            o.add("response", returnProps);
         }
 
-        return o;
+        return o.build();
     }
 
     /**
@@ -309,10 +313,10 @@ public class RestMethodMetadata {
      * sake, only getters are checked.
      * @param type
      * @return
-     * @throws JSONException
+     * @throws JsonException
      */
-    private JSONObject getProperties(Type type) throws JSONException {
-        JSONObject props = new JSONObject();
+    private JsonObject getProperties(Type type) throws JsonException {
+        JsonObjectBuilder props = Json.createObjectBuilder();
         Class<?> clazz;
         Map<String, ParamMetadata> map = new HashMap<String, ParamMetadata>();
         if (Util.isGenericType(type)) {
@@ -336,11 +340,11 @@ public class RestMethodMetadata {
             }
 
             for (Map.Entry<String, ParamMetadata> entry : map.entrySet()) {
-                props.put(entry.getKey(), entry.getValue().toJson());
+                props.add(entry.getKey(), entry.getValue().toJson());
             }
         }
 
-        return props;
+        return props.build();
     }
 
     protected String getTypeString(Type clazz) {

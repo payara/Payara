@@ -38,19 +38,29 @@
  * holder.
  */
 
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.common.util.logging;
 
 public class LoggingPropertyNames {
 
     public static final String GFFileHandler = "com.sun.enterprise.server.logging.GFFileHandler.";
+    
+    public static final String PYFileHandler = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.";
 
     public static final String SyslogHandler = "com.sun.enterprise.server.logging.SyslogHandler.";
 
     public static final String logRotationLimitInBytes = GFFileHandler + "rotationLimitInBytes";
+    
+    public static final String payaraNotificationLogRotationLimitInBytes  = PYFileHandler + "rotationLimitInBytes";
 
     public static final String logRotationTimelimitInMinutes = GFFileHandler + "rotationTimelimitInMinutes";
+    
+    public static final String payaraNotificationLogRotationTimelimitInMinutes  = PYFileHandler + "rotationTimelimitInMinutes";
 
     public static final String file = GFFileHandler + "file";
+    
+    public static final String payaraNotificationFile  = PYFileHandler + "file";
 
     public static final String logFormatter = GFFileHandler + "formatter";
 
@@ -61,6 +71,10 @@ public class LoggingPropertyNames {
     public static final String retainErrorStatisticsForHours = GFFileHandler + "retainErrorsStasticsForHours";
 
     public static final String logFilter = GFFileHandler + "logFilterClass";
+    
+    public static final String logToFile = GFFileHandler + "logtoFile";
+    
+    public static final String payaraNotificationLogToFile  = PYFileHandler + "logtoFile";
 
     public static final String logToConsole = GFFileHandler + "logtoConsole";
 

@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.config.serverbeans.*;
@@ -77,7 +78,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Collections;
@@ -111,7 +111,7 @@ import org.glassfish.deployment.versioning.VersioningException;
 @I18n("undeploy.command")
 @PerLookup
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
         @RestEndpoint(configBean = Applications.class, opType = RestEndpoint.OpType.DELETE, path = "undeploy", description = "Undeploy an application")
 })
@@ -239,15 +239,13 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                 domain, apps, target, matchedVersions, "delete", "delete");
     }
 
+    @Override
     public void execute(AdminCommandContext context) {
         
         
 
-        // for each matched version
-        Iterator it = matchedVersions.iterator();
-        while (it.hasNext()) {
-            String appName = (String)it.next();
-
+        // for each matched version  
+        for (String appName : matchedVersions) {
             if (target == null) {
                 target = deployment.getDefaultTarget(appName, origin, _classicstyle);
             }
@@ -362,7 +360,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
 
             deploymentContext.setModulePropsMap(
                 application.getModulePropertiesMap());
-
+            
             events.send(new Event<DeploymentContext>(Deployment.UNDEPLOYMENT_VALIDATION, deploymentContext), false);
 
             if (report.getActionExitCode()==ActionReport.ExitCode.FAILURE) {
@@ -476,6 +474,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
         }
     }
 
+    @Override
     public String getTarget(ParameterMap parameters) {
         return DeploymentCommandUtils.getTarget(parameters, origin, deployment);
     }

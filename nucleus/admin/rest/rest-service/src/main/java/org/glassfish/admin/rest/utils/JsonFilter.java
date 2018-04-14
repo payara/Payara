@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.utils;
 
@@ -48,14 +50,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
 import java.util.Set;
+import javax.json.JsonArray;
+import javax.json.JsonException;
+import javax.json.JsonObject;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 /**
  * @author tmoreau
@@ -218,7 +219,7 @@ public class JsonFilter {
         protected Result notFoundResult() { return Result.Exclude; }
     }
 
-    public JSONObject trim(JSONObject j) {
+    public JsonObject trim(JsonObject j) {
         newScope().trimJsonObject(j);
         return j;
     }
@@ -237,28 +238,28 @@ public class JsonFilter {
             }
         }
 
-        public JSONObject trim(JSONObject j) {
+        public JsonObject trim(JsonObject j) {
             (new Scope()).trimJsonObject(j);
             return j;
         }
 
-        private void trimJsonObject(JSONObject j) {
+        private void trimJsonObject(JsonObject j) {
             for (String property : getPropertyNames(j)) {
                 if (!include(property)) {
                     j.remove(property);
                 } else {
                     try {
                         Object o = j.get(property);
-                        if (o instanceof JSONObject) {
-                            JSONObject next = (JSONObject)o;
+                        if (o instanceof JsonObject) {
+                            JsonObject next = (JsonObject)o;
                             beginObjectAttr(property);
                             try {
                                 trimJsonObject(next);
                             } finally {
                                 endObjectAttr();
                             }
-                        } else if (o instanceof JSONArray) {
-                            JSONArray ar = (JSONArray)o;
+                        } else if (o instanceof JsonArray) {
+                            JsonArray ar = (JsonArray)o;
                             beginArrayAttr(property);
                             try {
                                 trimJsonArray(ar);
@@ -268,33 +269,33 @@ public class JsonFilter {
                         } else {
                             // scalar - we're done recursing
                         }
-                    } catch (JSONException e) { /* impossible since we're iterating over the known keys */ }
+                    } catch (JsonException e) { /* impossible since we're iterating over the known keys */ }
                 }
             }
         }
 
         // Can't iterate and remove properties at the same time so make a list of the properties
-        private List<String> getPropertyNames(JSONObject j) {
+        private List<String> getPropertyNames(JsonObject j) {
             List<String> rtn = new ArrayList<String>();
-            for (Iterator it = j.keys(); it.hasNext();) {
-                String property = (String)(it.next());
+            for (String property: j.keySet()){
                 rtn.add(property);
             }
+            
             return rtn;
         }
 
-        private void trimJsonArray(JSONArray ar) {
-            for (int i = 0; i < ar.length(); i++) {
+        private void trimJsonArray(JsonArray ar) {
+            for (int i = 0; i < ar.size(); i++) {
                 try {
                     Object o = ar.get(i);
-                    if (o instanceof JSONObject) {
-                        trimJsonObject((JSONObject)o);
-                    } else if (o instanceof JSONArray) { // I don't think our models support arrays of arrays, but I might be wrong
-                        trimJsonArray((JSONArray)o);
+                    if (o instanceof JsonObject) {
+                        trimJsonObject((JsonObject)o);
+                    } else if (o instanceof JsonArray) { // I don't think our models support arrays of arrays, but I might be wrong
+                        trimJsonArray((JsonArray)o);
                     } else {
                         // scalar - we're done recursing
                     }
-                } catch (JSONException e) { /* impossible since we're iterating over the known elements */ }
+                } catch (JsonException e) { /* impossible since we're iterating over the known elements */ }
             }
         }
 

@@ -37,12 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources;
 
+import com.google.common.collect.ImmutableMap;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
+import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 
 import javax.ws.rs.PUT;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -88,6 +89,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
     protected String tagName;
     protected String target;
     protected String profiler = "false";
+    protected boolean isJvmOptions = false;
 
     public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CollectionLeafResource.class);
 
@@ -107,7 +109,16 @@ public abstract class CollectionLeafResource extends AbstractResource {
         this.parent = parent;
         this.tagName = tagName;
         if (parent!=null){
-            entity = parent.leafElements(tagName);
+            if (parent.getImplementationClass().equals(JavaConfig.class) && isJvmOptions(tagName)) {
+                JavaConfig javaConfig = (JavaConfig)parent.get();
+                entity = javaConfig.getJvmRawOptions();
+                isJvmOptions = true;
+            }
+            else {
+                synchronized (parent) {
+                    entity = parent.leafElements(tagName);
+                }
+            }
 
             if (parent.getImplementationClass().equals(JavaConfig.class)) {
                 target = parent.parent().attribute("name");
@@ -146,7 +157,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
 
         if (isJvmOptions(postCommand)) {
             existing = deleteExistingOptions();
-            payload = processData(data);
+            payload = processData(data, false);
         } else {
             payload = data;
         }
@@ -156,7 +167,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
             "\"{0}\" created successfully.", "rest.resource.post.forbidden","POST on \"{0}\" is forbidden.");
         if (response.getStatus() != 200) {
             // If creating JVM options is error, restore JVM options with exsiting.  
-            payload = processData(existing);
+            payload = processData(existing, false);
             runCommand(postCommand, payload, "rest.resource.create.message",
                 "\"{0}\" created successfully.", "rest.resource.post.forbidden","POST on \"{0}\" is forbidden.");
         }
@@ -171,7 +182,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
         Map<String, String> payload = null;
 
         if (isJvmOptions(postCommand)) {
-            payload = processData(data);
+            payload = processData(data, false);
         } else {
             payload = data;
         }
@@ -195,7 +206,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
                 deleteExistingOptions();
                 return Response.ok().build();
             } else {
-                return runCommand(deleteCommand, processData(data), "rest.resource.delete.message",
+                return runCommand(deleteCommand, processData(data, true), "rest.resource.delete.message",
                     "\"{0}\" deleted successfully.", "rest.resource.delete.forbidden", "DELETE on \"{0}\" is forbidden.");
             }
         } else {
@@ -215,7 +226,14 @@ public abstract class CollectionLeafResource extends AbstractResource {
         RestActionReporter ar = new RestActionReporter();
         final String typeKey = upperCaseFirstLetter((decode(getName())));
         ar.setActionDescription(typeKey);
-        ar.getExtraProperties().put("leafList", getEntity());
+        if (isJvmOptions) {
+            ar.getExtraProperties().put("leafList", getEntity().stream().map(JvmOption::new)
+                    .map(option -> ImmutableMap.of("minVersion", option.minVersion.isPresent() ? option.minVersion.get().toString() : "",
+                            "maxVersion", option.maxVersion.isPresent()? option.maxVersion.get().toString(): "", "jvmOption", option.option)).toArray());
+        }
+        else {
+            ar.getExtraProperties().put("leafList", getEntity());
+        }
 
         OptionsResult optionsResult = new OptionsResult(Util.getResourceName(uriInfo));
         Map<String, MethodMetaData> mmd = getMethodMetaData();
@@ -322,7 +340,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
     }
 
     // Ugly, temporary hack
-    private Map<String, String> processData(Map<String, String> data) {
+    private Map<String, String> processData(Map<String, String> data, boolean removeVersioning) {
         Map<String, String> results = new HashMap<String, String>();
         StringBuilder options = new StringBuilder();
         String sep = "";
@@ -332,7 +350,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
                 results.put(key, entry.getValue());
             } else {
 //                options.append(sep).append(escapeOptionPart(entry.getKey()));
-                options.append(sep).append(entry.getKey());
+                options.append(sep).append(removeVersioning ? new JvmOption(key).option: key);
 
                 String value = entry.getValue();
                 if ((value != null) && (!value.isEmpty())) {
@@ -384,7 +402,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
             }
         }
 
-        runCommand(getDeleteCommand(), processData(existing),
+        runCommand(getDeleteCommand(), processData(existing, true),
                 "rest.resource.delete.message",
                 "\"{0}\" deleted successfully.",
                 "rest.resource.delete.forbidden",

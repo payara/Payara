@@ -39,10 +39,10 @@
  */
 package org.glassfish.admin.rest.adapter;
 
-import com.sun.enterprise.v3.common.PropsFileActionReporter;
+import static java.util.logging.Level.INFO;
+import static org.glassfish.admin.rest.RestLogging.INIT_FAILED;
+
 import java.util.Collections;
-import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -50,12 +50,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+
 import javax.inject.Inject;
 import javax.security.auth.Subject;
+
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.jersey.inject.hk2.Hk2ReferencingFactory;
 import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
@@ -77,12 +80,13 @@ import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.jvnet.hk2.annotations.Service;
 
+import com.sun.enterprise.v3.common.PropsFileActionReporter;
+
 /**
  *
  * @author martinmares
  */
 @Service
-//@RunLevel(value= InitRunLevel.VAL)
 @RunLevel(value= StartupRunLevel.VAL)
 public class JerseyContainerCommandService implements PostConstruct {
 
@@ -101,16 +105,17 @@ public class JerseyContainerCommandService implements PostConstruct {
             this.future = executor.submit(new Callable<JerseyContainer>() {
                                                      @Override
                                                      public JerseyContainer call() throws Exception {
-                                                         JerseyContainer result = exposeContext();
-                                                         return result;
+                                                         return exposeContext();
                                                      }
                                                  });
             executor.execute(new Runnable() {
                                     @Override
                                     public void run() {
-                                        CommandRunner cr = habitat.getService(CommandRunner.class);
                                         final CommandRunner.CommandInvocation invocation =
-                                                        cr.getCommandInvocation("uptime", new PropsFileActionReporter(), kernelIdentity.getSubject());
+                                        		habitat.getService(CommandRunner.class)
+                                        			   .getCommandInvocation(
+                                    					   "uptime", new PropsFileActionReporter(), kernelIdentity.getSubject());
+                                        
                                         invocation.parameters(new ParameterMap());
                                         invocation.execute();
                                     }
@@ -124,18 +129,19 @@ public class JerseyContainerCommandService implements PostConstruct {
         try {
             if (future == null) {
                 return exposeContext();
-            } else {
-                return future.get();
             }
+                
+            return future.get();
         } catch (InterruptedException ex) {
             return exposeContext();
         } catch (ExecutionException ex) {
             Throwable orig = ex.getCause();
             if (orig instanceof EndpointRegistrationException) {
                 throw (EndpointRegistrationException) orig;
-            } else {
-                RestLogging.restLogger.log(Level.INFO, RestLogging.INIT_FAILED, orig);
-            }
+            } 
+                
+            RestLogging.restLogger.log(INFO, INIT_FAILED, orig);
+            
             return null;
         }
     }
@@ -184,7 +190,8 @@ public class JerseyContainerCommandService implements PostConstruct {
             protected void configure() {
                 bindFactory(RestAdapter.SubjectReferenceFactory.class).to(new TypeLiteral<Ref<Subject>>() {
                 }).in(PerLookup.class);
-                bindFactory(ReferencingFactory.<Subject>referenceFactory()).to(new TypeLiteral<Ref<Subject>>() {
+                
+                bindFactory(Hk2ReferencingFactory.<Subject>referenceFactory()).to(new TypeLiteral<Ref<Subject>>() {
                 }).in(RequestScoped.class);
             }
         });

@@ -77,6 +77,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -2323,20 +2324,22 @@ public class VirtualServer extends StandardHost
 
         Map<String, String> servlets = facade.getAddedServlets();
         Map<String, String[]> mappings = facade.getServletMappings();
-        List<String> listeners = facade.getListeners();
+        List<String> flisteners = facade.getListeners();
         Map<String, String> filters = facade.getAddedFilters();
         Map<String, String> servletNameFilterMappings = facade.getServletNameFilterMappings();
         Map<String, String> urlPatternFilterMappings = facade.getUrlPatternFilterMappings();
 
-        if (!filters.isEmpty() || !listeners.isEmpty() || !servlets.isEmpty()) {
+        if (!filters.isEmpty() || !flisteners.isEmpty() || !servlets.isEmpty()) {
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, LogFacade.MODIFYING_WEB_XML, file.getAbsolutePath());
             }
 
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            dbFactory.setValidating(true);
+            dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = null;
-            Element webapp = null;
+            Document doc;
+            Element webapp;
 
             if ((file != null) && (file.exists())) {
                 doc = dBuilder.parse(file);
@@ -2506,7 +2509,7 @@ public class VirtualServer extends StandardHost
                 }
             }
 
-            for (String listenerStr : listeners) {
+            for (String listenerStr : flisteners) {
                 Element listener = doc.createElement("listener");
                 Element listenerClass = doc.createElement("listener-class");
                 listenerClass.setTextContent(listenerStr);

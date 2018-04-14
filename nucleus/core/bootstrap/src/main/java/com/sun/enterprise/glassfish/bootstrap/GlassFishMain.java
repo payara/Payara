@@ -37,8 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affilates
  */
+// Portions Copyright [2017-2018] Payara Foundation and/or affilates
 
 package com.sun.enterprise.glassfish.bootstrap;
 
@@ -74,7 +74,7 @@ public class GlassFishMain {
         
         String platform = MainHelper.whichPlatform();
 
-        System.out.println("Launching GlassFish on " + platform + " platform");
+        System.out.println("Launching Payara Server on " + platform + " platform");
 
         // Set the system property if downstream code wants to know about it
         System.setProperty(Constants.PLATFORM_PROPERTY_KEY, platform); // TODO(Sahoo): Why is this a system property?

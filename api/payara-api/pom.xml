@@ -1,7 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  
-  Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+  Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
  
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common Development
@@ -43,14 +44,17 @@
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
-        <version>4.1.2.181-SNAPSHOT</version>
+        <version>5.182-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
-    <groupId>fish.payara.api</groupId>
     <artifactId>payara-api</artifactId>
     <name>Payara-API</name>
     <description>Artefact that exposes public API of Payara Application Server</description>
+
+    <properties>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+    </properties>
 
     <developers>
         <developer>
@@ -78,10 +82,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>${maven.compiler.plugin.version}</version>
                 <configuration>
-                    <source>${java.compiler.source.version}</source>
-                    <target>${java.compiler.target.version}</target>
+                    <source>${javase.version}</source>
+                    <target>${javase.version}</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -132,13 +136,15 @@
                                     javax.enterprise.util
                                 </Import-Package>
                                 <Export-Package>
+                                    fish.payara.cdi.auth.roles,
                                     fish.payara.cdi.jsr107.impl,
-                                    fish.payara.micro.cdi,
                                     fish.payara.cluster,
+                                    fish.payara.micro.cdi,
                                     fish.payara.nucleus.requesttracing.api,
+                                    fish.payara.notification,
                                     fish.payara.notification.eventbus,
-                                    fish.payara.nucleus.notification.domain,
-                                    fish.payara.nucleus.notification.service
+                                    fish.payara.notification.healthcheck,
+                                    fish.payara.notification.requesttracing
                                 </Export-Package>
                             </instructions>
                         </configuration>

@@ -45,6 +45,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PreDestroy;
+import javax.enterprise.context.ContextNotActiveException;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
@@ -60,7 +61,6 @@ import javax.transaction.SystemException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.jboss.weld.context.ContextNotActiveException;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.logging.annotation.LoggerInfo;
@@ -105,7 +105,7 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
     private transient ConnectionFactory connectionFactoryPM;
     private transient JavaEETransactionManager transactionManager;
 
-    private static final boolean usePMResourceInTransaction = Boolean.getBoolean("org.glassfish.jms.skip-resource-registration-in-transaction");
+    private static final boolean usePMResourceInTransaction = Boolean.parseBoolean(System.getProperty("org.glassfish.jms.skip-resource-registration-in-transaction", "true"));
 
     @Inject
     public InjectableJMSContext(InjectionPoint ip, RequestedJMSContextManager rm) {

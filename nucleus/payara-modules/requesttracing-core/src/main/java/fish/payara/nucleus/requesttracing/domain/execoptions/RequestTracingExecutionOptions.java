@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,58 +47,102 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Configuration class that holds enable/disable value of request tracing, the threshold value with its timeunit that will
- * trigger request tracing mechainsm, and a list of notifier configurations.
+ * Configuration class that holds the dynamic configuration of the Request
+ * Tracing service.
  *
  * @author mertcaliskan
  */
 public class RequestTracingExecutionOptions {
 
-    private boolean enabled;
+    private Boolean enabled;
+    
+    private Double sampleRate;
+    private Boolean adaptiveSamplingEnabled;
+    private Integer adaptiveSamplingTargetCount;
+    private Integer adaptiveSamplingTimeValue;
+    private TimeUnit adaptiveSamplingTimeUnit;
+    
+    private Boolean applicationsOnlyEnabled;
     private Long thresholdValue;
     private TimeUnit thresholdUnit;
-    private boolean historicalTraceEnabled;
-    private Integer historicalTraceStoreSize;
-    private Long historicalTraceTimeout;
-    private Map<NotifierType, NotifierExecutionOptions> notifierExecutionOptionsList = new HashMap<NotifierType, NotifierExecutionOptions>();
-
-    /**
-     * Adds a notifier to be used with request tracing
-     * @param notifierExecutionOptions 
-     */
-    public void addNotifierExecutionOption(NotifierExecutionOptions notifierExecutionOptions) {
-        getNotifierExecutionOptionsList().put(notifierExecutionOptions.getNotifierType(), notifierExecutionOptions);
-    }
+    private Boolean sampleRateFirstEnabled;
     
-    /**
-     * Removes a notifier from the list of configured ones
-     * @param notifierExecutionOptions A notifier with the same type of this will be removed
-     */
-    public void removeNotifierExecutionOption(NotifierExecutionOptions notifierExecutionOptions) {
-        getNotifierExecutionOptionsList().remove(notifierExecutionOptions.getNotifierType());
-    }
+    private Integer traceStoreSize;
+    private Long traceStoreTimeout;
+    private Boolean reservoirSamplingEnabled;
     
-    /**
-     * Removes all notifiers from the request tracing service
-     */
-    public void resetNotifierExecutionOptions() {
-        getNotifierExecutionOptionsList().clear();
-    }
+    private Boolean historicTraceStoreEnabled;
+    private Integer historicTraceStoreSize;
+    private Long historicTraceStoreTimeout;
 
-    /**
-     * Whether request tracing is set to use the notification service at all
-     * @return 
-     */
-    public boolean isEnabled() {
+    private final Map<NotifierType, NotifierExecutionOptions> notifierExecutionOptionsList = new HashMap<>();
+
+    public Boolean isEnabled() {
+        if (enabled == null) {
+            return false;
+        }
+        
         return enabled;
     }
 
-    /**
-     * Set whether request tracing is set to use the notification service at all
-     * @param enabled 
-     */
-    public void setEnabled(boolean enabled) {
+    public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Double getSampleRate() {
+        return sampleRate;
+    }
+
+    public void setSampleRate(Double sampleRate) {
+        this.sampleRate = sampleRate;
+    }
+
+    public Boolean getSampleRateFirstEnabled() {
+        return sampleRateFirstEnabled;
+    }
+
+    public void setSampleRateFirstEnabled(Boolean sampleRateFirstEnabled) {
+        this.sampleRateFirstEnabled = sampleRateFirstEnabled;
+    }
+
+    public Boolean getAdaptiveSamplingEnabled() {
+        return adaptiveSamplingEnabled;
+    }
+
+    public void setAdaptiveSamplingEnabled(Boolean adaptiveSamplingEnabled) {
+        this.adaptiveSamplingEnabled = adaptiveSamplingEnabled;
+    }
+
+    public Integer getAdaptiveSamplingTargetCount() {
+        return adaptiveSamplingTargetCount;
+    }
+
+    public void setAdaptiveSamplingTargetCount(Integer adaptiveSamplingTargetCount) {
+        this.adaptiveSamplingTargetCount = adaptiveSamplingTargetCount;
+    }
+
+    public Integer getAdaptiveSamplingTimeValue() {
+        return adaptiveSamplingTimeValue;
+    }
+
+    public void setAdaptiveSamplingTimeValue(Integer adaptiveSamplingTimeValue) {
+        this.adaptiveSamplingTimeValue = adaptiveSamplingTimeValue;
+    }
+
+    public TimeUnit getAdaptiveSamplingTimeUnit() {
+        return adaptiveSamplingTimeUnit;
+    }
+
+    public void setAdaptiveSamplingTimeUnit(TimeUnit adaptiveSamplingTimeUnit) {
+        this.adaptiveSamplingTimeUnit = adaptiveSamplingTimeUnit;
+    }
+
+    public Boolean getApplicationsOnlyEnabled() {
+        return applicationsOnlyEnabled;
+    }
+
+    public void setApplicationsOnlyEnabled(Boolean applicationsOnlyEnabled) {
+        this.applicationsOnlyEnabled = applicationsOnlyEnabled;
     }
 
     /**
@@ -136,47 +180,67 @@ public class RequestTracingExecutionOptions {
     public void setThresholdUnit(TimeUnit thresholdUnit) {
         this.thresholdUnit = thresholdUnit;
     }
-
-    /**
-     * Returns true if a store of historic traces is enabled
-     * @return 
-     */
-    public boolean isHistoricalTraceEnabled() {
-        return historicalTraceEnabled;
-    }
-
-    /**
-     * Set whether a store of historic traces is enabled
-     * @param historicalTraceEnabled 
-     */
-    public void setHistoricalTraceEnabled(boolean historicalTraceEnabled) {
-        this.historicalTraceEnabled = historicalTraceEnabled;
-    }
-
+    
     /**
      * Gets maximum the number of traces stored
      * @return 
      */
-    public Integer getHistoricalTraceStoreSize() {
-        return historicalTraceStoreSize;
+    public Integer getTraceStoreSize() {
+        return traceStoreSize;
     }
 
     /**
      * Sets the maximum number of traces to store
-     * @param historicalTraceStoreSize 
+     * @param traceStoreSize 
      */
-    public void setHistoricalTraceStoreSize(Integer historicalTraceStoreSize) {
-        this.historicalTraceStoreSize = historicalTraceStoreSize;
+    public void setTraceStoreSize(Integer traceStoreSize) {
+        this.traceStoreSize = traceStoreSize;
     }
 
-    public Long getHistoricalTraceTimeout() {
-        return historicalTraceTimeout;
+    public Long getTraceStoreTimeout() {
+        return traceStoreTimeout;
     }
 
-    public void setHistoricalTraceTimeout(Long historicalTraceTimeout) {
-        this.historicalTraceTimeout = historicalTraceTimeout;
+    public void setTraceStoreTimeout(Long traceStoreTimeout) {
+        this.traceStoreTimeout = traceStoreTimeout;
     }
 
+    public Boolean getReservoirSamplingEnabled() {
+        return reservoirSamplingEnabled;
+    }
+
+    public void setReservoirSamplingEnabled(Boolean reservoirSamplingEnabled) {
+        this.reservoirSamplingEnabled = reservoirSamplingEnabled;
+    }
+    
+    public Boolean isHistoricTraceStoreEnabled() {
+        if (historicTraceStoreEnabled == null) {
+            return false;
+        }
+        
+        return historicTraceStoreEnabled;
+    }
+    
+    public void setHistoricTraceStoreEnabled(Boolean historicTraceStoreEnabled) {
+        this.historicTraceStoreEnabled = historicTraceStoreEnabled;
+    }
+    
+    public Integer getHistoricTraceStoreSize() {
+        return historicTraceStoreSize;
+    }
+    
+    public void setHistoricTraceStoreSize(Integer historicTraceStoreSize) {
+        this.historicTraceStoreSize = historicTraceStoreSize;
+    }
+    
+    public Long getHistoricTraceStoreTimeout() {
+        return historicTraceStoreTimeout;
+    }
+    
+    public void setHistoricTraceStoreTimeout(Long historicTraceStoreTimeout) {
+        this.historicTraceStoreTimeout = historicTraceStoreTimeout;
+    }
+    
     /**
      * Gets the notifier options configured with request tracing
      * @return 
@@ -184,17 +248,38 @@ public class RequestTracingExecutionOptions {
     public Map<NotifierType, NotifierExecutionOptions> getNotifierExecutionOptionsList() {
         return notifierExecutionOptionsList;
     }
+    
+    public void addNotifierExecutionOption(NotifierExecutionOptions notifierExecutionOptions) {
+        getNotifierExecutionOptionsList().put(notifierExecutionOptions.getNotifierType(), notifierExecutionOptions);
+    }
+
+    public void removeNotifierExecutionOption(NotifierExecutionOptions notifierExecutionOptions) {
+        getNotifierExecutionOptionsList().remove(notifierExecutionOptions.getNotifierType());
+    }
+
+    public void resetNotifierExecutionOptions() {
+        getNotifierExecutionOptionsList().clear();
+    }
 
     @Override
     public String toString() {
-        return "RequestTracingExecutionOptions{" +
-                "enabled=" + enabled +
-                ", thresholdValue=" + thresholdValue +
-                ", thresholdUnit=" + thresholdUnit +
-                ", historicalTraceEnabled=" + historicalTraceEnabled +
-                ", historicalTraceStoreSize=" + historicalTraceStoreSize +
-                ", historicalTraceTimeout=" + historicalTraceTimeout +
-                ", notifierExecutionOptionsList=" + notifierExecutionOptionsList +
-                '}';
+        return "RequestTracingExecutionOptions{"
+                + "enabled=" + enabled
+                + ", sampleRate=" + sampleRate
+                + ", adaptiveSamplingEnabled=" + adaptiveSamplingEnabled
+                + ", adaptiveSamplingTargetCount=" + adaptiveSamplingTargetCount
+                + ", adaptiveSamplingTimeValue=" + adaptiveSamplingTimeValue
+                + ", adaptiveSamplingTimeUnit=" + adaptiveSamplingTimeUnit
+                + ", applicationsOnlyEnabled=" + applicationsOnlyEnabled
+                + " ,thresholdValue=" + thresholdValue
+                + ", thresholdUnit=" + thresholdUnit
+                + ", sampleRateFirstEnabled=" + sampleRateFirstEnabled
+                + ", traceStoreSize=" + traceStoreSize
+                + ", traceStoreTimeout=" + traceStoreTimeout
+                + ", reservoirSamplingEnabled=" + reservoirSamplingEnabled
+                + ", historicTraceStoreEnabled=" + historicTraceStoreEnabled
+                + " ,historicTraceStoreSize=" + historicTraceStoreSize
+                + ", historicTraceStoreTimeout=" + historicTraceStoreTimeout
+                + "}";
     }
 }

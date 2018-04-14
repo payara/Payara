@@ -391,7 +391,7 @@ public class LinuxService extends NonSMFServiceAdapter {
     }
 
     private void setTarget() {
-        targetName = "GlassFish_" + info.serverDirs.getServerName();
+        targetName = "payara_" + info.serverDirs.getServerName();
         target = new File(INITD + "/" + targetName);
         kFile = "K" + info.kPriority + targetName;
         sFile = "S" + info.sPriority + targetName;

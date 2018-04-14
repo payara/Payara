@@ -37,10 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
+import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import static java.util.logging.Level.FINE;
 import static org.glassfish.weld.connector.WeldUtils.*;
 
@@ -74,6 +75,7 @@ import org.jboss.weld.bootstrap.spi.Metadata;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
+import org.glassfish.weld.services.InjectionServicesImpl;
 import org.jboss.weld.injection.spi.InjectionServices;
 
 /*
@@ -109,6 +111,8 @@ public class DeploymentImpl implements CDI11Deployment {
     private boolean earContextAppLibBdasProcessed = false;
 
     private String appName;
+    private String contextId;
+    final InjectionManager injectionManager;
 
     /**
      * Produce <code>BeanDeploymentArchive</code>s for this <code>Deployment</code>
@@ -118,12 +122,14 @@ public class DeploymentImpl implements CDI11Deployment {
                           Collection<EjbDescriptor> ejbs,
                           DeploymentContext context,
                           ArchiveFactory archiveFactory,
-                          String moduleName) {
+                          String moduleName,
+                          InjectionManager injectionManager) {
         if ( logger.isLoggable( FINE ) ) {
             logger.log(FINE, CDILoggerInfo.CREATING_DEPLOYMENT_ARCHIVE, new Object[]{ archive.getName()});
         }
         this.archiveFactory = archiveFactory;
         this.context = context;
+        this.injectionManager = injectionManager;
 
         // Collect /lib Jar BDAs (if any) from the parent module.
         // If we've produced BDA(s) from any /lib jars, <code>return</code> as
@@ -142,7 +148,8 @@ public class DeploymentImpl implements CDI11Deployment {
             this.appName = "CDIApp";
         }
 
-        createModuleBda(archive, ejbs, context, moduleName);
+        this.contextId = moduleName != null? moduleName : archive.getName();
+        createModuleBda(archive, ejbs, context, contextId);
     }
 
     private void addBeanDeploymentArchives(RootBeanDeploymentArchive bda) {
@@ -417,8 +424,8 @@ public class DeploymentImpl implements CDI11Deployment {
         BeanDeploymentArchive newBda =
             new BeanDeploymentArchiveImpl(beanClass.getName(),
                                           beanClasses, beanXMLUrls, ejbs, context);
-        InjectionServices injectionServices = this.getServices().get(InjectionServices.class);
-        newBda.getServices().add(InjectionServices.class, injectionServices);
+        // have to create new InjectionServicesImpl for each new BDA so injection context is propagated for the correct bundle
+        newBda.getServices().add(InjectionServices.class, new InjectionServicesImpl(injectionManager, DOLUtils.getCurrentBundleForContext(context), this));
         BeansXml beansXml = newBda.getBeansXml();
         if (beansXml == null || !beansXml.getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
             if ( logger.isLoggable( FINE ) ) {
@@ -771,5 +778,9 @@ public class DeploymentImpl implements CDI11Deployment {
 
     public String getAppName() {
         return appName;
+    }
+
+    public String getContextId() {
+        return contextId;
     }
 }

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2017] [Payara Foundation]
+// Portions Copyright [2017-2018] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -96,15 +96,12 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
     static {
         String logSource = System.getProperty(
                 "com.sun.aas.logging.keyvalue.logsource");
-        if ((logSource != null)
-                && (logSource.equals("true"))) {
+        if ((logSource != null) && (logSource.equals("true"))) {
             LOG_SOURCE_IN_KEY_VALUE = true;
         }
 
-        String recordCount = System.getProperty(
-                "com.sun.aas.logging.keyvalue.recordnumber");
-        if ((recordCount != null)
-                && (recordCount.equals("true"))) {
+        String recordCount = System.getProperty("com.sun.aas.logging.keyvalue.recordnumber");
+        if ((recordCount != null) && (recordCount.equals("true"))) {
             RECORD_NUMBER_IN_KEY_VALUE = true;
         }
 
@@ -221,17 +218,16 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
 
             // Adding messageType
             Level logLevel = record.getLevel();
+            recordBuffer.append(FIELD_BEGIN_MARKER);
             if (color()) {
                 recordBuffer.append(getColor(logLevel));
-            }
-            recordBuffer.append(FIELD_BEGIN_MARKER);
-            String odlLevel = logLevel.getLocalizedName();
+            }            String odlLevel = logLevel.getLocalizedName();
             logEvent.setLevel(odlLevel);
             recordBuffer.append(odlLevel);
-            recordBuffer.append(FIELD_END_MARKER);
             if (color()) {
                 recordBuffer.append(getReset());
             }
+            recordBuffer.append(FIELD_END_MARKER);
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
             // Adding message ID

@@ -47,7 +47,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("enable-phone-home")
-@ExecuteOn(RuntimeType.INSTANCE)
+@ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})
 public class EnablePhoneHome implements AdminCommand {
     

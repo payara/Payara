@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]"
 package com.sun.enterprise.security.ssl.impl;
 
 import com.sun.enterprise.security.ssl.manager.UnifiedX509KeyManager;
@@ -87,6 +88,8 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Singleton;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.jvnet.hk2.annotations.Optional;
 
 /**
  * This implements SecuritySupport used in PluggableFeatureFactory.
@@ -129,6 +132,9 @@ public class SecuritySupportImpl extends SecuritySupport {
     private ServiceLocator habitat;
     @Inject
     private ProcessEnvironment penv;
+    
+    @Inject @Optional
+    private ServerEnvironment senv;
 
     public SecuritySupportImpl() {
         this(true);
@@ -164,12 +170,16 @@ public class SecuritySupportImpl extends SecuritySupport {
         if (penv == null && habitat != null) {
             penv = habitat.getService(ProcessEnvironment.class);
         }
+        
+        if (senv == null && habitat != null) {
+            senv = habitat.getService(ServerEnvironment.class);
+        }
         /*
          * If we don't have a keystore password yet check the properties.
          * Always do so for the app client case whether the passwords have been
          * found from master password helper or not.
          */
-        if (keyStorePass == null || isACC()) {
+        if (keyStorePass == null || isACC() || (senv != null && senv.isMicro())) {
             final String keyStorePassOverride = System.getProperty(KEYSTORE_PASS_PROP, DEFAULT_KEYSTORE_PASS);
             if (keyStorePassOverride != null) {
                 keyStorePass = keyStorePassOverride.toCharArray();
@@ -248,6 +258,7 @@ public class SecuritySupportImpl extends SecuritySupport {
             keyStorePasswords.add(Arrays.copyOf(keyStorePass, keyStorePass.length));
             tokenNames.add(tokenName);
         } catch (Exception ex) {
+            _logger.severe("Failed to load key stores " + ex.getMessage());
             throw new IllegalStateException(ex);
         }
     }

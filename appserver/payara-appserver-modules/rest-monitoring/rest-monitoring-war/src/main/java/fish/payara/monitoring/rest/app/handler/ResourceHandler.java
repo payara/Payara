@@ -45,9 +45,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import javax.ws.rs.core.Response;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 /**
  *
@@ -68,52 +71,53 @@ public abstract class ResourceHandler {
     }
 
     /**
-     * Returns a {@link JSONObject} containing the response to the request given
+     * Returns a {@link JsonObject} containing the response to the request given
      * to the implementing class. 
      * The response is made up of a request object and a value object. 
      * In some cases the value object is removed in the case of an exception and
      * replaced with an error object.
      * 
-     * @return The {@link JSONObject} containing the response to the request.
+     * @return The {@link JsonObject} containing the response to the request.
      */
-    public JSONObject getResource() {
-        JSONObject resourceResponse = new JSONObject();
+    public JsonObject getResource() {
+        JsonObject resourceResponse = Json.createObjectBuilder().build();
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
         try {
-            JSONObject requestObject = getRequestObject();
-            resourceResponse.put(RestMonitoringAppResponseToken.getRequestKey(),
+            JsonObject requestObject = getRequestObject();
+            objectBuilder.add(RestMonitoringAppResponseToken.getRequestKey(),
                     requestObject);
 
-            Object valueObject = getValueObject();
-            resourceResponse.put(RestMonitoringAppResponseToken.getValueKey(), 
+            JsonValue valueObject = getValueObject();
+            objectBuilder.add(RestMonitoringAppResponseToken.getValueKey(), 
                     valueObject);
             
             setStatus(Response.Status.OK);
             
             if (errorThrown(status)) {
-                JSONObject traceObject = (JSONObject) resourceResponse
+                JsonObject traceObject = (JsonObject) resourceResponse
                         .get(RestMonitoringAppResponseToken.getValueKey());
                
-                resourceResponse.put(RestMonitoringAppResponseToken.getStacktraceKey(),
+                objectBuilder.add(RestMonitoringAppResponseToken.getStacktraceKey(),
                         traceObject.get(RestMonitoringAppResponseToken.getStacktraceKey()));
-                resourceResponse.put(RestMonitoringAppResponseToken.getErrorTypeKey(),
+                objectBuilder.add(RestMonitoringAppResponseToken.getErrorTypeKey(),
                         traceObject.get(RestMonitoringAppResponseToken.getErrorTypeKey()));
-                resourceResponse.put(RestMonitoringAppResponseToken.getErrorKey(),
+                objectBuilder.add(RestMonitoringAppResponseToken.getErrorKey(),
                         traceObject.get(RestMonitoringAppResponseToken.getErrorKey()));
                
                 resourceResponse.remove(RestMonitoringAppResponseToken.getValueKey());
             } else {
                 Long millis = System.currentTimeMillis();
-                resourceResponse.put(RestMonitoringAppResponseToken.getTimestampKey(),
+                objectBuilder.add(RestMonitoringAppResponseToken.getTimestampKey(),
                         millis);
             }
 
             int statusCode = status.getStatusCode();
-            resourceResponse.put(RestMonitoringAppResponseToken.getHttpStatusKey(),
+            objectBuilder.add(RestMonitoringAppResponseToken.getHttpStatusKey(),
                     statusCode);
-        } catch (JSONException ex) {
-            // @TODO - FANG-6: Properly handle any JSONException caught in the ResourceHandler class.
+        } catch (JsonException ex) {
+            // @TODO - FANG-6: Properly handle any JsonException caught in the ResourceHandler class.
             // Is this the best way to handle it? Return the response built so far and log the issue.
-            // Don't exactly want to return a JSON error in the response.
+            // Don't exactly want to return a Json error in the response.
             //
             // Options:
             //  1. Place each put in it's own try-catch block so that what can be 
@@ -124,56 +128,60 @@ public abstract class ResourceHandler {
             // internal error or something?
             Logger.getLogger(ResourceHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return resourceResponse;
+        return objectBuilder.build();
     }
 
     /**
-     * Returns a {@link JSONObject} that contains values relating to the request. 
+     * Returns a {@link JsonObject} that contains values relating to the request. 
      * 
-     * @return A {@link JSONObject} containing the value(s) relating to the request..
-     * @throws JSONException {@inheritDoc}
+     * @return A {@link JsonObject} containing the value(s) relating to the request..
+     * @throws JsonException {@inheritDoc}
      */
-    abstract JSONObject getRequestObject() throws JSONException;
+    abstract JsonObject getRequestObject() throws JsonException;
 
     /**
-     * Returns an {@link Object} that contains values relating to the target of 
+     * Returns an {@link JsonValue} that contains values relating to the target of 
      * the request. 
-     * Typically this is a primitive type or a JSONObject.
+     * Typically this is a primitive type or a JsonObject.
      * 
-     * @return An {@link Object} containing the value(s) relating to the request target.
-     * @throws JSONException {@inheritDoc}
+     * @return An {@link JsonValue} containing the value(s) relating to the request target.
+     * @throws JsonException {@inheritDoc}
      */
-    abstract Object getValueObject() throws JSONException; 
+    abstract JsonValue getValueObject() throws JsonException; 
   
-    // If the response status isn't set then will set it
+    /* If the response status isn't set then will set it
+    */
     protected void setStatus(Response.Status status) {
         if (this.status == null) {
             this.status = status;
         }
     }
 
-    // Gets the JSONObject containing information about the exception passed 
-    protected JSONObject getTraceObject(Exception exception) throws JSONException {
-        JSONObject traceObject = new JSONObject();
+    /**
+     * Gets the JsonObject containing information about the exception passed 
+    */
+    protected JsonObject getTraceObject(Exception exception) throws JsonException {
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
         exception.printStackTrace(printWriter);
 
-        traceObject.put(RestMonitoringAppResponseToken.getStacktraceKey(), 
+        objectBuilder.add(RestMonitoringAppResponseToken.getStacktraceKey(), 
                 stringWriter.toString());
 
-        traceObject.put(RestMonitoringAppResponseToken.getErrorTypeKey(), 
+        objectBuilder.add(RestMonitoringAppResponseToken.getErrorTypeKey(), 
                 exception.getClass().getCanonicalName());
 
-        traceObject.put(RestMonitoringAppResponseToken.getErrorKey(), 
+        objectBuilder.add(RestMonitoringAppResponseToken.getErrorKey(), 
                 exception.getClass().getCanonicalName() + " : " 
                         + exception.getMessage());
         
-        return traceObject;
+        return objectBuilder.build();
     }
 
-    // Returns true if one of the checked response codes is passed to it
+    /* Returns true if one of the checked response codes is passed to it
+    */
     private boolean errorThrown(Response.Status status) {
         switch (status) {
             case NOT_FOUND:

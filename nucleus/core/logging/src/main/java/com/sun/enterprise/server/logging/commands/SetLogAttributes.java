@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
-
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.server.logging.commands;
 
 import com.sun.common.util.logging.LoggingConfigImpl;
@@ -74,22 +73,13 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
-
 /**
- * Created by IntelliJ IDEA.
- * User: naman mehta
- * Date: Oct 21, 2010
- * Time: 11:48:20 AM
- * To change this template use File | Settings | File Templates.
- */
-
-/*
 * Set Log Attributes Command
 *
 * Updates one or more loggers' attributes
-*
-*
-*/
+* @author naman mehta
+* @since 3.1
+ */
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
 @CommandLock(CommandLock.LockType.NONE)
@@ -97,25 +87,25 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 @PerLookup
 @I18n("set.log.attributes")
 @RestEndpoints({
-        @RestEndpoint(configBean = Domain.class,
-                opType = RestEndpoint.OpType.POST,
-                path = "set-log-attributes",
-                description = "set-log-attributes")
+    @RestEndpoint(configBean = Domain.class,
+            opType = RestEndpoint.OpType.POST,
+            path = "set-log-attributes",
+            description = "set-log-attributes")
 })
 public class SetLogAttributes implements AdminCommand {
 
-    private static final String LINE_SEP = System.getProperty("line.separator");
-
+    private static final String LINE_SEP = System.lineSeparator();
     private static final String ROTATION_LIMIT_IN_BYTES = "com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes";
-
     private static final String ROTATION_TIMELIMIT_IN_MINUTES = "com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes";
+    private static final String PAYARA_NOTIFICATOIN_ROTATION_LIMIT_IN_BYTES = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationLimitInBytes";
+    private static final String PAYARA_NOTIFICATION_ROTATION_TIMELIMIT_IN_MINUTES = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationTimelimitInMinutes";
 
     @Param(name = "name_value", primary = true, separator = ':')
     Properties properties;
 
     @Param(optional = true)
     String target = SystemPropertyConstants.DAS_SERVER_NAME;
-    
+
     @Param(optional = true, defaultValue = "true")
     boolean validate;
 
@@ -135,44 +125,54 @@ public class SetLogAttributes implements AdminCommand {
     UnprocessedConfigListener ucl;
 
     String[] validAttributes = {"handlers", "handlerServices",
-            "java.util.logging.ConsoleHandler.formatter",
-            "com.sun.enterprise.server.logging.GFFileHandler.file",
-            ROTATION_TIMELIMIT_IN_MINUTES,
-            "com.sun.enterprise.server.logging.GFFileHandler.flushFrequency",
-            "java.util.logging.FileHandler.formatter",
-            "com.sun.enterprise.server.logging.GFFileHandler.formatter",
-            "java.util.logging.FileHandler.limit",
-            "com.sun.enterprise.server.logging.GFFileHandler.logtoConsole",
-            ROTATION_LIMIT_IN_BYTES,
-            "com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging",
-            "com.sun.enterprise.server.logging.GFFileHandler.alarms",
-            "java.util.logging.FileHandler.count",
-            "com.sun.enterprise.server.logging.GFFileHandler.retainErrorsStasticsForHours",
-            "log4j.logger.org.hibernate.validator.util.Version",
-            "com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles",
-            "java.util.logging.FileHandler.pattern",
-            "com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange",
-            "com.sun.enterprise.server.logging.GFFileHandler.logFormatDateFormat",
-            "com.sun.enterprise.server.logging.GFFileHandler.excludeFields",
-            "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode",
-            "com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation",
-            "com.sun.enterprise.server.logging.UniformLogFormatter.ansiColor",
-            "com.sun.enterprise.server.logging.UniformLogFormatter.infoColor",
-            "com.sun.enterprise.server.logging.UniformLogFormatter.warnColor",
-            "com.sun.enterprise.server.logging.UniformLogFormatter.severeColor",
-            "com.sun.enterprise.server.logging.UniformLogFormatter.loggerColor",
-            "com.sun.enterprise.server.logging.ODLLogFormatter.ansiColor",
-            "com.sun.enterprise.server.logging.ODLLogFormatter.loggerColor",
-            "com.sun.enterprise.server.logging.ODLLogFormatter.infoColor",
-            "com.sun.enterprise.server.logging.ODLLogFormatter.warnColor",
-            "com.sun.enterprise.server.logging.ODLLogFormatter.severeColor"};
+        "java.util.logging.ConsoleHandler.formatter",
+        "com.sun.enterprise.server.logging.GFFileHandler.file",
+        ROTATION_TIMELIMIT_IN_MINUTES,
+        "com.sun.enterprise.server.logging.GFFileHandler.flushFrequency",
+        "java.util.logging.FileHandler.formatter",
+        "com.sun.enterprise.server.logging.GFFileHandler.formatter",
+        "java.util.logging.FileHandler.limit",
+        "com.sun.enterprise.server.logging.GFFileHandler.logtoFile",
+        "com.sun.enterprise.server.logging.GFFileHandler.logtoConsole",
+        ROTATION_LIMIT_IN_BYTES,
+        "com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging",
+        "com.sun.enterprise.server.logging.GFFileHandler.alarms",
+        "java.util.logging.FileHandler.count",
+        "com.sun.enterprise.server.logging.GFFileHandler.retainErrorsStasticsForHours",
+        "log4j.logger.org.hibernate.validator.util.Version",
+        "com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles",
+        "java.util.logging.FileHandler.pattern",
+        "com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange",
+        "com.sun.enterprise.server.logging.GFFileHandler.logFormatDateFormat",
+        "com.sun.enterprise.server.logging.GFFileHandler.excludeFields",
+        "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode",
+        "com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation",
+        "com.sun.enterprise.server.logging.UniformLogFormatter.ansiColor",
+        "com.sun.enterprise.server.logging.UniformLogFormatter.infoColor",
+        "com.sun.enterprise.server.logging.UniformLogFormatter.warnColor",
+        "com.sun.enterprise.server.logging.UniformLogFormatter.severeColor",
+        "com.sun.enterprise.server.logging.UniformLogFormatter.loggerColor",
+        "com.sun.enterprise.server.logging.ODLLogFormatter.ansiColor",
+        "com.sun.enterprise.server.logging.ODLLogFormatter.loggerColor",
+        "com.sun.enterprise.server.logging.ODLLogFormatter.infoColor",
+        "com.sun.enterprise.server.logging.ODLLogFormatter.warnColor",
+        "com.sun.enterprise.server.logging.ODLLogFormatter.severeColor",
+        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.file",
+        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.logtoFile",
+        PAYARA_NOTIFICATION_ROTATION_TIMELIMIT_IN_MINUTES,
+        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange",
+        PAYARA_NOTIFICATOIN_ROTATION_LIMIT_IN_BYTES,
+        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.maxHistoryFiles",
+        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation",
+        "fish.payara.deprecated.jsonlogformatter.underscoreprefix"};
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SetLogLevel.class);
 
+    @Override
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
-        StringBuffer sbfSuccessMsg = new StringBuffer(LINE_SEP);
+        StringBuilder sbfSuccessMsg = new StringBuilder(LINE_SEP);
         boolean success = false;
         boolean invalidAttribute = false;
 
@@ -193,14 +193,14 @@ public class SetLogAttributes implements AdminCommand {
                                 if (e.getMessage() != null) {
                                     report.setMessage(e.getMessage() + "\n");
                                 }
-                                
+
                                 break;
                             }
                             m.put(att_name, att_value);
                             vlAttribute = true;
                             sbfSuccessMsg.append(localStrings.getLocalString(
-                                    "set.log.attribute.properties", 
-                                    "{0} logging attribute set with value {1}.", 
+                                    "set.log.attribute.properties",
+                                    "{0} logging attribute set with value {1}.",
                                     att_name, att_value)).append(LINE_SEP);
                         }
                     }
@@ -224,18 +224,18 @@ public class SetLogAttributes implements AdminCommand {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
-            
+
             TargetInfo targetInfo = new TargetInfo(domain, target);
             String targetConfigName = targetInfo.getConfigName();
             boolean isDas = targetInfo.isDas();
-            
+
             if (targetConfigName != null && !targetConfigName.isEmpty()) {
                 loggingConfig.updateLoggingProperties(m, targetConfigName);
                 success = true;
             } else if (isDas) {
                 loggingConfig.updateLoggingProperties(m);
                 success = true;
-            } 
+            }
 
             if (success) {
                 // do not record duplicate logging attribute restart events
@@ -259,7 +259,7 @@ public class SetLogAttributes implements AdminCommand {
 
                 String effectiveTarget = (isDas ? SystemPropertyConstants.DAS_SERVER_NAME : targetConfigName);
                 sbfSuccessMsg.append(localStrings.getLocalString(
-                        "set.log.attribute.success", 
+                        "set.log.attribute.success",
                         "These logging attributes are set for {0}.", effectiveTarget )).append(LINE_SEP);
                 report.setMessage(sbfSuccessMsg.toString());
                 report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
@@ -270,7 +270,7 @@ public class SetLogAttributes implements AdminCommand {
                 report.setMessage(msg);
                 return;
             }
-            
+
         } catch (IOException e) {
             report.setMessage(localStrings.getLocalString("set.log.attribute.failed",
                     "Could not set logging attributes for {0}.", target));
@@ -282,7 +282,13 @@ public class SetLogAttributes implements AdminCommand {
         if (attr_name.equals(ROTATION_LIMIT_IN_BYTES)) {
             int rotationSizeLimit = Integer.parseInt(attr_value);
             if (rotationSizeLimit != GFFileHandler.DISABLE_LOG_FILE_ROTATION_VALUE && rotationSizeLimit < GFFileHandler.MINIMUM_ROTATION_LIMIT_VALUE) {
-                throw new IllegalArgumentException("Value must be greater than " 
+                throw new IllegalArgumentException("Value must be greater than "
+                        + GFFileHandler.MINIMUM_ROTATION_LIMIT_VALUE + ".");
+            }
+        } else if (attr_name.equals(PAYARA_NOTIFICATOIN_ROTATION_LIMIT_IN_BYTES)) {
+            int PayaraNotificationRotationSizeLimit = Integer.parseInt(attr_value);
+            if (PayaraNotificationRotationSizeLimit != GFFileHandler.DISABLE_LOG_FILE_ROTATION_VALUE && PayaraNotificationRotationSizeLimit < GFFileHandler.MINIMUM_ROTATION_LIMIT_VALUE) {
+                throw new IllegalArgumentException("Value must be greater than "
                         + GFFileHandler.MINIMUM_ROTATION_LIMIT_VALUE + ".");
             }
         } else if (attr_name.equals(ROTATION_TIMELIMIT_IN_MINUTES)) {
@@ -290,7 +296,13 @@ public class SetLogAttributes implements AdminCommand {
             if (rotationTimeLimit < 0) {
                 throw new IllegalArgumentException("Value must be greater than 0.");
             }
+
+        } else if (attr_name.equals(PAYARA_NOTIFICATION_ROTATION_TIMELIMIT_IN_MINUTES)) {
+            int PayaraNotificationRotationTimeLimit = Integer.parseInt(attr_value);
+            if (PayaraNotificationRotationTimeLimit < 0) {
+                throw new IllegalArgumentException("Value must be greater than 0.");
+            }
         }
     }
-    
+
 }

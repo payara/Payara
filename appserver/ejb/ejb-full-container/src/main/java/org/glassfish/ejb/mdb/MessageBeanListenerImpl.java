@@ -37,15 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.ejb.mdb;
 
 import com.sun.appserv.connectors.internal.api.ResourceHandle;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
+import fish.payara.notification.requesttracing.EventType;
 import java.lang.reflect.Method;
 import java.util.UUID;
 import javax.jms.Destination;
@@ -103,38 +104,33 @@ public class MessageBeanListenerImpl implements MessageBeanListener {
             stuckThreadsStore.registerThread(Thread.currentThread().getId());
         }
         
-        if (requestTracing!= null && requestTracing.isRequestTracingEnabled()) {
-            requestTracing.startTrace();
-            RequestEvent re = new RequestEvent("MDB START Delivery");
-            re.addProperty("MDB Class", container_.getEjbDescriptor().getEjbClassName());
-            re.addProperty("Message Count", Long.toString(container_.getMessageCount()));
-            re.addProperty("JNDI", container_.getEjbDescriptor().getJndiName());
+        RequestTraceSpan span = null;
+        if (requestTracing!= null && requestTracing.isRequestTracingEnabled()) {            
+            span = new RequestTraceSpan(EventType.TRACE_START, "deliverMdb");
+            span.addSpanTag("MDB Class", container_.getEjbDescriptor().getEjbClassName());
+            span.addSpanTag("Message Count", Long.toString(container_.getMessageCount()));
+            span.addSpanTag("JNDI", container_.getEjbDescriptor().getJndiName());
             try {
                 javax.jms.Message msg = (javax.jms.Message) params[0];
-                 re.addProperty("JMS Type",msg.getJMSType());               
-                 re.addProperty("JMS CorrelationID",msg.getJMSCorrelationID());               
-                 re.addProperty("JMS MessageID",msg.getJMSMessageID());               
-                 re.addProperty("JMS Destination",getDestinationName(msg.getJMSDestination()));
-                 re.addProperty("JMS ReplyTo", getDestinationName(msg.getJMSReplyTo()));
+                 span.addSpanTag("JMS Type",msg.getJMSType());               
+                 span.addSpanTag("JMS CorrelationID",msg.getJMSCorrelationID());               
+                 span.addSpanTag("JMS MessageID",msg.getJMSMessageID());               
+                 span.addSpanTag("JMS Destination",getDestinationName(msg.getJMSDestination()));
+                 span.addSpanTag("JMS ReplyTo", getDestinationName(msg.getJMSReplyTo()));
                  // check RT conversation ID
                  UUID conversationID = (UUID) msg.getObjectProperty("#BAF-CID");
                  if (conversationID !=  null) {
                      // reset the conversation ID to match the received ID to 
                      // propagate the conversation across the message send
-                     requestTracing.setConversationID(conversationID);
+                     requestTracing.setTraceId(conversationID);
                  }
-            }catch (ClassCastException cce){}
-            requestTracing.traceRequestEvent(re);
+            } catch (ClassCastException cce){}
+            requestTracing.startTrace(span);
         }
         try {
             return container_.deliverMessage(params);
         }finally {
             if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
-                RequestEvent re = new RequestEvent("MDB END Delivery");
-                re.addProperty("MDB Class", container_.getEjbDescriptor().getEjbClassName());
-                re.addProperty("Message Count", Long.toString(container_.getMessageCount()));
-                re.addProperty("JNDI", container_.getEjbDescriptor().getJndiName());
-                requestTracing.traceRequestEvent(re);
                 requestTracing.endTrace();
             }
             if (stuckThreadsStore != null){

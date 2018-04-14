@@ -283,7 +283,8 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
             useMasterPassword = true;
         if (useMasterPassword)
             masterPassword = getPassword(masterPasswordOption,
-                DEFAULT_MASTER_PASSWORD, true);
+                    DEFAULT_MASTER_PASSWORD, true) != null ? new String(getPassword(masterPasswordOption,
+                DEFAULT_MASTER_PASSWORD, true)) : null;
         if (masterPassword == null)
             masterPassword = DEFAULT_MASTER_PASSWORD;
 

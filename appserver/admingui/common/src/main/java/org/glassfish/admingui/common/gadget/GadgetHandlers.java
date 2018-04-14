@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admingui.common.gadget;
 
@@ -54,14 +55,13 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.glassfish.admingui.common.util.GuiUtil;
-import org.glassfish.admingui.common.util.JSONUtil;
 import org.glassfish.admingui.connector.GadgetModule;
+import org.glassfish.admin.rest.utils.JsonUtil;
 
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.DomDocument;
@@ -234,11 +234,8 @@ public class GadgetHandlers {
 
 	// Now... lets get the output values from the "child" handler...
 	Map<String, Object> outputValues = new HashMap<String, Object>();
-	String outName;
-	Iterator<String> it = outputNames.iterator();
-	while (it.hasNext()) {
+        for (String outName: outputNames) {
 	    // For each output specified, save it in a Map to be encoded later
-	    outName = it.next();
 	    outputValues.put(outName, handler.getOutputValue(handlerCtx, outName));
 	}
 
@@ -246,12 +243,8 @@ public class GadgetHandlers {
 	handlerCtx.setHandler(oldHandler);
 
 	// Finally, translate the Map to JSON and set the String as an output
-	Integer depth = (Integer) handlerCtx.getInputValue("depth");
-	if (depth == null) {
-	    depth = 10;
-	}
-	handlerCtx.setOutputValue("values", JSONUtil.javaToJSON(outputValues, depth));
-
+        handlerCtx.setOutputValue("values", JsonUtil.getJsonValue(outputValues).toString());
+        
 	return result;
     }
     public static Object parseString(String test) {

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.weld.connector;
 
 import org.glassfish.api.deployment.DeploymentContext;
@@ -64,7 +64,7 @@ public class WeldSniffer extends GenericSniffer {
 
   public WeldSniffer() {
     // We do not haGenericSniffer(String containerName, String appStigma, String urlPattern
-    super("weld", null /* appStigma */, null /* urlPattern */);
+    super("cdi", null /* appStigma */, null /* urlPattern */);
   }
 
   /**
@@ -149,50 +149,49 @@ public class WeldSniffer extends GenericSniffer {
     return entryPresent;
   }
 
-  protected boolean isArchiveCDIEnabled(DeploymentContext context,
-                                        ReadableArchive archive,
-                                        String relativeBeansXmlPath) {
-    String beanDiscoveryMode = null;
-    InputStream beansXmlInputStream = null;
-    try {
-      beansXmlInputStream = archive.getEntry(relativeBeansXmlPath);
-      if (beansXmlInputStream != null) {
-        try {
-          beanDiscoveryMode = WeldUtils.getBeanDiscoveryMode(beansXmlInputStream);
-        } finally {
-          try {
-            beansXmlInputStream.close();
-          } catch (Exception ignore) {
-          }
-        }
-      }
-    } catch (IOException ignore) {
-    }
+	protected boolean isArchiveCDIEnabled(DeploymentContext context, ReadableArchive archive, String relativeBeansXmlPath) {
+		String beanDiscoveryMode = null;
+		InputStream beansXmlInputStream = null;
+		
+		try {
+			beansXmlInputStream = archive.getEntry(relativeBeansXmlPath);
+			if (beansXmlInputStream != null) {
+				try {
+					beanDiscoveryMode = WeldUtils.getBeanDiscoveryMode(beansXmlInputStream);
+				} finally {
+					try {
+						beansXmlInputStream.close();
+					} catch (Exception ignore) {
+					}
+				}
+			}
+		} catch (IOException ignore) {
+		}
 
-    if ( beansXmlInputStream == null ) {
-      // no beans.xml
-      try {
-        return WeldUtils.isImplicitBeanArchive(context, archive);
-      } catch (IOException e) {
-        return false;
-      }
-    }
+		if (beansXmlInputStream == null) {
+			// no beans.xml
+			try {
+				return WeldUtils.isImplicitBeanArchive(context, archive);
+			} catch (IOException e) {
+				return false;
+			}
+		}
 
-    // there is a beans.xml.
-    if (beanDiscoveryMode == null || beanDiscoveryMode.equals("all")) {
-      return true;
-    } else if (beanDiscoveryMode.equals("none")) {
-      // beanDiscoveryMode = none
-      return false;
-    }
+		// There is a beans.xml.
+		if (beanDiscoveryMode == null || beanDiscoveryMode.equals("all") || beanDiscoveryMode.equals("annotated")) {
+			return true;
+		} else if (beanDiscoveryMode.equals("none")) {
+			// beanDiscoveryMode = none
+			return false;
+		}
 
-    // last case is beanDiscoveryMode = annotated
-    try {
-      return WeldUtils.isImplicitBeanArchive(context, archive);
-    } catch (IOException e) {
-      return false;
-    }
-  }
+		// last case is beanDiscoveryMode = annotated
+		try {
+			return WeldUtils.isImplicitBeanArchive(context, archive);
+		} catch (IOException e) {
+			return false;
+		}
+	}
 
   public String[] getContainersNames() {
     return containers;

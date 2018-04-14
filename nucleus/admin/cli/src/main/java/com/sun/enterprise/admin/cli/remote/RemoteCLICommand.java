@@ -124,7 +124,7 @@ public class RemoteCLICommand extends CLICommand {
          * supplied later using the execute method in the superclass.
          */
         public CLIRemoteAdminCommand(String name, String host, int port,
-                boolean secure, String user, String password, Logger logger,
+                boolean secure, String user, char[] password, Logger logger,
                 String authToken,boolean notify)
                 throws CommandException {
             super(name, host, port, secure, user, password, logger, getCommandScope(),
@@ -205,7 +205,7 @@ public class RemoteCLICommand extends CLICommand {
                     if (user == null)
                         return false;
                 }
-                String password;
+                char[] password;
                 String puser = ok(user) ? user : programOpts.getUser();
                 if (ok(puser))
                     password = readPassword(
@@ -797,8 +797,7 @@ public class RemoteCLICommand extends CLICommand {
             }*/
             try {
                 output = rac.executeCommand(options);
-            }
-            finally {
+            } finally {
                 rac.statusPrinter.deleteLastMessage();
             }
             ar = rac.getActionReport();

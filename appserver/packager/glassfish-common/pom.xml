@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>4.1.2.181-SNAPSHOT</version>
+        <version>5.182-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-common</artifactId>
     <name>Glassfish Commons Package</name>
@@ -153,11 +153,6 @@
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>monitoring-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.cluster</groupId>
-            <artifactId>gms-bootstrap</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

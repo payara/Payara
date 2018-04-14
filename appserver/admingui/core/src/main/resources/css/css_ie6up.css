@@ -46,9 +46,9 @@ H2 {font-family:arial, helvetica, sans-serif;font-weight:bold;font-size:15px}
 H3, H4 {font-family:arial, helvetica, sans-serif;font-weight:bold;font-size:12px}
 H5, H6 {font-family:arial, helvetica, sans-serif;font-weight:bold;font-size:11px}
 .DefBdy {color:#333;background-color:#FFF;margin:0px}
-a:link {color:#003399;text-decoration:none}
-a:visited {color:#003399;text-decoration:none}
-a:hover {color:#003399;text-decoration:underline}
+a:link {color:#ffffff;text-decoration:underline}
+a:visited {color:#ffffff;text-decoration:underline}
+a:hover {color:#ffffff;text-decoration:none}
 .ConMgn {margin:0px 10px}
 
 
@@ -195,7 +195,7 @@ a.HlpFldLnk:hover {color:#003399;text-decoration:underline;font-size:11px}
 
 /* LABELS */
 .LblLev1Txt {color:#5F6466;font-weight:bold;font-size:16px}
-.LblLev2Txt {color:#5F6466;font-weight:bold}
+.LblLev2Txt {color:#ffffff;font-weight:bold}
 .LblLev3Txt {color:#333}
 .LblRqdDiv {color:#333}
 
@@ -266,7 +266,7 @@ a.LncLnk:hover {color:#003399;text-decoration:underline}
 /* New Styles */
 .LogBdy {background-color:#4A5C69;margin:0px}
 .LogTopBnd {background-color:#4A5C69}
-.LogCntTd {background-color:#fff;padding-top:120px}
+.LogCntTd {padding-top:120px}
 .LogBotBnd {background-color:#4A5C69}
 .LogMidBnd {background-color:#D4DCE1}
 

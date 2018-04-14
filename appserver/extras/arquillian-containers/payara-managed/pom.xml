@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
+  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+  Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common Development
@@ -64,7 +65,7 @@
     <parent>
         <groupId>fish.payara.arquillian</groupId>
         <artifactId>parent-payara-containers</artifactId>
-        <version>1.0.Beta2</version>
+        <version>1.0.Beta3</version>
     </parent>
 
     <artifactId>arquillian-payara-server-4-managed</artifactId>
@@ -119,6 +120,7 @@
          <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
+           <version>${version.javaee.api}</version>
         </dependency>
         
         
@@ -167,6 +169,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>${version.maven.surefire.plugin}</version>
                 <configuration>
                     <systemPropertyVariables>
                         <glassfish.home>${glassfish.home}</glassfish.home>

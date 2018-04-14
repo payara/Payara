@@ -40,16 +40,19 @@ holder.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>fish.payara.microprofile</groupId>
         <artifactId>microprofile</artifactId>
-        <version>4.1.2.181-SNAPSHOT</version>
+        <version>5.182-SNAPSHOT</version>
     </parent>
+    
     <groupId>fish.payara.microprofile.config</groupId>
     <artifactId>microprofile-config</artifactId>
+    <packaging>glassfish-jar</packaging>
     <name>Microprofile-Config</name>
     <description>Implementation of Microprofile Configuration API</description>
-    <packaging>glassfish-jar</packaging>
+    
     <dependencies>
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
@@ -71,14 +74,10 @@ holder.
         <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
-            <version>1.2</version>
-            <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>7.0</version>
-            <type>jar</type>
+             <groupId>javax.enterprise</groupId>
+             <artifactId>cdi-api</artifactId>
         </dependency>
     </dependencies>
 </project>

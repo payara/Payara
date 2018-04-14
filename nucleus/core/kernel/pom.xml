@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>4.1.2.181-SNAPSHOT</version>
+        <version>5.182-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>kernel</artifactId>
@@ -273,12 +273,20 @@
         </dependency>
 
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
-            <version>${hibernate.validator.version}</version>
-            <classifier>payara-p1</classifier>
         </dependency>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.el</artifactId>
+        </dependency>
+        
     </dependencies>
+    
     <profiles>
         <profile>
             <id>jdk5</id>

@@ -69,7 +69,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
-import org.jvnet.hk2.config.types.Property;
+import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
 
 /**
  * Asadmin command to set the monitoring service's configuration.
@@ -81,7 +81,7 @@ import org.jvnet.hk2.config.types.Property;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("set.monitoring.configuration")
 @ExecuteOn(RuntimeType.DAS)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
@@ -111,11 +111,11 @@ public class SetMonitoringConfiguration implements AdminCommand {
     @Param(name = "logfrequencyunit", optional = true, acceptableValues = "NANOSECONDS,MILLISECONDS,SECONDS,MINUTES,HOURS,DAYS")
     private String logfrequencyunit;
 
-    @Param(name = "addproperty", optional = true, multiple = true)
-    private List<String> propertiesToAdd;
+    @Param(name = "addattribute", optional = true, multiple = true, alias = "addproperty")
+    private List<String> attributesToAdd;
 
-    @Param(name = "delproperty", optional = true, multiple = true)
-    private List<String> propertiesToDelete;
+    @Param(name = "delattribute", optional = true, multiple = true, alias = "delproperty")
+    private List<String> attributesToRemove;
 
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     protected Boolean dynamic;
@@ -143,7 +143,7 @@ public class SetMonitoringConfiguration implements AdminCommand {
                 @Override
                 public Object run(final MonitoringServiceConfiguration monitoringConfigProxy) throws PropertyVetoException, TransactionFailure {
                     updateConfiguration(monitoringConfigProxy);
-                    updateAttributes(actionReport, monitoringConfigProxy);
+                    updateAttributes(monitoringConfigProxy, actionReport);
                     actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                     return monitoringConfigProxy;
                 }
@@ -218,33 +218,69 @@ public class SetMonitoringConfiguration implements AdminCommand {
      * @throws PropertyVetoException
      * @throws TransactionFailure
      */
-    private void updateAttributes(ActionReport actionReport, MonitoringServiceConfiguration monitoringConfig) throws PropertyVetoException, TransactionFailure {
-        List<Property> attributes = monitoringConfig.getProperty();
-
-        if (propertiesToDelete != null && !propertiesToDelete.isEmpty()) {
-            for (String delProperty : propertiesToDelete) {
-                Property property = parseToProperty(delProperty, monitoringConfig.createChild(Property.class));
-                for (Property attribute : attributes) {
-                    if (attribute.getName().equals(property.getName()) && attribute.getValue().equals(property.getValue())) {
+    private void updateAttributes(MonitoringServiceConfiguration monitoringConfig, ActionReport report) throws PropertyVetoException, TransactionFailure {
+        List<MonitoredAttribute> attributes = monitoringConfig.getMonitoredAttributes();
+        
+        // If there are attributes to be removed
+        if (attributesToRemove != null && !attributesToRemove.isEmpty()) {
+            // Loop through them
+            for (String attributeToRemove : attributesToRemove) {
+                // Parse the provided attribute
+                MonitoredAttribute monitoredAttribute = parseToMonitoredAttribute(attributeToRemove, monitoringConfig.createChild(MonitoredAttribute.class));
+                boolean removed = false;
+                // Find the attribute matching the one specified
+                for (MonitoredAttribute attribute : attributes) {
+                    if (attribute.equals(monitoredAttribute)) {
                         attributes.remove(attribute);
+                        report.appendMessage(monitoringService.getLocalStringManager().getLocalString(
+                                "jmxmonitoring.configure.attribute.remove",
+                                "Attribute 'objectName={0} attributeName={1}' successfully deleted.",
+                                monitoredAttribute.getObjectName(), monitoredAttribute.getAttributeName()) + "\n");
+                        removed = true;
                         break;
                     }
+                }
+                if (!removed) {
+                    report.appendMessage(monitoringService.getLocalStringManager().getLocalString(
+                                "jmxmonitoring.configure.attribute.remove.error",
+                                "Attribute 'objectName={0} attributeName={1}' doesn't exist, so was ignored.",
+                                monitoredAttribute.getObjectName(), monitoredAttribute.getAttributeName()) + "\n");
                 }
             }
         }
 
-        if (propertiesToAdd != null && !propertiesToAdd.isEmpty()) {
-            for (String addProperty : propertiesToAdd) {
-                Property property = parseToProperty(addProperty, monitoringConfig.createChild(Property.class));
-                attributes.add(property);
+        if (attributesToAdd != null && !attributesToAdd.isEmpty()) {
+            for (String attributeToAdd : attributesToAdd) {
+                MonitoredAttribute monitoredAttribute = parseToMonitoredAttribute(attributeToAdd, monitoringConfig.createChild(MonitoredAttribute.class));
+                boolean attributeExists = false;
+                for(MonitoredAttribute attribute : attributes) {
+                    if (attribute.equals(monitoredAttribute)) {
+                        attributeExists = true;
+                        report.appendMessage(monitoringService.getLocalStringManager().getLocalString(
+                                "jmxmonitoring.configure.attribute.add.error",
+                                "Attribute 'objectName={0} attributeName={1}' already exists, so was ignored.",
+                                monitoredAttribute.getObjectName(), monitoredAttribute.getAttributeName()) + "\n");
+                        break;
+                    }
+                }
+                if (!attributeExists) {
+                    attributes.add(monitoredAttribute);
+                    report.appendMessage(monitoringService.getLocalStringManager().getLocalString(
+                            "jmxmonitoring.configure.attribute.add",
+                            "Attribute 'objectName={0} attributeName={1}' successfully added.",
+                            monitoredAttribute.getObjectName(), monitoredAttribute.getAttributeName()) + "\n");
+                }
             }
         }
     }
-
+    
+    
+    
     /**
-     * Produces a {@link org.jvnet.hk2.config.types.Property Property} from a
-     * given string. The string should be in the following format:
-     * 'name=something value=something description=something'.
+     * Produces a
+     * {@link fish.payara.jms.monitoring.configuration.MonitoredBean MonitoredAttribute}
+     * from a given string. The string should be in the following format:
+     * 'attribute=something objectName=something description=something'.
      *
      * @param input the string to be parsed
      * @param property the property to configure as per the input string.
@@ -252,28 +288,33 @@ public class SetMonitoringConfiguration implements AdminCommand {
      * @throws PropertyVetoException if a config listener vetoes a property
      * attribute value.
      */
-    private Property parseToProperty(String input, Property property) throws PropertyVetoException {
+    private MonitoredAttribute parseToMonitoredAttribute(String input, MonitoredAttribute monitoredAttribute) throws PropertyVetoException {
         // Negative lookbehind - find space characters not preceeded by \
-        String[] propertyTokens = input.split("(?<!\\\\) ");
-        String name = null;
-        String value = null;
+        String[] attributeTokens = input.split("(?<!\\\\) ");
+        String attributeName = null;
+        String objectName = null;
         String description = null;
 
-        if (propertyTokens.length < 2) {
+        if (attributeTokens.length < 2) {
             throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
-                            "jmxmonitoring.configure.attributes.too.few",
-                            "Too few attributes. Required attributes are 'name' and 'value'."));
+                    "jmxmonitoring.configure.attributes.too.few",
+                    "Too few properties. Required properties are 'objectName' and 'attributeName'."));
         }
 
-        for (String token : propertyTokens) {
+        for (String token : attributeTokens) {
             token = token.replaceAll("\\\\", "");
             String[] param = token.split("=", 2);
+            if (param.length != 2) {
+                throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
+                        "jmxmonitoring.configure.attributes.too.few",
+                        "Too few properties. Required properties are 'objectName' and 'attributeName'."));
+            }
             switch (param[0]) {
-                case "name":
-                    name = (param.length == 2) ? param[1] : null;
+                case "attributeName": case "name":
+                    attributeName = (param.length == 2) ? param[1] : null;
                     break;
-                case "value":
-                    value = (param.length == 2) ? param[1] : null;
+                case "objectName": case "value":
+                    objectName = (param.length == 2) ? param[1] : null;
                     break;
                 case "description":
                     description = (param.length == 2) ? param[1] : null;
@@ -281,30 +322,30 @@ public class SetMonitoringConfiguration implements AdminCommand {
                 default:
                     throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
                             "jmxmonitoring.configure.attributes.unknown",
-                            "Unknown attribute: {0}. Valid attributes are: 'name', 'value' and 'description'.",
+                            "Unknown property: {0}. Valid properties are: 'objectName', 'attributeName' and 'description'.",
                              param[0]));
             }
         }
-        if (name == null || name.isEmpty()) {
+        if (attributeName == null || attributeName.isEmpty()) {
             throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
                             "jmxmonitoring.configure.attributes.invalid",
-                            "Invalid attribute: {0}.",
-                             "name"));
+                            "Invalid property: {0}.",
+                             "attributeName"));
         }
-        if (value == null || value.isEmpty()) {
+        if (objectName == null || objectName.isEmpty()) {
             throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
                             "jmxmonitoring.configure.attributes.invalid",
-                            "Invalid attribute: {0}.",
-                             "value"));
+                            "Invalid property: {0}.",
+                             "objectName"));
         }
 
-        property.setName(name);
-        property.setValue(value);
+        monitoredAttribute.setAttributeName(attributeName);
+        monitoredAttribute.setObjectName(objectName);
 
         if (description != null) {
-            property.setDescription(description);
+            monitoredAttribute.setDescription(description);
         }
-        return property;
+        return monitoredAttribute;
     }
 
 }

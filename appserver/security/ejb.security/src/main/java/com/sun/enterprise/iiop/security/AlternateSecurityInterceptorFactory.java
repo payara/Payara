@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.iiop.security;
 
 import org.omg.IOP.Codec;
@@ -50,7 +50,9 @@ import org.omg.PortableInterceptor.ServerRequestInterceptor;
  * @author Sudarsan Sridhar
  */
 public interface AlternateSecurityInterceptorFactory {
-    public static final String SEC_INTEROP_INTFACTORY_PROP="com.sun.enterprise.iiop.security.interceptorFactory";
-    public ClientRequestInterceptor getClientRequestInterceptor(Codec codec);
-    public ServerRequestInterceptor getServerRequestInterceptor(Codec codec);
+    String SEC_INTEROP_INTFACTORY_PROP = "com.sun.enterprise.iiop.security.interceptorFactory";
+
+    ClientRequestInterceptor getClientRequestInterceptor(Codec codec);
+
+    ServerRequestInterceptor getServerRequestInterceptor(Codec codec);
 }

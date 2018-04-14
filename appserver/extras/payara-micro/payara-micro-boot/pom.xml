@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -45,12 +45,13 @@
     <parent>
         <groupId>fish.payara.extras.payara-micro</groupId>
         <artifactId>payara-micro-parent</artifactId>
-        <version>4.1.2.181-SNAPSHOT</version>
+        <version>5.182-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.micro</groupId>
     <artifactId>payara-micro-boot</artifactId>
-    <description>Payara Micro Boot</description>
     <packaging>glassfish-jar</packaging>
+    <name>Payara Micro Boot</name>
+    <description>Payara Micro Edition Boot</description>
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -62,8 +63,7 @@
 	<dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
-            <version>7.0</version>
-            <type>jar</type>
+            <version>${javaee.api.version}</version>
             <optional>true</optional>
         </dependency>
     </dependencies>

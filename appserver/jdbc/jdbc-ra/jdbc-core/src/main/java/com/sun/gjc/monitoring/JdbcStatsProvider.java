@@ -38,21 +38,22 @@
  * holder.
  */
 
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.gjc.monitoring;
 
 import com.sun.gjc.util.SQLTrace;
-import com.sun.gjc.util.FrequentSQLTraceCache;
+import fish.payara.jdbc.stats.FrequentSQLTraceCache;
 import fish.payara.jdbc.stats.SlowSqlTrace;
 import fish.payara.jdbc.stats.SlowSqlTraceCache;
+import java.util.List;
 import org.glassfish.external.probe.provider.annotations.ProbeListener;
 import org.glassfish.external.probe.provider.annotations.ProbeParam;
 import org.glassfish.external.statistics.CountStatistic;
-import org.glassfish.external.statistics.StringStatistic;
 import org.glassfish.external.statistics.impl.CountStatisticImpl;
+import org.glassfish.external.statistics.ListStatistic;
+import org.glassfish.external.statistics.impl.ListStatisticImpl;
 import org.glassfish.external.statistics.impl.StatisticImpl;
-import org.glassfish.external.statistics.impl.StringStatisticImpl;
 import org.glassfish.gmbal.AMXMetadata;
 import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
@@ -69,11 +70,11 @@ import org.glassfish.resourcebase.resources.api.PoolInfo;
 @Description("JDBC RA Statistics")
 public class JdbcStatsProvider {
 
-    private StringStatisticImpl freqUsedSqlQueries = new StringStatisticImpl(
+    private ListStatisticImpl freqUsedSqlQueries = new ListStatisticImpl(
             "FreqUsedSqlQueries", "List",
             "Most frequently used sql queries");
     
-    private StringStatisticImpl slowSqlQueries = new StringStatisticImpl("SlowSqlQueries", "List", "Slowest SQL Queries");
+    private ListStatisticImpl slowSqlQueries = new ListStatisticImpl("SlowSqlQueries", "List", "Slowest SQL Queries");
     
     private CountStatisticImpl numStatementCacheHit = new CountStatisticImpl(
             "NumStatementCacheHit", StatisticImpl.UNIT_COUNT,
@@ -207,20 +208,32 @@ public class JdbcStatsProvider {
     }
 
     @ManagedAttribute(id="frequsedsqlqueries")
-    public StringStatistic getfreqUsedSqlQueries() {
-        if(freqSqlTraceCache != null) {
-            //This is to ensure that only the queries in the last "time-to-keep-
-            //queries-in-minutes" is returned back.
-            freqUsedSqlQueries.setCurrent(freqSqlTraceCache.getTopQueries());
+    public ListStatistic getfreqUsedSqlQueries() {
+        List<SQLTrace> sqlTraces = freqSqlTraceCache.getTopQueries();
+        freqUsedSqlQueries = new ListStatisticImpl("frequsedsqlqueries", "List", "Most frequently used sql queries");
+        
+        for (SQLTrace trace : sqlTraces){
+            CountStatisticImpl stat = new CountStatisticImpl(trace.getQueryName(), "Count", "");
+            stat.setCount(trace.getNumExecutions());
+            freqUsedSqlQueries.add(stat);
         }
+        
         return freqUsedSqlQueries;
     }
     
     @ManagedAttribute(id = "slowSqlQueries")
-    public StringStatistic getSlowSqlQueries() {
-        if (slowSqlTraceCache != null) {
-            slowSqlQueries.setCurrent(slowSqlTraceCache.getSlowestSqlQueries());
+    public ListStatistic getSlowSqlQueries() {
+        //Make sure no data from previous execution is kept
+        slowSqlQueries.reset();
+        slowSqlQueries.clear();
+        //Get slow queries and process them
+        List<SlowSqlTrace> slowTraces = slowSqlTraceCache.getSlowestSqlQueries();
+        for (SlowSqlTrace trace: slowTraces){
+            CountStatisticImpl stat = new CountStatisticImpl(trace.getQueryName(), StatisticImpl.UNIT_MILLISECOND, "Longest execution time");
+            stat.setCount(trace.getSlowestExecutionTime());
+            slowSqlQueries.add(stat);
         }
+        
         return slowSqlQueries;
     }
 

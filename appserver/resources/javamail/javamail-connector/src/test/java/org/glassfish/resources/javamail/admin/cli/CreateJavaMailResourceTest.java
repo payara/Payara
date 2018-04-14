@@ -42,31 +42,35 @@
 
 package org.glassfish.resources.javamail.admin.cli;
 
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.v3.common.PropsFileActionReporter;
-import com.sun.logging.LogDomains;
+import static com.sun.logging.LogDomains.ADMIN_LOGGER;
+import static com.sun.logging.LogDomains.getLogger;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.hk2.api.ServiceLocator;
-
-import com.sun.enterprise.config.serverbeans.Resource;
-import com.sun.enterprise.config.serverbeans.ResourceRef;
-import com.sun.enterprise.config.serverbeans.Resources;
 import org.glassfish.resources.javamail.config.MailResource;
+import org.glassfish.security.services.api.authorization.AuthorizationService;
+import org.glassfish.security.services.impl.authorization.AuthorizationServiceImpl;
 import org.glassfish.tests.utils.ConfigApiTest;
 import org.junit.After;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.TransactionFailure;
+
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.ResourceRef;
+import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.Servers;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import com.sun.enterprise.v3.common.PropsFileActionReporter;
 
 
 public class CreateJavaMailResourceTest extends ConfigApiTest {
@@ -87,14 +91,28 @@ public class CreateJavaMailResourceTest extends ConfigApiTest {
 
     @Before
     public void setUp() {
+    		System.out.println("\n\n *** Entering setup method *** \n\n");
+    		System.out.println("Current dir: " + System.getProperty("user.dir") + "\n");
+    	
+    		AuthorizationService foo = new AuthorizationServiceImpl();
+    		
+    		System.out.println("Direct instantiation: " + foo);
+    	
         habitat = getHabitat();
+        
+        foo = habitat.getService(AuthorizationService.class);
+        
+        System.out.println("Lookup via habitat: " + foo + "\n");
+        
         resources = habitat.<Domain>getService(Domain.class).getResources();
         assertTrue(resources != null);
+        
         parameters = new ParameterMap();
         context = new AdminCommandContextImpl(
-                LogDomains.getLogger(CreateJavaMailResourceTest.class, LogDomains.ADMIN_LOGGER),
-                new PropsFileActionReporter());
+                		getLogger(CreateJavaMailResourceTest.class, ADMIN_LOGGER),
+                		new PropsFileActionReporter());
         cr = habitat.getService(CommandRunner.class);
+        
         assertTrue(cr != null);
     }
 

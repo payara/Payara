@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2018] [Payara Foundation and/or its affiliates]
  */
 
 package com.sun.enterprise.v3.services.impl;
@@ -53,6 +55,7 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -71,6 +74,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.glassfish.api.FutureProvider;
@@ -84,6 +89,7 @@ import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.event.RestrictTo;
 import org.glassfish.common.util.Constants;
+import org.glassfish.grizzly.Grizzly;
 import org.glassfish.grizzly.config.GenericGrizzlyListener;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -538,11 +544,32 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
             boolean isAtLeastOneProxyStarted = false;
             
             futures = new ArrayList<Future<Result<Thread>>>();
+
+            // Record how long it took for the listeners to start up
+            final long startTime = System.currentTimeMillis();
+
+            // Keep a list of successfully started listeners
+            List<NetworkListener> startedListeners = new ArrayList<>();
             for (NetworkListener listener : networkConfig.getNetworkListeners().getNetworkListener()) {
-                isAtLeastOneProxyStarted |= (createNetworkProxy(listener) != null);
+                if (createNetworkProxy(listener) != null) {
+                    isAtLeastOneProxyStarted = true;
+                    startedListeners.add(listener);
+                }
             }
             
             if (isAtLeastOneProxyStarted) {
+                
+                // Get the startup time
+                final long startupTime = System.currentTimeMillis() - startTime;
+
+                // Log the listeners which started.
+                String boundAddresses = Arrays.toString(
+                        startedListeners.stream()
+                            .map(listener -> listener.getAddress() + ":" + listener.getPort())
+                            .collect(Collectors.toList())
+                        .toArray());
+                LOGGER.log(Level.INFO, KernelLoggerInfo.grizzlyStarted,
+                        new Object[] { Grizzly.getDotedVersion(), startupTime, boundAddresses });
                 registerContainerAdapters();
             }
         } catch(RuntimeException e) { // So far postConstruct can not throw any other exception type

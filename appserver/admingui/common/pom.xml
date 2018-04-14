@@ -40,13 +40,14 @@
     holder.
 
 -->
-<!--"Portions Copyright [2016] [Payara Foundation]" -->
+<!--"Portions Copyright [2016-2018] [Payara Foundation]" -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>4.1.2.181-SNAPSHOT</version>
+        <version>5.182-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-common</artifactId>
@@ -154,6 +155,12 @@
            <artifactId>console-common-help</artifactId>
            <version>${v3-docs.version}</version>
            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.admin</groupId>
+            <artifactId>rest-service</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
 </project>

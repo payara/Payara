@@ -85,6 +85,9 @@
      <sun:property id="ClientAuthProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.clientAuthLabel}" helpText="$resource{i18n.ssl.clientAuthHelp}" >
         <sun:checkbox id="ClientAuth" label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['clientAuthEnabled']}" selectedValue="true" />
      </sun:property>
+    <sun:property id="SNIEnabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.sniEnabledLabel}" helpText="$resource{i18n.ssl.sniEnabledHelp}">
+        <sun:checkbox id="SniEnabled" label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['sniEnabled']}" selectedValue="true"/>
+     </sun:property>
      <sun:property id="CertNicknameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.certNicknameLabel}" helpText="$resource{i18n.ssl.certNicknameHelp}" >
         <sun:textField id="CertNickname" styleClass="required" required="#{true}" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.ssl.certNickname']}" text="#{pageSession.valueMap['certNickname']}" />
      </sun:property>

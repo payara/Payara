@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,11 +43,10 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.enterprise.resource.pool.PoolStatus;
+import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
-import fish.payara.nucleus.healthcheck.HealthCheckResultEntry;
 import fish.payara.nucleus.healthcheck.cpool.configuration.ConnectionPoolChecker;
 import fish.payara.nucleus.healthcheck.preliminary.BaseThresholdHealthCheck;
-import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.jdbc.config.JdbcResource;

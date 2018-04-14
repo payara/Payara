@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.readers;
 
@@ -50,6 +52,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import javax.json.stream.JsonParser;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.WebApplicationException;
@@ -58,8 +65,6 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.MessageBodyReader;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.composite.RestModel;
@@ -92,21 +97,23 @@ public class RestModelListReader implements MessageBodyReader<List<RestModel>> {
             Locale locale = CompositeUtil.instance().getLocale(httpHeaders);
             List<RestModel> list = new ArrayList<RestModel>();
             BufferedReader in = new BufferedReader(new InputStreamReader(entityStream));
-            StringBuilder sb = new StringBuilder();
-            String line = in.readLine();
-            while (line != null) {
-                sb.append(line);
-                line = in.readLine();
+            
+            JsonParser parser = Json.createParser(in);
+            JsonArray array;
+            if (parser.hasNext()){
+                parser.next();
+                array = parser.getArray();
+            } else {
+                array = JsonValue.EMPTY_JSON_ARRAY;
             }
-
-            JSONArray array = new JSONArray(sb.toString());
+            
             Class<?> modelType = null;
             if (genericType instanceof ParameterizedType) {
                 final ParameterizedType pt = (ParameterizedType) genericType;
                 modelType = (Class) pt.getActualTypeArguments()[0];
             }
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject o = array.getJSONObject(i);
+            for (int i = 0; i < array.size(); i++) {
+                JsonObject o = array.getJsonObject(i);
                 RestModel model = (RestModel) CompositeUtil.instance().unmarshallClass(locale, modelType, o);
                 Set<ConstraintViolation<RestModel>> cv = CompositeUtil.instance()
                         .validateRestModel(locale, model);

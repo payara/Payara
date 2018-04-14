@@ -3,19 +3,19 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2015 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://oss.oracle.com/licenses/CDDL+GPL-1.1
+    or LICENSE.txt.  See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -40,20 +40,23 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] [Payara Foundation] -->
+<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
-	<groupId>org.glassfish.main.web</groupId>
-    	<artifactId>web</artifactId>
-        <version>4.1.2.181-SNAPSHOT</version>
+	      <groupId>org.glassfish.main.web</groupId>
+    	  <artifactId>web</artifactId>
+        <version>5.182-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
+
     <artifactId>weld-integration</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>Weld integration for glassfish</name>
-    
+
     <developers>
         <developer>
             <id>mm110999</id>
@@ -66,7 +69,7 @@
             <organization>Oracle, Inc.</organization>
         </developer>
     </developers>
-    
+
     <properties>
         <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
     </properties>
@@ -89,7 +92,7 @@
             </resource>
         </resources>
     </build>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.glassfish</groupId>
@@ -113,7 +116,7 @@
             <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>deployment-javaee-full</artifactId>
             <version>${project.version}</version>
-            <!-- Since weld-integration artifact is part of web distro and we 
+            <!-- Since weld-integration artifact is part of web distro and we
                  don't want deployment-javaee-full to be part of web distro, we
                  mark this dependency as optional for it to be excluded by packager
             -->
@@ -122,7 +125,6 @@
         <dependency>
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-osgi-bundle</artifactId>
-            <classifier>glassfish4</classifier>
             <exclusions>
                 <exclusion>
                     <groupId>org.jboss.weld</groupId>
@@ -130,7 +132,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.jboss.weld</groupId>
-                    <artifactId>weld-core</artifactId>
+                    <artifactId>weld-core-impl</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.jboss.weld</groupId>
@@ -157,6 +159,16 @@
         <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>gf-weld-connector</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>glassfish-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.ejb</groupId>
+            <artifactId>ejb-container</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

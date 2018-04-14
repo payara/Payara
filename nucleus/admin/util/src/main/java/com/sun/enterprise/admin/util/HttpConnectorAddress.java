@@ -38,15 +38,17 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.util;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URLConnection;
-import com.sun.enterprise.universal.GFBase64Encoder;
+import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLSocketFactory;
@@ -302,8 +304,8 @@ public final class HttpConnectorAddress {
         return authInfo != null ? authInfo.getUser() : "";
     }
 
-    private String getPassword() {
-        return authInfo != null ? authInfo.getPassword() : "";
+    private char[] getPassword() {
+        return authInfo != null ? authInfo.getPassword().toCharArray() : "".toCharArray();
     }
 
     private URLConnection openConnection(URL url) throws IOException    {
@@ -341,7 +343,7 @@ public final class HttpConnectorAddress {
          * character with empty string "" works. Hence implementing the same.
          * Date: 10/10/2003.
          */
-        String cs = null, user = this.getUser(), pass = this.getPassword();
+        String cs = null, user = this.getUser(), pass = this.getPassword() != null ? new String(this.getPassword()) : null;
         String up = (user == null) ? "" : user;
         String pp = (pass == null) ? "" : pass;
         cs = up + ":" + pp;
@@ -351,7 +353,7 @@ public final class HttpConnectorAddress {
     }
   
     private String getBase64Encoded(String clearString) {
-        return new GFBase64Encoder().encode(clearString.getBytes());
+        return new String(Base64.getMimeEncoder().encode(clearString.getBytes()), UTF_8);
     }
 
     public static class BasicHostnameVerifier implements HostnameVerifier {

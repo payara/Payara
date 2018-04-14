@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,9 +36,10 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates] 
  */
 
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates] 
 
 package org.glassfish.grizzly.config.dom;
 
@@ -96,8 +97,19 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     String COMPRESSION_PATTERN = "on|off|force|\\d+";
     String DEFAULT_ADAPTER = "org.glassfish.grizzly.http.server.StaticHttpHandler";
     String URI_ENCODING = "UTF-8";
-    String VERSION = "HTTP/1.1";
     String SCHEME_PATTERN = "http|https";
+
+    // HTTP2 properties
+    boolean HTTP2_ENABLED = true;
+    int HTTP2_MAX_CONCURRENT_STREAMS = 100;
+    int HTTP2_INITIAL_WINDOW_SIZE_IN_BYTES = 64 * 1024 - 1;
+    int HTTP2_MAX_FRAME_PAYLOAD_SIZE_IN_BYTES = (1 << 24) - 1;
+    int HTTP2_MAX_HEADER_LIST_SIZE_IN_BYTES = 4096;
+    float HTTP2_STREAMS_HIGH_WATER_MARK = 0.5f;
+    float HTTP2_CLEAN_PERCENTAGE = 0.5f;
+    int HTTP2_CLEAN_FREQUENCY_CHECK = 50;
+    boolean HTTP2_DISABLE_CIPHER_CHECK = false;
+    boolean HTTP2_PUSH_ENABLED = true;
 
     @Attribute(defaultValue = DEFAULT_ADAPTER)
     String getAdapter();
@@ -183,16 +195,6 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     FileCache getFileCache();
 
     void setFileCache(FileCache value);
-
-    @Element
-    Spdy getSpdy();
-
-    void setSpdy(Spdy value);
-
-    @Element
-    Http2 getHttp2();
-
-    void setHttp2(Http2 value);
 
     /**
      * The response type to be forced if the content served cannot be matched by any of the MIME mappings for
@@ -329,14 +331,6 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     void setUriEncoding(String encoding);
 
     /**
-     * The version of the HTTP protocol used by the HTTP Service
-     */
-    @Attribute(defaultValue = VERSION)
-    String getVersion();
-
-    void setVersion(String version);
-
-    /**
      * The HTTP scheme (http or https) to override HTTP request scheme picked up
      * by Grizzly or web-container during HTTP request processing.
      */
@@ -457,6 +451,101 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     String getAllowPayloadForUndefinedHttpMethods();
 
     void setAllowPayloadForUndefinedHttpMethods(String allowPayloadForUndefinedHttpMethods);
+
+    // ---------------------------------------------------- HTTP2 CONFIGURATION
+
+    /**
+     * Controls whether or not HTTP/2 is enabled.
+     * The default is true.
+     */
+    @Attribute(defaultValue = "" + HTTP2_ENABLED, dataType = Boolean.class)
+    boolean isHttp2Enabled();
+
+    void setHttp2Enabled(boolean http2Enabled);
+
+    /**
+     * Configures the number of concurrent streams allowed per HTTP2 connection.
+     * The default is 100.
+     */
+    @Attribute(defaultValue = "" + HTTP2_MAX_CONCURRENT_STREAMS, dataType = Integer.class)
+    int getHttp2MaxConcurrentStreams();
+
+    void setHttp2MaxConcurrentStreams(int maxConcurrentStreams);
+
+    /**
+     * Configures the initial window size in bytes.  The default is 64K - 1.
+     */
+    @Attribute(defaultValue = "" + HTTP2_INITIAL_WINDOW_SIZE_IN_BYTES, dataType = Integer.class)
+    int getHttp2InitialWindowSizeInBytes();
+
+    void setHttp2InitialWindowSizeInBytes(int initialWindowSizeInBytes);
+
+    /**
+     * Configures the maximum size of the HTTP2 frame payload to be accepted.
+     * The default is 2^24 - 1.
+     */
+    @Attribute(defaultValue = "" + HTTP2_MAX_FRAME_PAYLOAD_SIZE_IN_BYTES, dataType = Integer.class)
+    int getHttp2MaxFramePayloadSizeInBytes();
+
+    void setHttp2MaxFramePayloadSizeInBytes(int maxFramePayloadSizeInBytes);
+
+    /**
+     * Configures the maximum size, in bytes, of the header list. The default is 4096.
+     */
+    @Attribute(defaultValue = "" + HTTP2_MAX_HEADER_LIST_SIZE_IN_BYTES, dataType = Integer.class)
+    int getHttp2MaxHeaderListSizeInBytes();
+
+    void setHttp2MaxHeaderListSizeInBytes(int maxHeaderListSizeInBytes);
+
+    /**
+     * Streams are periodically cleaned when the stream count exceeds this value,
+     * as a proportion of the {@link HTTP2_MAX_CONCURRENT_STREAMS}.
+     * The default is 0.5.
+     */
+    @Attribute(defaultValue = "" + HTTP2_STREAMS_HIGH_WATER_MARK)
+    @Pattern(regexp = "[01](?:(?=\\.)\\.\\d+f?|f?)", message = "Must be a valid float between 0 and 1")
+    String getHttp2StreamsHighWaterMark();
+
+    void setHttp2StreamsHighWaterMark(String streamsHighWaterMark);
+
+    /**
+     * The number of streams to process when the {@link HTTP2_STREAMS_HIGH_WATER_MARK}
+     * is exceeded. Only closed streams will be removed.
+     * The default is 0.5.
+     */
+    @Attribute(defaultValue = "" + HTTP2_CLEAN_PERCENTAGE)
+    @Pattern(regexp = "[01](?:(?=\\.)\\.\\d+f?|f?)", message = "Must be a valid float between 0 and 1")
+    String getHttp2CleanPercentage();
+
+    void setHttp2CleanPercentage(String cleanPercentage);
+
+    /**
+     * The number of streams that must be closed before checking if the number of streams
+     * exceeds the {@link HTTP2_STREAMS_HIGH_WATER_MARK}.
+     * The default is 50.
+     */
+    @Attribute(defaultValue = "" + HTTP2_CLEAN_FREQUENCY_CHECK, dataType = Integer.class)
+    int getHttp2CleanFrequencyCheck();
+
+    void setHttp2CleanFrequencyCheck(int cleanFrequencyCheck);
+
+    /**
+     * Controls whether or not insecure cipher suites are allowed to establish TLS connections.
+     * The default is false.
+     */
+    @Attribute(defaultValue = "" + HTTP2_DISABLE_CIPHER_CHECK, dataType = Boolean.class)
+    boolean isHttp2DisableCipherCheck();
+
+    void setHttp2DisableCipherCheck(boolean disableCipherCheck);
+
+    /**
+     * Controls whether or not push is allowed by the server endpoints.
+     * The default is true.
+     */
+    @Attribute(defaultValue = "" + HTTP2_PUSH_ENABLED, dataType = Boolean.class)
+    boolean isHttp2PushEnabled();
+
+    void setHttp2PushEnabled(boolean pushEnabled);
 
     @DuckTyped
     Protocol getParent();

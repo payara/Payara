@@ -40,6 +40,8 @@
     holder.
 
 -->
+<!--"Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]" -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -131,8 +133,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <inherited>true</inherited>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>${javase.version}</source>
+                    <target>${javase.version}</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -153,7 +155,6 @@
              </plugin>
             <plugin>
               <artifactId>maven-surefire-plugin</artifactId>
-              <version>2.11</version>
             </plugin>
        </plugins>
     </build>

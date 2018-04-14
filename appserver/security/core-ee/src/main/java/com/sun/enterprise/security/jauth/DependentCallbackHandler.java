@@ -37,23 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jauth;
 
 /**
  * A marker interface that may be implemented by a CallBackHandler.
  * <p>
- * When a CallbackHandler that implements this interface, is passed
- * as an argument to the getServerAuthContext or getClientAuthContext
- * methods of the AuthConfig class, the AuthConfig system will wrap 
- * the handler in a special internal CallbackHandler that will 
- * delegate any unsupported Callbacks to the default CallbackHandler
- * of the AuthConfig system. The modules of the context will receive
- * this wrapping handler at initialization, and the effect will be to
- * allow systems to extend or override the callbacks handled by the 
- * default handler of the config system with those handled by the wrapped
- * handler.
+ * When a CallbackHandler that implements this interface, is passed as an argument to the getServerAuthContext or
+ * getClientAuthContext methods of the AuthConfig class, the AuthConfig system will wrap the handler in a special
+ * internal CallbackHandler that will delegate any unsupported Callbacks to the default CallbackHandler of the
+ * AuthConfig system. The modules of the context will receive this wrapping handler at initialization, and the effect
+ * will be to allow systems to extend or override the callbacks handled by the default handler of the config system with
+ * those handled by the wrapped handler.
  *
  * @version %I%, %G%
  */
-public interface DependentCallbackHandler { }
+public interface DependentCallbackHandler {
+}

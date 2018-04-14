@@ -40,19 +40,19 @@
     holder.
 
 -->
-<!-- // Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<!--"Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]" -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.glassfish.main.ejb</groupId>
         <artifactId>ejb</artifactId>
-        <version>4.1.2.181-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.182-SNAPSHOT</version>
     </parent>
 
     <artifactId>ejb-container</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>GlassFish Core EJB container implementation</name>
 
     <developers>
@@ -130,6 +130,7 @@
             </plugin>
         </plugins>
     </build>
+
     <dependencies>
         <dependency>
             <groupId>javax.ejb</groupId>
@@ -140,18 +141,14 @@
             <artifactId>ejb-client</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
-        <!-- these 2 dependencies are for compilation only  -->
-        <dependency>
-            <groupId>javax.xml.soap</groupId>
-            <artifactId>javax.xml.soap-api</artifactId>
-            <optional>true</optional>
-        </dependency>        
+
+        <!-- This dependency is for compilation only  -->
         <dependency>
             <groupId>org.glassfish.metro</groupId>
             <artifactId>webservices-api-osgi</artifactId>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2-core</artifactId>
@@ -248,12 +245,12 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2.external</groupId>
-            <artifactId>asm-all-repackaged</artifactId>
+            <artifactId>asm-repackaged</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.pfl</groupId>
             <artifactId>pfl-dynamic</artifactId>
-	    <optional>true</optional> 
+	    <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.orb</groupId>
@@ -263,11 +260,6 @@
         <dependency>
             <groupId>org.glassfish.ha</groupId>
             <artifactId>ha-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.cluster</groupId>
-            <artifactId>gms-bootstrap</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.annotations</groupId>
@@ -283,6 +275,12 @@
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

@@ -1,66 +1,68 @@
 ![#badassfish](payara-logo-blue.png)
 
-## About Payara
+# Payara Server 5
 
-The [Payara Foundation](http://www.payara.org) is a non-profit foundation whose mission is to ensure the continued development and maintenance of Payara Server and Payara Micro as open source software for the benefit of its community of users.
+Payara Server 5 is a patched, enhanced, and supported application server derived from GlassFish Server Open Source Edition 5.x.
 
-***Payara Server*** is a patched, enhanced, and supported application server derived from GlassFish Server Open Source Edition, beginning from GlassFish version 4.1.  
-***Payara Micro*** is a new distribution, initially built from the Payara Server Embedded Web release and since enhanced with many new features to focus on cloud-native, elastically scalable environments. Payara Micro features automatic, dynamic clustering powered by Hazelcast.
+Payara Server 5 development is coordinated by the Payara Foundation, a UK not-for-profit organisation.
 
-Visit [payara.fish](https://www.payara.fish) for full 24/7 support and lots of free resources.
+Visit [www.payara.fish](http://www.payara.fish) for full 24/7 support and lots of free resources.
 
-Information about the Open Source project is on the [GitHub project page](http://www.payara.org).
+Information about the open source project is on the [GitHub project page](https://payara.github.io/Payara/).
 
-**Full Payara Server and Payara Micro documentation can be found at [docs.payara.fish](https://docs.payara.fish)**
+**Full Payara Server 5 and Payara Micro documentation:** https://payara.gitbooks.io/payara-server/content/ 
 
-Payara Server is a drop in replacement for GlassFish Server Open Source with the peace of mind of quarterly releases containing enhancements, bug fixes and patches including patches to dependent libraries, as required, including Tyrus, Eclipse Link, Jersey and others. Our vision is to optimise Payara Server and make it the best server for production Java applications with responsive 24/7 dedicated incident and software support from the best middleware engineers in the industry. Payara Server continues to draw fixes and features from upstream GlassFish in addition to fixes written by Payara developers. Additional features are also added, such as JCache support through Hazelcast and support for Eclipse MicroProfile.
+Payara Server 5 is a drop in replacement for GlassFish Server Open Source with the peace of mind of quarterly releases containing enhancements, bug fixes and patches including patches to dependent libraries, as required, including Tyrus, Eclipse Link, Jersey and others. Our vision is to optimise Payara Server and make it the best server for production Java applications with responsive 24/7 dedicated incident and software support from the best middleware engineers in the industry.
 
-We have added full JCache support, enhanced JBatch functionality, replaced Shoal with Hazelcast for session clustering, and are driving development of Payara Micro; a completely new way of running WAR applications on top of an embedded Payara Server core, Payara Micro is ideally suited to cloud and microservice architectures with elastic clustering and no installation. Payara Micro can run WAR applications simply using:
+We have added full JCache support, enhanced JBatch functionality, replaced Shoal with Hazelcast for session clustering and are driving development of Payara Micro. A completely new way of running WAR applications on top of an embedded GlassFish core, Payara Micro is ideally suited to cloud and microservice architectures with elastic clustering and no installation. Payara Micro can run WAR applications simply, using:
 
-```
+```Shell
 java -jar payara-micro.jar --deploy test.war
 ```
 
-In summary, Payara Server provides:
+In summary Payara Server provides:
 
-* Fully supported server derived from GlassFish 4.x Open Source Edition
-* Drop-in replacement for GlassFish Open Source Edition
-* Production enhancements including JCache, JBatch, and Hazelcast session clustering.
+* Fully Supported Server derived from GlassFish 5.x Open Source Edition
+* Drop in Replacement for GlassFish Open Source Edition
+* Microprofile 1.2 api support
+* Supports deployment of JavaEE 8 applications
+* Production Enhancements including JCache, JBatch, and Hazelcast session clustering.
 * Payara Micro for cloud and microservice deployments
-* Always open source dual licensed CDDL/GPL
+* Always Open Source dual licensed CDDL/GPL
 * Supported by dedicated engineers 24/7
-* Incident and software support
+* Incident and Software Support
 * Optimised for production and operations
-* Quarterly patch releases and bug fixes
-* Stability Stream releases, including only fixes, available for support customers
+* Quarterly Patch Releases / Bug Fixes
 
-## Supported JDKs and Operating Systems
+We take GlassFish, support it, add fixes, add enhancements and we release it as open source Payara Server.
 
-Payara Server currently supports the following JDKs:
+## Supported JDKs and OSs
 
-* Oracle JDK 7/8
-* Azul Zulu 7/8
-* OpenJDK 7/8
-* IBM J9 7/8
+Payara Server 5 currently supports the following JDKs:
 
-Payara Server currently supports the following operating systems:
+* Azul Zulu 8
+* IBM J9 8 [Payara Blue Only]
+* OpenJDK 8
+* Oracle JDK 8
+
+Payara Server 5 currently supports the following OSs:
 
 * Windows 7+
 * Windows Server 2008+
-* Ubuntu 14.04 LTS (Trusty Tahr)+
+* Ubuntu 14.04 (Trusty Tahr)+
 * Debian 7 (Wheezy)+
 * CentOS 6+
 * RHEL 5+
 * OpenSUSE 42.2+
 * SUSE 11.4 & 12.2+
 * AIX 7.3 TL3+
-* macOS(OSX) 10.10.5 (Yosemite)+
+* MacOS(OSX) 10.10.5 (Yosemite)+
 
 ## Tested Platforms
 
 While not all environments are tested, if it is on a supported JVM we will provide support for customers and address issues reported by the community. Other platforms can always be supported in the future.
 
-Payara Server is currently tested on the following platforms:
+Payara Server 5 is currently tested on the following platforms:
 
 |                       |Oracle JDK     |Azul Zulu      |OpenJDK        |IBM J9 |
 |---                    |---            |---            |---            |---    |
@@ -71,8 +73,10 @@ Payara Server is currently tested on the following platforms:
 |Debian 8               |✓              |               |               |       |
 |CentOS 7               |✓              |               |               |       |
 |OpenSUSE 42.2          |✓              |               |               |       |
-|AIX 7.3 TL3            |               |               |               |✓       |
+|AIX 7.3 TL3            |               |               |               |✓      |
 |macOS      10.12.5     |✓              |               |               |       |
 
-GlassFish is a trademark of Oracle Corporation.  
-Payara is a trademark of Payara Foundation.
+
+GlassFish is a trademark of the Eclipse Foundation.
+Payara is a trademark of the Payara Foundation.
+

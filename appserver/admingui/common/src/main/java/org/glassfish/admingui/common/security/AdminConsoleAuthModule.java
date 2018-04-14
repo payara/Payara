@@ -37,309 +37,355 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.admingui.common.security;
 
+import static java.util.logging.Level.INFO;
+import static javax.security.auth.message.AuthStatus.SEND_CONTINUE;
+import static javax.security.auth.message.AuthStatus.SEND_FAILURE;
+import static javax.security.auth.message.AuthStatus.SUCCESS;
+import static javax.ws.rs.core.MediaType.APPLICATION_FORM_URLENCODED;
+
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.Principal;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.message.AuthException;
 import javax.security.auth.message.AuthStatus;
 import javax.security.auth.message.MessageInfo;
 import javax.security.auth.message.MessagePolicy;
 import javax.security.auth.message.callback.CallerPrincipalCallback;
 import javax.security.auth.message.module.ServerAuthModule;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
-
-import org.glassfish.hk2.api.ServiceLocator;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestResponse;
 import org.glassfish.admingui.common.util.RestUtil;
 import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.security.SecurityServicesUtil;
 
 /**
- *  <p>	This class is responsible for providing the Authentication support
- *	needed by the admin console to both access the admin console pages
- *	as well as invoke REST requests.</p>
+ * <p>
+ * This class is responsible for providing the Authentication support needed by the admin console to both access the
+ * admin console pages as well as invoke REST requests.
+ * </p>
  */
 public class AdminConsoleAuthModule implements ServerAuthModule {
-    //public static final String TOKEN_ADMIN_LISTENER_PORT = "${ADMIN_LISTENER_PORT}";
 
-    private CallbackHandler handler = null;
-
-    private String restURL = null;
-
-    private String loginPage = null;
-
-    private String loginErrorPage = null;
-
-    private static final Class[] SUPPORTED_MESSAGE_TYPES = new Class[]{HttpServletRequest.class, HttpServletResponse.class};
+    private static final Logger logger = GuiUtil.getLogger();
+    
+    private static final Class<?>[] SUPPORTED_MESSAGE_TYPES = { HttpServletRequest.class, HttpServletResponse.class };
 
     private static final String SAVED_SUBJECT = "Saved_Subject";
-
     private static final String USER_NAME = "userName";
-
     private static final String ORIG_REQUEST_PATH = "origRequestPath";
-
     private static final String RESPONSE_TYPE = "application/json";
 
     /**
-     *	The Session key for the REST Server Name.
+     * The Session key for the REST Server Name.
      */
     public static final String REST_SERVER_NAME = "serverName";
 
     /**
-     *	The Session key for the REST Server Port.
+     * The Session key for the REST Server Port.
      */
     public static final String REST_SERVER_PORT = "serverPort";
 
     /**
-     *	The Session key for the REST authentication token.
+     * The Session key for the REST authentication token.
      */
     public static final String REST_TOKEN = "__rTkn__";
 
-    private static final Logger logger = GuiUtil.getLogger();
+    private CallbackHandler handler;
+    private String restURL;
+    private String loginPage;
+    private String loginErrorPage;
 
     /**
-     *	<p> This method configures this AuthModule and makes sure all the
-     *	    information needed to continue is present.</p>
+     * <p>
+     * This method configures this AuthModule and makes sure all the information needed to continue is present.
+     * </p>
      */
     @Override
-    public void initialize(MessagePolicy requestPolicy, MessagePolicy responsePolicy, CallbackHandler handler, Map options) throws AuthException {
+    public void initialize(MessagePolicy requestPolicy, MessagePolicy responsePolicy, CallbackHandler handler, @SuppressWarnings("rawtypes") Map options) throws AuthException {
         this.handler = handler;
+        
         if (options != null) {
-            this.loginPage = (String) options.get("loginPage");
+            loginPage = (String) options.get("loginPage");
             if (loginPage == null) {
-                throw new AuthException("'loginPage' "
-                        + "must be supplied as a property in the provider-config "
-                        + "in the domain.xml file!");
+                throw new AuthException(
+                        "'loginPage' " + "must be supplied as a property in the provider-config " + "in the domain.xml file!");
             }
-            this.loginErrorPage = (String) options.get("loginErrorPage");
+            
+            loginErrorPage = (String) options.get("loginErrorPage");
             if (loginErrorPage == null) {
-                throw new AuthException("'loginErrorPage' "
-                        + "must be supplied as a property in the provider-config "
-                        + "in the domain.xml file!");
+                throw new AuthException(
+                        "'loginErrorPage' " + "must be supplied as a property in the provider-config " + "in the domain.xml file!");
             }
-            ServiceLocator habitat = SecurityServicesUtil.getInstance().getHabitat();
-            Domain domain = habitat.getService(Domain.class);
-            NetworkListener adminListener = domain.getServerNamed("server").getConfig().getNetworkConfig().getNetworkListener("admin-listener");
-            SecureAdmin secureAdmin = habitat.getService(SecureAdmin.class);
-
-            final String host = adminListener.getAddress();
+            
             // Save the REST URL we need to authenticate the user.
-            this.restURL =  (SecureAdmin.Util.isEnabled(secureAdmin) ? "https://" : "http://") +
-                    (host.equals("0.0.0.0") ? "localhost" : host) + ":" + adminListener.getPort() + "/management/sessions";
+            restURL = getAuthenticationURL();
         }
     }
-
-    /**
-     *
-     */
+    
     @Override
+    @SuppressWarnings("rawtypes")
     public Class[] getSupportedMessageTypes() {
         return SUPPORTED_MESSAGE_TYPES;
     }
 
     /**
-     *	<p> This is where the validation happens...</p>
+     * <p>
+     * This is where the validation happens...
+     * </p>
      */
     @Override
     public AuthStatus validateRequest(MessageInfo messageInfo, Subject clientSubject, Subject serviceSubject) throws AuthException {
-        // Make sure we need to check...
-        HttpServletRequest request =
-                (HttpServletRequest) messageInfo.getRequestMessage();
-        HttpServletResponse response =
-                (HttpServletResponse) messageInfo.getResponseMessage();
-        if (!isMandatory(messageInfo)
-                && !request.getRequestURI().endsWith("/j_security_check")) {
-            return AuthStatus.SUCCESS;
+        
+        HttpServletRequest request = (HttpServletRequest) messageInfo.getRequestMessage();
+        HttpServletResponse response = (HttpServletResponse) messageInfo.getResponseMessage();
+        
+        if (!isMandatory(messageInfo) && !request.getRequestURI().endsWith("/j_security_check")) {
+            return doNothing(clientSubject);
         }
 
-        // See if we've already checked...
         HttpSession session = request.getSession(true);
-        if (session == null) {
-            return AuthStatus.FAILURE;
-        }
 
-        Subject savedClientSubject = (Subject) session.getValue(SAVED_SUBJECT);
-        if (savedClientSubject != null) {
-            // Copy all principals...
-            clientSubject.getPrincipals().addAll(savedClientSubject.getPrincipals());
-            clientSubject.getPublicCredentials().addAll(savedClientSubject.getPublicCredentials());
-            clientSubject.getPrivateCredentials().addAll(savedClientSubject.getPrivateCredentials());
-            return AuthStatus.SUCCESS;
+        Subject savedClientSubject = (Subject) session.getAttribute(SAVED_SUBJECT);
+        String savedUsername = (String) session.getAttribute(USER_NAME);
+        
+        if (savedClientSubject != null && savedUsername != null) {
+            
+            // Caller authenticated before, re-apply authentication for this request
+            return notifyContainerAboutLogin(clientSubject, savedUsername);
         }
 
         // See if we've already calculated the serverName / serverPort
-        if (session.getValue(REST_SERVER_NAME) == null) {
-            // Save this for use later...
-            URL url = null;
-            try {
-                url = new URL(restURL);
-            } catch (MalformedURLException ex) {
-                throw new IllegalArgumentException(
-                        "Unable to parse REST URL: (" + restURL + ")", ex);
-            }
-            session.putValue(REST_SERVER_NAME, url.getHost());
-            session.putValue(REST_SERVER_PORT, url.getPort());
+        if (session.getAttribute(REST_SERVER_NAME) == null) {
+            saveServerHostPort(session);
         }
 
         // See if the username / password has been passed in...
         String username = request.getParameter("j_username");
-        String password = request.getParameter("j_password");
-        if ((username == null) || (password == null) || !request.getMethod().equalsIgnoreCase("post")) {
-            // Not passed in, show the login page...
-            String origPath = request.getRequestURI();
-            String qs = request.getQueryString();
-            if ((qs != null) && (!qs.isEmpty())) {
-                origPath += "?" + qs;
-            }
-            session.setAttribute(ORIG_REQUEST_PATH, origPath);
-            RequestDispatcher rd = request.getRequestDispatcher(loginPage);
-            try {
-                rd.forward(request, response);
-            } catch (Exception ex) {
-                AuthException ae = new AuthException();
-                ae.initCause(ex);
-                throw ae;
-            }
-            return AuthStatus.SEND_CONTINUE;
+        char[] password = request.getParameter("j_password") != null
+                ? request.getParameter("j_password").toCharArray() : null;
+        
+        if (username == null || password == null || !request.getMethod().equalsIgnoreCase("post")) {
+            
+            // Credentials not passed in, show the login page
+            return saveRequestAndForwardToLogin(session, request, response);
         }
 
-// Don't use the PasswordValidationCallback... use REST authorization instead.
-//	char[] pwd = new char[password.length()];
-//	password.getChars(0, password.length(), pwd, 0);
-//	PasswordValidationCallback pwdCallback =
-//	    new PasswordValidationCallback(clientSubject, username, pwd);
+        // Credentials provided, validte them via a REST based identity store
+        RestResponse validationResult = validateCredentials(request, username, password);
 
-        // Make REST Request
-
-        Client client2 = RestUtil.initialize(ClientBuilder.newBuilder()).build();
-        WebTarget target = client2.target(restURL);
-        target.register(HttpAuthenticationFeature.basic(username, password));
-        MultivaluedMap payLoad = new MultivaluedHashMap();
-        payLoad.putSingle("remoteHostName", request.getRemoteHost());
-
-        Response resp = target.request(RESPONSE_TYPE).post(Entity.entity(payLoad, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
-        RestResponse restResp = RestResponse.getRestResponse(resp);
-
-        // Check to see if successful..
-        if (restResp.isSuccess()) {
-            // Username and Password sent in... validate them!
-            CallerPrincipalCallback cpCallback =
-                    new CallerPrincipalCallback(clientSubject, username);
-            try {
-                handler.handle(new Callback[]{ /*pwdCallback,*/cpCallback});
-            } catch (Exception ex) {
-                AuthException ae = new AuthException();
-                ae.initCause(ex);
-                throw ae;
-            }
+        // Check to see if successful
+        if (validationResult.isSuccess()) {
+            
+            notifyContainerAboutLogin(clientSubject, username);
 
             request.changeSessionId();
 
-                // Get the "extraProperties" section of the response...
-            Object obj = restResp.getResponse().get("data");
-            Map extraProperties = null;
-            if ((obj != null) && (obj instanceof Map)) {
-                obj = ((Map) obj).get("extraProperties");
-                if ((obj != null) && (obj instanceof Map)) {
-                    extraProperties = (Map) obj;
-                }
-            }
+            // Get the "extraProperties" section from the validation result
+            @SuppressWarnings("rawtypes")
+            Map extraProperties = getExtraProperties(validationResult);
 
             // Save the Rest Token...
             if (extraProperties != null) {
-                session.putValue(REST_TOKEN, extraProperties.get("token"));
+                session.setAttribute(REST_TOKEN, extraProperties.get("token"));
             }
 
             // Save the Subject...
-            session.putValue(SAVED_SUBJECT, clientSubject);
+            session.setAttribute(SAVED_SUBJECT, clientSubject);
 
             // Save the userName
-            session.putValue(USER_NAME, username);
+            session.setAttribute(USER_NAME, username);
 
-            try {
-                // Redirect...
-                String origRequest = (String)session.getAttribute(ORIG_REQUEST_PATH);
-                // Explicitly test for favicon.ico, as Firefox seems to ask for this on
-                // every page
-                if ((origRequest == null) || "/favicon.ico".equals(origRequest)) {
-                    origRequest = "/index.jsf";
-                }
-                logger.log(Level.INFO, "Redirecting to {0}", origRequest);
-                response.sendRedirect(response.encodeRedirectURL(origRequest));
-            } catch (Exception ex) {
-                AuthException ae = new AuthException();
-                ae.initCause(ex);
-                throw ae;
-            }
+            return redirectBack(session, request, response);
+        } 
+        
+        // If we reach this location an error has occurred
+        return forwardToErrorPage(validationResult, request, response);
+    }
 
-            // Continue...
-            return AuthStatus.SEND_CONTINUE;
-        } else {
-            int status = restResp.getResponseCode();
-            if (status == 403) {
-                request.setAttribute("errorText", GuiUtil.getMessage("alert.ConfigurationError"));
-                request.setAttribute("messageText", GuiUtil.getMessage("alert.EnableSecureAdmin"));
+    @Override
+    public AuthStatus secureResponse(MessageInfo messageInfo, Subject serviceSubject) throws AuthException {
+        return SUCCESS;
+    }
+
+    @Override
+    public void cleanSubject(MessageInfo messageInfo, Subject subject) throws AuthException {
+    }
+    
+    
+    
+    // ### Private methods
+    
+    private AuthStatus doNothing(Subject clientSubject) throws AuthException {
+        try {
+            // The JASPIC protocol for "do nothing"
+            handler.handle(new Callback[] { new CallerPrincipalCallback(clientSubject, (Principal) null) });
+            
+            return SUCCESS;
+        } catch (IOException | UnsupportedCallbackException e) {
+            throw (AuthException) new AuthException().initCause(e);
+        }
+    }
+    
+    private void saveServerHostPort(HttpSession session) {
+        try {
+            URL url = new URL(restURL);
+            
+            session.setAttribute(REST_SERVER_NAME, url.getHost());
+            session.setAttribute(REST_SERVER_PORT, url.getPort());
+            
+        } catch (MalformedURLException ex) {
+            throw new IllegalArgumentException("Unable to parse REST URL: (" + restURL + ")", ex);
+        }
+    }
+    
+    /**
+     * Compute the rest URL needed to authenticate a user
+     * @return
+     */
+    private String getAuthenticationURL() {
+        ServiceLocator habitat = SecurityServicesUtil.getInstance().getHabitat();
+        
+        Domain domain = habitat.getService(Domain.class);
+        SecureAdmin secureAdmin = habitat.getService(SecureAdmin.class);
+        
+        NetworkListener adminListener = domain.getServerNamed("server")
+                                              .getConfig()
+                                              .getNetworkConfig()
+                                              .getNetworkListener("admin-listener");
+
+        String host = adminListener.getAddress();
+        String port = adminListener.getPort();
+        
+        return
+            (SecureAdmin.Util.isEnabled(secureAdmin) ? "https://" : "http://") + 
+            (host.equals("0.0.0.0") ? "localhost" : host) + ":" + port + "/management/sessions";
+    }
+    
+    private RestResponse validateCredentials(HttpServletRequest request, String username, char[] password) {
+        WebTarget target = RestUtil.initialize(ClientBuilder.newBuilder())
+                                   .build()
+                                   .target(restURL)
+                                   .register(HttpAuthenticationFeature.basic(username, new String(password)));
+        
+        MultivaluedMap<String, String> payLoad = new MultivaluedHashMap<>();
+        payLoad.putSingle("remoteHostName", request.getRemoteHost());
+
+        // Username and Password sent in... validate them!
+        
+        return RestResponse.getRestResponse(
+                target.request(RESPONSE_TYPE)
+                      .post(Entity.entity(payLoad, APPLICATION_FORM_URLENCODED), Response.class));
+    }
+    
+    @SuppressWarnings("rawtypes")
+    private Map getExtraProperties(RestResponse validationResult) {
+        Object obj = validationResult.getResponse().get("data");
+        Map extraProperties = null;
+        if (obj instanceof Map) {
+            obj = ((Map) obj).get("extraProperties");
+            if (obj instanceof Map) {
+                extraProperties = (Map) obj;
             }
-            RequestDispatcher rd = request.getRequestDispatcher(this.loginErrorPage);
-            try {
-                rd.forward(request, response);
-            } catch (Exception ex) {
-                AuthException ae = new AuthException();
-                ae.initCause(ex);
-                throw ae;
+        }
+        
+        return extraProperties;
+    }
+    
+    private AuthStatus saveRequestAndForwardToLogin(HttpSession session, HttpServletRequest request, HttpServletResponse response) throws AuthException {
+        
+        // Save original request path
+        String originalPath = request.getRequestURI();
+        String queryString = request.getQueryString();
+        if (queryString != null && !queryString.isEmpty()) {
+            originalPath += "?" + queryString;
+        }
+        session.setAttribute(ORIG_REQUEST_PATH, originalPath);
+        
+        // Forward to login page
+        try {
+            request.getRequestDispatcher(loginPage)
+                   .forward(request, response);
+            
+            return SEND_CONTINUE;
+        } catch (Exception ex) {
+            throw (AuthException) new AuthException().initCause(ex);
+        }
+    }
+    
+    private AuthStatus forwardToErrorPage(RestResponse validationResult, HttpServletRequest request, HttpServletResponse response) throws AuthException {
+        if (validationResult.getResponseCode() == 403) {
+            request.setAttribute("errorText", GuiUtil.getMessage("alert.ConfigurationError"));
+            request.setAttribute("messageText", GuiUtil.getMessage("alert.EnableSecureAdmin"));
+        }
+        
+        try {
+            request.getRequestDispatcher(loginErrorPage)
+                   .forward(request, response);
+            
+            return SEND_FAILURE;
+        } catch (Exception ex) {
+            throw (AuthException) new AuthException().initCause(ex);
+        }
+        
+    }
+    
+    private AuthStatus notifyContainerAboutLogin(Subject clientSubject, String username) throws AuthException {
+        try {
+            handler.handle(new Callback[] { new CallerPrincipalCallback(clientSubject, username) });
+            return SUCCESS;
+        } catch (Exception ex) {
+            throw (AuthException) new AuthException().initCause(ex);
+        }
+    }
+    
+    private AuthStatus redirectBack(HttpSession session, HttpServletRequest request, HttpServletResponse response) throws AuthException {
+        try {
+            // Redirect...
+            String origRequest = (String) session.getAttribute(ORIG_REQUEST_PATH);
+            // Explicitly test for favicon.ico, as Firefox seems to ask for this on
+            // every page
+            if (origRequest == null || "/favicon.ico".equals(origRequest)) {
+                origRequest = "/index.jsf";
             }
-            return AuthStatus.SEND_FAILURE;
+            logger.log(INFO, "Redirecting to {0}", origRequest);
+            response.sendRedirect(response.encodeRedirectURL(origRequest));
+            
+            return SEND_CONTINUE;
+        } catch (Exception ex) {
+            throw (AuthException) new AuthException().initCause(ex);
         }
     }
 
-    /**
-     *
-     */
-    @Override
-    public AuthStatus secureResponse(MessageInfo messageInfo, Subject serviceSubject) throws AuthException {
-        return AuthStatus.SUCCESS;
-    }
-
-    /**
-     *
-     */
-    @Override
-    public void cleanSubject(MessageInfo messageInfo, Subject subject) throws AuthException {
-        // FIXME: Cleanup...
-    }
-
-    /**
-     *
-     */
     private boolean isMandatory(MessageInfo messageInfo) {
-        return Boolean.valueOf((String) messageInfo.getMap().get(
-                "javax.security.auth.message.MessagePolicy.isMandatory"));
+        return Boolean.valueOf((String) messageInfo.getMap().get("javax.security.auth.message.MessagePolicy.isMandatory"));
     }
+    
+    
 }

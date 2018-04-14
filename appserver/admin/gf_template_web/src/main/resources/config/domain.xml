@@ -1,7 +1,7 @@
 <!--
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   
-   Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
   
    The contents of this file are subject to the terms of either the GNU
    General Public License Version 2 only ("GPL") or the Common Development
@@ -63,7 +63,8 @@
   <system-applications />
   <resources>
     <jdbc-resource pool-name="__TimerPool" jndi-name="jdbc/__TimerPool" object-type="system-all" />
-    <jdbc-resource pool-name="DerbyPool" jndi-name="jdbc/__default" object-type="system-all" />
+    <jdbc-resource pool-name="DerbyPool" jndi-name="jdbc/__derby" object-type="system-all" />
+    <jdbc-resource pool-name="H2Pool" jndi-name="jdbc/__default" object-type="system-all" />
     <jdbc-connection-pool name="__TimerPool" datasource-classname="org.apache.derby.jdbc.EmbeddedXADataSource" res-type="javax.sql.XADataSource">
       <property value="${com.sun.aas.instanceRoot}/lib/databases/ejbtimer" name="databaseName" />
       <property value=";create=true" name="connectionAttributes" />
@@ -76,11 +77,15 @@
       <property value="sun-appserv-samples" name="DatabaseName" />
       <property value=";create=true" name="connectionAttributes" />
     </jdbc-connection-pool>
+    <jdbc-connection-pool is-isolation-level-guaranteed="false" name="H2Pool" datasource-classname="org.h2.jdbcx.JdbcDataSource" res-type="javax.sql.DataSource">
+      <property name="URL" value="jdbc:h2:${com.sun.aas.instanceRoot}/lib/databases/embedded_default;AUTO_SERVER=TRUE" />
+    </jdbc-connection-pool>
   </resources>
   <servers>
     <server name="%%%SERVER_ID%%%" config-ref="%%%CONFIG_MODEL_NAME%%%">
       <resource-ref ref="jdbc/__TimerPool" />
       <resource-ref ref="jdbc/__default" />
+      <resource-ref ref="jdbc/__derby" />
     </server>
   </servers>
   <nodes>
@@ -124,6 +129,7 @@
         <log-notifier-configuration enabled="true"></log-notifier-configuration>
       </notification-service-configuration>
       <monitoring-service-configuration></monitoring-service-configuration>
+      <microprofile-metrics-configuration></microprofile-metrics-configuration>
        <diagnostic-service />
       <security-service>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
@@ -187,8 +193,8 @@
 	<property value="SHA-256" name="default-digest-algorithm" />
       </security-service>
       <java-config classpath-suffix="" system-classpath="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%%%JAVA_DEBUGGER_PORT%%%">
-        <jvm-options>-XX:MaxPermSize=192m</jvm-options>
         <jvm-options>-client</jvm-options>
+        <jvm-options>-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap.jar</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
         <jvm-options>-Djavax.xml.accessExternalSchema=all</jvm-options>
@@ -240,6 +246,7 @@
         <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
         <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
         <jvm-options>-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER=org.glassfish.grizzly.memory.HeapMemoryManager</jvm-options>
+        <jvm-options>-Dorg.glassfish.grizzly.nio.DefaultSelectorHandler.force-selector-spin-detection=true</jvm-options>
       </java-config>
       <network-config>
         <protocols>
@@ -378,10 +385,11 @@
         <log-notifier-configuration enabled="true"></log-notifier-configuration>
       </notification-service-configuration>
       <monitoring-service-configuration></monitoring-service-configuration>
+      <microprofile-metrics-configuration></microprofile-metrics-configuration>
          <diagnostic-service />
          <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
-             <jvm-options>-XX:MaxPermSize=192m</jvm-options>
              <jvm-options>-server</jvm-options>
+             <jvm-options>-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap.jar</jvm-options>
              <jvm-options>-Djava.awt.headless=true</jvm-options>
              <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
              <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
@@ -431,6 +439,7 @@
              <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
              <!-- PAYARA-1033 Maintain backwards compatibility to old Grizzly Memeory Manager -->
              <jvm-options>-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER=org.glassfish.grizzly.memory.HeapMemoryManager</jvm-options>
+             <jvm-options>-Dorg.glassfish.grizzly.nio.DefaultSelectorHandler.force-selector-spin-detection=true</jvm-options>
              
         </java-config>
          <availability-service>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 /*
  * HASSOFactory.java
@@ -54,8 +54,8 @@ import com.sun.enterprise.web.SSOFactory;
 import com.sun.enterprise.web.session.PersistenceType;
 import com.sun.enterprise.security.web.GlassFishSingleSignOn;
 import com.sun.enterprise.web.ServerConfigLookup;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
 
-import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreConfiguration;
 import org.glassfish.ha.store.api.BackingStoreException;
@@ -95,7 +95,7 @@ public class HASSOFactory implements SSOFactory {
     @Override
     public GlassFishSingleSignOn createSingleSignOnValve(String virtualServerName) {
         PersistenceType persistenceType = serverConfigLookup.getPersistenceTypeFromConfig();
-        String persistenceTypeStr = persistenceType != null? persistenceType.getType() : PersistenceType.REPLICATED.getType();
+        String persistenceTypeStr = persistenceType != null? persistenceType.getType() : PersistenceType.HAZELCAST.getType();
         return new HASingleSignOn(ioUtils,
                 getSsoEntryMetadataBackingStore(persistenceTypeStr, STORE_NAME, services));
     }   
@@ -111,10 +111,10 @@ public class HASSOFactory implements SSOFactory {
 
             String clusterName = "";
             String instanceName = "";
-            GMSAdapterService gmsAdapterService = services.getService(GMSAdapterService.class);
-            if(gmsAdapterService.isGmsEnabled()) {
-                clusterName = gmsAdapterService.getGMSAdapter().getClusterName();
-                instanceName = gmsAdapterService.getGMSAdapter().getModule().getInstanceName();
+            HazelcastCore hazelcast = services.getService(HazelcastCore.class);
+            if (hazelcast.isEnabled()) {
+                clusterName = hazelcast.getMemberGroup();
+                instanceName = hazelcast.getMemberName();
             }
 
             conf.setStoreName(storeName)

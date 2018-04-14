@@ -74,7 +74,7 @@
       </ejb-ref>
     </ejb>
     <cmp-resource>
-      <jndi-name>jdbc/__default</jndi-name>
+      <jndi-name>jdbc/__derby</jndi-name>
     </cmp-resource>
   </enterprise-beans>
 </sun-ejb-jar>

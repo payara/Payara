@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.iiop.security;
 
+import fish.payara.nucleus.cluster.PayaraCluster;
 import java.lang.ref.WeakReference;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
-import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
@@ -51,13 +51,14 @@ import javax.inject.Provider;
 
 /**
  * This class is a local utility class to provide for hk2 lookups during runtime.
+ * 
  * @author Sudarsan Sridhar
  */
 public class Lookups {
 
     @Inject
     private Provider<SecurityMechanismSelector> securityMechanismSelectorProvider;
-    
+
     @Inject
     private Provider<GlassFishORBHelper> glassFishORBHelperProvider;
 
@@ -65,7 +66,7 @@ public class Lookups {
     private Provider<SecurityContextUtil> securityContextUtilProvider;
 
     @Inject
-    private Provider<GMSAdapterService> gmsAdapterServiceProvider;
+    private Provider<PayaraCluster> payaraCluster;
 
     /**
      * Static singleton {@link Habitat} instance.
@@ -73,8 +74,8 @@ public class Lookups {
     private static final ServiceLocator habitat = Globals.getDefaultHabitat();
 
     /**
-     * Static singleton {@link Lookups} instance.  Note that this is assigned lazily and may
-     * remain null if the {@link Habitat} can not be obtained.
+     * Static singleton {@link Lookups} instance. Note that this is assigned lazily and may remain null
+     * if the {@link Habitat} can not be obtained.
      */
     private static Lookups singleton;
 
@@ -82,17 +83,16 @@ public class Lookups {
     private static WeakReference<GlassFishORBHelper> orb = new WeakReference<GlassFishORBHelper>(null);
     private static WeakReference<SecurityContextUtil> sc = new WeakReference<SecurityContextUtil>(null);
 
-
     private Lookups() {
     }
 
     /**
-     * Check to see if the singleton {@link Lookups} reference has been assigned. If null,
-     * then attempt to obtain and assign the singleton {@link Lookups} instance.
+     * Check to see if the singleton {@link Lookups} reference has been assigned. If null, then attempt
+     * to obtain and assign the singleton {@link Lookups} instance.
      *
      * @return true if the singleton instance has been successfully assigned; false otherwise
      */
-    private static synchronized boolean checkSingleton(){
+    private static synchronized boolean checkSingleton() {
         if (singleton == null && habitat != null) {
             // Obtaining the singleton through the habitat will cause the injections to occur.
             singleton = habitat.create(Lookups.class);
@@ -164,7 +164,7 @@ public class Lookups {
      *
      * @return the {@link GMSAdapterService}; null if not available
      */
-    static GMSAdapterService getGMSAdapterService() {
-        return checkSingleton() ? singleton.gmsAdapterServiceProvider.get() : null;
+    static PayaraCluster getCluster() {
+        return checkSingleton() ? singleton.payaraCluster.get() : null;
     }
 }

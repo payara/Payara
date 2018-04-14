@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jacc.provider;
 
 import java.security.Permission;
@@ -53,18 +53,18 @@ import java.util.Set;
  */
 public class Role {
 
-    String roleName;
-    Permissions permissions;
-    Set<Principal> principals;
-    private boolean isAnyAuthenticatedUserRole = false;
+    private String roleName;
+    private Permissions permissions;
+    private Set<Principal> principals;
+    private boolean isAnyAuthenticatedUserRole;
 
     public Role(String name) {
         roleName = name;
     }
 
     /**
-     * NB: Class Overrides equals and hashCode Methods such that 2 Roles are
-     * equal simply based on having a common name.
+     * NB: Class Overrides equals and hashCode Methods such that 2 Roles are equal simply based on having a common name.
+     * 
      * @param o
      * @return
      */
@@ -85,19 +85,20 @@ public class Role {
         return roleName;
     }
 
-    void addPermission(Permission p) {
+    void addPermission(Permission permission) {
         if (permissions == null) {
             permissions = new Permissions();
         }
-        permissions.add(p);
+        
+        permissions.add(permission);
     }
 
-    void addPermissions(PermissionCollection pc) {
+    void addPermissions(PermissionCollection permissionCollection) {
         if (permissions == null) {
             permissions = new Permissions();
         }
-        for (Enumeration<Permission> e = pc.elements();
-                e.hasMoreElements();) {
+        
+        for (Enumeration<Permission> e = permissionCollection.elements(); e.hasMoreElements();) {
             permissions.add(e.nextElement());
         }
     }
@@ -106,25 +107,27 @@ public class Role {
         return permissions;
     }
 
-    void setPrincipals(Set<Principal> pSet) {
-        if (pSet != null) {
-            principals = pSet;
+    void setPrincipals(Set<Principal> principalSet) {
+        if (principalSet != null) {
+            principals = principalSet;
         }
     }
 
-    boolean implies(Permission p) {
+    boolean implies(Permission permission) {
         boolean rvalue = false;
         if (permissions != null) {
-            rvalue = permissions.implies(p);
+            rvalue = permissions.implies(permission);
         }
+        
         return rvalue;
     }
 
     void determineAnyAuthenticatedUserRole() {
         isAnyAuthenticatedUserRole = false;
+        
         // If no princiapls are present then any authenticated user is possible
-        if ((principals == null) || principals.isEmpty()) {
-        	isAnyAuthenticatedUserRole = true;
+        if (principals == null || principals.isEmpty()) {
+            isAnyAuthenticatedUserRole = true;
         }
     }
 
@@ -132,15 +135,16 @@ public class Role {
         return isAnyAuthenticatedUserRole;
     }
 
-    boolean isPrincipalInRole(Principal p) {
-        if (isAnyAuthenticatedUserRole && (p != null)) {
+    boolean isPrincipalInRole(Principal principal) {
+        if (isAnyAuthenticatedUserRole && principal != null) {
             return true;
         }
 
         boolean rvalue = false;
         if (principals != null) {
-            rvalue = principals.contains(p);
+            rvalue = principals.contains(principal);
         }
+        
         return rvalue;
     }
 
@@ -148,20 +152,23 @@ public class Role {
         if (subject == null || subject.length == 0) {
             return false;
         }
+        
         if (isAnyAuthenticatedUserRole) {
             return true;
         }
+        
         if (principals == null || principals.isEmpty()) {
             return false;
         }
 
         boolean rvalue = false;
-        for (Principal p : subject) {
-            if (principals.contains(p)) {
+        for (Principal principal : subject) {
+            if (principals.contains(principal)) {
                 rvalue = true;
                 break;
             }
         }
+        
         return rvalue;
     }
 }

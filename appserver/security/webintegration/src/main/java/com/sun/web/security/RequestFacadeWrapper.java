@@ -52,17 +52,15 @@ import javax.servlet.http.*;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.RequestFacade;
 
-
 class RequestFacadeWrapper extends RequestFacade implements HttpServletRequest {
 
     private final HttpServletRequest servletRequest;
 
-    RequestFacadeWrapper(Request request,
-            HttpServletRequest servletRequest,boolean mask) {
-        super(request,mask);
+    RequestFacadeWrapper(Request request, HttpServletRequest servletRequest, boolean mask) {
+        super(request, mask);
         this.servletRequest = servletRequest;
     }
-    
+
     /**
      * methods defined by HttpServletRequest
      */
@@ -83,7 +81,7 @@ class RequestFacadeWrapper extends RequestFacade implements HttpServletRequest {
 
     @Override
     public String getHeader(String name) {
-         return servletRequest.getHeader(name);
+        return servletRequest.getHeader(name);
     }
 
     @Override
@@ -102,8 +100,23 @@ class RequestFacadeWrapper extends RequestFacade implements HttpServletRequest {
     }
 
     @Override
+    public Map<String, String> getTrailerFields() {
+        return servletRequest.getTrailerFields();
+    }
+
+    @Override
+    public boolean isTrailerFieldsReady() {
+        return servletRequest.isTrailerFieldsReady();
+    }
+
+    @Override
     public String getMethod() {
         return servletRequest.getMethod();
+    }
+
+    @Override
+    public HttpServletMapping getHttpServletMapping() {
+        return servletRequest.getHttpServletMapping();
     }
 
     @Override
@@ -219,7 +232,7 @@ class RequestFacadeWrapper extends RequestFacade implements HttpServletRequest {
     /**
      * Methods inherited from ServletRequest
      */
-    
+
     @Override
     public Object getAttribute(String name) {
         return servletRequest.getAttribute(name);
@@ -376,8 +389,7 @@ class RequestFacadeWrapper extends RequestFacade implements HttpServletRequest {
     }
 
     @Override
-    public AsyncContext startAsync(ServletRequest sRequest, 
-        ServletResponse sResponse) throws IllegalStateException {
+    public AsyncContext startAsync(ServletRequest sRequest, ServletResponse sResponse) throws IllegalStateException {
         return servletRequest.startAsync(sRequest, sResponse);
     }
 

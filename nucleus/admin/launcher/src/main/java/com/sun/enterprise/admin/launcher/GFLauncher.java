@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright [2016-2017] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.launcher;
 
@@ -59,7 +58,9 @@ import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.universal.xml.MiniXmlParser;
 import static com.sun.enterprise.util.SystemPropertyConstants.*;
 import static com.sun.enterprise.admin.launcher.GFLauncherConstants.*;
+import com.sun.enterprise.util.JDK;
 import fish.payara.admin.launcher.PayaraDefaultJvmOptions;
+import java.util.stream.Collectors;
 
 /**
  * This is the main Launcher class designed for external and internal usage.
@@ -818,7 +819,11 @@ public abstract class GFLauncher {
                 parser.getProfilerJvmOptions(),
                 parser.getProfilerSystemProperties());
 
-        List<String> rawJvmOptions = parser.getJvmOptions();
+        List<String> rawJvmOptions = parser.getJvmOptions()
+                .stream()
+                .filter(fullOption -> JDK.isCorrectJDK(fullOption.minVersion, fullOption.maxVersion))
+                .map(option -> option.option)
+                .collect(Collectors.toList());
         rawJvmOptions.addAll(getSpecialSystemProperties());
         if (profiler.isEnabled()) {
             rawJvmOptions.addAll(profiler.getJvmOptions());

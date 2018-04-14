@@ -57,14 +57,6 @@
   <!-- ============ Built In Context Init Parameter Definitions =========== -->
 
 
-  <!-- Init parameter to force the XML validation of JSF configuration  --> 
-  <!-- ressources.                                                      -->
-
-  <context-param>
-      <param-name>com.sun.faces.validateXml</param-name>
-      <param-value>true</param-value>
-  </context-param>
-
   <!-- Init parameter will cause the JSF implementation to bypass      -->
   <!-- processing the web.xml to determine if we should continue       --> 
   <!-- bootstrapping JSF for the web application.                      -->
@@ -313,6 +305,14 @@
       <param-value>GET,POST,HEAD</param-value>
     </init-param>
     <init-param>
+      <param-name>compilerSourceVM</param-name>
+      <param-value>1.8</param-value>
+    </init-param>
+    <init-param>
+      <param-name>compilerTargetVM</param-name>
+      <param-value>1.8</param-value>
+    </init-param>
+    <init-param>
       <param-name>system-jar-includes</param-name>
       <param-value>
         /lib/
@@ -327,7 +327,7 @@
         javax.servlet.jsp.jar
         jspcaching-connector.jar
         web-glue.jar
-        hibernate-validator-payara-p1.jar
+        hibernate-validator.jar
         javax.ejb.jar
         javax.enterprise.deploy-api.jar
         javax.jms-api.jar
@@ -340,7 +340,7 @@
         javax.transaction-api.jar
         javax.xml.rpc-api.jar
         webservices-osgi.jar
-        weld-osgi-bundle-glassfish4.jar
+        weld-osgi-bundle.jar
         jersey-mvc-jsp.jar
       </param-value>
     </init-param>

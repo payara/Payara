@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.util;
 
-import java.util.Properties;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandParameters;
 
@@ -60,6 +60,8 @@ public class RegisterInstanceCommandParameters implements CommandParameters {
     public String node;
     @Param(name = ParameterNames.PARAM_CLUSTER, optional = true)
     public String clusterName;
+    @Param(name = ParameterNames.PARAM_DG, optional = true)
+    public String deploymentGroup;
     @Param(name = ParameterNames.PARAM_LBENABLED, optional = true)
     public String lbEnabled = null;
 
@@ -69,6 +71,7 @@ public class RegisterInstanceCommandParameters implements CommandParameters {
         public static final String PARAM_PORTBASE = "portbase";
         public static final String PARAM_NODE = "node";
         public static final String PARAM_CLUSTER = "cluster";
+        public static final String PARAM_DG = "deploymentgroup";
         public static final String PARAM_CONFIG = "config";
         public static final String PARAM_CHECKPORTS = "checkports";
     }

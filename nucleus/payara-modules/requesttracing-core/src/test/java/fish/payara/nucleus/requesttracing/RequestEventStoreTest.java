@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,8 +39,12 @@
  */
 package fish.payara.nucleus.requesttracing;
 
-import fish.payara.nucleus.requesttracing.domain.EventType;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,12 +52,12 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.junit.After;
-import org.junit.AfterClass;
+import fish.payara.notification.requesttracing.RequestTrace;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import fish.payara.notification.requesttracing.EventType;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
 
 /**
  *
@@ -62,28 +66,28 @@ import static org.junit.Assert.*;
 public class RequestEventStoreTest {
     
     private Map<Long,RequestTrace> tracesbyThreadId;
-    private RequestEventStore eventStore;
+    private RequestTraceSpanStore eventStore;
 
     @Before
     public void setUp() {
-        tracesbyThreadId = Collections.synchronizedMap(new HashMap<Long,RequestTrace>());
-        eventStore = new RequestEventStore();
+        tracesbyThreadId = Collections.synchronizedMap(new HashMap<>());
+        eventStore = new RequestTraceSpanStore();
     }
 
     @Test
     public void testStoreEvent() {
-        RequestEvent re = new RequestEvent(EventType.TRACE_START, "Start");
+        RequestTraceSpan re = new RequestTraceSpan(EventType.TRACE_START, "Start");
         eventStore.storeEvent(re);
-        eventStore.storeEvent(new RequestEvent("Test"));
-        eventStore.storeEvent(new RequestEvent(EventType.TRACE_END, "End"));
-        assertEquals(3, eventStore.getTrace().getTrace().size());
+        eventStore.storeEvent(new RequestTraceSpan("Test"));
+        eventStore.endTrace();
+        assertEquals(2, eventStore.getTrace().getTraceSpans().size());
     }
     
     @Test
     public void testFlushStore() {
         testStoreEvent();
         eventStore.flushStore();
-        assertEquals(0, eventStore.getTrace().getTrace().size());
+        assertEquals(0, eventStore.getTrace().getTraceSpans().size());
     }
 
     /**
@@ -95,13 +99,13 @@ public class RequestEventStoreTest {
             @Override
             public void run() {
                 long threadID = Thread.currentThread().getId();
-                RequestEvent re = new RequestEvent(EventType.TRACE_START, "Start"+threadID);
+                RequestTraceSpan re = new RequestTraceSpan(EventType.TRACE_START, "Start"+threadID);
                 eventStore.storeEvent(re);
                 for (int i = 0; i < 100; i++) {
-                    re = new RequestEvent("Event-"+i+"-"+threadID);
+                    re = new RequestTraceSpan("Event-"+i+"-"+threadID);
                     eventStore.storeEvent(re);
                 }
-                eventStore.storeEvent(new RequestEvent(EventType.TRACE_END, "End"+threadID));
+                eventStore.endTrace();
                 tracesbyThreadId.put(threadID, eventStore.getTrace());
             }
         });
@@ -110,13 +114,13 @@ public class RequestEventStoreTest {
             @Override
             public void run() {
                 long threadID = Thread.currentThread().getId();
-                RequestEvent re = new RequestEvent(EventType.TRACE_START, "Start"+threadID);
+                RequestTraceSpan re = new RequestTraceSpan(EventType.TRACE_START, "Start"+threadID);
                 eventStore.storeEvent(re);
                 for (int i = 0; i < 200; i++) {
-                    re = new RequestEvent("Event-"+i+"-"+threadID);
+                    re = new RequestTraceSpan("Event-"+i+"-"+threadID);
                     eventStore.storeEvent(re);
                 }
-                eventStore.storeEvent(new RequestEvent(EventType.TRACE_END, "End"+threadID));
+                eventStore.endTrace();
                 tracesbyThreadId.put(threadID, eventStore.getTrace());
             }
         });
@@ -132,30 +136,30 @@ public class RequestEventStoreTest {
         // make sure we have something of the correct length in each trace
         assertNotNull(trace2);
         assertNotNull(trace1);
-        assertEquals(202, trace2.getTrace().size());
-        assertEquals(102,trace1.getTrace().size());
+        assertEquals(201, trace2.getTraceSpans().size());
+        assertEquals(101,trace1.getTraceSpans().size());
         
         // ensure they are different classes
         assertNotSame(trace2, trace1);
         
-        // assert last names are coorect
-        assertEquals("End"+thread1.getId(), trace1.getTrace().getLast().getEventName());
-        assertEquals("End"+thread2.getId(), trace2.getTrace().getLast().getEventName());
+        // assert last names are correct
+        assertEquals("Event-99-"+thread1.getId(), trace1.getTraceSpans().getLast().getEventName());
+        assertEquals("Event-199-"+thread2.getId(), trace2.getTraceSpans().getLast().getEventName());
         
         //assert start names are correct
-        assertEquals("Start"+thread1.getId(), trace1.getTrace().getFirst().getEventName());
-        assertEquals("Start"+thread2.getId(), trace2.getTrace().getFirst().getEventName());
+        assertEquals("Start"+thread1.getId(), trace1.getTraceSpans().getFirst().getEventName());
+        assertEquals("Start"+thread2.getId(), trace2.getTraceSpans().getFirst().getEventName());
         
         // assert all conversation IDs are correct trace 1
-        UUID convID = trace1.getTrace().getFirst().getConversationId();
-        for (RequestEvent re : trace1.getTrace()) {
-            assertEquals(convID,re.getConversationId());
+        UUID convID = trace1.getTraceSpans().getFirst().getTraceId();
+        for (RequestTraceSpan re : trace1.getTraceSpans()) {
+            assertEquals(convID,re.getTraceId());
         }
         
         // assert all conversation IDs are correct trace 2
-        UUID convID2 = trace2.getTrace().getFirst().getConversationId();
-        for (RequestEvent re : trace2.getTrace()) {
-            assertEquals(convID2,re.getConversationId());
+        UUID convID2 = trace2.getTraceSpans().getFirst().getTraceId();
+        for (RequestTraceSpan re : trace2.getTraceSpans()) {
+            assertEquals(convID2,re.getTraceId());
         }
 
     }
@@ -166,12 +170,12 @@ public class RequestEventStoreTest {
      */
     @Test
     public void testGetElapsedTime() throws InterruptedException {
-        RequestEvent re = new RequestEvent(EventType.TRACE_START, "Start");
+        RequestTraceSpan re = new RequestTraceSpan(EventType.TRACE_START, "Start");
         eventStore.storeEvent(re);
         Thread.sleep(100);
-        eventStore.storeEvent(new RequestEvent("Test"));
-        eventStore.storeEvent(new RequestEvent(EventType.TRACE_END, "End"));
-        assertEquals(3, eventStore.getTrace().getTrace().size());
+        eventStore.storeEvent(new RequestTraceSpan("Test"));
+        eventStore.endTrace();
+        assertEquals(2, eventStore.getTrace().getTraceSpans().size());
         assertTrue(eventStore.getElapsedTime() >= 90);
     }
     
@@ -184,10 +188,10 @@ public class RequestEventStoreTest {
             @Override
             public void run(){
                 long threadID = Thread.currentThread().getId();
-                RequestEvent re = new RequestEvent(EventType.TRACE_START, "Start"+threadID);
+                RequestTraceSpan re = new RequestTraceSpan(EventType.TRACE_START, "Start"+threadID);
                 eventStore.storeEvent(re);
                 for (int i = 0; i < 10; i++) {
-                    re = new RequestEvent("Event-"+i+"-"+threadID);
+                    re = new RequestTraceSpan("Event-"+i+"-"+threadID);
                     try {
                         Thread.sleep(10);
                     } catch (InterruptedException ex) {
@@ -195,7 +199,7 @@ public class RequestEventStoreTest {
                     }
                     eventStore.storeEvent(re);
                 }
-                eventStore.storeEvent(new RequestEvent(EventType.TRACE_END, "End"+threadID));
+                eventStore.endTrace();
                 tracesbyThreadId.put(threadID, eventStore.getTrace());
             }
         });
@@ -226,8 +230,8 @@ public class RequestEventStoreTest {
         RequestTrace trace2 = tracesbyThreadId.get(thread2.getId());
         
         // check trace sizes 
-        assertEquals(12, trace1.getTrace().size());
-        assertEquals(0, trace2.getTrace().size());
+        assertEquals(11, trace1.getTraceSpans().size());
+        assertEquals(0, trace2.getTraceSpans().size());
         
         // check trace 1 has an elapsed time in the correct range
         assertTrue(trace1.getElapsedTime() >= 90);
@@ -236,10 +240,10 @@ public class RequestEventStoreTest {
     
     @Test
     public void testResettingConversationID() {
-        RequestEvent re = new RequestEvent(EventType.TRACE_START, "Start");
+        RequestTraceSpan re = new RequestTraceSpan(EventType.TRACE_START, "Start");
         eventStore.storeEvent(re);
         for (int i = 0; i < 10; i++) {
-            re = new RequestEvent("Event-"+i);
+            re = new RequestTraceSpan("Event-"+i);
             try {
                 Thread.sleep(10);
             } catch (InterruptedException ex) {
@@ -247,13 +251,14 @@ public class RequestEventStoreTest {
             }
             eventStore.storeEvent(re);
         }
-        eventStore.storeEvent(new RequestEvent(EventType.TRACE_END, "End"));
+//        eventStore.storeEvent(new RequesTraceSpan(EventType.TRACE_END, "End"));
+        eventStore.endTrace();
         
-        UUID oldID = eventStore.getTrace().getTrace().getFirst().getConversationId();
+        UUID oldID = eventStore.getTrace().getTraceSpans().getFirst().getTraceId();
         UUID newID = UUID.randomUUID();
-        eventStore.setConverstationID(newID);
-        for (RequestEvent event : eventStore.getTrace().getTrace()) {
-            assertEquals(newID, event.getConversationId());
+        eventStore.setTraceId(newID);
+        for (RequestTraceSpan event : eventStore.getTrace().getTraceSpans()) {
+            assertEquals(newID, event.getTraceId());
         }
         
     }
@@ -261,10 +266,10 @@ public class RequestEventStoreTest {
     @Test
     public void isInProgress() {
         assertFalse(eventStore.isTraceInProgress());
-        RequestEvent re = new RequestEvent(EventType.TRACE_START, "Start");
+        RequestTraceSpan re = new RequestTraceSpan(EventType.TRACE_START, "Start");
         eventStore.storeEvent(re);
         for (int i = 0; i < 10; i++) {
-            re = new RequestEvent("Event-"+i);
+            re = new RequestTraceSpan("Event-"+i);
             try {
                 Thread.sleep(10);
             } catch (InterruptedException ex) {
@@ -273,7 +278,8 @@ public class RequestEventStoreTest {
             eventStore.storeEvent(re);
         }
         assertTrue(eventStore.isTraceInProgress());
-        eventStore.storeEvent(new RequestEvent(EventType.TRACE_END, "End"));
+//        eventStore.storeEvent(new RequesTraceSpan(EventType.TRACE_END, "End"));
+        eventStore.endTrace();
         assertFalse(eventStore.isTraceInProgress());        
     }
 

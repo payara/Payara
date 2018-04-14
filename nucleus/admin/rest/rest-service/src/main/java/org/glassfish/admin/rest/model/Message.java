@@ -39,8 +39,10 @@
  */
 package org.glassfish.admin.rest.model;
 
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 public class Message {
     public static enum Severity {
@@ -88,14 +90,14 @@ public class Message {
         this.field = val;
     }
 
-    public JSONObject toJson() throws JSONException {
-        JSONObject object = new JSONObject();
-        object.put("message", getMessage());
-        object.put("severity", getSeverity());
+    public JsonObject toJson() throws JsonException {
+        JsonObjectBuilder object = Json.createObjectBuilder();
+        object.add("message", getMessage());
+        object.add("severity", getSeverity().toString());
         String f = getField();
         if (f != null && f.length() > 0) {
-          object.put("field", f);
+          object.add("field", f);
         }
-        return object;
+        return object.build();
     }
 }

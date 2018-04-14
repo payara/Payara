@@ -450,7 +450,12 @@ public class FormAuthenticator
         ByteChunk body = saved.getBody();
 
         if (body != null) {
-            request.replayPayload(body.getBytes());
+            byte[] tempData = body.getBytes();
+            // tempData is a buffer with reserved extra space
+            // we must keep only the valid data here
+            byte[] data = new byte[body.getLength()];
+            System.arraycopy(tempData, body.getStart(), data, 0, data.length);
+            request.replayPayload(data);
 
             // If no content type specified, use default for POST
             String savedContentType = saved.getContentType();

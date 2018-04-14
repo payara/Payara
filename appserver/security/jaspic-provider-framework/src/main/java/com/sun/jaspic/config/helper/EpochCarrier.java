@@ -38,7 +38,6 @@
  * holder.
  */
 
-
 package com.sun.jaspic.config.helper;
 
 import java.util.concurrent.locks.Lock;
@@ -92,5 +91,5 @@ public class EpochCarrier {
             instanceReadLock.unlock();
         }
     }
-    
+
 }

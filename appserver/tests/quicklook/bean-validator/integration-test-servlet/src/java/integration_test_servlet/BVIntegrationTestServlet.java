@@ -170,7 +170,7 @@ public class BVIntegrationTestServlet extends HttpServlet {
         ValidatorContext validatorContext = factory.usingContext();
         Validator validator = validatorContext.getValidator();
 
-        if (null == validator) {
+        if (validator == null) {
             factory = Validation.byDefaultProvider().configure().buildValidatorFactory();
             validator = factory.getValidator();
         }
@@ -178,8 +178,6 @@ public class BVIntegrationTestServlet extends HttpServlet {
         out.print("<p>");
         out.print("Obtained ValidatorFactory: " + factory + ".");
         out.print("</p>");
-
-
 
         return validator;
     }

@@ -44,14 +44,17 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>4.1.2.181-SNAPSHOT</version>
+        <version>5.182-SNAPSHOT</version>
     </parent>
+
     <artifactId>glassfish-web</artifactId>
     <name>Glassfish Web Container Package</name>
     <packaging>distribution-fragment</packaging>
+
     <description>This pom describes how to assemble the GlassFish Web Container  package</description>
 
     <build>
@@ -83,7 +86,7 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
         <profile>
             <id>ips</id>
             <activation>
-                <activeByDefault>false</activeByDefault>  
+                <activeByDefault>false</activeByDefault>
             </activation>
             <build>
                 <plugins>
@@ -104,7 +107,7 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
                                 <id>process-step5</id>
                                 <goals>
                                     <goal>exec</goal>
-                                </goals>                            
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
@@ -119,15 +122,15 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
                 </plugins>
             </build>
         </profile>
-        
+
         <profile>
             <id>jdk8</id>
             <activation>
                 <jdk>1.8</jdk>
             </activation>
             <dependencies>
-                <!-- Soteria / Java EE Security 
-                     Required in Payara 5, but optional for JDK 8+ builds in Payara 4 
+                <!-- Soteria / Java EE Security
+                     Required in Payara 5, but optional for JDK 8+ builds in Payara 4
                 -->
                  <dependency>
                     <groupId>javax.security.enterprise</groupId>
@@ -140,7 +143,7 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
             </dependencies>
         </profile>
     </profiles>
-    
+
     <dependencies>
 	<dependency>
             <groupId>org.glassfish.main.web</groupId>
@@ -224,7 +227,7 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
         <dependency>
             <groupId>org.glassfish.web</groupId>
             <artifactId>javax.servlet.jsp</artifactId>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>javax.servlet.jsp.jstl</groupId>
             <artifactId>javax.servlet.jsp.jstl-api</artifactId>
@@ -233,6 +236,17 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
             <groupId>org.glassfish.web</groupId>
             <artifactId>javax.servlet.jsp.jstl</artifactId>
         </dependency>
+
+        <!-- Java EE Security -->
+        <dependency>
+            <groupId>javax.security.enterprise</groupId>
+            <artifactId>javax.security.enterprise-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.soteria</groupId>
+            <artifactId>javax.security.enterprise</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.el</artifactId>
@@ -242,9 +256,13 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
             <artifactId>javax.websocket-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>javax.security.enterprise</groupId>
+            <artifactId>javax.security.enterprise-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.tyrus</groupId>
             <artifactId>tyrus-core</artifactId>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
             <artifactId>tyrus-server</artifactId>
@@ -285,4 +303,3 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
         </dependency>
     </dependencies>
 </project>
-

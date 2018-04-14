@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,8 +40,7 @@
 package fish.payara.nucleus.microprofile.config.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigConfiguration;
-import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigService;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.Param;
@@ -60,36 +59,34 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  * asAdmin command to the set the ordinal for one of the built in Config Sources
+ *
  * @since 4.1.2.173
  * @author Steve Millidge (Payara Foundation)
  */
 @Service(name = "set-config-ordinal") // the name of the service is the asadmin command name
 @PerLookup // this means one instance is created every time the command is run
-@ExecuteOn() 
+@ExecuteOn()
 @TargetType()
-@RestEndpoints({  // creates a REST endpoint needed for integration with the admin interface
+@RestEndpoints({ // creates a REST endpoint needed for integration with the admin interface
+    
     @RestEndpoint(configBean = MicroprofileConfigConfiguration.class,
             opType = RestEndpoint.OpType.POST, // must be POST as it is doing an update
             path = "set-config-ordinal",
             description = "Sets the Ordinal of a builtin Config Source")
 })
 public class SetConfigOrdinal implements AdminCommand {
-    
+
     @Param()
     int ordinal;
-    
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi", defaultValue = "domain")
+
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets", defaultValue = "domain")
     String source;
-    
-    @Param (optional = true, defaultValue = "server") // if no target is specified it will be the DAS
+
+    @Param(optional = true, defaultValue = "server") // if no target is specified it will be the DAS
     String target;
-    
-    @Inject
-    MicroprofileConfigService service;
-    
+
     @Inject
     Target targetUtil;
-    
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -99,39 +96,43 @@ public class SetConfigOrdinal implements AdminCommand {
             try {
                 // to perform a transaction on the domain.xml you need to use this construct
                 // see https://github.com/hk2-project/hk2/blob/master/hk2-configuration/persistence/hk2-xml-dom/hk2-config/src/main/java/org/jvnet/hk2/config/ConfigSupport.java
-                ConfigSupport.apply(new SingleConfigCode<MicroprofileConfigConfiguration>(){
+                ConfigSupport.apply(new SingleConfigCode<MicroprofileConfigConfiguration>() {
                     @Override
                     public Object run(MicroprofileConfigConfiguration config) {
-                        
-                        switch(source) {
+
+                        switch (source) {
                             case "domain": {
-                                config.setDomainOrdinality(ordinal);
+                                config.setDomainOrdinality(Integer.toString(ordinal));
                                 break;
                             }
                             case "config": {
-                                config.setConfigOrdinality(ordinal);
+                                config.setConfigOrdinality(Integer.toString(ordinal));
                                 break;
                             }
                             case "server": {
-                                config.setServerOrdinality(ordinal);
+                                config.setServerOrdinality(Integer.toString(ordinal));
                                 break;
-                            }                            
+                            }
                             case "application": {
-                                config.setApplicationOrdinality(ordinal);
+                                config.setApplicationOrdinality(Integer.toString(ordinal));
                                 break;
                             }
                             case "module": {
-                                config.setModuleOrdinality(ordinal);
+                                config.setModuleOrdinality(Integer.toString(ordinal));
                                 break;
-                            } 
+                            }
                             case "cluster": {
-                                config.setClusterOrdinality(ordinal);
+                                config.setClusterOrdinality(Integer.toString(ordinal));
                                 break;
-                            } 
+                            }
                             case "jndi": {
-                                config.setJNDIOrdinality(ordinal);
+                                config.setJNDIOrdinality(Integer.toString(ordinal));
                                 break;
-                            } 
+                            }
+                            case "secrets": {
+                                config.setSecretDirOrdinality(Integer.toString(ordinal));
+                                break;
+                            }
                         }
                         return null;
                     }
@@ -143,7 +144,7 @@ public class SetConfigOrdinal implements AdminCommand {
         } else {
             context.getActionReport().failure(Logger.getLogger(SetConfigOrdinal.class.getName()), "No configuration with name " + target);
         }
-        
+
     }
-    
+
 }

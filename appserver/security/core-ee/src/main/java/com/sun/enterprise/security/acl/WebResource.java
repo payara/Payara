@@ -39,6 +39,7 @@
  */
 
 package com.sun.enterprise.security.acl;
+
 /**
  * @author Harish Prabandham
  */
@@ -47,67 +48,64 @@ public class WebResource extends Resource {
     private transient String path;
 
     public WebResource(String app, String name, String method) {
-        super(app,name,method);
+        super(app, name, method);
         init(name);
     }
 
-    private void init(String name)                                       
-    {                                                                    
-    	if (name == null)                                                    
+    private void init(String name) {
+        if (name == null)
             throw new IllegalArgumentException("name can't be null");
-                                                                         
-    	if (name.endsWith("/*") || name.equals("*")) {
+
+        if (name.endsWith("/*") || name.equals("*")) {
             wildcard = true;
             if (name.length() == 1) {
                 path = "";
             } else {
-                path = name.substring(0, name.length()-1);
+                path = name.substring(0, name.length() - 1);
             }
-    	} else {
+        } else {
             path = name;
-    	}                                                                    
-    }                                                                    
-
-    public boolean equals(Object obj) {
-        if(obj == this)
-            return true;
-        
-        if ((obj == null) || (obj.getClass() != getClass()))
-            return false;
-        
-        Resource r = (Resource) obj;
-        
-        return getApplication().equals(r.getApplication()) &&
-            getMethod().equals(r.getMethod()) &&
-            getName().equals(r.getName());
+        }
     }
 
-    public boolean implies(Resource resource) {
-	if(( resource == null) || (resource.getClass() != getClass())) 
-		return false;
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
 
-	WebResource that = (WebResource) resource;
-
-	// Application name is not an issue in implies .....
-	if(!getMethod().equals(that.getMethod()))
+        if ((obj == null) || (obj.getClass() != getClass()))
             return false;
-		
-	if(this.wildcard) {
+
+        Resource r = (Resource) obj;
+
+        return getApplication().equals(r.getApplication()) && getMethod().equals(r.getMethod()) && getName().equals(r.getName());
+    }
+
+    @Override
+    public boolean implies(Resource resource) {
+        if ((resource == null) || (resource.getClass() != getClass()))
+            return false;
+
+        WebResource that = (WebResource) resource;
+
+        // Application name is not an issue in implies .....
+        if (!getMethod().equals(that.getMethod()))
+            return false;
+
+        if (this.wildcard) {
             if (that.wildcard)
                 // one wildcard can imply another
                 return that.path.startsWith(path);
             else
                 // make sure ap.path is longer so a/b/* doesn't imply a/b
-                return (that.path.length() > this.path.length()) &&
-                    that.path.startsWith(this.path);
-	} else {
-	    if (that.wildcard) {
+                return (that.path.length() > this.path.length()) && that.path.startsWith(this.path);
+        } else {
+            if (that.wildcard) {
                 // a non-wildcard can't imply a wildcard
                 return false;
-            }
-            else {
+            } else {
                 return this.path.equals(that.path);
             }
-	}
+        }
     }
 }

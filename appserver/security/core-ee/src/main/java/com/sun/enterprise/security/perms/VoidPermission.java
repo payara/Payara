@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
@@ -37,42 +37,37 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.perms;
 
 import java.security.BasicPermission;
 import java.security.Permission;
 
-
 /**
- * a class used on permission restriction list to imply 
- * "No 'AllPermission' allowed" in permissions.xml.
+ * a class used on permission restriction list to imply "No 'AllPermission' allowed" in permissions.xml.
  * 
- *  This permission can not imply any other permission
+ * This permission can not imply any other permission
  */
 public class VoidPermission extends BasicPermission {
 
-     private static final long serialVersionUID = 5535516010244462567L;
+    private static final long serialVersionUID = 5535516010244462567L;
 
+    public VoidPermission() {
+        this("VoidPermmission");
+    }
 
-     public VoidPermission() {
-         this("VoidPermmission");
-     }
-     
-     public VoidPermission(String name) {
-         super(name);
+    public VoidPermission(String name) {
+        super(name);
 
-     }
+    }
 
-     
-     public VoidPermission(String name, String actions) {
-         super(name, actions);
-     }
+    public VoidPermission(String name, String actions) {
+        super(name, actions);
+    }
 
-     
-     @Override
-     public boolean implies(Permission permission) {
-          //always return false
-          return false;
-     }
+    @Override
+    public boolean implies(Permission permission) {
+        // always return false
+        return false;
+    }
 }

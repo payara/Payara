@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * DeploymentHandler.java
@@ -200,10 +201,11 @@ public class DeploymentHandler {
             if (appRefs.size() > 0){
                 List clusters = TargetUtil.getClusters();
                 List standalone = TargetUtil.getStandaloneInstances();
+                List dgs = TargetUtil.getDeploymentGroups();
                 for(int i=0; i< appRefs.size(); i++){
                     AppUtil.manageAppTarget((String)attrMap.get("name"), 
                             appRefs.get(i), true, (String)attrMap.get("enabled"), 
-                            clusters, standalone, handlerCtx);
+                            clusters, standalone, dgs, handlerCtx);
                 }
             }
         } catch (Exception ex) {
@@ -227,10 +229,11 @@ public class DeploymentHandler {
             Map<String,String> deployMap = (Map) handlerCtx.getInputValue("deployMap");
             Map<String,String> valueMap = (Map) handlerCtx.getInputValue("valueMap");
             List<String> convertToFalsList = (List<String>) handlerCtx.getInputValue("convertToFalse");
-            if (convertToFalsList != null)
-            for (String one : convertToFalsList) {
-                if (deployMap.get(one) == null) {
-                    deployMap.put(one, "false");
+            if (convertToFalsList != null) {
+                for (String one : convertToFalsList) {
+                    if (deployMap.get(one) == null) {
+                        deployMap.put(one, "false");
+                    }
                 }
             }
             String appName = deployMap.get("appName");

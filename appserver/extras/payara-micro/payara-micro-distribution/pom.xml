@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,19 +40,20 @@
     holder.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>fish.payara.extras.payara-micro</groupId>
         <artifactId>payara-micro-parent</artifactId>
-        <version>4.1.2.181-SNAPSHOT</version>
+        <version>5.182-SNAPSHOT</version>
     </parent>
-  
+
     <groupId>fish.payara.extras</groupId>
     <artifactId>payara-micro</artifactId>
-    <name>Payara Micro Distribution</name>
     <packaging>jar</packaging>
+    
+    <name>Payara Micro Distribution</name>
+    
 
     <build>
         <defaultGoal>install</defaultGoal>
@@ -90,8 +91,10 @@
                             <tasks>
                                 <ant dir="." antfile="build.xml" target="new.create">
                                     <property name="bundlename" value="fish.payara.micro" />
-                                    <property name="finaljar" value="${project.build.directory}/payara-micro.jar" />
-                                    <property name="install.dir.name" value="${install.dir.name}" />                            
+                                    <property name="finaljar"
+                                        value="${project.build.directory}/payara-micro.jar" />
+                                    <property name="install.dir.name"
+                                        value="${install.dir.name}" />
                                 </ant>
                             </tasks>
                         </configuration>
@@ -131,7 +134,7 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- additional grizzly modules package which includes websockets -->
+        <!-- Additional grizzly modules package which includes websockets -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-grizzly-full</artifactId>
@@ -209,35 +212,41 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-        <!-- JMS Clilent dependencies -->
+        
+        <!-- JMS Client dependencies -->
         <dependency>
             <groupId>org.glassfish.main.ejb</groupId>
             <artifactId>ejb-full-container</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <optional>true</optional>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.security</groupId>
             <artifactId>ejb.security</artifactId>
             <version>${project.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.connectors</groupId>
             <artifactId>connectors-inbound-runtime</artifactId>
             <version>${project.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>javax.jms</groupId>
             <artifactId>javax.jms-api</artifactId>
-            <version>2.0.1</version>
+            <version>${jms-api.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.jms</groupId>
             <artifactId>gf-jms-injection</artifactId>
             <version>${project.version}</version>
+            <optional>true</optional>
         </dependency>
         <!-- End of JMS Client Dependencies -->
+        
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-jsf</artifactId>
@@ -282,11 +291,12 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>javadb</artifactId>
+            <artifactId>h2db</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- hazelcast package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -295,6 +305,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- healthcheck package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -303,6 +314,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- request tracing package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -311,6 +323,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- notification package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -319,6 +332,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- phonehome package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -327,6 +341,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- payara api package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -335,6 +350,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- ha package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -343,6 +359,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- payara rest endpoint package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -351,6 +368,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- Add Payara Micro Core -->
         <dependency>
             <groupId>fish.payara.micro</groupId>
@@ -359,6 +377,7 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- Add Payara Micro Services -->
         <dependency>
             <groupId>fish.payara.micro</groupId>
@@ -367,14 +386,16 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- Add Boot classes -->
         <dependency>
             <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-boot</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>            
+            <type>jar</type>
             <optional>true</optional>
-        </dependency>    
+        </dependency>
+       
         <!-- Add Payara Micro CDI Integration -->
         <dependency>
             <groupId>fish.payara.micro</groupId>
@@ -383,6 +404,7 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- Add JBatch -->
         <dependency>
             <groupId>org.glassfish.main.batch</groupId>
@@ -405,6 +427,7 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
+       
         <!-- Add Hazelcast EJB Timer Store -->
         <dependency>
             <groupId>fish.payara.ejb.timer</groupId>
@@ -420,20 +443,32 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
-        <!-- PAYARA-1081 -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-jaxb-annotations</artifactId>
-            <version>${jackson.version}</version>
-            <optional>true</optional>
-        </dependency>
+        
         <!-- JMS Annotation handlers -->
         <dependency>
             <groupId>org.glassfish.main.jms</groupId>
             <artifactId>jms-handlers</artifactId>
             <version>${project.version}</version>
+            <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>payara-executor-service</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Microprofile APIs -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>microprofile-package</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>             
     </dependencies>
+    
     <profiles>
         <profile>
             <!-- generate empty javadoc jar -->
@@ -461,31 +496,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-        
-        <profile>
-            <id>jdk8</id>
-            <activation>
-                <jdk>1.8</jdk>
-            </activation>
-            <dependencies>
-                <!-- Add Microprofile 1.1 apis -->
-                <dependency>
-                    <groupId>org.eclipse.microprofile.config</groupId>
-                    <artifactId>microprofile-config-api</artifactId>
-                    <version>${microprofile-config.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>fish.payara.nucleus.microprofile.config</groupId>
-                    <artifactId>microprofile-config-service</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>fish.payara.microprofile.config</groupId>
-                    <artifactId>microprofile-config</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
-            </dependencies>
         </profile>
     </profiles>
 </project>

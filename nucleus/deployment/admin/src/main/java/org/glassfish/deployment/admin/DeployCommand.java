@@ -38,6 +38,7 @@
  * holder.
  */
 // Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.deployment.admin;
 
 import java.net.URI;
@@ -46,6 +47,7 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
@@ -105,10 +107,13 @@ import org.glassfish.deployment.versioning.VersioningService;
 @I18n("deploy.command")
 @PerLookup
 @ExecuteOn(value = {RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value = {CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean = Applications.class, opType = RestEndpoint.OpType.POST, path = "deploy"),
     @RestEndpoint(configBean = Cluster.class, opType = RestEndpoint.OpType.POST, path = "deploy", params = {
+        @RestParam(name = "target", value = "$parent")
+    }),
+    @RestEndpoint(configBean = DeploymentGroup.class, opType = RestEndpoint.OpType.POST, path = "deploy", params = {
         @RestParam(name = "target", value = "$parent")
     }),
     @RestEndpoint(configBean = Server.class, opType = RestEndpoint.OpType.POST, path = "deploy", params = {
@@ -171,7 +176,17 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     private static final String EJB_JAR_XML = "META-INF/ejb-jar.xml";
     private static final String SUN_EJB_JAR_XML = "META-INF/sun-ejb-jar.xml";
     private static final String GF_EJB_JAR_XML = "META-INF/glassfish-ejb-jar.xml";
-
+   
+    private static final String APPLICATION_XML = "META-INF/application.xml";
+    private static final String SUN_APPLICATION_XML = "META-INF/sun-application.xml";
+    private static final String GF_APPLICATION_XML  = "META-INF/glassfish-application.xml";
+    
+    private static final String RA_XML  = "META-INF/ra.xml";
+    
+    private static final String APPLICATION_CLIENT_XML = "META-INF/application-client.xml";
+    private static final String SUN_APPLICATION_CLIENT_XML = "META-INF/sun-application-client.xml";
+    private static final String GF_APPLICATION_CLIENT_XML = "META-INF/glassfish-application-client.xml";
+    
     public DeployCommand() {
         origin = Origin.deploy;
     }
@@ -264,11 +279,29 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             events.send(new Event<DeploymentContext>(Deployment.INITIAL_CONTEXT_CREATED, initialContext), false);
 
             if (!forceName) {
+                boolean isModuleDescriptorAvailable = false;
                 if (archiveHandler.getArchiveType().equals("ejb")
                         && (archive.exists(EJB_JAR_XML)
                         || archive.exists(SUN_EJB_JAR_XML)
                         || archive.exists(GF_EJB_JAR_XML))) {
+                    isModuleDescriptorAvailable = true;
+                } else if (archiveHandler.getArchiveType().equals("ear")
+                        && (archive.exists(APPLICATION_XML)
+                        || archive.exists(SUN_APPLICATION_XML)
+                        || archive.exists(GF_APPLICATION_XML))) {
+                    isModuleDescriptorAvailable = true;
 
+                } else if (archiveHandler.getArchiveType().equals("car")
+                        && (archive.exists(APPLICATION_CLIENT_XML)
+                        || archive.exists(SUN_APPLICATION_CLIENT_XML)
+                        || archive.exists(GF_APPLICATION_CLIENT_XML))) {
+                    isModuleDescriptorAvailable = true;
+                } else if (archiveHandler.getArchiveType().equals("rar")
+                        && (archive.exists(RA_XML))) {
+                    isModuleDescriptorAvailable = true;
+                }
+
+                if (isModuleDescriptorAvailable) {
                     name = archiveHandler.getDefaultApplicationName(initialContext.getSource(), initialContext);
                 }
             }
@@ -504,8 +537,11 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             if (tracing != null) {
                 tracing.addMark(DeploymentTracing.Mark.DEPLOY);
             }
-            ApplicationInfo appInfo;
-            appInfo = deployment.deploy(deploymentContext);
+            Deployment.ApplicationDeployment deplResult = deployment.prepare(null, deploymentContext);
+            if(!loadOnly) {
+                deployment.initialize(deplResult.appInfo, deplResult.appInfo.getSniffers(), deplResult.context);
+            }
+            ApplicationInfo appInfo = deplResult.appInfo;
 
             /*
              * Various deployers might have added to the downloadable or
@@ -564,8 +600,13 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             }
         } catch (Throwable e) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(e.getMessage());
-            report.setFailureCause(e);
+            if(e.getMessage() != null) {
+                report.setMessage(e.getMessage());
+                report.setFailureCause(e);
+            }
+            else {
+                report.setFailureCause(null);
+            }
         } finally {
             events.unregister(this);
             try {
@@ -625,7 +666,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
                 }
             }
-            if (deploymentContext != null) {
+            if (deploymentContext != null && !loadOnly) {
                 deploymentContext.postDeployClean(true);
             }
         }

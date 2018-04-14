@@ -47,14 +47,16 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.*;
 
-
 public class JpaServlet extends HttpServlet {
 
-    @PersistenceUnit(unitName="pu1")
+    @PersistenceUnit(unitName = "pu1")
     private EntityManagerFactory emf;
-    private EntityManager em;
-    private @Resource UserTransaction utx;
     
+    @Resource 
+    private UserTransaction utx;
+    
+    private EntityManager em;
+
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/plain");
         PrintWriter out = response.getWriter();
@@ -67,29 +69,29 @@ public class JpaServlet extends HttpServlet {
         out.println("createEM  EntityManager=" + em);
 
         String testcase = request.getParameter("testcase");
-        System.out.println("testcase="+testcase);
+        System.out.println("testcase=" + testcase);
         if (testcase != null) {
-          JpaTest jt = new JpaTest(emf, em, utx, out);
+            JpaTest jt = new JpaTest(emf, em, utx, out);
 
-	  try {
+            try {
 
-	    if ("llinit".equals(testcase)) {
-                 status = jt.lazyLoadingInit();
-	    } else if ("llfind".equals(testcase)) {
-                 status = jt.lazyLoadingByFind(1);
-	    } else if ("llquery".equals(testcase)) {
-                 status = jt.lazyLoadingByQuery("Carla");
-	    } 
-            if (status) {
-	      out.println(testcase+":pass");
-	    } else {
-	      out.println(testcase+":fail");
-	    }
-	  } catch (Exception ex) {
-            ex.printStackTrace();
-            System.out.println("servlet test failed");
-            throw new ServletException(ex);
-	  } 
-	}
+                if ("llinit".equals(testcase)) {
+                    status = jt.lazyLoadingInit();
+                } else if ("llfind".equals(testcase)) {
+                    status = jt.lazyLoadingByFind(1);
+                } else if ("llquery".equals(testcase)) {
+                    status = jt.lazyLoadingByQuery("Carla");
+                }
+                if (status) {
+                    out.println(testcase + ":pass");
+                } else {
+                    out.println(testcase + ":fail");
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                System.out.println("servlet test failed");
+                throw new ServletException(ex);
+            }
+        }
     }
 }

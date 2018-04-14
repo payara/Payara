@@ -46,6 +46,7 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.admingui.handlers;
 
 import com.sun.jsftemplating.annotation.Handler;
@@ -69,8 +70,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.SecureRandom;
 import java.util.Map;
-import java.util.Random;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.ArrayList;
@@ -176,7 +177,7 @@ public class WoodstockHandler {
             try {
                 //createTempFile requires min. of 3 char for prefix.
                 if (prefix.length() <= 2) {
-                    prefix = prefix + new Random().nextInt(100000);
+                    prefix = prefix + new SecureRandom().nextInt(100000);
                 }
                 tmpFile = File.createTempFile(prefix, suffix);
                 tmpFile.deleteOnExit();

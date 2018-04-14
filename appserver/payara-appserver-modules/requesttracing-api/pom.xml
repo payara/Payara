@@ -44,7 +44,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>4.1.2.181-SNAPSHOT</version>
+        <version>5.182-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.appserver</groupId>
     <packaging>glassfish-jar</packaging>
@@ -85,15 +85,24 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>javax.interceptor</groupId>
+            <artifactId>javax.interceptor-api</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+            <version>2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
             <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>7.0</version>
         </dependency>
     </dependencies>
 </project>

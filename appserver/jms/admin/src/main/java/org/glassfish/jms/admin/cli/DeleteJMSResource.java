@@ -69,7 +69,7 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 @I18n("delete.jms.resource")
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DOMAIN})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DOMAIN, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean = Resources.class,
     opType = RestEndpoint.OpType.DELETE,

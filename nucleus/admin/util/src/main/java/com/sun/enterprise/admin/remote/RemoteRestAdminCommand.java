@@ -73,11 +73,14 @@ import com.sun.enterprise.admin.util.HttpConnectorAddress;
 import com.sun.enterprise.admin.util.cache.AdminCacheUtils;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.net.NetUtils;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import javax.json.stream.JsonParser;
 import org.glassfish.admin.payload.PayloadFilesManager;
 import org.glassfish.api.admin.Payload;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.common.util.admin.AuthTokenManager;
@@ -156,7 +159,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     protected boolean           secure;
     protected boolean           notify;
     protected String            user;
-    protected String            password;
+    protected char[]            password;
     protected Logger            logger;
     protected String            scope;
     protected String            authToken = null;
@@ -259,7 +262,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     }
 
     public RemoteRestAdminCommand(String name, String host, int port,
-            boolean secure, String user, String password, Logger logger,boolean notify)
+            boolean secure, String user, char[] password, Logger logger,boolean notify)
             throws CommandException {
         this(name, host, port, secure, user, password, logger, null, null, false,notify);
     }
@@ -269,7 +272,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
      * are supplied later using the execute method in the superclass.
      */
     public RemoteRestAdminCommand(String name, String host, int port,
-            boolean secure, String user, String password, Logger logger,
+            boolean secure, String user, char[] password, Logger logger,
             final String scope,
             final String authToken,
             final boolean prohibitDirectoryUploads, boolean notify)
@@ -449,44 +452,48 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         }
         try {
             boolean sawFile = false;
-            JSONObject obj = new JSONObject(str);
-            obj = obj.getJSONObject("command");
+            JsonParser parser = Json.createParser(new StringReader(str));
+            parser.next();
+            JsonObject obj = parser.getObject();
+            obj = obj.getJsonObject("command");
             CachedCommandModel cm = new CachedCommandModel(obj.getString("@name"), etag);
-            cm.dashOk = obj.optBoolean("@unknown-options-are-operands", false);
-            cm.managedJob = obj.optBoolean("@managed-job", false);
-            cm.setUsage(obj.optString("usage", null));
-            Object optns = obj.opt("option");
-            if (!JSONObject.NULL.equals(optns)) {
-                JSONArray jsonOptions;
-                if (optns instanceof JSONArray) {
-                    jsonOptions = (JSONArray) optns;
+            cm.dashOk = parseBoolean(obj,"@unknown-options-are-operands", false);
+            cm.managedJob = parseBoolean(obj,"@managed-job", false);
+            cm.setUsage(obj.getString("usage", null));
+            JsonValue optns = obj.get("option");
+            if (!JsonValue.NULL.equals(optns) && optns != null) {
+                JsonArray jsonOptions;
+                if (optns instanceof JsonArray) {
+                    jsonOptions = (JsonArray) optns;
                 } else {
-                    jsonOptions = new JSONArray();
-                    jsonOptions.put(optns);
+                    JsonArrayBuilder optBuilder = Json.createArrayBuilder();
+                    optBuilder.add(optns);
+                    jsonOptions = optBuilder.build();                    
                 }
-                for (int i = 0; i < jsonOptions.length(); i++) {
-                    JSONObject jsOpt = jsonOptions.getJSONObject(i);
+                
+                for (int i = 0; i < jsonOptions.size(); i++) {
+                    JsonObject jsOpt = jsonOptions.getJsonObject(i);
                     String type = jsOpt.getString("@type");
                     ParamModelData opt = new ParamModelData(
                             jsOpt.getString("@name"),
                             typeOf(type),
-                            jsOpt.optBoolean("@optional", false),
-                            jsOpt.optString("@default"),
-                            jsOpt.optString("@short"),
-                            jsOpt.optBoolean("@obsolete", false),
-                            jsOpt.optString("@alias"));
-                    opt.param._acceptableValues = jsOpt.optString("@acceptable-values");
+                            parseBoolean(jsOpt, "@optional", false),
+                            jsOpt.getString("@default", null),
+                            jsOpt.getString("@short", null),
+                            parseBoolean(jsOpt, "@obsolete", false),
+                            jsOpt.getString("@alias", null));
+                    opt.param._acceptableValues = jsOpt.getString("@acceptable-values", "");
                     if ("PASSWORD".equals(type)) {
                         opt.param._password = true;
-                        opt.prompt = jsOpt.optString("@prompt");
-                        opt.promptAgain = jsOpt.optString("@prompt-again");
+                        opt.prompt = jsOpt.getString("@prompt", null);
+                        opt.promptAgain = jsOpt.getString("@prompt-again", null);
                     } else if ("FILE".equals(type)) {
                         sawFile = true;
                     }
-                    if (jsOpt.optBoolean("@primary", false)) {
+                    if (parseBoolean(jsOpt, "@primary", false)) {
                         opt.param._primary = true;
                     }
-                    if (jsOpt.optBoolean("@multiple", false)) {
+                    if (parseBoolean(jsOpt, "@multiple", false)) {
                         if (opt.type == File.class) {
                             opt.type = File[].class;
                         } else {
@@ -508,8 +515,8 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             }
             this.usage = cm.getUsage();
             return cm;
-        } catch (JSONException ex) {
-            logger.log(Level.FINER, "Can not parse command metadata", ex);
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "Can not parse command metadata", ex);
             return null;
         }
     }
@@ -1679,6 +1686,25 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             }
         }
         return val;
+    }
+    
+    private boolean parseBoolean(JsonObject obj, String key, boolean defaultValue) {
+        boolean result = defaultValue;
+        JsonValue get = obj.get(key);
+        if (get != null && null != get.getValueType()) switch (get.getValueType()) {
+            case STRING:
+                result = Boolean.valueOf(obj.getString(key, Boolean.toString(defaultValue)));
+                break;
+            case TRUE:
+                result = true;
+                break; 
+            case FALSE:
+                result = false;
+                break;
+            default:
+                break;
+        }
+        return result;
     }
 
     private static boolean ok(String s) {

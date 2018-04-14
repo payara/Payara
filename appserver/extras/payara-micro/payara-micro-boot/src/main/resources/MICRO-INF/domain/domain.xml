@@ -37,10 +37,11 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
+    <hazelcast-runtime-configuration multicast-group="224.2.2.4" multicast-port="2904" generate-names="true" start-port="6900"></hazelcast-runtime-configuration>
     <security-configurations>
         <authorization-service default="true" name="authorizationService">
             <security-provider name="simpleAuthorization" type="Simple" provider-name="simpleAuthorizationProvider">
@@ -51,23 +52,28 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
     <system-applications />
     <applications />
     <resources>
-        <jdbc-resource pool-name="DerbyPool" jndi-name="jdbc/__default" object-type="system-all" />
-        <jdbc-connection-pool is-isolation-level-guaranteed="false" name="DerbyPool" datasource-classname="org.apache.derby.jdbc.EmbeddedDataSource" res-type="javax.sql.DataSource">
-            <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/embedded_default" />
-            <property name="connectionAttributes" value=";create=true" />
+        <jdbc-resource pool-name="H2Pool" jndi-name="jdbc/__default" object-type="system-all" />
+        <jdbc-connection-pool is-isolation-level-guaranteed="false" name="H2Pool" datasource-classname="org.h2.jdbcx.JdbcDataSource" res-type="javax.sql.DataSource"> 
+            <property name="URL" value="jdbc:h2:${com.sun.aas.instanceRoot}/lib/databases/embedded_default;AUTO_SERVER=TRUE" />
         </jdbc-connection-pool>
         <context-service description="context service" jndi-name="concurrent/__defaultContextService" object-type="system-all"></context-service>
-        <managed-executor-service maximum-pool-size="200" core-pool-size="1" long-running-tasks="true" keep-alive-seconds="300" hung-after-seconds="300" task-queue-capacity="20000" jndi-name="concurrent/__defaultManagedExecutorService" object-type="system-all"></managed-executor-service>
-        <managed-scheduled-executor-service core-pool-size="1" long-running-tasks="true" keep-alive-seconds="300" hung-after-seconds="300" jndi-name="concurrent/__defaultManagedScheduledExecutorService" object-type="system-all"></managed-scheduled-executor-service>
+        <managed-executor-service maximum-pool-size="200" core-pool-size="2" long-running-tasks="true" keep-alive-seconds="300" hung-after-seconds="300" task-queue-capacity="20000" jndi-name="concurrent/__defaultManagedExecutorService" object-type="system-all"></managed-executor-service>
+        <managed-scheduled-executor-service core-pool-size="2" long-running-tasks="true" keep-alive-seconds="300" hung-after-seconds="300" jndi-name="concurrent/__defaultManagedScheduledExecutorService" object-type="system-all"></managed-scheduled-executor-service>
         <managed-thread-factory description="thread factory" jndi-name="concurrent/__defaultManagedThreadFactory" object-type="system-all"></managed-thread-factory>
     </resources>
     <servers>
         <server name="server" config-ref="server-config">
             <resource-ref ref="jdbc/__default" />
+            <resource-ref ref="concurrent/__defaultContextService"></resource-ref>
+            <resource-ref ref="concurrent/__defaultManagedExecutorService"></resource-ref>
+            <resource-ref ref="concurrent/__defaultManagedScheduledExecutorService"></resource-ref>
+            <resource-ref ref="concurrent/__defaultManagedThreadFactory"></resource-ref>        
         </server>
     </servers>
     <configs>
         <config name="server-config">
+            <payara-executor-service-configuration/>
+            <hazelcast-config-specific-configuration enabled="true"></hazelcast-config-specific-configuration>
             <health-check-service-configuration enabled="false">
                 <log-notifier enabled="true"/>
                 <eventbus-notifier enabled="false"/>
@@ -92,7 +98,7 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
             <connector-service class-loading-policy="global" shutdown-timeout-in-seconds="30">
             </connector-service>
             <ejb-container steady-pool-size="0" max-pool-size="32" session-store="${com.sun.aas.instanceRoot}/session-store" pool-resize-quantity="8">
-                <ejb-timer-service ejb-timer-service="Hazelcast"></ejb-timer-service>
+                <ejb-timer-service ejb-timer-service="DataGrid"></ejb-timer-service>
             </ejb-container>
             <log-service file="${com.sun.aas.instanceRoot}/logs/server.log" log-rotation-limit-in-bytes="2000000">
                 <module-log-levels />
@@ -101,6 +107,7 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
         	<log-notifier></log-notifier>
         	<eventbus-notifier></eventbus-notifier>
             </monitoring-service-configuration>
+            <microprofile-metrics-configuration></microprofile-metrics-configuration>
             <security-service activate-default-principal-to-role-mapping="true" jacc="simple">
                 <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
                     <property value="${com.sun.aas.instanceRoot}/config/admin-keyfile" name="file" />
@@ -156,7 +163,6 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
             </security-service>
             <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" >
             </transaction-service>
-            <hazelcast-runtime-configuration enabled="true" multicastGroup="224.2.2.4" multicastPort="2904" generate-names="true"></hazelcast-runtime-configuration>
             <phone-home-runtime-configuration></phone-home-runtime-configuration>
             <request-tracing-service-configuration>
                 <log-notifier enabled="true"></log-notifier>
@@ -196,6 +202,7 @@ Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
                 <thread-pool name="http-thread-pool" min-thread-pool-size="10" max-thread-pool-size="200" max-queue-size="4096"></thread-pool>
                 <thread-pool name="thread-pool-1" min-thread-pool-size="2" max-thread-pool-size="200"/>
             </thread-pools>
+            <microprofile-config/>
         </config> 
     </configs>
     <property name="administrative.domain.name" value="domain1"/>

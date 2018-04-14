@@ -39,20 +39,22 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>org.glassfish.main.admin</groupId>
         <artifactId>rest-service-parent</artifactId>
-        <version>4.1.2.181-SNAPSHOT</version>
+        <version>5.182-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
+    
     <artifactId>rest-service</artifactId>
     <packaging>glassfish-jar</packaging>
-    
     <name>GlassFish Admin REST Service</name>
+    
     <description>Rest Interface for GlassFish Management and Monitoring</description>
 
     <dependencies>
@@ -80,10 +82,10 @@
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2</artifactId>
         </dependency>
-            <dependency>
-                <groupId>javax.el</groupId>
-                <artifactId>javax.el-api</artifactId>
-            </dependency>
+        <dependency>
+            <groupId>javax.el</groupId>
+            <artifactId>javax.el-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.core</groupId>
             <artifactId>kernel</artifactId>
@@ -101,8 +103,30 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-sse</artifactId>
+            <scope>provided</scope>
+        </dependency>
+         <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-multipart</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <version>${jsonp.version}</version>
+            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.flashlight</groupId>
@@ -112,18 +136,6 @@
         <dependency>
             <groupId>org.glassfish.external</groupId>
             <artifactId>management-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-multipart</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jackson</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -147,7 +159,28 @@
             <artifactId>asadmin-recorder</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>javax.json</groupId>
+            <artifactId>javax.json-api</artifactId>
+            <version>1.1</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-processing</artifactId>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-jaxb</artifactId>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+        </dependency>
     </dependencies>
+    
     <build> 
         <plugins>
             <plugin>

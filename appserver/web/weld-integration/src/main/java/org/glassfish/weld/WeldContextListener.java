@@ -39,7 +39,7 @@
  *
  * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
-
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.weld;
 
 import javax.enterprise.inject.spi.BeanManager;
@@ -53,7 +53,7 @@ import java.util.logging.Logger;
 
 import org.apache.jasper.runtime.JspApplicationContextImpl;
 import org.glassfish.cdi.CDILoggerInfo;
-import org.jboss.weld.el.WeldELContextListener;
+import org.jboss.weld.module.web.el.WeldELContextListener;
 
 /**
  * ServletContextListener implementation that ensures (for Weld applications)
@@ -73,12 +73,12 @@ public class WeldContextListener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
 
-        if (null != beanManager) {
+        if (beanManager != null) {
              JspApplicationContext jspAppContext = getJspApplicationContext(servletContextEvent);
              jspAppContext.addELResolver(beanManager.getELResolver());
 
              try {
-                 Class weldClass = Class.forName("org.jboss.weld.el.WeldELContextListener");
+                 Class<?> weldClass = Class.forName("org.jboss.weld.module.web.el.WeldELContextListener");
                  WeldELContextListener welcl = ( WeldELContextListener ) weldClass.newInstance();
                  jspAppContext.addELContextListener(welcl);
              } catch (Exception e) {
@@ -87,14 +87,14 @@ public class WeldContextListener implements ServletContextListener {
                             new Object [] {e});
              }
 
-            ( ( JspApplicationContextImpl ) jspAppContext ).setExpressionFactory(
+			((JspApplicationContextImpl) jspAppContext).setExpressionFactory(
                 beanManager.wrapExpressionFactory(jspAppContext.getExpressionFactory()));
         }
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-        if (null != beanManager) {
+        if (beanManager != null) {
             beanManager = null;
         }
     }

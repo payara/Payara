@@ -69,7 +69,7 @@
 </sun:head>
 
 
-<sun:body id="body3" focus="loginform.j_username" style="background-color: #4A5C6A;" onLoad="triggerRestart();">
+<sun:body id="body3" focus="loginform.j_username" style="background-color: #002332; color: #fff;" onLoad="triggerRestart();">
     <sun:form id="form">
     <sun:button id="restartInstance" visible="false">
         <!command
@@ -95,7 +95,7 @@
         <table border="0" background="/resource/images/dot.gif" cellpadding="0" cellspacing="0" width="100%" title="">
           <tr>
             <td width="150"><img src="/resource/images/dot.gif" width="150" height="245" alt="" /></td>
-            <td width="415" bgcolor="#FFFFFF" valign="top" align="left">&nbsp;
+            <td width="415" valign="top" align="left">&nbsp;
 
               <table border="0" cellspacing="0" cellpadding="0">
                 <tr>

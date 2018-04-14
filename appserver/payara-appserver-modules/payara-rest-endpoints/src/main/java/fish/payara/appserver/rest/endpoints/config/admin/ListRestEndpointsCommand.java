@@ -1,7 +1,7 @@
 /* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,43 +39,50 @@
  */
 package fish.payara.appserver.rest.endpoints.config.admin;
 
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.web.WebApplication;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
+import static java.util.Arrays.asList;
 
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
-
-import javax.inject.Inject;
-import com.sun.enterprise.web.WebContainer;
-import com.sun.enterprise.web.WebModule;
-import fish.payara.appserver.rest.endpoints.RestEndpointModel;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import javax.inject.Inject;
+import javax.ws.rs.HttpMethod;
+
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.web.WebApplication;
+import com.sun.enterprise.web.WebContainer;
+import com.sun.enterprise.web.WebModule;
+
 import org.apache.catalina.Container;
 import org.apache.catalina.core.StandardWrapper;
-import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.Param;
+import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.EngineRef;
 import org.glassfish.internal.data.ModuleInfo;
 import org.glassfish.jersey.servlet.ServletContainer;
+import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.appserver.rest.endpoints.RestEndpointModel;
 
 /**
  * CLI for listing all REST endpoints.
@@ -118,78 +125,25 @@ public class ListRestEndpointsCommand implements AdminCommand {
     @Inject
     private ServiceLocator habitat;
 
-    private final String requestMethodName = "requestMethod";
-    private final String endpointPathName = "endpointPath";
-    private final String endpointListName = "endpointList";
+    private final String jerseyWADL = "/application.wadl";
 
     @Override
     public void execute(AdminCommandContext context) {
 
-        List<Map<String, String>> endpoints = new ArrayList<>(); // Map of endpoint -> HTTP method
-
         ActionReport report = context.getActionReport();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 
-        // Get all deployed applications
-        ApplicationRegistry appRegistry = habitat.getService(ApplicationRegistry.class);
-
-        // Get the deployed application with the provided name
-        ApplicationInfo appInfo = getSpecifiedApplication(appName, appRegistry);
-
-        // Check if the given application exists
-        if (appInfo == null) {
-            report.setMessage("Application " + appName + " is not registered");
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        // Get the endpoints for the application
+        Map<String, Set<String>> endpoints = null;
+        try {
+            endpoints = getEndpointMap(appName); // Map of endpoint -> HTTP methods
+        } catch (IllegalArgumentException ex) {
+            report.setMessage(ex.getMessage());
+            report.setActionExitCode(FAILURE);
             return;
         }
 
-        // Get the web modules from the given application (e.g. multiple wars in an ear)
-        List<WebModule> modules = getWebModules(appInfo);
-
-        // Check if the given application exists
-        if (modules.isEmpty()) {
-            report.setMessage("Application " + appName + " contains no web modules");
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-
-        // Get the Jersey applications from all of the modules (or only the one matching the given component name)
-        Map<ServletContainer, String> jerseyApplicationMap = getSpecifiedJerseyApplications(componentName, modules);
-
-        // error out in the case of a non existent provided component or no components at all
-        if (jerseyApplicationMap.isEmpty()) {
-            report.setMessage("Component " + componentName + " could not be found");
-            if (componentName == null) {
-                report.setMessage("Application " + appName + " has no deployed JAX-RS applications");
-            }
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-
-        // loop through jersey components
-        for (ServletContainer jerseyApplication : jerseyApplicationMap.keySet()) {
-            String appRoot = jerseyApplication.getServletContext().getContextPath();
-            String jerseyAppRoot = jerseyApplicationMap.get(jerseyApplication);
-
-            List<Class<?>> containedClasses = getClasses(jerseyApplication);
-
-            // loop through all classes contained by given jersey application
-            for (Class containedClass : containedClasses) {
-                List<RestEndpointModel> classEndpoints = getEndpointsForClass(containedClass);
-
-                // loop through endpoints in given class
-                for (RestEndpointModel endpoint : classEndpoints) {
-                    String endpointPath = appRoot + jerseyAppRoot + endpoint.getPath();
-                    Map endpointMap = new HashMap<>();
-                    endpointMap.put(endpointPathName, endpointPath);
-                    endpointMap.put(requestMethodName, endpoint.getRequestMethod());
-                    endpoints.add(endpointMap);
-                }
-            }
-
-        }
-
-        // error out in the case of an empty application
+        // Error out in the case of an empty application
         if (endpoints.isEmpty()) {
             if(componentName == null) {
                 report.setMessage("Application " + appName + " has no deployed endpoints");
@@ -199,30 +153,96 @@ public class ListRestEndpointsCommand implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         }
 
-        // Sort the endpoint list
-        Comparator sorter = new Comparator<Map<String, String>>() {
-            @Override
-            public int compare(Map<String, String> a, Map<String, String> b) {
-                int firstPass = a.get(endpointPathName).compareToIgnoreCase(b.get(endpointPathName));
-
-                if (firstPass == 0) {
-                    return a.get(requestMethodName).compareToIgnoreCase(b.get(requestMethodName));
-                }
-                return firstPass;
-            }
-        };
-        Collections.sort(endpoints, sorter);
-
         // Print out endpoints to log
-        for (Map<String, String> endpoint : endpoints) {
-            report.appendMessage(endpoint.get(requestMethodName) + "\t" + endpoint.get(endpointPathName) + "\n");
-        }
+        endpoints.forEach((path, methods) -> {
+            methods.forEach(method -> {
+                report.appendMessage(method + "\t" + path + "\n");
+            });
+        });
         // Remove trailing spaces
         report.setMessage(report.getMessage().trim());
 
         Properties extraProps = new Properties();
-        extraProps.put(endpointListName, endpoints);
+        extraProps.put("endpoints", endpoints);
         report.setExtraProperties(extraProps);
+    }
+
+    /**
+     * Returns a list of a map of endpoint -> list of methods.
+     * @param appName the name of the application.
+     * @throws IllegalArgumentException if the application does not contain endpoints. Specifies the reason.
+     */
+    public Map<String, Set<String>> getEndpointMap(String appName) {
+        // Create an initial array
+        Map<String, Set<String>> endpoints = new TreeMap<>();
+
+        // Get all deployed applications
+        ApplicationRegistry appRegistry = habitat.getService(ApplicationRegistry.class);
+
+        // Get the deployed application with the provided name
+        ApplicationInfo appInfo = getSpecifiedApplication(appName, appRegistry);
+
+        // Check if the given application exists
+        if (appInfo == null) {
+            throw new IllegalArgumentException("Application " + appName + " is not registered.");
+        }
+
+        // Get the web modules from the given application (e.g. multiple wars in an ear)
+        List<WebModule> modules = getWebModules(appInfo);
+
+        // Check if the given application exists
+        if (modules.isEmpty()) {
+            throw new IllegalArgumentException("Application " + appName + " contains no web modules.");
+        }
+
+        // Get the Jersey applications from all of the modules (or only the one matching the given component name)
+        Map<ServletContainer, String> jerseyApplicationMap = getSpecifiedJerseyApplications(componentName, modules);
+
+        // error out in the case of a non existent provided component or no components at all
+        if (jerseyApplicationMap.isEmpty()) {
+            if (componentName == null) {
+                throw new IllegalArgumentException("Application " + appName + " has no deployed JAX-RS applications.");
+            }
+            throw new IllegalArgumentException("Component " + componentName + " could not be found.");
+        }
+
+        // loop through jersey components
+        boolean hasEndpoints = false;
+        for (ServletContainer jerseyApplication : jerseyApplicationMap.keySet()) {
+            String appRoot = jerseyApplication.getServletContext().getContextPath();
+            String jerseyAppRoot = jerseyApplicationMap.get(jerseyApplication);
+
+            List<Class<?>> containedClasses = getClasses(jerseyApplication);
+
+            // loop through all classes contained by given jersey application
+            for (Class<?> containedClass : containedClasses) {
+                List<RestEndpointModel> classEndpoints = getEndpointsForClass(containedClass);
+
+                if (!classEndpoints.isEmpty()) {
+                    // loop through endpoints in given class
+                    for (RestEndpointModel endpoint : classEndpoints) {
+                        String path = appRoot + jerseyAppRoot + endpoint.getPath();
+                        String method = endpoint.getRequestMethod();
+                        if (endpoints.keySet().contains(path)) {
+                            Set<String> methods = endpoints.get(path);
+                            methods.add(method);
+                            endpoints.put(path, methods);
+                        } else {
+                            endpoints.put(path, new TreeSet<>(asList(method)));
+                        }
+                    }
+                }
+            }
+
+            // Jersey will automatically generate a wadl file for the endpoints, so add
+            // it for every deployed application with endpoints
+            endpoints.put(appRoot + jerseyAppRoot + jerseyWADL, new TreeSet<>(asList(HttpMethod.GET)));
+            hasEndpoints = true;
+        }
+        if (!hasEndpoints) {
+            return null;
+        }
+        return endpoints;
     }
 
     /**
