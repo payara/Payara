@@ -43,6 +43,7 @@ package com.sun.enterprise.security.ssl;
 import java.net.Socket;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSocket;
+import org.glassfish.grizzly.config.ssl.JSSE14SocketFactory;
 import org.glassfish.grizzly.config.ssl.SSLImplementation;
 import org.glassfish.grizzly.config.ssl.ServerSocketFactory;
 import org.glassfish.grizzly.ssl.SSLSupport;
@@ -64,7 +65,7 @@ public class GlassfishSSLImpl extends SSLImplementation {
     }
 
     public ServerSocketFactory getServerSocketFactory() {
-        return new GlassfishServerSocketFactory();
+        return new JSSE14SocketFactory();
     }
 
     public SSLSupport getSSLSupport(Socket socket) {
