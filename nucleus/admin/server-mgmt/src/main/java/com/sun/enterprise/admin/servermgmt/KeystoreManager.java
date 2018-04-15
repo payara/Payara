@@ -79,6 +79,22 @@ import com.sun.enterprise.util.ProcessExecutor;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.net.NetUtils;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.security.Key;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateFactory;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author kebbs
@@ -470,6 +486,235 @@ public class KeystoreManager {
             p.execute("keyStorePasswordNotChanged", keystore);
         }
     }
+
+	/**
+	 * Throws an IllegalArgumentException if the password's complexity does not meet requirements
+	 * @param pw
+	 * @param msgId
+	 */
+	protected void enforcePasswordComplexity(char[] pw, String msgId) {
+		if (pw == null || pw.length < 6) {
+			throw new IllegalArgumentException(_strMgr.getString(msgId));
+		}
+	}
+
+	/**
+	 * Loads a (JKS or PKCS#12) keystore. This method does not use the keytool, but instead the JAVA API
+	 * @param source the path of the file to be opened and loaded into the keystore
+	 * @param storeType the type of the keystore to be read
+	 * @param pw the keystore password
+	 * @return the keystore, if load was successful
+	 * @throws KeyStoreException
+	 */
+	public KeyStore openKeyStore(File source, String storeType, char[] pw) throws KeyStoreException {
+		KeyStore keyStore = KeyStore.getInstance(storeType);
+		try (InputStream keyStoreStream = new FileInputStream(source)) {
+			keyStore.load(keyStoreStream, pw);
+		} catch (Exception ex) {
+			throw new KeyStoreException(ex);
+		}
+		return keyStore;
+	}
+
+	/**
+	 * Saves the (modified) keystore. This method does not use the keytool, but instead the JAVA API
+	 * @param keyStore the keystore to be written
+	 * @param dest path of the file the keystore is to be written to
+	 * @param pw keystore password
+	 * @throws KeyStoreException
+	 */
+	public void saveKeyStore(KeyStore keyStore, File dest, char[] pw) throws KeyStoreException {
+		enforcePasswordComplexity(pw, "invalidPassword");
+		try (OutputStream outStream = new FileOutputStream(dest)) {
+			keyStore.store(outStream, pw);
+			outStream.flush();
+		} catch (Exception ex) {
+			throw new KeyStoreException(ex);
+		}
+	}
+
+	/**
+	 * Adds/updates a keypair to a keystore. This method does not use the keytool, but instead the JAVA API
+	 * @param keyStore the keystore. Must not be null.
+	 * @param storeType the type of the keystore (JKS or PKCS#12)
+	 * @param storePw the keystore password. Since glassfish requires that keystore and key passwords are identical, this is also used
+	 *	as password for the private key
+	 * @param privKey the private key to be added to the store
+	 * @param certChain chain of certificates
+	 * @param alias the alis of the key to be used inside the keystore
+	 * @throws java.security.KeyStoreException in case of problems
+	 */
+	public void addKeyPair(File keyStore, String storeType, char[] storePw,
+			PrivateKey privKey, Certificate[] certChain, String alias) throws KeyStoreException {
+		enforcePasswordComplexity(storePw, "invalidPassword");
+		KeyStore ks = openKeyStore(keyStore, storeType, storePw);
+
+		// glassfish requires that keystore and key passwords are identical
+		ks.setKeyEntry(alias, privKey, storePw, certChain);
+		saveKeyStore(ks, keyStore, storePw);
+	}
+
+	/**
+	 * Adds/updates a keypair to a keystore. This method does not use the keytool, but instead the JAVA API
+	 * <p><b>NOTE:</b> Glassfish expects the keystore and key passwords to be identical. For this reason prefer using
+	 * {@link #addKeyPair(java.io.File, java.lang.String, char[], java.security.PrivateKey, java.security.cert.Certificate[], java.lang.String) }
+	 * instead</p>
+	 * @param keyStore the keystore. Must not be null.
+	 * @param storeType the type of the keystore (JKS or PKCS#12).
+	 * @param storePw the keystore password
+	 * @param privKey the private key to be added to the store
+	 * @param keyPw the private key's password.
+	 * @param certChain chain of certificates
+	 * @param alias the alis of the key to be used inside the keystore
+	 * @throws java.security.KeyStoreException in case of problems
+	 */
+	public void addKeyPair(File keyStore, String storeType, char[] storePw,
+			PrivateKey privKey, char[] keyPw, Certificate[] certChain, String alias) throws KeyStoreException {
+		enforcePasswordComplexity(keyPw, "invalidPassword");
+		KeyStore ks = openKeyStore(keyStore, storeType, storePw);
+		ks.setKeyEntry(alias, privKey, keyPw, certChain);
+		saveKeyStore(ks, keyStore, storePw);
+	}
+
+	/**
+	 * Changes the keystore's password and all contained keys'.
+	 * This is done to ensure the convention used by glassfish: same pw for the keystore and all keys inside.
+	 * <p>This method DOES NOT use the keytool, but manipulates the given file directly from JAVA.</p>
+	 * @param srcKeyStore the destination keystore - may be null for an in-memory keystore
+	 * @param storeType the type of the keystore (JKS or PKCS#12)
+	 * @param oldPw the old password
+	 * @param newPw thenew password
+	 * @throws java.security.KeyStoreException in case of problems
+	 */
+	public void changeKeyStorePassword(File keyStore, String storeType, char[] oldPw, char[] newPw) throws KeyStoreException {
+		changeKeyStorePassword(keyStore, storeType, oldPw, newPw, true);
+	}
+
+	/**
+	 * Changes the keystore's password and all contained keys'.
+	 * <p><b>NOTE:</b> Glassfish expects the keystore and key passwords to be identical. For this reason prefer using
+	 * {@link #changeKeyStorePassword(java.io.File, java.lang.String, char[], char[]) } instead</p>
+	 * <p>This method DOES NOT use the keytool, but manipulates the given file directly from JAVA.</p>
+	 * @param srcKeyStore the destination keystore - may be null for an in-memory keystore
+	 * @param storeType the type of the keystore (JKS or PKCS#12)
+	 * @param oldPw the old password
+	 * @param newPw the new password
+	 * @param changeKeyPasswords if true, all the keys contained in the keystore will have their passwords set
+	 * to newStorePw as well
+	 * @throws java.security.KeyStoreException in case of problems
+	 */
+	public void changeKeyStorePassword(File keyStore, String storeType, char[] oldPw,
+			char[] newPw, boolean changeKeyPasswords) throws KeyStoreException {
+		enforcePasswordComplexity(newPw, "invalidPassword");
+		KeyStore ks = openKeyStore(keyStore, storeType, oldPw);
+
+		if (changeKeyPasswords) {
+			Enumeration<String> aliases = ks.aliases();
+			// change all private key's passwords
+			try {
+				while (aliases.hasMoreElements()) {
+					String alias = aliases.nextElement();
+					Key k = ks.getKey(alias, oldPw);
+					if (k != null) {
+						Certificate[] certChain = ks.getCertificateChain(alias);
+						ks.setKeyEntry(alias, k, newPw, certChain);
+					}
+				}
+			} catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException ex) {
+				throw new KeyStoreException(ex);
+			}
+		}
+		saveKeyStore(ks, keyStore, newPw);
+	}
+
+	/**
+	 * Changes a private key's password. This method DOES NOT use the keytool, but manipulates the given file directly from JAVA.
+	 * In addition, this method changes just the password of the key, not the keystore.
+	 * <p><b>NOTE:</b> Glassfish expects the keystore and key passwords to be identical. For this reason prefer using
+	 * {@link #changeKeyStorePassword(java.io.File, java.lang.String, char[], char[]) } instead</p>
+	 *
+	 * @param keyStore the path of the keystore where the key with alias is to be modified
+	 * @param storeType - either "JKS" or "PKCS12"
+	 * @param storePw - must not be null
+	 * @param alias the alias of the key to be changed
+	 * @param oldKeyPw the old password
+	 * @param newKeyPw the new password
+	 * @throws KeyStoreException  in case of problems
+	 */
+	public void changeKeyPassword(File keyStore, String storeType, char[] storePw, String alias, char[] oldKeyPw, char[] newKeyPw)
+			throws KeyStoreException {
+		enforcePasswordComplexity(newKeyPw, "invalidPassword");
+		try {
+			KeyStore ks = openKeyStore(keyStore, storeType, storePw);
+			Key privKey = ks.getKey(alias, storePw);
+			Certificate[] certs = ks.getCertificateChain(alias);
+			ks.setKeyEntry(alias, privKey, newKeyPw, certs);
+			saveKeyStore(ks, keyStore, storePw);
+		} catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException ex) {
+			throw new KeyStoreException(ex);
+		}
+	}
+
+	/**
+	 * Reads an unencrypted, PKCS#8 formattted and base64 encoded RSA private key from the given File
+	 * @param keyFile the file containing the private key
+	 * @return the RSA private key
+	 * @throws IOException
+	 * @throws InvalidKeySpecException
+	 * @throws NoSuchAlgorithmException 
+	 */
+	public PrivateKey readPlainPKCS8PrivateKey(File keyFile)
+			throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+		return keyFactory.generatePrivate(
+				new PKCS8EncodedKeySpec(extractPrivateKeyBytes(
+						Files.lines(keyFile.toPath()))));
+	}
+
+	/**
+	 * Reads an unencrypted, PKCS#8 formattted and base64 encoded private key from the given
+	 * InputStream using the specified algo
+	 * @param is the input stream containing the private key
+	 * @param algo the algorithm used for the private key
+	 * @return the RSA private key
+	 * @throws IOException
+	 * @throws InvalidKeySpecException
+	 * @throws NoSuchAlgorithmException 
+	 */
+	public PrivateKey readPlainPKCS8PrivateKey(InputStream is, String algo)
+			throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+		KeyFactory keyFactory = KeyFactory.getInstance(algo);
+		return keyFactory.generatePrivate(
+				new PKCS8EncodedKeySpec(extractPrivateKeyBytes(
+						new BufferedReader(new InputStreamReader(is)).lines())));
+	}
+
+	/**
+	 * Ignores the header and footer and extracts the private key bytes from a PKCS#8 format
+	 * BASe64 encoded file
+	 * @param privateKeyLines
+	 * @return the decoded binary content
+	 */
+	byte[] extractPrivateKeyBytes(Stream<String> privateKeyLines) {
+		String base64KeyData = privateKeyLines.filter((line) -> line.charAt(0) != '-')
+				.collect(Collectors.joining());
+		return Base64.getDecoder().decode(base64KeyData);
+	}
+
+	/**
+	 * Reads X509 certificate(s) from the provided files
+	 *
+	 * @param pemFile path to the PEM (or .cer) file containing the X.509 certificate
+	 * @return certificate chain loaded from the file, if successful
+	 * @throws KeyStoreException in case of problems
+	 */
+	public Collection<? extends Certificate> readPemCertificateChain ( File pemFile ) throws KeyStoreException {
+		try (InputStream is = new FileInputStream(pemFile)) {
+			return CertificateFactory.getInstance("X.509").generateCertificates(is);
+		} catch (Exception ex) {
+			throw new KeyStoreException(ex);
+		}
+	}
 
     /**
      * Changes the key password for the default cert whose alias is s1as. The
