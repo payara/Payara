@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.apf;
 
@@ -62,9 +63,9 @@ public interface Scanner<T> {
      * @param archiveFile the archive file for scanning
      * @param bundleDesc the bundle descriptor associated with this archive
      * @param classLoader the classloader used to scan the annotation
+     * @throws IOException
      */
-    public void process(File archiveFile, T bundleDesc,
-            ClassLoader classLoader) throws IOException;
+    public void process(File archiveFile, T bundleDesc, ClassLoader classLoader) throws IOException;
 
     
     /**
