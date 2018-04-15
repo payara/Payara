@@ -37,8 +37,8 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-
 -->
+<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
 
 <!-- shared/propertyDescTable.inc -->
 
@@ -61,7 +61,7 @@
         <sun:button id="addSharedTableButton" disabled="#{false}" text="$resource{i18nc.jvmOptions.AddJvmOption}" >
             <!command
                 getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
-                addRowToTable(TableRowGroup="$attribute{tableRowGroup}", NameList={"name", "value", "description"});
+                addRowToTable(TableRowGroup="$attribute{tableRowGroup}", NameList={"jvmOption", "minVersion", "maxVersion"});
             />                                 
         </sun:button>
         <sun:button id="button1" text="$resource{i18n.button.Delete}" disabled="#{true}" primary="#{false}">
@@ -85,8 +85,14 @@
                 onClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\'); admingui.table.initAllRows(\\\\\'#{pageSession.tableId}\\\\\');', 0);"
             />
         </sun:tableColumn>                    
+        <sun:tableColumn headerText="Min JVM Version" rowHeader="$boolean{false}" id="col1hmin">
+            <sun:textField columns="$int{6}" maxLength="#{sessionScope.fieldLengths['maxLength.jvm.PropertyValue']}" id="col1min" value="#{td.value.minVersion}" />
+        </sun:tableColumn>
+        <sun:tableColumn headerText="Max JVM Version" rowHeader="$boolean{false}" id="col1hmax">
+            <sun:textField columns="$int{6}" maxLength="#{sessionScope.fieldLengths['maxLength.jvm.PropertyValue']}" id="col1max" value="#{td.value.maxVersion}" />
+        </sun:tableColumn>
         <sun:tableColumn headerText="$resource{i18n.common.PropertyValue}" sort="value" rowHeader="$boolean{false}" id="col3">
-            <sun:textField columns="$int{100}" maxLength="#{sessionScope.fieldLengths['maxLength.jvm.PropertyValue']}" id="col1St" value="#{td.value.value}" />
+            <sun:textField columns="$int{100}" maxLength="#{sessionScope.fieldLengths['maxLength.jvm.PropertyValue']}" id="col1St" value="#{td.value.jvmOption}" />
         </sun:tableColumn>
         "<br/>
     </sun:tableRowGroup>
