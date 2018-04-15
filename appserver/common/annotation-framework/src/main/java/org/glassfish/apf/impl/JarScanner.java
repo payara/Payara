@@ -37,20 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.apf.impl;
 
 import java.io.File;
-import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.util.Set;
-import java.util.Iterator;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.jar.JarFile;
 import java.util.jar.JarEntry;
+import java.util.logging.Level;
 import org.glassfish.apf.Scanner;
 
 /**
@@ -60,16 +60,16 @@ import org.glassfish.apf.Scanner;
  */
 public class JarScanner extends JavaEEScanner implements Scanner<Object> {
     
-    File jarFile;
-    Set<JarEntry> entries = new HashSet<JarEntry>();
-    ClassLoader classLoader = null;
+    private File jarFile;
+    private Set<JarEntry> entries = new HashSet<JarEntry>();
+    private ClassLoader classLoader = null;
     
     
+    @Override
     public  void process(File jarFile, Object bundleDesc, ClassLoader loader) throws java.io.IOException {
         this.jarFile = jarFile;
-        JarFile jf = new JarFile(jarFile);
         
-        try {
+        try (JarFile jf = new JarFile(jarFile)){
             Enumeration<JarEntry> entriesEnum = jf.entries();
             while(entriesEnum.hasMoreElements()) {
                 JarEntry je = entriesEnum.nextElement();
@@ -77,14 +77,11 @@ public class JarScanner extends JavaEEScanner implements Scanner<Object> {
                     entries.add(je);
                 }
             }        
-        } finally {
-            if (jf != null) {
-                jf.close();
-            }
         }
         initTypes(jarFile);
     }    
     
+    @Override
     public ClassLoader getClassLoader() {
         if (classLoader==null) {
             final URL[] urls = new URL[1];
@@ -98,12 +95,13 @@ public class JarScanner extends JavaEEScanner implements Scanner<Object> {
                   }
                 }.run();
             } catch(Exception e) {
-                e.printStackTrace();
+                AnnotationUtils.getLogger().log(Level.SEVERE, null, e);
             }
         }
         return classLoader;
     }
     
+    @Override
     public Set<Class> getElements() {
         
         
@@ -121,7 +119,7 @@ public class JarScanner extends JavaEEScanner implements Scanner<Object> {
                 elements.add(classLoader.loadClass(className));
                 
             } catch(ClassNotFoundException cnfe) {
-                cnfe.printStackTrace();
+                AnnotationUtils.getLogger().log(Level.SEVERE, null, cnfe);
             }
         }
         return elements;
