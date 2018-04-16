@@ -76,9 +76,9 @@ import java.util.logging.Logger;
 public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
         ResourceHandler, PoolProperties {
 
-    protected final static StringManager localStrings =
+    protected static final StringManager localStrings =
             StringManager.getManager(ConnectionPool.class);
-    protected final static Logger _logger = LogDomains.getLogger(ConnectionPool.class,LogDomains.RSR_LOGGER);
+    protected static final Logger _logger = LogDomains.getLogger(ConnectionPool.class,LogDomains.RSR_LOGGER);
 
 
     //pool life-cycle config properties

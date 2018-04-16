@@ -62,10 +62,10 @@ import com.sun.enterprise.transaction.spi.RecoveryEventListener;
 @Singleton
 public class RecoveryResourceRegistry  {
 
-    private final static Set<RecoveryResourceListener> resourceListeners = 
+    private static final Set<RecoveryResourceListener> resourceListeners = 
             new HashSet<RecoveryResourceListener>();
 
-    private final static Set<RecoveryEventListener> recoveryEventListeners = 
+    private static final Set<RecoveryEventListener> recoveryEventListeners = 
             new HashSet<RecoveryEventListener>();
 
     public RecoveryResourceRegistry() {

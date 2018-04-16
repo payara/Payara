@@ -66,7 +66,7 @@ import org.glassfish.hk2.api.PerLookup;
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
 public class DeployDirCommand extends DeployCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeployDirCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeployDirCommand.class);
     
     /**
      * Executes the command.

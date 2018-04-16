@@ -52,7 +52,7 @@ import com.sun.enterprise.deployment.node.RootXMLNode;
  */
 public class ApplicationDeploymentDescriptorFile extends DeploymentDescriptorFile {
     
-    public final static String DESC_PATH = "META-INF/application.xml";        
+    public static final String DESC_PATH = "META-INF/application.xml";        
     
     /** Creates a new instance of ApplicationDeploymentDescriptorFile */
     public ApplicationDeploymentDescriptorFile() {

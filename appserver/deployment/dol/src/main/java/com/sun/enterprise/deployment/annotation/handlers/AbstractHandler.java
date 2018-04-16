@@ -67,7 +67,7 @@ import java.util.logging.Logger;
  * @author Shing Wai Chan
  */
 public abstract class AbstractHandler implements AnnotationHandler {
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(AbstractHandler.class);
     protected Logger logger = AnnotationUtils.getLogger();
 

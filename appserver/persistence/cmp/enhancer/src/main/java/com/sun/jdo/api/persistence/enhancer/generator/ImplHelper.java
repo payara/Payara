@@ -116,7 +116,7 @@ final class ImplHelper extends Assertion
     static final String METHODNAME_JDO_IS_DELETED
     = "jdoIsDeleted";
 
-    static private final HashMap typeNameConversion = new HashMap();
+    private static final HashMap typeNameConversion = new HashMap();
     static
     {
         typeNameConversion.put(int.class.getName(), "Int");
@@ -130,26 +130,26 @@ final class ImplHelper extends Assertion
         typeNameConversion.put("String", "String");
     }
 
-    static private boolean isPrimitiveClass(String className)
+    private static boolean isPrimitiveClass(String className)
     {
         affirm(!className.equals("void"));      // NOI18N
 
         return JavaTypeHelper.getWrapperName(className) != null;
     }
 
-    static private String getConvertedTypeName(String fieldType)
+    private static String getConvertedTypeName(String fieldType)
     {
         final String name = (String)typeNameConversion.get(fieldType);
         return (name != null ? name : JavaClassWriterHelper.Object_);
     }
 
-    static private String getMethodNameGetField(String fieldType)
+    private static String getMethodNameGetField(String fieldType)
     {
         return JavaClassWriterHelper.get_ +
                getConvertedTypeName(fieldType) + "Field";
     }
 
-    static private String getMethodNameSetField(String fieldType)
+    private static String getMethodNameSetField(String fieldType)
     {
         return JavaClassWriterHelper.set_ +
                getConvertedTypeName(fieldType) + "Field";

@@ -69,7 +69,7 @@ public class MethodExecutor implements java.io.Serializable {
 
     private boolean debug = false;
     
-    private final static String newline = System.getProperty("line.separator");
+    private static final String newline = System.getProperty("line.separator");
 
     private static StringManager sm = StringManager.getManager(
             DataSourceObjectBuilder.class);

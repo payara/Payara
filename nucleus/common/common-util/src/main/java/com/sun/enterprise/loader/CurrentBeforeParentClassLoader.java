@@ -132,7 +132,7 @@ public class CurrentBeforeParentClassLoader extends URLClassLoader {
      * enable current-first behavior
      * conditional upon PARENT_CLASSLOADER_DELEGATE_PROPERTY system property being turned on
      */
-    final public void enableCurrentBeforeParent() {
+    public final void enableCurrentBeforeParent() {
         String parentClassLoaderDelegateStr = System.getProperty(PARENT_CLASSLOADER_DELEGATE_PROPERTY, "true");
         if(!Boolean.parseBoolean(parentClassLoaderDelegateStr)) {
             currentBeforeParentEnabled = true;
@@ -144,14 +144,14 @@ public class CurrentBeforeParentClassLoader extends URLClassLoader {
      * used by application configuration parser, so if application developer uses the config xml element,
      * they presumably want the behavior regardless of the system property settings
      */
-    final public void enableCurrentBeforeParentUnconditional() {
+    public final void enableCurrentBeforeParentUnconditional() {
         currentBeforeParentEnabled = true;
     }
 
     /**
      * disable functionality
      */
-    final public void disableCurrentBeforeParent() {
+    public final void disableCurrentBeforeParent() {
         currentBeforeParentEnabled = false;
     }
     

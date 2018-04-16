@@ -110,7 +110,7 @@ public class ListLifecycleModulesCommand implements AdminCommand {
     @Inject
     Domain domain;
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListLifecycleModulesCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListLifecycleModulesCommand.class);
    
     public void execute(AdminCommandContext context) {
         

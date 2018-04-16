@@ -58,12 +58,12 @@ import java.util.Vector;
  * @author Jerome Dochez
  * @version
  */
-abstract public class HomeMethodTest extends EjbTest  {  
+public abstract class HomeMethodTest extends EjbTest  {  
 
     /** Method tells the name of the home interface class that called this test
      */
-    abstract protected String getHomeInterfaceName(EjbDescriptor descriptor);
-    abstract protected String getSuperInterface();
+    protected abstract String getHomeInterfaceName(EjbDescriptor descriptor);
+    protected abstract String getSuperInterface();
     
     /** <p>
      * run an individual home method test
@@ -73,7 +73,7 @@ abstract public class HomeMethodTest extends EjbTest  {
      * @param m the mehtod to test
      */    
   
-    abstract protected void runIndividualHomeMethodTest( Method m,EjbDescriptor descriptor, Result result);
+    protected abstract void runIndividualHomeMethodTest( Method m,EjbDescriptor descriptor, Result result);
     
     /** 
      * 

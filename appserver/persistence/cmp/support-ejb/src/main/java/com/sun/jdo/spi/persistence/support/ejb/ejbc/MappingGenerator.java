@@ -130,7 +130,7 @@ public class MappingGenerator extends
     /**
      * I18N message handler
      */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
             MappingGenerator.class);
 
     /** 

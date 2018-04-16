@@ -73,10 +73,10 @@ import org.glassfish.grizzly.http.server.Session;
  */
 public class AppClientHTTPAdapter extends RestrictedContentAdapter {
 
-    public final static String GF_JWS_SESSION_CACHED_JNLP_NAME = "org.glassfish.jws.mainJNLP";
-    public final static String GF_JWS_SESSION_IS_MAIN_PROCESSED_NAME = "org.glassfish.jws.isMainProcessed";
+    public static final String GF_JWS_SESSION_CACHED_JNLP_NAME = "org.glassfish.jws.mainJNLP";
+    public static final String GF_JWS_SESSION_IS_MAIN_PROCESSED_NAME = "org.glassfish.jws.isMainProcessed";
         
-    private final static String IF_UNMODIFIED_SINCE = "If-Unmodified-Since";
+    private static final String IF_UNMODIFIED_SINCE = "If-Unmodified-Since";
 
     private static final String ARG_QUERY_PARAM_NAME = "arg";
     private static final String PROP_QUERY_PARAM_NAME = "prop";
@@ -86,7 +86,7 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
 
     private static final String DEFAULT_ORB_LISTENER_ID = "orb-listener-1";
 
-    private final static String LINE_SEP = System.getProperty("line.separator");
+    private static final String LINE_SEP = System.getProperty("line.separator");
     private static final String NEW_LINE = "\r\n";
 
     private final Map<String,DynamicContent> dynamicContent;
@@ -609,7 +609,7 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
 
     private class JWSACCArgQueryParams extends QueryParams {
 
-        private final static String JWS_ACC_PROPERTY_PREFIX = "javaws.acc.";
+        private static final String JWS_ACC_PROPERTY_PREFIX = "javaws.acc.";
         private final Properties props = new Properties();
 
         private JWSACCArgQueryParams() {

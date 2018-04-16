@@ -1061,7 +1061,7 @@ public abstract class GFLauncher {
     private long startTime;
     private String logFilename;
     private LaunchType mode = LaunchType.normal;
-    private final static LocalStringsImpl strings = new LocalStringsImpl(GFLauncher.class);
+    private static final LocalStringsImpl strings = new LocalStringsImpl(GFLauncher.class);
     private boolean setupCalledByClients = false; //handle with care
     private int exitValue = -1;
     private ProcessWhacker processWhacker;

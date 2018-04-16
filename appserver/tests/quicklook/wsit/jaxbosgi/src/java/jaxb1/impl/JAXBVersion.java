@@ -42,6 +42,6 @@ package jaxb1.impl;
 
 public class JAXBVersion {
 
-    public final static java.lang.String version = "1.0.6";
+    public static final java.lang.String version = "1.0.6";
 
 }

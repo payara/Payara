@@ -123,7 +123,7 @@ import org.glassfish.deployment.versioning.VersioningService;
 public class DeployCommand extends DeployCommandParameters implements AdminCommand, EventListener,
         AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeployCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeployCommand.class);
 
     @Inject
     Applications apps;

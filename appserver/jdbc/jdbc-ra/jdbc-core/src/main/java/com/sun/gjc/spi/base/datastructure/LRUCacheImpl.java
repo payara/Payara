@@ -67,7 +67,7 @@ public class LRUCacheImpl implements Cache {
      * Size of the cache
      */
     private int maxSize ;
-    protected final static Logger _logger;
+    protected static final Logger _logger;
     private StatementCacheProbeProvider probeProvider = null;
     private PoolInfo poolInfo;
 

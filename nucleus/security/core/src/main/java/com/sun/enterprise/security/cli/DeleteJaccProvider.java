@@ -83,7 +83,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
 public class DeleteJaccProvider implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
-    final private static LocalStringManagerImpl localStrings =
+    private final static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(DeleteJaccProvider.class);
 
     @Param(name="jaccprovidername", primary=true)

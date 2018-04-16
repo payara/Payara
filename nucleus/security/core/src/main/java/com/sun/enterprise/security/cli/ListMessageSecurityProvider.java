@@ -89,7 +89,7 @@ CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
 })
 public class ListMessageSecurityProvider implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(ListMessageSecurityProvider.class);    
 
     @Param(name = "target", primary=true, optional = true, defaultValue =

@@ -78,24 +78,24 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     public static final String SYSTEM_ID_10 = "http://java.sun.com/dtd/connector_1_0.dtd";
 
     //connector1.5
-    public final static String PUBLIC_DTD_ID_15 = "-//Sun Microsystems, Inc.//DTD Connector 1.5//EN";
+    public static final String PUBLIC_DTD_ID_15 = "-//Sun Microsystems, Inc.//DTD Connector 1.5//EN";
     public final  static String SYSTEM_ID_15 = "http://java.sun.com/dtd/connector_1_5.dtd";
-    public final static String SCHEMA_ID_15 = "connector_1_5.xsd";
+    public static final String SCHEMA_ID_15 = "connector_1_5.xsd";
 
     //connector1.6
-    public final static String PUBLIC_DTD_ID_16 = "-//Sun Microsystems, Inc.//DTD Connector 1.6//EN";
+    public static final String PUBLIC_DTD_ID_16 = "-//Sun Microsystems, Inc.//DTD Connector 1.6//EN";
     public final  static String SYSTEM_ID_16 = "http://java.sun.com/dtd/connector_1_6.dtd" ;
-    public final static String SCHEMA_ID_16 = "connector_1_6.xsd";
+    public static final String SCHEMA_ID_16 = "connector_1_6.xsd";
 
-    public final static String PUBLIC_DTD_ID = PUBLIC_DTD_ID_16;
-    public final static String SYSTEM_ID = SYSTEM_ID_16;
-    public final static String SCHEMA_ID_17 = "connector_1_7.xsd";
-    public final static String SCHEMA_ID = SCHEMA_ID_17;
-    public final static String SPEC_VERSION = VERSION_17;
+    public static final String PUBLIC_DTD_ID = PUBLIC_DTD_ID_16;
+    public static final String SYSTEM_ID = SYSTEM_ID_16;
+    public static final String SCHEMA_ID_17 = "connector_1_7.xsd";
+    public static final String SCHEMA_ID = SCHEMA_ID_17;
+    public static final String SPEC_VERSION = VERSION_17;
 
-    private final static List<String> systemIDs = initSystemIDs();
+    private static final List<String> systemIDs = initSystemIDs();
 
-    public final static XMLElement tag = new XMLElement(ConnectorTagNames.CONNECTOR);
+    public static final XMLElement tag = new XMLElement(ConnectorTagNames.CONNECTOR);
 
     private static List<String> initSystemIDs() {
         List<String> systemIDs = new ArrayList<String>();

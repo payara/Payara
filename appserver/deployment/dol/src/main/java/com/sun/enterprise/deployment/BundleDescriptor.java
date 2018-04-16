@@ -71,14 +71,14 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(BundleDescriptor.class);
 
-    private final static String DEPLOYMENT_DESCRIPTOR_DIR = "META-INF";
-    private final static String WSDL_DIR = "wsdl";
+    private static final String DEPLOYMENT_DESCRIPTOR_DIR = "META-INF";
+    private static final String WSDL_DIR = "wsdl";
 
      // the spec versions we should start to look at annotations
-    private final static double ANNOTATION_RAR_VER = 1.6;
-    private final static double ANNOTATION_EJB_VER = 3.0;
-    private final static double ANNOTATION_WAR_VER = 2.5;
-    private final static double ANNOTATION_CAR_VER = 5.0;
+    private static final double ANNOTATION_RAR_VER = 1.6;
+    private static final double ANNOTATION_EJB_VER = 3.0;
+    private static final double ANNOTATION_WAR_VER = 2.5;
+    private static final double ANNOTATION_CAR_VER = 5.0;
 
     private boolean fullFlag = false;
     private boolean fullAttribute = false;

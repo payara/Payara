@@ -922,7 +922,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
         }
     }
 
-    static protected class GFServerAuthContext implements ServerAuthContext {
+    protected static class GFServerAuthContext implements ServerAuthContext {
 
         private GFServerAuthConfig config;
         private ServerAuthModule module;
@@ -1045,7 +1045,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
         }
     }
 
-    static protected class GFClientAuthContext implements ClientAuthContext {
+    protected static class GFClientAuthContext implements ClientAuthContext {
 
         private GFClientAuthConfig config;
         private ClientAuthModule module;

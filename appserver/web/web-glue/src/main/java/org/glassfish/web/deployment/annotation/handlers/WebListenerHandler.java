@@ -72,7 +72,7 @@ import java.util.logging.Level;
 @Service
 @AnnotationHandlerFor(WebListener.class)
 public class WebListenerHandler extends AbstractWebHandler {
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(WebFilterHandler.class);
 
     public WebListenerHandler() {

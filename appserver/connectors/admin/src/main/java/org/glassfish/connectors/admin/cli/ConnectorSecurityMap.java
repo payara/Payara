@@ -57,7 +57,7 @@ import java.util.List;
 @I18n("create.connector.security.map")
 public class ConnectorSecurityMap {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ConnectorSecurityMap.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ConnectorSecurityMap.class);
 
     boolean doesPoolNameExist(String poolName, Collection<ConnectorConnectionPool> ccPools) {
         //check if the poolname exists.If it does not then throw an exception.

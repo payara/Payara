@@ -65,7 +65,7 @@ public class WebServiceHandlerNode extends DisplayableComponentNode {
 
     private static final Logger logger = LogUtils.getLogger();
 
-    private final static XMLElement tag =
+    private static final XMLElement tag =
         new XMLElement(WebServicesTagNames.HANDLER);
 
     private NameValuePairDescriptor initParam = null;

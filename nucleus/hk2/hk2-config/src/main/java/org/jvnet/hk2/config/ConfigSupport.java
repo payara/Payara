@@ -347,7 +347,7 @@ public class ConfigSupport implements ConfigurationUtilities {
     }
 
     // kind of insane, just to get the proper return type for my properties.
-    static private List<String> defaultPropertyValue() {
+    private static List<String> defaultPropertyValue() {
         return null;
     }
 

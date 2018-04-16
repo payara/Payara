@@ -254,7 +254,7 @@ public class EnhancerControl
      * Dumps a class' signature and byte-code.
      */
     //@olsen: added method for debugging
-    static protected void dumpClass(ClassControl cc) {
+    protected static void dumpClass(ClassControl cc) {
         final String name = cc.userClassName();
         System.out.println();
         System.out.println("dumping class " + name + " {");//NOI18N

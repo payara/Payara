@@ -80,7 +80,7 @@ import org.glassfish.concurrent.runtime.deployer.DefaultManagedScheduledExecutor
 })
 public class ListManagedScheduledExecutorServices implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListManagedScheduledExecutorServices.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListManagedScheduledExecutorServices.class);    
 
     @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     private String target ;

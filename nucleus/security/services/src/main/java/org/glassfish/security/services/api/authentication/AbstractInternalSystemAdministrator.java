@@ -90,7 +90,7 @@ public abstract class AbstractInternalSystemAdministrator implements InternalSys
         }
     }
     
-    abstract protected String getInternalUsername();
+    protected abstract String getInternalUsername();
     
-    abstract protected String getAdminGroupName();
+    protected abstract String getAdminGroupName();
 }

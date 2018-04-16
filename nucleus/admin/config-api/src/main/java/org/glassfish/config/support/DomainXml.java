@@ -99,7 +99,7 @@ public abstract class DomainXml implements Populator {
     @Inject
     ConfigurationAccess configAccess;
 
-    final static LocalStringManagerImpl localStrings =
+    static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DomainXml.class);
 
     @Override
@@ -287,5 +287,5 @@ public abstract class DomainXml implements Populator {
 
     protected abstract DomDocument getDomDocument();
 
-    private final static LocalStringsImpl strings = new LocalStringsImpl(DomainXml.class);
+    private static final LocalStringsImpl strings = new LocalStringsImpl(DomainXml.class);
 }

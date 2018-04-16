@@ -61,9 +61,9 @@ import javax.inject.Inject;
  */
 public abstract class WebModuleConfigCommand implements AdminCommand {
 
-    private final static String WEB_SNIFFER_TYPE = "web";
+    private static final String WEB_SNIFFER_TYPE = "web";
 
-    private final static String LINE_SEP = System.getProperty("line.separator");
+    private static final String LINE_SEP = System.getProperty("line.separator");
 
     @Param(primary=true)
     private String appNameAndOptionalModuleName;

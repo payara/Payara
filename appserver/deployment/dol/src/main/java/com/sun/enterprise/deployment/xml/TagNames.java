@@ -48,7 +48,7 @@ package com.sun.enterprise.deployment.xml;
 public interface TagNames {
 
     public static final String NAME = "display-name";
-    public final static String MODULE_NAME = "module-name";
+    public static final String MODULE_NAME = "module-name";
     public static final String ID = "id";
     public static final String DESCRIPTION = "description";
     public static final String VERSION = "version";
@@ -70,11 +70,11 @@ public interface TagNames {
 
     public static final String EJB_LOCAL_REFERENCE = "ejb-local-ref";
 
-    public final static String EJB_NAME = "ejb-name";
-    public final static String HOME = "home";
-    public final static String REMOTE = "remote";
-    public final static String LOCAL_HOME = "local-home";
-    public final static String LOCAL = "local";
+    public static final String EJB_NAME = "ejb-name";
+    public static final String HOME = "home";
+    public static final String REMOTE = "remote";
+    public static final String LOCAL_HOME = "local-home";
+    public static final String LOCAL = "local";
 
     public static final String LOOKUP_NAME = "lookup-name";
 
@@ -206,10 +206,10 @@ public interface TagNames {
     public static final String NAME_VALUE_PAIR_VALUE = "value";
 
     // FIXME by srini - should go away from here, longer term.
-    public final static String METHOD_NAME = "method-name";
-    public final static String METHOD_INTF = "method-intf";
-    public final static String METHOD_PARAMS = "method-params";
-    public final static String METHOD_PARAM = "method-param";
+    public static final String METHOD_NAME = "method-name";
+    public static final String METHOD_INTF = "method-intf";
+    public static final String METHOD_PARAMS = "method-params";
+    public static final String METHOD_PARAM = "method-param";
 
     // injection tags
     public static final String INJECTION_TARGET = "injection-target";
@@ -234,11 +234,11 @@ public interface TagNames {
     public static final String WLS_CONNECTOR_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-connector";
     public static final String WLS_APPLICATION_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-application";
     public static final String WLS_APPLICATION_CLIENT_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-application-client";
-    public final static String WLS_APPLICATION_SCHEMA_LOCATION = "http://xmlns.oracle.com/weblogic/weblogic-application http://xmlns.oracle.com/weblogic/weblogic-application/1.5/weblogic-application.xsd";
+    public static final String WLS_APPLICATION_SCHEMA_LOCATION = "http://xmlns.oracle.com/weblogic/weblogic-application http://xmlns.oracle.com/weblogic/weblogic-application/1.5/weblogic-application.xsd";
 
     public static final String PERSISTENCE_XML_NAMESPACE = "urn:ejb3-namespace";
-    public final static String W3C_XML_SCHEMA_INSTANCE = "http://www.w3.org/2001/XMLSchema-instance";
-    public final static String SCHEMA_LOCATION_TAG = "xsi:schemaLocation";
-    public final static String XMLNS = "http://www.w3.org/2000/xmlns/";
-    public final static String XMLNS_XSI = "xmlns:xsi";
+    public static final String W3C_XML_SCHEMA_INSTANCE = "http://www.w3.org/2001/XMLSchema-instance";
+    public static final String SCHEMA_LOCATION_TAG = "xsi:schemaLocation";
+    public static final String XMLNS = "http://www.w3.org/2000/xmlns/";
+    public static final String XMLNS_XSI = "xmlns:xsi";
 }

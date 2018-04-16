@@ -84,9 +84,9 @@ abstract class XPathToDeveloperProvidedContentRefs<T extends Content> {
     private static final String STATIC_REFS_PROPERTY_NAME = "static.refs";
     private static final String DYNAMIC_REFS_PROPERTY_NAME = "dynamic.refs";
 
-    private final static XPathFactory xPathFactory = XPathFactory.newInstance();
+    private static final XPathFactory xPathFactory = XPathFactory.newInstance();
 
-    private final static XPath xPath = xPathFactory.newXPath();
+    private static final XPath xPath = xPathFactory.newXPath();
 
     private static final Logger logger = Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER, JavaWebStartInfo.APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
     

@@ -106,7 +106,7 @@ import com.sun.jdo.api.persistence.enhancer.meta.JDOMetaData;
  *
  * Possible Alternative Code Annotation strategy
  * 1) non-static non-private methods always fetch/dirty "this"
- * 2) non-static private methods never fetch but may dirty "this"
+ * 2) non-private static methods never fetch but may dirty "this"
  * 3) invocations of private methods from static methods fetch the target
  * 4) invocations of private methods from non-static methods fetch the
  *    target if it can't be identified as "this"

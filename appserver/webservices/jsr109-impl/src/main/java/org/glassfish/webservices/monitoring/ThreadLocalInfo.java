@@ -52,8 +52,8 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class ThreadLocalInfo {
     
-    final private String messageId;
-    final private HttpServletRequest request;
+    private final String messageId;
+    private final HttpServletRequest request;
     private MessageTraceImpl requestMessageTrace;
     
     /** Creates a new instance of ServletThreadLocalConfiguration */

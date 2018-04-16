@@ -91,26 +91,26 @@ class LogExtent extends Object {
 
     /**Type of last access is unknown (forces fseek to required cursor pos'n)
      */
-    final static int ACCESSTYPE_UNKNOWN = 0;
+    static final int ACCESSTYPE_UNKNOWN = 0;
 
     /**Last access was for reading
      */
-    final static int ACCESSTYPE_READ = 1;
+    static final int ACCESSTYPE_READ = 1;
 
     /**Last access was for writing
      */
-    final static int ACCESSTYPE_WRITE = 2;
+    static final int ACCESSTYPE_WRITE = 2;
 
     /**The radix used to convert extent numbers to strings.
      */
-    final static int EXTENT_RADIX      = 36;
+    static final int EXTENT_RADIX      = 36;
 
     /**The maximum number of extent files that can be allocated to a single
      * log at any one time. Extent names are made up of <logfilename>.nnn
      * Hence this value is restricted by the .nnn extension (3 characters
      * only, to support the FAT file system.
      */
-    final static int MAX_NO_OF_EXTENTS = EXTENT_RADIX*EXTENT_RADIX*EXTENT_RADIX;
+    static final int MAX_NO_OF_EXTENTS = EXTENT_RADIX*EXTENT_RADIX*EXTENT_RADIX;
 
     /**This value is used to validate the LogExtent object.
      */
@@ -182,7 +182,7 @@ class LogExtent extends Object {
      *
      * @see
      */
-    final static int modExtent( int ext ) {
+    static final int modExtent( int ext ) {
         return (ext % MAX_NO_OF_EXTENTS);
     }
 }

@@ -108,7 +108,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
     public static final String COMPLETION_DATE = "completionDate";
 
 
-    final private static StringManager localStrings =
+    private final static StringManager localStrings =
             StringManager.getManager(ListJobsCommand.class);
 
     protected JobInfos getCompletedJobs() {

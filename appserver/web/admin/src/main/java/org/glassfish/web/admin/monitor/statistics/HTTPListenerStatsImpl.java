@@ -75,8 +75,8 @@ public class HTTPListenerStatsImpl implements MonitorContract {
 
     private static final ResourceBundle rb = logger.getResourceBundle();
 
-    private final static String name = "httplistener";
-    private final static String displayFormat = "%1$-4s %2$-4s %3$-6.2f %4$-4s";
+    private static final String name = "httplistener";
+    private static final String displayFormat = "%1$-4s %2$-4s %3$-6.2f %4$-4s";
 
     public String getName() {
         return name;

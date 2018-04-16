@@ -75,7 +75,7 @@ import java.util.Properties;
 @I18n("create.managed.thread.factory")
 public class CreateManagedThreadFactory implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateManagedThreadFactory.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateManagedThreadFactory.class);
 
     @Param(name="jndi_name", primary=true)
     private String jndiName;

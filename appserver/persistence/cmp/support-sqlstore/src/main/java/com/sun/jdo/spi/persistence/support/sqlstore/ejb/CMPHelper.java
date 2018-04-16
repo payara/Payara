@@ -70,7 +70,7 @@ import com.sun.jdo.spi.persistence.support.sqlstore.impl.PersistenceManagerWrapp
 public class CMPHelper {
 
     /** I18N message handler */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
         "com.sun.jdo.spi.persistence.support.sqlstore.Bundle", // NOI18N
         CMPHelper.class.getClassLoader());
 

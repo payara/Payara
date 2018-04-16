@@ -118,19 +118,19 @@ public class XID implements Xid {
     /**
      * The size of <b>data</b>.
      */
-    static private final int XIDDATASIZE= 128; // Size in bytes
+    private static final int XIDDATASIZE= 128; // Size in bytes
 
     /**
      * The maximum size of the global transaction identifier.
      */
-    static public  final int MAXGTRIDSIZE= 64; // Maximum size (in bytes) of gtrid
+    public static  final int MAXGTRIDSIZE= 64; // Maximum size (in bytes) of gtrid
 
     /**
      * The maximum size of the branch qualifier.
      */
-    static public  final int MAXBQUALSIZE= 64; // Maximum size (in bytes) of bqual
+    public static  final int MAXBQUALSIZE= 64; // Maximum size (in bytes) of bqual
 
-    static private final String hextab= "0123456789ABCDEF"/*#Frozen*/;
+    private static final String hextab= "0123456789ABCDEF"/*#Frozen*/;
 
     static Logger _logger = LogDomains.getLogger(XID.class, LogDomains.TRANSACTION_LOGGER);
 

@@ -129,7 +129,7 @@ abstract class ClassPathElement {
   /**
    * Check whether the String "looks" like a zip file name.
    */
-  static protected boolean looksLikeZipName(String fname) {
+  protected static boolean looksLikeZipName(String fname) {
     return (fname.length() > 4 &&
 	    (fname.regionMatches(true, fname.length() - 4, ".zip", 0, 4) ||//NOI18N
 	     fname.regionMatches(true, fname.length() - 4, ".jar", 0, 4)));//NOI18N

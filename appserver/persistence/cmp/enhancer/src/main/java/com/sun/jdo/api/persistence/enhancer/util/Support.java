@@ -53,12 +53,12 @@ public class Support
     extends Assertion {
 
     //^olsen: hack
-    static public final Timer timer = new Timer();
+    public static final Timer timer = new Timer();
 
     /**
      * I18N message handler
      */
-    static private ResourceBundle MESSAGES;
+    private static ResourceBundle MESSAGES;
 
 
     /**
@@ -81,14 +81,14 @@ public class Support
     /**
      * Returns the I18N message.
      */
-    static protected final String getI18N(String key) {
+    protected static final String getI18N(String key) {
         return I18NHelper.getMessage(MESSAGES, key);
     }
 
     /**
      * Returns the I18N message.
      */
-    static protected final String getI18N(String key,
+    protected static final String getI18N(String key,
                                           String arg) {
         return I18NHelper.getMessage(MESSAGES, key, arg);
     }
@@ -96,7 +96,7 @@ public class Support
     /**
      * Returns the I18N message.
      */
-    static protected final String getI18N(String key,
+    protected static final String getI18N(String key,
                                           String arg1,
                                           String arg2) {
         return I18NHelper.getMessage(MESSAGES, key, arg1, arg2);
@@ -105,7 +105,7 @@ public class Support
     /**
      * Returns the I18N message.
      */
-    static protected final String getI18N(String key,
+    protected static final String getI18N(String key,
                                           String arg1,
                                           String arg2,
                                           String arg3) {
@@ -115,7 +115,7 @@ public class Support
     /**
      * Returns the I18N message.
      */
-    static protected final String getI18N(String key,
+    protected static final String getI18N(String key,
                                           int arg1,
                                           String arg2) {
         return I18NHelper.getMessage(MESSAGES, key,
@@ -125,7 +125,7 @@ public class Support
     /**
      * Returns the I18N message.
      */
-    static protected final String getI18N(String key,
+    protected static final String getI18N(String key,
                                           Object[] args) {
         return I18NHelper.getMessage(MESSAGES, key, args);
     }

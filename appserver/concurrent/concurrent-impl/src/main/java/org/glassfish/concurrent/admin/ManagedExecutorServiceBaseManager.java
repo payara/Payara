@@ -74,7 +74,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.*;
  */
 public abstract class ManagedExecutorServiceBaseManager implements ResourceManager {
 
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(ManagedExecutorServiceBaseManager.class);
     protected static final String DESCRIPTION = ServerTags.DESCRIPTION;
     protected String jndiName = null;

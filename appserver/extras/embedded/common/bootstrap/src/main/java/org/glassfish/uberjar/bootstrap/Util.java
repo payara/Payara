@@ -71,7 +71,7 @@ public class Util {
     }
 
     // serverId:GlassFish map
-    private final static Map<String, GlassFish> gfMap =
+    private static final Map<String, GlassFish> gfMap =
             new HashMap<String, GlassFish>();
 
     public static synchronized void addServer(String serverId, GlassFish glassfish) {

@@ -52,9 +52,9 @@ import java.util.*;
 public class Property extends org.netbeans.modules.schema2beans.BaseBean {
 
     static Vector comparators = new Vector();
-    static public final String NAME = "Name";	// NOI18N
-    static public final String VALUE = "Value";	// NOI18N
-    static public final String DESCRIPTION = "Description";	// NOI18N
+    public static final String NAME = "Name";	// NOI18N
+    public static final String VALUE = "Value";	// NOI18N
+    public static final String DESCRIPTION = "Description";	// NOI18N
 
     public Property() {
         this(Common.USE_DEFAULT_VALUES);

@@ -57,8 +57,8 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  */
 public class JMSContextMetadata implements Serializable {
     private static final Logger logger = Logger.getLogger(InjectableJMSContext.JMS_INJECTION_LOGGER);
-    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(JMSContextMetadata.class);
-    public final static String DEFAULT_CONNECTION_FACTORY = "java:comp/DefaultJMSConnectionFactory";
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(JMSContextMetadata.class);
+    public static final String DEFAULT_CONNECTION_FACTORY = "java:comp/DefaultJMSConnectionFactory";
 
     private final String lookup;
     private final int sessionMode;

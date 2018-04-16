@@ -84,7 +84,7 @@ import javax.inject.Inject;
 })
 public class ListResourceAdapterConfigs implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListResourceAdapterConfigs.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListResourceAdapterConfigs.class);    
 
     @Param(name="raname", optional=true)
     private String raName;

@@ -77,12 +77,12 @@ import org.glassfish.persistence.common.I18NHelper;
  *
  * @author Marina Vatkina
  */
-abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
+public abstract class JDOEJB11HelperImpl implements JDOEJB11Helper {
 
     /**
      * I18N message handler
      */
-    protected final static ResourceBundle messages = I18NHelper.loadBundle(
+    protected static final ResourceBundle messages = I18NHelper.loadBundle(
         JDOEJB11HelperImpl.class);
 
     //The logger
@@ -276,7 +276,7 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * @param objectId the Object Id to be converted.
      * @return instance of the PrimaryKey Class.
      */
-    abstract public Object convertObjectIdToPrimaryKey (Object objectId);
+    public abstract Object convertObjectIdToPrimaryKey (Object objectId);
 
    /**
      * Converts instance of a PrimaryKey Class to an instance of the Object Id of a
@@ -284,7 +284,7 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * @param key the PrimaryKey instance to be converted.
      * @return instance of the Object Id.
      */
-    abstract public Object convertPrimaryKeyToObjectId (Object key);
+    public abstract Object convertPrimaryKeyToObjectId (Object key);
 
    /**
      * Converts Collection of Object Id's of persistence-capable instances to a
@@ -410,7 +410,7 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * of the concrete bean class.
      * @return the pc class object
      */
-    abstract public Class getPCClass ();
+    public abstract Class getPCClass ();
 
     /**
      * Validates that this instance is of the correct implementation class
@@ -419,7 +419,7 @@ abstract public class JDOEJB11HelperImpl implements JDOEJB11Helper {
      * @param o the instance to validate.
      * @throws IllegalArgumentException if validation fails.
      */
-    abstract public void assertInstanceOfRemoteInterfaceImpl(Object o);
+    public abstract void assertInstanceOfRemoteInterfaceImpl(Object o);
 
    /**
      * Validates that this instance is of the correct implementation class

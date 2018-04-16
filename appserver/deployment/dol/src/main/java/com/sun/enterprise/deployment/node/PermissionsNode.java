@@ -50,16 +50,16 @@ import com.sun.enterprise.deployment.PermissionsDescriptor;
 
 public class PermissionsNode extends AbstractBundleNode {
 
-    public final static String SCHEMA_ID = "permissions_7.xsd";
-    public final static String SPEC_VERSION = "7";
+    public static final String SCHEMA_ID = "permissions_7.xsd";
+    public static final String SPEC_VERSION = "7";
     
-    private final static List<String> systemIDs = initSystemIDs();
+    private static final List<String> systemIDs = initSystemIDs();
     
     // The XML tag associated with this Node
-    public final static XMLElement ROOT_ELEMENT = new XMLElement(
+    public static final XMLElement ROOT_ELEMENT = new XMLElement(
             DeclaredPermissionsTagNames.PERMS_ROOT);
     
-    private final static List<String> initSystemIDs() {
+    private static final List<String> initSystemIDs() {
         
         List<String> systemIDs = new ArrayList<String>();
         systemIDs.add(SCHEMA_ID);

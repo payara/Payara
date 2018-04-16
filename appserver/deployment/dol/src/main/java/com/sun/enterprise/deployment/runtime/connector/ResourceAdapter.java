@@ -58,14 +58,14 @@ import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
  */
 public class ResourceAdapter extends RuntimeDescriptor
 {
-    static public final String DESCRIPTION = "Description";	// NOI18N
-    static public final String PROPERTY = "PropertyElement";	// NOI18N
+    public static final String DESCRIPTION = "Description";	// NOI18N
+    public static final String PROPERTY = "PropertyElement";	// NOI18N
     
-    static public final String JNDI_NAME = "JndiName";
-    static public final String MAX_POOL_SIZE = "MaxPoolSize";
-    static public final String STEADY_POOL_SIZE = "SteadyPoolSize";
-    static public final String MAX_WAIT_TIME_IN_MILLIS = "MaxWaitTimeInMillis";
-    static public final String IDLE_TIMEOUT_IN_SECONDS = "IdleTimeoutInSeconds";
+    public static final String JNDI_NAME = "JndiName";
+    public static final String MAX_POOL_SIZE = "MaxPoolSize";
+    public static final String STEADY_POOL_SIZE = "SteadyPoolSize";
+    public static final String MAX_WAIT_TIME_IN_MILLIS = "MaxWaitTimeInMillis";
+    public static final String IDLE_TIMEOUT_IN_SECONDS = "IdleTimeoutInSeconds";
     
     // This attribute is an array, possibly empty
     public void setPropertyElement(int index, NameValuePairDescriptor value)

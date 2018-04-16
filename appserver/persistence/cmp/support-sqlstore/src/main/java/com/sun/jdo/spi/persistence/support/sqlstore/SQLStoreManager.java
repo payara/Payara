@@ -84,7 +84,7 @@ public class SQLStoreManager implements PersistenceStore {
     private static Logger sqlLogger = LogHelperSQLStore.getSqlLogger();
 
     /** I18N message handler. */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
             SQLStoreManager.class);
 
     /** Fetch size for query statements. */
@@ -641,7 +641,7 @@ public class SQLStoreManager implements PersistenceStore {
      * @param e Exception from the data store.
      * @param sqlText Executed SQL statement.
      */
-    static private void throwJDOSqlException(SQLException e, String sqlText) {
+    private static void throwJDOSqlException(SQLException e, String sqlText) {
 
         String exceptionMessage = I18NHelper.getMessage(messages,
             "core.persistencestore.jdbcerror", sqlText); // NOI18N
@@ -655,7 +655,7 @@ public class SQLStoreManager implements PersistenceStore {
      *
      * @param sqlText Executed SQL statement.
      */
-    static private void throwJDOConcurrentAccessException(String sqlText) {
+    private static void throwJDOConcurrentAccessException(String sqlText) {
         String operation = sqlText.substring(0, sqlText.indexOf(' ')); // NOI18N
 
         throw new JDODataStoreException(I18NHelper.getMessage(messages,
@@ -666,7 +666,7 @@ public class SQLStoreManager implements PersistenceStore {
      * Closes the JDBC ResultSet <code>r</code>.
      * SQLExceptions are catched and logged.
      */
-    static private void close(ResultSet r) {
+    private static void close(ResultSet r) {
         if (r != null) {
             try {
                 r.close();
@@ -683,7 +683,7 @@ public class SQLStoreManager implements PersistenceStore {
      * Closes the JDBC Statement <code>s</code>.
      * SQLExceptions are catched and logged.
      */
-    static private void close(DBStatement s) {
+    private static void close(DBStatement s) {
         if (s != null) {
             try {
                 s.close();
@@ -700,7 +700,7 @@ public class SQLStoreManager implements PersistenceStore {
      * Delegates the closure of the JDBC connection <code>c</code>
      * to the transaction <code>t</code>.
      */
-    static private void closeConnection(Transaction t, Connection c) {
+    private static void closeConnection(Transaction t, Connection c) {
         if (t != null && c != null) {
             t.releaseConnection();
         }
@@ -710,7 +710,7 @@ public class SQLStoreManager implements PersistenceStore {
      * Removes all DBStatements for specified plan and closes the JDBC Statement
      * wrapped by the DBStatement.
      */
-    static private void closeDBStatements(UpdateQueryPlan plan, Transaction tran) {
+    private static void closeDBStatements(UpdateQueryPlan plan, Transaction tran) {
         if ((plan != null) && (tran != null)) {
             for (Iterator i = plan.getStatements().iterator(); i.hasNext(); ) {
                 UpdateStatement updateStmt = (UpdateStatement)i.next();

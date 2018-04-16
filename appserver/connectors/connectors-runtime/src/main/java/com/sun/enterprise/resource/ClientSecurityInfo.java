@@ -56,7 +56,7 @@ public class ClientSecurityInfo {
     private ResourcePrincipal prin;
     private ConnectionRequestInfo info;
 
-    static private final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
+    private static final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
 
     public ClientSecurityInfo(ResourcePrincipal prin) {
         if (prin == null) {

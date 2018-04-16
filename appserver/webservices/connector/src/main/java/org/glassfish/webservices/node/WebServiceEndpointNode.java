@@ -67,7 +67,7 @@ public class WebServiceEndpointNode extends DisplayableComponentNode {
 
     private static final Logger logger = LogUtils.getLogger();
 
-    private final static XMLElement tag =
+    private static final XMLElement tag =
         new XMLElement(WebServicesTagNames.PORT_COMPONENT);
 
     /** Creates a new instance of WebServiceEndpointNode */

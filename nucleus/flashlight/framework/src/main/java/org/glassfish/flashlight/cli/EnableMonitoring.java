@@ -92,7 +92,7 @@ public class EnableMonitoring implements AdminCommand, AdminCommandSecurity.Prea
     private Boolean mbean;
     @Param(optional = true)
     private Boolean dtrace;
-    final private LocalStringManagerImpl localStrings =
+    private final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(EnableMonitoring.class);
 
     @AccessRequired.To("update")

@@ -80,7 +80,7 @@ public class DASJ2EEServerImpl extends J2EEServerImpl
     }
     
     /*
-    static private final Class[]	DOMAIN_STATUS_INTERFACES	=
+    private static final Class[]	DOMAIN_STATUS_INTERFACES	=
     new Class[] { DomainStatusMBean.class };
 
     protected DomainStatusMBean

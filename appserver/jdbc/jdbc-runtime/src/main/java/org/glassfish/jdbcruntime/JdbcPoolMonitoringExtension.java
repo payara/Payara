@@ -87,7 +87,7 @@ public class JdbcPoolMonitoringExtension implements ConnectionPoolMonitoringExte
 
     private ConnectorRuntime runtime;
 
-    private final static Logger logger = LoggerFactory.getLogger(JdbcPoolMonitoringExtension.class);
+    private static final Logger logger = LoggerFactory.getLogger(JdbcPoolMonitoringExtension.class);
 
     //List of all jdbc pool stats providers that are created and stored.
     private List<JdbcConnPoolStatsProvider> jdbcStatsProviders = null;

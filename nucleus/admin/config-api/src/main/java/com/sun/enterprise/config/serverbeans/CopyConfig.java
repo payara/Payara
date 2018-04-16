@@ -77,7 +77,7 @@ public abstract class CopyConfig implements AdminCommand {
     ServerEnvironment env;
     @Inject
     ServerEnvironmentImpl envImpl;
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(CopyConfig.class);
 
     public Config copyConfig(Configs configs, Config config, String destConfigName, Logger logger) throws PropertyVetoException,

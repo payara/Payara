@@ -54,12 +54,12 @@ import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
  * Extends the EJBHome Interface test.  
  * All enterprise beans home interface's must extend the EJBHome interface.
  */
-abstract public class HomeInterfaceExtendsRightInterface extends EjbTest implements EjbCheck { 
+public abstract class HomeInterfaceExtendsRightInterface extends EjbTest implements EjbCheck { 
  
     /** Method tells the name of the home interface class that called this test
      */
-    abstract protected String getHomeInterfaceName(EjbDescriptor descriptor);
-    abstract protected String getSuperInterface();
+    protected abstract String getHomeInterfaceName(EjbDescriptor descriptor);
+    protected abstract String getSuperInterface();
     
     /** 
      * Extends the EJBHome Interface test.  

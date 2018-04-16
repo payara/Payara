@@ -86,7 +86,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 })
 public class CreateProfiler implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateProfiler.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateProfiler.class);
 
     @Param(optional=true)
     String classpath;

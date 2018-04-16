@@ -59,7 +59,7 @@ class DBElementFactory {
     /**
      * String which indicates that schema was generated.
      */
-    private final static String TAGLINE =
+    private static final String TAGLINE =
         "generated schema version "; //NOI18N
 
     /**

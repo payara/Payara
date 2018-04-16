@@ -50,7 +50,7 @@ import java.util.Enumeration;
  */
 
 public class ExceptionsAttribute extends ClassAttribute {
-    public final static String expectedAttrName = "Exceptions";//NOI18N
+    public static final String expectedAttrName = "Exceptions";//NOI18N
 
   /* The list of checked exceptions */
   private Vector exceptionTable;

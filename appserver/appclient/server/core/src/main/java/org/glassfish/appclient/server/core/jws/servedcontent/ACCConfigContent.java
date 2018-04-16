@@ -60,10 +60,10 @@ public class ACCConfigContent {
     private final PairedFiles appClientLogin;
     
     /* match the security.config property and capture the value */
-    private final static Pattern SECURITY_CONFIG_VALUE_PATTERN = Pattern.compile(
+    private static final Pattern SECURITY_CONFIG_VALUE_PATTERN = Pattern.compile(
             "<property name=\"security.config\"\\s*value=\"([^\"]*)\"\\s*/\\s*>");
 
-    private final static String SECURITY_CONFIG_REPLACEMENT =
+    private static final String SECURITY_CONFIG_REPLACEMENT =
             "<property name=\"security.config\" value=\"\\${security.config.path}\"/>";
 
     public ACCConfigContent(File domainConfig, File installLibAppclient) throws FileNotFoundException, IOException {

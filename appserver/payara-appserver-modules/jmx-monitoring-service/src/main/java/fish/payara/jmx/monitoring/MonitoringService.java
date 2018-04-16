@@ -94,7 +94,7 @@ import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
 @RunLevel(StartupRunLevel.VAL)
 public class MonitoringService implements EventListener {
     
-    private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(MonitoringService.class);
+    private static final LocalStringManagerImpl strings = new LocalStringManagerImpl(MonitoringService.class);
 
     private final String PREFIX = "payara-monitoring-service(";
 

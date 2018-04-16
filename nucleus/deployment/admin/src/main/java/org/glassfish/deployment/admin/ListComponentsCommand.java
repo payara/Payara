@@ -160,7 +160,7 @@ public class ListComponentsCommand implements AdminCommand, AdminCommandSecurity
     
     
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListComponentsCommand.class);    
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListComponentsCommand.class);    
 
     public void execute(AdminCommandContext context) {
         

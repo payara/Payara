@@ -121,7 +121,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  */
 public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
-    private final static String DEPLOYMENT_DESCRIPTOR_DIR = "WEB-INF";
+    private static final String DEPLOYMENT_DESCRIPTOR_DIR = "WEB-INF";
 
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(WebBundleDescriptor.class);

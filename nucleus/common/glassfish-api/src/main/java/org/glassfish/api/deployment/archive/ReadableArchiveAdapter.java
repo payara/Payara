@@ -51,7 +51,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
  * easier to understand.
  * @author Byron Nevins
  */
-abstract public class ReadableArchiveAdapter implements ReadableArchive{
+public abstract class ReadableArchiveAdapter implements ReadableArchive{
 
     public long getEntrySize(String arg0) {
         return 0L;

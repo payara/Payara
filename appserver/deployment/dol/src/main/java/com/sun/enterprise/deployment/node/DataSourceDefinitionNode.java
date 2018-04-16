@@ -50,7 +50,7 @@ import java.util.Map;
 
 public class DataSourceDefinitionNode extends DeploymentDescriptorNode<DataSourceDefinitionDescriptor> {
 
-    public final static XMLElement tag = new XMLElement(TagNames.DATA_SOURCE);
+    public static final XMLElement tag = new XMLElement(TagNames.DATA_SOURCE);
     private DataSourceDefinitionDescriptor descriptor = null;
     public DataSourceDefinitionNode() {
         registerElementHandler(new XMLElement(TagNames.RESOURCE_PROPERTY), ResourcePropertyNode.class,

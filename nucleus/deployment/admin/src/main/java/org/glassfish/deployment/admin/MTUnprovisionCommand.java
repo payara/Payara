@@ -117,7 +117,7 @@ public class MTUnprovisionCommand implements AdminCommand, AdminCommandSecurity.
         return accessChecks;
     }
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(MTUnprovisionCommand.class);    
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(MTUnprovisionCommand.class);    
 
     public void execute(AdminCommandContext context) {
         

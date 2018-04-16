@@ -73,8 +73,8 @@ public final class WebContainerListener implements ContainerListener {
 
     private static final ResourceBundle rb = _logger.getResourceBundle();
 
-    static private HashSet<String> beforeEvents = new HashSet<String>();
-    static private HashSet<String> afterEvents = new HashSet<String>();
+    private static HashSet<String> beforeEvents = new HashSet<String>();
+    private static HashSet<String> afterEvents = new HashSet<String>();
 
     static {
         // preInvoke events

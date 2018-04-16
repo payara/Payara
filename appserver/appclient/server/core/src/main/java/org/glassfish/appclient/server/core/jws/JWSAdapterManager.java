@@ -94,11 +94,11 @@ import org.glassfish.logging.annotation.LogMessageInfo;
 @Singleton
 public class JWSAdapterManager implements PostConstruct {
     
-    private final static String SIGNING_ALIAS_PROPERTY_NAME = "jar-signing-alias";
+    private static final String SIGNING_ALIAS_PROPERTY_NAME = "jar-signing-alias";
     
-    private final static String DEFAULT_SIGNING_ALIAS = "s1as";
+    private static final String DEFAULT_SIGNING_ALIAS = "s1as";
     
-    private final static String MANIFEST_APP_NAME_FOR_SYSTEM_FILES = "GlassFish";
+    private static final String MANIFEST_APP_NAME_FOR_SYSTEM_FILES = "GlassFish";
 
     @Inject
     private ServerEnvironment serverEnv;

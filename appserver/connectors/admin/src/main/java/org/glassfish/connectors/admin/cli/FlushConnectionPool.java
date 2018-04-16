@@ -71,7 +71,7 @@ import javax.inject.Inject;
         description="flush-connection-pool")
 })
 public class FlushConnectionPool implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(FlushConnectionPool.class);
 
     @Param(name = "pool_name", primary = true)

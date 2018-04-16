@@ -128,9 +128,9 @@ public final class JavaEETransactionImpl extends TimerTask implements
     // tx-specific ejb container info associated with this tx
     private Object containerData = null;
 
-    static private boolean isTimerInitialized = false;
-    static private Timer timer = null;
-    static private long timerTasksScheduled = 0; // Global counter
+    private static boolean isTimerInitialized = false;
+    private static Timer timer = null;
+    private static long timerTasksScheduled = 0; // Global counter
 
     static synchronized private void initializeTimer() {
         if (isTimerInitialized)

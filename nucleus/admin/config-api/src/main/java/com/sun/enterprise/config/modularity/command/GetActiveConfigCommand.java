@@ -99,7 +99,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
 
     private final Logger LOG = getLogger();
     
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(GetActiveConfigCommand.class);
 
     private ActionReport report;

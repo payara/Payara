@@ -79,7 +79,7 @@ import javax.inject.Inject;
         })
 })
 public class UpdateConnectorWorkSecurityMap implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(UpdateConnectorSecurityMap.class);
 
     @Param(name = "raname")

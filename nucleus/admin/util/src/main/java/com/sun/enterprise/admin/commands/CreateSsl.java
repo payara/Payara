@@ -115,7 +115,7 @@ import javax.inject.Named;
         })
 })
 public class CreateSsl implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings =
+    private final static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(CreateSsl.class);
     @Param(name = "certname", alias="certNickname")
     String certName;

@@ -46,5 +46,5 @@ import org.glassfish.admin.amx.core.AMXMBeanMetadata;
 @AMXMBeanMetadata(type=J2EETypes.JNDI_RESOURCE, leaf=true)
 public interface JNDIResource extends J2EEResource
 {
-	public final static String	J2EE_TYPE	= J2EETypes.JNDI_RESOURCE;
+	public static final String	J2EE_TYPE	= J2EETypes.JNDI_RESOURCE;
 }

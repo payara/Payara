@@ -59,16 +59,16 @@ import java.util.HashMap;
 public class JavaTypeHelper
 {
 	/** Map of primitive to wrapper classes */
-	private final static Map _primitiveToWrappers;
+	private static final Map _primitiveToWrappers;
 
 	/** Map of primitive names to primitive classes */
-	private final static Map _primitiveNamesToPrimitives;
+	private static final Map _primitiveNamesToPrimitives;
 
 	/** Map of primitive names to wrapper names */
-	private final static Map _primitiveNamesToWrapperNames;
+	private static final Map _primitiveNamesToWrapperNames;
 
 	/** Map of wrapper classes to primitive names*/
-	private final static Map _wrapperToPrimitiveNames;
+	private static final Map _wrapperToPrimitiveNames;
 
 	static
 	{

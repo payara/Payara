@@ -50,7 +50,7 @@ import java.util.Map;
 import java.util.logging.Level;
 
 public class ConnectionFactoryDefinitionNode extends DeploymentDescriptorNode<ConnectionFactoryDefinitionDescriptor> {
-    public final static XMLElement tag = new XMLElement(TagNames.CONNECTION_FACTORY);
+    public static final XMLElement tag = new XMLElement(TagNames.CONNECTION_FACTORY);
     
     private ConnectionFactoryDefinitionDescriptor descriptor = null;
     

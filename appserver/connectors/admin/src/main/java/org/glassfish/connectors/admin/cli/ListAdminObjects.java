@@ -78,7 +78,7 @@ import java.util.Collection;
 })
 public class ListAdminObjects implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListAdminObjects.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListAdminObjects.class);    
 
     @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     private String target ;

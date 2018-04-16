@@ -114,7 +114,7 @@ public class SetLogFileFormat implements AdminCommand {
     @Inject
     ServerEnvironment env;
 
-    final private static LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(
+    private final static LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(
             SetLogFileFormat.class);
 
     public void execute(AdminCommandContext context) {

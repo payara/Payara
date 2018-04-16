@@ -64,7 +64,7 @@ import org.jvnet.hk2.annotations.Service;
 @AnnotationHandlerFor(ConnectionDefinition.class)
 public class ConnectionDefinitionHandler extends AbstractHandler  {
 
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ConnectionDefinitionHandler.class);
 
     public void processAnnotation(AnnotationInfo element, ConnectionDefinition defn)

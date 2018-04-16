@@ -56,7 +56,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 public class MessageDestinationReferenceDescriptor extends EnvironmentProperty 
     implements MessageDestinationReference {
 
-    static private final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
+    private static final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
 
     // Usage types
     public static final String CONSUMES = "Consumes";

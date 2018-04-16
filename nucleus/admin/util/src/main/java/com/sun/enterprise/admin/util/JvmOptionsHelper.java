@@ -49,7 +49,7 @@ import java.util.*;
 /**
  * A helper class to facilitate the add/delete/get jvm options.
  */
-final public class JvmOptionsHelper {
+public final class JvmOptionsHelper {
 
     /**
      * First in the chain of responsibility

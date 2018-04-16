@@ -94,7 +94,7 @@ public abstract class AutoOperation {
     /**
      * Used in deleting all marker files for a given app.
      */
-    final static private String [] autoDeployFileSuffixes = new String[] {
+    final private static String [] autoDeployFileSuffixes = new String[] {
             AutoDeployConstants.DEPLOYED,
             AutoDeployConstants.DEPLOY_FAILED,
             AutoDeployConstants.UNDEPLOYED,

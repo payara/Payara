@@ -96,7 +96,7 @@ public abstract class QueryPlan {
     protected ArrayList tables;
 
     /** I18N message handler. */
-    protected final static ResourceBundle messages = I18NHelper.loadBundle(
+    protected static final ResourceBundle messages = I18NHelper.loadBundle(
             "com.sun.jdo.spi.persistence.support.sqlstore.Bundle", // NOI18N
             QueryPlan.class.getClassLoader());
 

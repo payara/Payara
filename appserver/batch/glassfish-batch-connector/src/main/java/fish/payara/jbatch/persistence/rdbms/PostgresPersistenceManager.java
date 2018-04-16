@@ -53,7 +53,7 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 	private static final String CLASSNAME = PostgresPersistenceManager.class
 			.getName();
 
-	private final static Logger logger = Logger.getLogger(CLASSNAME);
+	private static final Logger logger = Logger.getLogger(CLASSNAME);
 
 	private IBatchConfig batchConfig = null;
 

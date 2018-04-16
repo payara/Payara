@@ -60,7 +60,7 @@ import org.omg.CORBA.ORB;
 public class RemoteSerialContextProviderImpl 
     extends SerialContextProviderImpl {
 
-    static public final String SERIAL_CONTEXT_PROVIDER_NAME =
+    public static final String SERIAL_CONTEXT_PROVIDER_NAME =
         "SerialContextProvider";
 
     private ORB orb;
@@ -99,7 +99,7 @@ public class RemoteSerialContextProviderImpl
    /**
      * Create the remote object and publish it in the CosNaming name service.
      */
-    static public Remote initSerialContextProvider(ORB orb, TransientContext rootContext)
+    public static Remote initSerialContextProvider(ORB orb, TransientContext rootContext)
 	    throws RemoteException {
        return new RemoteSerialContextProviderImpl(orb, rootContext);
     }

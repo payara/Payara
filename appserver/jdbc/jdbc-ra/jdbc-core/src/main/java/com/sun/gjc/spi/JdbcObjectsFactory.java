@@ -60,7 +60,7 @@ import org.glassfish.api.jdbc.SQLTraceRecord;
  */
 public abstract class JdbcObjectsFactory implements Serializable {
 
-    protected final static Logger _logger;
+    protected static final Logger _logger;
 
     static {
         _logger = LogDomains.getLogger(JdbcObjectsFactory.class, LogDomains.RSR_LOGGER);

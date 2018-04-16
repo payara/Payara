@@ -79,9 +79,9 @@ import org.jvnet.hk2.config.types.Property;
 @RunLevel(PostStartupRunLevel.VAL)
 public class ApplicationConfigListener implements TransactionListener, PostConstruct {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationConfigListener.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationConfigListener.class);
 
-    final private Logger logger = KernelLoggerInfo.getLogger();
+    private final Logger logger = KernelLoggerInfo.getLogger();
 
     @Inject
     Transactions transactions;

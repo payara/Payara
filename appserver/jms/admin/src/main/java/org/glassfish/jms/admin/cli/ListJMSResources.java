@@ -89,7 +89,7 @@ public class ListJMSResources implements AdminCommand {
     private static final String QUEUE_CF = "javax.jms.QueueConnectionFactory";
     private static final String TOPIC_CF = "javax.jms.TopicConnectionFactory";
     private static final String UNIFIED_CF = "javax.jms.ConnectionFactory";
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListJMSResources.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListJMSResources.class);
 
     @Param(name="resType", optional=true)
     String resourceType;

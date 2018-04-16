@@ -46,10 +46,10 @@ public class CatalogImpl
     implements jaxb1.Catalog, com.sun.xml.bind.RIElement, com.sun.xml.bind.JAXBObject, jaxb1.impl.runtime.UnmarshallableObject, jaxb1.impl.runtime.XMLSerializable, jaxb1.impl.runtime.ValidatableObject
 {
 
-    public final static java.lang.Class version = (jaxb1.impl.JAXBVersion.class);
+    public static final java.lang.Class version = (jaxb1.impl.JAXBVersion.class);
     private static com.sun.msv.grammar.Grammar schemaFragment;
 
-    private final static java.lang.Class PRIMARY_INTERFACE_CLASS() {
+    private static final java.lang.Class PRIMARY_INTERFACE_CLASS() {
         return (jaxb1.Catalog.class);
     }
 

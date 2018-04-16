@@ -63,7 +63,7 @@ import org.jvnet.hk2.annotations.Service;
 @AnnotationHandlerFor(SecurityPermission.class)
 public class SecurityPermissionHandler extends AbstractHandler {
 
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(SecurityPermissionHandler.class);
     
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {

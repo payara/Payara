@@ -65,7 +65,7 @@ public abstract class FileLister
         keepEmpty = true;
     }
 
-	abstract protected boolean relativePath();
+	protected abstract boolean relativePath();
 	
 	public String[] getFiles()
 	{

@@ -672,7 +672,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      * @return the Document for the given node
      * </p>
      */
-    static protected Document getOwnerDocument(Node node) {
+    protected static Document getOwnerDocument(Node node) {
 
         if (node instanceof Document) {
             return (Document) node;

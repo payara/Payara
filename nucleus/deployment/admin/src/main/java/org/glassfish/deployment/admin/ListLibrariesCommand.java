@@ -78,7 +78,7 @@ public class ListLibrariesCommand implements AdminCommand {
     @Inject
     ServerEnvironment env;
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListLibrariesCommand.class);    
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListLibrariesCommand.class);    
 
     public void execute(AdminCommandContext context) {
         

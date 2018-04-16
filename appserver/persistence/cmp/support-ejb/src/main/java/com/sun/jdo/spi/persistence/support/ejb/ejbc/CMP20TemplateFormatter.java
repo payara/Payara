@@ -67,76 +67,76 @@ import com.sun.jdo.spi.persistence.utility.generator.JavaClassWriterHelper;
  */
 class CMP20TemplateFormatter extends CMPTemplateFormatter {
 
-    private final static String templateFile =
+    private static final String templateFile =
         "com/sun/jdo/spi/persistence/support/ejb/ejbc/CMP20Templates.properties"; // NOI18N
 
     // Strings for CMP 2.0 code generation:
-    public final static String local_                     = "Local"; // NOI18N
-    public final static String ejbLocalObject_            = "EJBLocalObject"; // NOI18N
-    public final static String ejbLocalHome_              = "EJBLocalHome"; // NOI18N
-    public final static String getter_                    = "getter"; // NOI18N
-    public final static String setter_                    = "setter"; // NOI18N
-    public final static String assertPKsetter_            = "assertPKsetter"; // NOI18N
-    public final static String pksetter_                  = "pksetter"; // NOI18N
-    public final static String pkstringsetter_            = "pkstringsetter"; // NOI18N
-    public final static String pkcopysetter_              = "pkcopysetter"; // NOI18N
-    public final static String copygetter_                = "copygetter"; // NOI18N
-    public final static String copysetter_                = "copysetter"; // NOI18N
-    public final static String arraygetter_               = "arraygetter"; // NOI18N
-    public final static String arraysetter_               = "arraysetter"; // NOI18N
-    public final static String sfldgetter_                = "sfldGetter"; // NOI18N
-    public final static String sfldsetter_                = "sfldSetter"; // NOI18N
-    public final static String cmrGetter_                 = "cmrGetter"; // NOI18N
-    public final static String cmrSetter_                 = "cmrSetter"; // NOI18N
-    public final static String cmrGetterCollection_       = "cmrGetterCollection"; // NOI18N
-    public final static String cmrSetterCollection_       = "cmrSetterCollection"; // NOI18N
-    public final static String startCascadeDelete_        = "startCascadeDelete"; // NOI18N
-    public final static String endCascadeDelete_          = "endCascadeDelete"; // NOI18N
-    public final static String cmrCascadeDelete_          = "cmrCascadeDelete"; // NOI18N
-    public final static String cmrCascadeDeleteCollection_ = "cmrCascadeDeleteCollection"; // NOI18N
-    public final static String localCmrVariables_         = "localCmrVariables"; // NOI18N
-    public final static String cleanCollectionCmr_        = "cleanCollectionCmr"; // NOI18N
-    public final static String ejbFinderSelectorParamCheckLocalInterface_
+    public static final String local_                     = "Local"; // NOI18N
+    public static final String ejbLocalObject_            = "EJBLocalObject"; // NOI18N
+    public static final String ejbLocalHome_              = "EJBLocalHome"; // NOI18N
+    public static final String getter_                    = "getter"; // NOI18N
+    public static final String setter_                    = "setter"; // NOI18N
+    public static final String assertPKsetter_            = "assertPKsetter"; // NOI18N
+    public static final String pksetter_                  = "pksetter"; // NOI18N
+    public static final String pkstringsetter_            = "pkstringsetter"; // NOI18N
+    public static final String pkcopysetter_              = "pkcopysetter"; // NOI18N
+    public static final String copygetter_                = "copygetter"; // NOI18N
+    public static final String copysetter_                = "copysetter"; // NOI18N
+    public static final String arraygetter_               = "arraygetter"; // NOI18N
+    public static final String arraysetter_               = "arraysetter"; // NOI18N
+    public static final String sfldgetter_                = "sfldGetter"; // NOI18N
+    public static final String sfldsetter_                = "sfldSetter"; // NOI18N
+    public static final String cmrGetter_                 = "cmrGetter"; // NOI18N
+    public static final String cmrSetter_                 = "cmrSetter"; // NOI18N
+    public static final String cmrGetterCollection_       = "cmrGetterCollection"; // NOI18N
+    public static final String cmrSetterCollection_       = "cmrSetterCollection"; // NOI18N
+    public static final String startCascadeDelete_        = "startCascadeDelete"; // NOI18N
+    public static final String endCascadeDelete_          = "endCascadeDelete"; // NOI18N
+    public static final String cmrCascadeDelete_          = "cmrCascadeDelete"; // NOI18N
+    public static final String cmrCascadeDeleteCollection_ = "cmrCascadeDeleteCollection"; // NOI18N
+    public static final String localCmrVariables_         = "localCmrVariables"; // NOI18N
+    public static final String cleanCollectionCmr_        = "cleanCollectionCmr"; // NOI18N
+    public static final String ejbFinderSelectorParamCheckLocalInterface_
                                      = "ejbFinderSelectorParamCheckLocalInterface"; // NOI18N
-    public final static String ejbFinderSelectorParamCheckRemoteInterface_
+    public static final String ejbFinderSelectorParamCheckRemoteInterface_
                                      = "ejbFinderSelectorParamCheckRemoteInterface"; // NOI18N
-    public final static String ejbMultiSelectorBodyConversion_   = "ejbMultiSelectorBodyConversion"; // NOI18N
-    public final static String ejbMultiSelectorBody_           = "ejbMultiSelectorBody"; // NOI18N
-    public final static String ejbMultiSelectorBodySet_        = "ejbMultiSelectorBodySet"; // NOI18N
-    public final static String ejbSingleSelectorReturnBodyConversion_    = "ejbSingleSelectorReturnBodyConversion"; // NOI18N
-    public final static String ejbSingleSelectorReturnBody_    = "ejbSingleSelectorReturnBody"; // NOI18N
-    public final static String ejbAggregateSelectorPrimitiveReturnBody_    = "ejbAggregateSelectorPrimitiveReturnBody"; // NOI18N
-    public final static String ejbAggregateSelectorReturnBody_    = "ejbAggregateSelectorReturnBody"; // NOI18N
-    public final static String ejbAggregateSelectorReturnBodyConversion_    = "ejbAggregateSelectorReturnBodyConversion"; // NOI18N
-    public final static String ejbAggregateSelectorReturnBigDecimalConversion_    = "ejbAggregateSelectorReturnBigDecimalConversion"; // NOI18N
-    public final static String ejbAggregateSelectorReturnBigIntegerConversion_    = "ejbAggregateSelectorReturnBigIntegerConversion"; // NOI18N
-    public final static String ejbSingleSelectorBody_    = "ejbSingleSelectorBody"; // NOI18N
-    public final static String preSelect_                = "preSelect"; // NOI18N
-    public final static String convertPCToEJBLocalObject_
+    public static final String ejbMultiSelectorBodyConversion_   = "ejbMultiSelectorBodyConversion"; // NOI18N
+    public static final String ejbMultiSelectorBody_           = "ejbMultiSelectorBody"; // NOI18N
+    public static final String ejbMultiSelectorBodySet_        = "ejbMultiSelectorBodySet"; // NOI18N
+    public static final String ejbSingleSelectorReturnBodyConversion_    = "ejbSingleSelectorReturnBodyConversion"; // NOI18N
+    public static final String ejbSingleSelectorReturnBody_    = "ejbSingleSelectorReturnBody"; // NOI18N
+    public static final String ejbAggregateSelectorPrimitiveReturnBody_    = "ejbAggregateSelectorPrimitiveReturnBody"; // NOI18N
+    public static final String ejbAggregateSelectorReturnBody_    = "ejbAggregateSelectorReturnBody"; // NOI18N
+    public static final String ejbAggregateSelectorReturnBodyConversion_    = "ejbAggregateSelectorReturnBodyConversion"; // NOI18N
+    public static final String ejbAggregateSelectorReturnBigDecimalConversion_    = "ejbAggregateSelectorReturnBigDecimalConversion"; // NOI18N
+    public static final String ejbAggregateSelectorReturnBigIntegerConversion_    = "ejbAggregateSelectorReturnBigIntegerConversion"; // NOI18N
+    public static final String ejbSingleSelectorBody_    = "ejbSingleSelectorBody"; // NOI18N
+    public static final String preSelect_                = "preSelect"; // NOI18N
+    public static final String convertPCToEJBLocalObject_
                                      = "convertPCToEJBLocalObject"; // NOI18N
-    public final static String convertCollectionPCToEJBObject_
+    public static final String convertCollectionPCToEJBObject_
                                      = "convertCollectionPCToEJBObject"; // NOI18N
-    public final static String convertCollectionPCToEJBObjectSet_
+    public static final String convertCollectionPCToEJBObjectSet_
                                      = "convertCollectionPCToEJBObjectSet"; // NOI18N
-    public final static String convertCollectionPCToEJBLocalObject_
+    public static final String convertCollectionPCToEJBLocalObject_
                                      = "convertCollectionPCToEJBLocalObject"; // NOI18N
-    public final static String convertCollectionPCToEJBLocalObjectSet_
+    public static final String convertCollectionPCToEJBLocalObjectSet_
                                      = "convertCollectionPCToEJBLocalObjectSet"; // NOI18N
-    public final static String jdoCleanCollectionRef_    = "jdoCleanCollectionRef"; // NOI18N
+    public static final String jdoCleanCollectionRef_    = "jdoCleanCollectionRef"; // NOI18N
 
     // Inner helper Class strings.
-    public final static String helper20Interface_
+    public static final String helper20Interface_
                       = "com.sun.jdo.spi.persistence.support.sqlstore.ejb.JDOEJB20Helper"; // NOI18N
-    public final static String helper20Impl_
+    public static final String helper20Impl_
                       = "com.sun.jdo.spi.persistence.support.ejb.cmp.JDOEJB20HelperImpl"; // NOI18N
 
-    public final static String ejbHashSetImport_
+    public static final String ejbHashSetImport_
                       = "com.sun.jdo.spi.persistence.support.ejb.cmp.EJBHashSet"; // NOI18N
 
-    public final static String assertInstanceOfLocalInterfaceImpl_
+    public static final String assertInstanceOfLocalInterfaceImpl_
                                                           = "assertInstanceOfLocalInterfaceImpl"; // NOI18N
     // property key for the CVS keyword substitution
-    public final static String signature2_0_ = "signature2_0"; //NOI18N
+    public static final String signature2_0_ = "signature2_0"; //NOI18N
 
     // getters and setters
     public static MessageFormat gformatter = null; // CMP field getter

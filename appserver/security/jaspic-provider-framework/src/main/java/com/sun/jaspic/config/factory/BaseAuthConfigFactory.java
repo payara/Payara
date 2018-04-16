@@ -313,7 +313,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
         }
     }
 
-    abstract protected RegStoreFileParser getRegStore();
+    protected abstract RegStoreFileParser getRegStore();
 
     private AuthConfigProvider getConfigProviderUnderLock(String layer, String appContext, RegistrationListener listener) {
         AuthConfigProvider provider = null;

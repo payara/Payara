@@ -100,7 +100,7 @@ import org.glassfish.config.support.TargetType;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class CreateAuditModule implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(CreateAuditModule.class);    
 
     @Param(name="classname")

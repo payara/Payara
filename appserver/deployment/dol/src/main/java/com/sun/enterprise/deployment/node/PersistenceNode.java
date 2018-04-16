@@ -61,17 +61,17 @@ import org.jvnet.hk2.annotations.Service;
 @Service
 public class PersistenceNode extends AbstractBundleNode {
 
-    public final static String SCHEMA_NS =
+    public static final String SCHEMA_NS =
             "http://java.sun.com/xml/ns/persistence"; // NOI18N
 
-    public final static String SCHEMA_ID_1_0 = "persistence_1_0.xsd"; // NOI18N
+    public static final String SCHEMA_ID_1_0 = "persistence_1_0.xsd"; // NOI18N
 
-    public final static String SCHEMA_ID = "persistence_2_0.xsd"; // NOI18N
+    public static final String SCHEMA_ID = "persistence_2_0.xsd"; // NOI18N
 
-    private final static List<String> systemIDs = initSystemIDs();
+    private static final List<String> systemIDs = initSystemIDs();
 
     // The XML tag associated with this Node
-    public final static XMLElement ROOT_ELEMENT = new XMLElement(
+    public static final XMLElement ROOT_ELEMENT = new XMLElement(
             PersistenceTagNames.PERSISTENCE);
 
     private PersistenceUnitsDescriptor persistenceUnitsDescriptor;

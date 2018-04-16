@@ -45,7 +45,7 @@ package org.glassfish.webservices.monitoring;
  *
  * @author dochez
  */
-abstract public class HttpTransportInfo implements TransportInfo {
+public abstract class HttpTransportInfo implements TransportInfo {
     
     /** Creates a new instance of HttpTransportInfo */
     public HttpTransportInfo() {

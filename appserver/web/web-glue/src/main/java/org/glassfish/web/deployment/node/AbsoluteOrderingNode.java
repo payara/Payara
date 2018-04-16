@@ -57,7 +57,7 @@ import org.xml.sax.Attributes;
  */
 public class AbsoluteOrderingNode extends DeploymentDescriptorNode<AbsoluteOrderingDescriptor> {
 
-    public final static XMLElement tag = new XMLElement(WebTagNames.ABSOLUTE_ORDERING);
+    public static final XMLElement tag = new XMLElement(WebTagNames.ABSOLUTE_ORDERING);
 
     protected AbsoluteOrderingDescriptor descriptor = null;
 

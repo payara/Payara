@@ -148,7 +148,7 @@ public class SQLStateManager implements Cloneable, StateManager, TestStateManage
     private static Logger logger = LogHelperStateManager.getLogger();
 
     /** I18N message handler. */
-    private final static ResourceBundle messages = I18NHelper.loadBundle(
+    private static final ResourceBundle messages = I18NHelper.loadBundle(
             SQLStateManager.class);
 
     /** Name of the USE_BATCH property. */
@@ -949,7 +949,7 @@ public class SQLStateManager implements Cloneable, StateManager, TestStateManage
      *
      * @param actions List of updated state managers.
      */
-    static private void incrementVersion(List actions) {
+    private static void incrementVersion(List actions) {
 
         for (Iterator iter = actions.iterator(); iter.hasNext(); ) {
             ((UpdateObjectDescImpl) iter.next()).incrementVersion();
@@ -2571,7 +2571,7 @@ public class SQLStateManager implements Cloneable, StateManager, TestStateManage
      * @return True, if the persistence capable instances are (were)
      * related on the given field.
      */
-    static private boolean checkRelationship(SQLStateManager sm,
+    private static boolean checkRelationship(SQLStateManager sm,
                                              ForeignFieldDesc fieldDesc,
                                              Object pc) {
         boolean related = false;

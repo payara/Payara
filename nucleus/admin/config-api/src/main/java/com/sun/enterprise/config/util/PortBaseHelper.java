@@ -56,7 +56,7 @@ import static com.sun.enterprise.config.util.PortConstants.*;
  */
 public class PortBaseHelper {
     
-    final private static LocalStringsImpl strings = new LocalStringsImpl(PortBaseHelper.class);
+    private static final LocalStringsImpl strings = new LocalStringsImpl(PortBaseHelper.class);
 
     public PortBaseHelper(Server instance, String portbase, boolean checkports, Logger logger) {
         portBase = portbase;

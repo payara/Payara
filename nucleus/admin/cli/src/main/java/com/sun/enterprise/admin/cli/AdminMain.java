@@ -84,12 +84,12 @@ public class AdminMain {
     private CLIContainer cliContainer;
     private Environment env = new Environment();
     protected Logger logger;
-    private final static int ERROR = 1;
-    private final static int CONNECTION_ERROR = 2;
-    private final static int INVALID_COMMAND_ERROR = 3;
-    private final static int SUCCESS = 0;
-    private final static int WARNING = 4;
-    private final static String ADMIN_CLI_LOGGER =
+    private static final int ERROR = 1;
+    private static final int CONNECTION_ERROR = 2;
+    private static final int INVALID_COMMAND_ERROR = 3;
+    private static final int SUCCESS = 0;
+    private static final int WARNING = 4;
+    private static final String ADMIN_CLI_LOGGER =
             "com.sun.enterprise.admin.cli";
     private static final String[] copyProps = {
         SystemPropertyConstants.INSTALL_ROOT_PROPERTY,

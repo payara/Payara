@@ -125,8 +125,8 @@ class MethodBuilder
     // generated jdo methods have source code equivalents by
     // - not adding the synthetic code attribute
     // - providing a dummy line number table code attribute
-    static private final boolean addSyntheticAttr = false;
-    static private final boolean addLineNumberTableAttr = true;
+    private static final boolean addSyntheticAttr = false;
+    private static final boolean addLineNumberTableAttr = true;
 
     /* Central repository for the options and classes */
     //@olsen: added association
@@ -2394,7 +2394,7 @@ class MethodBuilder
     }
 
     // for debugging
-    static private void printFieldAction(FieldAction act) {
+    private static void printFieldAction(FieldAction act) {
         System.out.println("fieldName() = " + act.fieldName());//NOI18N
         System.out.println("userFieldName() = " + act.userFieldName());//NOI18N
         System.out.println("typeDescriptor() = " + act.typeDescriptor());//NOI18N
@@ -2419,7 +2419,7 @@ class MethodBuilder
     }
 
     // for debugging
-    static private String typeToString(int val) {
+    private static String typeToString(int val) {
         switch(val) {
         case T_DOUBLE:
             return "T_DOUBLE";//NOI18N

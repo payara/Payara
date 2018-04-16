@@ -106,7 +106,7 @@ import org.glassfish.config.support.TargetType;
 public class DeleteJMSDestination extends JMSDestination implements AdminCommand {
 
         private final Logger logger = Logger.getLogger(LogUtils.JMS_ADMIN_LOGGER);
-        final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteJMSDestination.class);
+        private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteJMSDestination.class);
 
         @Param(name="destType", shortName="T", optional=false)
         String destType;

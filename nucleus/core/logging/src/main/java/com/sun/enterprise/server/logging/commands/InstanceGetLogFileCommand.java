@@ -76,7 +76,7 @@ import java.util.Properties;
 })
 public class InstanceGetLogFileCommand implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InstanceGetLogFileCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InstanceGetLogFileCommand.class);
 
     @Inject
     private ServerEnvironment env;

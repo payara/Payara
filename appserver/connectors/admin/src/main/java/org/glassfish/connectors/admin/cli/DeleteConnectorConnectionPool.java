@@ -76,7 +76,7 @@ import java.util.logging.Logger;
 @I18n("delete.connector.connection.pool")
 public class DeleteConnectorConnectionPool implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteConnectorConnectionPool.class);
 
     private @Param(optional=true, obsolete = true)

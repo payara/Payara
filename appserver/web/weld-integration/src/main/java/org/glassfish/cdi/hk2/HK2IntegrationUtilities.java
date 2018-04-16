@@ -67,7 +67,7 @@ import org.glassfish.hk2.utilities.NamedImpl;
  *
  */
 public class HK2IntegrationUtilities {
-    private final static String APP_SL_NAME = "java:app/hk2/ServiceLocator";
+    private static final String APP_SL_NAME = "java:app/hk2/ServiceLocator";
     
     /**
      * This method returns the proper ApplicationServiceLocator

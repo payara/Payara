@@ -113,7 +113,7 @@ public class Configuration extends Object {
     private static int retries = -1;
     public static final String COMMIT_ONE_PHASE_DURING_RECOVERY = "commit-one-phase-during-recovery";
     public static final int LAO_PREPARE_OK = TransactionConstants.LAO_PREPARE_OK;
-    public final static long COMMIT_RETRY_WAIT = 60000;
+    public static final long COMMIT_RETRY_WAIT = 60000;
     private static boolean isAppClient = true;
 
 /**
@@ -136,7 +136,7 @@ public class Configuration extends Object {
      * <p>
      * The default value used for this property is the current directory.
      */
-    public final static String TRACE_DIRECTORY = "com.sun.jts.traceDirectory"/*#Frozen*/;
+    public static final String TRACE_DIRECTORY = "com.sun.jts.traceDirectory"/*#Frozen*/;
 
     /**The property key used to specify the directory to which transaction log files
      * should be written.
@@ -146,7 +146,7 @@ public class Configuration extends Object {
      * The default value used for this property is the "jts" subdirectory from the
      * current directory, if that exists, otherwise the current directory.
      */
-    public final static String LOG_DIRECTORY = "com.sun.jts.logDirectory"/*#Frozen*/;
+    public static final String LOG_DIRECTORY = "com.sun.jts.logDirectory"/*#Frozen*/;
 
     /**The property key used to specify the resource which will be used to wirte
      * transaction logs.
@@ -154,14 +154,14 @@ public class Configuration extends Object {
      * The value is <em><b>com.sun.jts.logResource</b></em>.
      * <p>
      */
-    public final static String DB_LOG_RESOURCE = "com.sun.jts.logResource"/*#Frozen*/;
+    public static final String DB_LOG_RESOURCE = "com.sun.jts.logResource"/*#Frozen*/;
 
     /**
      * Whether to write warnings and errors to jts.log file
      * if this property has any value, it is active, otherwise it is inactive
      *
      */
-    public final static String ERR_LOGGING = "com.sun.jts.errorLogging"/*#Frozen*/;
+    public static final String ERR_LOGGING = "com.sun.jts.errorLogging"/*#Frozen*/;
 
     /**
      * This property indicates that XA Resources would be passed in via
@@ -169,7 +169,7 @@ public class Configuration extends Object {
      * to wait until the resources are passed in. If not set, the recovery
      * thread would not wait for the XA Resources to be passed in.
      */
-    public final static String MANUAL_RECOVERY = "com.sun.jts.ManualRecovery"/*#Frozen*/;
+    public static final String MANUAL_RECOVERY = "com.sun.jts.ManualRecovery"/*#Frozen*/;
 
     /**The property key used to specify the number of times the JTS should retry
      * a commit or resync operation before giving up.
@@ -179,7 +179,7 @@ public class Configuration extends Object {
      * If this property has no value, retries continue indefinitely.  A value of
      * zero indicates that no retries should be made.
      */
-    public final static String COMMIT_RETRY = "com.sun.jts.commitRetry"/*#Frozen*/;
+    public static final String COMMIT_RETRY = "com.sun.jts.commitRetry"/*#Frozen*/;
 
     /**The property key used to specify whether the JTS should assume a transaction
      * is to be committed or rolled back if an outcome cannot be obtained during
@@ -191,7 +191,7 @@ public class Configuration extends Object {
      * The default is to assume that the transaction should be rolled back.  If the
      * value is '1', the transaction should be committed.
      */
-    public final static String HEURISTIC_DIRECTION = "com.sun.jts.heuristicDirection"/*#Frozen*/;
+    public static final String HEURISTIC_DIRECTION = "com.sun.jts.heuristicDirection"/*#Frozen*/;
 
     /**The property key used to specify the number of transactions between keypoint
      * operations on the log.  Keypoint operations reduce the size of the transaction
@@ -206,10 +206,10 @@ public class Configuration extends Object {
      * The default value for this property is 100.  If the value is specified as
      * zero, then no keypoints are taken.
      */
-    public final static String KEYPOINT_COUNT = "com.sun.jts.keypointCount"/*#Frozen*/;
+    public static final String KEYPOINT_COUNT = "com.sun.jts.keypointCount"/*#Frozen*/;
 
     // Property to specify the instance name
-    public final static String INSTANCE_NAME = "com.sun.jts.instancename"/*#Frozen*/;
+    public static final String INSTANCE_NAME = "com.sun.jts.instancename"/*#Frozen*/;
 
     /**The property is used to specify the time interval in seconds for which the timeout
      * manager would scan for timedout transactions. A higher value would mean better
@@ -220,37 +220,37 @@ public class Configuration extends Object {
      * This needs to be a positive integer value greater than 10. If the value is less than
      * 10, illegal or unspecified a default value of 10 seconds is assumed.
      */
-    public final static String TIMEOUT_INTERVAL = "com.sun.jts.timeoutInterval" ;
+    public static final String TIMEOUT_INTERVAL = "com.sun.jts.timeoutInterval" ;
 
     /**The default subdirectory in which log and repository files are stored.
      */
-    public final static String JTS_SUBDIRECTORY = "jts"/*#Frozen*/;
+    public static final String JTS_SUBDIRECTORY = "jts"/*#Frozen*/;
 
     /**getDirectory return value which indicates that the required directory was
      * specified and is OK.
      */
-    public final static int DIRECTORY_OK    = 0;
+    public static final int DIRECTORY_OK    = 0;
 
     /**getDirectory return value which indicates that the required directory was
      * either not specified or was specified and invalid, and that the default
      * subdirectory exists.  In this case the default subdirectory should be used.
      */
-    public final static int DEFAULT_USED    = 1;
+    public static final int DEFAULT_USED    = 1;
 
     /**getDirectory return value which indicates that the required directory was
      * either not specified or was specified and invalid, and that the default
      * subdirectory does not exist.  In this case the current directory should be
      * used.
      */
-    public final static int DEFAULT_INVALID = 2;
+    public static final int DEFAULT_INVALID = 2;
 
     /**The approximate concurrent transactions expected. This is used to set the capacity of  Vectors etc.
     */
-    public final static int EXPECTED_CONCURRENT_TRANSACTIONS = 10000;
+    public static final int EXPECTED_CONCURRENT_TRANSACTIONS = 10000;
 
     /**The approximate concurrent transactions expected. This is used to set the capacity of  Vectors etc.
     */
-    public final static int EXPECTED_CONCURRENT_THREADS = 100;
+    public static final int EXPECTED_CONCURRENT_THREADS = 100;
 
     /**Returns a valid directory for a particular purpose.  If the required
      * directory is not valid, then a default subdirectory of the current directory

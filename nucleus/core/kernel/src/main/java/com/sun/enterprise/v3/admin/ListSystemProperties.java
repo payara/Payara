@@ -91,7 +91,7 @@ CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.STA
 public class ListSystemProperties implements AdminCommand, AdminCommandSecurity.Preauthorization,
         AdminCommandSecurity.AccessCheckProvider {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListSystemProperties.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListSystemProperties.class);
 
     @Param(optional=true, primary=true, defaultValue=SystemPropertyConstants.DAS_SERVER_NAME)
     String target;

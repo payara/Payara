@@ -70,7 +70,7 @@ import javax.inject.Inject;
 @I18n("delete.context.service")
 public class DeleteContextService implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteContextService.class);    
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteContextService.class);    
 
     @Param(optional=true)
     private String target = SystemPropertyConstants.DAS_SERVER_NAME;

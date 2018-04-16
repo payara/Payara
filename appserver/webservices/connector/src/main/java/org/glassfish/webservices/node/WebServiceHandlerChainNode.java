@@ -52,7 +52,7 @@ import java.util.Map;
 
 public class WebServiceHandlerChainNode extends DisplayableComponentNode {
 
-    private final static XMLElement tag =
+    private static final XMLElement tag =
         new XMLElement(WebServicesTagNames.HANDLER_CHAIN);
 
     public WebServiceHandlerChainNode() {

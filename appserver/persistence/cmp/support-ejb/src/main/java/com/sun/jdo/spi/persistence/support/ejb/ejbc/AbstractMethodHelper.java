@@ -63,7 +63,7 @@ import org.glassfish.ejb.deployment.descriptor.QueryDescriptor;
  *
  * @author Rochelle Raccah
  */
-abstract public class AbstractMethodHelper
+public abstract class AbstractMethodHelper
 {
 	/** Constant representing a local interface return type. */
 	public static final int LOCAL_RETURN = 0;
@@ -250,7 +250,7 @@ abstract public class AbstractMethodHelper
 	 * prefetch setting.
 	 * @return a boolean representing the prefetch setting
 	 */
-	abstract public boolean isQueryPrefetchEnabled (Method method);
+	public abstract boolean isQueryPrefetchEnabled (Method method);
 
 	/** Gets the jdo filter expression associated with the specified method 
 	 * if it exists.  Note that this method should only be used for CMP 1.1 - 
@@ -259,7 +259,7 @@ abstract public class AbstractMethodHelper
 	 * query filter
 	 * @return the jdo filter expression
 	 */
-	abstract public String getJDOFilterExpression (Method method);
+	public abstract String getJDOFilterExpression (Method method);
 
 	/** Gets the jdo parameter declaration associated with the specified 
 	 * method if it exists.  Note that this method should only be used for 
@@ -268,7 +268,7 @@ abstract public class AbstractMethodHelper
 	 * parameter declaration
 	 * @return the jdo parameter declaration
 	 */
-	abstract public String getJDOParameterDeclaration (Method method);
+	public abstract String getJDOParameterDeclaration (Method method);
 
 	/** Gets the jdo variables declaration associated with the specified 
 	 * method if it exists.  Note that this method should only be used for 
@@ -277,7 +277,7 @@ abstract public class AbstractMethodHelper
 	 * parameter declaration
 	 * @return the jdo variables declaration
 	 */
-	abstract public String getJDOVariableDeclaration (Method method);
+	public abstract String getJDOVariableDeclaration (Method method);
 
 	/** Gets the jdo ordering specification associated with the specified 
 	 * method if it exists.  Note that this method should only be used for
@@ -286,5 +286,5 @@ abstract public class AbstractMethodHelper
 	 * parameter declaration
 	 * @return the jdo ordering specification
 	 */
-	abstract public String getJDOOrderingSpecification (Method method);
+	public abstract String getJDOOrderingSpecification (Method method);
 }

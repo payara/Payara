@@ -89,7 +89,7 @@ import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
  */
 public class CdiInitEventHandler {
     
-    private final static JsonWebTokenImpl emptyJsonWebToken = new JsonWebTokenImpl(null, emptyMap());
+    private static final JsonWebTokenImpl emptyJsonWebToken = new JsonWebTokenImpl(null, emptyMap());
     
     public static void installAuthenticationMechanism(AfterBeanDiscovery afterBeanDiscovery) {
       

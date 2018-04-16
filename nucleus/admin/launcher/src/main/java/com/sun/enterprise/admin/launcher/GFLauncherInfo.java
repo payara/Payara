@@ -629,9 +629,9 @@ public class GFLauncherInfo {
     private File postbootCommandsFile;
     private File prebootCommandsFile;
     // BUG TODO get the def. domains dir from asenv 3/14/2008
-    private final static String DEFAULT_DOMAIN_PARENT_DIR = "domains";
-    private final static String CONFIG_DIR = "config";
-    private final static String CONFIG_FILENAME = "domain.xml";
+    private static final String DEFAULT_DOMAIN_PARENT_DIR = "domains";
+    private static final String CONFIG_DIR = "config";
+    private static final String CONFIG_FILENAME = "domain.xml";
     //password tokens -- could be multiple -- launcher should *just* write them onto stdin of server
     final List<String> securityTokens = new ArrayList<String>(); // note: it's package private
 
@@ -639,7 +639,7 @@ public class GFLauncherInfo {
         return verbose || watchdog;
     }
 
-    final private static class ThreeStateBoolean {
+    private static final class ThreeStateBoolean {
 
         ThreeStateBoolean(Boolean b) {
             this.b = b;

@@ -55,9 +55,9 @@ import java.util.*;
  */
 class FormattedWriter
 {
-	static private final String lineSeparator =
+	private static final String lineSeparator =
 		System.getProperty("line.separator");
-	static private final String indent = "    ";	// NOI18N
+	private static final String indent = "    ";	// NOI18N
 
 	private StringBuffer _buffer;
 	private int _initialIndents = 0;

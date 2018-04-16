@@ -159,7 +159,7 @@ public class TransactionalInterceptorBase implements Serializable {
     public static final String CDI_JTA_SUPPORTS = "AS-JTA-00018";
 
     private static TransactionManager testTransactionManager;
-    volatile private static TransactionManager transactionManager;
+    private static volatile TransactionManager transactionManager;
     transient private TransactionOperationsManager preexistingTransactionOperationsManager;
     private static final TransactionOperationsManager transactionalTransactionOperationsManagerTransactionMethodsAllowed = new TransactionalTransactionOperationsManagerTransactionMethodsAllowed();
     private static final TransactionOperationsManager transactionalTransactionOperationsManagerTransactionMethodsNotAllowed = new TransactionalTransactionOperationsManagerTransactionMethodsNotAllowed();

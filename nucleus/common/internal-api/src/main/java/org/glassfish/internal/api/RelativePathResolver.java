@@ -172,7 +172,7 @@ public class RelativePathResolver {
      * @param propName The property name to resolve. ex. ${ALIAS=aliasname}.
      * @return The aliasname or null.
      */    
-    static public String getAlias(String propName)
+    public static String getAlias(String propName)
     {
        String aliasName=null;
        String starter = "${" + ALIAS_TOKEN + "="; //no space is allowed in starter

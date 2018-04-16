@@ -99,7 +99,7 @@ public class UptimeCommand implements AdminCommand {
         report.setMessage(message);
         report.getTopMessagePart().addProperty("milliseconds", totalTime_mss);
     }
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(UptimeCommand.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(UptimeCommand.class);
 
     private long getUptime() {
         RuntimeMXBean mxbean = ManagementFactory.getRuntimeMXBean();

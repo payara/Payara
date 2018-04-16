@@ -67,7 +67,7 @@ abstract class ServerReaderFilter extends XMLStreamReaderFilter {
     }
 
     @Override
-    final public void close() throws XMLStreamException {
+    public final void close() throws XMLStreamException {
         try {
             super.close();
             stream.close();

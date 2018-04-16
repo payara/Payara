@@ -56,7 +56,7 @@ import javax.persistence.PersistenceContextType;
  */
 public abstract class AbstractPersistenceContextType extends VerifierTest
         implements VerifierCheck {
-    final static String className = AbstractPersistenceContextType.class.getName();
+    static final String className = AbstractPersistenceContextType.class.getName();
     
     public Result check(Descriptor descriptor) {
         

@@ -60,8 +60,8 @@ import java.util.ArrayList;
  */
 public class GrizzlyModuleDescriptor {
 
-    private final static String[] HANDLER_ELEMENTS = {"adapter", "http-handler"};
-    final static String DescriptorPath = "META-INF/grizzly-glassfish.xml";
+    private static final String[] HANDLER_ELEMENTS = {"adapter", "http-handler"};
+    static final String DescriptorPath = "META-INF/grizzly-glassfish.xml";
     final Map<String, String> tuples = new HashMap<String, String>();
     final Map<String, ArrayList<GrizzlyProperty>> adapterProperties = new HashMap<String,  ArrayList<GrizzlyProperty>>();
 

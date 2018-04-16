@@ -48,7 +48,7 @@ package com.sun.jts.codegen.otsidl;
 * Tuesday, February 5, 2002 12:57:23 PM PST
 */
 
-abstract public class TransAncestryHelper
+public abstract class TransAncestryHelper
 {
   private static String  _id = "IDL:otsidl/TransAncestry:1.0";
 

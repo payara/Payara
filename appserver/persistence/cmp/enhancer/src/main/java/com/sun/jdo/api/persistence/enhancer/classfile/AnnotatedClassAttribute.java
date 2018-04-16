@@ -50,20 +50,20 @@ import java.io.*;
 public class AnnotatedClassAttribute extends ClassAttribute {
 
   /* The expected attribute name */
-    public final static String expectedAttrName = "filter.annotatedClass";//NOI18N
+    public static final String expectedAttrName = "filter.annotatedClass";//NOI18N
 
   /* The expected attribute version */
-  public final static short expectedAttrVersion = 1;
+  public static final short expectedAttrVersion = 1;
 
   /* Bit mask indicating that the class was filter generated */
-  public final static short generatedFlag = 0x1;
+  public static final short generatedFlag = 0x1;
 
   /* Bit mask indicating that the class was filter annotated */
-  public final static short annotatedFlag = 0x2;
+  public static final short annotatedFlag = 0x2;
 
   /* Bit mask indicating that the class was "repackaged" or similarly
    * modified */
-  public final static short modifiedFlag = 0x4;
+  public static final short modifiedFlag = 0x4;
 
   /* The version of the attribute */
   private short attrVersion;

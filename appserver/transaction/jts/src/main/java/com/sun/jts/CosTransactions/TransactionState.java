@@ -105,92 +105,92 @@ class TransactionState {
     /**
      * A state value indicating that the transaction has not yet been started.
      */
-    final static int STATE_NONE = 0;
+    static final int STATE_NONE = 0;
 
     /**
      * A state value indicating that the transaction has been started,
      * and not yet completed.
      */
-    final static int STATE_ACTIVE = 1;
+    static final int STATE_ACTIVE = 1;
 
     /**
      * A state value indicating that the transaction is in the process of being
      * prepared.
      */
-    final static int STATE_PREPARING = 2;
+    static final int STATE_PREPARING = 2;
 
     /**
      * A state value indicating that the transaction has been
      * successfully prepared, but commit or rollback has not yet started.
      */
-    final static int STATE_PREPARED_SUCCESS = 3;
+    static final int STATE_PREPARED_SUCCESS = 3;
 
     /**
      * A state value indicating that the transaction has failed to be prepared,
      * but rollback has not yet started.
      */
-    final static int STATE_PREPARED_FAIL = 4;
+    static final int STATE_PREPARED_FAIL = 4;
 
     /**
      * A state value indicating that the transaction has been prepared
      * and is read-only, but rollback has not yet started.
      */
-    final static int STATE_PREPARED_READONLY = 5;
+    static final int STATE_PREPARED_READONLY = 5;
 
     /**
      * A state value indicating that the transaction is in the process of being
      * committed.
      */
-    final static int STATE_COMMITTING = 6;
+    static final int STATE_COMMITTING = 6;
 
     /**
      * A state value indicating that the transaction has been committed.
      */
-    final static int STATE_COMMITTED = 7;
+    static final int STATE_COMMITTED = 7;
 
     /**
      * A state value indicating that the transaction is in the process of being
      * rolled back.
      */
-    final static int STATE_ROLLING_BACK = 8;
+    static final int STATE_ROLLING_BACK = 8;
 
     /**
      * A state value indicating that the transaction has been rolled back.
      */
-    final static int STATE_ROLLED_BACK = 9;
+    static final int STATE_ROLLED_BACK = 9;
 
     // GDH: New COP States
     /**
      * A state value indicating that the transaction is being commited
      * to a downstream resource using one phase commit
      */
-    final static int STATE_COMMITTING_ONE_PHASE = 10;
+    static final int STATE_COMMITTING_ONE_PHASE = 10;
 
 
     /**
      * A state value indicating that the transaction has been successfully
      * commited using commit one phase
      */
-    final static int STATE_COMMITTED_ONE_PHASE_OK = 11;
+    static final int STATE_COMMITTED_ONE_PHASE_OK = 11;
 
 
     /**
      * A state value indicating that the transaction has been rolled back
      * after a commit one phase flow.
      */
-    final static int STATE_COMMIT_ONE_PHASE_ROLLED_BACK = 12;
+    static final int STATE_COMMIT_ONE_PHASE_ROLLED_BACK = 12;
 
     /**
      * A state value indicating that the transaction has heuristic
      * hazard after a commit one phase flow.
      */
-    final static int STATE_COMMIT_ONE_PHASE_HEURISTIC_HAZARD = 13;
+    static final int STATE_COMMIT_ONE_PHASE_HEURISTIC_HAZARD = 13;
 
     /**
      * A state value indicating that the resources are heuristic mixed
      * after a commit one phase flow.
      */
-    final static int STATE_COMMIT_ONE_PHASE_HEURISTIC_MIXED = 14;
+    static final int STATE_COMMIT_ONE_PHASE_HEURISTIC_MIXED = 14;
 
 	/*
 		Logger to log transaction messages
@@ -227,7 +227,7 @@ class TransactionState {
 
     // GDH: Added this column onwards
     //
-    final static boolean[][] validStateChange = {
+    static final boolean[][] validStateChange = {
     /*  from      to         none   actve  ping    pds    pdf    pdr   cing    cd    ring    rd    c1p    1p_ok  1p_rb  1p_hh  1p_hm  */
     /*  none            */ { false, true,  false, false, false, false, false, false, true,  false, false, false, false, false, false  },
     /*  active          */ { false, false, true,  false, false, false, false, false, true,  false, true,  false, false, false, false  },
@@ -248,9 +248,9 @@ class TransactionState {
 
     // XID format identifier.
 
-    final static int XID_FORMAT_ID = ('J'<<16) + ('T'<<8) + 'S';
+    static final int XID_FORMAT_ID = ('J'<<16) + ('T'<<8) + 'S';
 
-    private final static String LOG_SECTION_NAME = "TS"/*#Frozen*/;
+    private static final String LOG_SECTION_NAME = "TS"/*#Frozen*/;
 
     /**
      * Default TransactionState constructor.

@@ -47,7 +47,7 @@ import java.io.*;
  * a class file.
  */
 
-final public class ClassField extends ClassMember {
+public final class ClassField extends ClassMember {
   /* access flag bit mask - see VMConstants */
   private int accessFlags;
 

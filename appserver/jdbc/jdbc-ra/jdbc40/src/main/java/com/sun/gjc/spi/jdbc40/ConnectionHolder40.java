@@ -78,7 +78,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
     // this class uses LogStrings.properties of the jdbc-core library.
     private static final Logger _logger = LogDomains.getLogger(ConnectionHolder40.class, LogDomains.RSR_LOGGER,
             ConnectionHolder.class.getClassLoader());
-    protected final static StringManager localStrings =
+    protected static final StringManager localStrings =
             StringManager.getManager(ManagedConnectionFactoryImpl.class);
 
     protected Properties defaultClientInfo;

@@ -89,7 +89,7 @@ public class EJBQLC
     private static Logger logger = LogHelperQueryCompilerEJB.getLogger();
     
     /** I18N support. */
-    protected final static ResourceBundle msgs = I18NHelper.loadBundle(
+    protected static final ResourceBundle msgs = I18NHelper.loadBundle(
         EJBQLC.class);
         
     /**

@@ -83,7 +83,7 @@ public class TransactionManagerImpl implements TransactionManager {
     /**
      * the singleton object
      */
-    static private TransactionManagerImpl tm = null;
+    private static TransactionManagerImpl tm = null;
 
     /**
      * store the current psuedo object
@@ -98,8 +98,8 @@ public class TransactionManagerImpl implements TransactionManager {
     /**
      * mapping between CosTransaction status -> JTA status
      */
-    static private HashMap statusMap;
-    static private int[] directLookup;
+    private static HashMap statusMap;
+    private static int[] directLookup;
     static final int maxStatus;
 
 	/*
@@ -112,10 +112,10 @@ public class TransactionManagerImpl implements TransactionManager {
 	/**
 	* store XAResource Timeout 
 	*/
-	static private int xaTimeOut = 0;
+	private static int xaTimeOut = 0;
   	//END IASRI 4706150 
 
-	static private Status CosTransactionStatus[] =
+	private static Status CosTransactionStatus[] =
     {
         org.omg.CosTransactions.Status.StatusActive,
         org.omg.CosTransactions.Status.StatusMarkedRollback,
@@ -129,7 +129,7 @@ public class TransactionManagerImpl implements TransactionManager {
         org.omg.CosTransactions.Status.StatusRollingBack
     };
 
-    static private int JTAStatus[] =
+    private static int JTAStatus[] =
     {
         javax.transaction.Status.STATUS_ACTIVE,
         javax.transaction.Status.STATUS_MARKED_ROLLBACK,
@@ -229,7 +229,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * @param traceDir directory for tracing, current directory if null
      *
      */
-    static public void initJTSProperties(Properties props, String logDir,
+    public static void initJTSProperties(Properties props, String logDir,
                                          boolean trace, String traceDir) {
         if (traceDir == null) traceDir = "."/*#Frozen*/;
         if (logDir == null) logDir = "."/*#Frozen*/;
@@ -247,7 +247,7 @@ public class TransactionManagerImpl implements TransactionManager {
      * given a CosTransactions Status, return
      * the equivalent JTA Status
      */
-    static public int mapStatus(Status status) {
+    public static int mapStatus(Status status) {
         int statusVal = status.value();
         if (statusVal < 0 || statusVal > maxStatus) {
             return javax.transaction.Status.STATUS_UNKNOWN;

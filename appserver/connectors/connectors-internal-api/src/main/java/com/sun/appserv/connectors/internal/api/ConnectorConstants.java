@@ -222,7 +222,7 @@ public interface ConnectorConstants extends ResourceConstants {
      * Property name for distinguishing the transaction exceptions 
      * propagation capability.
      */
-    public final static String THROW_TRANSACTED_EXCEPTIONS_PROP
+    public static final String THROW_TRANSACTED_EXCEPTIONS_PROP
         = "resourceadapter.throw.transacted.exceptions";
  
     /**

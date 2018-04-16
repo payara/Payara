@@ -92,7 +92,7 @@ CommandTarget.CLUSTER, CommandTarget.CONFIG,CommandTarget.CLUSTERED_INSTANCE})
 })
 public class ListAuthRealm implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(ListAuthRealm.class);    
 
     @Param(name = "target", primary=true, optional = true, defaultValue =

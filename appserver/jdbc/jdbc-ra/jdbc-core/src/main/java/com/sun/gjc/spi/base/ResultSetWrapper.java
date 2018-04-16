@@ -61,7 +61,7 @@ public abstract class ResultSetWrapper implements ResultSet {
     protected ResultSet resultSet = null;
     protected Statement statement = null;
     private MethodExecutor executor = null;
-    protected final static Logger _logger;
+    protected static final Logger _logger;
     private ResultSetClosedEventListener eventListener = null;
 
     static {

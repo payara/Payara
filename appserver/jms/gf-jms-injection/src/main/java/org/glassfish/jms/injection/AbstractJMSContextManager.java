@@ -64,7 +64,7 @@ import org.glassfish.internal.api.Globals;
  */
 public abstract class AbstractJMSContextManager implements Serializable {
     private static final Logger logger = Logger.getLogger(InjectableJMSContext.JMS_INJECTION_LOGGER);
-    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AbstractJMSContextManager.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AbstractJMSContextManager.class);
 
     protected final Map<String, JMSContextEntry> contexts;
 

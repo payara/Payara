@@ -68,7 +68,7 @@ public class OutBoundRANode extends DeploymentDescriptorNode {
 
     OutboundResourceAdapter descriptor = null; 
    
-    public final static XMLElement tag = new XMLElement(ConnectorTagNames.OUTBOUND_RESOURCE_ADAPTER);
+    public static final XMLElement tag = new XMLElement(ConnectorTagNames.OUTBOUND_RESOURCE_ADAPTER);
     
     //default constructor...for normal operation in case of 1.5 DTD
     public OutBoundRANode() {

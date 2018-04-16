@@ -90,7 +90,7 @@ import org.glassfish.config.support.TargetType;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class DeleteAuditModule implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = 
+    private final static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(DeleteAuditModule.class);
 
     @Param(name="auditmodulename", primary=true)

@@ -83,7 +83,7 @@ public abstract class AbstractConnectorAllocator
     protected ConnectorDescriptor desc;
     protected ClientSecurityInfo info;
 
-    protected final static Logger _logger = LogDomains.getLogger(AbstractConnectorAllocator.class,LogDomains.RSR_LOGGER);
+    protected static final Logger _logger = LogDomains.getLogger(AbstractConnectorAllocator.class,LogDomains.RSR_LOGGER);
 
     public AbstractConnectorAllocator() {
     }

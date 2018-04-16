@@ -64,7 +64,7 @@ import java.util.regex.Pattern;
 public class Util {
 
     private static Class thisClass = Util.class;
-    private final static LocalStringManager localStrings = new LocalStringManagerImpl(thisClass);
+    private static final LocalStringManager localStrings = new LocalStringManagerImpl(thisClass);
     private static final String SLASH_REPLACEMENT = Matcher.quoteReplacement("\\\\");
     private static final String DOLLAR_REPLACEMENT = Matcher.quoteReplacement("\\$");
 

@@ -67,7 +67,7 @@ import java.util.Properties;
 @I18n("add.resources")
 public class ConnectorWorkSecurityMapResourceManager implements ResourceManager {
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ConnectorWorkSecurityMapResourceManager.class);
     private String raName;
     private Properties principalsMap;

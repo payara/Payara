@@ -61,7 +61,7 @@ public class WLWebServiceNode extends DisplayableComponentNode {
 
     private WebService descriptor = null;
     private String serviceDescriptionName;
-    private final static XMLElement tag =
+    private static final XMLElement tag =
             new XMLElement(WLWebServicesTagNames.WEB_SERVICE);
 
     public WLWebServiceNode() {

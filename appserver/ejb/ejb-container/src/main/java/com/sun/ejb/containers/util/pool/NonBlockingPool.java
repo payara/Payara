@@ -79,7 +79,7 @@ public class NonBlockingPool
 
     private TimerTask	  poolTimerTask;
     protected boolean	  addedResizeTask = false;
-    volatile protected boolean	  addedIdleBeanWork = false;
+    protected volatile boolean	  addedIdleBeanWork = false;
     protected boolean	  inResizing = false;
     private boolean	  maintainSteadySize = false;
 

@@ -57,7 +57,7 @@ import java.lang.*;
  */
 public class ResourceAdapterConfigParserImpl implements ConnectorConfigParser {
 
-    //private final static Logger _logger = LogDomains.getLogger(ResourceAdapterConfigParserImpl.class, LogDomains.RSR_LOGGER);
+    //private static final Logger _logger = LogDomains.getLogger(ResourceAdapterConfigParserImpl.class, LogDomains.RSR_LOGGER);
 
     /**
      * Default constructor.

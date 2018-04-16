@@ -87,10 +87,10 @@ public class EJBContainerImpl extends EJBContainer {
     private Cleanup cleanup = null;
     private DeploymentElement.ResultApplication res_app;
 
-    private final static int STARTING = 0;
-    private final static int RUNNING = 1;
-    private final static int CLOSING = 2;
-    private final static int CLOSED = 3;
+    private static final int STARTING = 0;
+    private static final int RUNNING = 1;
+    private static final int CLOSING = 2;
+    private static final int CLOSED = 3;
 
     /**
      * Construct new EJBContainerImpl instance 

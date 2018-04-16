@@ -114,7 +114,7 @@ public final class DeleteHTTPLBRefCommand extends LBCommandsBase
 
     private ActionReport report;
 
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(CreateHTTPLBRefCommand.class);
     
     @Override

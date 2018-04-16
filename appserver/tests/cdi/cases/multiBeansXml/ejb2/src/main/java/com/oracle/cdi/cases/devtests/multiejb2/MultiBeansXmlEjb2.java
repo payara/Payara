@@ -46,8 +46,8 @@ import java.util.List;
  *
  */
 public interface MultiBeansXmlEjb2 {
-    public final static String INTERCEPTOR2 = "Interceptor2";
-    public final static String CALL_ME2 = "CallMe2";
+    public static final String INTERCEPTOR2 = "Interceptor2";
+    public static final String CALL_ME2 = "CallMe2";
     
     /**
      * This method should have all interceptors listed in the return list

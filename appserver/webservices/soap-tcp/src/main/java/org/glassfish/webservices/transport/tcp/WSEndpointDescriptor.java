@@ -49,15 +49,15 @@ import com.sun.enterprise.deployment.WebServiceEndpoint;
  */
 public class WSEndpointDescriptor {
 
-    final private QName wsServiceName;
-    final private String uri;
-    final private String contextRoot;
-    final private String urlPattern;
-    final private boolean isEJB;
-    final private WebServiceEndpoint wsServiceEndpoint;
+    private final QName wsServiceName;
+    private final String uri;
+    private final String contextRoot;
+    private final String urlPattern;
+    private final boolean isEJB;
+    private final WebServiceEndpoint wsServiceEndpoint;
 
     // Full address to endpoint
-    final private String requestURL;
+    private final String requestURL;
 
     public WSEndpointDescriptor(final WebServiceEndpoint wsServiceDescriptor, final String contextRoot,
             final String urlPattern, final String requestURL) {

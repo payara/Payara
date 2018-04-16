@@ -86,9 +86,9 @@ import org.glassfish.hk2.api.ServiceLocator;
 
 public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
 
-    private final static String LIBRARY_SECURITY_PROPERTY_NAME = "library.security";
-    private final static String LIBRARY_JARS_PROPERTY_NAME = "library.jars";
-    private final static String LIBRARY_JNLP_PATH_PROPERTY_NAME = "library.jnlp.path";
+    private static final String LIBRARY_SECURITY_PROPERTY_NAME = "library.security";
+    private static final String LIBRARY_JARS_PROPERTY_NAME = "library.jars";
+    private static final String LIBRARY_JNLP_PATH_PROPERTY_NAME = "library.jnlp.path";
 
     private static final String LIBRARY_DOCUMENT_TEMPLATE =
             JavaWebStartInfo.DOC_TEMPLATE_PREFIX + "libraryJarsDocumentTemplate.jnlp";
@@ -115,7 +115,7 @@ public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
      */
     private final Set<FullAndPartURIs> clientLevelDownloads = new HashSet<FullAndPartURIs>();
     private Set<FullAndPartURIs> earLevelDownloads = null;
-    private final static String EAR_LEVEL_DOWNLOADS_KEY = "earLevelDownloads";
+    private static final String EAR_LEVEL_DOWNLOADS_KEY = "earLevelDownloads";
 
     private final ServiceLocator habitat;
 

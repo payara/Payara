@@ -91,7 +91,7 @@ public class GetApplicationLaunchURLsCommand implements AdminCommand, AdminComma
     @Inject
     CommandRunner commandRunner;
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GetApplicationLaunchURLsCommand.class);    
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GetApplicationLaunchURLsCommand.class);    
 
     private List<Server> servers;
     

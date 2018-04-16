@@ -68,7 +68,7 @@ import org.glassfish.persistence.common.I18NHelper;
 public class MethodHelper extends AbstractMethodHelper
 {
 	/** I18N message handler */
-	private final static ResourceBundle messages = I18NHelper.loadBundle(
+	private static final ResourceBundle messages = I18NHelper.loadBundle(
         	MethodHelper.class);
 
 	/** Creates a new instance of MethodHelper

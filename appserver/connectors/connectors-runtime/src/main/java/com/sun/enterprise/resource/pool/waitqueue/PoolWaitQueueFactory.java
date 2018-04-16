@@ -55,7 +55,7 @@ import java.util.logging.Logger;
  */
 public class PoolWaitQueueFactory {
 
-    private final static Logger _logger = LogDomains.getLogger(PoolWaitQueueFactory.class, LogDomains.RSR_LOGGER);
+    private static final Logger _logger = LogDomains.getLogger(PoolWaitQueueFactory.class, LogDomains.RSR_LOGGER);
 
     public static PoolWaitQueue createPoolWaitQueue(String className) throws PoolingException {
         PoolWaitQueue waitQueue;

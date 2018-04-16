@@ -81,7 +81,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @I18n("delete.resource.ref")
 public class DeleteResourceRef implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteResourceRef.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteResourceRef.class);
 
     @Param(optional=true)
     private String target = SystemPropertyConstants.DAS_SERVER_NAME;

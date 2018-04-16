@@ -90,7 +90,7 @@ import java.util.logging.Logger;
 })
 public class CollectLogFiles implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CollectLogFiles.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CollectLogFiles.class);
 
     private static final Logger LOGGER = LogFacade.LOGGING_LOGGER;
 

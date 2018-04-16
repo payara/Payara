@@ -67,7 +67,7 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 public final class StartDatabaseCommand extends DatabaseCommand {
 
-    private final static String DATABASE_DIR_NAME = "databases";
+    private static final String DATABASE_DIR_NAME = "databases";
 
     @Param(name = "dbhome", optional = true)
     private String dbHome;

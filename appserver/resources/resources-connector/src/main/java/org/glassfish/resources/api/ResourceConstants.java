@@ -137,8 +137,8 @@ public interface ResourceConstants {
         TRUE, FALSE, UNKNOWN
     }
 
-    public final static String CONNECTOR_RESOURCES = "CONNECTOR";
-    public final static String NON_CONNECTOR_RESOURCES = "NON-CONNECTOR";
+    public static final String CONNECTOR_RESOURCES = "CONNECTOR";
+    public static final String NON_CONNECTOR_RESOURCES = "NON-CONNECTOR";
 
     /**
      * Token used for generating the name to refer to the embedded rars.
@@ -147,7 +147,7 @@ public interface ResourceConstants {
 
     public static String EMBEDDEDRAR_NAME_DELIMITER="#";
 
-    public final static String APP_META_DATA_RESOURCES = "app-level-resources-config";
-    public final static String APP_SCOPED_RESOURCES_MAP = "app-scoped-resources-map";
+    public static final String APP_META_DATA_RESOURCES = "app-level-resources-config";
+    public static final String APP_SCOPED_RESOURCES_MAP = "app-scoped-resources-map";
 
 }

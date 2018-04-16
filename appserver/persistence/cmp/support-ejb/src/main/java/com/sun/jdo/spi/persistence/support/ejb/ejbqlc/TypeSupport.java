@@ -140,7 +140,7 @@ public class TypeSupport
     protected NameMapper nameMapper;
     
     /** I18N support. */
-    protected final static ResourceBundle msgs = I18NHelper.loadBundle(
+    protected static final ResourceBundle msgs = I18NHelper.loadBundle(
         TypeSupport.class);
     
     /** Inilialize static fields numericTypes numericWrapperTypes. */

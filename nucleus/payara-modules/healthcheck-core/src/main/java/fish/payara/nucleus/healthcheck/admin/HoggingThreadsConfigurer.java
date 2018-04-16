@@ -69,7 +69,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 })
 public class HoggingThreadsConfigurer implements AdminCommand {
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceConfigurer.class);
+    private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceConfigurer.class);
 
     @Inject
     ServiceLocator habitat;

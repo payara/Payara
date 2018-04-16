@@ -68,7 +68,7 @@ public class RWLockDataStructure implements DataStructure {
     private ReentrantReadWriteLock.ReadLock readLock = reentrantLock.readLock();
     private ReentrantReadWriteLock.WriteLock writeLock = reentrantLock.writeLock();
 
-    protected final static Logger _logger =
+    protected static final Logger _logger =
             LogDomains.getLogger(RWLockDataStructure.class,LogDomains.RSR_LOGGER);
 
     public RWLockDataStructure(String parameters, int maxSize,

@@ -59,8 +59,8 @@ import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 public class MapElement extends RuntimeDescriptor
 {
     
-    static public final String PRINCIPAL = "Principal";	// NOI18N
-    static public final String BACKEND_PRINCIPAL = "BackendPrincipal";	// NOI18N
+    public static final String PRINCIPAL = "Principal";	// NOI18N
+    public static final String BACKEND_PRINCIPAL = "BackendPrincipal";	// NOI18N
     
     Principal backendPrincipal = null;
     

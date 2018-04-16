@@ -106,7 +106,7 @@ public abstract class JarArchive implements Archive {
          return JarArchive.getName(getURI());
     }
 
-    abstract protected JarEntry getJarEntry(String entryName);
+    protected abstract JarEntry getJarEntry(String entryName);
 
     /**
      * Returns the existence of the given entry name

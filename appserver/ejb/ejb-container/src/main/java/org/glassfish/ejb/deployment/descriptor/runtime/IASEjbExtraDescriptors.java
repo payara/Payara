@@ -158,11 +158,11 @@ public class IASEjbExtraDescriptors extends RuntimeDescriptor {
     private Boolean perRequestLoadBalancing;
 
     // contants used to parse the checkpointedMethods 
-    private final static String METHODS_DELIM = ";";
-    private final static String PARAMS_DELIM = ",";
-    private final static String LEFT_PAREN = "(";
-    private final static String RIGHT_PAREN = ")";
-    private final static String PARAM_DELIM = " ";
+    private static final String METHODS_DELIM = ";";
+    private static final String PARAMS_DELIM = ",";
+    private static final String LEFT_PAREN = "(";
+    private static final String RIGHT_PAREN = ")";
+    private static final String PARAM_DELIM = " ";
 
     /** 
      * Default constructor. 

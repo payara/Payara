@@ -50,7 +50,7 @@ package com.sun.jts.codegen.otsidl;
 
 
 //#-----------------------------------------------------------------------------
-abstract public class CoordinatorResourceHelper
+public abstract class CoordinatorResourceHelper
 {
   private static String  _id = "IDL:otsidl/CoordinatorResource:1.0";
 

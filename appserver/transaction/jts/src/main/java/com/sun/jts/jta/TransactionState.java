@@ -543,7 +543,7 @@ public class TransactionState {
         return resourceList.containsKey(res);
     }
 
-    static private void assert_prejdk14(boolean value) {
+    private static void assert_prejdk14(boolean value) {
         if (!value) {
             Exception e = new Exception();
 			_logger.log(Level.WARNING,"jts.assert",e);

@@ -71,7 +71,7 @@ import com.sun.jdo.api.persistence.support.PersistenceManagerFactory;
 * } 
 * </pre></blockquote>
 */  
-abstract public class TransactionHelperImpl
+public abstract class TransactionHelperImpl
     implements TransactionHelper {
 
     static final String DEFAULT_STRING = "default"; // NOI18N
@@ -105,13 +105,13 @@ abstract public class TransactionHelperImpl
      * associated with the current thread, this method returns null.
      * @return the Transaction instance for the calling thread
      */ 
-    abstract public Transaction getTransaction();
+    public abstract Transaction getTransaction();
 
     /** Returns the UserTransaction associated with the calling thread.  If there
      * is no transaction currently in progress, this method returns null.
      * @return the UserTransaction instance for the calling thread
      */
-    abstract public UserTransaction getUserTransaction();
+    public abstract UserTransaction getUserTransaction();
 
     /** Translate local representation of the Transaction Status to
      * javax.transaction.Status value if necessary. Otherwise this method
@@ -231,7 +231,7 @@ abstract public class TransactionHelperImpl
      * @return a Connection.
      * @throws java.sql.SQLException.
      */
-    abstract public java.sql.Connection getNonTransactionalConnection(
+    public abstract java.sql.Connection getNonTransactionalConnection(
         Object resource, String username, char[] password)
         throws java.sql.SQLException;
 
@@ -241,7 +241,7 @@ abstract public class TransactionHelperImpl
      * 
      * @return javax.transaction.TransactionManager
      */
-    abstract public TransactionManager getLocalTransactionManager();
+    public abstract TransactionManager getLocalTransactionManager();
 
     /**
      * This method unwraps given Statement and return the Statement from

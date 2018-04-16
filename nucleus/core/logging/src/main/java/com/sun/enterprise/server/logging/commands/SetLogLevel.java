@@ -118,7 +118,7 @@ public class SetLogLevel implements AdminCommand {
 
     String[] validLevels = {"ALL", "OFF", "EMERGENCY", "ALERT", "SEVERE", "WARNING", "INFO", "CONFIG", "FINE", "FINER", "FINEST"};
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SetLogLevel.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SetLogLevel.class);
 
 
     public void execute(AdminCommandContext context) {

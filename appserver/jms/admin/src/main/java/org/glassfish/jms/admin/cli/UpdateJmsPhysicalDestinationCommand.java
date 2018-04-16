@@ -88,7 +88,7 @@ import org.glassfish.hk2.api.PerLookup;
         })
 })
 public class UpdateJmsPhysicalDestinationCommand extends JMSDestination implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(UpdateJmsPhysicalDestinationCommand.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(UpdateJmsPhysicalDestinationCommand.class);
 
     @Param(name = "desttype", shortName = "t", optional = false)
     String destType;

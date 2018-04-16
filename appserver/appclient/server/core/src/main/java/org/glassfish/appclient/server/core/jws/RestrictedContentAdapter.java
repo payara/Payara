@@ -61,13 +61,13 @@ import org.glassfish.grizzly.http.server.Response;
  */
 public class RestrictedContentAdapter extends HttpHandler {
 
-    public final static String LAST_MODIFIED_HEADER_NAME = "Last-Modified";
-    public final static String DATE_HEADER_NAME = "Date";
-    protected final static String IF_MODIFIED_SINCE = "If-Modified-Since";
-    private final static String LINE_SEP = System.getProperty("line.separator");
-    private final static String BROKEN_PIPE = "Broken pipe";
+    public static final String LAST_MODIFIED_HEADER_NAME = "Last-Modified";
+    public static final String DATE_HEADER_NAME = "Date";
+    protected static final String IF_MODIFIED_SINCE = "If-Modified-Since";
+    private static final String LINE_SEP = System.getProperty("line.separator");
+    private static final String BROKEN_PIPE = "Broken pipe";
     
-    protected final static Logger logger = Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER, JavaWebStartInfo.APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
+    protected static final Logger logger = Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER, JavaWebStartInfo.APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
 
     private enum State {
 

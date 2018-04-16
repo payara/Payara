@@ -49,7 +49,7 @@ import java.io.*;
 
 public class LineNumberTableAttribute extends ClassAttribute {
   /* The expected attribute name */
-    public final static String expectedAttrName = "LineNumberTable";//NOI18N
+    public static final String expectedAttrName = "LineNumberTable";//NOI18N
 
   /* The line numbers */
   private short lineNumbers[];

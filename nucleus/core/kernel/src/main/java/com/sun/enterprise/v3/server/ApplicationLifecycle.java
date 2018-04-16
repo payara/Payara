@@ -156,7 +156,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     ConfigSupport configSupport;
 
     protected Logger logger = KernelLoggerInfo.getLogger();
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
+    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
 
     private final ThreadLocal<Deque<ExtendedDeploymentContext>> currentDeploymentContext = new ThreadLocal<Deque<ExtendedDeploymentContext>>() {
         @Override

@@ -72,8 +72,8 @@ import java.security.PrivilegedAction;
  */
 public class TranslatedConfigView implements ConfigView {
 
-    final static Pattern p = Pattern.compile("([^\\$]*)\\$\\{([^\\}]*)\\}([^\\$]*)");
-    final static Pattern envP = Pattern.compile("([^\\$]*)\\$\\{ENV=([^\\}]*)\\}([^\\$]*)");
+    static final Pattern p = Pattern.compile("([^\\$]*)\\$\\{([^\\}]*)\\}([^\\$]*)");
+    static final Pattern envP = Pattern.compile("([^\\$]*)\\$\\{ENV=([^\\}]*)\\}([^\\$]*)");
 
     private static final String ALIAS_TOKEN = "ALIAS";
     private static final String ENV_TOKEN = "ENV";
@@ -214,7 +214,7 @@ public class TranslatedConfigView implements ConfigView {
      * @param propName The property name to resolve. ex. ${ALIAS=aliasname}.
      * @return The aliasname or null.
      */
-    static public String getAlias(String propName, String token)
+    public static String getAlias(String propName, String token)
     {
        String aliasName=null;
        String starter = "${" + token + "="; //no space is allowed in starter

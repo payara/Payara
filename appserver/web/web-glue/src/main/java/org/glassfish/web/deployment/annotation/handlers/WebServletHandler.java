@@ -68,7 +68,7 @@ import org.glassfish.config.support.TranslatedConfigView;
 @Service
 @AnnotationHandlerFor(WebServlet.class)
 public class WebServletHandler extends AbstractWebHandler {
-    protected final static LocalStringManagerImpl localStrings =
+    protected static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(WebFilterHandler.class);
 
     public WebServletHandler() {

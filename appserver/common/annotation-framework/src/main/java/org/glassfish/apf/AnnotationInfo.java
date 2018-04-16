@@ -65,19 +65,19 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  */
 public class AnnotationInfo {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AnnotationInfo.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AnnotationInfo.class);
 
     // the annotated element 
-    final private AnnotatedElement annotatedElement;
+    private final AnnotatedElement annotatedElement;
 
     // the annotation   
-    final private Annotation annotation;
+    private final Annotation annotation;
     
     // the processing context
-    final private ProcessingContext context;
+    private final ProcessingContext context;
     
     // the element type
-    final private ElementType type;
+    private final ElementType type;
 
     /**
      * Creates a new instance of AnnotationInfo with all the information 

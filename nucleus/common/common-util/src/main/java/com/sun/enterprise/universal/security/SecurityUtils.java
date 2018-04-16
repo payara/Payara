@@ -60,7 +60,7 @@ public final class SecurityUtils {
     private SecurityUtils() {
     }
 
-    static private String toHexString(byte b) {
+    private static String toHexString(byte b) {
         String s = Integer.toHexString((int) b + 128);
 
         if (s.length() == 1)
@@ -69,7 +69,7 @@ public final class SecurityUtils {
         return s;
     }
 
-    static private String toHexString(byte[] bb) {
+    private static String toHexString(byte[] bb) {
         StringBuilder sb = new StringBuilder();
 
         for (byte b : bb)

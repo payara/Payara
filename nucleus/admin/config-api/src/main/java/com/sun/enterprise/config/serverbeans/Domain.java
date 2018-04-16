@@ -510,7 +510,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     public List<DeploymentGroup> getDeploymentGroupsForInstance(String namedInstance);
 
     class Duck {
-        private final static Logger logger=ConfigApiLoggerInfo.getLogger();
+        private static final Logger logger=ConfigApiLoggerInfo.getLogger();
         public static String getName(Domain domain) {
             return domain.getPropertyValue(DOMAIN_NAME_PROPERTY);
         }

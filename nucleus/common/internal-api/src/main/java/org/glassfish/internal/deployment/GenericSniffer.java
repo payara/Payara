@@ -78,11 +78,11 @@ public abstract class GenericSniffer implements Sniffer {
     @Inject
     protected ServiceLocator habitat;
 
-    final private String containerName;
-    final private String appStigma;
-    final private String urlPattern;
+    private final String containerName;
+    private final String appStigma;
+    private final String urlPattern;
     
-    final private static XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
+    private final static XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
     private Module[] modules;
 
     public GenericSniffer(String containerName, String appStigma, String urlPattern) {

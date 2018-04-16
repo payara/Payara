@@ -105,7 +105,7 @@ public abstract class ConnectionHolder implements Connection {
      * an exception is thrown.
      */
 
-    protected final static StringManager sm = StringManager.getManager(
+    protected static final StringManager sm = StringManager.getManager(
             DataSourceObjectBuilder.class);
 
 

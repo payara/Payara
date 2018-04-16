@@ -48,7 +48,7 @@ package com.sun.jts.codegen.otsidl;
 * Tuesday, February 5, 2002 12:57:23 PM PST
 */
 
-abstract public class ResourceStatusHelper
+public abstract class ResourceStatusHelper
 {
   private static String  _id = "IDL:otsidl/ResourceStatus:1.0";
 

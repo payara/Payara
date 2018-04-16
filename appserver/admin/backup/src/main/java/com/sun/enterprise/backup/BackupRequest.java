@@ -140,7 +140,7 @@ public class BackupRequest {
     ////////////     Variables     ////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
     
-    final static String[] excludeDirs = {Constants.BACKUP_DIR + "/",
+    static final String[] excludeDirs = {Constants.BACKUP_DIR + "/",
                                          Constants.OSGI_CACHE + "/"}; 
 
     File    domainsDir;

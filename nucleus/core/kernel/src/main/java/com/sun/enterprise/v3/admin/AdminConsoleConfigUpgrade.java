@@ -111,7 +111,7 @@ public class AdminConsoleConfigUpgrade implements ConfigurationUpgrade, PostCons
         }
     }
 
-    static private class AdminConsoleConfigCode
+    private static class AdminConsoleConfigCode
         implements SingleConfigCode<SecurityService> {
 
         @Override

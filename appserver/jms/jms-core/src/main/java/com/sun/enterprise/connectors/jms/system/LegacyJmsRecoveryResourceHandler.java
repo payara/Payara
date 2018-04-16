@@ -81,7 +81,7 @@ public class LegacyJmsRecoveryResourceHandler implements RecoveryResourceHandler
     static final String JMS_TOPIC_CONNECTION_FACTORY = "javax.jms.TopicConnectionFactory";
 
     private static final Logger _logger = JMSLoggerInfo.getLogger();
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LegacyJmsRecoveryResourceHandler.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LegacyJmsRecoveryResourceHandler.class);
 
 
      public void loadXAResourcesAndItsConnections(List xaresList, List connList)

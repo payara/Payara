@@ -82,7 +82,7 @@ import org.jvnet.hk2.config.TransactionFailure;
         })
 })
 public class DeleteJMSHost implements AdminCommand {
-        final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteJMSHost.class);
+        private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteJMSHost.class);
 
     @Param(optional=true)
     String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;

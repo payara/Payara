@@ -61,105 +61,105 @@ public interface AnnotationConstants extends VMConstants {
      */
 
     /* "this" needs to be fetched *///NOI18N
-    public final static int FetchThis       = 0x0001;
+    public static final int FetchThis       = 0x0001;
 
     /* "this" needs to be dirtied *///NOI18N
-    public final static int DirtyThis       = 0x0002;
+    public static final int DirtyThis       = 0x0002;
 
     /* a java.lang.Object  needs to be fetched */
 //@olsen: disabled feature / not used anymore
 /*
-    public final static int FetchObject     = 0x0004;
+    public static final int FetchObject     = 0x0004;
 */
 
     /* a java.lang.Object  needs to be dirtied */
 //@olsen: disabled feature / not used anymore
 /*
-    public final static int DirtyObject     = 0x0008;
+    public static final int DirtyObject     = 0x0008;
 */
 
     /* an PersistenceCapable needs to be fetched */
-    public final static int FetchPersistent = 0x0010;
+    public static final int FetchPersistent = 0x0010;
 
     /* an PersistenceCapable needs to be dirtied */
-    public final static int DirtyPersistent = 0x0020;
+    public static final int DirtyPersistent = 0x0020;
 
     /* an array instance needs to be fetched */
 //@olsen: disabled feature
 /*
-    public final static int FetchArray      = 0x0040;
+    public static final int FetchArray      = 0x0040;
 */
 
     /* an array instance needs to be dirtied */
 //@olsen: disabled feature
 /*
-    public final static int DirtyArray      = 0x0080;
+    public static final int DirtyArray      = 0x0080;
 */
 
     /* the fetch/dirty point is unconditionally reached in the method */
 //@olsen: disabled feature
 /*
-    public final static int Unconditional   = 0x0100;
+    public static final int Unconditional   = 0x0100;
 */
 
     /* the fetch/dirty point is within some type of loop structure */
 //@olsen: disabled feature
 /*
-    public final static int InLoop          = 0x0200;
+    public static final int InLoop          = 0x0200;
 */
 
     /* the fetch/dirty requires a check for null */
 //@olsen: disabled feature
 /*
-    public final static int CheckNull       = 0x0400;
+    public static final int CheckNull       = 0x0400;
 */
 
     /* the fetch/dirty is not mediated by the StateManager */
     //@olsen: added constant
-    public final static int DFGField        = 0x0800;
+    public static final int DFGField        = 0x0800;
 
     /* the dirty is mediated by the StateManager */
     //@olsen: added constant
-    public final static int PKField         = 0x1000;
+    public static final int PKField         = 0x1000;
 
     /* clear stateManager and flags fields in "this" *///NOI18N
 //@olsen: disabled feature
 /*
-    public final static int MakeThisTransient = 0x2000;
+    public static final int MakeThisTransient = 0x2000;
 */
 
     /* needs to clear jdo fields after a call of super.clone() */
     //@olsen: added constant
-    public final static int SuperClone = 0x8000;
+    public static final int SuperClone = 0x8000;
 
     /* a bit mask covering a field which describes the type of array 
        being fetched or dirtied */
 //@olsen: disabled feature
 /*
-    public final static int ArrayTypeMask      = 0x78000000;
+    public static final int ArrayTypeMask      = 0x78000000;
 */
 
     /* Specific values for the array type field */
 //@olsen: disabled feature
 /*
-    public final static int ArrayTypeBoolean   = 0x08000000;
-    public final static int ArrayTypeByte      = 0x10000000;
-    public final static int ArrayTypeChar      = 0x18000000;
-    public final static int ArrayTypeShort     = 0x20000000;
-    public final static int ArrayTypeInt       = 0x28000000;
-    public final static int ArrayTypeLong      = 0x30000000;
-    public final static int ArrayTypeFloat     = 0x38000000;
-    public final static int ArrayTypeDouble    = 0x40000000;
-    public final static int ArrayTypeObject    = 0x48000000;
+    public static final int ArrayTypeBoolean   = 0x08000000;
+    public static final int ArrayTypeByte      = 0x10000000;
+    public static final int ArrayTypeChar      = 0x18000000;
+    public static final int ArrayTypeShort     = 0x20000000;
+    public static final int ArrayTypeInt       = 0x28000000;
+    public static final int ArrayTypeLong      = 0x30000000;
+    public static final int ArrayTypeFloat     = 0x38000000;
+    public static final int ArrayTypeDouble    = 0x40000000;
+    public static final int ArrayTypeObject    = 0x48000000;
 */
 
     /* pre-combined masks formed from the above masks */
 
 //@olsen: disabled feature / not used anymore
 /*
-    public final static int FetchAny        =
+    public static final int FetchAny        =
     FetchThis | FetchObject | FetchPersistent | FetchArray;
-    public final static int DirtyAny        =
+    public static final int DirtyAny        =
     DirtyThis | DirtyObject | DirtyPersistent | DirtyArray;
 */
 }

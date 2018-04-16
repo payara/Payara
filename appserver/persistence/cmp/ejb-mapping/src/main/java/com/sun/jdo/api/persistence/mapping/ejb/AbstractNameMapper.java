@@ -56,7 +56,7 @@ import java.util.*;
  *
  * @author Rochelle Raccah
  */
-abstract public class AbstractNameMapper {
+public abstract class AbstractNameMapper {
 	public static final int USER_DEFINED_KEY_CLASS = 1;
 	public static final int PRIMARY_KEY_FIELD = 2;
 	public static final int UNKNOWN_KEY_CLASS = 3;
@@ -69,30 +69,30 @@ abstract public class AbstractNameMapper {
 	protected static final String GENERATED_CMR_FIELD_PREFIX =
 		"thisRelationshipFieldWasGeneratedByTheNameMapper";		// NOI18N
 
-	abstract protected Map getGeneratedFieldsMap();
+	protected abstract Map getGeneratedFieldsMap();
 
-	abstract protected Map getInverseFieldsMap();
+	protected abstract Map getInverseFieldsMap();
 
 	/** Determines if the specified name represents an ejb.
 	 * @param name the fully qualified name to be checked
 	 * @return <code>true</code> if this name represents an ejb; 
 	 * <code>false</code> otherwise.
 	 */
-	abstract public boolean isEjbName(String name);
+	public abstract boolean isEjbName(String name);
 
 	/** Gets the name of the abstract bean class which corresponds to the 
 	 * specified ejb name.
 	 * @param name the name of the ejb
 	 * @return the name of the abstract bean for the specified ejb
 	 */
-	abstract public String getAbstractBeanClassForEjbName(String name);
+	public abstract String getAbstractBeanClassForEjbName(String name);
 
 	/** Gets the name of the key class which corresponds to the specified 
 	 * ejb name.
 	 * @param name the name of the ejb
 	 * @return the name of the key class for the ejb
 	 */
-	abstract public String getKeyClassForEjbName(String name);
+	public abstract String getKeyClassForEjbName(String name);
 
 	/** Gets the name of the key class which corresponds to the specified 
 	 * persistence-capable key class name.  Returns <code>null</code> if the 
@@ -127,35 +127,35 @@ abstract public class AbstractNameMapper {
 	 * @return the key class type, one of {@link #USER_DEFINED_KEY_CLASS}, 
 	 * {@link #PRIMARY_KEY_FIELD}, or {@link #UNKNOWN_KEY_CLASS}
 	 */
-	abstract public int getKeyClassTypeForEjbName (String name);
+	public abstract int getKeyClassTypeForEjbName (String name);
 
 	/** Gets the name of the abstract schema which corresponds to the 
 	 * specified ejb.
 	 * @param name the name of the ejb
 	 * @return the name of the abstract schema for the specified ejb
 	 */
-	abstract public String getAbstractSchemaForEjbName(String name);
+	public abstract String getAbstractSchemaForEjbName(String name);
 
 	/** Gets the name of the ejb name which corresponds to the 
 	 * specified persistence-capable class name.
 	 * @param className the name of the persistence-capable
 	 * @return the name of the ejb for the specified persistence-capable
 	 */
-	abstract public String getEjbNameForPersistenceClass(String className);
+	public abstract String getEjbNameForPersistenceClass(String className);
 
 	/** Gets the name of the persistence-capable class which corresponds to 
 	 * the specified ejb name.
 	 * @param name the name of the ejb
 	 * @return the name of the persistence-capable for the specified ejb
 	 */
-	abstract public String getPersistenceClassForEjbName(String name);
+	public abstract String getPersistenceClassForEjbName(String name);
 
 	/** Determines if the specified name represents a local interface.
 	 * @param name the fully qualified name to be checked
 	 * @return <code>true</code> if this name represents a local interface; 
 	 * <code>false</code> otherwise.
 	 */
-	abstract public boolean isLocalInterface(String name);
+	public abstract boolean isLocalInterface(String name);
 
 	/** Gets the name of the persistence-capable class which corresponds to 
 	 * the specified local interface name.
@@ -190,7 +190,7 @@ abstract public class AbstractNameMapper {
 	 * @param interfaceName the name of the local interface
 	 * @return the name of the ejb for the specified local interface
 	 */
-	abstract public String getEjbNameForLocalInterface(String ejbName, 
+	public abstract String getEjbNameForLocalInterface(String ejbName, 
 		String fieldName, String interfaceName);
 
 	/** Gets the name of the local interface which corresponds to the 
@@ -198,14 +198,14 @@ abstract public class AbstractNameMapper {
 	 * @param name the name of the ejb
 	 * @return the name of the local interface for the specified ejb
 	 */
-	abstract public String getLocalInterfaceForEjbName(String name);
+	public abstract String getLocalInterfaceForEjbName(String name);
 
 	/** Determines if the specified name represents a remote interface.
 	 * @param name the fully qualified name to be checked
 	 * @return <code>true</code> if this name represents a remote interface; 
 	 * <code>false</code> otherwise.
 	 */
-	abstract public boolean isRemoteInterface(String name);
+	public abstract boolean isRemoteInterface(String name);
 
 	/** Gets the name of the persistence-capable class which corresponds to 
 	 * the specified remote interface name.
@@ -240,7 +240,7 @@ abstract public class AbstractNameMapper {
 	 * @param interfaceName the name of the remote interface
 	 * @return the name of the ejb for the specified remote interface
 	 */
-	abstract public String getEjbNameForRemoteInterface(String ejbName, 
+	public abstract String getEjbNameForRemoteInterface(String ejbName, 
 		String fieldName, String interfaceName);
 
 	/** Gets the name of the remote interface which corresponds to the 
@@ -248,7 +248,7 @@ abstract public class AbstractNameMapper {
 	 * @param name the name of the ejb
 	 * @return the name of the remote interface for the specified ejb
 	 */
-	abstract public String getRemoteInterfaceForEjbName(String name);
+	public abstract String getRemoteInterfaceForEjbName(String name);
 
 	/** Gets the name of the field in the ejb which corresponds to the 
 	 * specified persistence-capable class name and field name pair.
@@ -257,7 +257,7 @@ abstract public class AbstractNameMapper {
 	 * @return the name of the field in the ejb for the specified 
 	 * persistence-capable field
 	 */
-	abstract public String getEjbFieldForPersistenceField(String className, 
+	public abstract String getEjbFieldForPersistenceField(String className, 
 		String fieldName);
 
 	/** Gets the name of the field in the persistence-capable class which 
@@ -267,7 +267,7 @@ abstract public class AbstractNameMapper {
 	 * @return the name of the field in the persistence-capable for the 
 	 * specified ejb field
 	 */
-	abstract public String getPersistenceFieldForEjbField(String name, 
+	public abstract String getPersistenceFieldForEjbField(String name, 
 		String fieldName);
 
 	/** Returns <code>true</code> if the field is a generated field.

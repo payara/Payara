@@ -488,7 +488,7 @@ public class Request
     private boolean initRequestFacadeHelper = false;
 
     // Allow Grizzly to auto detect a remote close connection.
-    public final static boolean discardDisconnectEvent =
+    public static final boolean discardDisconnectEvent =
             Boolean.getBoolean("org.glassfish.grizzly.discardDisconnect");
 
     /*

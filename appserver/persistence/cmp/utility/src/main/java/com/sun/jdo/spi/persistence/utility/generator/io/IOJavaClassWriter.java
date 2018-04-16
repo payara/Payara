@@ -310,7 +310,7 @@ public final class IOJavaClassWriter implements JavaClassWriter
 		methodList.add(writerHelper.toString());
 	}
 
-	static private String createMethodSignature (final String name,
+	private static String createMethodSignature (final String name,
 		final int modifiers, String returnType, final String[] parameterNames,
 		final String[] parameterTypes, final String[] exceptions)
 	{
@@ -347,7 +347,7 @@ public final class IOJavaClassWriter implements JavaClassWriter
 		return writerHelper.toString();
 	}
 
-	static private void writeListElement (int i, int count, String string, 
+	private static void writeListElement (int i, int count, String string, 
 		FormattedWriter writerHelper)
 	{
 		int indent = ((i == 0) ? 0 : 1);

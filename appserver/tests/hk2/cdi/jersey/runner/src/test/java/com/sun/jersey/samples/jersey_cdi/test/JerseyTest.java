@@ -55,10 +55,10 @@ import org.testng.annotations.Test;
  *
  */
 public class JerseyTest extends NucleusStartStopTest {
-    private final static String SOURCE_HOME = System.getProperty("source.home", "$");
-    private final static String JERSEY_WAR = "cdi/jersey/war/target/jersey-cdi.war";
-    private final static String SOURCE_HOME_WAR = "/appserver/tests/hk2/" + JERSEY_WAR;
-    private final static String JERSEY_WAR_APP_NAME = "jersey-cdi";
+    private static final String SOURCE_HOME = System.getProperty("source.home", "$");
+    private static final String JERSEY_WAR = "cdi/jersey/war/target/jersey-cdi.war";
+    private static final String SOURCE_HOME_WAR = "/appserver/tests/hk2/" + JERSEY_WAR;
+    private static final String JERSEY_WAR_APP_NAME = "jersey-cdi";
     
     private boolean deployed1;
     private Context context;

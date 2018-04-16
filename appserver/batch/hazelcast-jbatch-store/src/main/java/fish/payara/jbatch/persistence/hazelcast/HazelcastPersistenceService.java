@@ -51,8 +51,8 @@ import javax.naming.NamingException;
  */
 public class HazelcastPersistenceService implements IPersistenceManagerService{
     
-    public final static String JOB_INSTANCE_MAP = "JobInstanceMap";
-    public final static String CHECKPOINTMAP = "CheckpointMap";
+    public static final String JOB_INSTANCE_MAP = "JobInstanceMap";
+    public static final String CHECKPOINTMAP = "CheckpointMap";
     private IMap jobInstanceMap;
     private IMap checkpointMAP;
     private HazelcastInstance theInstance;
