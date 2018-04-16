@@ -51,7 +51,6 @@ import javax.enterprise.inject.spi.PassivationCapable;
  * @since 4.1.2.172
  */
 @SessionScoped
-@Default
 public class OAuth2State implements Serializable {
     
     /**

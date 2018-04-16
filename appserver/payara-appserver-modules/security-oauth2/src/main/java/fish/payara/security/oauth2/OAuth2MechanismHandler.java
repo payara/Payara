@@ -98,27 +98,21 @@ public class OAuth2MechanismHandler implements Extension {
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery event, BeanManager manager) {
         logger.log(Level.SEVERE, "OAuth2Handler - BeforeBeanDiscovery" + event.toString());
         event.addAnnotatedType(manager.createAnnotatedType(OAuth2AuthenticationMechanism.class), "OAuth2 Mechanism");
+        event.addAnnotatedType(manager.createAnnotatedType(OAuth2State.class), "OAuth2State");
         
     }
 
     void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBean, BeanManager beanManager) {
         logger.log(Level.SEVERE, "Creating OAuth2 Mechanism");
-        for (OAuth2AuthenticationDefinition annotation : annotations) {
-//            afterBean.addBean(new OAuth2Producer(annotation)); // --> Bean is a POJO and does not have injection applied to it
-//            
-//            
-//            afterBean.addBean()
-//                    .types(OAuth2AuthenticationMechanism.class, HttpAuthenticationMechanism.class)
-//                    .scope(ApplicationScoped.class)
-//                    .addQualifier(Default.Literal.INSTANCE)
-//                    .produceWith(obj -> new OAuth2AuthenticationMechanism(annotation)); // --> Bean is a POJO and does not have injection applied to it
-//            
+        for (OAuth2AuthenticationDefinition annotation : annotations) {       
             
             afterBean.addBean(new CdiProducer<HttpAuthenticationMechanism>().
                     scope(ApplicationScoped.class)
                     .beanClass(HttpAuthenticationMechanism.class)
                     .types(HttpAuthenticationMechanism.class, Object.class)
-                    .create(obj -> new OAuth2AuthenticationMechanism(annotation))); // --> Leads to NPE in CdiProducer.create(104)
+                    .create(obj -> {return CDI.current()
+                               .select(OAuth2AuthenticationMechanism.class).get().setDefinition(annotation);}
+                    )); // --> Leads to NPE in CdiProducer.create(104)
             logger.log(Level.SEVERE, "OAuth2 Mechanism created successfully");
 
         }

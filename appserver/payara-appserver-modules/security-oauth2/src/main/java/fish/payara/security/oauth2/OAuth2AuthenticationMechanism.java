@@ -83,6 +83,11 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
     }
     
     public OAuth2AuthenticationMechanism(OAuth2AuthenticationDefinition definition){
+        setDefinition(definition);
+        
+    }
+    
+    public OAuth2AuthenticationMechanism setDefinition (OAuth2AuthenticationDefinition definition){
         authEndpoint = definition.authEndpoint();
         tokenEndpoint = definition.tokenEndpoint();
         clientID = definition.clientId();
@@ -90,7 +95,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
         redirectURI = definition.redirectURI();
         scopes = definition.scopes();
         extraParameters = definition.extraParameters();
-        
+        return this;
     }
     
     @PostConstruct
