@@ -45,9 +45,14 @@ import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.ProcessBean;
 
@@ -59,18 +64,11 @@ import javax.enterprise.inject.spi.ProcessBean;
  */
 public class OAuth2MechanismHandler implements Extension {
 
-//    private List<OAuth2AuthenticationDefinition> annotations;
+    private List<OAuth2AuthenticationDefinition> annotations;
     private Logger logger = Logger.getLogger("OAuthMechanism-Handler");
 
     public OAuth2MechanismHandler() {
-        StringBuilder stacktrace = new StringBuilder();
-        for (StackTraceElement element: Thread.currentThread().getStackTrace()){
-            stacktrace.append(element.toString()).append("\n");
-        }
-       
-        logger.log(Level.SEVERE, "Created OAuth2AuthenicationMechanism Handler at \n{0}", stacktrace.toString());
-        
-        //annotations = new ArrayList<>();
+        annotations = new ArrayList<>();
     }
     
     /**
@@ -82,31 +80,33 @@ public class OAuth2MechanismHandler implements Extension {
      */
     public <T> void findOAuth2DefinitionAnnotation(@Observes ProcessBean<T> eventIn, BeanManager beanManager) {
         
-        logger.log(Level.SEVERE, "OAuth2Handler Processing annotations...");
-        Logger.getAnonymousLogger().log(Level.SEVERE, "Anonymouse logging");
-//        ProcessBean<T> event = eventIn; // JDK8 u60 workaround
-//        
-//        
-//        OAuth2AuthenticationDefinition annotation = event.getAnnotated().getAnnotation(OAuth2AuthenticationDefinition.class);
-//        if (annotation != null && !annotations.contains(annotation)) {
-//            logger.log(Level.SEVERE, "Processing annotation {0}", annotation);
-//            annotations.add(annotation);
-//        }
+        //logger.log(Level.SEVERE, "OAuth2Handler Processing annotations..." + eventIn.toString());
+        ProcessBean<T> event = eventIn; // JDK8 u60 workaround
+      
+        OAuth2AuthenticationDefinition annotation = event.getAnnotated().getAnnotation(OAuth2AuthenticationDefinition.class);
+        if (annotation != null && !annotations.contains(annotation)) {
+            logger.log(Level.SEVERE, "Processing annotation {0}", annotation);
+            annotations.add(annotation);
+        }
     }
     
-    public void beforeBeanDiscovery(@Observes BeforeBeanDiscovery event, BeanManager manager) {
+    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery event, BeanManager manager) {
         logger.log(Level.SEVERE, "OAuth2Handler - BeforeBeanDiscovery" + event.toString());
-        event.addAnnotatedType(manager.createAnnotatedType(OAuth2AuthenticationMechanism.class), "OAuth2 Mechanism");
+        //event.addAnnotatedType(manager.createAnnotatedType(OAuth2AuthenticationMechanism.class), "OAuth2 Mechanism");
+        
     }
 
-    public void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBean, BeanManager beanManager) {
+    void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBean, BeanManager beanManager) {
         logger.log(Level.SEVERE, "Creating OAuth2 Mechanism");
-//        for (OAuth2AuthenticationDefinition annotation : annotations) {
-//            afterBean.addBean(new OAuth2Producer<>(annotation));
-//            annotations.remove(annotation);
-//            logger.log(Level.SEVERE, "OAuth2 Mechanism created successfully");
-//
-//        }
+        for (OAuth2AuthenticationDefinition annotation : annotations) {
+            //OAuth2Producer producer = new OAuth2Producer<>(annotation);
+            
+            afterBean.addBean(new OAuth2Producer(annotation));
+            
+            logger.log(Level.SEVERE, "OAuth2 Mechanism created successfully");
+
+        }
+        annotations.clear();
     }
 
 }

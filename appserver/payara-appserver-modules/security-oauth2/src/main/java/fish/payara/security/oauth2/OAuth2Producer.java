@@ -50,13 +50,20 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
 
 import fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.UUID;
+import javax.enterprise.inject.Default;
+import javax.enterprise.inject.spi.PassivationCapable;
+import javax.enterprise.util.AnnotationLiteral;
+import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 
 /**
  * Class to produce a bean of {@link OAuth2AuthenticationMechanism}
  * @author jonathan coustick
  * @since 4.1.2.172
  */
-public class OAuth2Producer<T> implements Bean<T> {
+public class OAuth2Producer implements Bean<OAuth2AuthenticationMechanism>, PassivationCapable {
 
     private OAuth2AuthenticationDefinition definition;
     
@@ -80,23 +87,23 @@ public class OAuth2Producer<T> implements Bean<T> {
     }
 
     @Override
-    public T create(CreationalContext<T> creationalContext) {
-        return (T) new OAuth2AuthenticationMechanism(definition);
+    public void destroy(OAuth2AuthenticationMechanism instance, CreationalContext<OAuth2AuthenticationMechanism> creationalContext) {
+        //no-op
     }
 
     @Override
-    public void destroy(T instance, CreationalContext<T> creationalContext) {
-        creationalContext.release();
+    public OAuth2AuthenticationMechanism create(CreationalContext<OAuth2AuthenticationMechanism> creationalContext) {
+        return new OAuth2AuthenticationMechanism(definition);
     }
 
     @Override
     public Set<Type> getTypes() {
-        return Collections.singleton(OAuth2AuthenticationMechanism.class);
+        return new HashSet<>(Arrays.asList(OAuth2AuthenticationMechanism.class, HttpAuthenticationMechanism.class, Object.class));
     }
 
     @Override
     public Set<Annotation> getQualifiers() {
-        return Collections.EMPTY_SET;
+        return Collections.singleton((Annotation) new DefaultAnnotationLiteral());
     }
 
     @Override
@@ -119,5 +126,18 @@ public class OAuth2Producer<T> implements Bean<T> {
         return false;
     }
 
+    @Override
+    public String getId() {
+        return UUID.randomUUID().toString();
+    }
     
+    public class DefaultAnnotationLiteral extends AnnotationLiteral {
+        
+        
+        @Override
+         public Class<? extends Annotation> annotationType() {
+            return Default.class;
+        }
+    }
+
 }

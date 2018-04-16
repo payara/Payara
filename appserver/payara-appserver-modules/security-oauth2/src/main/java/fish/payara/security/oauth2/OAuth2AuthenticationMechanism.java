@@ -41,6 +41,10 @@ package fish.payara.security.oauth2;
 
 
 import fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
@@ -87,12 +91,17 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
         
     }
     
+    @PostConstruct
+    public void postConstuct(){
+        Logger.getLogger("Oauth2").log(Level.SEVERE, "State is {0}" + state);
+    }
+    
     @Override
     public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthenticationException {
 
         if (request.getRequestURL().toString().equals(redirectURI)){
             String recievedState = request.getParameter("state");
-            if (recievedState != null && recievedState.equals(state.getState())){
+            if (recievedState != null && recievedState.equals(state.get().getState())){
                 
             } else {
             
@@ -101,7 +110,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
         } else {
             StringBuilder authTokenRequest = new StringBuilder(authEndpoint);
             authTokenRequest.append("?client_id=").append(clientID);
-            authTokenRequest.append("&state=").append(state.getState());
+            authTokenRequest.append("&state=").append(state.get().getState());
             if (redirectURI != null){
                 authTokenRequest.append("&redirect_uri=").append(redirectURI);
             }

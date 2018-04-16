@@ -123,6 +123,7 @@
                                     javax.inject,
                                     javax.enterprise.context,
                                     javax.enterprise.event,
+                                    javax.enterprise.inject,
                                     javax.enterprise.inject.spi,
                                     javax.enterprise.util, 
                                     javax.security.enterprise,
