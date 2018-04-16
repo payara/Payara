@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.apf.context;
 
-import java.util.Stack;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.annotation.ElementType;
 
@@ -70,10 +70,12 @@ public class AnnotationContext implements AnnotatedElementHandler {
         return processingContext;
     }
     
+    @Override
     public void startElement(ElementType type, AnnotatedElement element) 
         throws AnnotationProcessorException {
     }
    
+    @Override
     public void endElement(ElementType type, AnnotatedElement element)
         throws AnnotationProcessorException {
     }     

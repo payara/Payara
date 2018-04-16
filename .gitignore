@@ -21,3 +21,5 @@ nb-configuration.xml
 /appserver/tests/quicklook/**/*.war
 /nucleus/payara-modules/nucleus-microprofile/config-service/nbproject/
 appserver/extras/arquillian-containers/payara-common/dependency-reduced-pom.xml
+/nucleus/payara-modules/service-exemplar/nbproject/
+/nucleus/admin/server-mgmt/nbproject/
