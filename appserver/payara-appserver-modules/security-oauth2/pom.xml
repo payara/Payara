@@ -102,6 +102,12 @@
             <artifactId>cdi-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.soteria</groupId>
+            <artifactId>javax.security.enterprise</artifactId>
+            <type>jar</type>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
     
     <build>
@@ -118,19 +124,6 @@
                         </goals>
                         <configuration>
                             <instructions>
-                                <Import-Package>
-                                    fish.payara.security.oauth2.annotation,
-                                    javax.inject,
-                                    javax.enterprise.context,
-                                    javax.enterprise.event,
-                                    javax.enterprise.inject,
-                                    javax.enterprise.inject.spi,
-                                    javax.enterprise.util, 
-                                    javax.security.enterprise,
-                                    javax.security.enterprise.authentication.mechanism.http,
-                                    javax.security.enterprise.identitystore,
-                                    javax.servlet.http
-                                </Import-Package>
                                 <Export-Package>
                                     fish.payara.security.oauth2
                                 </Export-Package>

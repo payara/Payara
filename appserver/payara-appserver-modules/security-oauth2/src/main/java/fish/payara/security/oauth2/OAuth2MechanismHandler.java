@@ -52,9 +52,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
+import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.ProcessBean;
+import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
+import org.glassfish.soteria.cdi.CdiProducer;
 
 /**
  * Handles the {@link OAuth2AuthenticationDefinition} annotation
@@ -92,17 +97,28 @@ public class OAuth2MechanismHandler implements Extension {
     
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery event, BeanManager manager) {
         logger.log(Level.SEVERE, "OAuth2Handler - BeforeBeanDiscovery" + event.toString());
-        //event.addAnnotatedType(manager.createAnnotatedType(OAuth2AuthenticationMechanism.class), "OAuth2 Mechanism");
+        event.addAnnotatedType(manager.createAnnotatedType(OAuth2AuthenticationMechanism.class), "OAuth2 Mechanism");
         
     }
 
     void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBean, BeanManager beanManager) {
         logger.log(Level.SEVERE, "Creating OAuth2 Mechanism");
         for (OAuth2AuthenticationDefinition annotation : annotations) {
-            //OAuth2Producer producer = new OAuth2Producer<>(annotation);
+//            afterBean.addBean(new OAuth2Producer(annotation)); // --> Bean is a POJO and does not have injection applied to it
+//            
+//            
+//            afterBean.addBean()
+//                    .types(OAuth2AuthenticationMechanism.class, HttpAuthenticationMechanism.class)
+//                    .scope(ApplicationScoped.class)
+//                    .addQualifier(Default.Literal.INSTANCE)
+//                    .produceWith(obj -> new OAuth2AuthenticationMechanism(annotation)); // --> Bean is a POJO and does not have injection applied to it
+//            
             
-            afterBean.addBean(new OAuth2Producer(annotation));
-            
+            afterBean.addBean(new CdiProducer<HttpAuthenticationMechanism>().
+                    scope(ApplicationScoped.class)
+                    .beanClass(HttpAuthenticationMechanism.class)
+                    .types(HttpAuthenticationMechanism.class, Object.class)
+                    .create(obj -> new OAuth2AuthenticationMechanism(annotation))); // --> Leads to NPE in CdiProducer.create(104)
             logger.log(Level.SEVERE, "OAuth2 Mechanism created successfully");
 
         }

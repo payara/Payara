@@ -54,6 +54,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.UUID;
 import javax.enterprise.inject.Default;
+import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.PassivationCapable;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
@@ -93,7 +94,10 @@ public class OAuth2Producer implements Bean<OAuth2AuthenticationMechanism>, Pass
 
     @Override
     public OAuth2AuthenticationMechanism create(CreationalContext<OAuth2AuthenticationMechanism> creationalContext) {
-        return new OAuth2AuthenticationMechanism(definition);
+//        CDI.current().select(OAuth2AuthenticationMechanism.class).get();
+        OAuth2AuthenticationMechanism mechanism = new OAuth2AuthenticationMechanism(definition);
+        creationalContext.push(mechanism);
+        return mechanism;
     }
 
     @Override

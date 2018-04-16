@@ -42,6 +42,7 @@ package fish.payara.security.oauth2;
 import java.io.Serializable;
 import java.util.UUID;
 import javax.enterprise.context.SessionScoped;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.spi.PassivationCapable;
 
 /**
@@ -50,7 +51,8 @@ import javax.enterprise.inject.spi.PassivationCapable;
  * @since 4.1.2.172
  */
 @SessionScoped
-public class OAuth2State implements Serializable, PassivationCapable {
+@Default
+public class OAuth2State implements Serializable {
     
     /**
      * A random string used to ensure the return value from the remote endpoint
@@ -66,7 +68,6 @@ public class OAuth2State implements Serializable, PassivationCapable {
         return state;
     }
 
-    @Override
     public String getId() {
         return state;
     }

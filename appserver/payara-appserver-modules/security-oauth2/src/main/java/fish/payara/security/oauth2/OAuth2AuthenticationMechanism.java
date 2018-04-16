@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Instance;
+import javax.enterprise.inject.Typed;
 import javax.inject.Inject;
 import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
@@ -62,6 +63,7 @@ import javax.servlet.http.HttpServletResponse;
  * @since 4.1.2.172
  */
 @AutoApplySession
+@Typed(OAuth2AuthenticationMechanism.class)
 public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanism  {
 
     private String authEndpoint;
