@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 /**
  * Provides the classes necessary to process J2SE 1.5 annotations in the context 
@@ -46,15 +47,15 @@
  * Annotations are defined by their annotation type. This tool assumes that 
  * annotation handlers will be registered to it to process a particular annotation 
  * type. These annotation handlers have no particular knowledge outside of the 
- * annotation they process and the annoted element on which the annotation was
+ * annotation they process and the annotated element on which the annotation was
  * defined. 
  * </p>
  * <p>
- * The AnnotationProcessor tool implementation is responsible for maintening a 
+ * The AnnotationProcessor tool implementation is responsible for maintaining a 
  * list of annotations handlers per annotation type. AnnotationHandler are added
  * to the tool through the pushAnnotationHandler and can be removed through the 
  * popAnnotationHandler. Alternatively, the Factory singleton can be used to get
- * an initialized AnnotationProcessor with all the default AnnotationHandler. 
+ * an initialised AnnotationProcessor with all the default AnnotationHandler. 
  * </p>
  * <p>
  * The tool uses the ProcessingContext to have access to Class instances. Each 

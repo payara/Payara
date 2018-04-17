@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.apf;
 
@@ -44,7 +45,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 
 /**
  * Exception that denotes a warning or error condition in the 
- * annotation procesing tool
+ * annotation processing tool
  *
  * @author Jerome Dochez
  */
@@ -83,6 +84,7 @@ public class AnnotationProcessorException extends Exception {
      * Return a meaningful string explaining the exception cause
      * @return the exception reason
      */
+    @Override
     public String getMessage() {
         return message;
     }
@@ -99,6 +101,7 @@ public class AnnotationProcessorException extends Exception {
     /**
      * @return a meaningful description
      */
+    @Override
     public String toString() {
         if (locator == null) {
             return message;
@@ -117,9 +120,9 @@ public class AnnotationProcessorException extends Exception {
     }
    
     /**
-     * Sets wether is exception is considered as fatal to the annotation 
+     * Sets whether is exception is considered as fatal to the annotation 
      * processing.
-     * @param true if the annotation processing should stop
+     * @param fatal true if the annotation processing should stop
      */
      public void setFatal(boolean fatal){
          this.isFatal = fatal;

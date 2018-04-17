@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.apf;
 
@@ -88,9 +89,9 @@ public interface AnnotationProcessor {
         
     /**
      * Starts the annotation processing tool passing the processing context which 
-     * encapuslate all information necessary for the configuration of the tool. 
+     * encapsulate all information necessary for the configuration of the tool. 
      * @param ctx is the initialized processing context
-     * @return the result of the annoations processing
+     * @return the result of the annotations processing
      */
     public ProcessingResult process(ProcessingContext ctx) throws AnnotationProcessorException;
         
@@ -100,8 +101,8 @@ public interface AnnotationProcessor {
      * annotation processing tool when classes need to be processed in a 
      * particular context rather than when they are picked up by the scanner.
      * 
-     * @param the processing context 
-     * @param the list of classes to process
+     * @param ctx the processing context 
+     * @param classes the list of classes to process
      * @return the processing result for such classes
      * @throws AnnotationProcessorException if handlers fail to process 
      * an annotation

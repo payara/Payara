@@ -46,4 +46,11 @@ import java.io.Serializable;
  */
 public abstract class NotificationData implements Serializable {
     private static final long serialVersionUID = 1L;
+
+    public <T extends NotificationData> T as(final Class<T> clazz) {
+        if (this.getClass().isAssignableFrom(clazz)) {
+            return clazz.cast(this);
+        }
+        throw new IllegalArgumentException("Cannot cast to class: " + clazz.getName());
+    }
 }
