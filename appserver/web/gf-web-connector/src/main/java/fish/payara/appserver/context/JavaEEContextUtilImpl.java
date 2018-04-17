@@ -126,7 +126,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
      * set context class loader by component ID
      */
     @Override
-    public void setApplicationClassLoader() {
+    public Context setApplicationClassLoader() {
         ClassLoader cl = null;
         if (capturedInvocation != null && capturedInvocation.getJNDIEnvironment() != null) {
             cl = getClassLoaderForEnvironment((JndiNameEnvironment)capturedInvocation.getJNDIEnvironment());
@@ -135,8 +135,9 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
             cl = getClassLoaderForEnvironment(compEnvMgr.getJndiNameEnvironment(componentId));
         }
         if (cl != null) {
-            Utility.setContextClassLoader(cl);
+            return new ContextImpl.ClassLoaderContext(Utility.setContextClassLoader(cl), true);
         }
+        return new ContextImpl.ClassLoaderContext(null, false);
     }
 
     @Override

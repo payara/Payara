@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -66,6 +66,19 @@ class ContextImpl {
         private final ClassLoader oldClassLoader;
         private final ComponentInvocation invocation;
         private final InvocationManager invMgr;
+    }
+
+    @RequiredArgsConstructor
+    public static class ClassLoaderContext implements JavaEEContextUtil.Context {
+        private final ClassLoader oldClassLoader;
+        private final boolean resetOldClassLoader;
+
+        @Override
+        public void close() {
+            if (resetOldClassLoader) {
+                Utility.setContextClassLoader(oldClassLoader);
+            }
+        }
     }
 
     @RequiredArgsConstructor
