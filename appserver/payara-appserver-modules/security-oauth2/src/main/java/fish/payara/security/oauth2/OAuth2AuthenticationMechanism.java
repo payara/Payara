@@ -41,30 +41,43 @@ package fish.payara.security.oauth2;
 
 
 import fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition;
+import java.io.StringReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
-import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Typed;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
 import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
 import javax.security.enterprise.authentication.mechanism.http.AutoApplySession;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
+import javax.security.enterprise.credential.RememberMeCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
+import javax.security.enterprise.identitystore.IdentityStoreHandler;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Form;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * The AuthenticationMechanism used for authenticate users
- * 
+ *
  * @author jonathan coustick
  * @since 4.1.2.172
  */
 @AutoApplySession
 @Typed(OAuth2AuthenticationMechanism.class)
 public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanism  {
+
+    private static final Logger logger = Logger.getLogger("OAuth2Mechanism");
 
     private String authEndpoint;
     private String tokenEndpoint;
@@ -73,21 +86,23 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
     private String redirectURI;
     private String scopes;
     private String[] extraParameters;
-    
+
     @Inject
     OAuth2State state;
     
-    
+    @Inject
+    private IdentityStoreHandler identityStoreHandler;
+
     public OAuth2AuthenticationMechanism() {
-        
+        //no-op constuctor
     }
-    
-    public OAuth2AuthenticationMechanism(OAuth2AuthenticationDefinition definition){
+
+    public OAuth2AuthenticationMechanism(OAuth2AuthenticationDefinition definition) {
         setDefinition(definition);
-        
+
     }
-    
-    public OAuth2AuthenticationMechanism setDefinition (OAuth2AuthenticationDefinition definition){
+
+    public OAuth2AuthenticationMechanism setDefinition(OAuth2AuthenticationDefinition definition) {
         authEndpoint = definition.authEndpoint();
         tokenEndpoint = definition.tokenEndpoint();
         clientID = definition.clientId();
@@ -97,45 +112,77 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
         extraParameters = definition.extraParameters();
         return this;
     }
-    
-    @PostConstruct
-    public void postConstuct(){
-        Logger.getLogger("Oauth2").log(Level.SEVERE, "State is {0}" + state);
-    }
-    
-    @Override
-    public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthenticationException {
 
-        if (request.getRequestURL().toString().equals(redirectURI)){
+    @Override
+    public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) 
+            throws AuthenticationException {
+
+        if (request.getRequestURL().toString().equals(redirectURI)) {
             String recievedState = request.getParameter("state");
-            if (recievedState != null && recievedState.equals(state.get().getState())){
+            if (recievedState != null && recievedState.equals(state.getState())) {
+                logger.log(Level.SEVERE, "User Authenticated, now getting authorisation token");
+                Client jaxrsClient = ClientBuilder.newClient();
+
+                //Creates a new JAX-RS form with all paramters
+                Form form = new Form()
+                        .param("client_id", clientID)
+                        .param("client_secret", new String(clientSecret))
+                        .param("code", request.getParameter("code"))
+                        .param("redirect_uri", redirectURI)
+                        .param("scopes", scopes)
+                        .param("state", state.getState());
+                for (String extra : extraParameters) {
+                    String[] parts = extra.split("=");
+                    form.param(parts[0], parts[1]);
+                }
                 
+                WebTarget target = jaxrsClient.target(tokenEndpoint);
+                Response oauthResponse = target.request()
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("referer", request.getRequestURL().toString())
+                        .post(Entity.form(form));
+                
+                String result = oauthResponse.readEntity(String.class);
+                JsonObject object = Json.createReader(new StringReader(result)).readObject();
+                logger.log(Level.SEVERE, result);
+                if (oauthResponse.getStatus() != 200){
+                    
+                    String error = object.getString("error", "Unknown Error");
+                    String errorDescription = object.getString("error_description", "Unknown");
+                    logger.log(Level.WARNING, "[OAUTH-001] Error occurred authenticating user: {0} caused by {1}", new Object[]{error, errorDescription});
+                    return httpMessageContext.notifyContainerAboutLogin(CredentialValidationResult.INVALID_RESULT);
+                } else {
+                    
+                    state.setToken(object.getString("access_token"));
+                    RememberMeCredential credential = new RememberMeCredential(result);
+                    CredentialValidationResult validationResult = identityStoreHandler.validate(credential);
+                    return httpMessageContext.notifyContainerAboutLogin(validationResult);
+                }
             } else {
-            
-                return httpMessageContext.notifyContainerAboutLogin(CredentialValidationResult.INVALID_RESULT);
+                logger.log(Level.WARNING, "Inconsistent recieved state");
+                return httpMessageContext.notifyContainerAboutLogin(CredentialValidationResult.NOT_VALIDATED_RESULT);
             }
         } else {
+            logger.log(Level.SEVERE, "Redirecting for authentication");
             StringBuilder authTokenRequest = new StringBuilder(authEndpoint);
             authTokenRequest.append("?client_id=").append(clientID);
-            authTokenRequest.append("&state=").append(state.get().getState());
-            if (redirectURI != null){
+            authTokenRequest.append("&state=").append(state.getState());
+            if (redirectURI != null) {
                 authTokenRequest.append("&redirect_uri=").append(redirectURI);
             }
-            if (scopes != null){
+            if (scopes != null) {
                 authTokenRequest.append("&scopes=").append(scopes);
             }
-            for (String extra : extraParameters){
+            for (String extra : extraParameters) {
                 authTokenRequest.append("&").append(extra);
             }
-            
+
             return httpMessageContext.redirect(authTokenRequest.toString());
         }
-        return null;
-    } 
-    
-    void setAuthEndpoint(String endpoint){
+    }
+
+    void setAuthEndpoint(String endpoint) {
         authEndpoint = endpoint;
     }
-    
-    
+
 }

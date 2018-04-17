@@ -40,10 +40,9 @@
 package fish.payara.security.oauth2;
 
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.UUID;
 import javax.enterprise.context.SessionScoped;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.spi.PassivationCapable;
 
 /**
  * Class to hold state of OAuth2
@@ -57,27 +56,63 @@ public class OAuth2State implements Serializable {
      * A random string used to ensure the return value from the remote endpoint
      * is correct and prevent CSRF.
      */
-    private static String state;
+    private String state;
+    private String token;
+    private String bearer;
+    private Optional<String> scope;
+    private Optional<String> refreshToken;
+    private Optional<String> expiresIn;
+
+    public String getBearer() {
+        return bearer;
+    }
+
+    public void setBearer(String bearer) {
+        this.bearer = bearer;
+    }
+
+    public Optional<String> getScope() {
+        return scope;
+    }
+
+    public void setScope(String scope) {
+        this.scope = Optional.of(scope);
+    }
+
+    public Optional<String> getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = Optional.of(refreshToken);
+    }
+
+    public Optional<String> getExpiresIn() {
+        return expiresIn;
+    }
+
+    public void setExpiresIn(String expiresIn) {
+        this.expiresIn = Optional.of(expiresIn);
+    }
     
     public OAuth2State(){
         state = UUID.randomUUID().toString();
     }
     
+    public OAuth2State(String state){
+        this.state = state;
+    }
+    
     public String getState(){
         return state;
     }
-
-    public String getId() {
-        return state;
+    
+    public void setToken(String token){
+        this.token = token;
     }
     
-    public OAuth2State get(){
-        return this;
+    public String getToken(){
+        return token;
     }
-    
-    @Override
-    public String toString(){
-        return state;
-    }
-    
+       
 }

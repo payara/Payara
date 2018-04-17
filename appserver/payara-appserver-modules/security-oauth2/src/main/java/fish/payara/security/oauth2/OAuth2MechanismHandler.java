@@ -45,20 +45,16 @@ import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
+import fish.payara.security.oauth2.api.OAuthIdentityStore;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.ProcessBean;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
+import javax.security.enterprise.identitystore.IdentityStore;
 import org.glassfish.soteria.cdi.CdiProducer;
 
 /**
@@ -70,42 +66,55 @@ import org.glassfish.soteria.cdi.CdiProducer;
 public class OAuth2MechanismHandler implements Extension {
 
     private List<OAuth2AuthenticationDefinition> annotations;
-    private Logger logger = Logger.getLogger("OAuthMechanism-Handler");
+    private Logger logger = Logger.getLogger("OAuth2Mechanism-Handler");
 
     public OAuth2MechanismHandler() {
         annotations = new ArrayList<>();
     }
-    
+
     /**
      * This method tries to find the {@link OAuth2AuthenticationDefinition} annotation and if does flags that fact.
-     * 
+     *
      * @param <T>
      * @param eventIn
      * @param beanManager
      */
     public <T> void findOAuth2DefinitionAnnotation(@Observes ProcessBean<T> eventIn, BeanManager beanManager) {
-        
+
         //logger.log(Level.SEVERE, "OAuth2Handler Processing annotations..." + eventIn.toString());
         ProcessBean<T> event = eventIn; // JDK8 u60 workaround
-      
+
         OAuth2AuthenticationDefinition annotation = event.getAnnotated().getAnnotation(OAuth2AuthenticationDefinition.class);
         if (annotation != null && !annotations.contains(annotation)) {
             logger.log(Level.SEVERE, "Processing annotation {0}", annotation);
             annotations.add(annotation);
         }
     }
-    
+
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery event, BeanManager manager) {
         logger.log(Level.SEVERE, "OAuth2Handler - BeforeBeanDiscovery" + event.toString());
         event.addAnnotatedType(manager.createAnnotatedType(OAuth2AuthenticationMechanism.class), "OAuth2 Mechanism");
         event.addAnnotatedType(manager.createAnnotatedType(OAuth2State.class), "OAuth2State");
-        
+        event.addAnnotatedType(manager.createAnnotatedType(OAuthIdentityStore.class), "OAuth2IdentityStore");
+
     }
 
     void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBean, BeanManager beanManager) {
-        logger.log(Level.SEVERE, "Creating OAuth2 Mechanism");
-        for (OAuth2AuthenticationDefinition annotation : annotations) {       
-            
+        logger.log(Level.FINE, "Creating OAuth2 Mechanism");
+
+        /*if (!annotations.isEmpty() && CDI.current().select(IdentityStore.class).isUnsatisfied()) {
+            afterBean.addBean()
+                    .scope(ApplicationScoped.class)
+                    .types(IdentityStore.class, Object.class)
+                    .beanClass(IdentityStore.class)
+                    .createWith(obj -> {
+                        return CDI.current()
+                                .select(OAuthIdentityStore.class).get();
+                    });
+
+        }*/
+        for (OAuth2AuthenticationDefinition annotation : annotations) {
+
             afterBean.addBean(new CdiProducer<HttpAuthenticationMechanism>().
                     scope(ApplicationScoped.class)
                     .beanClass(HttpAuthenticationMechanism.class)

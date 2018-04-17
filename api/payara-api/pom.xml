@@ -133,7 +133,9 @@
                                     fish.payara.nucleus.notification.service,
                                     fish.payara.cdi.jsr107.implementation,
                                     javax.inject,
-                                    javax.enterprise.util
+                                    javax.enterprise.util,
+                                    javax.security.enterprise.credential,
+                                    javax.security.enterprise.identitystore
                                 </Import-Package>
                                 <Export-Package>
                                     fish.payara.cdi.auth.roles,
@@ -145,7 +147,8 @@
                                     fish.payara.notification.eventbus,
                                     fish.payara.notification.healthcheck,
                                     fish.payara.notification.requesttracing,
-                                    fish.payara.security.oauth2.annotation
+                                    fish.payara.security.oauth2.annotation,
+                                    fish.payara.security.oauth2.api
                                 </Export-Package>
                             </instructions>
                         </configuration>

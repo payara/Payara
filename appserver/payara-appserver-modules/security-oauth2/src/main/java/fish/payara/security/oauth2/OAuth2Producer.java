@@ -54,7 +54,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.UUID;
 import javax.enterprise.inject.Default;
-import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.PassivationCapable;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
