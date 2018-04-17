@@ -114,7 +114,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
     public Context pushRequestContext() {
         Context rootCtx = pushContext();
         BoundRequestContext brc = CDI.current().select(BoundRequestContext.class).get();
-        ContextImpl.RequestContext context = new ContextImpl.RequestContext(rootCtx, brc.isActive()? null : brc, new HashMap<>());
+        ContextImpl.RequestContext context = new ContextImpl.RequestContext(rootCtx, brc.isActive()? null : brc, new HashMap<String, Object>());
         if (context.ctx != null) {
             context.ctx.associate(context.storage);
             context.ctx.activate();
