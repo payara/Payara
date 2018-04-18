@@ -55,6 +55,9 @@ import javax.security.jacc.*;
 import java.util.logging.*;
 
 import com.sun.logging.LogDomains;
+
+import fish.payara.jacc.JaccConfigurationFactory;
+
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.security.common.AppservAccessController;
 import com.sun.enterprise.security.ee.CachedPermission;
@@ -533,22 +536,31 @@ public class WebSecurityManager {
 
             isGranted = checkPermission(perm, defaultPrincipalSet);
 
-            if (isGranted)
+            if (isGranted) {
                 result = -1;
+            }
         }
 
         return result;
     }
 
     public void destroy() throws PolicyContextException {
-        boolean wasInService = getPolicyFactory().inService(CONTEXT_ID);
-        // getPolicyFactory().getPolicyConfiguration(CONTEXT_ID,true);
+        PolicyConfigurationFactory policyFactory = getPolicyFactory();
+        
+        boolean wasInService = policyFactory.inService(CONTEXT_ID);
         if (wasInService) {
             policy.refresh();
         }
+        
         PermissionCacheFactory.removePermissionCache(uncheckedPermissionCache);
         uncheckedPermissionCache = null;
         SecurityRoleMapperFactoryGen.getSecurityRoleMapperFactory().removeAppNameForContext(CONTEXT_ID);
+        
+        if (policyFactory instanceof JaccConfigurationFactory) {
+            ((JaccConfigurationFactory) policyFactory).removeContextProviderByPolicyContextId(CONTEXT_ID);
+            ((JaccConfigurationFactory) policyFactory).removeContextIdMappingByPolicyContextId(CONTEXT_ID);
+        }
+        
         wsmf.getManager(CONTEXT_ID, null, true);
     }
 

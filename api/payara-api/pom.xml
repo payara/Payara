@@ -41,12 +41,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+   
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
         <version>5.182-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
+    
     <artifactId>payara-api</artifactId>
     <name>Payara-API</name>
     <description>Artefact that exposes public API of Payara Application Server</description>
@@ -133,12 +134,14 @@
                                     fish.payara.nucleus.notification.service,
                                     fish.payara.cdi.jsr107.implementation,
                                     javax.inject,
-                                    javax.enterprise.util
+                                    javax.enterprise.util,
+                                    javax.security.jacc
                                 </Import-Package>
                                 <Export-Package>
                                     fish.payara.cdi.auth.roles,
                                     fish.payara.cdi.jsr107.impl,
                                     fish.payara.cluster,
+                                    fish.payara.jacc,
                                     fish.payara.micro.cdi,
                                     fish.payara.nucleus.requesttracing.api,
                                     fish.payara.notification,

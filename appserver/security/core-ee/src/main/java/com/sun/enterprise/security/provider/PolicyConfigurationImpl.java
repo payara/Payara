@@ -92,6 +92,8 @@ import com.sun.enterprise.security.provider.PolicyParser.PermissionEntry;
 import com.sun.enterprise.security.provider.PolicyParser.PrincipalEntry;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
+import sun.security.provider.PolicyFile;
+
 /**
  * Implementation of Jacc PolicyConfiguration Interface
  * 
@@ -705,7 +707,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
             return ((JDKPolicyFileWrapper) wrapper).getNewPolicy();
         } 
             
-        return new sun.security.provider.PolicyFile();
+        return new PolicyFile();
     }
 
     private void captureFileTime(boolean granted) {

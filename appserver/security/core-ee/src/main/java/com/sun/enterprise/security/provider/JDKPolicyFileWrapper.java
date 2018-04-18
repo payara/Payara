@@ -56,6 +56,7 @@ import static java.lang.System.getSecurityManager;
 import static java.security.AccessController.doPrivileged;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
+import static java.util.logging.Level.WARNING;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -71,6 +72,7 @@ import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
 import java.security.Security;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -84,6 +86,8 @@ import javax.security.jacc.WebRoleRefPermission;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
 
+import fish.payara.jacc.ContextProvider;
+import fish.payara.jacc.JaccConfigurationFactory;
 import sun.net.www.ParseUtil;
 import sun.security.provider.PolicyFile;
 import sun.security.util.PropertyExpander;
@@ -238,6 +242,14 @@ public class JDKPolicyFileWrapper extends Policy {
     @Override
     public PermissionCollection getPermissions(CodeSource codesource) {
         String contextId = PolicyContext.getContextID();
+        
+        PolicyConfigurationFactoryImpl policyConfigurationFactory = getPolicyFactory();
+        ContextProvider contextProvider = getContextProvider(contextId, policyConfigurationFactory);
+        
+        if (contextProvider != null) {
+            return contextProvider.getPolicy().getPermissions(codesource);
+        }
+        
         PolicyConfigurationImpl pci = getPolicyConfigForContext(contextId);
         Policy appPolicy = getPolicy(pci);
         PermissionCollection perms = appPolicy.getPermissions(codesource);
@@ -267,15 +279,25 @@ public class JDKPolicyFileWrapper extends Policy {
     @Override
     public PermissionCollection getPermissions(ProtectionDomain domain) {
         String contextId = PolicyContext.getContextID();
+        
+        PolicyConfigurationFactoryImpl policyConfigurationFactory = getPolicyFactory();
+        ContextProvider contextProvider = getContextProvider(contextId, policyConfigurationFactory);
+        
+        if (contextProvider != null) {
+            return contextProvider.getPolicy().getPermissions(domain);
+        }
+        
         PolicyConfigurationImpl pci = getPolicyConfigForContext(contextId);
         Policy appPolicy = getPolicy(pci);
         PermissionCollection perms = appPolicy.getPermissions(domain);
         if (perms != null) {
             perms = removeExcludedPermissions(pci, perms);
         }
+        
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest("JACC Policy Provider: PolicyWrapper.getPermissions(d), context (" + contextId + ") permissions: " + perms);
         }
+        
         return perms;
     }
 
@@ -335,7 +357,7 @@ public class JDKPolicyFileWrapper extends Policy {
         // (see FORCE_APP_REFRESH_PROP_NAME).
 
         boolean force = defaultContextChanged();
-        PolicyConfigurationImpl policyConfigurations[] = null;
+        List<PolicyConfigurationImpl> policyConfigurations = null;
         PolicyConfigurationFactoryImpl policyFactory = getPolicyFactory();
         if (policyFactory != null) {
             policyConfigurations = policyFactory.getPolicyConfigurationImpls();
@@ -343,15 +365,15 @@ public class JDKPolicyFileWrapper extends Policy {
         
         if (policyConfigurations != null) {
 
-            for (PolicyConfigurationImpl pci : policyConfigurations) {
-
-                if (pci != null) {
+            for (PolicyConfigurationImpl policyConfig : policyConfigurations) {
+                if (policyConfig != null) {
                     // false means don't force refresh if no update since
                     // last refresh.
-                    pci.refresh(force);
+                    policyConfig.refresh(force);
                 }
             }
         }
+        
         try {
             if (PolicyContext.getHandlerKeys().contains(REUSE)) {
                 PolicyContext.getContext(REUSE);
@@ -363,12 +385,25 @@ public class JDKPolicyFileWrapper extends Policy {
     }
 
     private PolicyConfigurationImpl getPolicyConfigForContext(String contextId) {
-        PolicyConfigurationImpl pci = null;
-        PolicyConfigurationFactoryImpl pcf = getPolicyFactory();
-        if (contextId != null && pcf != null) {
-            pci = pcf.getPolicyConfigurationImpl(contextId);
+        PolicyConfigurationImpl policyConfiguration = null;
+        
+        PolicyConfigurationFactoryImpl policyConfigurationFactory = getPolicyFactory();
+        if (contextId != null && policyConfigurationFactory != null) {
+            policyConfiguration = policyConfigurationFactory.getPolicyConfigurationImpl(contextId);
+            if (policyConfiguration == null) {
+                logger.log(WARNING, "pc.unknown_policy_context", new Object[] { contextId });
+            }
         }
-        return pci;
+        
+        return policyConfiguration;
+    }
+    
+    private ContextProvider getContextProvider(String contextId, JaccConfigurationFactory configurationFactory) {
+        if (configurationFactory != null) {
+            return configurationFactory.getContextProviderByPolicyContextId(contextId);
+        }
+        
+        return null;
     }
 
     private Policy getPolicy(PolicyConfigurationImpl policyConfiguration) {
@@ -452,7 +487,19 @@ public class JDKPolicyFileWrapper extends Policy {
 
     private boolean doImplies(ProtectionDomain domain, Permission permission) {
         String contextId = PolicyContext.getContextID();
+        
+        PolicyConfigurationFactoryImpl policyConfigurationFactory = getPolicyFactory();
+        ContextProvider contextProvider = null;
+        if (policyConfigurationFactory != null) {
+            contextProvider = policyConfigurationFactory.getContextProviderByPolicyContextId(contextId);
+        }
+        
+        if (contextProvider != null) {
+            return contextProvider.getPolicy().implies(domain, permission);
+        }
+        
         PolicyConfigurationImpl policyConfiguration = getPolicyConfigForContext(contextId);
+        
         Policy applicationPolicy = getPolicy(policyConfiguration);
 
         boolean doesImplies = applicationPolicy.implies(domain, permission);
