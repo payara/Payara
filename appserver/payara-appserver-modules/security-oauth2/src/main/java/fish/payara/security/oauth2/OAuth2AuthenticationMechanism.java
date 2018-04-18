@@ -39,7 +39,6 @@
  */
 package fish.payara.security.oauth2;
 
-
 import fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition;
 import java.io.StringReader;
 import java.util.logging.Level;
@@ -66,6 +65,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import sun.reflect.Reflection;
 
 /**
  * The AuthenticationMechanism used for authenticate users
@@ -75,7 +75,7 @@ import javax.ws.rs.core.Response;
  */
 @AutoApplySession
 @Typed(OAuth2AuthenticationMechanism.class)
-public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanism  {
+public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanism {
 
     private static final Logger logger = Logger.getLogger("OAuth2Mechanism");
 
@@ -89,7 +89,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
 
     @Inject
     OAuth2State state;
-    
+
     @Inject
     private IdentityStoreHandler identityStoreHandler;
 
@@ -114,13 +114,34 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
     }
 
     @Override
-    public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) 
-            throws AuthenticationException {
-
+    public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext)
+            throws AuthenticationException {        
+        
+        if (!httpMessageContext.isProtected()){
+            return httpMessageContext.doNothing();
+        }
+        
         if (request.getRequestURL().toString().equals(redirectURI)) {
             String recievedState = request.getParameter("state");
             if (recievedState != null && recievedState.equals(state.getState())) {
-                logger.log(Level.SEVERE, "User Authenticated, now getting authorisation token");
+                return validateCallback(request, httpMessageContext);
+            } else {
+                logger.log(Level.WARNING, "Inconsistent recieved state");
+                return httpMessageContext.notifyContainerAboutLogin(CredentialValidationResult.NOT_VALIDATED_RESULT);
+            }
+        } else {
+            return redirectForAuth(httpMessageContext);
+        }
+    }
+
+    /**
+     * Called when the callback URL is hit, this gets the authorisation token and logs the user in
+     * @param request
+     * @param context
+     * @return 
+     */
+    private AuthenticationStatus validateCallback(HttpServletRequest request, HttpMessageContext context){
+        logger.log(Level.SEVERE, "User Authenticated, now getting authorisation token");
                 Client jaxrsClient = ClientBuilder.newClient();
 
                 //Creates a new JAX-RS form with all paramters
@@ -128,61 +149,66 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
                         .param("client_id", clientID)
                         .param("client_secret", new String(clientSecret))
                         .param("code", request.getParameter("code"))
-                        .param("redirect_uri", redirectURI)
-                        .param("scopes", scopes)
                         .param("state", state.getState());
+                if (redirectURI != null && !redirectURI.isEmpty()) {
+                    form.param("redirect_uri", redirectURI);
+                }
+                if (scopes != null && !scopes.isEmpty()) {
+                    form.param("scopes", scopes);
+                }
                 for (String extra : extraParameters) {
                     String[] parts = extra.split("=");
                     form.param(parts[0], parts[1]);
                 }
-                
+
                 WebTarget target = jaxrsClient.target(tokenEndpoint);
                 Response oauthResponse = target.request()
                         .accept(MediaType.APPLICATION_JSON)
                         .header("referer", request.getRequestURL().toString())
                         .post(Entity.form(form));
-                
+
+                // Get back the result of the REST request
                 String result = oauthResponse.readEntity(String.class);
                 JsonObject object = Json.createReader(new StringReader(result)).readObject();
                 logger.log(Level.SEVERE, result);
-                if (oauthResponse.getStatus() != 200){
-                    
+                if (oauthResponse.getStatus() != 200) {
+
                     String error = object.getString("error", "Unknown Error");
                     String errorDescription = object.getString("error_description", "Unknown");
                     logger.log(Level.WARNING, "[OAUTH-001] Error occurred authenticating user: {0} caused by {1}", new Object[]{error, errorDescription});
-                    return httpMessageContext.notifyContainerAboutLogin(CredentialValidationResult.INVALID_RESULT);
+                    return context.notifyContainerAboutLogin(CredentialValidationResult.INVALID_RESULT);
                 } else {
-                    
+
                     state.setToken(object.getString("access_token"));
                     RememberMeCredential credential = new RememberMeCredential(result);
                     CredentialValidationResult validationResult = identityStoreHandler.validate(credential);
-                    return httpMessageContext.notifyContainerAboutLogin(validationResult);
+                    return context.notifyContainerAboutLogin(validationResult);
                 }
-            } else {
-                logger.log(Level.WARNING, "Inconsistent recieved state");
-                return httpMessageContext.notifyContainerAboutLogin(CredentialValidationResult.NOT_VALIDATED_RESULT);
-            }
-        } else {
-            logger.log(Level.SEVERE, "Redirecting for authentication");
-            StringBuilder authTokenRequest = new StringBuilder(authEndpoint);
-            authTokenRequest.append("?client_id=").append(clientID);
-            authTokenRequest.append("&state=").append(state.getState());
-            if (redirectURI != null) {
-                authTokenRequest.append("&redirect_uri=").append(redirectURI);
-            }
-            if (scopes != null) {
-                authTokenRequest.append("&scopes=").append(scopes);
-            }
-            for (String extra : extraParameters) {
-                authTokenRequest.append("&").append(extra);
-            }
-
-            return httpMessageContext.redirect(authTokenRequest.toString());
-        }
     }
+    
+    
+    /**
+     * If the user is not logged in then redirect them to OAuth provider
+     * @param context
+     * @return 
+     */
+    private AuthenticationStatus redirectForAuth(HttpMessageContext context) {
+        logger.log(Level.SEVERE, "Redirecting for authentication");
+        StringBuilder authTokenRequest = new StringBuilder(authEndpoint);
+        authTokenRequest.append("?client_id=").append(clientID);
+        authTokenRequest.append("&state=").append(state.getState());
+        authTokenRequest.append("&response_type=code");
+        if (redirectURI != null && !redirectURI.isEmpty()) {
+            authTokenRequest.append("&redirect_uri=").append(redirectURI);
+        }
+        if (scopes != null && !scopes.isEmpty()) {
+            authTokenRequest.append("&scopes=").append(scopes);
+        }
+        for (String extra : extraParameters) {
+            authTokenRequest.append("&").append(extra);
+        }
 
-    void setAuthEndpoint(String endpoint) {
-        authEndpoint = endpoint;
+        return context.redirect(authTokenRequest.toString());
     }
 
 }

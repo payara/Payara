@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.CDI;
+import javax.enterprise.inject.spi.DefinitionException;
 import javax.enterprise.inject.spi.ProcessBean;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.identitystore.IdentityStore;
@@ -81,18 +82,23 @@ public class OAuth2MechanismHandler implements Extension {
      */
     public <T> void findOAuth2DefinitionAnnotation(@Observes ProcessBean<T> eventIn, BeanManager beanManager) {
 
-        //logger.log(Level.SEVERE, "OAuth2Handler Processing annotations..." + eventIn.toString());
-        ProcessBean<T> event = eventIn; // JDK8 u60 workaround
+        ProcessBean<T> event = eventIn;
 
         OAuth2AuthenticationDefinition annotation = event.getAnnotated().getAnnotation(OAuth2AuthenticationDefinition.class);
         if (annotation != null && !annotations.contains(annotation)) {
-            logger.log(Level.SEVERE, "Processing annotation {0}", annotation);
+            logger.log(Level.FINE, "Processing annotation {0}", annotation);
             annotations.add(annotation);
+            for (String param : annotation.extraParameters()){
+                if (param.split("=").length != 2){
+                    throw new DefinitionException("Exception processing OAuth2AuthenticationDefinition: "
+                            + "extraParameter on annotation " + annotation.toString() + " is not of the format key=value");
+                }
+            }
         }
     }
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery event, BeanManager manager) {
-        logger.log(Level.SEVERE, "OAuth2Handler - BeforeBeanDiscovery" + event.toString());
+        logger.log(Level.FINER, "OAuth2Handler - BeforeBeanDiscovery" + event.toString());
         event.addAnnotatedType(manager.createAnnotatedType(OAuth2AuthenticationMechanism.class), "OAuth2 Mechanism");
         event.addAnnotatedType(manager.createAnnotatedType(OAuth2State.class), "OAuth2State");
         event.addAnnotatedType(manager.createAnnotatedType(OAuthIdentityStore.class), "OAuth2IdentityStore");
@@ -101,8 +107,8 @@ public class OAuth2MechanismHandler implements Extension {
 
     void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBean, BeanManager beanManager) {
         logger.log(Level.FINE, "Creating OAuth2 Mechanism");
-
-        /*if (!annotations.isEmpty() && CDI.current().select(IdentityStore.class).isUnsatisfied()) {
+        
+        if (!annotations.isEmpty() && beanManager.getBeans(IdentityStore.class).isEmpty()) {
             afterBean.addBean()
                     .scope(ApplicationScoped.class)
                     .types(IdentityStore.class, Object.class)
@@ -112,7 +118,7 @@ public class OAuth2MechanismHandler implements Extension {
                                 .select(OAuthIdentityStore.class).get();
                     });
 
-        }*/
+        }
         for (OAuth2AuthenticationDefinition annotation : annotations) {
 
             afterBean.addBean(new CdiProducer<HttpAuthenticationMechanism>().
@@ -122,7 +128,7 @@ public class OAuth2MechanismHandler implements Extension {
                     .create(obj -> {return CDI.current()
                                .select(OAuth2AuthenticationMechanism.class).get().setDefinition(annotation);}
                     )); // --> Leads to NPE in CdiProducer.create(104)
-            logger.log(Level.SEVERE, "OAuth2 Mechanism created successfully");
+            logger.log(Level.FINE, "OAuth2 Mechanism created successfully");
 
         }
         annotations.clear();

@@ -39,17 +39,21 @@
  */
 package fish.payara.security.oauth2.api;
 
+import java.util.EnumSet;
+import java.util.Set;
 import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.RememberMeCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
+import static javax.security.enterprise.identitystore.IdentityStore.ValidationType.VALIDATE;
 
 /**
- * This is a basic identity store that will always validate as a valid result.
+ * This is a basic identity store that will always validate as a valid result. This class does not add the user
+ * to any security groups.
  * <p>
  * This identity store validates a {@link RememberMeCredential} and presumes that the the token passes to the
  * credential upon creation is a valid one and does no further validation. If further validation is required
- * then it may be useful to send a JAX-RS request to the OAuth provider
+ * then it may be useful to send a JAX-RS request to the OAuth provider.
  * <p>
  * If an {@link fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition} is declared and their are
  * no other {@link IdentityStore} definitions implemented then this will be used as a fall-back.
@@ -96,4 +100,9 @@ public class OAuthIdentityStore implements IdentityStore {
         return 200;
     }
     
+    
+    @Override
+    public Set<ValidationType> validationTypes() {
+        return EnumSet.of(VALIDATE);
+    }
 }

@@ -39,6 +39,7 @@
  */
 package fish.payara.security.oauth2;
 
+import fish.payara.security.oauth2.api.OAuth2State;
 import java.io.Serializable;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,15 +47,15 @@ import javax.enterprise.context.SessionScoped;
 
 /**
  * Class to hold state of OAuth2
+ *
  * @author jonathan
  * @since 4.1.2.172
  */
-@SessionScoped
-public class OAuth2State implements Serializable {
-    
+//@SessionScoped
+public class OAuth2StateHolder implements OAuth2State {
+
     /**
-     * A random string used to ensure the return value from the remote endpoint
-     * is correct and prevent CSRF.
+     * A random string used to ensure the return value from the remote endpoint is correct and prevent CSRF.
      */
     private String state;
     private String token;
@@ -63,6 +64,21 @@ public class OAuth2State implements Serializable {
     private Optional<String> refreshToken;
     private Optional<String> expiresIn;
 
+    public OAuth2StateHolder() {
+        state = UUID.randomUUID().toString();
+        scope = Optional.empty();
+        refreshToken = Optional.empty();
+        expiresIn = Optional.empty();
+    }
+
+    public OAuth2StateHolder(String state) {
+        this.state = state;
+        scope = Optional.empty();
+        refreshToken = Optional.empty();
+        expiresIn = Optional.empty();
+    }
+
+    @Override
     public String getBearer() {
         return bearer;
     }
@@ -71,6 +87,7 @@ public class OAuth2State implements Serializable {
         this.bearer = bearer;
     }
 
+    @Override
     public Optional<String> getScope() {
         return scope;
     }
@@ -79,40 +96,43 @@ public class OAuth2State implements Serializable {
         this.scope = Optional.of(scope);
     }
 
+    @Override
     public Optional<String> getRefreshToken() {
         return refreshToken;
     }
 
+    @Override
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = Optional.of(refreshToken);
     }
 
+    @Override
     public Optional<String> getExpiresIn() {
         return expiresIn;
     }
 
+    @Override
     public void setExpiresIn(String expiresIn) {
         this.expiresIn = Optional.of(expiresIn);
     }
-    
-    public OAuth2State(){
-        state = UUID.randomUUID().toString();
-    }
-    
-    public OAuth2State(String state){
-        this.state = state;
-    }
-    
-    public String getState(){
+
+    @Override
+    public String getState() {
         return state;
     }
-    
-    public void setToken(String token){
+
+    @Override
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public void setToken(String token) {
         this.token = token;
     }
-    
-    public String getToken(){
+
+    @Override
+    public String getToken() {
         return token;
     }
-       
+
 }

@@ -37,79 +37,57 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.oauth2.annotation;
+package fish.payara.security.oauth2.api;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import java.lang.annotation.Retention;
-
-import java.lang.annotation.Target;
-import javax.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.util.Optional;
+import java.util.UUID;
+import javax.enterprise.context.SessionScoped;
 
 /**
- * This annotation is used for defining an OAuth2 authentication mechanism
- * 
- * @author jonathan coustick
- * @since 4.1.2.182
+ * Class to hold state of OAuth2
+ * @author jonathan
+ * @since 4.1.2.172
  */
-@Target({TYPE, METHOD})
-@Retention(RUNTIME)
-public @interface OAuth2AuthenticationDefinition {
+@SessionScoped
+public interface OAuth2State extends Serializable {
     
+    
+    public String getState();
+    
+    public void setState(String state);
+    
+    
+    public String getBearer();
+
     /**
-     * Required. The URL for the OAuth2 provider to provide authentication
-     * <p>
-     * This must be a https endpoint
+     * Gets the scope that the user has been given permission for your application to use
+     * with the OAuth provider
      * @return 
      */
-    @NotNull
-    String authEndpoint();
-    
+    public Optional<String> getScope();
+
+
+    public Optional<String> getRefreshToken();
+
+    public void setRefreshToken(String refreshToken);
+
     /**
-     * Required. The URL for the OAuth2 provider to give the authorisation token
+     * 
      * @return 
      */
-    @NotNull
-    String tokenEndpoint();
-    
+    public Optional<String> getExpiresIn();
+
     /**
-     * Required. The client identifier issued when the application was registered
-     * @return the client identifier
+     * 
+     * @param expiresIn 
      */
-    @NotNull
-    String clientId();
+    public void setExpiresIn(String expiresIn);
     
     /**
-     * Required. The client secret
-     * <p>
-     * It is recommended to set this using an alias.
-     * @return 
-     * @see <a href="https://docs.payara.fish/documentation/payara-server/password-aliases/password-aliases-overview.html">Payara Password Aliases Documentation</a>
-     */
-    @NotNull
-    String clientSecret();
-    
-    /**
-     * The callback URI.
-     * <p>
-     * If supplied this must be equal to one set in the OAuth2 Authentication provider
+     * Gets the authorisation token that was received from the OAuth provider
      * @return 
      */
-    String redirectURI() default "";
-    
-    /**
-     * The scopes that will be requested from the OAuth provider
-     * @return 
-     */
-    String scopes() default "";
-    
-    /**
-     * An array of extra options that will be sent to the OAuth provider.
-     * <p>
-     * These must be in the form of {@code "key=value"} i.e.
-     * <code> extraParameters={"key1=value", "key2=value2"} </code>
-     * @return 
-     */
-    String[] extraParameters() default {};
+    public String getToken();
+       
 }
