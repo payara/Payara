@@ -40,6 +40,7 @@
 package fish.payara.security.oauth2;
 
 import fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition;
+import fish.payara.security.oauth2.api.OAuth2State;
 import java.io.StringReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -88,7 +89,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
     private String[] extraParameters;
 
     @Inject
-    OAuth2State state;
+    OAuth2StateHolder state;
 
     @Inject
     private IdentityStoreHandler identityStoreHandler;
@@ -117,20 +118,25 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
     public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext)
             throws AuthenticationException {        
         
-        if (!httpMessageContext.isProtected()){
-            return httpMessageContext.doNothing();
+        if (httpMessageContext.isProtected() && request.getUserPrincipal() == null){
+            //Needs to login and has not already done so
+            return redirectForAuth(httpMessageContext);   
         }
         
-        if (request.getRequestURL().toString().equals(redirectURI)) {
-            String recievedState = request.getParameter("state");
-            if (recievedState != null && recievedState.equals(state.getState())) {
+        
+        String recievedState = request.getParameter("state");
+        if (request.getRequestURL().toString().equals(redirectURI) && recievedState != null) {
+            //In the process of logging in
+            if (recievedState.equals(state.getState())) {
                 return validateCallback(request, httpMessageContext);
             } else {
                 logger.log(Level.WARNING, "Inconsistent recieved state");
                 return httpMessageContext.notifyContainerAboutLogin(CredentialValidationResult.NOT_VALIDATED_RESULT);
             }
         } else {
-            return redirectForAuth(httpMessageContext);
+            
+            // Is not trying to login, has not logged in already and does not need to login
+            return httpMessageContext.doNothing();
         }
     }
 

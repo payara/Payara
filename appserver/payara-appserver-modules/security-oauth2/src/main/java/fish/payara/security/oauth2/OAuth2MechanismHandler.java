@@ -100,7 +100,7 @@ public class OAuth2MechanismHandler implements Extension {
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery event, BeanManager manager) {
         logger.log(Level.FINER, "OAuth2Handler - BeforeBeanDiscovery" + event.toString());
         event.addAnnotatedType(manager.createAnnotatedType(OAuth2AuthenticationMechanism.class), "OAuth2 Mechanism");
-        event.addAnnotatedType(manager.createAnnotatedType(OAuth2State.class), "OAuth2State");
+        event.addAnnotatedType(manager.createAnnotatedType(OAuth2StateHolder.class), "OAuth2State");
         event.addAnnotatedType(manager.createAnnotatedType(OAuthIdentityStore.class), "OAuth2IdentityStore");
 
     }
