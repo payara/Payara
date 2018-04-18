@@ -45,6 +45,7 @@ import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition;
+import fish.payara.security.oauth2.api.OAuth2State;
 import fish.payara.security.oauth2.api.OAuthIdentityStore;
 import java.util.ArrayList;
 import java.util.List;
@@ -100,8 +101,9 @@ public class OAuth2MechanismHandler implements Extension {
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery event, BeanManager manager) {
         logger.log(Level.FINER, "OAuth2Handler - BeforeBeanDiscovery" + event.toString());
         event.addAnnotatedType(manager.createAnnotatedType(OAuth2AuthenticationMechanism.class), "OAuth2 Mechanism");
-        event.addAnnotatedType(manager.createAnnotatedType(OAuth2StateHolder.class), "OAuth2State");
+        event.addAnnotatedType(manager.createAnnotatedType(OAuth2StateHolder.class), "OAuth2Token");
         event.addAnnotatedType(manager.createAnnotatedType(OAuthIdentityStore.class), "OAuth2IdentityStore");
+        event.addAnnotatedType(manager.createAnnotatedType(OAuth2State.class), "OAuth2State");
 
     }
 

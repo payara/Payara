@@ -40,49 +40,68 @@
 package fish.payara.security.oauth2.api;
 
 import java.io.Serializable;
-import java.util.UUID;
-import javax.enterprise.context.SessionScoped;
+import java.time.Instant;
+import java.util.Optional;
 
 /**
- * Class to hold state of OAuth2
- * <p>
- * This is used in the authentication mechanism to both help prevent CSRF and to 
- * pass data to the callback page.
- * @author jonathan
+ * Interface for the access token response returned by the OAuth provider
+ * @author jonathan coustick
  * @since 4.1.2.182
  */
-@SessionScoped
-public class OAuth2State implements Serializable {
-
-    private final String state;
+public interface OAuth2AccessToken extends Serializable {
+ 
     
-
-    /**
-     * Creates a new instance with a random UUID as the state. 
-     */
-    public OAuth2State(){
-        state = UUID.randomUUID().toString();
-    }
-    
-    /**
-     * Creates a new instance set the state to what is in the constructor.
-     * <p>
-     * This can be used so that the callback page knows the originating page,
-     * but is not used by the {@link fish.payara.security.oauth2.OAuth2AuthenticationMechanism} by default
-     * @param state 
-     */
-    public OAuth2State(String state){
-        this.state = state;
-    }
-    
-    /**
-     * Gets the state
+       /**
+     * Gets the authorisation token that was received from the OAuth provider
      *
      * @return
      */
-    public String getState(){
-        return state;
-    }
+    public String getAccessToken();
 
+    /**
+     * Sets the access token that is to be used to verify the user with the OAuth provider once they are logged in.
+     * @param token
+     */
+    public void setAccessToken(String token);
 
+    /**
+     * Gets the scope that the user has been given permission for your application to use with the OAuth provider
+     *
+     * @return
+     */
+    public Optional<String> getScope();
+
+    /**
+     * Returns the refresh token that can be used to get a new access token
+     *
+     * @return
+     */
+    public Optional<String> getRefreshToken();
+
+    /**
+     * Sets the refresh token that can be used to renew the access token
+     * @param refreshToken
+     */
+    public void setRefreshToken(String refreshToken);
+
+    /**
+     * Return the time that the access token is granted for, if it is set to expire
+     *
+     * @return
+     */
+    public Optional<Integer> getExpiresIn();
+
+    /**
+     * Sets the time that the access token is granted for
+     *
+     * @param expiresIn
+     */
+    public void setExpiresIn(Integer expiresIn);
+
+    /**
+     * Gets the time that the access token was last set
+     *
+     * @return
+     */
+    public Instant getTimeSet();
 }

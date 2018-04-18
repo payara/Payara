@@ -39,52 +39,33 @@
  */
 package fish.payara.security.oauth2;
 
-import fish.payara.security.oauth2.api.OAuth2State;
-import java.io.Serializable;
+import fish.payara.security.oauth2.api.OAuth2AccessToken;
+import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 import javax.enterprise.context.SessionScoped;
 
 /**
- * Class to hold state of OAuth2
+ * Class to hold state of OAuth2 token as returned by the provider
  *
  * @author jonathan
  * @since 4.1.2.172
  */
 //@SessionScoped
-public class OAuth2StateHolder implements OAuth2State {
+public class OAuth2StateHolder implements OAuth2AccessToken {
 
     /**
      * A random string used to ensure the return value from the remote endpoint is correct and prevent CSRF.
      */
-    private String state;
     private String token;
-    private String bearer;
     private Optional<String> scope;
     private Optional<String> refreshToken;
-    private Optional<String> expiresIn;
+    private Optional<Integer> expiresIn;
+    private Instant timeset;
 
     public OAuth2StateHolder() {
-        state = UUID.randomUUID().toString();
         scope = Optional.empty();
         refreshToken = Optional.empty();
         expiresIn = Optional.empty();
-    }
-
-    public OAuth2StateHolder(String state) {
-        this.state = state;
-        scope = Optional.empty();
-        refreshToken = Optional.empty();
-        expiresIn = Optional.empty();
-    }
-
-    @Override
-    public String getBearer() {
-        return bearer;
-    }
-
-    public void setBearer(String bearer) {
-        this.bearer = bearer;
     }
 
     @Override
@@ -103,36 +84,33 @@ public class OAuth2StateHolder implements OAuth2State {
 
     @Override
     public void setRefreshToken(String refreshToken) {
-        this.refreshToken = Optional.of(refreshToken);
+        this.refreshToken = Optional.ofNullable(refreshToken);
     }
 
     @Override
-    public Optional<String> getExpiresIn() {
+    public Optional<Integer> getExpiresIn() {
         return expiresIn;
     }
 
     @Override
-    public void setExpiresIn(String expiresIn) {
+    public void setExpiresIn(Integer expiresIn) {
         this.expiresIn = Optional.of(expiresIn);
     }
-
+    
     @Override
-    public String getState() {
-        return state;
-    }
-
-    @Override
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    @Override
-    public String getToken() {
+    public String getAccessToken() {
         return token;
+    }
+
+    @Override
+    public void setAccessToken(String token) {
+        this.token = token;
+        timeset = Instant.now();
+    }
+
+    @Override
+    public Instant getTimeSet() {
+        return timeset;
     }
 
 }

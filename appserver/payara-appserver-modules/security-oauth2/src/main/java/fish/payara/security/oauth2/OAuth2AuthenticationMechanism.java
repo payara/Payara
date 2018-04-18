@@ -44,7 +44,6 @@ import fish.payara.security.oauth2.api.OAuth2State;
 import java.io.StringReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Typed;
 import javax.inject.Inject;
 import javax.json.Json;
@@ -66,13 +65,12 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import sun.reflect.Reflection;
 
 /**
- * The AuthenticationMechanism used for authenticate users
+ * The AuthenticationMechanism used for authenticate users using the OAuth2 protocol
  *
  * @author jonathan coustick
- * @since 4.1.2.172
+ * @since 4.1.2.182
  */
 @AutoApplySession
 @Typed(OAuth2AuthenticationMechanism.class)
@@ -89,8 +87,11 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
     private String[] extraParameters;
 
     @Inject
-    OAuth2StateHolder state;
+    private OAuth2State state;
 
+    @Inject
+    private OAuth2StateHolder tokenHolder;
+    
     @Inject
     private IdentityStoreHandler identityStoreHandler;
 
@@ -136,6 +137,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
         } else {
             
             // Is not trying to login, has not logged in already and does not need to login
+            logger.log(Level.FINEST, "Authentication mechanism doing nothing");
             return httpMessageContext.doNothing();
         }
     }
@@ -147,7 +149,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
      * @return 
      */
     private AuthenticationStatus validateCallback(HttpServletRequest request, HttpMessageContext context){
-        logger.log(Level.SEVERE, "User Authenticated, now getting authorisation token");
+        logger.log(Level.FINE, "User Authenticated, now getting authorisation token");
                 Client jaxrsClient = ClientBuilder.newClient();
 
                 //Creates a new JAX-RS form with all paramters
@@ -176,7 +178,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
                 // Get back the result of the REST request
                 String result = oauthResponse.readEntity(String.class);
                 JsonObject object = Json.createReader(new StringReader(result)).readObject();
-                logger.log(Level.SEVERE, result);
+                logger.log(Level.FINEST, result);
                 if (oauthResponse.getStatus() != 200) {
 
                     String error = object.getString("error", "Unknown Error");
@@ -185,7 +187,14 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
                     return context.notifyContainerAboutLogin(CredentialValidationResult.INVALID_RESULT);
                 } else {
 
-                    state.setToken(object.getString("access_token"));
+                    tokenHolder.setAccessToken(object.getString("access_token"));
+                    tokenHolder.setRefreshToken(object.getString("refresh_token"));
+                    tokenHolder.setScope(object.getString("scope"));
+                    String expiresIn = object.getString("expires_in");
+                    if (expiresIn != null){
+                        tokenHolder.setExpiresIn(Integer.parseInt(expiresIn));
+                    }
+                    
                     RememberMeCredential credential = new RememberMeCredential(result);
                     CredentialValidationResult validationResult = identityStoreHandler.validate(credential);
                     return context.notifyContainerAboutLogin(validationResult);
@@ -199,7 +208,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
      * @return 
      */
     private AuthenticationStatus redirectForAuth(HttpMessageContext context) {
-        logger.log(Level.SEVERE, "Redirecting for authentication");
+        logger.log(Level.FINE, "Redirecting for authentication to {0}", authEndpoint);
         StringBuilder authTokenRequest = new StringBuilder(authEndpoint);
         authTokenRequest.append("?client_id=").append(clientID);
         authTokenRequest.append("&state=").append(state.getState());

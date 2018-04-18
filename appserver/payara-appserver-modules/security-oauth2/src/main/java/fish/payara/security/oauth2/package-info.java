@@ -37,52 +37,16 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.oauth2.api;
-
-import java.io.Serializable;
-import java.util.UUID;
-import javax.enterprise.context.SessionScoped;
 
 /**
- * Class to hold state of OAuth2
+ * OAuth Security Mechanism
  * <p>
- * This is used in the authentication mechanism to both help prevent CSRF and to 
- * pass data to the callback page.
- * @author jonathan
+ * This module is for integrating the Jakarta EE 8 security system with OAuth2 and
+ * provides a {@link javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism}
+ * to be used when a {@link fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition} is
+ * included in a project.
+ * 
+ * @author Jonathan Coustick
  * @since 4.1.2.182
  */
-@SessionScoped
-public class OAuth2State implements Serializable {
-
-    private final String state;
-    
-
-    /**
-     * Creates a new instance with a random UUID as the state. 
-     */
-    public OAuth2State(){
-        state = UUID.randomUUID().toString();
-    }
-    
-    /**
-     * Creates a new instance set the state to what is in the constructor.
-     * <p>
-     * This can be used so that the callback page knows the originating page,
-     * but is not used by the {@link fish.payara.security.oauth2.OAuth2AuthenticationMechanism} by default
-     * @param state 
-     */
-    public OAuth2State(String state){
-        this.state = state;
-    }
-    
-    /**
-     * Gets the state
-     *
-     * @return
-     */
-    public String getState(){
-        return state;
-    }
-
-
-}
+package fish.payara.security.oauth2;
