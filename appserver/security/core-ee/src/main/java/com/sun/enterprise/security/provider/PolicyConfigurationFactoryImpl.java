@@ -46,16 +46,19 @@ import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.security.Permission;
+import java.security.Policy;
 import java.security.SecurityPermission;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import javax.security.jacc.PolicyConfiguration;
@@ -67,33 +70,37 @@ import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
+import fish.payara.jacc.ContextProvider;
+import fish.payara.jacc.JaccConfigurationFactory;
+
 /**
  * Implementation of jacc PolicyConfigurationFactory class
- * 
+ *
  * @author Harpreet Singh
  * @author Ron Monzillo
  * @version
  */
 @Service
 @ContractsProvided({ PolicyConfigurationFactoryImpl.class, PolicyConfigurationFactory.class })
-public class PolicyConfigurationFactoryImpl extends PolicyConfigurationFactory {
+public class PolicyConfigurationFactoryImpl extends PolicyConfigurationFactory implements JaccConfigurationFactory {
 
     private static Logger logger = Logger.getLogger(SECURITY_LOGGER);
     private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(PolicyConfigurationFactoryImpl.class);
-    
+
     // Set in PolicyLoader from domain.xml
     private static final String REPOSITORY_HOME_PROP = "com.sun.enterprise.jaccprovider.property.repository";
-    
-    // Table of ContextId->PolicyConfiguration
-    private Map<String, PolicyConfigurationImpl> contextToConfigurationMap = new HashMap<>();
 
-    // brought from PolicyConfigurationImpl
-    // used to represent configuration linkages
+    private Map<String, String> applicationToPolicyContextIdMap = new ConcurrentHashMap<String, String>();
+
+    // Map of ContextId -> ContextProvider (per context PolicyConfigurationFactory and Policy)
+    private Map<String, ContextProvider> contextToContextProviderMap = new ConcurrentHashMap<>();
+
+    // Map of ContextId -> PolicyConfiguration
+    private Map<String, PolicyConfigurationImpl> contextToConfigurationMap = new ConcurrentHashMap<>();
+
+    // Used to represent configuration linkages
     private /* TODO: static */ Map<String, Set<String>> linkTable = new HashMap<>();
 
-    private ReadWriteLock rwLock = new ReentrantReadWriteLock(true);
-    private Lock rLock = rwLock.readLock();
-    private Lock wLock = rwLock.writeLock();
     private String repository;
     private Permission setPolicyPermission;
 
@@ -102,6 +109,67 @@ public class PolicyConfigurationFactoryImpl extends PolicyConfigurationFactory {
     public PolicyConfigurationFactoryImpl() {
         repository = initializeRepository();
         singleton = this;
+    }
+
+    @Override
+    public void registerContextProvider(String applicationContextId, PolicyConfigurationFactory factory, Policy policy) {
+        checkSetPolicyPermission();
+
+        try {
+            String policyContextId = applicationToPolicyContextIdMap.get(applicationContextId);
+            if (policyContextId == null) {
+                throw new IllegalStateException(
+                        "No policyContextId available for applicationContextId " + applicationContextId +
+                        " Is this JaccConfigurationFactory instance used by the container?");
+            }
+
+            if (inService(policyContextId)) {
+                throw new IllegalStateException("Context :" + policyContextId + " already has an active global provider");
+            }
+
+            ContextProvider contextProvider = contextToContextProviderMap.get(policyContextId);
+            if (contextProvider != null && contextProvider.getPolicyConfigurationFactory().inService(policyContextId)) {
+                throw new IllegalStateException("Context :" + policyContextId + " already has an active context (per app) provider");
+            }
+
+            contextToContextProviderMap.put(policyContextId, new ContextProviderImpl(factory, policy));
+
+        } catch (PolicyContextException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Override
+    public void addContextIdMapping(String applicationContextId, String policyContextId) {
+        applicationToPolicyContextIdMap.put(applicationContextId, policyContextId);
+    }
+
+    @Override
+    public boolean removeContextIdMappingByPolicyContextId(String policyContextId) {
+
+        boolean removed = false;
+        Iterator<Entry<String, String>> entries = applicationToPolicyContextIdMap.entrySet().iterator();
+        while (entries.hasNext()) {
+            Entry<String, String> entry = entries.next();
+            if (entry.getValue().equals(policyContextId)) {
+               entries.remove();
+               removed = true;
+            }
+        }
+
+        return removed;
+
+       // return applicationToPolicyContextIdMap.entrySet().removeIf(e -> e.getValue().equals(policyContextId));
+    }
+
+    @Override
+    public ContextProvider getContextProviderByPolicyContextId(String contextId) {
+        return contextToContextProviderMap.get(contextId);
+    }
+
+    @Override
+    public ContextProvider removeContextProviderByPolicyContextId(String policyContextId) {
+        return contextToContextProviderMap.remove(policyContextId);
     }
 
     /**
@@ -122,7 +190,7 @@ public class PolicyConfigurationFactoryImpl extends PolicyConfigurationFactory {
      * To preserve the invariant that there be at most one PolicyConfiguration object for a given policy context, it may be
      * necessary for this method to be thread safe.
      * <P>
-     * 
+     *
      * @param contextID A String identifying the policy context whose PolicyConfiguration interface is to be returned. The
      * value passed to this parameter must not be null.
      * <P>
@@ -143,31 +211,25 @@ public class PolicyConfigurationFactoryImpl extends PolicyConfigurationFactory {
     @Override
     public PolicyConfiguration getPolicyConfiguration(String contextId, boolean remove) throws PolicyContextException {
         checkSetPolicyPermission();
-        
+
         if (logger.isLoggable(FINE)) {
             logger.fine("JACC Policy Provider: Getting PolicyConfiguration object with id = " + contextId);
         }
-        
-        PolicyConfigurationImpl policyConfiguration = getPolicyConfigImpl(contextId);
-     
-        if (policyConfiguration == null) {
-            // If the policy configuration is not in the table, see if it was copied into the
-            // filesystem (e.g. by the DAS), and if not create and store a new one.
-            policyConfiguration = getPolicyConfigurationImpl(contextId, remove);
-        } else {
-            // Return the policy configuration to the open state, value of
-            // remove will determine if statements are removed
-            policyConfiguration.initialize(true, remove, false);
+
+        ContextProvider contextProvider = contextToContextProviderMap.get(contextId);
+
+        if (contextProvider != null) {
+            return contextProvider.getPolicyConfigurationFactory().getPolicyConfiguration(contextId, remove);
         }
-        
-        return policyConfiguration;
+
+        return getPolicyConfigurationImpl(contextId, true, remove);
     }
 
     /**
      * This method determines if the identified policy context exists with state "inService" in the Policy provider
      * associated with the factory.
      * <P>
-     * 
+     *
      * @param contextID A string identifying a policy context
      *
      * @return true if the identified policy context exists within the provider and its state is "inService", false
@@ -181,134 +243,25 @@ public class PolicyConfigurationFactoryImpl extends PolicyConfigurationFactory {
      * encapsulated (during construction) in the thrown PolicyContextException.
      */
     @Override
-    public boolean inService(String contextID) throws PolicyContextException {
+    public boolean inService(String contextId) throws PolicyContextException {
         checkSetPolicyPermission();
-       
-        PolicyConfiguration policyConfiguration = getPolicyConfigImpl(contextID);
 
-        // If the policy configuration is not in the table, see if it was copied into the
-        // filesystem (e.g. by the DAS)
-        if (policyConfiguration == null) {
-            policyConfiguration = getPolicyConfigurationImplFromDirectory(contextID, false, false);
+        ContextProvider contextProvider = contextToContextProviderMap.get(contextId);
+
+        if (contextProvider != null) {
+            return contextProvider.getPolicyConfigurationFactory().inService(contextId);
         }
-        
+
+        PolicyConfiguration policyConfiguration = getPolicyConfigurationImpl(contextId);
+
         return policyConfiguration == null ? false : policyConfiguration.inService();
     }
-    
-    
-    
+
+
     // ### Private / Protected methods
-    
-    private PolicyConfigurationImpl getPolicyConfigurationImpl(String contextId, boolean remove) {
-        PolicyConfigurationImpl policyConfiguration = getPolicyConfigurationImplFromDirectory(contextId, true, remove);
-        
-        if (policyConfiguration == null) {
-            policyConfiguration = new PolicyConfigurationImpl(contextId, this);
-            putPolicyConfigurationImpl(contextId, policyConfiguration);
-        }
-        
-        return policyConfiguration;
-    }
 
-    /**
-     * This method tries to find the Policy Configuration copied into the file system (by the DAS) after the 
-     * repository was initialized. 
-     * 
-     * This will only open the Policy Configuration if remove is true (otherwise the Policy Configuration will
-     * remain in service);
-     */
-    private PolicyConfigurationImpl getPolicyConfigurationImplFromDirectory(String contextId, boolean open, boolean remove) {
-        PolicyConfigurationImpl policyConfigurationImpl = null;
-        
-        File contextDirectory = new File(getContextDirectoryName(contextId));
-        if (contextDirectory.exists()) {
-            policyConfigurationImpl = new PolicyConfigurationImpl(contextDirectory, open, remove, this);
-            putPolicyConfigurationImpl(contextId, policyConfigurationImpl);
-        }
-        
-        return policyConfigurationImpl;
-    }
-
-    String getContextDirectoryName(String contextId) {
-        if (repository == null) {
-            throw new RuntimeException("JACC Policy provider: repository not initialized");
-        }
-        
-        return repository + File.separator + contextId;
-    }
-
-    // The following package protected methods are needed to support the
-    // PolicyCongigurationImpl class.
-
-    protected PolicyConfigurationImpl[] getPolicyConfigurationImpls() {
-        rLock.lock();
-        try {
-            Collection<PolicyConfigurationImpl> configurations = contextToConfigurationMap.values();
-            return configurations.toArray(new PolicyConfigurationImpl[configurations.size()]);
-        } finally {
-            rLock.unlock();
-        }
-    }
-
-    protected PolicyConfigurationImpl putPolicyConfigurationImpl(String contextID, PolicyConfigurationImpl pci) {
-        wLock.lock();
-        try {
-            return contextToConfigurationMap.put(contextID, pci);
-        } finally {
-            wLock.unlock();
-        }
-    }
-
-    private PolicyConfigurationImpl getPolicyConfigImpl(String contextId) {
-        rLock.lock();
-        try {
-            return contextToConfigurationMap.get(contextId);
-        } finally {
-            rLock.unlock();
-        }
-    }
-
-    protected PolicyConfigurationImpl removePolicyConfigurationImpl(String contextID) {
-        wLock.lock();
-        try {
-            return (PolicyConfigurationImpl) contextToConfigurationMap.remove(contextID);
-        } finally {
-            wLock.unlock();
-        }
-    }
-
-    // Does not reopen PC
-    protected PolicyConfigurationImpl getPolicyConfigurationImpl(String contextId) {
-        PolicyConfigurationImpl policyConfigurationImpl = getPolicyConfigImpl(contextId);
-        if (policyConfigurationImpl == null) {
-            
-            // Check if the policy configuration was copied into the filesystem after the repository
-            // was initialized (do not open configuration or remove policy statements).
-            policyConfigurationImpl = getPolicyConfigurationImplFromDirectory(contextId, false, false);
-            if (policyConfigurationImpl == null) {
-                logger.log(WARNING, "pc.unknown_policy_context", new Object[] { contextId });
-            }
-        }
-        
-        return policyConfigurationImpl;
-    }
-
-    protected void checkSetPolicyPermission() {
-        SecurityManager securityManager = System.getSecurityManager();
-        if (securityManager != null) {
-            if (setPolicyPermission == null) {
-                setPolicyPermission = new SecurityPermission("setPolicy");
-            }
-            securityManager.checkPermission(setPolicyPermission);
-        }
-    }
-
-    Map<String, Set<String>> getLinkTable() {
-        return linkTable;
-    }
-
-    String getRepository() {
-        return repository;
+    static PolicyConfigurationFactoryImpl getInstance() {
+        return singleton;
     }
 
     /**
@@ -328,26 +281,31 @@ public class PolicyConfigurationFactoryImpl extends PolicyConfigurationFactory {
                 File repositoryDirectory = new File(repository);
                 if (repositoryDirectory.exists()) {
                     if (!repositoryDirectory.isDirectory()) {
-                        logger.log(SEVERE, 
+                        logger.log(SEVERE,
                             localStrings.getLocalString(
                                 "pc.unable_to_create_repository",
                                 "unable to create repository" + repository, new Object[] { repository }));
                     } else {
-                        // Read deployed policy contextes
+                        // Read deployed policy contexts
                         File[] appsInService = repositoryDirectory.listFiles();
                         if (appsInService != null) {
                             for (int i = 0; i < appsInService.length; i++) {
-                                File[] contextsInService = appsInService[i].listFiles(pathName -> pathName.isDirectory());
-                                
+                                File[] contextsInService = appsInService[i].listFiles(new FileFilter() {
+                                    @Override
+                                    public boolean accept(File pathName) {
+                                        return pathName.isDirectory();
+                                    }
+                                });
+
                                 if (contextsInService != null) {
                                     for (int j = 0; j < contextsInService.length; j++) {
                                         try {
                                             PolicyConfigurationImpl pc = new PolicyConfigurationImpl(contextsInService[j], false, false,
                                                     this);
-                                            putPolicyConfigurationImpl(pc.CONTEXT_ID, pc);
+                                            contextToConfigurationMap.put(pc.CONTEXT_ID, pc);
 
                                         } catch (Exception ex) {
-                                            logger.log(WARNING, 
+                                            logger.log(WARNING,
                                                 localStrings.getLocalString(
                                                     "pc.unable_to_read_repostory",
                                                     "unable to read repository", new Object[] { contextsInService[i].toString() }), ex);
@@ -361,25 +319,111 @@ public class PolicyConfigurationFactoryImpl extends PolicyConfigurationFactory {
                     if (logger.isLoggable(FINE)) {
                         logger.fine("JACC Policy Provider: creating new policy repository");
                     }
-                    
+
                     if (!repositoryDirectory.mkdirs()) {
                         throw new IOException();
                     }
                 }
             }
         } catch (Exception e) {
-            logger.log(SEVERE, 
+            logger.log(SEVERE,
                 localStrings.getLocalString(
-                    "pc.unable_to_init_repository", 
+                    "pc.unable_to_init_repository",
                     "unable to init repository", new Object[] { e }));
-            
+
             repository = null;
         }
 
         return repository;
     }
 
-    static PolicyConfigurationFactoryImpl getInstance() {
-        return singleton;
+    String getRepository() {
+        return repository;
     }
+
+    String getContextDirectoryName(String contextId) {
+        if (repository == null) {
+            throw new RuntimeException("JACC Policy provider: repository not initialized");
+        }
+
+        return repository + File.separator + contextId;
+    }
+
+    protected PolicyConfigurationImpl getPolicyConfigurationImpl(String contextId) {
+        // Do not create new policy, nor open configuration or remove policy statements
+        return getPolicyConfigurationImpl(contextId, false, false);
+    }
+
+    protected PolicyConfigurationImpl getPolicyConfigurationImpl(String contextId, boolean open, boolean remove) {
+        PolicyConfigurationImpl policyConfiguration = contextToConfigurationMap.get(contextId);
+
+        if (policyConfiguration != null) {
+            if (open) {
+                // Return the policy configuration to the open state, value of
+                // remove will determine if statements are removed
+                policyConfiguration.initialize(true, remove, false);
+            }
+        } else {
+
+            // Check if the policy configuration was copied into the filesystem after the repository
+            // was initialized.
+
+            // Note that both a policy obtained from a directory and a new instance are correctly
+            // initialized, so we don't need to call policyConfiguration.initialize as we do above
+            policyConfiguration = getPolicyConfigurationImplFromDirectory(contextId, open, remove);
+
+            if (policyConfiguration == null) {
+                if (open) {
+                    policyConfiguration = new PolicyConfigurationImpl(contextId, this);
+                    contextToConfigurationMap.put(contextId, policyConfiguration);
+                }
+            }
+        }
+
+        return policyConfiguration;
+    }
+
+
+
+    /**
+     * This method tries to find the Policy Configuration copied into the file system (by the DAS) after the
+     * repository was initialized.
+     *
+     * This will only open the Policy Configuration if remove is true (otherwise the Policy Configuration will
+     * remain in service);
+     */
+    private PolicyConfigurationImpl getPolicyConfigurationImplFromDirectory(String contextId, boolean open, boolean remove) {
+        PolicyConfigurationImpl policyConfigurationImpl = null;
+
+        File contextDirectory = new File(getContextDirectoryName(contextId));
+        if (contextDirectory.exists()) {
+            policyConfigurationImpl = new PolicyConfigurationImpl(contextDirectory, open, remove, this);
+            contextToConfigurationMap.put(contextId, policyConfigurationImpl);
+        }
+
+        return policyConfigurationImpl;
+    }
+
+    protected List<PolicyConfigurationImpl> getPolicyConfigurationImpls() {
+        return new ArrayList<>(contextToConfigurationMap.values());
+    }
+
+    protected PolicyConfigurationImpl removePolicyConfigurationImpl(String contextID) {
+        return contextToConfigurationMap.remove(contextID);
+    }
+
+    protected void checkSetPolicyPermission() {
+        SecurityManager securityManager = System.getSecurityManager();
+        if (securityManager != null) {
+            if (setPolicyPermission == null) {
+                setPolicyPermission = new SecurityPermission("setPolicy");
+            }
+            securityManager.checkPermission(setPolicyPermission);
+        }
+    }
+
+    Map<String, Set<String>> getLinkTable() {
+        return linkTable;
+    }
+
 }

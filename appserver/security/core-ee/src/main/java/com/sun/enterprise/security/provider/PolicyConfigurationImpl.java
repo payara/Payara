@@ -92,9 +92,11 @@ import com.sun.enterprise.security.provider.PolicyParser.PermissionEntry;
 import com.sun.enterprise.security.provider.PolicyParser.PrincipalEntry;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
+import sun.security.provider.PolicyFile;
+
 /**
  * Implementation of Jacc PolicyConfiguration Interface
- * 
+ *
  * @author Harpreet Singh (harpreet.singh@sun.com)
  * @author Ron Monzillo
  */
@@ -102,7 +104,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 
     private static Logger logger = Logger.getLogger(SECURITY_LOGGER);
     private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(PolicyConfigurationImpl.class);
-    
+
     private static final String policySuffix = ".policy";
     private static final String PROVIDER_URL = "policy.url.";
     private static final Class<?>[] permissionParams = { String.class, String.class };
@@ -117,10 +119,10 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 
     // Excluded permissions
     private Permissions excludedPermissions;
-    
+
     // Unchecked permissions
     private Permissions uncheckedPermissions;
-    
+
     // Permissions mapped to roles.
     private Map<String, Permissions> roleToPermissionsMap;
 
@@ -164,13 +166,13 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
         CONTEXT_ID = applicationPolicyDirectory.getParentFile().getName() + '/' + applicationPolicyDirectory.getName();
 
         repository = configurationFactory.getRepository();
-        
+
         String policyFileName = getPolicyFileName(true);
         File policyFile = new File(policyFileName);
         if (!policyFile.exists()) {
             String defMsg = "Unable to open Policy file: " + policyFileName;
             logger.log(SEVERE, localStrings.getLocalString("pc.file_not_found", defMsg, new Object[] { policyFileName }));
-            
+
             throw new RuntimeException(defMsg);
         }
 
@@ -179,7 +181,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 
     /**
      * This method returns this object's policy context identifier.
-     * 
+     *
      * @return this object's policy context identifier.
      *
      * @throws java.lang.SecurityException if called by an AccessControlContext that has not been granted the "setPolicy"
@@ -192,7 +194,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
     @Override
     public String getContextID() throws PolicyContextException {
         checkSetPolicyPermission();
-        
+
         return CONTEXT_ID;
     }
 
@@ -203,7 +205,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
      * It is the job of the Policy provider to ensure that all the permissions added to a role are granted to principals
      * "mapped to the role".
      * <P>
-     * 
+     *
      * @param roleName the name of the Role to which the permissions are to be added.
      * <P>
      * @param permissions the collection of permissions to be added to the role. The collection may be either a homogenous
@@ -225,7 +227,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 
         if (roleName != null && permissions != null) {
             checkSetPolicyPermission();
-            
+
             for (Permission permission : list(permissions.elements())) {
                 getRolePermissions(roleName).add(permission);
                 writeOnCommit = true;
@@ -240,7 +242,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
      * It is the job of the Policy provider to ensure that all the permissions added to a role are granted to principals
      * "mapped to the role".
      * <P>
-     * 
+     *
      * @param roleName the name of the Role to which the permission is to be added.
      * <P>
      * @param permission the permission to be added to the role.
@@ -269,7 +271,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
     /**
      * Used to add unchecked policy statements to this PolicyConfiguration.
      * <P>
-     * 
+     *
      * @param permissions the collection of permissions to be added as unchecked policy statements. The collection may be
      * either a homogenous or heterogenous collection.
      *
@@ -289,7 +291,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 
         if (permissions != null) {
             checkSetPolicyPermission();
-            
+
             for (Permission permission : list(permissions.elements())) {
                 getUncheckedPermissions().add(permission);
                 writeOnCommit = true;
@@ -300,7 +302,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
     /**
      * Used to add a single unchecked policy statement to this PolicyConfiguration.
      * <P>
-     * 
+     *
      * @param permission the permission to be added to the unchecked policy statements.
      *
      * @throws java.lang.SecurityException if called by an AccessControlContext that has not been granted the "setPolicy"
@@ -327,7 +329,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
     /**
      * Used to add excluded policy statements to this PolicyConfiguration.
      * <P>
-     * 
+     *
      * @param permissions the collection of permissions to be added to the excluded policy statements. The collection may be
      * either a homogenous or heterogenous collection.
      *
@@ -347,7 +349,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 
         if (permissions != null) {
             checkSetPolicyPermission();
-            
+
             for (Permission permission : list(permissions.elements())) {
                 getExcludedPermissions().add(permission);
                 writeOnCommit = true;
@@ -358,7 +360,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
     /**
      * Used to add a single excluded policy statement to this PolicyConfiguration.
      * <P>
-     * 
+     *
      * @param permission the permission to be added to the excluded policy statements.
      *
      * @throws java.lang.SecurityException if called by an AccessControlContext that has not been granted the "setPolicy"
@@ -385,7 +387,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
     /**
      * Used to remove a role and all its permissions from this PolicyConfiguration.
      * <P>
-     * 
+     *
      * @param roleName the name of the role to remove from this PolicyConfiguration. If the value of the roleName parameter
      * is "*" and no role with name "*" exists in this PolicyConfiguration, then all roles must be removed from this
      * PolicyConfiguration.
@@ -416,7 +418,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
                 if (!wasEmpty) {
                     roleToPermissionsMap.clear();
                 }
-                
+
                 roleToPermissionsMap = null;
                 if (!wasEmpty) {
                     writeOnCommit = true;
@@ -499,7 +501,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
             if (stateIs(DELETED_STATE)) {
                 String defMsg = "Cannot perform Operation on a deleted PolicyConfiguration";
                 logger.log(WARNING, localStrings.getLocalString("pc.invalid_op_for_state_delete", defMsg));
-                
+
                 throw new UnsupportedOperationException(defMsg);
 
             } else {
@@ -513,7 +515,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
                 } catch (Exception e) {
                     String defMsg = "commit fail for contextod " + CONTEXT_ID;
                     logger.log(SEVERE, localStrings.getLocalString("pc.commit_failure", defMsg, new Object[] { CONTEXT_ID, e }));
-                    
+
                     throw new PolicyContextException(e);
                 }
                 if (logger.isLoggable(Level.FINE)) {
@@ -532,7 +534,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
      * Note that the policy statements which comprise a role, or comprise the excluded or unchecked policy collections in a
      * PolicyConfiguration are unaffected by the configuration being linked to another.
      * <P>
-     * 
+     *
      * @param link a reference to a different PolicyConfiguration than this PolicyConfiguration.
      * <P>
      * The relationship formed by this method is symetric, transitive and idempotent. If the argument PolicyConfiguration
@@ -560,7 +562,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
         if (CONTEXT_ID.equals(linkId)) {
             String defMsg = "Operation attempted to link PolicyConfiguration to itself.";
             logger.log(Level.WARNING, localStrings.getLocalString("pc.unsupported_link_operation", defMsg));
-            
+
             throw new IllegalArgumentException(defMsg);
         }
 
@@ -587,7 +589,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
     @Override
     public void delete() throws PolicyContextException {
         checkSetPolicyPermission();
-        
+
         synchronized (refreshLock) {
             try {
                 removePolicy();
@@ -613,7 +615,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
     @Override
     public boolean inService() throws PolicyContextException {
         checkSetPolicyPermission();
-        
+
         boolean isInService = stateIs(INSERVICE_STATE);
 
         if (logger.isLoggable(FINE)) {
@@ -622,7 +624,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 
         return isInService;
     }
-    
+
 
     // ### The following methods are implementation specific
 
@@ -638,11 +640,11 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
         if (stateIs(INSERVICE_STATE)) {
             return policy;
         }
-        
+
         if (logger.isLoggable(FINEST)) {
             logger.finest("JACC Policy Provider: getPolicy (" + CONTEXT_ID + ") is NOT in service");
         }
-        
+
         return null;
     }
 
@@ -703,9 +705,9 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
         Object wrapper = Policy.getPolicy();
         if (wrapper != null && wrapper instanceof JDKPolicyFileWrapper) {
             return ((JDKPolicyFileWrapper) wrapper).getNewPolicy();
-        } 
-            
-        return new sun.security.provider.PolicyFile();
+        }
+
+        return new PolicyFile();
     }
 
     private void captureFileTime(boolean granted) {
@@ -715,22 +717,22 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
     private boolean filesChanged() {
         return fileChanged(true) || fileChanged(false);
     }
-    
+
     private boolean fileChanged(boolean granted) {
         return _fileChanged(granted, new File(getPolicyFileName(granted)));
     }
-    
+
     private boolean _fileChanged(boolean granted, File f) {
         return !(lastModTimes[granted ? 1 : 0] == f.lastModified());
     }
 
-    
+
 
     /**
      * tests if policy file has arrived (via synchronization system). if File exists, also checks last modified time, in
      * case file was not deleted on transition out of inservice state. Called when context is not inService to determine if
      * it was needs to be transitioned because of file distribution.
-     * 
+     *
      * @param granted selects granted or excluded policy file
      * @return true if new file has arrived.
      */
@@ -740,9 +742,9 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 
         if (logger.isLoggable(FINE)) {
             logger.fine(
-                "JACC Policy Provider: file arrival check" + " type: " + (granted ? "granted " : "excluded ") + 
-                " arrived: " + hasFileArrived + " exists: " + policyFile.exists() + 
-                " lastModified: " + policyFile.lastModified() + " storedTime: " + lastModTimes[granted ? 1 : 0] + 
+                "JACC Policy Provider: file arrival check" + " type: " + (granted ? "granted " : "excluded ") +
+                " arrived: " + hasFileArrived + " exists: " + policyFile.exists() +
+                " lastModified: " + policyFile.lastModified() + " storedTime: " + lastModTimes[granted ? 1 : 0] +
                 " state: " + (this.state == OPEN_STATE ? "open " : "deleted ") + CONTEXT_ID);
         }
 
@@ -781,7 +783,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
             } catch (MalformedURLException e) {
                 String defMsg = "Unable to convert Policy file Name to URL: " + name;
                 logger.log(Level.SEVERE, localStrings.getLocalString("pc.file_to_url", defMsg, new Object[] { name, e }));
-                
+
                 throw new RuntimeException(defMsg);
             }
         }
@@ -796,7 +798,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
         if (repository == null) {
             throw new RuntimeException("JACC Policy provider: repository not initialized");
         }
-        
+
         return configurationFactory.getContextDirectoryName(CONTEXT_ID);
     }
 
@@ -823,27 +825,27 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
             if (!contextDirectory.delete()) {
                 String defMsg = "Failure removing policy context directory: " + directoryName;
                 logger.log(SEVERE, localStrings.getLocalString("pc.file_delete_error", defMsg));
-                
+
                 throw new RuntimeException(defMsg);
             } else if (logger.isLoggable(FINE)) {
                 logger.fine("JACC Policy Provider: Policy context directory removed: " + directoryName);
             }
 
             File appDir = contextDirectory.getParentFile();
-            
+
             // WORKAROUND: due to existence of timestamp file in given directory
             // for SE/EE synchronization
             File[] fs = appDir.listFiles();
             if (fs != null && fs.length > 0) {
                 boolean hasDir = false;
-                
+
                 for (int i = 0; i < fs.length; i++) {
                     if (fs[i].isDirectory()) {
                         hasDir = true;
                         break;
                     }
                 }
-                
+
                 if (!hasDir) {
                     for (int i = 0; i < fs.length; i++) {
                         fs[i].delete();
@@ -857,7 +859,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
                 if (!appDir.delete()) {
                     String defMsg = "Failure removing policy context directory: " + appDir;
                     logger.log(Level.SEVERE, localStrings.getLocalString("pc.file_delete_error", defMsg));
-                    
+
                     throw new RuntimeException(defMsg);
                 }
             }
@@ -872,10 +874,10 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
             if (!policyFile.delete()) {
                 String defMsg = "Failure removing policy file: " + fileName;
                 logger.log(Level.SEVERE, localStrings.getLocalString("pc.file_delete_error", defMsg, new Object[] { fileName }));
-                
+
                 throw new RuntimeException(defMsg);
             }
-            
+
             if (logger.isLoggable(FINE)) {
                 logger.fine("JACC Policy Provider: Policy file removed: " + fileName);
             }
@@ -899,7 +901,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
         synchronized (refreshLock) {
             // Get the linkSet corresponding to this context.
             Set<String> linkSet = configurationFactory.getLinkTable().get(CONTEXT_ID);
-            
+
             // Remove this context id from the linkSet (which may be shared
             // with other contexts), and unmap the linkSet form this context.
             if (linkSet != null) {
@@ -919,7 +921,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 
             // Get the linkSet corresponding to this context
             Set<String> thisLinkSet = configurationFactory.getLinkTable().get(CONTEXT_ID);
-            
+
             // Get the linkSet corresponding to the context being linked to this
             Set<String> otherLinkSet = configurationFactory.getLinkTable().get(otherId);
 
@@ -927,13 +929,13 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
                 logger.log(SEVERE, "pc.invalid_link_target", otherId);
                 throw new RuntimeException("Linked policy configuration (" + otherId + ") does not exist");
             }
-                
+
             // For each context (id) linked to the context being linked to this
             for (String otherContextId : otherLinkSet) {
-                
+
                 // Add the id to this linkSet
                 thisLinkSet.add(otherContextId);
-                
+
                 // Replace the linkset mapped to all the contexts being linked
                 // to this context, with this linkset.
                 configurationFactory.getLinkTable().put(otherContextId, thisLinkSet);
@@ -962,13 +964,13 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
     /**
      * checks if PolicyContex is in agrument state. Detects implicpit state changes resulting from distribution of policy
      * files by synchronization system.
-     * 
+     *
      * @param stateValue state the context is tested for
      * @return true if in state.
      */
     private boolean stateIs(int stateValue) {
         boolean inState = _stateIs(stateValue);
-        
+
         if (stateValue == INSERVICE_STATE && !inState) {
             if (fileArrived(true) || fileArrived(false)) {
 
@@ -990,7 +992,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
         if (!stateIs(OPEN_STATE)) {
             String defMsg = "Operation invoked on closed or deleted PolicyConfiguration.";
             logger.log(WARNING, localStrings.getLocalString("pc.op_requires_state_open", defMsg));
-            
+
             throw new UnsupportedOperationException(defMsg);
         }
     }
@@ -999,7 +1001,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
         if (uncheckedPermissions == null) {
             uncheckedPermissions = new Permissions();
         }
-        
+
         return uncheckedPermissions;
     }
 
@@ -1007,7 +1009,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
         if (excludedPermissions == null) {
             excludedPermissions = new Permissions();
         }
-        
+
         return excludedPermissions;
     }
 
@@ -1015,8 +1017,14 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
         if (roleToPermissionsMap == null) {
             roleToPermissionsMap = new HashMap<>();
         }
-        
-        return roleToPermissionsMap.computeIfAbsent(roleName, key -> new Permissions());
+
+        if (!roleToPermissionsMap.containsKey(roleName)) {
+            roleToPermissionsMap.put(roleName, new Permissions());
+        }
+
+        return roleToPermissionsMap.get(roleName);
+
+        // return roleToPermissionsMap.computeIfAbsent(roleName, key -> new Permissions());
     }
 
     // This method workarounds a bug in PolicyParser.write(...).
@@ -1033,12 +1041,12 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
         // Otherwise proceed to write policy file
 
         Map<String, Subject> roleToSubjectMap = getRoleToSubjectMap();
-        
+
         // When there are role based permissions, a role mapper is required
         checkNotNullWhenNeeded(roleToSubjectMap);
 
         PolicyParser parser = new PolicyParser(false);
-        
+
         // Add unchecked grants to parser
         if (uncheckedPermissions != null) {
             addUncheckedGrantsToParser(parser);
@@ -1048,7 +1056,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
         if (roleToPermissionsMap != null) {
             addRoleBasedGrantsToParser(roleToSubjectMap, parser);
         }
-        
+
         writeOnCommit = createPolicyFile(true, parser, writeOnCommit);
 
         // Add excluded permissions to a new, excluded, parser
@@ -1064,33 +1072,33 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
             wasRefreshed = false;
         }
     }
-    
+
     private Map<String, Subject> getRoleToSubjectMap() {
         if (roleToPermissionsMap == null) {
             return null;
         }
-        
+
         Map<String, Subject> roleToSubjectMap = null;
-        
+
         SecurityRoleMapperFactory factory = SecurityRoleMapperFactoryGen.getSecurityRoleMapperFactory();
-            
+
         // Make sure a role to subject map has been defined for the Policy Context
         if (factory != null) {
-            
+
             // The role mapper is stored against the application naeme.
             // For a web app get the appname for this contextid
             SecurityRoleMapper securityRoleMapper = factory.getRoleMapper(CONTEXT_ID);
             if (securityRoleMapper != null) {
                 roleToSubjectMap = securityRoleMapper.getRoleToSubjectMapping();
             }
-            
+
             if (roleToSubjectMap != null) {
-                
+
                 // Make sure all linked PCs have the same roleToSubjectMap
                 Set<String> linkContextIds = configurationFactory.getLinkTable().get(CONTEXT_ID);
                 if (linkContextIds != null) {
                     for (String contextId : linkContextIds) {
-                        
+
                         if (!CONTEXT_ID.equals(contextId)) {
                             SecurityRoleMapper otherSecurityRoleMapper = factory.getRoleMapper(contextId);
                             Map otherRoleToSubjectMap = null;
@@ -1101,12 +1109,12 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 
                             if (otherRoleToSubjectMap != roleToSubjectMap) {
                                 String defMsg = "Linked policy contexts have different roleToSubjectMaps (" + CONTEXT_ID + ")<->(" + contextId + ")";
-                                
-                                logger.log(SEVERE, 
+
+                                logger.log(SEVERE,
                                         localStrings.getLocalString(
-                                                "pc.linked_with_different_role_maps", 
+                                                "pc.linked_with_different_role_maps",
                                                 defMsg, new Object[] { CONTEXT_ID, contextId }));
-                                
+
                                 throw new RuntimeException(defMsg);
                             }
                         }
@@ -1114,55 +1122,55 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
                 }
             }
         }
-        
+
         return roleToSubjectMap;
     }
-    
+
     private void checkNotNullWhenNeeded(Map<String, Subject> roleToSubjectMap) {
         if (roleToSubjectMap == null && roleToPermissionsMap != null) {
             String defMsg = "This application has no role mapper factory defined";
-            logger.log(SEVERE, 
+            logger.log(SEVERE,
                 localStrings.getLocalString(
                         "pc.role_map_not_defined_at_commit", defMsg, new Object[] { CONTEXT_ID }));
-            
+
             throw new RuntimeException(localStrings.getLocalString("enterprise.deployment.deployment.norolemapperfactorydefine", defMsg));
         }
     }
-    
+
     private void addUncheckedGrantsToParser(PolicyParser parser) {
         List<Permission> permissions = list(uncheckedPermissions.elements());
-        
+
         if (!permissions.isEmpty()) {
             GrantEntry grant = new GrantEntry();
             addPermissionsToGrant(permissions, grant);
             parser.add(grant);
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     private void addRoleBasedGrantsToParser(Map<String, Subject> roleToSubjectMap, PolicyParser parser) {
         for (String roleName : roleToPermissionsMap.keySet()) {
-        
+
             boolean withPrincipals = false;
             Permissions rolePermissions = getRolePermissions(roleName);
-            
+
             Subject subject = roleToSubjectMap.get(roleName);
             if (subject != null) {
-                
+
                 for (Principal principal : subject.getPrincipals()) {
 
                     if (principal != null) {
                         withPrincipals = true;
                         GrantEntry grant = new GrantEntry();
-                        
+
                         grant.principals.add(
                             new PrincipalEntry(
                                     principal.getClass().
-                                    getName(), 
+                                    getName(),
                                     escapeName(principal.getName())));
-                        
+
                         addPermissionsToGrant(rolePermissions, grant);
-                        
+
                         parser.add(grant);
                     } else {
                         logger.log(WARNING, localStrings.getLocalString("pc.non_principal_mapped_to_role",
@@ -1170,46 +1178,46 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
                     }
                 }
             }
-            
+
             /**
              * JACC MR8 add grant for the any authenticated user role '**'
              */
             if (!withPrincipals && ("**".equals(roleName))) {
                 withPrincipals = true;
-                
+
                 GrantEntry grant = new GrantEntry();
-                
+
                 grant.principals.add(
                     new PrincipalEntry(
-                        WILDCARD_CLASS, 
+                        WILDCARD_CLASS,
                         WILDCARD_NAME));
-                
+
                 addPermissionsToGrant(rolePermissions, grant);
-                
+
                 parser.add(grant);
-                
+
                 if (logger.isLoggable(FINE)) {
                     logger.fine("JACC Policy Provider: added role grant for any authenticated user");
                 }
             }
-            
+
             if (!withPrincipals) {
                 logger.log(WARNING, localStrings.getLocalString("pc.no_principals_mapped_to_role", "no principals mapped to role " + roleName,
                         new Object[] { roleName }));
             }
         }
     }
-    
+
     private void addExcludedPermissionsToParser(PolicyParser parser) {
         List<Permission> permissions = list(excludedPermissions.elements());
-        
+
         if (!permissions.isEmpty()) {
             GrantEntry grant = new GrantEntry();
             addPermissionsToGrant(permissions, grant);
             parser.add(grant);
         }
     }
-    
+
     private void addPermissionsToGrant(Permissions permissions, GrantEntry grant) {
         addPermissionsToGrant(list(permissions.elements()), grant);
     }
@@ -1218,12 +1226,12 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
         for (Permission permission : permissions) {
             grant.add(
                 new PermissionEntry(
-                        permission.getClass().getName(), 
+                        permission.getClass().getName(),
                         permission.getName(),
                         permission.getActions()));
         }
     }
-    
+
     private void createPolicyContextDirectory() {
 
         String contextDirectoryName = getContextDirectoryName();
@@ -1231,7 +1239,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 
         String defMsg = "unable to create policy context directory";
         String msg = localStrings.getLocalString("pc.unable_to_create_context_directory", defMsg, new Object[] { contextDirectoryName });
-        
+
         if (contectDirectory.exists()) {
             if (!contectDirectory.isDirectory()) {
 
@@ -1249,13 +1257,13 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
     // Returns false if write succeeds. otherwise returns input woc (i.e. writeOnCommit)
     private boolean createPolicyFile(boolean granted, PolicyParser parser, boolean woc) throws IOException {
         boolean result = woc;
-        
+
         createPolicyContextDirectory();
         removePolicyFile(granted);
-        
+
         String name = getPolicyFileName(granted);
         OutputStreamWriter writer = null;
-        
+
         try {
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("JACC Policy Provider: Writing grant statements to policy file: " + name);
@@ -1277,12 +1285,12 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
                 } catch (Exception e) {
                     String defMsg = "Unable to close Policy file: " + name;
                     logger.log(Level.SEVERE, localStrings.getLocalString("pc.file_close_error", defMsg, new Object[] { name, e }));
-                    
+
                     throw new RuntimeException(defMsg);
                 }
             }
         }
-        
+
         return result;
     }
 
@@ -1305,10 +1313,10 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
     @SuppressWarnings("unchecked")
     private Permissions loadExcludedPolicy() {
         Permissions result = null;
-        
+
         String name = getPolicyFileName(false);
         PolicyParser parser = new PolicyParser(false);
-        
+
         FileReader reader = null;
         try {
             captureFileTime(false);
@@ -1321,12 +1329,12 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
         } catch (IOException ioe) {
             String defMsg = "Error reading Policy file: " + name;
             logger.log(SEVERE, localStrings.getLocalString("pc.file_read_error", defMsg, new Object[] { name, ioe }));
-            
+
             throw new RuntimeException(defMsg);
         } catch (ParsingException pe) {
             String defMsg = "Unable to parse Policy file: " + name;
             logger.log(SEVERE, localStrings.getLocalString("pc.policy_parsing_exception", defMsg, new Object[] { name, pe }));
-            
+
             throw new RuntimeException(defMsg);
         } finally {
             if (reader != null) {
@@ -1335,26 +1343,26 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
                 } catch (Exception e) {
                     String defMsg = "Unable to close Policy file: " + name;
                     logger.log(SEVERE, localStrings.getLocalString("pc.file_close_error", defMsg, new Object[] { name, e }));
-                    
+
                     throw new RuntimeException(defMsg);
                 }
             }
         }
 
         if (parser != null) {
-            
+
             for (GrantEntry grant : list((Enumeration<GrantEntry>)parser.grantElements())) {
                 if (grant.codeBase != null || grant.signedBy != null || grant.principals.size() != 0) {
                     logger.log(WARNING, localStrings.getLocalString("pc.excluded_grant_context_ignored", "ignore excluded grant context", new Object[] { grant }));
                 } else {
                     for (PermissionEntry entry : list((Enumeration<PermissionEntry>) grant.permissionEntries.elements())) {
-                    
+
                         Permission permission = loadPermission(entry.permission, entry.name, entry.action);
-                        
+
                         if (result == null) {
                             result = new Permissions();
                         }
-                        
+
                         result.add(permission);
                     }
                 }
@@ -1367,8 +1375,8 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
     private void setSecurityProperty(final String key, final String value) {
         if (System.getSecurityManager() == null) {
             Security.setProperty(key, value);
-        } 
-            
+        }
+
         doPrivileged(new PrivilegedAction<Object>() {
             @Override
             public Object run() {
@@ -1381,8 +1389,8 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
     private String getSecurityProperty(final String key) {
         if (getSecurityManager() == null) {
             return Security.getProperty(key);
-        } 
-            
+        }
+
         return doPrivileged(new PrivilegedAction<String>() {
             @Override
             public String run() {

@@ -1,23 +1,23 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,37 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-/*
- * PolicyWrapper.java
- *
- * @author Harpreet Singh (harpreet.singh@sun.com)
- * @author Ron Monzillo
- * @version
-5B
- * Created on May 23, 2002, 1:56 PM
- */
+package fish.payara.jacc;
 
-package com.sun.enterprise.security.provider;
+import java.security.Policy;
+
+import javax.security.jacc.PolicyConfigurationFactory;
 
 /**
- * This class is a wrapper around the default jdk policy file implementation. 
+ * This interface is used to bundle the two elements that make up a full JACC Provider
+ * (authorization module), the {@link PolicyConfigurationFactory} and the {@link Policy}.
  * 
- * <p>
- * PolicyWrapper is installed as the JRE policy object. It multiplexes policy decisions to the context specific instance of
- * sun.enterprise.security.provider.PolicyFile. 
- * </p>
- * 
- * <p>
- * Although this Policy provider is implemented using another Policy
- * class, this class is not a "delegating Policy provider" as defined by JACC, and as such it SHOULD not be configured
- * using the JACC system property javax.security.jacc.policy.provider.
- * </p>
- * 
- * @author Harpreet Singh (harpreet.singh@sun.com)
- * @author Jean-Francois Arcand
- * @author Ron Monzillo
- *
+ * @author Arjan Tijms
  */
-public class PolicyWrapper extends JDKPolicyFileWrapper {
+public interface ContextProvider {
+    
+    /**
+     * Returns the PolicyConfigurationFactory element of the JACC Provider
+     * @return the PolicyConfigurationFactory
+     */
+    PolicyConfigurationFactory getPolicyConfigurationFactory(); 
+    
+    /**
+     * Returns the Policy element of the JACC Provider
+     * @return the Policy
+     */
+    Policy getPolicy();
 }
