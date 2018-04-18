@@ -61,6 +61,7 @@ import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
 import fish.payara.nucleus.microprofile.config.source.EnvironmentConfigSource;
 import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
+import fish.payara.nucleus.microprofile.config.source.PasswordAliasConfigSource;
 import fish.payara.nucleus.microprofile.config.source.PayaraServerProperties;
 import fish.payara.nucleus.microprofile.config.source.PropertiesConfigSource;
 import fish.payara.nucleus.microprofile.config.source.SecretsDirConfigSource;
@@ -289,6 +290,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         sources.add(new JNDIConfigSource());
         sources.add(new PayaraServerProperties());
         sources.add(new SecretsDirConfigSource());
+        sources.add(new PasswordAliasConfigSource());
         if (appName != null) {
             sources.add(new ApplicationConfigSource(appName));
             sources.add(new ModuleConfigSource(appName, moduleName));
