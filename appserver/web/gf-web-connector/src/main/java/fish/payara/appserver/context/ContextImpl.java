@@ -69,6 +69,19 @@ class ContextImpl {
     }
 
     @RequiredArgsConstructor
+    public static class ClassLoaderContext implements JavaEEContextUtil.Context {
+        private final ClassLoader oldClassLoader;
+        private final boolean resetOldClassLoader;
+
+        @Override
+        public void close() {
+            if (resetOldClassLoader) {
+                Utility.setContextClassLoader(oldClassLoader);
+            }
+        }
+    }
+
+    @RequiredArgsConstructor
     public static class RequestContext implements JavaEEContextUtil.Context {
         @Override
         public void close() {

@@ -37,16 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
-/*
+ /*
  * JavaEEScanner.java
  *
  * Created on November 1, 2005, 5:30 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
  */
-
 package org.glassfish.apf.impl;
 
 import org.glassfish.apf.ComponentInfo;
@@ -65,21 +62,22 @@ import java.io.IOException;
 public abstract class JavaEEScanner {
 
     Types types;
-    
-    public ComponentInfo getComponentInfo(Class componentImpl){
+
+    public ComponentInfo getComponentInfo(Class componentImpl) {
         return new ComponentDefinition(componentImpl);
     }
 
     protected void initTypes(File file) throws IOException {
         ParsingContext context = new ParsingContext.Builder().build();
-        Parser cp = new Parser(context);
-        cp.parse(file, null);
-        try {
-            cp.awaitTermination();
-        } catch (InterruptedException e) {
-            throw new IOException(e);
+        try (Parser cp = new Parser(context)) {
+            cp.parse(file, null);
+            try {
+                cp.awaitTermination();
+            } catch (InterruptedException e) {
+                throw new IOException(e);
+            }
+            types = cp.getContext().getTypes();
         }
-        types = cp.getContext().getTypes();
     }
 
     public Types getTypes() {

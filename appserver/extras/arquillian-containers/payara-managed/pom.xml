@@ -169,7 +169,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${version.maven.surefire.plugin}</version>
                 <configuration>
                     <systemPropertyVariables>
                         <glassfish.home>${glassfish.home}</glassfish.home>

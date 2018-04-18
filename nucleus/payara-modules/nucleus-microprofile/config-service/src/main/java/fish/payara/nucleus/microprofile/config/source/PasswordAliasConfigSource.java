@@ -37,20 +37,59 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification;
+package fish.payara.nucleus.microprofile.config.source;
 
-import java.io.Serializable;
+import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.glassfish.internal.api.Globals;
 
 /**
- * @author mertcaliskan
+ *
+ * @author steve
  */
-public abstract class NotificationData implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class PasswordAliasConfigSource extends PayaraConfigSource implements ConfigSource {
 
-    public <T extends NotificationData> T as(final Class<T> clazz) {
-        if (this.getClass().isAssignableFrom(clazz)) {
-            return clazz.cast(this);
-        }
-        throw new IllegalArgumentException("Cannot cast to class: " + clazz.getName());
+    private final DomainScopedPasswordAliasStore store;
+    
+    
+    public PasswordAliasConfigSource() {
+        store = Globals.getDefaultHabitat().getService(DomainScopedPasswordAliasStore.class);
     }
+    
+    @Override
+    public int getOrdinal() {
+        return Integer.parseInt(configService.getMPConfig().getPasswordOrdinality());
+    }
+
+
+    @Override
+    public Map<String, String> getProperties() {
+        Map<String,String> properties = new HashMap<>();
+        if (store != null) {
+            Iterator<String> keys = store.keys();
+            while(keys.hasNext()){
+                String key = keys.next();
+                properties.put(key, new String(store.get(key)));
+            }
+        }
+        return properties;
+    }
+
+    @Override
+    public String getValue(String name) {
+        String value = null;
+        if (store != null && name != null && store.containsKey(name)) {
+            value = new String(store.get(name));
+        }
+        return value;
+    }
+
+    @Override
+    public String getName() {
+        return "Password Alias";
+    }
+    
 }

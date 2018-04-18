@@ -55,7 +55,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.plugin.version}</version>
                 <configuration>
                     <source>${javase.version}</source>
                     <target>${javase.version}</target>
