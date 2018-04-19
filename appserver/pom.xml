@@ -210,18 +210,21 @@
 
         <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
 
-         <!-- Microprofile version properties -->
-         <microprofile-config.version>1.1-payara-p1</microprofile-config.version>
-         <microprofile-fault-tolerance.version>1.0.payara-p1</microprofile-fault-tolerance.version>
-         <microprofile-jwt-auth.version>1.0.payara-p1</microprofile-jwt-auth.version>
-         <microprofile-healthcheck.version>1.0.payara-p1</microprofile-healthcheck.version>
-         <microprofile-metrics.version>1.1.payara-p1</microprofile-metrics.version>
-      
-         <nimbus-jose-jwt.version>5.4</nimbus-jose-jwt.version>
-         <accessors-smart.version>1.2.payara-p1</accessors-smart.version>
-         <json-smart.version>2.3</json-smart.version>
-         <jcip-annotations.version>1.0-1</jcip-annotations.version>
+        <!-- Microprofile version properties -->
+        <microprofile-config.version>1.1-payara-p1</microprofile-config.version>
+        <microprofile-fault-tolerance.version>1.0.payara-p1</microprofile-fault-tolerance.version>
+        <microprofile-jwt-auth.version>1.0.payara-p1</microprofile-jwt-auth.version>
+        <microprofile-healthcheck.version>1.0.payara-p1</microprofile-healthcheck.version>
+        <microprofile-metrics.version>1.1.payara-p1</microprofile-metrics.version>
 
+        <nimbus-jose-jwt.version>5.4</nimbus-jose-jwt.version>
+        <accessors-smart.version>1.2.payara-p1</accessors-smart.version>
+        <json-smart.version>2.3</json-smart.version>
+        <jcip-annotations.version>1.0-1</jcip-annotations.version>
+         
+        <!-- Yubico client validation version property -->
+        <yubico-validation-client2.version>3.0.0</yubico-validation-client2.version>
+        
     </properties>
 
 
@@ -686,12 +689,7 @@
                 <artifactId>javax.security.enterprise-api</artifactId>
                 <version>${javax.security.enterprise-api.version}</version>
             </dependency>
-             <dependency>
-                <groupId>org.glassfish.soteria</groupId>
-                <artifactId>javax.security.enterprise</artifactId>
-                <version>${javax.security.enterprise.version}</version>
-            </dependency>
-
+            
             <!-- JACC -->
             <dependency>
                 <groupId>javax.security.jacc</groupId>

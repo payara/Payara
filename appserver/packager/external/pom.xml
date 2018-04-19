@@ -69,10 +69,12 @@
         <module>ant</module>
         <module>javadb</module>
         <module>h2db</module>    
-	    <module>jmsra</module>
+	<module>jmsra</module>
         <module>jaxr_ra</module>
         <module>jcip</module>
         <module>libpam4j</module>
+        <module>yubico</module>
+        <module>slf4j</module>
     </modules>
     <build>
         <plugins>

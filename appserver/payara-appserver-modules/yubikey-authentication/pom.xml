@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.glassfish.main</groupId>
+        <artifactId>payara-appserver-modules</artifactId>
+        <version>5.182-SNAPSHOT</version>
+    </parent>
+    
+    <groupId>fish.payara.security</groupId>
+    <artifactId>yubikey-authentication</artifactId>
+    
+    <name>Yubikey Authentication</name>
+    <packaging>glassfish-jar</packaging>
+    <description>Yubikey Authentication</description>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                        <configuration>
+                            <instructions>
+                                <Export-Package>
+                                    fish.payara.security.otp.authentication,
+                                    fish.payara.security.otp.identitystores
+                                </Export-Package>
+                            </instructions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    
+    <dependencies>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>8.0</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.yubico</groupId>
+            <artifactId>yubico-validation-client2</artifactId>
+            <version>${yubico-validation-client2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.soteria</groupId>
+            <artifactId>javax.security.enterprise</artifactId>
+        </dependency>
+    </dependencies>
+</project>
