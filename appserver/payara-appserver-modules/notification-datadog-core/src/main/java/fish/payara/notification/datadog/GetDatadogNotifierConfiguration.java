@@ -69,12 +69,13 @@ public class GetDatadogNotifierConfiguration extends BaseGetNotifierConfiguratio
 
     @Override
     protected String listConfiguration(DatadogNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "Key"};
+        String headers[] = {"Enabled", "Noisy", "Key"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[2];
+        Object values[] = new Object[3];
 
         values[0] = configuration.getEnabled();
-        values[1] = configuration.getKey();
+        values[1] = configuration.getNoisy();
+        values[2] = configuration.getKey();
 
         columnFormatter.addRow(values);
         return columnFormatter.toString();
@@ -82,11 +83,14 @@ public class GetDatadogNotifierConfiguration extends BaseGetNotifierConfiguratio
     
     @Override
     protected Map<String, Object> getNotifierConfiguration(DatadogNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(2);
+        Map<String, Object> map = new HashMap<>(3);
 
         if (configuration != null) {
             map.put("enabled", configuration.getEnabled());
+            map.put("noisy", configuration.getNoisy());
             map.put("key", configuration.getKey());
+        } else {
+        	map.put("noisy", Boolean.TRUE.toString());
         }
 
         return map;

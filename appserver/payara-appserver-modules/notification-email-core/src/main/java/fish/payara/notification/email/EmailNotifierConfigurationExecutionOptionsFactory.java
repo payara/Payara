@@ -68,6 +68,7 @@ public class EmailNotifierConfigurationExecutionOptionsFactory
         executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
         executionOptions.setJndiName(notifierConfiguration.getJndiName());
         executionOptions.setTo(notifierConfiguration.getTo());
+		executionOptions.setNoisy(Boolean.parseBoolean(notifierConfiguration.getNoisy()));
 
         return executionOptions;
     }

@@ -67,6 +67,7 @@ public class HipchatNotifierConfigurationExecutionOptionsFactory
     public HipchatNotifierConfigurationExecutionOptions build(HipchatNotifierConfiguration notifierConfiguration) throws UnsupportedEncodingException {
         HipchatNotifierConfigurationExecutionOptions executionOptions = new HipchatNotifierConfigurationExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
+		executionOptions.setNoisy(Boolean.parseBoolean(notifierConfiguration.getNoisy()));
         String roomName = notifierConfiguration.getRoomName();
         executionOptions.setRoomName(URLDecoder.decode(roomName, Charsets.UTF8_CHARSET.displayName()));
         executionOptions.setToken(notifierConfiguration.getToken());

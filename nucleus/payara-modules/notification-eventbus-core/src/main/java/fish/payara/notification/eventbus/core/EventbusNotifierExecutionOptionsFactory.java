@@ -64,7 +64,7 @@ public class EventbusNotifierExecutionOptionsFactory extends NotifierExecutionOp
     public NotifierExecutionOptions build(EventbusNotifier notifier) {
         EventbusNotifierExecutionOptions executionOptions = new EventbusNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
-
+        executionOptions.setNoisy(Boolean.parseBoolean(notifier.getNoisy()));
         return executionOptions;
     }
 }

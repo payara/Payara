@@ -67,6 +67,7 @@ public class CDIEventbusNotifierConfigurationExecutionOptionsFactory
 
         executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
         executionOptions.setLoopBack(Boolean.parseBoolean(notifierConfiguration.getLoopBack()));
+		executionOptions.setNoisy(Boolean.parseBoolean(notifierConfiguration.getNoisy()));
 
         return executionOptions;
     }

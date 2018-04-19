@@ -111,7 +111,7 @@ public class GetNotificationConfiguration implements AdminCommand {
         NotificationServiceConfiguration configuration = config.getExtensionByType(NotificationServiceConfiguration.class);
         List<ServiceHandle<BaseNotifierService>> allServiceHandles = habitat.getAllServiceHandles(BaseNotifierService.class);
 
-        String headers[] = {"Enabled", "Notifier Enabled"};
+        String headers[] = {"Enabled", "Notifier Enabled", "Notifier Noisy"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
 
         if (configuration.getNotifierConfigurationList().isEmpty()) {
@@ -135,23 +135,26 @@ public class GetNotificationConfiguration implements AdminCommand {
 
                     if (notifierConfigurationClassList.contains(view.<NotifierConfiguration>getProxyType())) {
 
-                        Object values[] = new Object[2];
+                        Object values[] = new Object[3];
                         values[0] = notificationServiceConfiguration.getEnabled();
                         values[1] = notifierConfiguration.getEnabled();
+                        values[2] = notifierConfiguration.getNoisy();
                         columnFormatter.addRow(values);
 
                         Map<String, Object> map;
                         if (NotifierType.LOG.equals(annotation.type())) {
-                            map = new HashMap<>(3);
+                            map = new HashMap<>(4);
                             map.put("enabled", values[0]);
                             map.put("notifierEnabled", values[1]);
+                            map.put("noisy", values[2]);
                             LogNotifierConfiguration logNotifierConfiguration = (LogNotifierConfiguration) notifierConfiguration;
                             map.put("useSeparateLogFile", logNotifierConfiguration.getUseSeparateLogFile());
                         }
                         else {
-                            map = new HashMap<>(2);
+                            map = new HashMap<>(3);
                             map.put("enabled", values[0]);
                             map.put("notifierEnabled", values[1]);
+                            map.put("noisy", values[2]);
                         }
 
                         extraProps.put("getNotificationConfiguration" + annotation.type(), map);

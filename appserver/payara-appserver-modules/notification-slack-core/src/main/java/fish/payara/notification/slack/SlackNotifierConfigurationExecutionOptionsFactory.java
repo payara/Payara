@@ -64,6 +64,7 @@ public class SlackNotifierConfigurationExecutionOptionsFactory
     public SlackNotifierConfigurationExecutionOptions build(SlackNotifierConfiguration notifierConfiguration) {
         SlackNotifierConfigurationExecutionOptions executionOptions = new SlackNotifierConfigurationExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
+		executionOptions.setNoisy(Boolean.parseBoolean(notifierConfiguration.getNoisy()));
         executionOptions.setToken1(notifierConfiguration.getToken1());
         executionOptions.setToken2(notifierConfiguration.getToken2());
         executionOptions.setToken3(notifierConfiguration.getToken3());

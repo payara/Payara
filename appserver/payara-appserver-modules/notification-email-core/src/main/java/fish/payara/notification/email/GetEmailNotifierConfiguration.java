@@ -68,13 +68,14 @@ public class GetEmailNotifierConfiguration extends BaseGetNotifierConfiguration<
 
     @Override
     protected String listConfiguration(EmailNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "JNDI Name", "To"};
+        String headers[] = {"Enabled", "Noisy", "JNDI Name", "To"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[3];
+        Object values[] = new Object[4];
 
         values[0] = configuration.getEnabled();
-        values[1] = configuration.getJndiName();
-        values[2] = configuration.getTo();
+        values[1] = configuration.getNoisy();
+        values[2] = configuration.getJndiName();
+        values[3] = configuration.getTo();
 
         columnFormatter.addRow(values);
         return columnFormatter.toString();
@@ -82,12 +83,15 @@ public class GetEmailNotifierConfiguration extends BaseGetNotifierConfiguration<
 
     @Override
     protected Map<String, Object> getNotifierConfiguration(EmailNotifierConfiguration configuration) {
-    	Map<String, Object> map = new HashMap<>(3);
+    	Map<String, Object> map = new HashMap<>(4);
 
         if (configuration != null) {
             map.put("enabled", configuration.getEnabled());
+            map.put("noisy", configuration.getNoisy());
             map.put("jndiName", configuration.getJndiName());
             map.put("to", configuration.getTo());
+        } else {
+        	map.put("noisy", Boolean.TRUE.toString());
         }
 
         return map;

@@ -68,13 +68,14 @@ public class GetHipchatNotifierConfiguration extends BaseGetNotifierConfiguratio
 
     @Override
     protected String listConfiguration(HipchatNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "Room Name", "Token"};
+        String headers[] = {"Enabled", "Noisy", "Room Name", "Token"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[3];
+        Object values[] = new Object[4];
 
         values[0] = configuration.getEnabled();
-        values[1] = configuration.getRoomName();
-        values[2] = configuration.getToken();
+        values[1] = configuration.getNoisy();
+        values[2] = configuration.getRoomName();
+        values[3] = configuration.getToken();
 
         columnFormatter.addRow(values);
         return columnFormatter.toString();
@@ -82,12 +83,15 @@ public class GetHipchatNotifierConfiguration extends BaseGetNotifierConfiguratio
 
     @Override
     protected Map<String, Object> getNotifierConfiguration(HipchatNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(3);
+        Map<String, Object> map = new HashMap<>(4);
 
         if (configuration != null) {
             map.put("enabled", configuration.getEnabled());
+            map.put("noisy", configuration.getNoisy());
             map.put("roomName", configuration.getRoomName());
             map.put("token", configuration.getToken());
+        } else {
+        	map.put("noisy", Boolean.TRUE.toString());
         }
 
         return map;

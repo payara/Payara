@@ -38,28 +38,35 @@
  */
 package fish.payara.nucleus.healthcheck.admin.notifier;
 
-import com.google.common.collect.ObjectArrays;
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import fish.payara.nucleus.healthcheck.HealthCheckService;
-import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.notification.configuration.Notifier;
+import java.beans.PropertyVetoException;
+import java.lang.reflect.ParameterizedType;
+import java.util.Map;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.security.auth.Subject;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import javax.inject.Inject;
-import java.beans.PropertyVetoException;
-import java.lang.reflect.ParameterizedType;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.google.common.collect.ObjectArrays;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.util.SystemPropertyConstants;
+
+import fish.payara.nucleus.healthcheck.HealthCheckService;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
+import fish.payara.nucleus.notification.configuration.Notifier;
 
 /**
  * @author mertcaliskan
@@ -87,13 +94,26 @@ public abstract class BaseHealthCheckNotifierConfigurer<C extends Notifier> impl
     @Param(name = "enabled")
     protected Boolean enabled;
 
+    @Param(name = "noisy", optional = true)
+    protected Boolean noisy;
+
     private Class<C> notifierClass;
 
     protected abstract void applyValues(C c) throws PropertyVetoException;
 
+    protected ActionReport actionReport;
+
+    protected Subject subject;
+
+    @Inject
+    ServiceLocator serviceLocator;
+
+    CommandRunner.CommandInvocation inv;
+
     @Override
     public void execute(AdminCommandContext context) {
-        final ActionReport actionReport = context.getActionReport();
+        actionReport = context.getActionReport();
+        subject = context.getSubject();
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
             extraProperties = new Properties();
@@ -112,8 +132,7 @@ public abstract class BaseHealthCheckNotifierConfigurer<C extends Notifier> impl
             if (c == null) {
                 ConfigSupport.apply(new SingleConfigCode<HealthCheckServiceConfiguration>() {
                     @Override
-                    public Object run(final HealthCheckServiceConfiguration healthCheckServiceConfigurationProxy)
-                            throws PropertyVetoException, TransactionFailure {
+                    public Object run(final HealthCheckServiceConfiguration healthCheckServiceConfigurationProxy) throws PropertyVetoException, TransactionFailure {
                         C c = healthCheckServiceConfigurationProxy.createChild(notifierClass);
                         applyValues(c);
                         healthCheckServiceConfigurationProxy.getNotifierList().add(c);
@@ -121,8 +140,7 @@ public abstract class BaseHealthCheckNotifierConfigurer<C extends Notifier> impl
                         return healthCheckServiceConfigurationProxy;
                     }
                 }, healthCheckServiceConfiguration);
-            }
-            else {
+            } else {
                 config[0] = c;
                 ConfigSupport.apply(new SingleConfigCode<C>() {
                     public Object run(C cProxy) throws PropertyVetoException, TransactionFailure {
@@ -138,17 +156,32 @@ public abstract class BaseHealthCheckNotifierConfigurer<C extends Notifier> impl
                     if (targetUtil.getConfig(target).isDas()) {
                         configureDynamically();
                     }
-                }
-                else {
+                } else {
                     configureDynamically();
                 }
             }
-        }
-        catch(TransactionFailure ex){
+        } catch (TransactionFailure ex) {
             logger.log(Level.WARNING, "Exception during command ", ex);
-            actionReport.setMessage(ex.getCause().getMessage());
+            actionReport.setMessage(ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
+    }
+
+    @SuppressWarnings("rawtypes")
+    protected boolean getNotifierNoisy(String commandName) {
+        boolean ret = true;
+        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
+        ActionReport subReport = actionReport.addSubActionsReport();
+        inv = runner.getCommandInvocation(commandName, subReport, subject);
+        inv.execute();
+        if (subReport.hasSuccesses()) {
+            Properties properties = subReport.getExtraProperties();
+            if (properties != null) {
+                Map notifierConfigurationMap = (Map) properties.get("notifierConfiguration");
+                ret = "true".equalsIgnoreCase("" + notifierConfigurationMap.get("noisy"));
+            }
+        }
+        return ret;
     }
 
     protected void configureDynamically() {
