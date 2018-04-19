@@ -95,6 +95,9 @@ public class SetNotificationConfiguration implements AdminCommand {
     @Param(name = "notifierEnabled")
     private Boolean notifierEnabled;
 
+    @Param(name = "noisy", defaultValue = "true", optional = true)
+    private Boolean noisy;
+
     @Param(name = "useSeparateLogFile", defaultValue = "false", optional = true)
     private Boolean useSeparateLogFile;
 
@@ -144,6 +147,7 @@ public class SetNotificationConfiguration implements AdminCommand {
         params.add("dynamic", notifierDynamic.toString());
         params.add("target", target);
         params.add("enabled", notifierEnabled.toString());
+        params.add("noisy", noisy.toString());
         params.add("useSeparateLogFile", useSeparateLogFile.toString());
         inv.parameters(params);
         inv.execute();

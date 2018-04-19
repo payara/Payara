@@ -68,14 +68,15 @@ public class GetSlackNotifierConfiguration extends BaseGetNotifierConfiguration<
 
     @Override
     protected String listConfiguration(SlackNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "Token 1", "Token 2", "Token 3"};
+        String headers[] = {"Enabled", "Noisy", "Token 1", "Token 2", "Token 3"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[4];
+        Object values[] = new Object[5];
 
         values[0] = configuration.getEnabled();
-        values[1] = configuration.getToken1();
-        values[2] = configuration.getToken2();
-        values[3] = configuration.getToken3();
+        values[1] = configuration.getNoisy();
+        values[2] = configuration.getToken1();
+        values[3] = configuration.getToken2();
+        values[4] = configuration.getToken3();
 
         columnFormatter.addRow(values);
         return columnFormatter.toString();
@@ -83,14 +84,17 @@ public class GetSlackNotifierConfiguration extends BaseGetNotifierConfiguration<
     
     @Override
     protected Map<String, Object> getNotifierConfiguration(SlackNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(4);
+        Map<String, Object> map = new HashMap<>(5);
 
         if (configuration != null) {
             map.put("enabled", configuration.getEnabled());
+            map.put("noisy", configuration.getNoisy());
             map.put("token1", configuration.getToken1());
             map.put("token2", configuration.getToken2());
             map.put("token3", configuration.getToken3());
-        }
+        } else {
+        	map.put("noisy", Boolean.TRUE.toString());
+       }
 
         return map;
     }

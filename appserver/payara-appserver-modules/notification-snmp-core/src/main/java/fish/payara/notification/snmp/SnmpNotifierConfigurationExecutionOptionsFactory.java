@@ -64,6 +64,7 @@ public class SnmpNotifierConfigurationExecutionOptionsFactory
     public SnmpNotifierConfigurationExecutionOptions build(SnmpNotifierConfiguration notifierConfiguration) {
         SnmpNotifierConfigurationExecutionOptions executionOptions = new SnmpNotifierConfigurationExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
+		executionOptions.setNoisy(Boolean.parseBoolean(notifierConfiguration.getNoisy()));
         executionOptions.setCommunity(notifierConfiguration.getCommunity());
         executionOptions.setOid(notifierConfiguration.getOid());
         executionOptions.setVersion(notifierConfiguration.getVersion());

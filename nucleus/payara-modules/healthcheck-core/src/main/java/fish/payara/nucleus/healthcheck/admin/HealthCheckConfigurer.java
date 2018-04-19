@@ -39,15 +39,27 @@
  */
 package fish.payara.nucleus.healthcheck.admin;
 
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import fish.payara.nucleus.healthcheck.HealthCheckService;
-import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.notification.TimeUtil;
+import java.beans.PropertyVetoException;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.validation.constraints.Min;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -58,12 +70,15 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import javax.inject.Inject;
-import java.beans.PropertyVetoException;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.validation.constraints.Min;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+
+import fish.payara.nucleus.healthcheck.HealthCheckService;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
+import fish.payara.nucleus.notification.TimeUtil;
+import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
+import fish.payara.nucleus.notification.log.LogNotifierConfiguration;
 
 /**
  * Admin command to enable/disable all health check services defined in
@@ -75,150 +90,165 @@ import javax.validation.constraints.Min;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("healthcheck.configure")
-@ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@ExecuteOn({ RuntimeType.DAS, RuntimeType.INSTANCE })
+@TargetType({ CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER,
+		CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG })
 @RestEndpoints({
-    @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
-            opType = RestEndpoint.OpType.POST,
-            path = "healthcheck-configure",
-            description = "Enables/Disables Health Check Service")
-})
+		@RestEndpoint(configBean = HealthCheckServiceConfiguration.class, opType = RestEndpoint.OpType.POST, path = "healthcheck-configure", description = "Enables/Disables Health Check Service") })
 public class HealthCheckConfigurer implements AdminCommand {
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckConfigurer.class);
-    
-    @Inject
-    ServerEnvironment server;
+	final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckConfigurer.class);
 
-    @Inject
-    protected Logger logger;
+	@Inject
+	ServerEnvironment server;
 
-    @Inject
-    HealthCheckService service;
+	@Inject
+	protected Logger logger;
 
-    @Inject
-    ServiceLocator serviceLocator;
+	@Inject
+	HealthCheckService service;
 
-    @Inject
-    protected Target targetUtil;
+	@Inject
+	ServiceLocator serviceLocator;
 
-    @Param(name = "dynamic", optional = true, defaultValue = "false")
-    protected Boolean dynamic;
+	@Inject
+	protected Target targetUtil;
 
-    @Param(name = "target", optional = true, defaultValue = "server-config")
-    protected String target;
+	@Param(name = "dynamic", optional = true, defaultValue = "false")
+	protected Boolean dynamic;
 
-    @Param(name = "enabled")
-    private Boolean enabled;
+	@Param(name = "target", optional = true, defaultValue = "server-config")
+	protected String target;
 
-    @Deprecated
-    @Param(name = "notifierEnabled", optional = true)
-    private Boolean notifierEnabled;
+	@Param(name = "enabled")
+	private Boolean enabled;
 
-    @Param(name = "historicalTraceEnabled", optional = true)
-    private Boolean historicalTraceEnabled;
-  
-    @Param(name = "historicalTraceStoreSize", optional = true, defaultValue = "20")
-    @Min(value = 1, message = "Store size must be greater than 0")
-    private Integer historicalTraceStoreSize;
+	@Deprecated
+	@Param(name = "notifierEnabled", optional = true)
+	private Boolean notifierEnabled;
 
-    @Param(name = "historicalTraceStoreTimeout", optional = true)
-    private String historicalTraceStoreTimeout;
+	@Param(name = "historicalTraceEnabled", optional = true)
+	private Boolean historicalTraceEnabled;
 
-    @Override
-    public void execute(AdminCommandContext context) {
-        final ActionReport actionReport = context.getActionReport();
+	@Param(name = "historicalTraceStoreSize", optional = true, defaultValue = "20")
+	@Min(value = 1, message = "Store size must be greater than 0")
+	private Integer historicalTraceStoreSize;
 
-        Properties extraProperties = actionReport.getExtraProperties();
-        if (extraProperties == null) {
-            extraProperties = new Properties();
-            actionReport.setExtraProperties(extraProperties);
-        }
+	@Param(name = "historicalTraceStoreTimeout", optional = true)
+	private String historicalTraceStoreTimeout;
 
-        Config config = targetUtil.getConfig(target);
-        final HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
-        if (healthCheckServiceConfiguration != null) {
-            try {
-                ConfigSupport.apply(new SingleConfigCode<HealthCheckServiceConfiguration>() {
-                    @Override
-                    public Object run(final HealthCheckServiceConfiguration healthCheckServiceConfigurationProxy) throws
-                            PropertyVetoException, TransactionFailure {
-                        if (enabled != null) {
-                            healthCheckServiceConfigurationProxy.enabled(enabled.toString());
-                        }
-                        if (historicalTraceEnabled != null) {
-                            healthCheckServiceConfigurationProxy.setHistoricalTraceEnabled(historicalTraceEnabled.toString());
-                        }
-                        if (historicalTraceStoreSize != null) {
-                            healthCheckServiceConfigurationProxy.setHistoricalTraceStoreSize(historicalTraceStoreSize.toString());
-                        }
+	@Override
+	public void execute(AdminCommandContext context) {
+		final ActionReport actionReport = context.getActionReport();
 
-                        if (historicalTraceStoreTimeout != null) {
-                            healthCheckServiceConfigurationProxy.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout.toString());
-                        }
-                        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                        return healthCheckServiceConfigurationProxy;
-                    }
+		Properties extraProperties = actionReport.getExtraProperties();
+		if (extraProperties == null) {
+			extraProperties = new Properties();
+			actionReport.setExtraProperties(extraProperties);
+		}
 
-                }, healthCheckServiceConfiguration);
-            } catch (TransactionFailure ex) {
-                logger.log(Level.WARNING, "Exception during command ", ex);
-                actionReport.setMessage(ex.getCause().getMessage());
-                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            }
-        }
+		Config config = targetUtil.getConfig(target);
+		final HealthCheckServiceConfiguration healthCheckServiceConfiguration = config
+				.getExtensionByType(HealthCheckServiceConfiguration.class);
+		if (healthCheckServiceConfiguration != null) {
+			try {
+				ConfigSupport.apply(new SingleConfigCode<HealthCheckServiceConfiguration>() {
+					@Override
+					public Object run(final HealthCheckServiceConfiguration healthCheckServiceConfigurationProxy)
+							throws PropertyVetoException, TransactionFailure {
+						if (enabled != null) {
+							healthCheckServiceConfigurationProxy.enabled(enabled.toString());
+						}
+						if (historicalTraceEnabled != null) {
+							healthCheckServiceConfigurationProxy
+									.setHistoricalTraceEnabled(historicalTraceEnabled.toString());
+						}
+						if (historicalTraceStoreSize != null) {
+							healthCheckServiceConfigurationProxy
+									.setHistoricalTraceStoreSize(historicalTraceStoreSize.toString());
+						}
 
-        if (dynamic) {
-            if (server.isDas()) {
-                if (targetUtil.getConfig(target).isDas()) {
-                    configureDynamically();
-                }
-            } else {
-                // apply as not the DAS so implicitly it is for us
-                configureDynamically();
-            }
-        }
+						if (historicalTraceStoreTimeout != null) {
+							healthCheckServiceConfigurationProxy
+									.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout.toString());
+						}
+						actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+						return healthCheckServiceConfigurationProxy;
+					}
 
-        enableLogNotifier(context);
-    }
+				}, healthCheckServiceConfiguration);
+			} catch (TransactionFailure ex) {
+				logger.log(Level.WARNING, "Exception during command ", ex);
+				actionReport.setMessage(ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
+				actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+				return;
+			}
+		}
 
-    private void enableLogNotifier(AdminCommandContext context) {
-        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
-        ActionReport subReport = context.getActionReport().addSubActionsReport();
+		if (dynamic) {
+			if (server.isDas()) {
+				if (targetUtil.getConfig(target).isDas()) {
+					configureDynamically();
+				}
+			} else {
+				// apply as not the DAS so implicitly it is for us
+				configureDynamically();
+			}
+		}
 
-        CommandRunner.CommandInvocation inv = runner.getCommandInvocation("healthcheck-log-notifier-configure", subReport, context.getSubject());
+		enableLogNotifier(context);
+	}
 
-        ParameterMap params = new ParameterMap();
-        params.add("dynamic", dynamic.toString());
-        params.add("target", target);
-        if (notifierEnabled != null) {
-            params.add("enabled", notifierEnabled.toString());
-        }
-        if (notifierEnabled == null && enabled != null) {
-            params.add("enabled", enabled.toString());
-        }
-        inv.parameters(params);
-        inv.execute();
-        // swallow the offline warning as it is not a problem
-        if (subReport.hasWarnings()) {
-            subReport.setMessage("");
-        }
-    }
+	private void enableLogNotifier(AdminCommandContext context) {
+		CommandRunner runner = serviceLocator.getService(CommandRunner.class);
+		ActionReport subReport = context.getActionReport().addSubActionsReport();
 
+		CommandRunner.CommandInvocation inv = runner.getCommandInvocation("healthcheck-log-notifier-configure",
+				subReport, context.getSubject());
 
-    private void configureDynamically() {
-        service.setEnabled(enabled);
+		ParameterMap params = new ParameterMap();
+		params.add("dynamic", dynamic.toString());
+		params.add("target", target);
+		if (notifierEnabled != null) {
+			params.add("enabled", notifierEnabled.toString());
+		}
+		if (notifierEnabled == null && enabled != null) {
+			params.add("enabled", enabled.toString());
+		}
+		Config config = targetUtil.getConfig(target);
+		if (config == null) {
+			subReport.setMessage("No such config named: " + target);
+			subReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+			return;
+		}
+		String noisy = "true";
+		NotificationServiceConfiguration configuration = config
+				.getExtensionByType(NotificationServiceConfiguration.class);
+		NotifierConfiguration notifierConfiguration = configuration
+				.getNotifierConfigurationByType(LogNotifierConfiguration.class);
+		noisy = notifierConfiguration.getNoisy();
 
-        if (historicalTraceEnabled != null) {
-            service.setHistoricalTraceEnabled(historicalTraceEnabled);
-        }
-        if (historicalTraceStoreSize != null) {
-            service.setHistoricalTraceStoreSize(historicalTraceStoreSize);
-        }
-        if (historicalTraceStoreTimeout != null) {
-            long timeout = TimeUtil.setStoreTimeLimit(this.historicalTraceStoreTimeout);
-            service.setHistoricalTraceStoreTimeout(timeout);
-        }
-    }
+		params.add("noisy", noisy);
+		inv.parameters(params);
+		inv.execute();
+		// swallow the offline warning as it is not a problem
+		if (subReport.hasWarnings()) {
+			subReport.setMessage("");
+		}
+	}
+
+	private void configureDynamically() {
+		service.setEnabled(enabled);
+
+		if (historicalTraceEnabled != null) {
+			service.setHistoricalTraceEnabled(historicalTraceEnabled);
+		}
+		if (historicalTraceStoreSize != null) {
+			service.setHistoricalTraceStoreSize(historicalTraceStoreSize);
+		}
+		if (historicalTraceStoreTimeout != null) {
+			long timeout = TimeUtil.setStoreTimeLimit(this.historicalTraceStoreTimeout);
+			service.setHistoricalTraceStoreTimeout(timeout);
+		}
+	}
 }

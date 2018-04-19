@@ -52,7 +52,7 @@ holder.
         gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/get-notification-configuration?target=#{pageSession.configName}"  method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getNotificationConfigurationLOG}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled","notifierEnabled","dynamic","notifierDynamic", "useSeparateLogFile"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled","notifierEnabled","dynamic","notifierDynamic","noisy", "useSeparateLogFile"});
         if (#{pageSession.valueMap['enabled']}=true) {
         setPageSessionAttribute(key="enabledSelected", value="true");
         }
@@ -62,6 +62,9 @@ holder.
         if (#{pageSession.valueMap['useSeparateLogFile']}=true) {
         setPageSessionAttribute(key="useSeparateLogFile", value="true");
         }
+        if (#{pageSession.valueMap['noisy']}=true) {
+			setPageSessionAttribute(key="noisy", value="true");
+		}	
         setPageSessionAttribute(key="dynamic", value="true");
         /> 
 </event>
@@ -77,6 +80,7 @@ holder.
                 <!command
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="notifierEnabled" value="#{pageSession.notifierEnabledSelected}");
+					mapPut(map="#{pageSession.valueMap}" key="noisy" value="#{pageSession.noisy}");
                     mapPut(map="#{pageSession.valueMap}" key="useSeparateLogFile" value="#{pageSession.useSeparateLogFile}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                     mapPut(map="#{pageSession.valueMap}" key="notifierDynamic" value="#{pageSession.dynamic}");
@@ -98,6 +102,9 @@ holder.
         </sun:property>
        <sun:property id="logNotifierEnabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nn.notification.configuration.logNotifierEnabled}" helpText="$resource{i18nn.notification.configuration.logNotifierEnabledHelp}">
             <sun:checkbox id="logNotifierEnabledLabel" selected="#{pageSession.notifierEnabledSelected}" selectedValue="true" />
+        </sun:property>
+       <sun:property id="logNotifierNoisyProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nn.notification.configuration.logNotifierNoisy}" helpText="$resource{i18nn.notification.configuration.logNotifierNoisyHelp}">
+            <sun:checkbox id="logNotifierNoisyLabel" selected="#{pageSession.noisy}" selectedValue="true" />
         </sun:property>
         <sun:property id="useSeparateLogFileProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nn.notification.configuration.useSeparateLogFile}" helpText="$resource{i18nn.notification.configuration.useSeparateLogFileHelp}">
             <sun:checkbox id="useSeparateLogFileLabel" selected="#{pageSession.useSeparateLogFile}" selectedValue="true" />

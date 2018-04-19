@@ -37,6 +37,7 @@ public class LogNotifierExecutionOptionsFactory extends NotifierExecutionOptions
     public NotifierExecutionOptions build(LogNotifier notifier) {
         LogNotifierExecutionOptions executionOptions = new LogNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
+        executionOptions.setNoisy(Boolean.parseBoolean(notifier.getNoisy()));
         return executionOptions;
     }
 }

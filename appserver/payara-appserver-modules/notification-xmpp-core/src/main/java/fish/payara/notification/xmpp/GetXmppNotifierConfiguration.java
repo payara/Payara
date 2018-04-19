@@ -68,18 +68,19 @@ public class GetXmppNotifierConfiguration extends BaseGetNotifierConfiguration<X
 
     @Override
     protected String listConfiguration(XmppNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "Host", "Port", "Service Name", "Username", "Password", "Security Disabled", "Room ID"};
+        String headers[] = {"Enabled", "Noisy", "Host", "Port", "Service Name", "Username", "Password", "Security Disabled", "Room ID"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[8];
+        Object values[] = new Object[9];
 
         values[0] = configuration.getEnabled();
-        values[1] = configuration.getHost();
-        values[2] = configuration.getPort();
-        values[3] = configuration.getServiceName();
-        values[4] = configuration.getUsername();
-        values[5] = configuration.getPassword();
-        values[6] = configuration.getSecurityDisabled();
-        values[7] = configuration.getRoomId();
+        values[1] = configuration.getNoisy();
+        values[2] = configuration.getHost();
+        values[3] = configuration.getPort();
+        values[4] = configuration.getServiceName();
+        values[5] = configuration.getUsername();
+        values[6] = configuration.getPassword();
+        values[7] = configuration.getSecurityDisabled();
+        values[8] = configuration.getRoomId();
 
         columnFormatter.addRow(values);
         return columnFormatter.toString();
@@ -87,10 +88,11 @@ public class GetXmppNotifierConfiguration extends BaseGetNotifierConfiguration<X
 
     @Override
     protected Map<String, Object> getNotifierConfiguration(XmppNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(8);
+        Map<String, Object> map = new HashMap<>(9);
 
         if (configuration != null) {
             map.put("enabled", configuration.getEnabled());
+            map.put("noisy", configuration.getNoisy());
             map.put("hostName", configuration.getHost());
             map.put("port", configuration.getPort());
             map.put("serviceName", configuration.getServiceName());
@@ -98,6 +100,8 @@ public class GetXmppNotifierConfiguration extends BaseGetNotifierConfiguration<X
             map.put("password", configuration.getPassword());
             map.put("securityDisabled", configuration.getSecurityDisabled());
             map.put("roomId", configuration.getRoomId());
+        } else {
+        	map.put("noisy", Boolean.TRUE.toString());
         }
 
         return map;

@@ -64,6 +64,7 @@ public class SlackNotifierExecutionOptionsFactory extends NotifierExecutionOptio
     public NotifierExecutionOptions build(SlackNotifier notifier) {
         SlackNotifierExecutionOptions executionOptions = new SlackNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
+        executionOptions.setNoisy(Boolean.parseBoolean(notifier.getNoisy()));
         return executionOptions;
     }
 }

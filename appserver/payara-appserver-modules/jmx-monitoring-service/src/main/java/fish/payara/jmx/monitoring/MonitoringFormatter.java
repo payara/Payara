@@ -116,7 +116,7 @@ public class MonitoringFormatter implements Runnable {
 
         if (monitoringService.getNotifierExecutionOptionsList() != null) {
             for (NotifierExecutionOptions options : monitoringService.getNotifierExecutionOptionsList()) {
-                if (options.isEnabled()) {
+                if (options.isEnabled(level)) {
                     NotificationEventFactory notificationEventFactory = eventFactoryStore.get(options.getNotifierType());
                     NotificationEvent event = notificationEventFactory.buildNotificationEvent(level, LOGMESSAGE_PREFIX, message, parameters);
                     notificationService.notify(EventSource.MONITORING, event);
