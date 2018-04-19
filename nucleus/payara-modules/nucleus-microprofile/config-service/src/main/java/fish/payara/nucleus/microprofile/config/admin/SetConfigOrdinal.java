@@ -79,7 +79,7 @@ public class SetConfigOrdinal implements AdminCommand {
     @Param()
     int ordinal;
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets,password", defaultValue = "domain")
     String source;
 
     @Param(optional = true, defaultValue = "server") // if no target is specified it will be the DAS
@@ -131,6 +131,10 @@ public class SetConfigOrdinal implements AdminCommand {
                             }
                             case "secrets": {
                                 config.setSecretDirOrdinality(Integer.toString(ordinal));
+                                break;
+                            }
+                            case "password" : {
+                                config.setPasswordOrdinality(Integer.toString(ordinal));
                                 break;
                             }
                         }

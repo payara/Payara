@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.apf;
 
@@ -47,27 +48,24 @@ package org.glassfish.apf;
  */
 public interface ErrorHandler {
     /**
-     * Receive notication of a fine error message
+     * Receive notification of a fine error message
      * @param ape The warning information
-     * @throws any exception to stop the annotation processing 
+     * @throws AnnotationProcessorException any exception to stop the annotation processing 
      */ 
-    public void fine(AnnotationProcessorException ape) throws
-            AnnotationProcessorException;
+    public void fine(AnnotationProcessorException ape) throws AnnotationProcessorException;
     
     /**
      * Receive notification of a warning
      * @param ape The warning information
-     * @throws any exception to stop the annotation processing 
+     * @throws AnnotationProcessorException any exception to stop the annotation processing 
      */
-    public void warning(AnnotationProcessorException ape) throws
-            AnnotationProcessorException;
+    public void warning(AnnotationProcessorException ape) throws AnnotationProcessorException;
     
     /**
      * Receive notification of an error
      * @param ape The error information
-     * @throws amy exception to stop the annotation processing
+     * @throws AnnotationProcessorException any exception to stop the annotation processing
      */
-    public void error(AnnotationProcessorException ape) throws 
-            AnnotationProcessorException;
+    public void error(AnnotationProcessorException ape) throws AnnotationProcessorException;
     
 }

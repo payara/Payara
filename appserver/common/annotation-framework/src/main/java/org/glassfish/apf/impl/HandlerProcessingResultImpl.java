@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.apf.impl;
 
@@ -46,7 +47,6 @@ import java.lang.annotation.Annotation;
 
 import org.glassfish.apf.ResultType;
 import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.apf.AnnotationHandler;
 
 /**
  *
@@ -76,6 +76,7 @@ public class HandlerProcessingResultImpl implements HandlerProcessingResult {
         return impl;                
     }
     
+    @Override
     public Map<Class<? extends Annotation>,ResultType> processedAnnotations() {
         return results;
     }

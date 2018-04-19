@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.configapi.tests;
 
@@ -111,7 +112,7 @@ public class JavaConfigSubTypesTest extends ConfigPersistence {
 
         ConfigSupport.apply(new SingleConfigCode<JavaConfig>() {
             public Object run(JavaConfig param) throws PropertyVetoException, TransactionFailure {
-                List<String> jvmOptions = param.getJvmOptions();
+                List<String> jvmOptions = param.getJvmRawOptions();
                 jvmOptions.add("-XFooBar=true");
                 return jvmOptions;
             }
