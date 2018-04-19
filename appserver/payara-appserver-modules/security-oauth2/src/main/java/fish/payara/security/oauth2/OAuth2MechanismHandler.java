@@ -68,7 +68,7 @@ import org.glassfish.soteria.cdi.CdiProducer;
 public class OAuth2MechanismHandler implements Extension {
 
     private List<OAuth2AuthenticationDefinition> annotations;
-    private Logger logger = Logger.getLogger("OAuth2Mechanism-Handler");
+    private Logger logger = Logger.getLogger("OAuth2Mechanism");
 
     public OAuth2MechanismHandler() {
         annotations = new ArrayList<>();

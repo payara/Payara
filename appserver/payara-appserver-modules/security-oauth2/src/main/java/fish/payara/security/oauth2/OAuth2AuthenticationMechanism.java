@@ -154,6 +154,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
 
                 //Creates a new JAX-RS form with all paramters
                 Form form = new Form()
+                        .param("grant_type", "authorization_code")
                         .param("client_id", clientID)
                         .param("client_secret", new String(clientSecret))
                         .param("code", request.getParameter("code"))
@@ -188,9 +189,9 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
                 } else {
 
                     tokenHolder.setAccessToken(object.getString("access_token"));
-                    tokenHolder.setRefreshToken(object.getString("refresh_token"));
-                    tokenHolder.setScope(object.getString("scope"));
-                    String expiresIn = object.getString("expires_in");
+                    tokenHolder.setRefreshToken(object.getString("refresh_token", null));
+                    tokenHolder.setScope(object.getString("scope", null));
+                    String expiresIn = object.getString("expires_in", null);
                     if (expiresIn != null){
                         tokenHolder.setExpiresIn(Integer.parseInt(expiresIn));
                     }

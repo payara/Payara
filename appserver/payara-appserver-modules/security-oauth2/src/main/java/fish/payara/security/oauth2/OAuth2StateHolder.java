@@ -74,7 +74,7 @@ public class OAuth2StateHolder implements OAuth2AccessToken {
     }
 
     public void setScope(String scope) {
-        this.scope = Optional.of(scope);
+        this.scope = Optional.ofNullable(scope);
     }
 
     @Override
@@ -94,7 +94,7 @@ public class OAuth2StateHolder implements OAuth2AccessToken {
 
     @Override
     public void setExpiresIn(Integer expiresIn) {
-        this.expiresIn = Optional.of(expiresIn);
+        this.expiresIn = Optional.ofNullable(expiresIn);
     }
     
     @Override
