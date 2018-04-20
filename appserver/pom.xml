@@ -223,8 +223,8 @@
         <jcip-annotations.version>1.0-1</jcip-annotations.version>
          
         <!-- Yubico client validation version property -->
-        <yubico-validation-client2.version>3.0.0</yubico-validation-client2.version>
-        
+        <yubico-validation-client2.version>3.0.2.payara-p1</yubico-validation-client2.version>
+        <slf4j-api.version>1.7.25</slf4j-api.version>
     </properties>
 
 
