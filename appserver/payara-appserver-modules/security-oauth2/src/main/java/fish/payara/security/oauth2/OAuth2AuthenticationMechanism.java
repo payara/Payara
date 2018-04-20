@@ -65,6 +65,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.glassfish.config.support.TranslatedConfigView;
 
 /**
  * The AuthenticationMechanism used for authenticate users using the OAuth2 protocol
@@ -95,23 +96,43 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
     @Inject
     private IdentityStoreHandler identityStoreHandler;
 
+    /**
+     * Creates an OAuth2AuthenticationMechanism.
+     * <p>
+     * If this constructor is used then {@link #setDefinition(OAuth2AuthenticationDefinition) must be
+     * called before any requests are validated.
+     */
     public OAuth2AuthenticationMechanism() {
         //no-op constuctor
     }
 
+    /**
+     * Creates an OAuth2AuthenticationMechanism that has been defined using an annotation
+     * @param definition 
+     */
     public OAuth2AuthenticationMechanism(OAuth2AuthenticationDefinition definition) {
         setDefinition(definition);
 
     }
 
-    public OAuth2AuthenticationMechanism setDefinition(OAuth2AuthenticationDefinition definition) {
-        authEndpoint = definition.authEndpoint();
-        tokenEndpoint = definition.tokenEndpoint();
-        clientID = definition.clientId();
-        clientSecret = definition.clientSecret().toCharArray();
-        redirectURI = definition.redirectURI();
-        scopes = definition.scopes();
-        extraParameters = definition.extraParameters();
+    /**
+     * Sets the properties of the OAuth2AuthenticationMechanism as defined in an
+     * {@link OAuth2AuthenticationDefinition} annotation.
+     * @param definition
+     * @return 
+     */
+    public OAuth2AuthenticationMechanism setDefinition(OAuth2AuthenticationDefinition definition) {;
+        authEndpoint = (String) TranslatedConfigView.getTranslatedValue(definition.authEndpoint());
+        tokenEndpoint = (String) TranslatedConfigView.getTranslatedValue(definition.tokenEndpoint());
+        clientID = (String) TranslatedConfigView.getTranslatedValue(definition.clientId());
+        clientSecret = ((String) TranslatedConfigView.getTranslatedValue(definition.clientSecret())).toCharArray();
+        redirectURI = (String) TranslatedConfigView.getTranslatedValue(definition.redirectURI());
+        scopes = (String) TranslatedConfigView.getTranslatedValue(definition.scopes());
+        String[] params = definition.extraParameters();
+        extraParameters = new String[params.length];
+        for (int i = 0; i < params.length; i++){
+            extraParameters[i] = (String) TranslatedConfigView.getTranslatedValue(params[i]);
+        }
         return this;
     }
 
