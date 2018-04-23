@@ -39,61 +39,52 @@
  */
 package fish.payara.persistence.eclipselink.cache.coordination;
 
-import org.eclipse.persistence.internal.sessions.coordination.RemoteConnection;
-import org.eclipse.persistence.sessions.coordination.broadcast.BroadcastTransportManager;
-
-import java.util.Collections;
-import java.util.Map;
-import java.util.logging.Logger;
+import java.util.UUID;
 
 /**
- * Hazelcast based {@link BroadcastTransportManager}.
+ * Represents an indirection between internal and external, hazelcast based
+ * topic listener registration.
  *
  * @author Sven Diedrichsen
  */
-public class HazelcastPublishingTransportManager extends BroadcastTransportManager {
+class TopicIdMapping {
 
-    private static final Logger LOG = Logger.getLogger(HazelcastPublishingTransportManager.class.getName());
     /**
-     * The connection with the hz topic.
+     * The internal id.
      */
-    private HazelcastTopicRemoteConnection connection;
+    private final String internalId;
+    /**
+     * the topic name to register a listener for.
+     */
+    private final String topic;
+    /**
+     * The hazelcast message listener registration id.
+     */
+    private String externalId;
 
-    public HazelcastPublishingTransportManager() {
-        super();
-        LOG.info("HazelcastPublishingTransportManager initialized.");
+    TopicIdMapping(String topic) {
+        this.topic = topic;
+        this.internalId = UUID.randomUUID().toString();
     }
 
-    /**
-     * Method to return the connection with the hazelcast topic.
-     *
-     * @return Map containing the hz connection.
-     */
-    @Override
-    public Map<String, RemoteConnection> getConnectionsToExternalServicesForCommandPropagation() {
-        if (this.connection != null) {
-            return Collections.singletonMap(this.connection.getServiceId().getId(), this.connection);
-        }
-        return Collections.emptyMap();
+    boolean hasExternalId() {
+        return externalId != null;
     }
 
-    /**
-     * Creates the hz connection.
-     */
-    @Override
-    public void createLocalConnection() {
-        this.connection = new HazelcastTopicRemoteConnection(this.getRemoteCommandManager());
+    String getInternalId() {
+        return internalId;
     }
 
-    /**
-     * Closes and removes the connection.
-     */
-    @Override
-    public void removeLocalConnection() {
-        if (this.connection != null) {
-            this.connection.close();
-            this.connection = null;
-        }
+    String getExternalId() {
+        return externalId;
+    }
+
+    void setExternalId(String externalId) {
+        this.externalId = externalId;
+    }
+
+    String getTopic() {
+        return topic;
     }
 
 }

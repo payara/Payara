@@ -1,10 +1,54 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
 package fish.payara.persistence.eclipselink.cache.coordination;
 
 import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
+import org.eclipse.persistence.internal.sessions.AbstractSession;
 import org.eclipse.persistence.internal.sessions.coordination.broadcast.BroadcastRemoteConnection;
 import org.eclipse.persistence.sessions.coordination.Command;
 import org.eclipse.persistence.sessions.coordination.RemoteCommandManager;
+import org.eclipse.persistence.sessions.serializers.JavaSerializer;
+import org.eclipse.persistence.sessions.serializers.Serializer;
+
+import java.util.Objects;
 
 /**
  * Hazelcast {@link BroadcastRemoteConnection} implementing {@link MessageListener} interface.
@@ -13,31 +57,36 @@ import org.eclipse.persistence.sessions.coordination.RemoteCommandManager;
  * @version $Id$
  * @since 23.02.18
  */
-public class HazelcastTopicRemoteConnection extends BroadcastRemoteConnection implements MessageListener<Command> {
+public class HazelcastTopicRemoteConnection extends BroadcastRemoteConnection implements MessageListener<HazelcastPayload> {
+
     /**
      * The topic to publish commands to and receive messages from.
      */
     private final HazelcastTopic topic;
-    /**
-     * The message listener id to use for removal.
-     */
-    private final String messageListenerId;
 
-    public HazelcastTopicRemoteConnection(RemoteCommandManager rcm) {
+    HazelcastTopicRemoteConnection(RemoteCommandManager rcm) {
         super(rcm);
-        this.topic = new HazelcastTopic(rcm.getChannel());
-        this.messageListenerId = this.topic.registerMessageListener(this);
+        this.topic = new HazelcastTopic(rcm.getChannel(), this);
     }
 
+    /**
+     * Publishes the provided command via {@link HazelcastTopic}.
+     * @param o The command to execute.
+     * @return NULL
+     * @throws Exception In case of an error.
+     */
     @Override
     protected Object executeCommandInternal(Object o) throws Exception {
-        if(o != null && Command.class.isAssignableFrom(o.getClass())) {
+        if (o != null) {
             Object[] debugInfo = null;
             if (this.rcm.shouldLogDebugMessage()) {
                 debugInfo = this.logDebugBeforePublish(null);
             }
-            Command command = (Command) o;
-            this.topic.publish(command);
+            if(Command.class.isAssignableFrom(o.getClass())) {
+                this.topic.publish(new HazelcastPayload.Command((Command) o));
+            } else if (o.getClass().isArray()) {
+                this.topic.publish(new HazelcastPayload.Bytes((byte[])o));
+            }
             if (debugInfo != null) {
                 this.logDebugAfterPublish(debugInfo, "");
             }
@@ -47,14 +96,26 @@ public class HazelcastTopicRemoteConnection extends BroadcastRemoteConnection im
 
     @Override
     protected void closeInternal() throws Exception {
-        this.topic.removeMessageListener(this.messageListenerId);
         this.topic.destroy();
     }
 
     @Override
-    public void onMessage(Message<Command> message) {
-        String messageId = message.getPublishingMember().getUuid() + "-" + String.valueOf(message.getPublishTime());
-        this.processReceivedObject(message.getMessageObject(), messageId);
+    public void onMessage(Message<HazelcastPayload> message) {
+        if (!Objects.equals(topic.getMemberUuid(), message.getPublishingMember().getUuid())) {
+            String messageId = message.getPublishingMember().getUuid() + "-" + String.valueOf(message.getPublishTime());
+            Object command;
+            if (message.getMessageObject() instanceof HazelcastPayload.Command) {
+                command = message.getMessageObject().get();
+            } else {
+                byte[] bytes = ((HazelcastPayload.Bytes)message.getMessageObject()).get();
+                Serializer serializer = this.rcm.getSerializer();
+                if (serializer == null) {
+                    serializer = JavaSerializer.instance;
+                }
+                command = serializer.deserialize(bytes, (AbstractSession)this.rcm.getCommandProcessor());
+            }
+            this.processReceivedObject(command, messageId);
+        }
     }
 
 }

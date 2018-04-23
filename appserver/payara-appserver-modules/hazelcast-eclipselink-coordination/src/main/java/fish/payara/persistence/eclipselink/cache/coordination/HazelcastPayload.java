@@ -39,60 +39,43 @@
  */
 package fish.payara.persistence.eclipselink.cache.coordination;
 
-import org.eclipse.persistence.internal.sessions.coordination.RemoteConnection;
-import org.eclipse.persistence.sessions.coordination.broadcast.BroadcastTransportManager;
-
-import java.util.Collections;
-import java.util.Map;
-import java.util.logging.Logger;
+import java.io.Serializable;
 
 /**
- * Hazelcast based {@link BroadcastTransportManager}.
+ * Represents the payload transported via Hazelcast topic.
  *
- * @author Sven Diedrichsen
+ * @param <T> Type of the payload.
  */
-public class HazelcastPublishingTransportManager extends BroadcastTransportManager {
+public abstract class HazelcastPayload<T> implements Serializable {
 
-    private static final Logger LOG = Logger.getLogger(HazelcastPublishingTransportManager.class.getName());
-    /**
-     * The connection with the hz topic.
-     */
-    private HazelcastTopicRemoteConnection connection;
+    private static final long serialVersionUID = 1;
 
-    public HazelcastPublishingTransportManager() {
-        super();
-        LOG.info("HazelcastPublishingTransportManager initialized.");
-    }
+    public abstract T get();
 
-    /**
-     * Method to return the connection with the hazelcast topic.
-     *
-     * @return Map containing the hz connection.
-     */
-    @Override
-    public Map<String, RemoteConnection> getConnectionsToExternalServicesForCommandPropagation() {
-        if (this.connection != null) {
-            return Collections.singletonMap(this.connection.getServiceId().getId(), this.connection);
+    public static class Bytes extends HazelcastPayload<byte[]> {
+
+        private byte[] bytes;
+
+        public Bytes(byte[] bytes) {
+            this.bytes = bytes;
         }
-        return Collections.emptyMap();
+
+        public byte[] get() {
+            return bytes;
+        }
     }
 
-    /**
-     * Creates the hz connection.
-     */
-    @Override
-    public void createLocalConnection() {
-        this.connection = new HazelcastTopicRemoteConnection(this.getRemoteCommandManager());
-    }
+    public static class Command extends HazelcastPayload<org.eclipse.persistence.sessions.coordination.Command> {
 
-    /**
-     * Closes and removes the connection.
-     */
-    @Override
-    public void removeLocalConnection() {
-        if (this.connection != null) {
-            this.connection.close();
-            this.connection = null;
+        private org.eclipse.persistence.sessions.coordination.Command command;
+
+        public Command(org.eclipse.persistence.sessions.coordination.Command command) {
+            this.command = command;
+        }
+
+        @Override
+        public org.eclipse.persistence.sessions.coordination.Command get() {
+            return command;
         }
     }
 

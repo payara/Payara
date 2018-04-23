@@ -1,55 +1,56 @@
 package fish.payara.persistence.eclipselink.cache.coordination;
 
 import com.hazelcast.core.MessageListener;
-import org.eclipse.persistence.sessions.coordination.Command;
 
 /**
- * Allow for Hazelcast topic proxying.
+ * Representation of the Hazelcast topic to allow for proxying.
  */
-public class HazelcastTopic {
+final class HazelcastTopic {
 
+    /**
+     * The topic name to use.
+     */
     private final String name;
+    /**
+     * The message listener id to unregister with.
+     */
+    private final String messageListenerId;
 
     /**
      * Ctor.
      * @param name The name of the topic.
      */
-    public HazelcastTopic(String name) {
+    HazelcastTopic(String name, MessageListener<HazelcastPayload> listener) {
         this.name = name;
-    }
-
-    /**
-     * Registers the message listener and returns its id.
-     * @param listener The listener to register.
-     * @return the listener id.
-     */
-    public String registerMessageListener(MessageListener<Command> listener) {
-        return getStorage().registerMessageListener(name, listener);
-    }
-
-    /**
-     * Removes the message listener.
-     * @param messageListenerId The listener id.
-     */
-    public void removeMessageListener(String messageListenerId) {
-        getStorage().removeMessageListener(name, messageListenerId);
+        this.messageListenerId = getStorage().registerMessageListener(name, listener);
     }
 
     /**
      * Publishes the command.
-     * @param command The command to publish.
+     * @param payload The {@link HazelcastPayload} to publish.
      */
-    public void publish(Command command) {
-        getStorage().publish(name, command);
+    void publish(HazelcastPayload payload) {
+        getStorage().publish(name, payload);
     }
 
     /**
      * Destroys the referenced topic.
      */
-    public void destroy() {
+    void destroy() {
+        getStorage().removeMessageListener(name, messageListenerId);
         getStorage().destroyTopic(name);
     }
 
+    /**
+     * @return The storage UUID representing this cluster member.
+     */
+    String getMemberUuid() {
+        return getStorage().getMemberUuid();
+    }
+
+    /**
+     * @return The hz topic storage.
+     */
     private HazelcastTopicStorage getStorage() {
         return HazelcastTopicStorage.getInstance();
     }
