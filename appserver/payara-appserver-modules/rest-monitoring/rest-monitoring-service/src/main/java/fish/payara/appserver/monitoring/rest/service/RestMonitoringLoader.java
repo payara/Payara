@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigCode;
@@ -288,7 +289,10 @@ public class RestMonitoringLoader extends Thread {
         // Load the Rest Monitoring Application
         String instanceName = serverEnv.getInstanceName();
         ApplicationRef ref = domain.getApplicationRefInServer(instanceName, applicationName);
-        habitat.getService(ApplicationLoaderService.class).processApplication(config, ref);
+        Deployment lifecycle = habitat.getService(Deployment.class);
+        for(Deployment.ApplicationDeployment depl : habitat.getService(ApplicationLoaderService.class).processApplication(config, ref)) {
+            lifecycle.initialize(depl.appInfo, depl.appInfo.getSniffers(), depl.context);
+        }
 
         // Mark as registered
         restMonitoringAdapter.setAppRegistered(true);
