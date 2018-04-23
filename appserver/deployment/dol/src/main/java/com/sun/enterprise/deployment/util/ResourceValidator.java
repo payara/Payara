@@ -123,7 +123,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
     }
 
     @Override
-    public void event(Event<?> event) {
+    public void event(Event event) {
         if (event.is(Deployment.AFTER_APPLICATION_CLASSLOADER_CREATION)) {
             DeploymentContext deploymentContext = (DeploymentContext) event.hook();
             Application application = deploymentContext.getModuleMetaData(Application.class);
