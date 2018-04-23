@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
+import com.google.common.base.Strings;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.deployment.Application;
@@ -127,7 +129,11 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
             if(contextRoot==null) {
                 contextRoot = params.previousContextRoot;
             }
-            if(contextRoot==null)
+            // default should be application name, if available
+            if (contextRoot == null && !Strings.isNullOrEmpty(params.name())) {
+                contextRoot = params.name();
+            }
+            if (contextRoot == null)
                 contextRoot = ((GenericHandler)dc.getArchiveHandler()).getDefaultApplicationNameFromArchiveName(dc.getOriginalSource());
 
             if (!contextRoot.startsWith("/")) {
