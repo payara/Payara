@@ -213,18 +213,28 @@ public class JDKPolicyFileWrapper extends Policy {
         }
     }
 
+
+    private static ThreadLocal<Boolean> contextProviderReentry = new ThreadLocal<Boolean>() {
+
+        @Override
+        protected Boolean initialValue() {
+            return false;
+        }
+    };
+
     public JDKPolicyFileWrapper() {
         // The JDK policy file implementation
         policy = getNewPolicy();
         refreshTime = 0L;
+
         // Call the following routine to compute the actual refreshTime
         defaultContextChanged();
     }
 
     /**
-     * gets the underlying PolicyFile implementation can be overridden by Subclass
+     * Gets the underlying PolicyFile implementation can be overridden by Subclass
      */
-    protected java.security.Policy getNewPolicy() {
+    protected Policy getNewPolicy() {
         return new PolicyFile();
     }
 
@@ -243,24 +253,36 @@ public class JDKPolicyFileWrapper extends Policy {
     public PermissionCollection getPermissions(CodeSource codesource) {
         String contextId = PolicyContext.getContextID();
 
-        PolicyConfigurationFactoryImpl policyConfigurationFactory = getPolicyFactory();
-        ContextProvider contextProvider = getContextProvider(contextId, policyConfigurationFactory);
+        ContextProvider contextProvider = getContextProvider(contextId, getPolicyFactory());
 
         if (contextProvider != null) {
-            return contextProvider.getPolicy().getPermissions(codesource);
+
+            if (contextProviderReentry.get()) {
+                return Policy.UNSUPPORTED_EMPTY_COLLECTION;
+            }
+
+            contextProviderReentry.set(true);
+            try {
+                return contextProvider.getPolicy().getPermissions(codesource);
+            } finally {
+                contextProviderReentry.set(false);
+            }
         }
 
-        PolicyConfigurationImpl pci = getPolicyConfigForContext(contextId);
-        Policy appPolicy = getPolicy(pci);
-        PermissionCollection perms = appPolicy.getPermissions(codesource);
-        if (perms != null) {
-            perms = removeExcludedPermissions(pci, perms);
+        PolicyConfigurationImpl policyConfiguration = getPolicyConfigForContext(contextId);
+
+        PermissionCollection permissions = getPolicy(policyConfiguration).getPermissions(codesource);
+        if (permissions != null) {
+            permissions = removeExcludedPermissions(policyConfiguration, permissions);
         }
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.finest("JACC Policy Provider: PolicyWrapper.getPermissions(cs), context (" + contextId + ") codesource (" + codesource
-                    + ") permissions: " + perms);
+
+        if (logger.isLoggable(FINEST)) {
+            logger.finest(
+                "JACC Policy Provider: PolicyWrapper.getPermissions(cs), context (" + contextId + ") " +
+                " codesource (" + codesource + ") permissions: " + permissions);
         }
-        return perms;
+
+        return permissions;
     }
 
     /**
@@ -280,25 +302,33 @@ public class JDKPolicyFileWrapper extends Policy {
     public PermissionCollection getPermissions(ProtectionDomain domain) {
         String contextId = PolicyContext.getContextID();
 
-        PolicyConfigurationFactoryImpl policyConfigurationFactory = getPolicyFactory();
-        ContextProvider contextProvider = getContextProvider(contextId, policyConfigurationFactory);
+        ContextProvider contextProvider = getContextProvider(contextId, getPolicyFactory());
 
         if (contextProvider != null) {
-            return contextProvider.getPolicy().getPermissions(domain);
+            if (contextProviderReentry.get()) {
+                return Policy.UNSUPPORTED_EMPTY_COLLECTION;
+            }
+
+            contextProviderReentry.set(true);
+            try {
+                return contextProvider.getPolicy().getPermissions(domain);
+            } finally {
+                contextProviderReentry.set(false);
+            }
         }
 
-        PolicyConfigurationImpl pci = getPolicyConfigForContext(contextId);
-        Policy appPolicy = getPolicy(pci);
-        PermissionCollection perms = appPolicy.getPermissions(domain);
-        if (perms != null) {
-            perms = removeExcludedPermissions(pci, perms);
+        PolicyConfigurationImpl policyConfiguration = getPolicyConfigForContext(contextId);
+
+        PermissionCollection permissions = getPolicy(policyConfiguration).getPermissions(domain);
+        if (permissions != null) {
+            permissions = removeExcludedPermissions(policyConfiguration, permissions);
         }
 
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.finest("JACC Policy Provider: PolicyWrapper.getPermissions(d), context (" + contextId + ") permissions: " + perms);
+        if (logger.isLoggable(FINEST)) {
+            logger.finest("JACC Policy Provider: PolicyWrapper.getPermissions(d), context (" + contextId + ") permissions: " + permissions);
         }
 
-        return perms;
+        return permissions;
     }
 
     /**
@@ -488,21 +518,26 @@ public class JDKPolicyFileWrapper extends Policy {
     private boolean doImplies(ProtectionDomain domain, Permission permission) {
         String contextId = PolicyContext.getContextID();
 
-        PolicyConfigurationFactoryImpl policyConfigurationFactory = getPolicyFactory();
-        ContextProvider contextProvider = null;
-        if (policyConfigurationFactory != null) {
-            contextProvider = policyConfigurationFactory.getContextProviderByPolicyContextId(contextId);
-        }
+        if (contextId != null) {
+            ContextProvider contextProvider = getContextProvider(contextId, getPolicyFactory());
+            if (contextProvider != null) {
 
-        if (contextProvider != null) {
-            return contextProvider.getPolicy().implies(domain, permission);
+                if (contextProviderReentry.get()) {
+                    return false;
+                }
+
+                contextProviderReentry.set(true);
+                try {
+                    return contextProvider.getPolicy().implies(domain, permission);
+                } finally {
+                    contextProviderReentry.set(false);
+                }
+            }
         }
 
         PolicyConfigurationImpl policyConfiguration = getPolicyConfigForContext(contextId);
 
-        Policy applicationPolicy = getPolicy(policyConfiguration);
-
-        boolean doesImplies = applicationPolicy.implies(domain, permission);
+        boolean doesImplies = getPolicy(policyConfiguration).implies(domain, permission);
 
         // Log failures but skip failures that occurred prior to redirecting to
         // login pages, and javax.management.MBeanPermission
@@ -523,7 +558,7 @@ public class JDKPolicyFileWrapper extends Policy {
         return doesImplies;
     }
 
-    private void logImpliesFailure(final Permission permission, final String contextId, final ProtectionDomain domain) {
+    private void logImpliesFailure(Permission permission, String contextId, ProtectionDomain domain) {
         if (!(permission instanceof WebResourcePermission) && !(permission instanceof MBeanPermission)
                 && !(permission instanceof WebRoleRefPermission) && !(permission instanceof EJBRoleRefPermission)) {
 
@@ -567,7 +602,7 @@ public class JDKPolicyFileWrapper extends Policy {
         return isDefaultContextChanged;
     }
 
-    private static long getTimeStamp(final String propertyName, final String urlName) {
+    private static long getTimeStamp(String propertyName, String urlName) {
         return doPrivileged(new PrivilegedAction<Long>() {
             @Override
             public Long run() {
