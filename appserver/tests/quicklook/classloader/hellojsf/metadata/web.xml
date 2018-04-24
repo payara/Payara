@@ -43,35 +43,31 @@
 -->
 
 <web-app>
-  <context-param>
-    <param-name>com.sun.jsftemplating.DEBUG</param-name>
-    <param-value>true</param-value>
-  </context-param>
-<!--
-  <context-param>
-    <param-name>ContentSources</param-name>
-    <param-value>org.example.contentSources.ExampleContentSource,org.example.contentSources.ProxyContentSource</param-value>
-  </context-param>
--->
-  <servlet>
-    <servlet-name>FacesServlet</servlet-name>
-    <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
-    <!-- For Dynamic Faces: -->
-    <init-param>
-	<param-name>javax.faces.LIFECYCLE_ID</param-name>
-	<param-value>com.sun.faces.lifecycle.PARTIAL</param-value>
-    </init-param>
-    <load-on-startup>1</load-on-startup>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>FacesServlet</servlet-name>
-    <url-pattern>/resource/*</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>FacesServlet</servlet-name>
-    <url-pattern>*.jsf</url-pattern>
-  </servlet-mapping>
- <welcome-file-list>
-    <welcome-file>index.jsf</welcome-file>
-  </welcome-file-list>
+    <context-param>
+        <param-name>com.sun.jsftemplating.DEBUG</param-name>
+        <param-value>true</param-value>
+    </context-param>
+    
+    <servlet>
+        <servlet-name>FacesServlet</servlet-name>
+        <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+        <!-- For Dynamic Faces: -->
+        <init-param>
+            <param-name>javax.faces.LIFECYCLE_ID</param-name>
+            <param-value>com.sun.faces.lifecycle.PARTIAL</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>FacesServlet</servlet-name>
+        <url-pattern>/resource/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FacesServlet</servlet-name>
+        <url-pattern>*.jsf</url-pattern>
+    </servlet-mapping>
+    
+    <welcome-file-list>
+        <welcome-file>index.jsf</welcome-file>
+    </welcome-file-list>
 </web-app>

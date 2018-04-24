@@ -44,36 +44,41 @@ import org.testng.annotations.Test;
 import org.testng.Assert;
 import test.admincli.util.*;
 
-//@Test(sequential = true)
 public class ExistStatusTests {
-    private boolean execReturn = false;
+    
+    private boolean execReturn;
     private String ASADMIN = System.getProperty("ASADMIN");
     private String cmd, cmd1;
+
     @Test
     public void createJDBCPool() throws Exception {
-//        System.out.println(ASADMIN);
-        cmd = ASADMIN + " create-jdbc-connection-pool --port 4848 " +
-            "--datasourceclassname=org.apache.derby.jdbc.ClientDataSource --property " +
-            "DatabaseName=sun-appserv-samples:PortNumber=1527:serverName=localhost:Password=APP:User=APP QLJdbcPool";
+        // System.out.println(ASADMIN);
+        cmd = ASADMIN + " create-jdbc-connection-pool --port 4848 "
+                + "--datasourceclassname=org.apache.derby.jdbc.ClientDataSource --property "
+                + "DatabaseName=sun-appserv-samples:PortNumber=1527:serverName=localhost:Password=APP:User=APP QLJdbcPool";
 
-        execReturn = RtExec.execute(cmd);
+        execReturn = RtExec.execute("createJDBCPool", cmd);
+        
         Assert.assertEquals(execReturn, true, "Create jdbc connection pool failed ...");
     }
 
     @Test(dependsOnMethods = { "createJDBCPool" })
     public void pingJDBCPool() throws Exception {
-//      extra ping of DerbyPool to create sun-appserv-samples DB.
+        // Extra ping of DerbyPool to create sun-appserv-samples DB.
         cmd = ASADMIN + " ping-connection-pool --port 4848 DerbyPool";
-        RtExec.execute(cmd);
+        RtExec.execute("pingJDBCPool", cmd);
+        
         cmd1 = ASADMIN + " ping-connection-pool --port 4848 QLJdbcPool";
-        execReturn = RtExec.execute(cmd1);
+        execReturn = RtExec.execute("pingJDBCPool", cmd1);
+        
         Assert.assertEquals(execReturn, true, "Ping jdbc connection pool failed ...");
     }
 
     @Test(dependsOnMethods = { "pingJDBCPool" })
     public void deleteJDBCPool() throws Exception {
         cmd = ASADMIN + " delete-jdbc-connection-pool --port 4848 QLJdbcPool";
-        execReturn = RtExec.execute(cmd);
+        execReturn = RtExec.execute("deleteJDBCPool", cmd);
+        
         Assert.assertEquals(execReturn, true, "Delete jdbc connection pool failed ...");
     }
 }
