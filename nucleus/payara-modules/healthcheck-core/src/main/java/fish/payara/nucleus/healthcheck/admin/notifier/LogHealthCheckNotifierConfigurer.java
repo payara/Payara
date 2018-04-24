@@ -38,8 +38,9 @@
  */
 package fish.payara.nucleus.healthcheck.admin.notifier;
 
-import java.beans.PropertyVetoException;
 
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
+import fish.payara.nucleus.notification.log.LogNotifier;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
@@ -49,28 +50,32 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.notification.log.LogNotifier;
+import java.beans.PropertyVetoException;
 
 /**
  * @author mertcaliskan
  */
 @Service(name = "healthcheck-log-notifier-configure")
 @PerLookup
-@ExecuteOn({ RuntimeType.DAS, RuntimeType.INSTANCE })
-@TargetType(value = { CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG })
-@RestEndpoints({ @RestEndpoint(configBean = HealthCheckServiceConfiguration.class, opType = RestEndpoint.OpType.POST, path = "healthcheck-log-notifier-configure", description = "Configures Log Notifier for HealthCheck Service") })
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "healthcheck-log-notifier-configure",
+                description = "Configures Log Notifier for HealthCheck Service")
+})
 public class LogHealthCheckNotifierConfigurer extends BaseHealthCheckNotifierConfigurer<LogNotifier> {
 
-	@Override
-	protected void applyValues(LogNotifier notifier) throws PropertyVetoException {
-		if (this.enabled != null) {
-			notifier.enabled(enabled);
-		}
-		if (this.noisy != null) {
-			notifier.noisy(noisy);
-		} else {
+    @Override
+    protected void applyValues(LogNotifier notifier) throws PropertyVetoException {
+        if(this.enabled != null) {
+            notifier.enabled(enabled);
+        }
+        if (this.noisy != null) {
+            notifier.noisy(noisy);
+        } else {
             notifier.noisy(getNotifierNoisy("get-log-notifier-configuration"));
-		}
-	}
+        }
+    }
 }

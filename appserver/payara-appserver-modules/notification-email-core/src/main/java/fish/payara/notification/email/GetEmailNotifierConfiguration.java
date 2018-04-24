@@ -83,7 +83,7 @@ public class GetEmailNotifierConfiguration extends BaseGetNotifierConfiguration<
 
     @Override
     protected Map<String, Object> getNotifierConfiguration(EmailNotifierConfiguration configuration) {
-    	Map<String, Object> map = new HashMap<>(4);
+        Map<String, Object> map = new HashMap<>(4);
 
         if (configuration != null) {
             map.put("enabled", configuration.getEnabled());
@@ -91,7 +91,7 @@ public class GetEmailNotifierConfiguration extends BaseGetNotifierConfiguration<
             map.put("jndiName", configuration.getJndiName());
             map.put("to", configuration.getTo());
         } else {
-        	map.put("noisy", Boolean.TRUE.toString());
+            map.put("noisy", Boolean.TRUE.toString());
         }
 
         return map;

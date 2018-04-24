@@ -100,7 +100,7 @@ public class GetJmsNotifierConfiguration extends BaseGetNotifierConfiguration<Jm
             map.put("username", configuration.getUsername());
             map.put("password", configuration.getPassword());
         } else {
-        	map.put("noisy", Boolean.TRUE.toString());
+            map.put("noisy", Boolean.TRUE.toString());
         }
 
         return map;

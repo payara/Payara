@@ -91,7 +91,7 @@ public class GetHipchatNotifierConfiguration extends BaseGetNotifierConfiguratio
             map.put("roomName", configuration.getRoomName());
             map.put("token", configuration.getToken());
         } else {
-        	map.put("noisy", Boolean.TRUE.toString());
+            map.put("noisy", Boolean.TRUE.toString());
         }
 
         return map;

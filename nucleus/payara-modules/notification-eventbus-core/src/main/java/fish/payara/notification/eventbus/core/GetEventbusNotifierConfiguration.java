@@ -89,7 +89,7 @@ public class GetEventbusNotifierConfiguration extends BaseGetNotifierConfigurati
             map.put("noisy", configuration.getNoisy());
             map.put("topicName", configuration.getTopicName());
         } else {
-        	map.put("noisy", Boolean.TRUE.toString());
+            map.put("noisy", Boolean.TRUE.toString());
         }
 
         return map;

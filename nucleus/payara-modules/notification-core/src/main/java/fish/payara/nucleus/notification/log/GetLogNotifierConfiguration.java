@@ -39,23 +39,16 @@
  */
 package fish.payara.nucleus.notification.log;
 
+import com.sun.enterprise.util.ColumnFormatter;
+import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
+import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
-
-import com.sun.enterprise.util.ColumnFormatter;
-
-import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 
 /**
  * @author mertcaliskan
@@ -63,9 +56,14 @@ import fish.payara.nucleus.notification.configuration.NotificationServiceConfigu
 @Service(name = "get-log-notifier-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-@ExecuteOn({ RuntimeType.DAS, RuntimeType.INSTANCE })
-@TargetType(value = { CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG })
-@RestEndpoints({ @RestEndpoint(configBean = NotificationServiceConfiguration.class, opType = RestEndpoint.OpType.GET, path = "get-log-notifier-configuration", description = "Lists Log Notifier Configuration") })
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = NotificationServiceConfiguration.class,
+                opType = RestEndpoint.OpType.GET,
+                path = "get-log-notifier-configuration",
+                description = "Lists Log Notifier Configuration")
+})
 public class GetLogNotifierConfiguration extends BaseGetNotifierConfiguration<LogNotifierConfiguration> {
 
     @Override
@@ -84,7 +82,7 @@ public class GetLogNotifierConfiguration extends BaseGetNotifierConfiguration<Lo
 
     @Override
     protected Map<String, Object> getNotifierConfiguration(LogNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(3);
+        Map<String, Object> map = new HashMap<>(2);
 
         if (configuration != null) {
             map.put("enabled", configuration.getEnabled());
