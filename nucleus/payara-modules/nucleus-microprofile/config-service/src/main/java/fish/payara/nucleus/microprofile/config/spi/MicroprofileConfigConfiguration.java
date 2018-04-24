@@ -86,5 +86,9 @@ public interface MicroprofileConfigConfiguration extends ConfigBeanProxy, Config
     @Attribute(defaultValue = "90", dataType = Integer.class)
     String getSecretDirOrdinality();
     public void setSecretDirOrdinality(String message);  
+
+    @Attribute(defaultValue = "105", dataType = Integer.class)
+    public String getPasswordOrdinality();
+    public void setPasswordOrdinality(String message);
     
 }

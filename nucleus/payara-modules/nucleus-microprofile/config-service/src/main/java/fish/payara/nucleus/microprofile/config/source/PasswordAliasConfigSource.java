@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,77 +37,59 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.microprofile.config.spi;
+package fish.payara.nucleus.microprofile.config.source;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.spi.ConfigBuilder;
+import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.eclipse.microprofile.config.spi.Converter;
+import org.glassfish.internal.api.Globals;
 
 /**
  *
- * @author Steve Millidge (Payara Foundation)
+ * @author steve
  */
-public class PayaraConfigBuilder implements ConfigBuilder {
+public class PasswordAliasConfigSource extends PayaraConfigSource implements ConfigSource {
 
-    LinkedList<ConfigSource> sources;
-    LinkedList<Converter> converters;
-    ConfigProviderResolverImpl resolver;
-    ClassLoader loader;
-
-    public PayaraConfigBuilder(ConfigProviderResolverImpl resolver, ClassLoader loader) {
-        this.resolver = resolver;
-        sources = new LinkedList<>();
-        converters = new LinkedList<>();
-        this.loader = loader;
+    private final DomainScopedPasswordAliasStore store;
+    
+    
+    public PasswordAliasConfigSource() {
+        store = Globals.getDefaultHabitat().getService(DomainScopedPasswordAliasStore.class);
     }
     
-    public PayaraConfigBuilder(ConfigProviderResolverImpl resolver) {
-        this(resolver,Thread.currentThread().getContextClassLoader());
+    @Override
+    public int getOrdinal() {
+        return Integer.parseInt(configService.getMPConfig().getPasswordOrdinality());
+    }
+
+
+    @Override
+    public Map<String, String> getProperties() {
+        Map<String,String> properties = new HashMap<>();
+        if (store != null) {
+            Iterator<String> keys = store.keys();
+            while(keys.hasNext()){
+                String key = keys.next();
+                properties.put(key, new String(store.get(key)));
+            }
+        }
+        return properties;
     }
 
     @Override
-    public ConfigBuilder addDefaultSources() {
-        sources.addAll(resolver.getDefaultSources());
-        return this;
+    public String getValue(String name) {
+        String value = null;
+        if (store != null && name != null && store.containsKey(name)) {
+            value = new String(store.get(name));
+        }
+        return value;
     }
 
     @Override
-    public ConfigBuilder addDiscoveredSources() {
-        sources.addAll(resolver.getDiscoveredSources(resolver.getAppInfo(loader)));
-        return this;
-     }
-
-    @Override
-    public ConfigBuilder addDiscoveredConverters() {
-        converters.addAll(resolver.getDiscoveredConverters(resolver.getAppInfo(loader)));
-        return this;
+    public String getName() {
+        return "Password Alias";
     }
-
-    @Override
-    public ConfigBuilder forClassLoader(ClassLoader loader) {
-        this.loader = loader;
-        return this;
-    }
-
-    @Override
-    public ConfigBuilder withSources(ConfigSource... sources) {
-        this.sources.addAll(Arrays.asList(sources));
-        return this;
-    }
-
-    @Override
-    public ConfigBuilder withConverters(Converter<?>... converters) {
-        this.converters.addAll(Arrays.asList(converters));
-        return this;
-    }
-
-    @Override
-    public Config build() {
-        this.converters.addAll(resolver.getDefaultConverters());
-        return new PayaraConfig(sources, converters);
-    }
-
+    
 }

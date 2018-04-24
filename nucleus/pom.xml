@@ -214,9 +214,34 @@
         <jdk.version>1.8.0</jdk.version>
         <javase.version>1.8</javase.version>
         <javadoc.skip>false</javadoc.skip>
-        <maven.javadoc.plugin.version>2.10.4</maven.javadoc.plugin.version>
+
+        <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
         <maven.compiler.plugin.version>3.7.0</maven.compiler.plugin.version>
         <maven.surefire.plugin.version>2.21.0</maven.surefire.plugin.version>
+        <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
+        <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
+        <maven.dependency.plugin.version>3.0.2</maven.dependency.plugin.version>
+        <maven.site.plugin.version>3.7</maven.site.plugin.version>
+        <maven.assembly.plugin.version>3.1.0</maven.assembly.plugin.version>
+        <maven.jar.plugin.version>3.0.2</maven.jar.plugin.version>
+        <maven.antrun.plugin.version>1.8</maven.antrun.plugin.version>
+        <maven.remote.resources.plugin.version>1.5</maven.remote.resources.plugin.version>
+        <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
+        <maven.invoker.plugin.version>3.0.1</maven.invoker.plugin.version>
+        <maven.war.plugin.version>3.2.0</maven.war.plugin.version>
+        <maven.makepkgs.plugin.version>0.6.2</maven.makepkgs.plugin.version>
+        <maven.jaxb2.plugin.version>0.13.3</maven.jaxb2.plugin.version>
+        <maven.bundle.plugin.version>3.5.0</maven.bundle.plugin.version>
+        <maven.antlr.plugin.version>2.1</maven.antlr.plugin.version>
+        <maven.enforcer.plugin.version>1.4.1</maven.enforcer.plugin.version>
+        <maven.install.plugin.version>2.5.2</maven.install.plugin.version>
+        <maven.javadoc.plugin.version>2.10.4</maven.javadoc.plugin.version>
+        <maven.jaxws.plugin.version>1.12</maven.jaxws.plugin.version>
+        <maven.apt.plugin.version>1.0-alpha-5</maven.apt.plugin.version>
+        <maven.build.helper.plugin.version>1.7</maven.build.helper.plugin.version>
+        <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
+        <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
+
         <deploy.skip>true</deploy.skip>
 
         <!-- Java EE -->
@@ -231,7 +256,7 @@
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.1</jax-rs-api.impl.version>
-        <jersey.version>2.26</jersey.version>
+        <jersey.version>2.27</jersey.version>
 
         <!-- Bean Validation -->
         <javax.validation.version>2.0.0.Final</javax.validation.version>
@@ -292,7 +317,7 @@
         <v3-docs-l10n.version>4.0-b07</v3-docs-l10n.version>
         <l10n.version>3.1-b41</l10n.version>
         <asm.version>6.0</asm.version>
-        <ha-api.version>3.1.9</ha-api.version>      
+        <ha-api.version>3.1.9</ha-api.version>
         <hazelcast.version>3.9.3</hazelcast.version>
         <smack.version>4.1.9</smack.version>
         <jxmpp.version>0.4.2</jxmpp.version>
@@ -362,7 +387,7 @@
                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>${maven.clean.plugin.version}</version>
                </plugin>
 
                <plugin>
@@ -385,7 +410,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.0.2</version>
+                    <version>${maven.resources.plugin.version}</version>
                 </plugin>
 
                 <plugin>
@@ -394,16 +419,13 @@
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
                         <useSystemClassLoader>true</useSystemClassLoader>
-                        <!--
-                        <forkCount>0</forkCount>
-                         -->
                     </configuration>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>3.0.1</version>
+                    <version>${maven.source.plugin.version}</version>
                 </plugin>
 
                 <plugin>
@@ -418,79 +440,79 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>2.5.3</version>
+                    <version>${maven.release.plugin.version}</version>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.0.1</version>
+                    <version>${maven.dependency.plugin.version}</version>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.5</version>
+                    <version>${maven.site.plugin.version}</version>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>${maven.assembly.plugin.version}</version>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-install-plugin</artifactId>
-                    <version>2.5.2</version>
+                    <version>${maven.install.plugin.version}</version>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.0.2</version>
+                    <version>${maven.jar.plugin.version}</version>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-gpg-plugin</artifactId>
-                    <version>1.6</version>
+                    <version>${maven.gpg.plugin.version}</version>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.8.2</version>
+                    <version>${maven.deploy.plugin.version}</version>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
-                    <version>1.7</version>
+                    <version>${maven.antrun.plugin.version}</version>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-remote-resources-plugin</artifactId>
-                    <version>1.5</version>
+                    <version>${maven.remote.resources.plugin.version}</version>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-eclipse-plugin</artifactId>
-                    <version>2.9</version>
+                    <version>${maven.eclipse.plugin.version}</version>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-invoker-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>${maven.invoker.plugin.version}</version>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-war-plugin</artifactId>
-                    <version>2.2</version>
+                    <version>${maven.war.plugin.version}</version>
                 </plugin>
 
                 <plugin>
@@ -522,18 +544,18 @@
                 <plugin>
                     <groupId>org.jvnet.updatecenter2</groupId>
                     <artifactId>maven-makepkgs-plugin</artifactId>
-                    <version>0.5.1</version>
+                    <version>${maven.makepkgs.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.jvnet.jaxb2.maven2</groupId>
                     <artifactId>maven-jaxb2-plugin</artifactId>
-                    <version>0.8.1</version>
+                    <version>${maven.jaxb2.plugin.version}</version>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
-                    <version>3.5.0</version>
+                    <version>${maven.bundle.plugin.version}</version>
                 </plugin>
 
                 <plugin>
@@ -545,22 +567,22 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>antlr-maven-plugin</artifactId>
-                    <version>2.1</version>
+                    <version>${maven.antlr.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>jaxws-maven-plugin</artifactId>
-                    <version>1.12</version>
+                    <version>${maven.jaxws.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>apt-maven-plugin</artifactId>
-                    <version>1.0-alpha-5</version>
+                    <version>${maven.apt.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>1.7</version>
+                    <version>${maven.build.helper.plugin.version}</version>
                 </plugin>
 
             </plugins>
@@ -570,7 +592,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.4.1</version>
+                <version>${maven.enforcer.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>enforce-versions</id>
@@ -706,7 +728,6 @@
                     <useSystemClassLoader>true</useSystemClassLoader>
                 </configuration>
             </plugin>
-
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

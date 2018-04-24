@@ -37,7 +37,6 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-
 package fish.payara.microprofile.metrics.impl;
 
 import java.util.Collections;
@@ -85,42 +84,46 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     @Override
     public Counter counter(String name) {
-        return counter(new Metadata(name, COUNTER));
+        return addMetric(new Metadata(name, COUNTER));
     }
 
     @Override
     public Counter counter(Metadata metadata) {
-        return getOrAdd(metadata, COUNTER);
+        metadata.setType(COUNTER);
+        return addMetric(metadata);
     }
 
     @Override
     public Histogram histogram(String name) {
-        return histogram(new Metadata(name, HISTOGRAM));
+        return addMetric(new Metadata(name, HISTOGRAM));
     }
 
     @Override
     public Histogram histogram(Metadata metadata) {
-        return getOrAdd(metadata, HISTOGRAM);
+        metadata.setType(HISTOGRAM);
+        return addMetric(metadata);
     }
 
     @Override
     public Meter meter(String name) {
-        return meter(new Metadata(name, METERED));
+        return addMetric(new Metadata(name, METERED));
     }
 
     @Override
     public Meter meter(Metadata metadata) {
-        return getOrAdd(metadata, METERED);
+        metadata.setType(METERED);
+        return addMetric(metadata);
     }
 
     @Override
     public Timer timer(String name) {
-        return timer(new Metadata(name, TIMER));
+        return addMetric(new Metadata(name, TIMER));
     }
 
     @Override
     public Timer timer(Metadata metadata) {
-        return getOrAdd(metadata, TIMER);
+        metadata.setType(TIMER);
+        return addMetric(metadata);
     }
 
     @Override
@@ -187,7 +190,7 @@ public class MetricRegistryImpl extends MetricRegistry {
     public Map<String, Metadata> getMetadata() {
         return new HashMap<>(metadataMap);
     }
-    
+
     @Override
     public boolean remove(String name) {
         final Metric metric = metricMap.remove(name);
@@ -205,10 +208,10 @@ public class MetricRegistryImpl extends MetricRegistry {
             }
         }
     }
-    
+
     @Override
     public <T extends Metric> T register(String name, T metric) throws IllegalArgumentException {
-        return register(name, metric, new Metadata(name, MetricType.from(metric.getClass())));
+        return register(new Metadata(name, MetricType.from(metric.getClass())), metric);
     }
 
     @Deprecated
@@ -216,20 +219,23 @@ public class MetricRegistryImpl extends MetricRegistry {
     public <T extends Metric> T register(String name, T metric, Metadata metadata) throws IllegalArgumentException {
         metadata.setName(name);
         return register(metadata, metric);
-        
     }
-    
+
     @Override
-    public <T extends Metric> T register(Metadata metadata, T metric) throws IllegalArgumentException {
-           
-        String name = metadata.getName();
+    public <T extends Metric> T register(Metadata newMetadata, T metric) throws IllegalArgumentException {
+
+        String name = newMetadata.getName();
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Metric name must not be null or empty");
         }
-        
+
         Metadata existingMetadata = metadataMap.get(name);
-        
-        if (existingMetadata != null) {
+
+        if (existingMetadata == null) {
+            metricMap.put(name, metric == null ? createMetricInstance(newMetadata) : metric);
+            metadataMap.put(name, metadataClone(newMetadata));
+        } else if (existingMetadata.isReusable() || newMetadata.isReusable()) {
+
             //if existing metric declared not reusable
             if (!existingMetadata.isReusable()) {
                 throw new IllegalArgumentException(String.format(
@@ -237,62 +243,78 @@ public class MetricRegistryImpl extends MetricRegistry {
                 ));
             }
 
-            //Only metrics of the same type can be reused under the same name
-            if (!existingMetadata.getTypeRaw().equals(metadata.getTypeRaw())) {
+            //registration call itself declares the metric to not be reusable
+            if (!newMetadata.isReusable()) {
                 throw new IllegalArgumentException(String.format(
-                        "Metric ['%s'] type['%s'] does not match with existing type['%s']",
-                        name, metadata.getType(), existingMetadata.getType()
+                        "Metric ['%s'] already exists and declared reusable but registration call declares the metric to not be reusable", name
                 ));
             }
-            
+
+            //Only metrics of the same type can be reused under the same name
+            if (!existingMetadata.getTypeRaw().equals(newMetadata.getTypeRaw())) {
+                throw new IllegalArgumentException(String.format(
+                        "Metric ['%s'] type['%s'] does not match with existing type['%s']",
+                        name, newMetadata.getType(), existingMetadata.getType()
+                ));
+            }
+
             //reusable does not apply to gauges
-            if(GAUGE.equals(metadata.getTypeRaw())) {
+            if (GAUGE.equals(newMetadata.getTypeRaw())) {
                 throw new IllegalArgumentException(String.format(
                         "Gauge type metric['%s'] is not reusable", name
                 ));
             }
-        }
 
-        metricMap.put(name, metric);
-        metadataMap.put(name, metadata);
+            metadataMap.put(name, metadataClone(newMetadata));
+        }
 
         return metric;
     }
 
-    private <T extends Metric> T getOrAdd(Metadata metadata, MetricType metricType) {
+    private <T extends Metric> T addMetric(Metadata metadata) {
         String name = metadata.getName();
-        Metadata existingMetadata = metadataMap.get(name);
-        if (existingMetadata == null) {
-            Metric metric;
-            switch (metricType) {
-                case COUNTER:
-                    metric = new CounterImpl();
-                    break;
-                case GAUGE:
-                    throw new IllegalArgumentException(String.format(
-                            "Unsupported operation for Gauge ['%s']", name
-                    ));
-                case METERED:
-                    metric = new MeterImpl();
-                    break;
-                case HISTOGRAM:
-                    metric = new HistogramImpl();
-                    break;
-                case TIMER:
-                    metric = new TimerImpl();
-                    break;
-                case INVALID:
-                default:
-                    throw new IllegalStateException("Invalid metric type : " + metricType);
-            }
-            register(metadata, metric);
-        }  else if (!existingMetadata.getTypeRaw().equals(metadata.getTypeRaw())) {
-            throw new IllegalArgumentException(String.format(
-                        "Metric ['%s'] type['%s'] does not match with existing type['%s']",
-                        name, metadata.getType(), existingMetadata.getType()
-                ));
-        }
+        register(metadata, null);
         return (T) metricMap.get(name);
+    }
+
+    private <T extends Metric> T createMetricInstance(Metadata metadata) {
+        String name = metadata.getName();
+        Metric metric;
+        switch (metadata.getTypeRaw()) {
+            case COUNTER:
+                metric = new CounterImpl();
+                break;
+            case GAUGE:
+                throw new IllegalArgumentException(String.format(
+                        "Unsupported operation for Gauge ['%s']", name
+                ));
+            case METERED:
+                metric = new MeterImpl();
+                break;
+            case HISTOGRAM:
+                metric = new HistogramImpl();
+                break;
+            case TIMER:
+                metric = new TimerImpl();
+                break;
+            case INVALID:
+            default:
+                throw new IllegalStateException("Invalid metric type : " + metadata.getTypeRaw());
+        }
+        return (T)metric;
+    }
+    
+    private Metadata metadataClone(Metadata metadata) {
+        Metadata newMetadata = new Metadata(
+                metadata.getName(),
+                metadata.getDisplayName(),
+                metadata.getDescription(),
+                metadata.getTypeRaw(),
+                metadata.getUnit()
+        );
+        newMetadata.setTags(metadata.getTags());
+        newMetadata.setReusable(metadata.isReusable());
+        return newMetadata;
     }
 
     private <T extends Metric> SortedMap<String, T> findMetrics(Class<T> metricClass, MetricFilter metricFilter) {
