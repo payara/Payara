@@ -52,50 +52,93 @@ public class ClusterSetupTest extends AdminBaseDevTest {
         return "QL cluster test helloworld";
     }
 
-        final String tn = "QLCluster";
-        final String port1 = "18080";
-        final String port2 = "28080";
-        final String cname = "eec1";
-        final String i1name = "eein1-with-a-very-very-very-long-name";
-        final String i2name = "eein2";
-        String i1url = "http://localhost:"+port1;
-        String i2url = "http://localhost:"+port2;
-        
-        public boolean retStatus = false, ret1 = false,ret2 = false;
+    final String tn = "QLCluster";
+    final String port1 = "18080";
+    final String port2 = "28080";
+    final String cname = "eec1";
+    final String i1name = "eein1-with-a-very-very-very-long-name";
+    final String i2name = "eein2";
+    
+    String i1url = "http://localhost:" + port1;
+    String i2url = "http://localhost:" + port2;
+
+    public boolean retStatus = false, ret1 = false, ret2 = false;
 
     @Test
-    public void createClusterTest() throws Exception{
-        // create a cluster and two instances
+    public void createClusterTest() throws Exception {
+        
+        // Try to see if there's an existing cluster config, if so tear it down
+        try {
+            deleteInstance();
+            deleteCluster();
+        } catch (Exception e) {
+            // Ignore
+        }
+        
+        // Create a cluster and two instances
         retStatus = report(tn + "create-cluster", asadmin("create-cluster", cname));
         Assert.assertEquals(retStatus, true, "Create Cluster failed ...");
     }
 
     @Test(dependsOnMethods = { "createClusterTest" })
-    public void createInstanceTest() throws Exception{
-        report(tn + "create-local-instance1", asadmin("create-local-instance",
-                "--cluster", cname, "--node","localhost-test-domain","--systemproperties",
-                "HTTP_LISTENER_PORT=18080:HTTP_SSL_LISTENER_PORT=18181:IIOP_SSL_LISTENER_PORT=13800:" +
-                "IIOP_LISTENER_PORT=13700:JMX_SYSTEM_CONNECTOR_PORT=17676:IIOP_SSL_MUTUALAUTH_PORT=13801:" +
-                "JMS_PROVIDER_PORT=18686:ASADMIN_LISTENER_PORT=14848", i1name));
-        retStatus = report(tn + "create-local-instance2", asadmin("create-local-instance",
-                "--cluster", cname, "--node","localhost-test-domain","--systemproperties",
-                "HTTP_LISTENER_PORT=28080:HTTP_SSL_LISTENER_PORT=28181:IIOP_SSL_LISTENER_PORT=23800:" +
-                "IIOP_LISTENER_PORT=23700:JMX_SYSTEM_CONNECTOR_PORT=27676:IIOP_SSL_MUTUALAUTH_PORT=23801:" +
-                "JMS_PROVIDER_PORT=28686:ASADMIN_LISTENER_PORT=24848", i2name));
+    public void createInstanceTest() throws Exception {
+        report(tn + "create-local-instance1",
+                asadmin(
+                    "create-local-instance", 
+                    "--cluster", cname, 
+                    "--node", "localhost-domain1", 
+                    "--systemproperties", 
+                        "HTTP_LISTENER_PORT=18080:HTTP_SSL_LISTENER_PORT=18181:IIOP_SSL_LISTENER_PORT=13800:"
+                        + "IIOP_LISTENER_PORT=13700:JMX_SYSTEM_CONNECTOR_PORT=17676:IIOP_SSL_MUTUALAUTH_PORT=13801:"
+                        + "JMS_PROVIDER_PORT=18686:ASADMIN_LISTENER_PORT=14848",
+                    i1name));
+        
+        retStatus = report(tn + "create-local-instance2",
+                asadmin(
+                    "create-local-instance", 
+                    "--cluster", cname, 
+                    "--node", "localhost-domain1", 
+                    "--systemproperties",
+                        "HTTP_LISTENER_PORT=28080:HTTP_SSL_LISTENER_PORT=28181:IIOP_SSL_LISTENER_PORT=23800:"
+                        + "IIOP_LISTENER_PORT=23700:JMX_SYSTEM_CONNECTOR_PORT=27676:IIOP_SSL_MUTUALAUTH_PORT=23801:"
+                        + "JMS_PROVIDER_PORT=28686:ASADMIN_LISTENER_PORT=24848",
+                   i2name));
+        
         Assert.assertEquals(retStatus, true, "Create instance failed ...");
     }
 
     @Test(dependsOnMethods = { "createInstanceTest" })
-    public void startInstanceTest() throws Exception{
-        // start the instances
-        report(tn + "start-local-instance1", asadmin("start-local-instance", "--node","localhost-test-domain",i1name));
-        report(tn + "start-local-instance2", asadmin("start-local-instance", "--node","localhost-test-domain",i2name));
+    public void startInstanceTest() throws Exception {
+        // Start the instances
+        report(tn + "start-local-instance1", asadmin("start-local-instance", "--node", "localhost-domain1", i1name));
+        report(tn + "start-local-instance2", asadmin("start-local-instance", "--node", "localhost-domain1", i2name));
+        
         System.out.println("Waiting for 5 sec...");
-	Thread.currentThread().sleep(5000);
-        // check that the instances are there
+        
+        Thread.currentThread().sleep(5000);
+        
+        // Check that the instances are there
         report(tn + "list-instances", asadmin("list-instances"));
         report(tn + "getindex1", matchString("GlassFish Server", getURL(i1url)));
         retStatus = report(tn + "getindex2", matchString("Payara Server", getURL(i2url)));
+        
         Assert.assertEquals(retStatus, true, "Start instance failed ...");
     }
- }
+    
+    public void deleteInstance() throws Exception {
+        AsadminReturn ar1 = asadminWithOutput("stop-local-instance", "--node", "localhost-domain1", "--kill", i1name);
+        AsadminReturn ar2 = asadminWithOutput("stop-local-instance", "--node", "localhost-domain1", "--kill", i2name);
+        AsadminReturn ar3 = asadminWithOutput("delete-local-instance", "--node", "localhost-domain1", i1name);
+        AsadminReturn ar4 = asadminWithOutput("delete-local-instance", "--node", "localhost-domain1", i2name);
+
+        report(tn + "stop-local-instance1", ar1.returnValue);
+        report(tn + "stop-local-instance2", ar2.returnValue);
+        report(tn + "delete-local-instance1", ar3.returnValue);
+        report(tn + "delete-local-instance2", ar4.returnValue);
+    }
+
+    public void deleteCluster() throws Exception {
+        AsadminReturn ar1 = asadminWithOutput("delete-cluster", cname);
+        retStatus = report(tn + "delete-cluster", ar1.returnValue);
+    }
+}

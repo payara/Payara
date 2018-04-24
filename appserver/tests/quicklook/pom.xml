@@ -79,16 +79,28 @@
                         <phase>test</phase>
                         <configuration>
                             <target>
-                                <taskdef resource="net/sf/antcontrib/antcontrib.properties"
-                                         classpathref="maven.plugin.classpath" />
+                                <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpathref="maven.plugin.classpath" />
                                 <property name="compile_classpath" refid="maven.compile.classpath"/>
                                 <property name="plugin_classpath" refid="maven.plugin.classpath"/>
                                 
                                 <echo message="compile classpath: ${compile_classpath}"/>
+                                <echo message="${line.separator} ###############################" />
                                 <echo message="plugin classpath:  ${plugin_classpath}"/>
+                                <echo message="${line.separator}" />
+                                
                                 <if>
                                     <equals arg1="${test.gd}" arg2="true" />
                                     <then>
+                                        
+                                        <echo>${line.separator}</echo>
+                                        <echo>+--------------------------------------------+</echo>
+                                        <echo>|                                            |</echo>
+                                        <echo>| Invoking ANT /build.xml with target "all"" |</echo>
+                                        <echo>|                                            |</echo>
+                                        <echo>+--------------------------------------------+</echo>
+                                        <echo>${line.separator}</echo>
+                                        <echo>glassfish.home: ${glassfish.home} </echo>
+                                        
                                         <ant dir="." antfile="build.xml" target="all">
                                             <property name="glassfish.home" value="${glassfish.home}"/>
                                             <property name="jruby-all.version" value="${jruby-all.version}"/>
@@ -96,6 +108,7 @@
                                         </ant>                                        
                                     </then>
                                 </if>
+                                
                                 <if>
                                     <equals arg1="${test.wd}" arg2="true" />
                                     <then>
@@ -104,6 +117,7 @@
                                         </ant>
                                     </then>
                                 </if>
+                                
                                 <if>
                                     <equals arg1="${test.em}" arg2="true" />
                                     <then>
@@ -112,6 +126,7 @@
                                         </ant>
                                     </then>
                                 </if>
+                                
                                 <if>
                                     <equals arg1="${test.ri}" arg2="true" />
                                     <then>
@@ -120,6 +135,7 @@
                                         </ant>
                                     </then>
                                 </if>
+                                
                                 <if>
                                     <equals arg1="${test.wd.security}" arg2="true" />
                                     <then>
@@ -128,6 +144,7 @@
                                         </ant>
                                     </then>
                                 </if>
+                                
                                 <if>
                                     <equals arg1="${start.wd.security}" arg2="true" />
                                     <then>
@@ -136,6 +153,7 @@
                                         </ant>
                                     </then>
                                 </if>
+                                
                                 <if>
                                     <equals arg1="${stop.wd.security}" arg2="true" />
                                     <then>
@@ -144,6 +162,7 @@
                                         </ant>
                                     </then>
                                 </if>
+                                
                                 <if>
                                     <equals arg1="${test.gd.security}" arg2="true" />
                                     <then>
@@ -154,12 +173,14 @@
                                         </ant>
                                     </then>
                                 </if>
+                                
                                 <if>
                                     <isset property="test.report" />
                                     <then>
                                         <ant dir="." antfile="build.xml" target="report"/>
                                     </then>
                                 </if>
+                                
                                 <if>
                                     <equals arg1="${test.debug}" arg2="true" />
                                     <then>
@@ -243,15 +264,8 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <profiles>
-        <profile>
-            <id>report</id>
-            <properties>
-                <test.report>test-output</test.report>
-            </properties>
-        </profile>
-        
         <profile>
             <id>all</id>
             <activation>
@@ -261,6 +275,13 @@
                 <test.gd>true</test.gd>
             </properties>
         </profile>
+    
+        <profile>
+            <id>report</id>
+            <properties>
+                <test.report>test-output</test.report>
+            </properties>
+        </profile>
         
         <profile>
             <id>test_wd</id>
@@ -268,6 +289,7 @@
                 <test.wd>true</test.wd>
             </properties>
         </profile>
+        
         <profile>
             <id>test_em</id>
             <properties>
