@@ -55,7 +55,7 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -81,6 +81,10 @@ public class HazelcastTopicStorage implements EventListener {
      * The message listener cache.
      */
     private final Map<MessageListener<HazelcastPayload>, TopicIdMapping> messageListener = new ConcurrentHashMap<>();
+    /**
+     * Executor to process incoming messages.
+     */
+    private ExecutorService executorService;
 
     @Inject
     private Events events;
@@ -88,15 +92,23 @@ public class HazelcastTopicStorage implements EventListener {
     @PostConstruct
     public void postConstruct() {
         storage = this;
-        events.register(this);
+        this.events.register(this);
+        this.executorService = new ThreadPoolExecutor(
+        2, 40, 30, TimeUnit.SECONDS, new LinkedBlockingQueue<>(200)
+        );
     }
 
     @PreDestroy
     public void preDestroy() {
         storage = null;
-        events.unregister(this);
+        this.events.unregister(this);
+        this.executorService.shutdown();
     }
 
+    /**
+     * Returns the singleton instance of this storage.
+     * @return Singleton storage instance.
+     */
     public static HazelcastTopicStorage getInstance() {
         return storage;
     }
@@ -170,6 +182,22 @@ public class HazelcastTopicStorage implements EventListener {
         }
     }
 
+    /**
+     * Processes the submitted work asynchronously.
+     *
+     * @param work The work to process.
+     * @return The {@link Future} representing a handle for the processing.
+     */
+    Future<?> process(final Runnable work) {
+        return executorService.submit(work);
+    }
+
+    /**
+     * Tries to register the message listener with the provided topic by its name.
+     * @param topic The name of the topic to register the listener with.
+     * @param listener The listener to register
+     * @return The internal id for the registered listener usable for removing the listener.
+     */
     String registerMessageListener(String topic, MessageListener<HazelcastPayload> listener) {
         TopicIdMapping topicIdMapping = new TopicIdMapping(topic);
         if(HazelcastCore.getCore().isEnabled()) {
@@ -179,16 +207,21 @@ public class HazelcastTopicStorage implements EventListener {
         return topicIdMapping.getInternalId();
     }
 
-    void removeMessageListener(String topic, String messageListenerId) {
+    /**
+     * Unregisters the listener identified by its internal id for the provided topic..
+     * @param topic The name of the topic to unregister the listener from.
+     * @param internalId The internal id identifying the listener.
+     */
+    void removeMessageListener(String topic, String internalId) {
         Iterator<Map.Entry<MessageListener<HazelcastPayload>, TopicIdMapping>> iterator = messageListener.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<MessageListener<HazelcastPayload>, TopicIdMapping> entry = iterator.next();
-            if(Objects.equals(entry.getValue().getInternalId(), messageListenerId)) {
+            if(Objects.equals(entry.getValue().getInternalId(), internalId)) {
                 if(entry.getValue().hasExternalId()
                         && !getTopic(topic).removeMessageListener(entry.getValue().getExternalId())) {
                     Logger.getLogger(HazelcastTopicStorage.class.getName())
                             .warning(
-                                MessageFormat.format("Topic {0}: Removal of MessageListener {1} failed.", topic, messageListenerId)
+                                MessageFormat.format("Topic {0}: Removal of MessageListener {1} failed.", topic, internalId)
                             );
                 }
                 iterator.remove();
@@ -196,10 +229,19 @@ public class HazelcastTopicStorage implements EventListener {
         }
     }
 
+    /**
+     * Publishes the {@link HazelcastPayload} at the topic.
+     * @param topic The name of the topic to publish the payload.
+     * @param payload The payload to publish.
+     */
     void publish(String topic, HazelcastPayload payload) {
         getTopic(topic).publish(payload);
     }
 
+    /**
+     * Destroys the topic by name.
+     * @param name The name of the topic to destroy.
+     */
     void destroyTopic(String name) {
         ITopic<HazelcastPayload> topic = topicCache.remove(name);
         if (topic != null) {
@@ -226,7 +268,7 @@ public class HazelcastTopicStorage implements EventListener {
     }
 
     /**
-     * @return The this local members UUID.
+     * @return This local members UUID.
      */
     String getMemberUuid() {
         return HazelcastCore.getCore().getUUID();

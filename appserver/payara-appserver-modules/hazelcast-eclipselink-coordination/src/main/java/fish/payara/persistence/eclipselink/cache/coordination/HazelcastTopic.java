@@ -83,13 +83,6 @@ final class HazelcastTopic {
     }
 
     /**
-     * @return The storage UUID representing this cluster member.
-     */
-    String getMemberUuid() {
-        return getStorage().getMemberUuid();
-    }
-
-    /**
      * @return The hz topic storage.
      */
     private HazelcastTopicStorage getStorage() {
