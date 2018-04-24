@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigCode;
@@ -183,7 +184,7 @@ public class RestMonitoringLoader extends Thread {
                 Engine webEngine = singleModule.createChild(Engine.class);
                 webEngine.setSniffer("web");
                 Engine weldEngine = singleModule.createChild(Engine.class);
-                weldEngine.setSniffer("weld");
+                weldEngine.setSniffer("cdi");
                 Engine securityEngine = singleModule.createChild(Engine.class);
                 securityEngine.setSniffer("security");
                 singleModule.getEngines().add(webEngine);
@@ -288,7 +289,10 @@ public class RestMonitoringLoader extends Thread {
         // Load the Rest Monitoring Application
         String instanceName = serverEnv.getInstanceName();
         ApplicationRef ref = domain.getApplicationRefInServer(instanceName, applicationName);
-        habitat.getService(ApplicationLoaderService.class).processApplication(config, ref);
+        Deployment lifecycle = habitat.getService(Deployment.class);
+        for(Deployment.ApplicationDeployment depl : habitat.getService(ApplicationLoaderService.class).processApplication(config, ref)) {
+            lifecycle.initialize(depl.appInfo, depl.appInfo.getSniffers(), depl.context);
+        }
 
         // Mark as registered
         restMonitoringAdapter.setAppRegistered(true);
