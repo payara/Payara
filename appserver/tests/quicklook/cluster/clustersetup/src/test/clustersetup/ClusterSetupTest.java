@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package test.clustersetup;
 
 import com.sun.appserv.test.AdminBaseDevTest;
@@ -58,6 +58,7 @@ public class ClusterSetupTest extends AdminBaseDevTest {
     final String cname = "eec1";
     final String i1name = "eein1-with-a-very-very-very-long-name";
     final String i2name = "eein2";
+    final String domain = System.getProperty("domain.name", "test-domain");
     
     String i1url = "http://localhost:" + port1;
     String i2url = "http://localhost:" + port2;
@@ -86,7 +87,7 @@ public class ClusterSetupTest extends AdminBaseDevTest {
                 asadmin(
                     "create-local-instance", 
                     "--cluster", cname, 
-                    "--node", "localhost-domain1", 
+                    "--node", "localhost-" + domain, 
                     "--systemproperties", 
                         "HTTP_LISTENER_PORT=18080:HTTP_SSL_LISTENER_PORT=18181:IIOP_SSL_LISTENER_PORT=13800:"
                         + "IIOP_LISTENER_PORT=13700:JMX_SYSTEM_CONNECTOR_PORT=17676:IIOP_SSL_MUTUALAUTH_PORT=13801:"
@@ -97,7 +98,7 @@ public class ClusterSetupTest extends AdminBaseDevTest {
                 asadmin(
                     "create-local-instance", 
                     "--cluster", cname, 
-                    "--node", "localhost-domain1", 
+                    "--node", "localhost-" + domain, 
                     "--systemproperties",
                         "HTTP_LISTENER_PORT=28080:HTTP_SSL_LISTENER_PORT=28181:IIOP_SSL_LISTENER_PORT=23800:"
                         + "IIOP_LISTENER_PORT=23700:JMX_SYSTEM_CONNECTOR_PORT=27676:IIOP_SSL_MUTUALAUTH_PORT=23801:"
@@ -110,8 +111,8 @@ public class ClusterSetupTest extends AdminBaseDevTest {
     @Test(dependsOnMethods = { "createInstanceTest" })
     public void startInstanceTest() throws Exception {
         // Start the instances
-        report(tn + "start-local-instance1", asadmin("start-local-instance", "--node", "localhost-domain1", i1name));
-        report(tn + "start-local-instance2", asadmin("start-local-instance", "--node", "localhost-domain1", i2name));
+        report(tn + "start-local-instance1", asadmin("start-local-instance", "--node", "localhost-" + domain, i1name));
+        report(tn + "start-local-instance2", asadmin("start-local-instance", "--node", "localhost-" + domain, i2name));
         
         System.out.println("Waiting for 5 sec...");
         
@@ -126,19 +127,13 @@ public class ClusterSetupTest extends AdminBaseDevTest {
     }
     
     public void deleteInstance() throws Exception {
-        AsadminReturn ar1 = asadminWithOutput("stop-local-instance", "--node", "localhost-domain1", "--kill", i1name);
-        AsadminReturn ar2 = asadminWithOutput("stop-local-instance", "--node", "localhost-domain1", "--kill", i2name);
-        AsadminReturn ar3 = asadminWithOutput("delete-local-instance", "--node", "localhost-domain1", i1name);
-        AsadminReturn ar4 = asadminWithOutput("delete-local-instance", "--node", "localhost-domain1", i2name);
-
-        report(tn + "stop-local-instance1", ar1.returnValue);
-        report(tn + "stop-local-instance2", ar2.returnValue);
-        report(tn + "delete-local-instance1", ar3.returnValue);
-        report(tn + "delete-local-instance2", ar4.returnValue);
+        AsadminReturn ar1 = asadminWithOutput("stop-local-instance", "--node", "localhost-" + domain, "--kill", i1name);
+        AsadminReturn ar2 = asadminWithOutput("stop-local-instance", "--node", "localhost-" + domain, "--kill", i2name);
+        AsadminReturn ar3 = asadminWithOutput("delete-local-instance", "--node", "localhost-" + domain, i1name);
+        AsadminReturn ar4 = asadminWithOutput("delete-local-instance", "--node", "localhost-" + domain, i2name);
     }
 
     public void deleteCluster() throws Exception {
         AsadminReturn ar1 = asadminWithOutput("delete-cluster", cname);
-        retStatus = report(tn + "delete-cluster", ar1.returnValue);
     }
 }

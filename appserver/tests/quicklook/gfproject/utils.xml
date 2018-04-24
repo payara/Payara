@@ -40,7 +40,7 @@
     holder.
 
 -->
-
+<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
 <!--
     Contributor(s): Dies Koper (Fujitsu Ltd.)
 -->
@@ -61,7 +61,7 @@
 
     <property file="../build.properties"/>
 
-    <property name="server.log.path" location="${glassfish.home}/domains/domain1/logs/server.log"/>
+    <property name="server.log.path" location="${glassfish.home}/domains/${domain.name}/logs/server.log"/>
     <property name="log.msg.excl.path" location="gfproject/log_msg_excl.txt"/>
     <tempfile property="log.msg.tmp.path" destdir="../test-output" prefix="server_log_filtered" deleteonexit="true"/>
 

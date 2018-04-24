@@ -40,7 +40,7 @@
     holder.
 
 -->
-
+<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
 <project name="db-targets" default="all" basedir=".">
 
 <target name="start-derby" depends="setOSConditions" if="v3">
@@ -132,11 +132,11 @@
 </target>
 
 <target name="add-quicklook-policy-grants">
-  <move file="${glassfish.home}/domains/domain1/config/server.policy"
-        tofile="${glassfish.home}/domains/domain1/config/server_policy.orig"/>
+  <move file="${glassfish.home}/domains/${domain.name}/config/server.policy"
+        tofile="${glassfish.home}/domains/${domain.name}/config/server_policy.orig"/>
   <concat append="true"
-          destfile="${glassfish.home}/domains/domain1/config/server.policy">
-    <fileset file="${glassfish.home}/domains/domain1/config/server_policy.orig"/>
+          destfile="${glassfish.home}/domains/${domain.name}/config/server.policy">
+    <fileset file="${glassfish.home}/domains/${domain.name}/config/server_policy.orig"/>
     <fileset file="${basedir}/weld/numberguess/numberguess.policy"/>   
     <fileset file="${basedir}/weld/extensions/extensions.policy"/>   
     <fileset file="${basedir}/osgitest/basicosgi/security.policy"/>   
@@ -144,9 +144,9 @@
 </target>
 
 <target name="remove-quicklook-policy-grants">
-  <delete file="${glassfish.home}/domains/domain1/config/server.policy"/>
-  <move file="${glassfish.home}/domains/domain1/config/server_policy.orig"
-        tofile="${glassfish.home}/domains/domain1/config/server.policy"/>
+  <delete file="${glassfish.home}/domains/${domain.name}/config/server.policy"/>
+  <move file="${glassfish.home}/domains/${domain.name}/config/server_policy.orig"
+        tofile="${glassfish.home}/domains/${domain.name}/config/server.policy"/>
 </target>
 
 <target name="startDerby" depends="initprop">

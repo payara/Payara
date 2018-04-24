@@ -40,7 +40,7 @@
     holder.
 
 -->
-
+<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
 <project name="GlassFish-V3-QuickLook" default="all" basedir=".">
 	<property environment="env"/>
 
@@ -161,6 +161,7 @@
 		
 		<antcall target="runtest">
 			<param name="testng.xml" value="testng/testng_gd.xml"/>
+			<param name="domain.name" value="${domain.name}"/>
 		</antcall>
 				
 		<antcall target="undeploy"/>
@@ -182,7 +183,7 @@
 	<target name="restart-server-unix" if="isUnix">
 		<exec executable="${glassfish.home}/bin/asadmin" outputproperty="message1">
 			<arg value="restart-domain"/>
-			<arg value="domain1"/>
+			<arg value="${domain.name}"/>
 		</exec>
 		<echo message="${message1}"/>
 	</target>
@@ -193,7 +194,7 @@
 			<arg value="/c" />
 			<arg value="${glassfish.home}\bin\asadmin.bat" />
 			<arg value="restart-domain" />
-			<arg value="domain1" />
+			<arg value="${domain.name}" />
 		</exec>
 		<echo message="${message1}" />
 	</target>
@@ -372,12 +373,13 @@
 	<!-- Target is re-definted here as didn't want to specify ws.root property -->
 	<target  name="runtest" depends="initprops,setOSConditions,asenv-unix,asenv-windows">
 		<record name="${basedir}/runtestng.output" action="start"/>
+		
 		<echo message="=============Starting TestNG functional tests from ${testng.xml} ============"/>
 		<property name="hasTestNGXML" value="true"/>
 
 		<mkdir dir="${test.report}"/>
-		<testng outputdir="${test.report}"
-                classpathref="run.testng.classpath" haltOnFailure="true">
+		
+		<testng outputdir="${test.report}" classpathref="run.testng.classpath" haltOnFailure="true">
 			<jvmarg value="-Djava.compiler=NONE"/>
 			<jvmarg value="-Dhttp.host=${glassfish.http.host}"/>
 			<jvmarg value="-Dhttp.port=${glassfish.http.port}"/>
@@ -385,10 +387,11 @@
 			<jvmarg value="-DASADMIN=${ASADMIN}" />
 			<jvmarg value="-DAPPCLIENT=${APPCLIENT}"/>
 			<sysproperty key="glassfish.home" value="${glassfish.home}"/>
+			<sysproperty key="domain.name" value="${domain.name}"/>
 			<sysproperty key="BASEDIR" value="${basedir}"/>
-			<!--<classfileset dir="classes/test" includes="**/SeleniumTest.class"/>-->
 			<xmlfileset dir="." includes="${testng.xml}"/>
 		</testng>
+		
 		<record name="${basedir}/runtestng.output" action="stop"/>
 	</target>
 
@@ -655,7 +658,7 @@
 			<arg value="/c"/>
 			<arg value="${glassfish.home}\bin\asadmin.bat"/>
 			<arg value="start-domain"/>
-			<arg value="domain1"/>
+			<arg value="${domain.name}"/>
 		</exec>
 		<waitfor maxwait="30" maxwaitunit="second" checkevery="500">
 			<http url="http://localhost:4848/"/>
@@ -665,7 +668,7 @@
 	<target name="start-server-felix-unix" if="isUnix">
 		<exec executable="${glassfish.home}/bin/asadmin">
 			<arg value="start-domain"/>
-			<arg value="domain1"/>
+			<arg value="${domain.name}"/>
 		</exec>
 	</target>
 
