@@ -100,23 +100,21 @@ public class HazelcastTopicRemoteConnection extends BroadcastRemoteConnection im
      */
     @Override
     public void onMessage(final Message<HazelcastPayload> message) {
-        if (!isMessageFromLocalPublisher(message)) {
-            HazelcastTopicStorage.getInstance().process(
-                () -> {
-                    String messageId = message.getPublishingMember().getUuid() + "-" + String.valueOf(message.getPublishTime());
-                    try {
-                        if (hasHazelcastPayload(message)) {
-                            this.processReceivedObject(message.getMessageObject().get(this.rcm), messageId);
-                        } else {
-                            Object[] args = new Object[]{message.getClass().getName(), topic};
-                            this.rcm.logWarningWithoutLevelCheck("received_unexpected_message_type", args);
-                        }
-                    } catch (Exception e) {
-                        this.failDeserializeMessage(messageId, e);
+        HazelcastTopicStorage.getInstance().process(
+            () -> {
+                String messageId = message.getPublishingMember().getUuid() + "-" + String.valueOf(message.getPublishTime());
+                try {
+                    if (hasHazelcastPayload(message)) {
+                        this.processReceivedObject(message.getMessageObject().get(this.rcm), messageId);
+                    } else {
+                        Object[] args = new Object[]{message.getClass().getName(), topic};
+                        this.rcm.logWarningWithoutLevelCheck("received_unexpected_message_type", args);
                     }
+                } catch (Exception e) {
+                    this.failDeserializeMessage(messageId, e);
                 }
-            );
-        }
+            }
+        );
     }
 
     /**
@@ -127,22 +125,5 @@ public class HazelcastTopicRemoteConnection extends BroadcastRemoteConnection im
     private boolean hasHazelcastPayload(Message<HazelcastPayload> message) {
         return HazelcastPayload.class.isAssignableFrom(message.getMessageObject().getClass());
     }
-
-    /**
-     * Signals if the message is from the local publisher.
-     * @param message The message to judge.
-     * @return If it is from the local publisher.
-     */
-    private boolean isMessageFromLocalPublisher(Message<HazelcastPayload> message) {
-        return Objects.equals(getMemberUuid(), message.getPublishingMember().getUuid());
-    }
-
-    /**
-     * @return The storage UUID representing this cluster member.
-     */
-    private String getMemberUuid() {
-        return HazelcastTopicStorage.getInstance().getMemberUuid();
-    }
-
-
+    
 }
