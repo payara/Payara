@@ -45,18 +45,19 @@ import javax.validation.constraints.Size;
 import java.util.Collection;
 
 @Entity
-@Table(name="BV_EMPL")
+@Table(name = "BV_EMPL")
 public class Employee {
 
-    private int	     id;
-    private String  name;
+    private int id;
+    private String name;
     private long salary;
     private Collection<Project> projects;
 
-
     // ===========================================================
     // constructor
-    public Employee() {}
+    
+    public Employee() {
+    }
 
     public Employee(int id, String name, long salary) {
         this.id = id;
@@ -66,38 +67,44 @@ public class Employee {
 
     // ===========================================================
     // getters and setters for the state fields
+    
     @Id
-    @Column(name="ID")
+    @Column(name = "ID")
     public int getId() {
         return id;
     }
+
     public void setId(int id) {
         this.id = id;
     }
 
     @Size(max = 5)
-    @Column(length=20, name="NAME")
+    @Column(length = 20, name = "NAME")
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
 
-    @Column(name="SALARY")
+    @Column(name = "SALARY")
     public long getSalary() {
         return salary;
     }
+
     public void setSalary(long salary) {
         this.salary = salary;
     }
 
     // ===========================================================
     // relationship
+
     @ManyToMany(mappedBy = "employees", cascade = CascadeType.ALL)
     public Collection<Project> getProjects() {
         return projects;
     }
+
     public void setProjects(Collection<Project> projects) {
         this.projects = projects;
     }
@@ -119,12 +126,9 @@ public class Employee {
     }
 
     // ===========================================================
-    @Override 
+    @Override
     public String toString() {
-        return "Employee {Id:" +  id + " name:" + name + "}";
+        return "Employee {Id:" + id + " name:" + name + "}";
     }
 
 }
-
-
-
