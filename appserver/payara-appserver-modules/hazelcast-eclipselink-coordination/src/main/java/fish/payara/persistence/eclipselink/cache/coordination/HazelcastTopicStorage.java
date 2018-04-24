@@ -62,15 +62,24 @@ import java.util.logging.Logger;
 /**
  * Represents a cache for {@link ITopic} instances ond a
  * possibility to delay {@link MessageListener} registration.
+ *
+ * @author Sven Diedrichsen
  */
 @Service(name = "hazelcast-topic-storage")
 @RunLevel(StartupRunLevel.VAL)
 public class HazelcastTopicStorage implements EventListener {
 
+    /**
+     * The singleton instance of the storage.
+     */
     private static HazelcastTopicStorage storage;
-
+    /**
+     * The topic cache.
+     */
     private final Map<String, ITopic<HazelcastPayload>> topicCache = new ConcurrentHashMap<>();
-
+    /**
+     * The message listener cache.
+     */
     private final Map<MessageListener<HazelcastPayload>, TopicIdMapping> messageListener = new ConcurrentHashMap<>();
 
     @Inject
@@ -101,10 +110,20 @@ public class HazelcastTopicStorage implements EventListener {
         }
     }
 
+    /**
+     * Show if the event shows that the Hazelcast bootstrap has completed.
+     * @param event the event to query.
+     * @return The event show that Hazelcast bootstrap has finished.
+     */
     private static boolean isBootstrapComplete(Event event) {
         return event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE);
     }
 
+    /**
+     * Shows that the event is of type 'Shutdown'. Either the whole server or just Hazelcast.
+     * @param event The event to check its type of.
+     * @return is of type 'Shutdown'
+     */
     private static boolean isShutdown(Event event) {
         return event.is(EventTypes.SERVER_SHUTDOWN)
                 || event.is(HazelcastEvents.HAZELCAST_SHUTDOWN_COMPLETE);
@@ -207,7 +226,7 @@ public class HazelcastTopicStorage implements EventListener {
     }
 
     /**
-     * @return The members UUID.
+     * @return The this local members UUID.
      */
     String getMemberUuid() {
         return HazelcastCore.getCore().getUUID();

@@ -39,43 +39,69 @@
  */
 package fish.payara.persistence.eclipselink.cache.coordination;
 
+import org.eclipse.persistence.internal.sessions.AbstractSession;
+import org.eclipse.persistence.sessions.coordination.RemoteCommandManager;
+import org.eclipse.persistence.sessions.serializers.JavaSerializer;
+import org.eclipse.persistence.sessions.serializers.Serializer;
+
 import java.io.Serializable;
 
 /**
  * Represents the payload transported via Hazelcast topic.
  *
- * @param <T> Type of the payload.
+ * @author Sven Diedrichsen
  */
-public abstract class HazelcastPayload<T> implements Serializable {
+public abstract class HazelcastPayload implements Serializable {
 
     private static final long serialVersionUID = 1;
 
-    public abstract T get();
+    public abstract org.eclipse.persistence.sessions.coordination.Command get(RemoteCommandManager rcm);
 
-    public static class Bytes extends HazelcastPayload<byte[]> {
+    /**
+     * Implements a payload for raw bytes to transfer.
+     */
+    public static class Bytes extends HazelcastPayload {
 
-        private byte[] bytes;
+        private final byte[] bytes;
 
         public Bytes(byte[] bytes) {
             this.bytes = bytes;
         }
 
-        public byte[] get() {
-            return bytes;
+        /**
+         * Returns the serialized {@link org.eclipse.persistence.sessions.coordination.Command} from
+         * the initial bytes.
+         * @param rcm The {@link RemoteCommandManager} to use for serialization.
+         * @return coordination command serialized from bytes.
+         */
+        public org.eclipse.persistence.sessions.coordination.Command get(RemoteCommandManager rcm) {
+            Serializer serializer = rcm.getSerializer();
+            if (serializer == null) {
+                serializer = JavaSerializer.instance;
+            }
+            return (org.eclipse.persistence.sessions.coordination.Command)serializer.deserialize(this.bytes, (AbstractSession) rcm.getCommandProcessor());
         }
     }
 
-    public static class Command extends HazelcastPayload<org.eclipse.persistence.sessions.coordination.Command> {
+    /**
+     * Implements a payload consisting of a coordination command.
+     */
+    public static class Command extends HazelcastPayload {
 
-        private org.eclipse.persistence.sessions.coordination.Command command;
+        private final org.eclipse.persistence.sessions.coordination.Command command;
 
         public Command(org.eclipse.persistence.sessions.coordination.Command command) {
             this.command = command;
         }
 
+        /**
+         * Simply returns the original command.
+         * @param rcm The {@link RemoteCommandManager} to use for serialization.will not be used.
+         * @return The original command.
+         */
         @Override
-        public org.eclipse.persistence.sessions.coordination.Command get() {
-            return command;
+        public org.eclipse.persistence.sessions.coordination.Command get(RemoteCommandManager rcm) {
+            return this.command;
         }
     }
 

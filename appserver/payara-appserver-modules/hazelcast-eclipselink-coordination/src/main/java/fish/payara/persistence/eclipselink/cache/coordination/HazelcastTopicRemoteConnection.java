@@ -41,21 +41,16 @@ package fish.payara.persistence.eclipselink.cache.coordination;
 
 import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
-import org.eclipse.persistence.internal.sessions.AbstractSession;
 import org.eclipse.persistence.internal.sessions.coordination.broadcast.BroadcastRemoteConnection;
 import org.eclipse.persistence.sessions.coordination.Command;
 import org.eclipse.persistence.sessions.coordination.RemoteCommandManager;
-import org.eclipse.persistence.sessions.serializers.JavaSerializer;
-import org.eclipse.persistence.sessions.serializers.Serializer;
 
 import java.util.Objects;
 
 /**
- * Hazelcast {@link BroadcastRemoteConnection} implementing {@link MessageListener} interface.
+ * Hazelcast {@link BroadcastRemoteConnection} implementing the HZ {@link MessageListener} interface.
  *
  * @author Sven Diedrichsen
- * @version $Id$
- * @since 23.02.18
  */
 public class HazelcastTopicRemoteConnection extends BroadcastRemoteConnection implements MessageListener<HazelcastPayload> {
 
@@ -99,23 +94,43 @@ public class HazelcastTopicRemoteConnection extends BroadcastRemoteConnection im
         this.topic.destroy();
     }
 
+    /**
+     * Receives any published message containing hz payload.
+     * @param message the message to process.
+     */
     @Override
     public void onMessage(Message<HazelcastPayload> message) {
-        if (!Objects.equals(topic.getMemberUuid(), message.getPublishingMember().getUuid())) {
+        if (!isMessageFromLocalPublisher(message)) {
             String messageId = message.getPublishingMember().getUuid() + "-" + String.valueOf(message.getPublishTime());
-            Object command;
-            if (message.getMessageObject() instanceof HazelcastPayload.Command) {
-                command = message.getMessageObject().get();
-            } else {
-                byte[] bytes = ((HazelcastPayload.Bytes)message.getMessageObject()).get();
-                Serializer serializer = this.rcm.getSerializer();
-                if (serializer == null) {
-                    serializer = JavaSerializer.instance;
+            try {
+                if (hasHazelcastPayload(message)) {
+                    this.processReceivedObject(message.getMessageObject().get(this.rcm), messageId);
+                } else {
+                    Object[] args = new Object[]{message.getClass().getName(), topic};
+                    this.rcm.logWarningWithoutLevelCheck("received_unexpected_message_type", args);
                 }
-                command = serializer.deserialize(bytes, (AbstractSession)this.rcm.getCommandProcessor());
+            } catch (Exception e) {
+                this.failDeserializeMessage(messageId, e);
             }
-            this.processReceivedObject(command, messageId);
         }
+    }
+
+    /**
+     * Signals if the message carries a {@link HazelcastPayload} instance.
+     * @param message The message to query for its content.
+     * @return Content is of type {@link HazelcastPayload}
+     */
+    private boolean hasHazelcastPayload(Message<HazelcastPayload> message) {
+        return HazelcastPayload.class.isAssignableFrom(message.getMessageObject().getClass());
+    }
+
+    /**
+     * Signals if the message is from the local publisher.
+     * @param message The message to judge.
+     * @return If it is from the local publisher.
+     */
+    private boolean isMessageFromLocalPublisher(Message<HazelcastPayload> message) {
+        return Objects.equals(topic.getMemberUuid(), message.getPublishingMember().getUuid());
     }
 
 }
