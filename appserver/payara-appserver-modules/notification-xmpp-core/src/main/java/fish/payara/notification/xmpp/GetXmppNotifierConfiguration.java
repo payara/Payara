@@ -101,7 +101,7 @@ public class GetXmppNotifierConfiguration extends BaseGetNotifierConfiguration<X
             map.put("securityDisabled", configuration.getSecurityDisabled());
             map.put("roomId", configuration.getRoomId());
         } else {
-        	map.put("noisy", Boolean.TRUE.toString());
+            map.put("noisy", Boolean.TRUE.toString());
         }
 
         return map;

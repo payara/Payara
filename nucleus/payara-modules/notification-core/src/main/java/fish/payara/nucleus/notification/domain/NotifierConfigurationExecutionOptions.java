@@ -24,8 +24,7 @@ public abstract class NotifierConfigurationExecutionOptions {
 
     private NotifierType notifierType;
     private boolean enabled;
-	private boolean noisy;
-
+    private boolean noisy;
 
     public NotifierConfigurationExecutionOptions(NotifierType notifierType) {
         this.notifierType = notifierType;
@@ -47,13 +46,13 @@ public abstract class NotifierConfigurationExecutionOptions {
         this.enabled = enabled;
     }
 
-	public void setNoisy(boolean noisy) {
-		this.noisy = noisy;
-	}
+    public void setNoisy(boolean noisy) {
+        this.noisy = noisy;
+    }
 
-	public boolean isNoisy() {
-		return noisy;
-	}
+    public boolean isNoisy() {
+        return noisy;
+    }
 
     @Override
     public String toString() {

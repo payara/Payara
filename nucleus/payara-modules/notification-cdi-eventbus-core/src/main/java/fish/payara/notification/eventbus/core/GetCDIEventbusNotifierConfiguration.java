@@ -95,7 +95,7 @@ public class GetCDIEventbusNotifierConfiguration extends BaseGetNotifierConfigur
             map.put("noisy", configuration.getNoisy());
             map.put("loopBack", configuration.getLoopBack());
         } else {
-        	map.put("noisy", Boolean.TRUE.toString());
+            map.put("noisy", Boolean.TRUE.toString());
         }
         map.put("hazelcastEnabled", hazelcast.isEnabled());
 

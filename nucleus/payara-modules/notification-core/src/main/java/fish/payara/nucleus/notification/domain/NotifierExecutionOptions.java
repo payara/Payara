@@ -24,62 +24,64 @@ import fish.payara.nucleus.notification.configuration.NotifierType;
  */
 public abstract class NotifierExecutionOptions {
 
-	private NotifierType notifierType;
-	private boolean enabled;
-	private boolean noisy;
+    private NotifierType notifierType;
+    private boolean enabled;
+    private boolean noisy;
 
-	protected NotifierExecutionOptions(NotifierType notifierType) {
-		this.notifierType = notifierType;
-	}
+    protected NotifierExecutionOptions(NotifierType notifierType) {
+        this.notifierType = notifierType;
+    }
 
-	public NotifierType getNotifierType() {
-		return notifierType;
-	}
+    public NotifierType getNotifierType() {
+        return notifierType;
+    }
 
-	public void setNotifierType(NotifierType notifierType) {
-		this.notifierType = notifierType;
-	}
+    public void setNotifierType(NotifierType notifierType) {
+        this.notifierType = notifierType;
+    }
 
-	public boolean isEnabled() {
-		return isEnabled(Level.INFO);
-	}
+    public boolean isEnabled() {
+        return isEnabled(Level.INFO);
+    }
 
-	public boolean isEnabled(Level level) {
-		return Level.FINE.equals(level) ? enabled && noisy : enabled;
-	}
+    public boolean isEnabled(Level level) {
+        return Level.FINE.equals(level) ? enabled && noisy : enabled;
+    }
 
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-	}
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
-	public boolean isNoisy() {
-		return noisy;
-	}
+    public boolean isNoisy() {
+        return noisy;
+    }
 
-	public void setNoisy(boolean noisy) {
-		this.noisy = noisy;
-	}
+    public void setNoisy(boolean noisy) {
+        this.noisy = noisy;
+    }
 
-	@Override
-	public String toString() {
-		return "NotificationExecutionOptions{" + "notifierType=" + notifierType + ", enabled=" + enabled + ", noisy=" + noisy + '}';
-	}
+    @Override
+    public String toString() {
+        return "NotificationExecutionOptions{" +
+                "notifierType=" + notifierType +
+                ", enabled=" + enabled +
+                ", noisy=" + noisy +
+                '}';
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-		NotifierExecutionOptions that = (NotifierExecutionOptions) o;
+        NotifierExecutionOptions that = (NotifierExecutionOptions) o;
 
-		return notifierType == that.notifierType;
+        return notifierType == that.notifierType;
 
-	}
+    }
 
-	@Override
-	public int hashCode() {
-		return notifierType != null ? notifierType.hashCode() : 0;
-	}
+    @Override
+    public int hashCode() {
+        return notifierType != null ? notifierType.hashCode() : 0;
+    }
 }

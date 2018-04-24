@@ -97,7 +97,7 @@ public class GetSnmpNotifierConfiguration extends BaseGetNotifierConfiguration<S
             map.put("hostName", configuration.getHost());
             map.put("port", configuration.getPort());
         } else {
-        	map.put("noisy", Boolean.TRUE.toString());
+            map.put("noisy", Boolean.TRUE.toString());
         }
 
         return map;

@@ -90,7 +90,7 @@ public class GetDatadogNotifierConfiguration extends BaseGetNotifierConfiguratio
             map.put("noisy", configuration.getNoisy());
             map.put("key", configuration.getKey());
         } else {
-        	map.put("noisy", Boolean.TRUE.toString());
+            map.put("noisy", Boolean.TRUE.toString());
         }
 
         return map;

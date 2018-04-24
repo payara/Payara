@@ -93,7 +93,7 @@ public class GetSlackNotifierConfiguration extends BaseGetNotifierConfiguration<
             map.put("token2", configuration.getToken2());
             map.put("token3", configuration.getToken3());
         } else {
-        	map.put("noisy", Boolean.TRUE.toString());
+            map.put("noisy", Boolean.TRUE.toString());
        }
 
         return map;

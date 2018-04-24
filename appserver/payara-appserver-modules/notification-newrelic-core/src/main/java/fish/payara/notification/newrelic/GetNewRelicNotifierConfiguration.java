@@ -91,7 +91,7 @@ public class GetNewRelicNotifierConfiguration extends BaseGetNotifierConfigurati
             map.put("key", configuration.getKey());
             map.put("accountId", configuration.getAccountId());
         } else {
-        	map.put("noisy", Boolean.TRUE.toString());
+            map.put("noisy", Boolean.TRUE.toString());
        }
 
         return map;

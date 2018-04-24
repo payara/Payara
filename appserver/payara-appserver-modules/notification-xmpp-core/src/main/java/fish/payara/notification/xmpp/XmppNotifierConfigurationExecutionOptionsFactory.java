@@ -65,7 +65,7 @@ public class XmppNotifierConfigurationExecutionOptionsFactory
     public XmppNotifierConfigurationExecutionOptions build(XmppNotifierConfiguration notifierConfiguration) throws UnsupportedEncodingException {
         XmppNotifierConfigurationExecutionOptions executionOptions = new XmppNotifierConfigurationExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
-		executionOptions.setNoisy(Boolean.parseBoolean(notifierConfiguration.getNoisy()));
+        executionOptions.setNoisy(Boolean.parseBoolean(notifierConfiguration.getNoisy()));
         executionOptions.setHost(notifierConfiguration.getHost());
         executionOptions.setPort(Integer.parseInt(notifierConfiguration.getPort()));
         executionOptions.setServiceName(notifierConfiguration.getServiceName());
