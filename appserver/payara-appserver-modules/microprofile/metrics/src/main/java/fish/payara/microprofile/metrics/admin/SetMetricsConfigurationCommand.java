@@ -87,7 +87,7 @@ public class SetMetricsConfigurationCommand implements AdminCommand {
     @Param(name = "enabled", optional = false)
     private Boolean enabled;
     
-    @Param(name = "secure", optional = true, defaultValue = "false")
+    @Param(name = "secureMetrics", optional = true, defaultValue = "false")
     private Boolean secure;
 
     @Param(optional = true, defaultValue = "server-config")
