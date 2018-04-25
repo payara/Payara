@@ -94,7 +94,7 @@ public class HazelcastTopicStorage implements EventListener {
         storage = this;
         this.events.register(this);
         this.executorService = new ThreadPoolExecutor(
-        2, 40, 30, TimeUnit.SECONDS, new LinkedBlockingQueue<>(200)
+            2, 40, 30, TimeUnit.SECONDS, new LinkedBlockingQueue<>(200)
         );
     }
 
@@ -265,13 +265,6 @@ public class HazelcastTopicStorage implements EventListener {
             }
         }
         return topic;
-    }
-
-    /**
-     * @return This local members UUID.
-     */
-    String getMemberUuid() {
-        return HazelcastCore.getCore().getUUID();
     }
 
 }
