@@ -497,6 +497,9 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract boolean isJaxrsRolesAllowedEnabled();
     public abstract void setJaxrsRolesAllowedEnabled(boolean jaxrsRolesAllowedEnabled);
+    
+    public abstract String getAppContextId();
+    public abstract void setAppContextId(String appContextId);
 
     public boolean isConflictLoginConfig() {
         return conflictLoginConfig;

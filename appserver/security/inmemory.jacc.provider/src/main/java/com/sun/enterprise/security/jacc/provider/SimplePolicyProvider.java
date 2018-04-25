@@ -60,7 +60,7 @@ import javax.security.jacc.PolicyContextException;
 public class SimplePolicyProvider extends Policy {
 
     private static final String REUSE = "java.security.Policy.supportsReuse";
-    Policy basePolicy;
+
     /**
      * ThreadLocal object to keep track of the reentrancy status of each thread. It contains a byte[] object whose single
      * element is either 0 (initial value or no reentrancy), or 1 (current thread is reentrant). When a thread exists the
@@ -74,8 +74,10 @@ public class SimplePolicyProvider extends Policy {
         }
     };
 
+    private final Policy basePolicy;
+
     /**
-     * Create a new instance of SimplePolicyProvider 
+     * Create a new instance of SimplePolicyProvider
      * Delegates to existing policy provider
      */
     public SimplePolicyProvider() {
@@ -97,13 +99,13 @@ public class SimplePolicyProvider extends Policy {
     @Override
     public PermissionCollection getPermissions(CodeSource codesource) {
         PermissionCollection permissionCollection = basePolicy.getPermissions(codesource);
-        
+
         try {
             permissionCollection = SimplePolicyConfiguration.getPermissions(permissionCollection, codesource);
         } catch (PolicyContextException pce) {
             SimplePolicyConfiguration.logGetPermissionsFailure(codesource, pce);
         }
-        
+
         return permissionCollection;
     }
 
@@ -129,7 +131,7 @@ public class SimplePolicyProvider extends Policy {
         } catch (PolicyContextException pce) {
             SimplePolicyConfiguration.logGetPermissionsFailure(domain, pce);
         }
-        
+
         return permissionCollection;
     }
 
@@ -152,9 +154,9 @@ public class SimplePolicyProvider extends Policy {
         if (reentrancyStatus.get()) {
             return true;
         }
-        
+
         reentrancyStatus.set(true);
-        
+
         try {
             return doImplies(domain, permission);
         } finally {
@@ -175,16 +177,16 @@ public class SimplePolicyProvider extends Policy {
                 result = 1;
             }
         }
-        
+
         boolean rvalue = false;
         if (result == 0) {
             rvalue = basePolicy.implies(domain, permission);
         }
-        
+
         if (!rvalue) {
             logAccessFailure(domain, permission);
         }
-        
+
         return rvalue;
     }
 
@@ -196,7 +198,7 @@ public class SimplePolicyProvider extends Policy {
     @Override
     public void refresh() {
         basePolicy.refresh();
-        
+
         try {
             // Will enable permission caching of container, unless REUSE
             // property is set, and its value is not "true".
@@ -210,7 +212,7 @@ public class SimplePolicyProvider extends Policy {
             SimplePolicyConfiguration.refresh();
         } catch (PolicyContextException pce) {
             logException(SEVERE, "refresh.failure", pce);
-            
+
             throw new IllegalStateException(pce);
         }
     }

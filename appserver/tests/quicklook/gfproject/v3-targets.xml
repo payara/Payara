@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
 
 <project name="v3-targets" default="all" basedir=".">
     
@@ -70,14 +71,6 @@
     <property name="APPCLIENT" value="${glassfish.home}\bin\appclient.bat"/>
 </target>
 
-<!-- target name="restart-server" depends="setOSConditions,asenv-unix,asenv-windows">
-    <exec executable="${ASADMIN}" outputproperty="message1">
-        <arg value="restart-domain"/>
-        <arg value="domain1"/>
-    </exec>
-    <echo message="${message1}"/>
-</target -->
-
 <target name="restart-server" depends="setOSConditions">
     <antcall target="restart-server-unix"/>
     <antcall target="restart-server-windows"/>
@@ -86,7 +79,7 @@
 <target name="restart-server-unix" if="isUnix">
     <exec executable="${glassfish.home}/bin/asadmin" outputproperty="message1">
         <arg value="restart-domain"/>
-        <arg value="test-domain"/>
+        <arg value="${domain.name}"/>
     </exec>
     <echo message="${message1}"/>
 </target>
@@ -97,7 +90,7 @@
         <arg value="/c"/>
         <arg value="${glassfish.home}\bin\asadmin.bat"/>
         <arg value="restart-domain"/>
-        <arg value="test-domain"/>
+        <arg value="${domain.name}"/>
     </exec>
     <echo message="${message1}"/>
 </target>
@@ -162,7 +155,7 @@
     <exec executable="${glassfish.home}/bin/asadmin">
     <env key="GlassFish_Platform" value="Felix"/>
         <arg value="start-domain"/>
-	<arg value="test-domain"/>
+	<arg value="${domain.name}"/>
     </exec>
 </target>
 
@@ -172,7 +165,7 @@
         <arg value="/c"/>
         <arg value="${glassfish.home}\bin\asadmin.bat"/>
         <arg value="start-domain"/>
-	<arg value="test-domain"/>
+	<arg value="${domain.name}"/>
     </exec>
     <!-- JRuby deplyment needs GF start server to be fully done. 
          Introduce a delay for now and will investigate futher.  -->
@@ -188,7 +181,7 @@
     <echo message="stopping server on unix ..."/>
     <exec executable="${glassfish.home}/bin/asadmin">        
         <arg value="stop-domain"/>
-        <arg value="test-domain"/>
+        <arg value="${domain.name}"/>
     </exec>
 </target>
 
@@ -198,13 +191,14 @@
     <arg value="/c"/>
     <arg value="${glassfish.home}\bin\asadmin.bat"/>
         <arg value="stop-domain"/>
-        <arg value="test-domain"/>
+        <arg value="${domain.name}"/>
     </exec>
 </target>
     
       
 <target name="deploy-v3-impl" depends="setOSConditions">
     <echo message="deploying ${app.file.ext}"/>
+	
     <antcall target="deploy-v3-impl-unix"/>
     <antcall target="deploy-v3-impl-windows"/>
 </target>
@@ -225,14 +219,14 @@
     <arg value="deploy"/>
     <arg value="--port"/>
     <arg value="4848"/>
-	
     <arg line="${dist.dir}/${app.file.ext}"/>
   </exec>
 </target>
 
 <target name="deploy-upload-v3-impl" depends="setOSConditions">
     <echo message="deploying ${app.file.ext} with --upload"/>
-    <antcall target="deploy-upload-v3-impl-unix"/>
+    
+	<antcall target="deploy-upload-v3-impl-unix"/>
     <antcall target="deploy-upload-v3-impl-windows"/>
 </target>
 
@@ -305,7 +299,7 @@
 </target>
   
 <target name="undeploy-v3-impl-unix" if="isUnix">
-  <exec executable="${glassfish.home}/bin/asadmin">
+  <exec executable="${glassfish.home}/bin/asadmin" failonerror="false">
     <arg value="undeploy"/>
     <arg value="--port"/>
     <arg value="4848"/>
