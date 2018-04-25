@@ -45,6 +45,7 @@ import org.eclipse.persistence.sessions.serializers.JavaSerializer;
 import org.eclipse.persistence.sessions.serializers.Serializer;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * Represents the payload transported via Hazelcast topic.
@@ -55,7 +56,14 @@ public abstract class HazelcastPayload implements Serializable {
 
     private static final long serialVersionUID = 1;
 
-    public abstract org.eclipse.persistence.sessions.coordination.Command get(RemoteCommandManager rcm);
+    /**
+     * This payloads id.
+     */
+    private final UUID id = UUID.randomUUID();
+
+    public abstract org.eclipse.persistence.sessions.coordination.Command getCommand(RemoteCommandManager rcm);
+
+    public UUID getId() { return id; }
 
     /**
      * Implements a payload for raw bytes to transfer.
@@ -70,11 +78,11 @@ public abstract class HazelcastPayload implements Serializable {
 
         /**
          * Returns the serialized {@link org.eclipse.persistence.sessions.coordination.Command} from
-         * the initial bytes.
+         * the provided bytes.
          * @param rcm The {@link RemoteCommandManager} to use for serialization.
          * @return coordination command serialized from bytes.
          */
-        public org.eclipse.persistence.sessions.coordination.Command get(RemoteCommandManager rcm) {
+        public org.eclipse.persistence.sessions.coordination.Command getCommand(RemoteCommandManager rcm) {
             Serializer serializer = rcm.getSerializer();
             if (serializer == null) {
                 serializer = JavaSerializer.instance;
@@ -96,11 +104,11 @@ public abstract class HazelcastPayload implements Serializable {
 
         /**
          * Simply returns the original command.
-         * @param rcm The {@link RemoteCommandManager} to use for serialization.will not be used.
+         * @param rcm The {@link RemoteCommandManager} to use for serialization. Will not be used.
          * @return The original command.
          */
         @Override
-        public org.eclipse.persistence.sessions.coordination.Command get(RemoteCommandManager rcm) {
+        public org.eclipse.persistence.sessions.coordination.Command getCommand(RemoteCommandManager rcm) {
             return this.command;
         }
     }

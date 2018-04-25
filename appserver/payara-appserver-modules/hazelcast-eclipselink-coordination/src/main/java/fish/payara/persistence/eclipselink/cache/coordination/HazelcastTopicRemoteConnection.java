@@ -45,8 +45,6 @@ import org.eclipse.persistence.internal.sessions.coordination.broadcast.Broadcas
 import org.eclipse.persistence.sessions.coordination.Command;
 import org.eclipse.persistence.sessions.coordination.RemoteCommandManager;
 
-import java.util.Objects;
-
 /**
  * Hazelcast {@link BroadcastRemoteConnection} implementing the HZ {@link MessageListener} interface.
  *
@@ -80,7 +78,7 @@ public class HazelcastTopicRemoteConnection extends BroadcastRemoteConnection im
             if(Command.class.isAssignableFrom(o.getClass())) {
                 this.topic.publish(new HazelcastPayload.Command((Command) o));
             } else if (o.getClass().isArray()) {
-                this.topic.publish(new HazelcastPayload.Bytes((byte[])o));
+                this.topic.publish(new HazelcastPayload.Bytes((byte[]) o));
             }
             if (debugInfo != null) {
                 this.logDebugAfterPublish(debugInfo, "");
@@ -100,21 +98,24 @@ public class HazelcastTopicRemoteConnection extends BroadcastRemoteConnection im
      */
     @Override
     public void onMessage(final Message<HazelcastPayload> message) {
-        HazelcastTopicStorage.getInstance().process(
-            () -> {
-                String messageId = message.getPublishingMember().getUuid() + "-" + String.valueOf(message.getPublishTime());
-                try {
-                    if (hasHazelcastPayload(message)) {
-                        this.processReceivedObject(message.getMessageObject().get(this.rcm), messageId);
-                    } else {
-                        Object[] args = new Object[]{message.getClass().getName(), topic};
-                        this.rcm.logWarningWithoutLevelCheck("received_unexpected_message_type", args);
+        if (hasHazelcastPayload(message)) {
+            if(!topic.hasPublished(message.getMessageObject())) {
+                topic.forget(message.getMessageObject());
+                HazelcastTopicStorage.getInstance().process(
+                    () -> {
+                        String messageId = message.getPublishingMember().getUuid() + "-" + String.valueOf(message.getPublishTime());
+                        try {
+                            this.processReceivedObject(message.getMessageObject().getCommand(this.rcm), messageId);
+                        } catch (Exception e) {
+                            this.failDeserializeMessage(messageId, e);
+                        }
                     }
-                } catch (Exception e) {
-                    this.failDeserializeMessage(messageId, e);
-                }
+                );
             }
-        );
+        } else {
+            Object[] args = new Object[]{message.getClass().getName(), topic};
+            this.rcm.logWarningWithoutLevelCheck("received_unexpected_message_type", args);
+        }
     }
 
     /**
@@ -125,5 +126,5 @@ public class HazelcastTopicRemoteConnection extends BroadcastRemoteConnection im
     private boolean hasHazelcastPayload(Message<HazelcastPayload> message) {
         return HazelcastPayload.class.isAssignableFrom(message.getMessageObject().getClass());
     }
-    
+
 }

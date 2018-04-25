@@ -41,6 +41,10 @@ package fish.payara.persistence.eclipselink.cache.coordination;
 
 import com.hazelcast.core.MessageListener;
 
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentSkipListSet;
+
 /**
  * Representation of the Hazelcast topic to allow for proxying.
  *
@@ -56,6 +60,10 @@ final class HazelcastTopic {
      * The message listener id to unregister with.
      */
     private final String messageListenerId;
+    /**
+     * Stores the Ids of the messages published by this topic.
+     */
+    private final Set<UUID> publishedMessageIds = new ConcurrentSkipListSet<>();
 
     /**
      * Ctor.
@@ -71,13 +79,32 @@ final class HazelcastTopic {
      * @param payload The {@link HazelcastPayload} to publish.
      */
     void publish(HazelcastPayload payload) {
+        publishedMessageIds.add(payload.getId());
         getStorage().publish(name, payload);
+    }
+
+    /**
+     * Checks if the provided payload has been published by this topic.
+     * @param payload The payload to check if it has been published with this topic.
+     * @return True if it has been published.
+     */
+    boolean hasPublished(HazelcastPayload payload) {
+        return publishedMessageIds.contains(payload.getId());
+    }
+
+    /**
+     * Forgets if the provided payload has been published by this topic.
+     * @param payload The payload to forget if it has been published with this topic.
+     */
+    void forget(HazelcastPayload payload) {
+        publishedMessageIds.remove(payload.getId());
     }
 
     /**
      * Destroys the referenced topic.
      */
     void destroy() {
+        publishedMessageIds.clear();
         getStorage().removeMessageListener(name, messageListenerId);
         getStorage().destroyTopic(name);
     }
