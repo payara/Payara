@@ -127,7 +127,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
         clientID = (String) TranslatedConfigView.getTranslatedValue(definition.clientId());
         clientSecret = ((String) TranslatedConfigView.getTranslatedValue(definition.clientSecret())).toCharArray();
         redirectURI = (String) TranslatedConfigView.getTranslatedValue(definition.redirectURI());
-        scopes = (String) TranslatedConfigView.getTranslatedValue(definition.scopes());
+        scopes = (String) TranslatedConfigView.getTranslatedValue(definition.scope());
         String[] params = definition.extraParameters();
         extraParameters = new String[params.length];
         for (int i = 0; i < params.length; i++){
@@ -152,7 +152,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
             if (recievedState.equals(state.getState())) {
                 return validateCallback(request, httpMessageContext);
             } else {
-                logger.log(Level.WARNING, "Inconsistent recieved state");
+                logger.log(Level.FINE, "Inconsistent recieved state. This may be caused by using the back button in the browser.");
                 return httpMessageContext.notifyContainerAboutLogin(CredentialValidationResult.NOT_VALIDATED_RESULT);
             }
         } else {
@@ -170,7 +170,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
      * @return 
      */
     private AuthenticationStatus validateCallback(HttpServletRequest request, HttpMessageContext context){
-        logger.log(Level.FINE, "User Authenticated, now getting authorisation token");
+        logger.log(Level.FINER, "User Authenticated, now getting authorisation token");
                 Client jaxrsClient = ClientBuilder.newClient();
 
                 //Creates a new JAX-RS form with all paramters
@@ -184,7 +184,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
                     form.param("redirect_uri", redirectURI);
                 }
                 if (scopes != null && !scopes.isEmpty()) {
-                    form.param("scopes", scopes);
+                    form.param("scope", scopes);
                 }
                 for (String extra : extraParameters) {
                     String[] parts = extra.split("=");
@@ -239,7 +239,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
             authTokenRequest.append("&redirect_uri=").append(redirectURI);
         }
         if (scopes != null && !scopes.isEmpty()) {
-            authTokenRequest.append("&scopes=").append(scopes);
+            authTokenRequest.append("&scope=").append(scopes);
         }
         for (String extra : extraParameters) {
             authTokenRequest.append("&").append(extra);

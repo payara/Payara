@@ -65,21 +65,6 @@ import static javax.security.enterprise.identitystore.IdentityStore.ValidationTy
  */
 public class OAuthIdentityStore implements IdentityStore {
     
-    
-    
-    /**
-     * This method will always return a valid result
-     * @param credentials
-     * @return 
-     */
-    @Override
-    public CredentialValidationResult validate(Credential credentials){
-        if (credentials instanceof RememberMeCredential){
-            return validate((RememberMeCredential) credentials);
-        }
-        return CredentialValidationResult.NOT_VALIDATED_RESULT;
-    }
-    
     /**
      * Returns a valid {@link CredentialValidationResult}.
      * <p>

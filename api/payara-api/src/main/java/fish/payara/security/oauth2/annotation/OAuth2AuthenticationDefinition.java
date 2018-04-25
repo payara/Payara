@@ -99,10 +99,10 @@ public @interface OAuth2AuthenticationDefinition {
     String redirectURI() default "";
     
     /**
-     * The scopes that will be requested from the OAuth provider
+     * The scope that will be requested from the OAuth provider
      * @return 
      */
-    String scopes() default "";
+    String scope() default "";
     
     /**
      * An array of extra options that will be sent to the OAuth provider.
