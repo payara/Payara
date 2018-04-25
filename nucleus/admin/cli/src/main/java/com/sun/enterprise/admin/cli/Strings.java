@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
@@ -49,19 +50,18 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  * Nothing in here is public protected.  Only for use by this one java package.
  * @author Byron Nevins
  */
-
 final class Strings {
     private Strings() {
         // no instances allowed!
     }
 
-    final static String get(String indexString) {
+    static final String get(String indexString) {
         return strings.get(indexString);
     }
 
-    final static String get(String indexString, Object... objects) {
+    static final String get(String indexString, Object... objects) {
         return strings.get(indexString, objects);
     }
 
-    final private static LocalStringsImpl strings = new LocalStringsImpl(Strings.class);
+    private static final LocalStringsImpl strings = new LocalStringsImpl(Strings.class);
 }
