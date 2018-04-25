@@ -136,31 +136,19 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
 
     protected static final String LOGS_DIR = "logs";
     private static final String LOG_FILE_NAME = "server.log";
-
     private static final String GZIP_EXTENSION = ".gz";
-
+    
     private String absoluteServerLogName = null;
-
     protected File absoluteFile = null;
-
     private int flushFrequency = 1;
-
     protected int maxHistoryFiles = 10;
-
     private boolean logToFile;
-
     private boolean rotationOnDateChange;
-    
     private String excludeFields;
-    
     private Integer rotationLimitAttrValue;
-    
     private Long rotationTimeLimitValue;
-    
     private boolean compressionOnRotation;
-    
     private boolean multiLineMode;
-
     private String gffileHandlerFormatter = "";
     private String currentgffileHandlerFormatter = "";
 
@@ -211,7 +199,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     protected String logFileProperty = "";
     private final LogManager manager = LogManager.getLogManager();
     private final String className = getClass().getName();
-    private static final String GF_FILE_HANDER = "com.sun.enterprise.server.logging.GFFileHandler";
+    private static final String GF_FILE_HANDER = GFFileHandler.class.getCanonicalName() ;
     private LogRecord logRecord = new LogRecord(Level.INFO, LogFacade.GF_VERSION_INFO);
 
     @Override
