@@ -1,7 +1,7 @@
 /* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -130,6 +130,7 @@ public class GetHttpListener implements AdminCommand {
         report.appendMessage(String.format("Name: %s\n", listener.getName()));
         report.appendMessage(String.format("Enabled: %s\n", listener.getEnabled()));
         report.appendMessage(String.format("Port: %s\n", listener.getPort()));
+        report.appendMessage(String.format("Port Range: %s\n", listener.getPortRange()));
         report.appendMessage(String.format("Address: %s\n", listener.getAddress()));
         report.appendMessage(String.format("Protocol: %s\n", listener.getProtocol()));
         if (verbose) {
@@ -145,6 +146,7 @@ public class GetHttpListener implements AdminCommand {
         properties.put("name", listener.getName());
         properties.put("enabled", listener.getEnabled());
         properties.put("port", listener.getPort());
+        properties.put("portRange", listener.getPortRange());
         properties.put("address", listener.getAddress());
         properties.put("protocol", listener.getProtocol());
         properties.put("transport", listener.getTransport());
