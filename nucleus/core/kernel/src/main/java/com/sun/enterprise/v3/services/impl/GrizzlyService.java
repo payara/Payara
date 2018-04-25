@@ -57,6 +57,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -219,12 +220,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
         return proxy;
     }
 
-    /**
-     * Remove the  proxy from our list of proxies.
-     * @return <tt>true</tt>, if proxy on specified port was removed,
-     *         <tt>false</tt> otherwise.
-     */
-    public boolean removeNetworkProxy(NetworkProxy proxy) {
+    public boolean closeNetworkProxy(NetworkProxy proxy) {
         if (proxy != null) {
             try {
                 proxy.stop();
@@ -233,11 +229,19 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
             }
             
             proxy.destroy();
-            proxies.remove(proxy);
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Remove the  proxy from our list of proxies.
+     * @return <tt>true</tt>, if proxy on specified port was removed,
+     *         <tt>false</tt> otherwise.
+     */
+    public boolean removeNetworkProxy(NetworkProxy proxy) {
+        return proxies.remove(proxy);
     }
 
     /**
@@ -327,7 +331,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
         if (proxy != null) {
             if (proxy instanceof GrizzlyProxy) {
                 GrizzlyProxy grizzlyProxy = (GrizzlyProxy)proxy;
-                GenericGrizzlyListener grizzlyListener = (GenericGrizzlyListener)grizzlyProxy.getUnderlyingListener();
+                GenericGrizzlyListener grizzlyListener = (GenericGrizzlyListener) grizzlyProxy.getUnderlyingListener();
                 List<HttpCodecFilter> codecFilters = grizzlyListener.getFilters(HttpCodecFilter.class);
                 if (codecFilters != null && !codecFilters.isEmpty()) {
                     for (HttpCodecFilter codecFilter : codecFilters) {
@@ -344,9 +348,11 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
                 }
             }
 
-            removeNetworkProxy(proxy);
+            closeNetworkProxy(proxy);
         }
         final Future future = createNetworkProxy(networkListener);
+        removeNetworkProxy(proxy);
+
         if (future == null) {
             LOGGER.log(Level.FINE, "Skipping proxy registration for the listener {0}",
                     networkListener.getName());
@@ -554,18 +560,19 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
                     startedListeners.add(listener);
                 }
             }
-            
+
             if (isAtLeastOneProxyStarted) {
                 
                 // Get the startup time
                 final long startupTime = System.currentTimeMillis() - startTime;
 
+                List<String> startedListenerStrings = new LinkedList<>();
+                for (NetworkListener listener : startedListeners) {
+                    startedListenerStrings.add(listener.getName() + ":" + getRealPort(listener));
+                }
+
                 // Log the listeners which started.
-                String boundAddresses = Arrays.toString(
-                        startedListeners.stream()
-                            .map(listener -> listener.getAddress() + ":" + listener.getPort())
-                            .collect(Collectors.toList())
-                        .toArray());
+                String boundAddresses = Arrays.toString(startedListenerStrings.toArray());
                 LOGGER.log(Level.INFO, KernelLoggerInfo.grizzlyStarted,
                         new Object[] { Grizzly.getDotedVersion(), startupTime, boundAddresses });
                 registerContainerAdapters();
@@ -585,6 +592,20 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
         }
 
         registerMonitoringStatsProviders();
+    }
+
+    public int getRealPort(NetworkListener listener) {
+        NetworkProxy proxy = lookupNetworkProxy(listener);
+        if (proxy == null) {
+            proxy = getNetworkProxy(listener.getName());
+        }
+        if (proxy != null) {
+            if (proxy instanceof GrizzlyProxy) {
+                GrizzlyProxy grizzlyProxy = (GrizzlyProxy) proxy;
+                return grizzlyProxy.getPort();
+            }
+        }
+        return Integer.parseInt(listener.getPort());
     }
 
     @Override

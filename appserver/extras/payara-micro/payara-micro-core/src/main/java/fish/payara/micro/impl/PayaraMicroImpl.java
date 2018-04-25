@@ -46,7 +46,6 @@ import fish.payara.micro.cmd.options.RuntimeOptions;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.BindException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -1683,7 +1682,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
     private void configurePorts() throws GlassFishException {
-        PortBinder portBinder = new PortBinder();
         // build the glassfish properties
 
         if (httpPort != Integer.MIN_VALUE) {
@@ -1691,62 +1689,41 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 // Log warnings if overriding other options
                 logPortPrecedenceWarnings(false);
 
-                // Search for an available port from the specified port
-                try {
-                    int port = portBinder.findAvailablePort(httpPort, autoBindRange);
-                    preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.port=" + port));
-                    preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.enabled=true"));
-                } catch (BindException ex) {
-                    LOGGER.log(Level.SEVERE, "No available port found in range: "
-                            + httpPort + " - "
-                            + (httpPort + autoBindRange), ex);
-
-                    throw new GlassFishException("Could not bind HTTP port");
-                }
+                // Configure the port range from the specified port
+                int minPort = httpPort;
+                int maxPort = minPort + autoBindRange;
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.port-range=" + Integer.toString(minPort) + "," + Integer.toString(maxPort)));
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.enabled=true"));
             } else {
                 // Log warnings if overriding other options
                 logPortPrecedenceWarnings(false);
                 preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.port=" + httpPort));
-
             }
         } else if (autoBindHttp == true) {
             // Log warnings if overriding other options
             logPortPrecedenceWarnings(false);
 
-            // Search for an available port from the default HTTP port
-            try {
-                int port = portBinder.findAvailablePort(defaultHttpPort, autoBindRange);
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.port=" + port));
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.enabled=true"));
-            } catch (BindException ex) {
-                LOGGER.log(Level.SEVERE, "No available port found in range: "
-                        + defaultHttpPort + " - "
-                        + (defaultHttpPort + autoBindRange), ex);
-
-                throw new GlassFishException("Could not bind HTTP port");
-            }
+            // Configure the port range from the default HTTP port
+            int minPort = defaultHttpPort;
+            int maxPort = minPort + autoBindRange;
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.port-range=" + Integer.toString(minPort) + "," + Integer.toString(maxPort)));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.enabled=true"));
         }
         if (sslPort != Integer.MIN_VALUE) {
             if (autoBindSsl == true) {
                 // Log warnings if overriding other options
                 logPortPrecedenceWarnings(true);
 
-                // Search for an available port from the specified port
-                try {
-                    int port = portBinder.findAvailablePort(sslPort, autoBindRange);
-                    preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.port=" + port));
-                    preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.enabled=true"));
-                } catch (BindException ex) {
-                    LOGGER.log(Level.SEVERE, "No available port found in range: "
-                            + sslPort + " - " + (sslPort + autoBindRange), ex);
-
-                    throw new GlassFishException("Could not bind SSL port");
-                }
+                // Configure the port range from the specified port
+                int minPort = sslPort;
+                int maxPort = minPort + autoBindRange;
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.port-range=" + Integer.toString(minPort) + "," + Integer.toString(maxPort)));
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.enabled=true"));
             } else {
                 // Log warnings if overriding other options
                 logPortPrecedenceWarnings(true);
 
-                // Set the port as normal
+                // Configure the port range from the default port
                 preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.port=" + sslPort));
                 preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.enabled=true"));
             }
@@ -1754,17 +1731,11 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             // Log warnings if overriding other options
             logPortPrecedenceWarnings(true);
 
-            // Search for an available port from the default HTTPS port
-            try {
-                int port = portBinder.findAvailablePort(defaultHttpsPort, autoBindRange);
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.port=" + port));
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.enabled=true"));
-            } catch (BindException ex) {
-                LOGGER.log(Level.SEVERE, "No available port found in range: "
-                        + defaultHttpsPort + " - " + (defaultHttpsPort + autoBindRange), ex);
-
-                throw new GlassFishException("Could not bind SSL port");
-            }
+            // Configure the port range from the default HTTPS port
+            int minPort = defaultHttpsPort;
+            int maxPort = minPort + autoBindRange;
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.port-range=" + Integer.toString(minPort) + "," + Integer.toString(maxPort)));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.enabled=true"));
         }
         
         if (sslCert != null) {

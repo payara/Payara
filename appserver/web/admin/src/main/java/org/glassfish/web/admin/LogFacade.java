@@ -295,4 +295,14 @@ public class LogFacade {
             message = "Monitoring Registry does not exist. Possible causes are 1) Monitoring is not turned on or at a lower level 2) The corresponding container (web, ejb, etc.) is not loaded yet",
             level = "INFO")
     public static final String MRDR_NULL = prefix + "00046";
+    
+    @LogMessageInfo(
+        message = "No config with the name `{0}` was found.",
+        level = "WARNING")
+    public static final String UNKNOWN_CONFIG = prefix + "00047";
+
+    @LogMessageInfo(
+        message = "No network listener with the name `{0}` was found for target `{1}`.",
+        level = "WARNING")
+    public static final String UNKNOWN_NETWORK_LISTENER = prefix + "00048";
 }
