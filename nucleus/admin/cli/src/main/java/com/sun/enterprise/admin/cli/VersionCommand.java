@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
@@ -75,8 +76,7 @@ public class VersionCommand extends CLICommand {
     @Param(optional = true)
     private boolean terse;
 
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(VersionCommand.class);
+    private static final LocalStringsImpl strings = new LocalStringsImpl(VersionCommand.class);
 
     @Override
     protected int executeCommand() throws CommandException {
@@ -87,10 +87,11 @@ public class VersionCommand extends CLICommand {
         try {
             RemoteCLICommand cmd = new RemoteCLICommand("version", programOpts, env);
             String version;
-            if (verbose)
+            if (verbose) {
                 version = cmd.executeAndReturnOutput("version", "--verbose");
-            else
+            } else {
                 version = cmd.executeAndReturnOutput("version");
+            }
             version = version.trim();   // get rid of gratuitous newlines
             logger.info(terse ? version : strings.get("version.remote", version));
         } catch (Exception e) {
@@ -105,20 +106,17 @@ public class VersionCommand extends CLICommand {
         String fv = Version.getFullVersion();
 
         logger.info(terse ? fv : strings.get("version.local", fv));
-        if (verbose)
-            logger.info(strings.get("version.local.java",
-				    System.getProperty("java.version")));
+        if (verbose){
+            logger.info(strings.get("version.local.java", System.getProperty("java.version")));
+        }
     }
 
     private void printRemoteException(Exception e) {
-        logger.info(strings.get("remote.version.failed",
-                programOpts.getHost(), programOpts.getPort() + ""));
+        logger.info(strings.get("remote.version.failed", programOpts.getHost(), programOpts.getPort() + ""));
         if (logger.isLoggable(Level.FINER)) {
             logger.finer(e.getMessage());
-        }
-        else {
-            logger.info(strings.get("remote.version.failed.debug", 
-                Environment.getDebugVar()));
+        } else {
+            logger.info(strings.get("remote.version.failed.debug", Environment.getDebugVar()));
         }
     }
 }
