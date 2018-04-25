@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016] [Payara Foundation]
+//Portions Copyright [2016-2018] [Payara Foundation]
 
 package com.sun.enterprise.admin.cli.embeddable;
 
@@ -85,8 +85,7 @@ import org.glassfish.internal.api.InternalSystemAdministrator;
 @ContractsProvided({DeployerImpl.class, Deployer.class}) // bcos Deployer interface can't depend on HK2, we need ContractProvided here.
 public class DeployerImpl implements Deployer {
 
-    private static final Logger logger =
-            Logger.getLogger(DeployerImpl.class.getPackage().getName());
+    private static final Logger logger = Logger.getLogger(DeployerImpl.class.getPackage().getName());
 
     /*
      * This class currently copies generic URIs to a file before processing. Once deployment backend
@@ -194,22 +193,13 @@ public class DeployerImpl implements Deployer {
         File file;
         file = File.createTempFile("app", "tmp");
         file.deleteOnExit();
-        OutputStream out = null;
-        try {
-            out = new FileOutputStream(file);
+        try (OutputStream out = new FileOutputStream(file)) {
             copyStream(in, out);
         } finally {
             if (in != null) {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    // ignore
-                }
-            }
-            if (out != null) {
-                try {
-                    out.close();
-                } finally {
                     // ignore
                 }
             }
@@ -279,21 +269,18 @@ public class DeployerImpl implements Deployer {
                 try {
                     payloadOutputStream.close();
                 } catch (IOException ioex) {
-                    logger.warning(ioex.getMessage());
+                    logger.log(Level.WARNING, ioex.getMessage());
                 }
             }
             if (payloadInputStream != null) {
                 try {
                     payloadInputStream.close();
                 } catch (IOException ioex) {
-                    logger.warning(ioex.getMessage());
+                    logger.log(Level.WARNING, ioex.getMessage());
                 }
             }
-            if (payloadZip != null) {
-                if (payloadZip.delete() == false) {
-                    logger.log(Level.WARNING, "Cannot delete payload: {0}", 
-                            payloadZip.toString());
-                }
+            if (payloadZip != null && !payloadZip.delete()) {
+                    logger.log(Level.WARNING, "Cannot delete payload: {0}", payloadZip.toString());
             }
         }
     }

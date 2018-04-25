@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 package com.sun.enterprise.admin.cli;
 
 import com.sun.enterprise.admin.remote.reader.ProprietaryReaderFactory;
@@ -84,13 +85,13 @@ public class AdminMain {
     private CLIContainer cliContainer;
     private Environment env = new Environment();
     protected Logger logger;
+    private final static int SUCCESS = 0;
     private final static int ERROR = 1;
     private final static int CONNECTION_ERROR = 2;
     private final static int INVALID_COMMAND_ERROR = 3;
-    private final static int SUCCESS = 0;
     private final static int WARNING = 4;
-    private final static String ADMIN_CLI_LOGGER =
-            "com.sun.enterprise.admin.cli";
+    private final static String ADMIN_CLI_LOGGER = "com.sun.enterprise.admin.cli";
+    
     private static final String[] copyProps = {
         SystemPropertyConstants.INSTALL_ROOT_PROPERTY,
         SystemPropertyConstants.CONFIG_ROOT_PROPERTY,
@@ -201,11 +202,8 @@ public class AdminMain {
     }
 
     public static void main(String[] args) {
-        //System.exit(new AdminMain().doMain(args));
-        //long startTime = System.currentTimeMillis();
         AdminMain adminMain = new AdminMain();
         int code = adminMain.doMain(args);
-        //System.out.println("Overal duration: " + (System.currentTimeMillis() - startTime)+" ms");
         System.exit(code);
     }
 
@@ -253,12 +251,8 @@ public class AdminMain {
         rlogger.addHandler(h);
 
         if (debug) {
-            System.setProperty(CLIConstants.WALL_CLOCK_START_PROP,
-                    "" + System.currentTimeMillis());
-            if (logger.isLoggable(Level.FINER))
-                logger.log(Level.FINER, "CLASSPATH= {0}\nCommands: {1}",
-                        new Object[]{System.getProperty("java.class.path"),
-                            Arrays.toString(args)});
+            System.setProperty(CLIConstants.WALL_CLOCK_START_PROP, "" + System.currentTimeMillis());
+            logger.log(Level.FINER, "CLASSPATH= {0}\nCommands: {1}", new Object[]{System.getProperty("java.class.path"), Arrays.toString(args)});
         }
         /*
          * Set the thread's context class loader so that everyone can load from
@@ -283,8 +277,7 @@ public class AdminMain {
 
         cliContainer = new CLIContainer(ecl, extensions, logger);
 
-        classPath =
-                SmartFile.sanitizePaths(System.getProperty("java.class.path"));
+        classPath = SmartFile.sanitizePaths(System.getProperty("java.class.path"));
         className = AdminMain.class.getName();
 
         /*
@@ -342,8 +335,7 @@ public class AdminMain {
                  * Parse all the admin options, stopping at the first
                  * non-option, which is the command name.
                  */
-                Parser rcp = new Parser(argv, 0,
-                        ProgramOptions.getValidOptions(), false);
+                Parser rcp = new Parser(argv, 0, ProgramOptions.getValidOptions(), false);
                 ParameterMap params = rcp.getOptions();
                 po = new ProgramOptions(params, env);
                 readAndMergeOptionsFromAuxInput(po);
@@ -368,8 +360,7 @@ public class AdminMain {
             cliContainer.setEnvironment(env);
             cliContainer.setProgramOptions(po);
             cmd = CLICommand.getCommand(cliContainer, command);
-            int result = cmd.execute(argv);
-            return result;
+            return cmd.execute(argv);
         } catch (CommandValidationException cve) {
             logger.severe(cve.getMessage());
             if (cmd == null) // error parsing program options
@@ -410,8 +401,7 @@ public class AdminMain {
         }
     }
 
-    private static void readAndMergeOptionsFromAuxInput(final ProgramOptions progOpts)
-            throws CommandException {
+    private static void readAndMergeOptionsFromAuxInput(final ProgramOptions progOpts) throws CommandException {
         final String auxInput = progOpts.getAuxInput();
         if (auxInput == null || auxInput.length() == 0) {
             return;
@@ -447,9 +437,10 @@ public class AdminMain {
         return s != null && s.length() > 0;
     }
     
-    /** Returns source JAR file for given class. 
-     * 
+    /** 
+     * Returns source JAR file for given class. 
      * @param cls Must be classic class - NOT inner class
+     * @return 
      */
     public static File getJarForClass(Class cls) {
         URL resource = cls.getResource("/" + cls.getName().replace('.', '/') + ".class");
