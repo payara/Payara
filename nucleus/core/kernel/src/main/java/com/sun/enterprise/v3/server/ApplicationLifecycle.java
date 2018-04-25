@@ -547,10 +547,11 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 tracker.actOn(logger);
             } finally {
                 context.postDeployClean(false /* not final clean-up yet */);
-                if (report.getActionExitCode() == ActionReport.ExitCode.SUCCESS) {
-                    events.send(new Event<>(Deployment.DEPLOYMENT_SUCCESS, appInfo));
-                } else {
+                if (report.getActionExitCode() == ActionReport.ExitCode.FAILURE) {
+                    // warning status code is not a failure
                     events.send(new Event<>(Deployment.DEPLOYMENT_FAILURE, context));
+                } else {
+                    events.send(new Event<>(Deployment.DEPLOYMENT_SUCCESS, appInfo));
                 }
             }
             currentDeploymentContext.get().pop();

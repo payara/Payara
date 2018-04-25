@@ -37,10 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
+import static com.sun.enterprise.security.ee.SecurityUtil.getContextID;
+import static com.sun.enterprise.web.Constants.DEPLOYMENT_CONTEXT_ATTRIBUTE;
+import static com.sun.enterprise.web.Constants.ENABLE_HA_ATTRIBUTE;
+import static com.sun.enterprise.web.Constants.IS_DISTRIBUTABLE_ATTRIBUTE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.text.MessageFormat.format;
 import static java.util.logging.Level.WARNING;
@@ -80,6 +84,8 @@ import java.util.logging.Logger;
 
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
+import javax.security.jacc.PolicyConfigurationFactory;
+import javax.security.jacc.PolicyContextException;
 import javax.servlet.Filter;
 import javax.servlet.HttpMethodConstraintElement;
 import javax.servlet.Servlet;
@@ -162,6 +168,7 @@ import com.sun.enterprise.deployment.web.SecurityConstraint;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
 import com.sun.enterprise.deployment.web.UserDataConstraint;
 import com.sun.enterprise.deployment.web.WebResourceCollection;
+import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.integration.RealmInitializer;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.web.deploy.LoginConfigDecorator;
@@ -169,6 +176,8 @@ import com.sun.enterprise.web.pwc.PwcWebModule;
 import com.sun.enterprise.web.session.PersistenceType;
 import com.sun.enterprise.web.session.SessionCookieConfig;
 import com.sun.web.security.RealmAdapter;
+
+import fish.payara.jacc.JaccConfigurationFactory;
 
 /**
  * Class representing a web module for use by the Application Server.
@@ -641,42 +650,75 @@ public class WebModule extends PwcWebModule implements Context {
     @Override
     protected void contextListenerStart() {
         ServletContext servletContext = getServletContext();
-        WebBundleDescriptor wbd = getWebBundleDescriptor();
+        WebBundleDescriptor webBundleDescriptor = getWebBundleDescriptor();
+        JaccConfigurationFactory jaccConfigurationFactory = getJaccConfigurationFactory();
+        
         try {
-            // for jsf injection
+            // For JSF injection
             servletContext.setAttribute(
-                    Constants.DEPLOYMENT_CONTEXT_ATTRIBUTE,
+                    DEPLOYMENT_CONTEXT_ATTRIBUTE,
                     getWebModuleConfig().getDeploymentContext());
-            // null check for OSGi/HTTP
-            if (wbd != null) {
-                servletContext.setAttribute(
-                        Constants.IS_DISTRIBUTABLE_ATTRIBUTE,
-                        wbd.isDistributable());
+            
+            // Null check for OSGi/HTTP
+            if (webBundleDescriptor != null) {
+                servletContext.setAttribute(IS_DISTRIBUTABLE_ATTRIBUTE, webBundleDescriptor.isDistributable());
+                
+                webBundleDescriptor.setAppContextId(getAppContextId(servletContext));
+                
+                if (jaccConfigurationFactory != null) {
+                    // Add a mapping from the JACC context Id, which is not available to the application yet at this point
+                    // to the Servlet based application Id, which the application uses
+                    jaccConfigurationFactory.addContextIdMapping(
+                            webBundleDescriptor.getAppContextId(), // Servlet application context Id
+                            getContextID(webBundleDescriptor));    // JACC context Id
+                            
+                }
             }
+            
             servletContext.setAttribute(
-                    Constants.ENABLE_HA_ATTRIBUTE,
-                    Boolean.valueOf(
-                        webContainer.getServerConfigLookup().calculateWebAvailabilityEnabledFromConfig(this)));
+                    ENABLE_HA_ATTRIBUTE,
+                    webContainer.getServerConfigLookup().calculateWebAvailabilityEnabledFromConfig(this));
 
             super.contextListenerStart();
         } finally {
-            servletContext.removeAttribute(
-                    Constants.DEPLOYMENT_CONTEXT_ATTRIBUTE);
-            servletContext.removeAttribute(
-                    Constants.IS_DISTRIBUTABLE_ATTRIBUTE);
-            servletContext.removeAttribute(
-                    Constants.ENABLE_HA_ATTRIBUTE);
+            servletContext.removeAttribute(DEPLOYMENT_CONTEXT_ATTRIBUTE);
+            servletContext.removeAttribute(IS_DISTRIBUTABLE_ATTRIBUTE);
+            servletContext.removeAttribute(ENABLE_HA_ATTRIBUTE);
         }
-        for (ServletRegistrationImpl srImpl : servletRegisMap.values()) {
-            if (srImpl instanceof DynamicWebServletRegistrationImpl) {
-                DynamicWebServletRegistrationImpl dwsrImpl =
-                    (DynamicWebServletRegistrationImpl)srImpl;
-                dwsrImpl.postProcessAnnotations();
+        
+        servletRegisMap.values()
+                       .stream()
+                       .filter(DynamicWebServletRegistrationImpl.class::isInstance)
+                       .map(DynamicWebServletRegistrationImpl.class::cast)
+                       .forEach(DynamicWebServletRegistrationImpl::postProcessAnnotations);
+        
+        if (jaccConfigurationFactory != null && webBundleDescriptor != null) {
+            if (jaccConfigurationFactory.getContextProviderByPolicyContextId(getContextID(webBundleDescriptor)) != null) {
+                webBundleDescriptor.setPolicyModified(true);
             }
         }
-        webContainer.afterServletContextInitializedEvent(wbd);
+
+        webContainer.afterServletContextInitializedEvent(webBundleDescriptor);
+    }
+    
+    private String getAppContextId(ServletContext servletContext) {
+        return servletContext.getVirtualServerName() + " " + servletContext.getContextPath();
     }
 
+    private JaccConfigurationFactory getJaccConfigurationFactory() {
+        try {
+            PolicyConfigurationFactory policyConfigurationFactory = PolicyConfigurationFactory.getPolicyConfigurationFactory();
+            if (policyConfigurationFactory instanceof JaccConfigurationFactory) {
+                return (JaccConfigurationFactory) policyConfigurationFactory;
+            }
+            
+        } catch (ClassNotFoundException | PolicyContextException e) {
+            // Ignore
+        }
+        
+        return null;
+    }
+    
     @Override
     protected Types getTypes() {
         if (wmInfo.getDeploymentContext()!=null) {

@@ -256,7 +256,7 @@
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.1</jax-rs-api.impl.version>
-        <jersey.version>2.26</jersey.version>
+        <jersey.version>2.27</jersey.version>
 
         <!-- Bean Validation -->
         <javax.validation.version>2.0.0.Final</javax.validation.version>

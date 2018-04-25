@@ -43,16 +43,16 @@ package myapp;
 import javax.persistence.*;
 import java.util.Collection;
 
-
 @Entity
-@Table(name="BV_PROJ")
+@Table(name = "BV_PROJ")
 public class Project {
 
-    private int	    id;
-    private String	name;
+    private int id;
+    private String name;
     private Collection<Employee> employees;
 
-    public Project() {}
+    public Project() {
+    }
 
     public Project(int id, String name) {
         this.id = id;
@@ -63,14 +63,16 @@ public class Project {
     public int getId() {
         return id;
     }
+
     public void setId(int id) {
         this.id = id;
     }
 
-    @Column(length=20, name="NAME")
+    @Column(length = 20, name = "NAME")
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -79,6 +81,7 @@ public class Project {
     public Collection<Employee> getEmployees() {
         return employees;
     }
+
     public void setEmployees(Collection<Employee> employees) {
         this.employees = employees;
     }

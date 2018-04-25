@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package test.clusterteardown;
 
 import com.sun.appserv.test.AdminBaseDevTest;
@@ -50,21 +50,23 @@ public class ClusterTeardownTest extends AdminBaseDevTest {
     protected String getTestDescription() {
         return "QL Cluster TEARDOWN Test";
     }
-        final String tn = "QLCluster";
-        final String cname = "eec1";
-        final String i1name = "eein1-with-a-very-very-very-long-name";
-        final String i2name = "eein2";
-        
-        public boolean retStatus;
 
-        // Byron Nevins Nov 4,2010 -- Add plenty of output if there are problems.
-        // previously deleteInstanceTest would never say boo no matter what happened...
+    final String tn = "QLCluster";
+    final String cname = "eec1";
+    final String i1name = "eein1-with-a-very-very-very-long-name";
+    final String i2name = "eein2";
+    final String domain = System.getProperty("domain.name", "test-domain");
+
+    public boolean retStatus;
+
+    // Byron Nevins Nov 4,2010 -- Add plenty of output if there are problems.
+    // previously deleteInstanceTest would never say boo no matter what happened...
     @Test
-    public void deleteInstanceTest() throws Exception{
-        AsadminReturn ar1 = asadminWithOutput("stop-local-instance", "--node","localhost-test-domain","--kill", i1name);
-        AsadminReturn ar2 = asadminWithOutput("stop-local-instance", "--node","localhost-test-domain","--kill", i2name);
-        AsadminReturn ar3 = asadminWithOutput("delete-local-instance", "--node","localhost-test-domain",i1name);
-        AsadminReturn ar4 = asadminWithOutput("delete-local-instance", "--node","localhost-test-domain",i2name);
+    public void deleteInstanceTest() throws Exception {
+        AsadminReturn ar1 = asadminWithOutput("stop-local-instance", "--node", "localhost-" + domain, "--kill", i1name);
+        AsadminReturn ar2 = asadminWithOutput("stop-local-instance", "--node", "localhost-" + domain, "--kill", i2name);
+        AsadminReturn ar3 = asadminWithOutput("delete-local-instance", "--node", "localhost-" + domain, i1name);
+        AsadminReturn ar4 = asadminWithOutput("delete-local-instance", "--node", "localhost-" + domain, i2name);
 
         report(tn + "stop-local-instance1", ar1.returnValue);
         report(tn + "stop-local-instance2", ar2.returnValue);
@@ -76,9 +78,9 @@ public class ClusterTeardownTest extends AdminBaseDevTest {
         Assert.assertTrue(ar3.returnValue, "Error deleting instance " + i1name + ": " + ar3.outAndErr);
         Assert.assertTrue(ar4.returnValue, "Error deleting instance " + i2name + ": " + ar4.outAndErr);
     }
-        
+
     @Test(dependsOnMethods = { "deleteInstanceTest" })
-    public void deleteClusterTest() throws Exception{
+    public void deleteClusterTest() throws Exception {
         AsadminReturn ar1 = asadminWithOutput("delete-cluster", cname);
         retStatus = report(tn + "delete-cluster", ar1.returnValue);
 
