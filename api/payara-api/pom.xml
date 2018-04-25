@@ -133,7 +133,7 @@
                                     javax.inject,
                                     javax.enterprise.util,
                                     javax.security.enterprise.credential,
-                                    javax.security.enterprise.identitystore
+                                    javax.security.enterprise.identitystore,
                                     javax.security.jacc
                                 </Import-Package>
                                 <Export-Package>
