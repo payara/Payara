@@ -14,3 +14,4 @@ gfbuild.log
 nb-configuration.xml
 /nucleus/payara-modules/nucleus-microprofile/config-service/nbproject/
 appserver/extras/arquillian-containers/payara-common/dependency-reduced-pom.xml
+/appserver/tests/quicklook/cluster/clustersetup/nbproject/

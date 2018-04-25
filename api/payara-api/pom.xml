@@ -129,7 +129,10 @@
                                     fish.payara.nucleus.notification.service,
                                     fish.payara.cdi.jsr107.implementation,
                                     javax.inject,
-                                    javax.enterprise.util
+                                    javax.enterprise.util,
+                                    javax.security.enterprise.credential,
+                                    javax.security.enterprise.identitystore,
+                                    javax.security.jacc
                                 </Import-Package>
                                 <Export-Package>
                                     fish.payara.cdi.auth.roles,
@@ -139,7 +142,11 @@
                                     fish.payara.nucleus.requesttracing.api,
                                     fish.payara.notification.eventbus,
                                     fish.payara.nucleus.notification.domain,
-                                    fish.payara.nucleus.notification.service
+                                    fish.payara.nucleus.notification.service,
+                                    fish.payara.notification.healthcheck,
+                                    fish.payara.notification.requesttracing,
+                                    fish.payara.security.oauth2.annotation,
+                                    fish.payara.security.oauth2.api
                                 </Export-Package>
                             </instructions>
                         </configuration>
@@ -167,4 +174,25 @@
             <optional>true</optional>
         </dependency>
     </dependencies>
+    
+    <profiles>
+        <profile>
+            <id>jdk8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>2.3.2</version>
+                        <configuration>
+                    
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
