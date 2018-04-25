@@ -100,7 +100,6 @@ public class HazelcastTopicRemoteConnection extends BroadcastRemoteConnection im
     public void onMessage(final Message<HazelcastPayload> message) {
         if (hasHazelcastPayload(message)) {
             if(!topic.hasPublished(message.getMessageObject())) {
-                topic.forget(message.getMessageObject());
                 HazelcastTopicStorage.getInstance().process(
                     () -> {
                         String messageId = message.getPublishingMember().getUuid() + "-" + String.valueOf(message.getPublishTime());

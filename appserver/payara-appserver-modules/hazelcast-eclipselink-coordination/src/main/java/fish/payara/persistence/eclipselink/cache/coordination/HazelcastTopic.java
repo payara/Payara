@@ -89,15 +89,7 @@ final class HazelcastTopic {
      * @return True if it has been published.
      */
     boolean hasPublished(HazelcastPayload payload) {
-        return publishedMessageIds.contains(payload.getId());
-    }
-
-    /**
-     * Forgets if the provided payload has been published by this topic.
-     * @param payload The payload to forget if it has been published with this topic.
-     */
-    void forget(HazelcastPayload payload) {
-        publishedMessageIds.remove(payload.getId());
+        return publishedMessageIds.remove(payload.getId());
     }
 
     /**
