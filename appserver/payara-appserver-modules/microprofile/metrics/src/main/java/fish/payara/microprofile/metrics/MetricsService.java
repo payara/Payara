@@ -55,13 +55,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.xml.bind.JAXB;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricRegistry;
@@ -104,7 +100,7 @@ public class MetricsService implements EventListener {
     public void init() {
         events.register(this);
         metricsServiceConfiguration = serviceLocator.getService(MetricsServiceConfiguration.class);
-        initMetadataConfig(JAXB.unmarshal(getConfigStream(), MBeanMetadataConfig.class));
+        initMetadataConfig(getConfig());
     }
 
     @Override
@@ -135,20 +131,25 @@ public class MetricsService implements EventListener {
                 globalTags);
     }
     
-    private InputStream getConfigStream() {
-        InputStream configStream = null;
+    private MBeanMetadataConfig getConfig() {
+        
+        InputStream defaultConfig = MetricsHelper.class.getResourceAsStream("/metrics.xml");
+        MBeanMetadataConfig config = JAXB.unmarshal(defaultConfig, MBeanMetadataConfig.class);
+        
+        
         File metricsResource = new File(serverEnv.getConfigDirPath(), "metrics.xml");
         if (metricsResource.exists()) {
             try {
-                configStream = new FileInputStream(metricsResource);
+                InputStream userMetrics = new FileInputStream(metricsResource);
+                MBeanMetadataConfig extraConfig = JAXB.unmarshal(userMetrics, MBeanMetadataConfig.class);
+                config.addBaseMetadata(extraConfig.getBaseMetadata());
+                config.addVendorMetadata(extraConfig.getVendorMetadata());
+                
             } catch (FileNotFoundException ex) {
                 //ignore
             }
         }
-        if (configStream == null) {
-            configStream = MetricsHelper.class.getResourceAsStream("/metrics.xml");
-        }
-        return configStream;
+        return config;
     }
 
     public Boolean isMetricsEnabled() {
