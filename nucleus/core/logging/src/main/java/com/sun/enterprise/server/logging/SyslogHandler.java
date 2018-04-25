@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -78,7 +79,7 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
     private BooleanLatch done = new BooleanLatch();
     private BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<LogRecord>(5000);
     private SimpleFormatter simpleFormatter = new SimpleFormatter();
-    
+
 
     public void postConstruct() {
 
@@ -94,18 +95,19 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
             return;
 
         //set up the connection
-        try {
-            sysLogger = new Syslog("localhost");  //for now only write to this host
-        } catch ( java.net.UnknownHostException e) {
-		        LogFacade.LOGGING_LOGGER.log(Level.SEVERE, LogFacade.ERROR_INIT_SYSLOG, e);
-		        return;
-		    }
-        
+        setupConnection();       
+        initializePump();
+    }
+
+    private void initializePump() {
         // start the Queue consummer thread.
         pump = new Thread() {
             public void run() {
                 try {
                     while (!done.isSignalled()) {
+                        if (pump.isInterrupted()) {
+                            break;
+                        }
                         log();
                     }
                 } catch (RuntimeException e) {
@@ -114,7 +116,15 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
             }
         };
         pump.start();
-
+    }
+    
+    private void setupConnection(){
+        try {
+            sysLogger = new Syslog("localhost");  //for now only write to this host
+        } catch (java.net.UnknownHostException e) {
+            LogFacade.LOGGING_LOGGER.log(Level.SEVERE, LogFacade.ERROR_INIT_SYSLOG, e);
+            return;
+        }
     }
     
     public void preDestroy() {
@@ -129,44 +139,44 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
      */
     public void log() {
 
-        LogRecord record;
+            LogRecord record;
 
-        try {
-            record = pendingRecords.take();
-        } catch (InterruptedException e) {
-            return;
-        }
+            try {
+                record = pendingRecords.take();
+            } catch (InterruptedException e) {
+                return;
+            }
         Level level= record.getLevel();
-        long millisec = record.getMillis();
-        int syslogLevel = Syslog.INFO;
-        String logLevel = "INFO";
+            long millisec = record.getMillis();
+            int syslogLevel = Syslog.INFO;
+            String logLevel = "INFO";
 
-        if (level.equals(Level.SEVERE)) {
-            syslogLevel = Syslog.CRIT;
-            logLevel = "CRIT";            
+            if (level.equals(Level.SEVERE)) {
+                syslogLevel = Syslog.CRIT;
+                logLevel = "CRIT";
         } else if (level.equals(Level.WARNING)){
-            syslogLevel = Syslog.WARNING;
-            logLevel = "WARNING";
+                syslogLevel = Syslog.WARNING;
+                logLevel = "WARNING";
         } else if(level.intValue() <= Level.FINE.intValue())   {
-            syslogLevel = Syslog.DEBUG;
-            logLevel = "DEBUG";
-        } 
-        
-        //format the message
-        StringBuilder sb = new StringBuilder();
-        SimpleDateFormat formatter = new SimpleDateFormat("MMM dd HH:mm:ss");
-        sb.append(formatter.format(millisec));
-        sb.append(" [ ");
-        sb.append(logLevel);
-        sb.append(" glassfish ] ");        
-        String formattedMsg = simpleFormatter.formatMessage(record);
-        sb.append(formattedMsg);
-         //send message
-        if (sysLogger != null) {
-            sysLogger.log(Syslog.DAEMON, syslogLevel, sb.toString());
-        }
+                syslogLevel = Syslog.DEBUG;
+                logLevel = "DEBUG";
+            }
 
-    }
+            //format the message
+            StringBuilder sb = new StringBuilder();
+            SimpleDateFormat formatter = new SimpleDateFormat("MMM dd HH:mm:ss");
+            sb.append(formatter.format(millisec));
+            sb.append(" [ ");
+            sb.append(logLevel);
+            sb.append(" glassfish ] ");
+            String formattedMsg = simpleFormatter.formatMessage(record);
+            sb.append(formattedMsg);
+            //send message
+            if (sysLogger != null) {
+                sysLogger.log(Syslog.DAEMON, syslogLevel, sb.toString());
+            }
+
+        }
 
     /**
      * Publishes the logrecord storing it in our queue
@@ -194,5 +204,18 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
     public void flush() {
         
     }
+
+    public void setSystemLogging(boolean systemLogging) {
+        if (systemLogging) {
+            //set up the connection
+            setupConnection();
+            initializePump();
+        } else {
+            if (pump.isAlive()) {
+                pump.interrupt();
+            }
+        }
+    }
+
 }
 

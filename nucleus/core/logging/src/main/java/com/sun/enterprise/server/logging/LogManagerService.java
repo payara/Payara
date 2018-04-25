@@ -113,7 +113,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
     @Inject
     Domain domain;
-
+    
     final Map<String, Handler> gfHandlers = new HashMap<String, Handler>();
 
     private static final Logger LOGGER = LogFacade.LOGGING_LOGGER;
@@ -148,7 +148,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     String payaraNotificationlogToFileDetail = "";
     String payaraNotificationLogRotationOnTimeLimitInMinutesDetail = "";
     String payaraNotificationLogRotationOnDateChangeDetail = "";
-    String payaraNotificationLogRotationInTimeLimitInBytesDetail = "";
+    String payaraNotificationLogRotationLimitInBytesDetail = "";
     String payaraNotificationLogmaxHistoryFilesDetail = "";
     String payaraNotificationLogCompressOnRotationDetail = "";
     
@@ -213,7 +213,13 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private LoggingOutputStream stdoutOutputStream=null;
 
     private LoggingOutputStream stderrOutputStream=null;
-
+    
+    private  GFFileHandler gfFileHandler = null;
+    
+    private  PayaraNotificationFileHandler pyFileHandler = null;
+    
+    private String payaraNotificationLogger = "fish.payara.nucleus.notification.log.LogNotifierService";
+    
     /**
      * Returns properties based on the DAS/Cluster/Instance
      */
@@ -282,7 +288,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     public void postConstruct() {
 
         // if the system property is already set, we don't need to do anything
-        if (System.getProperty("java.util.logging.config.file") != null) {
+         if (System.getProperty("java.util.logging.config.file") != null) {
             System.out.println("\n\n\n#!## LogManagerService.postConstruct : java.util.logging.config.file=" +System.getProperty("java.util.logging.config.file"));
 
             return;
@@ -298,7 +304,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
             logging = getLoggingFile();
             System.setProperty("java.util.logging.config.file", logging.getAbsolutePath());
-
+            
 
 
             String rootFolder = env.getProps().get(com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
@@ -332,135 +338,23 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         // force the ConsoleHandler to use GF formatter
         String formatterClassName = null;
         try {
-
             Map<String, String> props = getLoggingProperties();
+            setConsoleHandlerLogFormat(formatterClassName, props, logMgr);
             formatterClassName = props.get(CONSOLEHANDLER_FORMATTER_PROPERTY);
-            if (formatterClassName == null || formatterClassName.isEmpty()) {
-                formatterClassName = UniformLogFormatter.class.getName();
-            }
-            consoleHandlerFormatterDetail = formatterClassName;
-            excludeFields  = props.get(EXCLUDE_FIELDS_PROPERTY);
-            multiLineMode  = Boolean.parseBoolean(props.get(MULTI_LINE_MODE_PROPERTY));
-            if (formatterClassName.equals(UniformLogFormatter.class.getName())) {
-                // used to support UFL formatter in GF.
-                UniformLogFormatter formatter = new UniformLogFormatter();
-                String cname = "com.sun.enterprise.server.logging.GFFileHandler";
-                recordBeginMarker = props.get(cname + ".logFormatBeginMarker");
-                if (recordBeginMarker == null || ("").equals(recordBeginMarker)) {
-                    LOGGER.log(Level.FINE, "Record begin marker is not a proper value so using default.");
-                    recordBeginMarker = RECORD_BEGIN_MARKER;
-                }
-
-                recordEndMarker = props.get(cname + ".logFormatEndMarker");
-                if (recordEndMarker == null || ("").equals(recordEndMarker)) {
-                    LOGGER.log(Level.FINE, "Record end marker is not a proper value so using default.");
-                    recordEndMarker = RECORD_END_MARKER;
-                }
-
-                recordFieldSeparator = props.get(cname + ".logFormatFieldSeparator");
-                if (recordFieldSeparator == null || ("").equals(recordFieldSeparator) || recordFieldSeparator.length() > 1) {
-                    LOGGER.log(Level.FINE, "Log Format field separator is not a proper value so using default.");
-                    recordFieldSeparator = RECORD_FIELD_SEPARATOR;
-                }
-
-                recordDateFormat = props.get(cname + ".logFormatDateFormat");
-                if (recordDateFormat != null && !("").equals(recordDateFormat)) {
-                    SimpleDateFormat sdf = new SimpleDateFormat(recordDateFormat);
-                    try {
-                        sdf.format(new Date());
-                    } catch (Exception e) {
-                        LOGGER.log(Level.FINE, "Date Format specified is wrong so using default.");
-                        recordDateFormat = RECORD_DATE_FORMAT;
-                    }
-                } else {
-                    LOGGER.log(Level.FINE, "Date Format specified is wrong so using default.");
-                    recordDateFormat = RECORD_DATE_FORMAT;
-                }
-
-                formatter.setRecordBeginMarker(recordBeginMarker);
-                formatter.setRecordEndMarker(recordEndMarker);
-                formatter.setRecordDateFormat(recordDateFormat);
-                formatter.setRecordFieldSeparator(recordFieldSeparator);
-                formatter.setExcludeFields(excludeFields);
-                formatter.setMultiLineMode(multiLineMode);
-                for (Handler handler : logMgr.getLogger("").getHandlers()) {                    
-                    // only get the ConsoleHandler
-                    if (handler.getClass().equals(ConsoleHandler.class)) {
-                        handler.setFormatter(formatter);
-                        break;
-                    }
-                }
-            } else if (formatterClassName.equals(ODLLogFormatter.class.getName())) {
-                // used to support ODL formatter in GF.
-                ODLLogFormatter formatter = new ODLLogFormatter();
-                formatter.setExcludeFields(excludeFields);
-                formatter.setMultiLineMode(multiLineMode);
-                for (Handler handler : logMgr.getLogger("").getHandlers()) {
-                    // only get the ConsoleHandler
-                    if (handler.getClass().equals(ConsoleHandler.class)) {
-                        handler.setFormatter(formatter);
-                        break;
-                    }
-                }
-            } else if (formatterClassName.equals(JSONLogFormatter.class.getName())) {
-                JSONLogFormatter formatter = new JSONLogFormatter();
-                formatter.setExcludeFields(excludeFields);
-                for (Handler handler : logMgr.getLogger("").getHandlers()) {
-                    // only get the ConsoleHandler
-                    if (handler.getClass().equals(ConsoleHandler.class)) {
-                        handler.setFormatter(formatter);
-                        break;
-                    }
-                }                
-            }
 
             //setting default attributes value for all properties
-            serverLogFileDetail = props.get(SERVER_LOG_FILE_PROPERTY);
-            handlerDetail = props.get(HANDLER_PROPERTY);   
-            handlerServices = props.get(HANDLER_SERVICES_PROPERTY);
-            if (handlerServices == null) {
-                handlerServices = "";
-            }
-            consoleHandlerFormatterDetail = props.get(CONSOLEHANDLER_FORMATTER_PROPERTY);
-            gffileHandlerFormatterDetail = props.get(GFFILEHANDLER_FORMATTER_PROPERTY);
-            rotationOnTimeLimitInMinutesDetail = props.get(ROTATIONTIMELIMITINMINUTES_PROPERTY);
-            flushFrequencyDetail = props.get(FLUSHFREQUENCY_PROPERTY);
-            filterHandlerDetails = props.get(FILEHANDLER_LIMIT_PROPERTY);
-            logToFileDetail = props.get(LOGTOFILE_PROPERTY);
-            logToConsoleDetail = props.get(LOGTOCONSOLE_PROPERTY);
-            rotationInTimeLimitInBytesDetail = props.get(ROTATIONLIMITINBYTES_PROPERTY);
-            useSystemLoggingDetail = props.get(USESYSTEMLOGGING_PROPERTY);
-            fileHandlerCountDetail = props.get(FILEHANDLER_COUNT_PROPERTY);
-            retainErrorsStaticticsDetail = props.get(RETAINERRORSSTATICTICS_PROPERTY);
-            log4jVersionDetail = props.get(LOG4J_VERSION_PROPERTY);
-            maxHistoryFilesDetail = props.get(MAXHISTORY_FILES_PROPERTY);
-            rotationOnDateChangeDetail = props.get(ROTATIONONDATECHANGE_PROPERTY);
-            fileHandlerPatternDetail = props.get(FILEHANDLER_PATTERN_PROPERTY);
-            fileHandlerFormatterDetail = props.get(FILEHANDLER_FORMATTER_PROPERTY);
-            logFormatDateFormatDetail = props.get(LOGFORMAT_DATEFORMAT_PROPERTY);
-            compressOnRotationDetail = props.get(COMPRESS_ON_ROTATION_PROPERTY);
-            
-            //Payara Notification Logging
-            payaraNotificationLogFileDetail = props.get(PAYARA_NOTIFICATION_LOG_FILE_PROPERTY);
-            payaraNotificationlogToFileDetail = props.get(PAYARA_NOTIFICATION_LOGTOFILE_PROPERTY);
-            payaraNotificationLogRotationOnDateChangeDetail = props.get(PAYARA_NOTIFICATION_LOG_ROTATIONONDATECHANGE_PROPERTY);
-            payaraNotificationLogRotationOnTimeLimitInMinutesDetail = props.get(PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY);
-            payaraNotificationLogRotationInTimeLimitInBytesDetail = props.get(PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY);
-            payaraNotificationLogmaxHistoryFilesDetail = props.get(PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY);
-            payaraNotificationLogCompressOnRotationDetail = props.get(PAYARA_NOTIFICATION_LOG_COMPRESS_ON_ROTATION_PROPERTY);
-            
-            payaraJsonUnderscorePrefix = props.get(PAYARA_JSONLOGFORMATTER_UNDERSCORE);
+            setDefaultLoggingProperties(props);
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, LogFacade.ERROR_APPLYING_CONF, e);
         }
 
-        Collection<Handler> handlers = getHandlerServices();        
+        Collection<Handler> handlers = getHandlerServices();
         if (handlers != null && handlers.size() > 0) {
             // add the new handlers to the root logger
             for (Handler handler : handlers) {
                 addHandler(handler);
-            }            
+            }
         }
 
         // Need to lock Logger.class first before locking LogManager to avoid deadlock.
@@ -477,7 +371,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                         continue;
                     }
                     for (Handler handler : logger.getHandlers()) {
-                        Formatter formatter = handler.getFormatter();
+                        Formatter formatter = handler.getFormatter();                     
                         if (formatter != null
                                 && formatter instanceof UniformLogFormatter) {
                             ((UniformLogFormatter) formatter)
@@ -556,13 +450,16 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                         loggerReference.add(appLogger);
                                     }
                                 } else if (a.equals(SERVER_LOG_FILE_PROPERTY)) {
-                                    //check if file name was changed and send notification
                                     if (!val.equals(serverLogFileDetail)) {
-                                        PropertyChangeEvent pce = new PropertyChangeEvent(this, a, serverLogFileDetail, val);
-                                        UnprocessedChangeEvents ucel = new UnprocessedChangeEvents(new UnprocessedChangeEvent(pce, "server log filename changed."));
-                                        List<UnprocessedChangeEvents> b = new ArrayList();
-                                        b.add(ucel);
-                                        ucl.unprocessedTransactedEvents(b);
+                                        serverLogFileDetail = val;
+                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                                            // only get the GFFileHandler
+                                            if (handler.getClass().equals(GFFileHandler.class)) {
+                                                gfFileHandler = (GFFileHandler) handler;
+                                                gfFileHandler.setLogFile(serverLogFileDetail);
+                                                break;
+                                            }
+                                        }
                                     }
                                 } else if (a.equals(HANDLER_PROPERTY)) {
                                     if (!val.equals(handlerDetail)) {
@@ -574,19 +471,44 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                     }
                                 } else if (a.equals(CONSOLEHANDLER_FORMATTER_PROPERTY)) {
                                     if (!val.equals(consoleHandlerFormatterDetail)) {
-                                        generateAttributeChangeEvent(CONSOLEHANDLER_FORMATTER_PROPERTY, consoleHandlerFormatterDetail, props);
+                                        consoleHandlerFormatterDetail = val;
+                                        setConsoleHandlerLogFormat(consoleHandlerFormatterDetail, props, logMgr);
                                     }
                                 } else if (a.equals(GFFILEHANDLER_FORMATTER_PROPERTY)) {
                                     if (!val.equals(gffileHandlerFormatterDetail)) {
-                                        generateAttributeChangeEvent(GFFILEHANDLER_FORMATTER_PROPERTY, gffileHandlerFormatterDetail, props);
+                                        gffileHandlerFormatterDetail = val;
+                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                                            // only get the GFFileHandler
+                                            if (handler.getClass().equals(GFFileHandler.class)) {
+                                                gfFileHandler = (GFFileHandler) handler;
+                                                gfFileHandler.setGffileHandlerFormatter(gffileHandlerFormatterDetail);
+                                                break;
+                                            }
+                                        }
                                     }
                                 } else if (a.equals(ROTATIONTIMELIMITINMINUTES_PROPERTY)) {
                                     if (!val.equals(rotationOnTimeLimitInMinutesDetail)) {
-                                        generateAttributeChangeEvent(ROTATIONTIMELIMITINMINUTES_PROPERTY, rotationOnTimeLimitInMinutesDetail, props);
+                                        rotationOnTimeLimitInMinutesDetail = val;
+                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                                            // only get the GFFileHandler
+                                            if (handler.getClass().equals(GFFileHandler.class)) {
+                                                gfFileHandler = (GFFileHandler) handler;
+                                                gfFileHandler.setRotationTimeLimitValue(Long.parseLong(rotationOnTimeLimitInMinutesDetail));
+                                                break;
+                                            }
+                                        }
                                     }
                                 } else if (a.equals(FLUSHFREQUENCY_PROPERTY)) {
                                     if (!val.equals(flushFrequencyDetail)) {
-                                        generateAttributeChangeEvent(FLUSHFREQUENCY_PROPERTY, flushFrequencyDetail, props);
+                                        flushFrequencyDetail = val;
+                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                                            // only get the GFFileHandler
+                                            if (handler.getClass().equals(GFFileHandler.class)) {
+                                                gfFileHandler = (GFFileHandler) handler;
+                                                gfFileHandler.setFlushFrequency(Integer.parseInt(flushFrequencyDetail));
+                                                break;
+                                            }
+                                        }
                                     }
                                 } else if (a.equals(FILEHANDLER_LIMIT_PROPERTY)) {
                                     if (!val.equals(filterHandlerDetails)) {
@@ -594,19 +516,44 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                     }
                                 } else if (a.equals(LOGTOFILE_PROPERTY)) {
                                     if (!val.equals(logToFileDetail)) {
-                                        generateAttributeChangeEvent(LOGTOFILE_PROPERTY, logToFileDetail, props);
+                                        logToFileDetail = val;
+                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                                            // only get the GFFileHandler
+                                            if (handler.getClass().equals(GFFileHandler.class)) {
+                                                gfFileHandler = (GFFileHandler) handler;
+                                                gfFileHandler.setLogToFile(Boolean.parseBoolean(logToFileDetail));
+                                                break;
+                                            }
+                                        }
                                     }
                                 } else if (a.equals(LOGTOCONSOLE_PROPERTY)) {
                                     if (!val.equals(logToConsoleDetail)) {
-                                        generateAttributeChangeEvent(LOGTOCONSOLE_PROPERTY, logToConsoleDetail, props);
+                                        //generateAttributeChangeEvent(LOGTOCONSOLE_PROPERTY, logToConsoleDetail, props);
                                     }
                                 } else if (a.equals(ROTATIONLIMITINBYTES_PROPERTY)) {
                                     if (!val.equals(rotationInTimeLimitInBytesDetail)) {
-                                        generateAttributeChangeEvent(ROTATIONLIMITINBYTES_PROPERTY, rotationInTimeLimitInBytesDetail, props);
+                                        rotationInTimeLimitInBytesDetail = val;
+                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                                            // only get the GFFileHandler
+                                            if (handler.getClass().equals(GFFileHandler.class)) {
+                                                gfFileHandler = (GFFileHandler) handler;
+                                                gfFileHandler.setRotationLimitAttrValue(Integer.valueOf(rotationInTimeLimitInBytesDetail));
+                                                break;
+                                            }
+                                        }
                                     }
                                 } else if (a.equals(USESYSTEMLOGGING_PROPERTY)) {
                                     if (!val.equals(useSystemLoggingDetail)) {
-                                        generateAttributeChangeEvent(USESYSTEMLOGGING_PROPERTY, useSystemLoggingDetail, props);
+                                        useSystemLoggingDetail = val;
+                                        SyslogHandler syslogHandler = null;
+                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                                            // only get the GFFileHandler
+                                            if (handler.getClass().equals(SyslogHandler.class)) {
+                                                syslogHandler = (SyslogHandler) handler;
+                                                syslogHandler.setSystemLogging(Boolean.parseBoolean(useSystemLoggingDetail));
+                                                break;
+                                            }
+                                        }
                                     }
                                 } else if (a.equals(FILEHANDLER_COUNT_PROPERTY)) {
                                     if (!val.equals(fileHandlerCountDetail)) {
@@ -622,11 +569,28 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                     }
                                 } else if (a.equals(MAXHISTORY_FILES_PROPERTY)) {
                                     if (!val.equals(maxHistoryFilesDetail)) {
-                                        generateAttributeChangeEvent(MAXHISTORY_FILES_PROPERTY, maxHistoryFilesDetail, props);
+                                        maxHistoryFilesDetail = val;
+                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                                            // only get the GFFileHandler
+                                            if (handler.getClass().equals(GFFileHandler.class)) {
+                                                gfFileHandler = (GFFileHandler) handler;
+                                                gfFileHandler.setMaxHistoryFiles(Integer.parseInt(maxHistoryFilesDetail));
+                                                break;
+                                            }
+                                        }
                                     }
                                 } else if (a.equals(ROTATIONONDATECHANGE_PROPERTY)) {
                                     if (!val.equals(rotationOnDateChangeDetail)) {
-                                        generateAttributeChangeEvent(ROTATIONONDATECHANGE_PROPERTY, rotationOnDateChangeDetail, props);
+                                        rotationOnDateChangeDetail = val;
+                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                                            // only get the GFFileHandler
+                                            if (handler.getClass().equals(GFFileHandler.class)) {
+                                                gfFileHandler = (GFFileHandler) handler;
+
+                                                gfFileHandler.setRotationOnDateChange(Boolean.parseBoolean(rotationOnDateChangeDetail));
+                                                break;
+                                            }
+                                        }
                                     }
                                 } else if (a.equals(FILEHANDLER_PATTERN_PROPERTY)) {
                                     if (!val.equals(fileHandlerPatternDetail)) {
@@ -644,40 +608,145 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                     val = (val == null) ? "" : val;
                                     excludeFields = (excludeFields == null) ? "" : excludeFields;
                                     if (!val.equals(excludeFields)) {
-                                        generateAttributeChangeEvent(EXCLUDE_FIELDS_PROPERTY, excludeFields, props);
+                                        excludeFields = val;
+                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                                            // only get the GFFileHandler
+                                            if (handler.getClass().equals(GFFileHandler.class)) {
+                                                gfFileHandler = (GFFileHandler) handler;
+                                                gfFileHandler.setExcludeFields(excludeFields);
+                                                break;
+                                            }
+                                        }
                                     }
                                 } else if (a.equals(MULTI_LINE_MODE_PROPERTY)) {
                                     String oldVal = Boolean.toString(multiLineMode);
                                     if (!val.equalsIgnoreCase(oldVal)) {
-                                        generateAttributeChangeEvent(MULTI_LINE_MODE_PROPERTY, oldVal, props);
+                                        multiLineMode = Boolean.parseBoolean(val);
+                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                                            // only get the GFFileHandler
+                                            if (handler.getClass().equals(GFFileHandler.class)) {
+                                                gfFileHandler = (GFFileHandler) handler;
+                                                gfFileHandler.setMultiLineMode(multiLineMode);
+                                                break;
+                                            }
+                                        }
                                     }
                                 } else if (a.equals(COMPRESS_ON_ROTATION_PROPERTY)) {
                                     if (!val.equals(compressOnRotationDetail)) {
-                                        generateAttributeChangeEvent(COMPRESS_ON_ROTATION_PROPERTY, compressOnRotationDetail, props);
+                                        compressOnRotationDetail = val;
+                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                                            // only get the GFFileHandler
+                                            if (handler.getClass().equals(GFFileHandler.class)) {
+                                                gfFileHandler = (GFFileHandler) handler;
+                                                gfFileHandler.setCompressionOnRotation(Boolean.parseBoolean(compressOnRotationDetail));
+                                                break;
+                                            }
+                                        }
                                     }
-                                } else if (a.equals(PAYARA_NOTIFICATION_LOG_FILE_PROPERTY)){
+                                } else if (a.equals(PAYARA_NOTIFICATION_LOG_FILE_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogFileDetail)) {
-                                        generateAttributeChangeEvent(PAYARA_NOTIFICATION_LOG_FILE_PROPERTY, payaraNotificationLogFileDetail, props);
+                                        Logger logger = Logger.getLogger(payaraNotificationLogger);
+                                        Handler[] existingHandlers = logger.getHandlers();
+                                        if (existingHandlers.length > 0) {
+                                            for (Handler handler : existingHandlers) {
+                                                if (handler.getClass().equals(PayaraNotificationFileHandler.class)) {
+                                                    pyFileHandler = (PayaraNotificationFileHandler) handler;
+                                                    pyFileHandler.setLogFile(payaraNotificationLogFileDetail);
+                                                    break;
+                                                }
+                                            }
+                                            payaraNotificationLogFileDetail = val;
+                                        } else {
+                                            LOGGER.log(Level.INFO, "Payara Notification Service isn't using a separate Log File ");
+                                        }
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOGTOFILE_PROPERTY)) {
                                     if (!val.equals(payaraNotificationlogToFileDetail)) {
-                                        generateAttributeChangeEvent(PAYARA_NOTIFICATION_LOGTOFILE_PROPERTY, payaraNotificationlogToFileDetail, props);
+                                        Logger logger = Logger.getLogger(payaraNotificationLogger);
+                                        Handler[] existingHandlers = logger.getHandlers();
+
+                                        if (existingHandlers.length > 0) {
+                                            for (Handler handler : existingHandlers) {
+                                                if (handler.getClass().equals(PayaraNotificationFileHandler.class)) {
+                                                    pyFileHandler = (PayaraNotificationFileHandler) handler;
+                                                    pyFileHandler.setLogToFile(Boolean.parseBoolean(val));
+                                                    break;
+                                                }
+                                            }
+                                            payaraNotificationlogToFileDetail = val;
+                                        } else {
+                                            LOGGER.log(Level.INFO, "Payara Notification Service isn't using a separate Log File ");
+                                        }
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY)) {
-                                        if (!val.equals(payaraNotificationLogRotationOnTimeLimitInMinutesDetail)) {
-                                            generateAttributeChangeEvent(PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY, payaraNotificationLogRotationOnTimeLimitInMinutesDetail, props);
+                                    if (!val.equals(payaraNotificationLogRotationOnTimeLimitInMinutesDetail)) {
+                                        Logger logger = Logger.getLogger(payaraNotificationLogger);
+                                        Handler[] existingHandlers = logger.getHandlers();
+                                        if (existingHandlers.length > 0) {
+                                            for (Handler handler : existingHandlers) {
+                                                if (handler.getClass().equals(PayaraNotificationFileHandler.class)) {
+                                                    pyFileHandler = (PayaraNotificationFileHandler) handler;
+                                                    pyFileHandler.setRotationTimeLimitValue(Long.parseLong(val));
+                                                    break;
+                                                }
+                                            }
+                                            payaraNotificationLogRotationOnTimeLimitInMinutesDetail = val;
+                                        } else {
+                                            LOGGER.log(Level.INFO, "Payara Notification Service isn't using a separate Log File ");
                                         }
+                                    }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY)) {
-                                    if (!val.equals(payaraNotificationLogRotationInTimeLimitInBytesDetail)) {
-                                        generateAttributeChangeEvent(PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY, payaraNotificationLogRotationInTimeLimitInBytesDetail, props);
+                                    if (!val.equals(payaraNotificationLogRotationLimitInBytesDetail)) {
+                                        Logger logger = Logger.getLogger(payaraNotificationLogger);
+                                        Handler[] existingHandlers = logger.getHandlers();
+                                        if (existingHandlers.length > 0) {
+                                            for (Handler handler : existingHandlers) {
+                                                if (handler.getClass().equals(PayaraNotificationFileHandler.class)) {
+                                                    pyFileHandler = (PayaraNotificationFileHandler) handler;
+                                                    pyFileHandler.setRotationLimitAttrValue(Integer.valueOf(val));
+                                                    break;
+                                                }
+                                            }
+                                            payaraNotificationLogRotationLimitInBytesDetail = val;
+                                        } else {
+                                            LOGGER.log(Level.INFO, "Payara Notification Service isn't using a separate Log File ");
+                                        }
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogmaxHistoryFilesDetail)) {
-                                        generateAttributeChangeEvent(PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY, payaraNotificationLogmaxHistoryFilesDetail, props);
+                                        Logger logger = Logger.getLogger(payaraNotificationLogger);
+                                        Handler[] existingHandlers = logger.getHandlers();
+
+                                        if (existingHandlers.length > 0) {
+                                            for (Handler handler : existingHandlers) {
+                                                if (handler.getClass().equals(PayaraNotificationFileHandler.class)) {
+                                                    pyFileHandler = (PayaraNotificationFileHandler) handler;
+                                                    pyFileHandler.setMaxHistoryFiles(Integer.parseInt(val));
+                                                    break;
+                                                }
+                                            }
+                                            payaraNotificationLogmaxHistoryFilesDetail = val;
+                                        } else {
+                                            LOGGER.log(Level.INFO, "Payara Notification Service isn't using a separate Log File ");
+                                        }
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_COMPRESS_ON_ROTATION_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogCompressOnRotationDetail)) {
-                                        generateAttributeChangeEvent(PAYARA_NOTIFICATION_LOG_COMPRESS_ON_ROTATION_PROPERTY, payaraNotificationLogCompressOnRotationDetail, props);
+                                        Logger logger = Logger.getLogger(payaraNotificationLogger);
+                                        Handler[] existingHandlers = logger.getHandlers();
+
+                                        if (existingHandlers.length > 0) {
+                                            for (Handler handler : existingHandlers) {
+                                                if (handler.getClass().equals(PayaraNotificationFileHandler.class)) {
+                                                    pyFileHandler = (PayaraNotificationFileHandler) handler;
+                                                    pyFileHandler.setCompressionOnRotation(Boolean.parseBoolean(val));
+                                                    break;
+                                                }
+                                            }
+                                            payaraNotificationLogCompressOnRotationDetail = val;
+                                        } else {
+                                            LOGGER.log(Level.INFO, "Payara Notification Service isn't using a separate Log File ");
+                                        }
                                     }
                                 }
                             }
@@ -715,6 +784,125 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                 LOGGER.log(logRecord);
             }
         }
+    }
+    
+    private void setConsoleHandlerLogFormat(String formatterClassName, Map<String, String> props, LogManager logMgr) {
+        if (formatterClassName == null || formatterClassName.isEmpty()) {
+            formatterClassName = UniformLogFormatter.class.getName();
+        }
+        consoleHandlerFormatterDetail = formatterClassName;
+        excludeFields = props.get(EXCLUDE_FIELDS_PROPERTY);
+        multiLineMode = Boolean.parseBoolean(props.get(MULTI_LINE_MODE_PROPERTY));
+        if (formatterClassName.equals(UniformLogFormatter.class.getName())) {
+            // used to support UFL formatter in GF.
+            UniformLogFormatter formatter = new UniformLogFormatter();
+            String cname = "com.sun.enterprise.server.logging.GFFileHandler";
+            recordBeginMarker = props.get(cname + ".logFormatBeginMarker");
+            if (recordBeginMarker == null || ("").equals(recordBeginMarker)) {
+                LOGGER.log(Level.FINE, "Record begin marker is not a proper value so using default.");
+                recordBeginMarker = RECORD_BEGIN_MARKER;
+            }
+
+            recordEndMarker = props.get(cname + ".logFormatEndMarker");
+            if (recordEndMarker == null || ("").equals(recordEndMarker)) {
+                LOGGER.log(Level.FINE, "Record end marker is not a proper value so using default.");
+                recordEndMarker = RECORD_END_MARKER;
+            }
+
+            recordFieldSeparator = props.get(cname + ".logFormatFieldSeparator");
+            if (recordFieldSeparator == null || ("").equals(recordFieldSeparator) || recordFieldSeparator.length() > 1) {
+                LOGGER.log(Level.FINE, "Log Format field separator is not a proper value so using default.");
+                recordFieldSeparator = RECORD_FIELD_SEPARATOR;
+            }
+
+            recordDateFormat = props.get(cname + ".logFormatDateFormat");
+            if (recordDateFormat != null && !("").equals(recordDateFormat)) {
+                SimpleDateFormat sdf = new SimpleDateFormat(recordDateFormat);
+                try {
+                    sdf.format(new Date());
+                } catch (Exception e) {
+                    LOGGER.log(Level.FINE, "Date Format specified is wrong so using default.");
+                    recordDateFormat = RECORD_DATE_FORMAT;
+                }
+            } else {
+                LOGGER.log(Level.FINE, "Date Format specified is wrong so using default.");
+                recordDateFormat = RECORD_DATE_FORMAT;
+            }
+
+            formatter.setRecordBeginMarker(recordBeginMarker);
+            formatter.setRecordEndMarker(recordEndMarker);
+            formatter.setRecordDateFormat(recordDateFormat);
+            formatter.setRecordFieldSeparator(recordFieldSeparator);
+            formatter.setExcludeFields(excludeFields);
+            formatter.setMultiLineMode(multiLineMode);
+            for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                // only get the ConsoleHandler
+                if (handler.getClass().equals(ConsoleHandler.class)) {
+                    handler.setFormatter(formatter);
+                    break;
+                }
+            }
+        } else if (formatterClassName.equals(ODLLogFormatter.class.getName())) {
+            // used to support ODL formatter in GF.
+            ODLLogFormatter formatter = new ODLLogFormatter();
+            formatter.setExcludeFields(excludeFields);
+            formatter.setMultiLineMode(multiLineMode);
+            for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                // only get the ConsoleHandler
+                if (handler.getClass().equals(ConsoleHandler.class)) {
+                    handler.setFormatter(formatter);
+                    break;
+                }
+            }
+        } else if (formatterClassName.equals(JSONLogFormatter.class.getName())) {
+            JSONLogFormatter formatter = new JSONLogFormatter();
+            formatter.setExcludeFields(excludeFields);
+            for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                // only get the ConsoleHandler
+                if (handler.getClass().equals(ConsoleHandler.class)) {
+                    handler.setFormatter(formatter);
+                    break;
+                }
+            }
+        }
+    }
+    
+    private void setDefaultLoggingProperties(Map<String, String> props) {
+        serverLogFileDetail = props.get(SERVER_LOG_FILE_PROPERTY);
+        handlerDetail = props.get(HANDLER_PROPERTY);
+        handlerServices = props.get(HANDLER_SERVICES_PROPERTY);
+        if (handlerServices == null) {
+            handlerServices = "";
+        }
+        consoleHandlerFormatterDetail = props.get(CONSOLEHANDLER_FORMATTER_PROPERTY);
+        gffileHandlerFormatterDetail = props.get(GFFILEHANDLER_FORMATTER_PROPERTY);
+        rotationOnTimeLimitInMinutesDetail = props.get(ROTATIONTIMELIMITINMINUTES_PROPERTY);
+        flushFrequencyDetail = props.get(FLUSHFREQUENCY_PROPERTY);
+        filterHandlerDetails = props.get(FILEHANDLER_LIMIT_PROPERTY);
+        logToFileDetail = props.get(LOGTOFILE_PROPERTY);
+        logToConsoleDetail = props.get(LOGTOCONSOLE_PROPERTY);
+        rotationInTimeLimitInBytesDetail = props.get(ROTATIONLIMITINBYTES_PROPERTY);
+        useSystemLoggingDetail = props.get(USESYSTEMLOGGING_PROPERTY);
+        fileHandlerCountDetail = props.get(FILEHANDLER_COUNT_PROPERTY);
+        retainErrorsStaticticsDetail = props.get(RETAINERRORSSTATICTICS_PROPERTY);
+        log4jVersionDetail = props.get(LOG4J_VERSION_PROPERTY);
+        maxHistoryFilesDetail = props.get(MAXHISTORY_FILES_PROPERTY);
+        rotationOnDateChangeDetail = props.get(ROTATIONONDATECHANGE_PROPERTY);
+        fileHandlerPatternDetail = props.get(FILEHANDLER_PATTERN_PROPERTY);
+        fileHandlerFormatterDetail = props.get(FILEHANDLER_FORMATTER_PROPERTY);
+        logFormatDateFormatDetail = props.get(LOGFORMAT_DATEFORMAT_PROPERTY);
+        compressOnRotationDetail = props.get(COMPRESS_ON_ROTATION_PROPERTY);
+
+        //Payara Notification Logging
+        payaraNotificationLogFileDetail = props.get(PAYARA_NOTIFICATION_LOG_FILE_PROPERTY);
+        payaraNotificationlogToFileDetail = props.get(PAYARA_NOTIFICATION_LOGTOFILE_PROPERTY);
+        payaraNotificationLogRotationOnDateChangeDetail = props.get(PAYARA_NOTIFICATION_LOG_ROTATIONONDATECHANGE_PROPERTY);
+        payaraNotificationLogRotationOnTimeLimitInMinutesDetail = props.get(PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY);
+        payaraNotificationLogRotationLimitInBytesDetail = props.get(PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY);
+        payaraNotificationLogmaxHistoryFilesDetail = props.get(PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY);
+        payaraNotificationLogCompressOnRotationDetail = props.get(PAYARA_NOTIFICATION_LOG_COMPRESS_ON_ROTATION_PROPERTY);
+
+        payaraJsonUnderscorePrefix = props.get(PAYARA_JSONLOGFORMATTER_UNDERSCORE);
     }
 
     private Collection<Handler> getHandlerServices() {

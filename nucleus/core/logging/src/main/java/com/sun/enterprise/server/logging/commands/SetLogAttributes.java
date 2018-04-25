@@ -239,7 +239,7 @@ public class SetLogAttributes implements AdminCommand {
 
             if (success) {
                 // do not record duplicate logging attribute restart events
-                boolean triggerRestart = true;
+                /*boolean triggerRestart = true;
                 unprocessedLoop:
                 for(UnprocessedChangeEvents evts : ucl.getUnprocessedChangeEvents()) {
                     for(UnprocessedChangeEvent evt : evts.getUnprocessed()) {
@@ -255,7 +255,7 @@ public class SetLogAttributes implements AdminCommand {
                             new PropertyChangeEvent(this, "Logging Attribute", null, null),
                             "logging attribute(s) modified")));
                     ucl.unprocessedTransactedEvents(logAttrChanges);
-                }
+                }*/
 
                 String effectiveTarget = (isDas ? SystemPropertyConstants.DAS_SERVER_NAME : targetConfigName);
                 sbfSuccessMsg.append(localStrings.getLocalString(
