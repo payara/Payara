@@ -58,8 +58,15 @@ import static com.sun.enterprise.util.StringUtils.ok;
  */
 class JvmOptions {
 
+    final static Pattern p = Pattern.compile("([^\\$]*)\\$\\{([^\\}]*)\\}([^\\$]*)");
     private final static Pattern envP = Pattern.compile("([^\\$]*)\\$\\{ENV=([^\\}]*)\\}([^\\$]*)");
     private static final int MAX_SUBSTITUTION_DEPTH = 100;
+    
+    Map<String, String> sysProps = new HashMap<String, String>();
+    Map<String, String> xxProps = new HashMap<String, String>();
+    Map<String, String> xProps = new HashMap<String, String>();
+    Map<String, String> plainProps = new HashMap<String, String>();
+    int osgiPort = -1;
     
     JvmOptions(List<String> options) throws GFLauncherException {
         // We get them from domain.xml as a list of Strings
@@ -80,7 +87,7 @@ class JvmOptions {
                 String matchValue = m2.group(2).trim();
                 String newValue = System.getenv(matchValue);
                 if (newValue != null) {
-                    s = newValue;
+                   s = m2.replaceFirst(Matcher.quoteReplacement(m2.group(1) + newValue + m2.group(3)));
                     m2.reset(s);
                 } 
                 i++;     
@@ -312,11 +319,6 @@ class JvmOptions {
             // already handled -- it is already set to -1
         }
     }
-    Map<String, String> sysProps = new HashMap<String, String>();
-    Map<String, String> xxProps = new HashMap<String, String>();
-    Map<String, String> xProps = new HashMap<String, String>();
-    Map<String, String> plainProps = new HashMap<String, String>();
-    int osgiPort = -1;
 
     private static class NameValue {
 
