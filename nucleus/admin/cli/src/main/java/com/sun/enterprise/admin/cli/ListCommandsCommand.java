@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
@@ -82,34 +83,31 @@ public class ListCommandsCommand extends CLICommand {
 
     private static final String SPACES = "                                                            ";
 
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(ListCommandsCommand.class);
+    private static final LocalStringsImpl strings = new LocalStringsImpl(ListCommandsCommand.class);
 
     @Override
-    protected void validate()
-            throws CommandException, CommandValidationException {
+    protected void validate() throws CommandException, CommandValidationException {
         if (localOnly && remoteOnly) {
             throw new CommandException(strings.get("listCommands.notBoth"));
         }
     }
 
     @Override
-    public int executeCommand()
-            throws CommandException, CommandValidationException {
+    public int executeCommand() throws CommandException, CommandValidationException {
 
         // convert the patterns to regular expressions
-        if (cmds != null)
-            for (String pat : cmds)
+        if (cmds != null) {
+            for (String pat : cmds) {
                 patterns.add(Pattern.compile(globToRegex(pat)));
-
+            }
+        }
         /*
          * If we need the remote commands, get them first so that
          * we prompt for any passwords before printing anything.
          */
         if (!localOnly) {
             try {
-                remoteCommands = matchCommands(
-                    CLIUtil.getRemoteCommands(container, programOpts, env));
+                remoteCommands = matchCommands(CLIUtil.getRemoteCommands(container, programOpts, env));
             } catch (CommandException ce) {
                 /*
                  * Hide the real cause of the remote failure (almost certainly
@@ -139,15 +137,16 @@ public class ListCommandsCommand extends CLICommand {
         // filter the commands
         List<String> matched = new ArrayList<String>();
         for (String cmd : commands) {
-            if (patterns.size() == 0) {
+            if (patterns.isEmpty()) {
                 if (!cmd.startsWith("_"))
                     matched.add(cmd);
             } else {
                 for (Pattern re : patterns)
-                    if (re.matcher(cmd).find())
-                        if (!cmd.startsWith("_") ||
-                                re.pattern().startsWith("_"))
+                    if (re.matcher(cmd).find()) {
+                        if (!cmd.startsWith("_") || re.pattern().startsWith("_")){
                             matched.add(cmd);
+                        }
+                    }
             }
         }
 
@@ -248,8 +247,7 @@ public class ListCommandsCommand extends CLICommand {
 
     void printLocalCommands() {
         if (localCommands.length == 0) {
-            logger.info(
-                            strings.get("listCommands.localCommandNoMatch"));
+            logger.info(strings.get("listCommands.localCommandNoMatch"));
             return;
         }
         logger.info(strings.get("listCommands.localCommandHeader"));
@@ -261,8 +259,7 @@ public class ListCommandsCommand extends CLICommand {
 
     void printRemoteCommands() {
         if (remoteCommands.length == 0) {
-            logger.info(
-                            strings.get("listCommands.remoteCommandNoMatch"));
+            logger.info(strings.get("listCommands.remoteCommandNoMatch"));
             return;
         }
 
@@ -279,8 +276,9 @@ public class ListCommandsCommand extends CLICommand {
             if (i + offset < num) {
                 sb.append(remoteCommands[i + offset]);
             }
-            if (i < offset - 1)
+            if (i < offset - 1){
                 sb.append(EOL);
+            }
         }
         logger.info(sb.toString());
     }
@@ -288,11 +286,11 @@ public class ListCommandsCommand extends CLICommand {
     private String justify(String s, int width) {
         int numSpaces = width - s.length();
 
-        if (numSpaces > 0)
+        if (numSpaces > 0) {
             return SPACES.substring(0, numSpaces);
-        else
-            // the command-name is HUGE.  The formatting will be funky now but
-            // truncating it is a bad idea.  Just add a one-space separator.
-            return " "; 
+        }
+        // the command-name is HUGE.  The formatting will be funky now but
+        // truncating it is a bad idea.  Just add a one-space separator.
+        return " ";
     }
 }

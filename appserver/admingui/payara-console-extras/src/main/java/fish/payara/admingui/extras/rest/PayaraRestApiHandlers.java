@@ -54,6 +54,7 @@ import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+import java.math.BigDecimal;
 
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
@@ -176,7 +177,7 @@ public class PayaraRestApiHandlers {
             // Get the parameters from each row, and send the asadmin command
             for (Map row : selectedRows) {
                 String instanceName = (String) row.get("instanceName");
-                String hazelcastPort = Long.toString((Long) row.get("hazelcastPort"));
+                String hazelcastPort = ((BigDecimal) row.get("hazelcastPort")).toString();
                 String hostName = (String) row.get("hostName");
                 String ipAddress = hostName.split("/")[1];
 

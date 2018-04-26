@@ -82,6 +82,7 @@
             </activation>
             <modules>
                 <module>microprofile</module>
+                <module>security-oauth2</module>
             </modules>
         </profile>
     </profiles>

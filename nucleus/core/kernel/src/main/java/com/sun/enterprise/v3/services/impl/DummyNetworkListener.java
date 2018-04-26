@@ -36,8 +36,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.services.impl;
 
@@ -66,6 +67,7 @@ public class DummyNetworkListener implements NetworkListener {
     private String type = "standard";
     private String name;
     private String port;
+    private String portRange;
     private String protocol;
     private String pool;
     private String transport;
@@ -124,6 +126,16 @@ public class DummyNetworkListener implements NetworkListener {
     @Override
     public void setPort(String value) {
         port = value;
+    }
+
+    @Override
+    public String getPortRange() {
+        return portRange;
+    }
+
+    @Override
+    public void setPortRange(String portRange) {
+        this.portRange = portRange;
     }
 
     @Override
