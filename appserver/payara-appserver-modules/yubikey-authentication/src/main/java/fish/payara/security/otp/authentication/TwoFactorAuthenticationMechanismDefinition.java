@@ -38,32 +38,24 @@
  *     holder.
  */
 
-package fish.payara.security.otp.identitystores;
+package fish.payara.security.otp.authentication;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
+import javax.enterprise.util.Nonbinding;
+import javax.security.enterprise.authentication.mechanism.http.LoginToContinue;
 
 /**
  *
  * @author Mark Wareham
  */
-
-@Retention(value=RetentionPolicy.RUNTIME)
-@Target(value=ElementType.TYPE)
-public @interface YubikeyIdentityStoreDefinition {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface TwoFactorAuthenticationMechanismDefinition {
     
-    String yubikeyAPIClientID();    
-
-    String yubikeyAPIKey();
+    @Nonbinding
+    LoginToContinue loginToContinue();
     
-    YubicoServerType serverType() default YubicoServerType.CLOUD;
-    
-    String serverEnpoint() default "";
-    
-    int priority() default 100;
-    
-    String priorityExpression() default "";
 }

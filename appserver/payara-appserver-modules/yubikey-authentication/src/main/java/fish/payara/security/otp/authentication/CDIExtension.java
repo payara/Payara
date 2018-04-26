@@ -1,17 +1,51 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * 
+ *     The contents of this file are subject to the terms of either the GNU
+ *     General Public License Version 2 only ("GPL") or the Common Development
+ *     and Distribution License("CDDL") (collectively, the "License").  You
+ *     may not use this file except in compliance with the License.  You can
+ *     obtain a copy of the License at
+ *     https://github.com/payara/Payara/blob/master/LICENSE.txt
+ *     See the License for the specific
+ *     language governing permissions and limitations under the License.
+ * 
+ *     When distributing the software, include this License Header Notice in each
+ *     file and include the License file at glassfish/legal/LICENSE.txt.
+ * 
+ *     GPL Classpath Exception:
+ *     The Payara Foundation designates this particular file as subject to the "Classpath"
+ *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ *     file that accompanied this code.
+ * 
+ *     Modifications:
+ *     If applicable, add the following below the License Header, with the fields
+ *     enclosed by brackets [] replaced by your own identifying information:
+ *     "Portions Copyright [year] [name of copyright owner]"
+ * 
+ *     Contributor(s):
+ *     If you wish your version of this file to be governed by only the CDDL or
+ *     only the GPL Version 2, indicate your decision by adding "[Contributor]
+ *     elects to include this software in this distribution under the [CDDL or GPL
+ *     Version 2] license."  If you don't indicate a single choice of license, a
+ *     recipient has the option to distribute your version of this file under
+ *     either the CDDL, the GPL Version 2 or to extend the choice of license to
+ *     its licensees as provided above.  However, if you add GPL Version 2 code
+ *     and therefore, elected the GPL Version 2 license, then the option applies
+ *     only if the new code is made subject to such option by the copyright
+ *     holder.
  */
 package fish.payara.security.otp.authentication;
 
-import fish.payara.security.otp.identitystores.YubikeyIdentityStore;
 import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 
+import fish.payara.security.otp.identitystores.YubikeyIdentityStore;
 import fish.payara.security.otp.identitystores.YubikeyIdentityStoreDefinitionAnnotationLiteral;
-import java.lang.annotation.Annotation;
+import fish.payara.security.otp.identitystores.YubikeyIdentityStoreDefinition;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -19,117 +53,95 @@ import java.util.logging.Logger;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessBean;
-import javax.security.enterprise.authentication.mechanism.http.AutoApplySession;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
-import javax.security.enterprise.authentication.mechanism.http.LoginToContinue;
-import javax.security.enterprise.authentication.mechanism.http.RememberMe;
 import javax.security.enterprise.identitystore.IdentityStore;
-import javax.security.enterprise.identitystore.IdentityStoreHandler;
 import org.glassfish.soteria.cdi.CdiProducer;
-import org.glassfish.soteria.cdi.DefaultIdentityStoreHandler;
 import org.glassfish.soteria.cdi.LoginToContinueAnnotationLiteral;
-import fish.payara.security.otp.identitystores.YubikeyIdentityStoreDefinition;
-
 
 /**
  *
  * @author Mark Wareham
  */
-public class CDIExtension implements Extension{
-    
-    private static final Logger LOGGER = Logger.getLogger(CDIExtension.class.getName());
+public class CDIExtension implements Extension {
+
+    private static final Logger LOG = Logger.getLogger(CDIExtension.class.getName());
     private List<Bean<IdentityStore>> identityStoreBeans = new ArrayList<>();
     private Bean<HttpAuthenticationMechanism> authenticationMechanismBean;
-    private boolean httpAuthenticationMechanismFound;
     
     public void register(@Observes BeforeBeanDiscovery beforeBean, BeanManager beanManager) {
-       beforeBean.addAnnotatedType(beanManager.createAnnotatedType(OneTimePasswordAuthenticationMechanism.class),
-                OneTimePasswordAuthenticationMechanism.class.getName());
+        beforeBean.addAnnotatedType(beanManager.createAnnotatedType(TwoFactorAuthenticationMechanism.class),
+                TwoFactorAuthenticationMechanism.class.getName());
     }
-    
-    
+
     public <T> void processBean(@Observes ProcessBean<T> eventIn, BeanManager beanManager) {
-        LOGGER.info("CDIExtension.processBean()");
+
         ProcessBean<T> event = eventIn; // JDK8 u60 workaround
 
         //create the bean being proccessed.
         Class<?> beanClass = event.getBean().getBeanClass();
-        
+
         //get the identity store from the annotation (if it exists)
-        Optional<YubikeyIdentityStoreDefinition> optionalYubikeyIdentityStore = getAnnotation(beanManager, 
+        Optional<YubikeyIdentityStoreDefinition> optionalYubikeyIdentityStore = getAnnotation(beanManager,
                 event.getAnnotated(), YubikeyIdentityStoreDefinition.class);
-        
-        
+
         optionalYubikeyIdentityStore
-            //if it exists
-            .ifPresent(yubikeyIdentityStoreDefinition -> {
+                //if it exists
+                .ifPresent(yubikeyIdentityStoreDefinition -> {
                     //log about it
                     logActivatedIdentityStore(YubikeyIdentityStoreDefinition.class, beanClass);
 
-                //also 
-                identityStoreBeans.add(new CdiProducer<IdentityStore>()
-                    .scope(ApplicationScoped.class)
-                    .beanClass(IdentityStore.class)
-                    .types(Object.class, IdentityStore.class, YubikeyIdentityStore.class)
-                    .addToId(YubikeyIdentityStoreDefinition.class)
-                     //using the cdi producer to
-                     // create a YubikeyIdentityStore from the definition.
-                    .create(e -> new YubikeyIdentityStore(
-                        YubikeyIdentityStoreDefinitionAnnotationLiteral.eval(
-                            yubikeyIdentityStoreDefinition)))
-            );
-        });
+                    //also 
+                    identityStoreBeans.add(new CdiProducer<IdentityStore>()
+                            .scope(ApplicationScoped.class)
+                            .beanClass(IdentityStore.class)
+                            .types(Object.class, IdentityStore.class, YubikeyIdentityStore.class)
+                            .addToId(YubikeyIdentityStoreDefinition.class)
+                            //using the cdi producer to
+                            // create a YubikeyIdentityStore from the definition.
+                            .create(e -> new YubikeyIdentityStore(
+                            YubikeyIdentityStoreDefinitionAnnotationLiteral.eval(
+                                    yubikeyIdentityStoreDefinition)))
+                    );
+                });
 
-
-        Optional<OneTimePasswordAuthenticationMechanismDefinition> optionalOneTimePasswordMechanism = 
-                getAnnotation(beanManager, event.getAnnotated(), OneTimePasswordAuthenticationMechanismDefinition.class);
+        Optional<TwoFactorAuthenticationMechanismDefinition> optionalOneTimePasswordMechanism
+                = getAnnotation(beanManager, event.getAnnotated(), TwoFactorAuthenticationMechanismDefinition.class);
         optionalOneTimePasswordMechanism.ifPresent(oneTimePasswordAuthenticationMechanismDefinition -> {
-            logActivatedAuthenticationMechanism(OneTimePasswordAuthenticationMechanismDefinition.class, beanClass);
+            logActivatedAuthenticationMechanism(TwoFactorAuthenticationMechanismDefinition.class, beanClass);
 
             authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
                     .scope(ApplicationScoped.class)
                     .beanClass(HttpAuthenticationMechanism.class)
                     .types(Object.class, HttpAuthenticationMechanism.class)
-                    .addToId(OneTimePasswordAuthenticationMechanismDefinition.class)
+                    .addToId(TwoFactorAuthenticationMechanismDefinition.class)
                     .create(e -> {
                         return CDI.current()
-                                .select(OneTimePasswordAuthenticationMechanism.class)
+                                .select(TwoFactorAuthenticationMechanism.class)
                                 .get()
                                 .loginToContinue(
-                                    LoginToContinueAnnotationLiteral.eval(
-                                        oneTimePasswordAuthenticationMechanismDefinition.loginToContinue()));
+                                        LoginToContinueAnnotationLiteral.eval(
+                                                oneTimePasswordAuthenticationMechanismDefinition
+                                                        .loginToContinue()));
                     });
         });
-        
-        
-        if (event.getBean().getTypes().contains(HttpAuthenticationMechanism.class)) {
-            // enabled bean implementing the HttpAuthenticationMechanism found
-            httpAuthenticationMechanismFound = true;
-        }
+    }
 
-        checkForWrongUseOfInterceptors(event.getAnnotated(), beanClass);
-    }
-    public boolean isHttpAuthenticationMechanismFound() {
-        return httpAuthenticationMechanismFound;
-    }
-    
     private void logActivatedIdentityStore(Class<?> identityStoreClass, Class<?> beanClass) {
-        LOGGER.log(Level.INFO, "Activating {0} identity store from {1} class", 
+        LOG.log(Level.INFO, "Activating {0} identity store from {1} class",
                 new Object[]{identityStoreClass.getName(), beanClass.getName()});
     }
-    
+
     private void logActivatedAuthenticationMechanism(Class<?> authenticationMechanismClass, Class<?> beanClass) {
-        LOGGER.log(Level.INFO, "Activating {0} authentication mechanism from {1} class", 
+        LOG.log(Level.INFO, "Activating {0} authentication mechanism from {1} class",
                 new Object[]{authenticationMechanismClass.getName(), beanClass.getName()});
     }
-    
+
     public void afterBean(final @Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
 
         if (!identityStoreBeans.isEmpty()) {
@@ -140,24 +152,6 @@ public class CDIExtension implements Extension{
 
         if (authenticationMechanismBean != null) {
             afterBeanDiscovery.addBean(authenticationMechanismBean);
-        }
-    }
-    
-    private void checkForWrongUseOfInterceptors(Annotated annotated, Class<?> beanClass) {
-        List<Class<? extends Annotation>> annotations = Arrays.asList(AutoApplySession.class, LoginToContinue.class, 
-                RememberMe.class);
-
-        for (Class<? extends Annotation> annotation : annotations) {
-            // Check if the class is not an interceptor, and is not a valid class to be intercepted.
-            if (annotated.isAnnotationPresent(annotation)
-                    && !annotated.isAnnotationPresent(javax.interceptor.Interceptor.class)
-                    && !HttpAuthenticationMechanism.class.isAssignableFrom(beanClass)) {
-                LOGGER.log(Level.WARNING, "Only classes implementing {0} may be annotated with {1}. {2} is annotated, but the interceptor won't take effect on it.",
-                        new Object[]{
-                    HttpAuthenticationMechanism.class.getName(),
-                    annotation.getName(),
-                    beanClass.getName()});
-            }
         }
     }
 }
