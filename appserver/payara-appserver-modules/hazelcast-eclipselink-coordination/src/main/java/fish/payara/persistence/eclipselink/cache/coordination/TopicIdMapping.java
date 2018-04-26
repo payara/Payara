@@ -42,8 +42,8 @@ package fish.payara.persistence.eclipselink.cache.coordination;
 import java.util.UUID;
 
 /**
- * Represents an indirection between internal and external, hazelcast based
- * topic listener registration.
+ * Represents an indirection for hazelcast based
+ * topic receiver registration.
  *
  * @author Sven Diedrichsen
  */
@@ -58,29 +58,25 @@ class TopicIdMapping {
      */
     private final String topic;
     /**
-     * The hazelcast message listener registration id.
+     * The hazelcast message receiver has been registered.
      */
-    private String externalId;
+    private boolean registered = false;
 
     TopicIdMapping(String topic) {
         this.topic = topic;
         this.internalId = UUID.randomUUID().toString();
     }
 
-    boolean hasExternalId() {
-        return externalId != null;
+    boolean isRegistered() {
+        return registered;
     }
 
     String getInternalId() {
         return internalId;
     }
 
-    String getExternalId() {
-        return externalId;
-    }
-
-    void setExternalId(String externalId) {
-        this.externalId = externalId;
+    void setRegistered(boolean registered) {
+        this.registered = registered;
     }
 
     String getTopic() {

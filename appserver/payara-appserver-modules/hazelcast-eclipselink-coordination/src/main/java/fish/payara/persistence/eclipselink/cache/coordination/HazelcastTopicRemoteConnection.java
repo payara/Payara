@@ -39,8 +39,9 @@
  */
 package fish.payara.persistence.eclipselink.cache.coordination;
 
-import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
+import fish.payara.nucleus.eventbus.ClusterMessage;
+import fish.payara.nucleus.eventbus.MessageReceiver;
 import org.eclipse.persistence.internal.sessions.coordination.broadcast.BroadcastRemoteConnection;
 import org.eclipse.persistence.sessions.coordination.Command;
 import org.eclipse.persistence.sessions.coordination.RemoteCommandManager;
@@ -50,7 +51,7 @@ import org.eclipse.persistence.sessions.coordination.RemoteCommandManager;
  *
  * @author Sven Diedrichsen
  */
-public class HazelcastTopicRemoteConnection extends BroadcastRemoteConnection implements MessageListener<HazelcastPayload> {
+public class HazelcastTopicRemoteConnection extends BroadcastRemoteConnection implements MessageReceiver<HazelcastPayload> {
 
     /**
      * The topic to publish commands to and receive messages from.
@@ -97,33 +98,18 @@ public class HazelcastTopicRemoteConnection extends BroadcastRemoteConnection im
      * @param message the message to process.
      */
     @Override
-    public void onMessage(final Message<HazelcastPayload> message) {
-        if (hasHazelcastPayload(message)) {
-            if(!topic.hasPublished(message.getMessageObject())) {
-                HazelcastTopicStorage.getInstance().process(
-                    () -> {
-                        String messageId = message.getPublishingMember().getUuid() + "-" + String.valueOf(message.getPublishTime());
-                        try {
-                            this.processReceivedObject(message.getMessageObject().getCommand(this.rcm), messageId);
-                        } catch (Exception e) {
-                            this.failDeserializeMessage(messageId, e);
-                        }
+    public void receiveMessage(ClusterMessage<HazelcastPayload> message) {
+        HazelcastPayload payload = message.getPayload();
+        if (!topic.hasPublished(payload)) {
+            HazelcastTopicStorage.getInstance().process(
+                () -> {
+                    try {
+                        this.processReceivedObject(payload.getCommand(this.rcm), payload.getId().toString());
+                    } catch (Exception e) {
+                        this.failDeserializeMessage(payload.getId().toString(), e);
                     }
-                );
-            }
-        } else {
-            Object[] args = new Object[]{message.getClass().getName(), topic};
-            this.rcm.logWarningWithoutLevelCheck("received_unexpected_message_type", args);
+                }
+            );
         }
     }
-
-    /**
-     * Signals if the message carries a {@link HazelcastPayload} instance.
-     * @param message The message to query for its content.
-     * @return Content is of type {@link HazelcastPayload}
-     */
-    private boolean hasHazelcastPayload(Message<HazelcastPayload> message) {
-        return HazelcastPayload.class.isAssignableFrom(message.getMessageObject().getClass());
-    }
-
 }

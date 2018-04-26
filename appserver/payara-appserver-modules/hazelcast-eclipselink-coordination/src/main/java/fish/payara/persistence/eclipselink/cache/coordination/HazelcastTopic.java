@@ -39,7 +39,7 @@
  */
 package fish.payara.persistence.eclipselink.cache.coordination;
 
-import com.hazelcast.core.MessageListener;
+import fish.payara.nucleus.eventbus.MessageReceiver;
 
 import java.util.Set;
 import java.util.UUID;
@@ -69,9 +69,9 @@ final class HazelcastTopic {
      * Ctor.
      * @param name The name of the topic.
      */
-    HazelcastTopic(String name, MessageListener<HazelcastPayload> listener) {
+    HazelcastTopic(String name, MessageReceiver<HazelcastPayload> receiver) {
         this.name = name;
-        this.messageListenerId = getStorage().registerMessageListener(name, listener);
+        this.messageListenerId = getStorage().registerMessageReceiver(name, receiver);
     }
 
     /**
@@ -97,8 +97,7 @@ final class HazelcastTopic {
      */
     void destroy() {
         publishedMessageIds.clear();
-        getStorage().removeMessageListener(name, messageListenerId);
-        getStorage().destroyTopic(name);
+        getStorage().removeMessageReceiver(messageListenerId);
     }
 
     /**

@@ -39,10 +39,11 @@
  */
 package fish.payara.persistence.eclipselink.cache.coordination;
 
-import com.hazelcast.core.ITopic;
-import com.hazelcast.core.MessageListener;
+import fish.payara.nucleus.eventbus.ClusterMessage;
+import fish.payara.nucleus.eventbus.EventBus;
+import fish.payara.nucleus.eventbus.MessageReceiver;
 import fish.payara.nucleus.events.HazelcastEvents;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
@@ -53,15 +54,14 @@ import org.jvnet.hk2.annotations.Service;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
-import java.text.MessageFormat;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 
 /**
- * Represents a cache for {@link ITopic} instances ond a
- * possibility to delay {@link MessageListener} registration.
+ * Represents a possibility to delay {@link MessageReceiver} registration.
  *
  * @author Sven Diedrichsen
  */
@@ -74,18 +74,22 @@ public class HazelcastTopicStorage implements EventListener {
      */
     private static HazelcastTopicStorage storage;
     /**
-     * The topic cache.
-     */
-    private final Map<String, ITopic<HazelcastPayload>> topicCache = new ConcurrentHashMap<>();
-    /**
      * The message listener cache.
      */
-    private final Map<MessageListener<HazelcastPayload>, TopicIdMapping> messageListener = new ConcurrentHashMap<>();
+    private final Map<MessageReceiver<HazelcastPayload>, TopicIdMapping> messageReceiver = new ConcurrentHashMap<>();
+    /**
+     * Event bus to propagate cache coordination messages over.
+     */
+    @Inject
+    private EventBus eventBus;
     /**
      * Executor to process incoming messages.
      */
-    private ExecutorService executorService;
-
+    @Inject
+    private PayaraExecutorService executorService;
+    /**
+     * System-Events interface.
+     */
     @Inject
     private Events events;
 
@@ -93,16 +97,12 @@ public class HazelcastTopicStorage implements EventListener {
     public void postConstruct() {
         storage = this;
         this.events.register(this);
-        this.executorService = new ThreadPoolExecutor(
-            2, 40, 30, TimeUnit.SECONDS, new LinkedBlockingQueue<>(200)
-        );
     }
 
     @PreDestroy
     public void preDestroy() {
         storage = null;
         this.events.unregister(this);
-        this.executorService.shutdown();
     }
 
     /**
@@ -118,7 +118,7 @@ public class HazelcastTopicStorage implements EventListener {
         if (isShutdown(event)) {
             destroy();
         } else if(isBootstrapComplete(event)) {
-            registerUnregisteredListener();
+            registerUnregisteredReceiver();
         }
     }
 
@@ -142,44 +142,22 @@ public class HazelcastTopicStorage implements EventListener {
     }
 
     /**
-     * Registers all yet unregistered {@link MessageListener}.
+     * Registers all yet unregistered {@link MessageReceiver}.
      */
-    private void registerUnregisteredListener() {
-        messageListener.entrySet().stream()
-            .filter(entry -> !entry.getValue().hasExternalId())
+    private void registerUnregisteredReceiver() {
+        messageReceiver.entrySet().stream()
+            .filter(entry -> !entry.getValue().isRegistered())
             .forEach(entry -> {
                 TopicIdMapping mapping = entry.getValue();
-                ITopic<HazelcastPayload> topic = getTopic(mapping.getTopic());
-                mapping.setExternalId(topic.addMessageListener(entry.getKey()));
+                mapping.setRegistered(eventBus.addMessageReceiver(mapping.getTopic(), entry.getKey()));
             });
     }
 
     /**
-     * Destroys this storage by destroying all topics, clearing the cache and all listeners.
+     * Removing all listeners.
      */
     private void destroy() {
-        destroyTopics(topicCache.values());
-        topicCache.clear();
-        messageListener.clear();
-    }
-
-    /**
-     * Destroys all provided {@link ITopic} instances.
-     * @param topics The topics to destroy.
-     */
-    private void destroyTopics(Collection<ITopic<HazelcastPayload>> topics) {
-        for (ITopic<HazelcastPayload> topic : topics) {
-            try {
-                topic.destroy();
-            } catch (RuntimeException e) {
-                Logger.getLogger(HazelcastTopicStorage.class.getName())
-                    .log(
-                        Level.WARNING,
-                        MessageFormat.format("Failure destroying topic {0}.", topic),
-                        e
-                    );
-            }
-        }
+        messageReceiver.clear();
     }
 
     /**
@@ -195,34 +173,27 @@ public class HazelcastTopicStorage implements EventListener {
     /**
      * Tries to register the message listener with the provided topic by its name.
      * @param topic The name of the topic to register the listener with.
-     * @param listener The listener to register
+     * @param receiver The receiver to register
      * @return The internal id for the registered listener usable for removing the listener.
      */
-    String registerMessageListener(String topic, MessageListener<HazelcastPayload> listener) {
+    String registerMessageReceiver(String topic, MessageReceiver<HazelcastPayload> receiver) {
         TopicIdMapping topicIdMapping = new TopicIdMapping(topic);
-        if(HazelcastCore.getCore().isEnabled()) {
-            topicIdMapping.setExternalId(getTopic(topic).addMessageListener(listener));
-        }
-        messageListener.put(listener, topicIdMapping);
+        topicIdMapping.setRegistered(eventBus.addMessageReceiver(topic, receiver));
+        messageReceiver.put(receiver, topicIdMapping);
         return topicIdMapping.getInternalId();
     }
 
     /**
      * Unregisters the listener identified by its internal id for the provided topic..
-     * @param topic The name of the topic to unregister the listener from.
      * @param internalId The internal id identifying the listener.
      */
-    void removeMessageListener(String topic, String internalId) {
-        Iterator<Map.Entry<MessageListener<HazelcastPayload>, TopicIdMapping>> iterator = messageListener.entrySet().iterator();
+    void removeMessageReceiver(String internalId) {
+        Iterator<Map.Entry<MessageReceiver<HazelcastPayload>, TopicIdMapping>> iterator = messageReceiver.entrySet().iterator();
         while (iterator.hasNext()) {
-            Map.Entry<MessageListener<HazelcastPayload>, TopicIdMapping> entry = iterator.next();
+            Map.Entry<MessageReceiver<HazelcastPayload>, TopicIdMapping> entry = iterator.next();
             if(Objects.equals(entry.getValue().getInternalId(), internalId)) {
-                if(entry.getValue().hasExternalId()
-                        && !getTopic(topic).removeMessageListener(entry.getValue().getExternalId())) {
-                    Logger.getLogger(HazelcastTopicStorage.class.getName())
-                            .warning(
-                                MessageFormat.format("Topic {0}: Removal of MessageListener {1} failed.", topic, internalId)
-                            );
+                if(entry.getValue().isRegistered()) {
+                    eventBus.removeMessageReceiver(entry.getValue().getTopic(), entry.getKey());
                 }
                 iterator.remove();
             }
@@ -235,36 +206,7 @@ public class HazelcastTopicStorage implements EventListener {
      * @param payload The payload to publish.
      */
     void publish(String topic, HazelcastPayload payload) {
-        getTopic(topic).publish(payload);
-    }
-
-    /**
-     * Destroys the topic by name.
-     * @param name The name of the topic to destroy.
-     */
-    void destroyTopic(String name) {
-        ITopic<HazelcastPayload> topic = topicCache.remove(name);
-        if (topic != null) {
-            destroyTopics(Collections.singleton(topic));
-        }
-    }
-
-    /**
-     * Returns the eventually cached topic.
-     * @param name The topic name.
-     * @return The {@link ITopic} for the name.
-     */
-    private ITopic<HazelcastPayload> getTopic(String name) {
-        ITopic<HazelcastPayload> topic = topicCache.get(name);
-        if(topic == null) {
-            if (HazelcastCore.getCore().isEnabled()) {
-                topic = HazelcastCore.getCore().getInstance().getTopic(name);
-                topicCache.put(name, topic);
-            } else {
-                throw new IllegalStateException("Hazelcast integration not enabled.");
-            }
-        }
-        return topic;
+        eventBus.publish(topic, new ClusterMessage<>(payload));
     }
 
 }
