@@ -78,7 +78,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>3.7.0</version>
                 <configuration>
                     <source>${java.compiler.source.version}</source>
                     <target>${java.compiler.target.version}</target>
@@ -174,25 +174,43 @@
             <optional>true</optional>
         </dependency>
     </dependencies>
-    
+        
     <profiles>
         <profile>
-            <id>jdk8</id>
+            <id>jdk7</id>
             <activation>
-                <jdk>1.8</jdk>
+                <jdk>1.7</jdk>
             </activation>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>2.3.2</version>
-                        <configuration>
-                    
+                        <configuration>  
+                            <excludes>
+                                <exclude>fish/payara/security/oauth2/annotation/OAuth2AuthenticationDefinition.java</exclude>
+                                <exclude>fish/payara/security/oauth2/api/OAuthIdentityStore.java</exclude>
+                                <exclude>fish/payara/security/oauth2/api/OAuth2State.java</exclude>
+                                <exclude>fish/payara/security/oauth2/api/OAuth2AccessToken.java</exclude>
+                            </excludes>
                         </configuration>
                     </plugin>
                 </plugins>
             </build>
         </profile>
-    </profiles>
+        <profile>
+            <id>jdk8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>javax.security.enterprise</groupId>
+                    <artifactId>javax.security.enterprise-api</artifactId>
+                    <version>1.0</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles> 
 </project>
