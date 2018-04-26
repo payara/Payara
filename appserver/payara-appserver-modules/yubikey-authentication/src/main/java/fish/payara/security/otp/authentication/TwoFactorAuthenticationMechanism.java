@@ -37,10 +37,7 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-
 package fish.payara.security.otp.authentication;
-
-import java.util.logging.Logger;
 
 import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.spi.CDI;
@@ -57,56 +54,43 @@ import javax.servlet.http.HttpServletResponse;
 import org.glassfish.soteria.mechanisms.LoginToContinueHolder;
 
 /**
- * Authentication mechanism that authenticates One Time Password
+ * Authentication mechanism that ensures two successful authentications. This can be with any two identity stores.
  *
  * @author Mark Wareham
  */
-//TODO remove this class.
 @AutoApplySession
 @LoginToContinue
 @Typed(TwoFactorAuthenticationMechanism.class) //Restricts the type
-public class TwoFactorAuthenticationMechanism implements HttpAuthenticationMechanism, LoginToContinueHolder {
+public class TwoFactorAuthenticationMechanism implements HttpAuthenticationMechanism,LoginToContinueHolder {
 
-    private static final Logger LOG = Logger.getLogger(TwoFactorAuthenticationMechanism.class.getName());
     private LoginToContinue loginToContinue;
     private CredentialValidationResult firstValidationResult;
-    
-    @Override
-    public AuthenticationStatus validateRequest(HttpServletRequest request,
-            HttpServletResponse response, HttpMessageContext httpMessageContext) throws AuthenticationException {
-        if (hasCredential(httpMessageContext)) {
 
-            IdentityStoreHandler identityStoreHandler = CDI.current().select(IdentityStoreHandler.class).get();
-            
-            CredentialValidationResult currentRoundValidationResult = identityStoreHandler.validate(
-                    httpMessageContext.getAuthParameters().getCredential());
-            
-            if(firstValidationResult == null){//first factor
-                firstValidationResult = currentRoundValidationResult;
-                return httpMessageContext.doNothing();
-            }else{//second factor
-                CredentialValidationResult finalResult = 
-                        decideResult(firstValidationResult, currentRoundValidationResult);
-                return httpMessageContext.notifyContainerAboutLogin(finalResult);
-            }
+    @Override
+    public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext 
+            httpMessageContext) throws AuthenticationException {
+        
+        if (!hasCredential(httpMessageContext)) {
+            return httpMessageContext.doNothing();
         }
-        return httpMessageContext.doNothing();
+        
+        IdentityStoreHandler identityStoreHandler = CDI.current().select(IdentityStoreHandler.class).get();
+        CredentialValidationResult currentRoundValidationResult = identityStoreHandler.validate(
+                        httpMessageContext.getAuthParameters().getCredential());
+
+        //first factor
+        if (firstValidationResult == null) {
+            firstValidationResult = currentRoundValidationResult;
+            return httpMessageContext.doNothing();
+        }
+        //second factor
+        CredentialValidationResult finalResult = collateResult(firstValidationResult, currentRoundValidationResult);
+        return httpMessageContext.notifyContainerAboutLogin(finalResult);
+
     }
 
     private static boolean hasCredential(HttpMessageContext httpMessageContext) {
-        boolean hasCredential = httpMessageContext.getAuthParameters().getCredential() != null;
-        if (!hasCredential) {
-            LOG.finest("No credential provided.");
-        }
-        return hasCredential;
-    }
-
-    public LoginToContinue getLoginToContinue() {
-        return loginToContinue;
-    }
-
-    public void setLoginToContinue(LoginToContinue loginToContinue) {
-        this.loginToContinue = loginToContinue;
+        return httpMessageContext.getAuthParameters().getCredential() != null;
     }
 
     public TwoFactorAuthenticationMechanism loginToContinue(LoginToContinue loginToContinue) {
@@ -114,43 +98,32 @@ public class TwoFactorAuthenticationMechanism implements HttpAuthenticationMecha
         return this;
     }
 
-    private static boolean notNull(Object... objects) {
-        for (Object object : objects) {
-            if (object == null) {
-                return false;
-            }
-        }
-        return true;
-    }
-    
     @Override
     public void cleanSubject(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) {
         httpMessageContext.cleanClientSubject();
         this.firstValidationResult = null;
     }
 
-    private CredentialValidationResult decideResult(
-            CredentialValidationResult firstValidationResult, 
+    private CredentialValidationResult collateResult(
+            CredentialValidationResult firstValidationResult,
             CredentialValidationResult secondValidationResult) {
-        
-        CredentialValidationResult rtn;
-        LOG.info("first IdentityStoreID = " + firstValidationResult.getIdentityStoreId());//TODO remove me
-        LOG.info("second IdentityStoreID = " + secondValidationResult.getIdentityStoreId());//TODO remove me
-        
-        //TODO could more intelligently return the main IDStore validation result here if priorities are adjusted by the user. 
-        //for now assume first is higher.
-        
-        if(firstValidationResult.getStatus() == CredentialValidationResult.Status.VALID
-                && secondValidationResult.getStatus() == CredentialValidationResult.Status.VALID){
-            rtn = firstValidationResult;
+
+        if (firstValidationResult.getStatus() == CredentialValidationResult.Status.VALID
+                && secondValidationResult.getStatus() == CredentialValidationResult.Status.VALID) {
+            return firstValidationResult;
+        } else if (secondValidationResult.getStatus() != CredentialValidationResult.Status.VALID) {
+            return secondValidationResult;
+        } else {
+            return firstValidationResult;
         }
-        else if(secondValidationResult.getStatus()!=CredentialValidationResult.Status.VALID){
-            rtn = secondValidationResult;
-        }else {
-            rtn = firstValidationResult;
-        }
-        LOG.info("decided on return result of " + rtn.getStatus().name() + " that's from " + firstValidationResult.getIdentityStoreId());//TODO remove me
-        return rtn;
+    }
+    
+    @Override
+    public LoginToContinue getLoginToContinue() {
+        return loginToContinue;
+    }
+
+    public void setLoginToContinue(LoginToContinue loginToContinue) {
+        this.loginToContinue = loginToContinue;
     }
 }
-

@@ -38,19 +38,21 @@
  *     holder.
  *
  */
- 
 
 package fish.payara.security.otp.identitystores;
 
 import javax.security.enterprise.credential.Credential;
 
-public class OneTimePasswordCredential implements Credential {
+/**
+ * Class representing a One Time Password (OTP)
+ * @author Mark Wareham
+*/
+public class YubikeyCredential implements Credential {
 
     public static final int PUBLIC_ID_LENGTH = 12;
-    
     private String oneTimePasswordString;
 
-    public OneTimePasswordCredential(String oneTimePasswordString) {
+    public YubikeyCredential(String oneTimePasswordString) {
         this.oneTimePasswordString = oneTimePasswordString;
     }
     

@@ -51,8 +51,7 @@ import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalImmediate;
  * @author Mark Wareham
  */
 @SuppressWarnings("AnnotationAsSuperInterface")
-public class YubikeyIdentityStoreDefinitionAnnotationLiteral
-        extends AnnotationLiteral<YubikeyIdentityStoreDefinition>
+public class YubikeyIdentityStoreDefinitionAnnotationLiteral extends AnnotationLiteral<YubikeyIdentityStoreDefinition>
         implements YubikeyIdentityStoreDefinition {
 
     private final String yubikeyAPIClientID;
@@ -62,8 +61,6 @@ public class YubikeyIdentityStoreDefinitionAnnotationLiteral
     private final int priority;
     private final String priorityExpression;
     
-    private boolean hasDeferredExpressions;
-
     public YubikeyIdentityStoreDefinitionAnnotationLiteral(
             String yubikeyAPIClientID, String yubikeyAPIKey, YubicoServerType serverType, 
             String serverEndpoint, int priority, String priorityExpression) {
@@ -82,7 +79,7 @@ public class YubikeyIdentityStoreDefinitionAnnotationLiteral
      * @return an evaluated object
      */
     public static YubikeyIdentityStoreDefinition eval(YubikeyIdentityStoreDefinition in) {
-        //If any of the fields do not contain an EL expression
+        //If any of the fields do not contain an EL expression, no need to eval
         if (!hasAnyELExpression(in)) {
             return in;
         }
@@ -95,20 +92,12 @@ public class YubikeyIdentityStoreDefinitionAnnotationLiteral
                         evalImmediate(in.serverEnpoint()),
                         evalImmediate(in.priorityExpression(), in.priority()),
                         emptyIfImmediate(in.priorityExpression()));
-
-        out.setHasDeferredExpressions(hasAnyELExpression(out));
-
         return out;
     }
 
     public static boolean hasAnyELExpression(YubikeyIdentityStoreDefinition in) {
         return AnnotationELPProcessor.hasAnyELExpression(in.yubikeyAPIClientID()) 
-                &&
-                AnnotationELPProcessor.hasAnyELExpression(in.yubikeyAPIKey());
-    }
-
-    public void setHasDeferredExpressions(boolean hasDeferredExpressions) {
-        this.hasDeferredExpressions = hasDeferredExpressions;
+                && AnnotationELPProcessor.hasAnyELExpression(in.yubikeyAPIKey());
     }
 
     @Override

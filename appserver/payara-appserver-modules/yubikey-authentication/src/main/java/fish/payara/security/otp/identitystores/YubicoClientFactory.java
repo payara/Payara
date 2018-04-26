@@ -43,7 +43,7 @@ package fish.payara.security.otp.identitystores;
 import com.yubico.client.v2.YubicoClient;
 
 /**
- *
+ * Factory class for obtaining an instance of Yubico Client.
  * @author Mark Wareham
  */
 public class YubicoClientFactory {
@@ -59,6 +59,5 @@ public class YubicoClientFactory {
     public static YubicoClient getYubicoClient(YubikeyIdentityStoreDefinition definition) {
         return INSTANCE.createYubicoClient(definition);
     }
-
    
 }

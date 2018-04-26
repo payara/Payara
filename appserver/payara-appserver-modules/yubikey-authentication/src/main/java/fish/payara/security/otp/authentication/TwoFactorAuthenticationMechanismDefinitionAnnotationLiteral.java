@@ -54,7 +54,6 @@ public class TwoFactorAuthenticationMechanismDefinitionAnnotationLiteral
     private final LoginToContinue loginToContinue;
     
     public TwoFactorAuthenticationMechanismDefinitionAnnotationLiteral(LoginToContinue loginToContinue) {
-        System.out.println("OneTimePasswordAuthenticationMechanismDefinitionAnnotationLiteral.<init>()");
         this.loginToContinue = loginToContinue;
     }
     

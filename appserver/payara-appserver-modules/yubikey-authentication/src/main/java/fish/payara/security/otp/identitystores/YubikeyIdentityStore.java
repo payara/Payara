@@ -37,6 +37,7 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
+
 package fish.payara.security.otp.identitystores;
 
 import com.yubico.client.v2.ResponseStatus;
@@ -59,9 +60,8 @@ import static javax.security.enterprise.identitystore.IdentityStore.ValidationTy
  */
 public class YubikeyIdentityStore implements IdentityStore {
 
-    //TODO remove loggers providing credentials.
     private static final Logger LOG = Logger.getLogger(YubikeyIdentityStore.class.getName());
-
+    
     private final YubicoClient yubicoClient;
     private final YubikeyIdentityStoreDefinition definition;
     
@@ -72,29 +72,24 @@ public class YubikeyIdentityStore implements IdentityStore {
 
     @Override
     public CredentialValidationResult validate(Credential credential) {
-        if (!(credential instanceof OneTimePasswordCredential)) {
+        if (!(credential instanceof YubikeyCredential)) {
             return CredentialValidationResult.NOT_VALIDATED_RESULT;
         }
-        OneTimePasswordCredential oneTimePasswordCredential
-                = ((OneTimePasswordCredential) credential);
+        YubikeyCredential oneTimePasswordCredential = ((YubikeyCredential) credential);
         try {
             String oneTimePassword = oneTimePasswordCredential.getOneTimePasswordString();
+            
             if (!YubicoClient.isValidOTPFormat(oneTimePassword)) {
                 return CredentialValidationResult.INVALID_RESULT;
             }
             ResponseStatus verificationStatus = yubicoClient.verify(oneTimePassword).getStatus();
-            LOG.log(Level.INFO, "yubico server validated user {0} as {1}", 
-                new String[]{
-                    oneTimePasswordCredential.getPublicID(), 
-                    verificationStatus.name()});
+            LOG.log(Level.FINE, "Yubico server reported {1}", verificationStatus.name());
 
             switch (verificationStatus) {
                 case BAD_OTP:
                 case REPLAYED_OTP:
                 case BAD_SIGNATURE:
                 case NO_SUCH_CLIENT:
-                    LOG.log(Level.INFO, "Yubico reported {0}",
-                            verificationStatus.name());
                     return CredentialValidationResult.INVALID_RESULT;
                 case MISSING_PARAMETER:
                 case OPERATION_NOT_ALLOWED:
@@ -105,16 +100,14 @@ public class YubikeyIdentityStore implements IdentityStore {
                             verificationStatus.name());
                     return CredentialValidationResult.NOT_VALIDATED_RESULT;
                 case OK:
-                //carry on.
+                    break;//carry on.
+                default:
+                    LOG.log(Level.SEVERE, "Unknown/new yubico return status");
             }
 
-            Set<String> groups = new HashSet<String>();
-            groups.add("yubikeyrole");
-            CredentialValidationResult credentialValidationResult
-                    = new CredentialValidationResult(oneTimePassword, groups);
-            LOG.log(Level.INFO, "credentialValidationResult.status for {0} is {1}", 
-                    new String[] {oneTimePasswordCredential.getPublicID(), 
-                        credentialValidationResult.getStatus().name()});
+            
+            CredentialValidationResult credentialValidationResult = new CredentialValidationResult(
+                    oneTimePasswordCredential.getPublicID());
             
             return credentialValidationResult;
         
@@ -127,6 +120,7 @@ public class YubikeyIdentityStore implements IdentityStore {
     @Override
     public Set<ValidationType> validationTypes() {
         return EnumSet.of(VALIDATE);
+        //This IdentityStore does not provide groups.
     }
 
     @Override

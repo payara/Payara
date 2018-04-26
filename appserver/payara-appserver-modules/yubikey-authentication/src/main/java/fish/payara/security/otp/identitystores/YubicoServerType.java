@@ -41,8 +41,8 @@
 package fish.payara.security.otp.identitystores;
 
 /**
- *
- * @author mark
+ * Represents a type of yubico validation server
+ * @author Mark Wareham
  */
 public enum YubicoServerType {
     PRIVATE, CLOUD;
