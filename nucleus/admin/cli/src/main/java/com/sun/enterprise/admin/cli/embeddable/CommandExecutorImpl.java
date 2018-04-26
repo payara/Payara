@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+//Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli.embeddable;
 
@@ -66,6 +66,7 @@ import com.sun.enterprise.admin.cli.ProgramOptions;
 import org.glassfish.internal.api.EmbeddedSystemAdministrator;
 
 /**
+ * This class implements the code to execute asadmin commands programatically
  * @author bhavanishankar@dev.java.net
  * @author sanjeeb.sahoo@sun.com
  */
@@ -89,6 +90,7 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
 
     private Logger logger = Logger.getAnonymousLogger();
 
+    @Override
     public CommandResult run(String command, String... args){
         try {
             ActionReport actionReport = executeCommand(command, args);
@@ -109,7 +111,7 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
         Parser parser = new Parser(args, 0, ProgramOptions.getValidOptions(), true);
         ParameterMap globalOptions = parser.getOptions();
         List<String> operands = parser.getOperands();
-        String argv[] = operands.toArray(new String[operands.size()]);
+        String[] argv = operands.toArray(new String[operands.size()]);
 
         parser = new Parser(argv, 0, commandModel.getParameters(), false);
         ParameterMap options = parser.getOptions();
@@ -139,6 +141,7 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
         return options;
     }
 
+    @Override
     public void setTerse(boolean terse) {
         this.terse = terse;
     }
@@ -173,6 +176,7 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
 
     private CommandResult convert(final ActionReport actionReport) {
         return new CommandResult(){
+            @Override
             public ExitStatus getExitStatus() {
                 final ActionReport.ExitCode actionExitCode = actionReport.getActionExitCode();
                 switch (actionExitCode) {
@@ -187,6 +191,7 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
                 }
             }
 
+            @Override
             public String getOutput() {
                 final ByteArrayOutputStream os = new ByteArrayOutputStream();
                 try {
@@ -203,6 +208,7 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
                 }
             }
 
+            @Override
             public Throwable getFailureCause() {
                 return actionReport.getFailureCause();
             }
@@ -211,14 +217,17 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
 
     private CommandResult convert(final Exception e) {
         return new CommandResult() {
+            @Override
             public ExitStatus getExitStatus() {
                 return ExitStatus.FAILURE;
             }
 
+            @Override
             public String getOutput() {
                 return "Exception while executing command.";
             }
 
+            @Override
             public Throwable getFailureCause() {
                 return e;
             }

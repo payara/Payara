@@ -67,8 +67,9 @@ public interface JavaEEContextUtil {
 
     /**
      * set context class loader by internal state of this instance
+     * @return context so class loader can be reset
      */
-    void setApplicationClassLoader();
+    Context setApplicationClassLoader();
 
     /**
      * Sets the state of this instance from current invocation context

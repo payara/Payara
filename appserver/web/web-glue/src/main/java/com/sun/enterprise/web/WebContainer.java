@@ -481,9 +481,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
                 if (depth > 0) {
                     Request.setMaxDispatchDepth(depth);
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.log(Level.FINE, LogFacade.MAX_DISPATCH_DEPTH_SET, maxDepth);
-                    }
+                    logger.log(Level.FINE, LogFacade.MAX_DISPATCH_DEPTH_SET, maxDepth);
                 }
             }
 
@@ -853,37 +851,28 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * Use an network-listener subelements and creates a corresponding
      * Tomcat Connector for each.
      *
-     * @param httpService The http-service element
-     * @param listener    the configuration element.
+     * @param listener the NetworkListener config object.
+     * @param httpService the http-service element.
      * @return 
      */
     protected WebConnector createHttpListener(NetworkListener listener,
-                                              HttpService httpService) {
+            HttpService httpService) {
         return createHttpListener(listener, httpService, null);
     }
 
 
     protected WebConnector createHttpListener(NetworkListener listener,
-                                              HttpService httpService,
-                                              Mapper mapper) {
+            HttpService httpService,
+            Mapper mapper) {
 
         if (!Boolean.valueOf(listener.getEnabled())) {
             return null;
         }
 
-        int port = 8080;
+        int port = grizzlyService.getRealPort(listener);
         WebConnector connector;
 
         checkHostnameUniqueness(listener.getName(), httpService);
-
-        try {
-            port = Integer.parseInt(listener.getPort());
-        } catch (NumberFormatException nfe) {
-            String msg = rb.getString(LogFacade.HTTP_LISTENER_INVALID_PORT);
-            msg = MessageFormat.format(msg, listener.getPort(),
-                    listener.getName());
-            throw new IllegalArgumentException(msg);
-        }
 
         if (mapper == null) {
             for (Mapper m : habitat.<Mapper>getAllServices(Mapper.class)) {
@@ -955,10 +944,8 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         connector.setMapper(mapper);
         connector.setJvmRoute(engine.getJvmRoute());
 
-        if (logger.isLoggable(Level.INFO)) {
-            logger.log(Level.INFO, LogFacade.HTTP_LISTENER_CREATED,
-                    new Object[]{listener.getName(), listener.getAddress(), listener.getPort()});
-        }
+        logger.log(Level.INFO, LogFacade.HTTP_LISTENER_CREATED,
+                new Object[]{listener.getName(), listener.getAddress(), Integer.toString(port)});
 
         connector.setDefaultHost(listener.findHttpProtocol().getHttp().getDefaultVirtualServer());
         connector.setName(listener.getName());
@@ -3276,7 +3263,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             throws LifecycleException {
 
         synchronized (mapperUpdateSync) {
-            int port = Integer.parseInt(httpListener.getPort());
+            int port = grizzlyService.getRealPort(httpListener);
 
             // Add the listener name of the new http-listener to its
             // default-virtual-server, so that when the new http-listener
@@ -3432,10 +3419,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         for (Connector connector : _embedded.getConnectors()) {
             connector.setJvmRoute(jvmRoute);
         }
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, LogFacade.JVM_ROUTE_UPDATED, jvmRoute);
-
-        }
+        logger.log(Level.FINE, LogFacade.JVM_ROUTE_UPDATED, jvmRoute);
     }
 
 

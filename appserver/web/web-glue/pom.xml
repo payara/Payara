@@ -163,6 +163,11 @@
             <artifactId>deployment-javaee-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+         <dependency>
+            <groupId>fish.payara.api</groupId>
+            <artifactId>payara-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
             <!--
         <dependency>
               since our minimum requirement is still JDK5,

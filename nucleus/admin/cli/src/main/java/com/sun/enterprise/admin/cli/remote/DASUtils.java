@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli.remote;
 
@@ -50,12 +51,11 @@ import org.glassfish.api.admin.*;
  * Domain Admin Server utility method.
  */
 public class DASUtils {
-    private static final Logger logger =
-                        Logger.getLogger("javax.enterprise.admin.cli.remote");
+    private static final Logger logger = Logger.getLogger("javax.enterprise.admin.cli.remote");
 
-public enum Error {
+    public enum Error {
         NONE, AUTHENTICATION, CONNECTION, IO, UNKNOWN
-    };
+    }
 
     private DASUtils() {
         // can't instantiate
@@ -68,8 +68,7 @@ public enum Error {
      * @return true if DAS can be reached and can handle commands,
      * otherwise false.
      */
-    public static boolean pingDASQuietly(ProgramOptions programOpts,
-            Environment env) {
+    public static boolean pingDASQuietly(ProgramOptions programOpts, Environment env) {
         try {
             RemoteCLICommand cmd = new RemoteCLICommand("version", programOpts, env);
             cmd.executeAndReturnOutput(new String[]{"version"});
@@ -81,14 +80,11 @@ public enum Error {
         catch (Exception ex) {
             ExceptionAnalyzer ea = new ExceptionAnalyzer(ex);
             if(ea.getFirstInstanceOf(ConnectException.class) != null) {
-                logger.finer("Got java.net.ConnectException");
+                logger.log(Level.FINER, "Got java.net.ConnectException");
                 return false; // this definitely means server is not up
             }
             else if(ea.getFirstInstanceOf(IOException.class) != null) {
-                if (logger.isLoggable(Level.FINER))
-                    logger.finer("It appears that server has started, but for" +
-                        " some reason this exception was thrown: " +
-                        ex.getMessage());
+                logger.log(Level.FINER, "It appears that server has started, but for some reason this exception was thrown: {0}", ex.getMessage());
                 return true;
             }
             else {
@@ -103,8 +99,7 @@ public enum Error {
      *
      * @return Error code indicating status
      */
-    public static Error pingDASWithAuth(ProgramOptions programOpts,
-            Environment env) throws CommandException {
+    public static Error pingDASWithAuth(ProgramOptions programOpts, Environment env) throws CommandException {
         try {
             RemoteCLICommand cmd = new RemoteCLICommand("version", programOpts, env);
             cmd.executeAndReturnOutput(new String[]{"version"});
@@ -115,14 +110,11 @@ public enum Error {
         catch (Exception ex) {
             ExceptionAnalyzer ea = new ExceptionAnalyzer(ex);
             if(ea.getFirstInstanceOf(ConnectException.class) != null) {
-                logger.finer("Got java.net.ConnectException");
+                logger.log(Level.FINER, "Got java.net.ConnectException");
                 return Error.CONNECTION;
             }
             else if(ea.getFirstInstanceOf(IOException.class) != null) {
-                if (logger.isLoggable(Level.FINER))
-                    logger.finer("It appears that server has started, but for" +
-                        " some reason this exception was thrown: " +
-                        ex.getMessage());
+                logger.log(Level.FINER, "It appears that server has started, but for some reason this exception was thrown: {0}", ex.getMessage());
                 return Error.IO;
             }
             else {

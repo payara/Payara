@@ -57,13 +57,13 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 public abstract class AdminBaseDevTest extends BaseDevTest {
-    
+
     public AdminBaseDevTest() {
         boolean verbose = false;
         try {
             verbose = Boolean.parseBoolean(System.getProperty("verbose"));
+        } catch (Exception e) {
         }
-        catch (Exception e) {}
 
         setVerbose(verbose);
         if (!verbose) {
@@ -80,20 +80,19 @@ public abstract class AdminBaseDevTest extends BaseDevTest {
     public boolean report(String name, boolean success) {
         // bnevins june 6 2010
 
-        // crazy base class uses a Map to store these reports.  If you use
+        // crazy base class uses a Map to store these reports. If you use
         // the same name > 1 time they are ignored and thrown away!!!
         // I went with this outrageous kludge because (1) it is just tests
         // and (2) there are tens of thousands of other files in this harness!!!
 
-        // another issue is hacking off strings after a space.  Makes no sense to me!!
+        // another issue is hacking off strings after a space. Makes no sense to me!!
 
         if (name.length() > MAX_LENGTH - 3)
             name = name.substring(0, MAX_LENGTH - 3);
         String name2 = name.replace(' ', '_');
         if (!name2.equals(name)) {
-            write("Found spaces in the name.  Replaced with underscore. "
-                    + "before: " + name + ", after: " + name2);
-            name = name2;   // don't foul logic below!
+            write("Found spaces in the name.  Replaced with underscore. " + "before: " + name + ", after: " + name2);
+            name = name2; // don't foul logic below!
         }
 
         int i = 0;
@@ -103,8 +102,7 @@ public abstract class AdminBaseDevTest extends BaseDevTest {
         }
 
         if (!name2.equals(name)) {
-            write("Duplicate name found (" + name
-                    + ") and replaced with: " + name2);
+            write("Duplicate name found (" + name + ") and replaced with: " + name2);
         }
 
         int numpads = 60 - name2.length();
@@ -113,8 +111,8 @@ public abstract class AdminBaseDevTest extends BaseDevTest {
             name2 += DASHES.substring(0, numpads);
 
         super.report(name2, success);
-        
-        if(!success && !isVerbose())
+
+        if (!success && !isVerbose())
             writeFailure();
         return success;
     }
@@ -126,23 +124,19 @@ public abstract class AdminBaseDevTest extends BaseDevTest {
     }
 
     void startDomain(String domainname) {
-        report(getTestName() + "-start-domain" + startstops++,
-                asadmin("start-domain", domainname));
+        report(getTestName() + "-start-domain" + startstops++, asadmin("start-domain", domainname));
     }
 
     void startDomain() {
-        report(getTestName() + "-start-def-domain" + startstops++,
-                asadmin("start-domain"));
+        report(getTestName() + "-start-def-domain" + startstops++, asadmin("start-domain"));
     }
 
     void stopDomain(String domainname) {
-        report(getTestName() + "-stop-domain" + startstops++,
-                asadmin("stop-domain", domainname));
+        report(getTestName() + "-stop-domain" + startstops++, asadmin("stop-domain", domainname));
     }
 
     void stopDomain() {
-        report(getTestName() + "-stop-def-domain" + startstops++,
-                asadmin("stop-domain"));
+        report(getTestName() + "-stop-def-domain" + startstops++, asadmin("stop-domain"));
     }
 
     final boolean verifyNoClusters() {
@@ -172,8 +166,7 @@ public abstract class AdminBaseDevTest extends BaseDevTest {
         try {
             URL u = new URL(urlstr);
             URLConnection urlc = u.openConnection();
-            BufferedReader ir = new BufferedReader(new InputStreamReader(urlc.getInputStream(),
-                    "ISO-8859-1"));
+            BufferedReader ir = new BufferedReader(new InputStreamReader(urlc.getInputStream(), "ISO-8859-1"));
             StringWriter ow = new StringWriter();
             String line;
             while ((line = ir.readLine()) != null) {
@@ -183,8 +176,7 @@ public abstract class AdminBaseDevTest extends BaseDevTest {
             ir.close();
             ow.close();
             return ow.getBuffer().toString();
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             printf("unable to fetch URL:" + urlstr);
             return "";
         }
@@ -195,6 +187,7 @@ public abstract class AdminBaseDevTest extends BaseDevTest {
             System.out.printf("**** DEBUG MESSAGE ****  " + fmt + "\n", args);
         }
     }
+
     private final SortedSet<String> reportNames = new TreeSet<String>();
     private int startstops = 0;
     protected final static boolean DEBUG;
@@ -222,7 +215,7 @@ public abstract class AdminBaseDevTest extends BaseDevTest {
     String get(String what) {
         // note that the returned string is full of junk -- namely the HUGE asadmin
         // command is prepended to the output.
-        // the "get" key will appear TWICE!!!!!!  Once for the echo of the command itself
+        // the "get" key will appear TWICE!!!!!! Once for the echo of the command itself
         // and once for the output of the command.
 
         AsadminReturn ret = asadminWithOutput("get", what);
@@ -235,7 +228,7 @@ public abstract class AdminBaseDevTest extends BaseDevTest {
         if (index < 0 || len - index <= 2)
             return null;
 
-        // e.g. "asadmin blah foo=xyz  len==20, index==13,  start at index=17
+        // e.g. "asadmin blah foo=xyz len==20, index==13, start at index=17
         // which is index+lenofget-string+1
         int valueIndex = index + what.length() + 1;
         return ret.outAndErr.substring(index + what.length() + 1).trim();
@@ -262,7 +255,7 @@ public abstract class AdminBaseDevTest extends BaseDevTest {
     final boolean ok(String s) {
         return s != null && s.length() > 0;
     }
+
     private static final int MAX_LENGTH = 51;
-    private static final String DASHES =
-            "------------------------------------------------------------------------------------------------------------------------------";
+    private static final String DASHES = "------------------------------------------------------------------------------------------------------------------------------";
 }

@@ -95,6 +95,8 @@ public class CreateHttpListener implements AdminCommand {
     String listenerAddress;
     @Param(name = "listenerport")
     String listenerPort;
+    @Param(name = "listenerPortRange", alias = "listenerportrange", optional = true)
+    String listenerPortRange;
     @Param(name = "defaultvs", optional = true)
     String defaultVS;
     @Param(name = "default-virtual-server", optional = true)
@@ -253,6 +255,9 @@ public class CreateHttpListener implements AdminCommand {
                 newListener.setName(listenerId);
                 newListener.setAddress(listenerAddress);
                 newListener.setPort(listenerPort);
+                if (listenerPortRange != null) {
+                    newListener.setPortRange(listenerPortRange);
+                }
                 newListener.setTransport(newTransport ? listenerId : DEFAULT_TRANSPORT);
                 newListener.setProtocol(listenerId);
                 newListener.setThreadPool(threadPool.getName());

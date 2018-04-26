@@ -40,11 +40,6 @@
 
 package test.admincli.util;
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 
 import java.io.*;
 
@@ -52,31 +47,28 @@ import java.io.*;
  *
  * @author Administrator
  */
-public class StreamGobbler extends Thread
-{
-    InputStream is;
-    String type;
+public class StreamGobbler extends Thread {
+    
+    private final InputStream is;
+    private final String type;
     private final StringBuffer stringBuffer = new StringBuffer();
 
-    public StreamGobbler(InputStream is, String type)
-    {
+    public StreamGobbler(InputStream is, String type) {
         this.is = is;
         this.type = type;
     }
 
-    public void run()
-    {
+    public void run() {
         try {
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr);
-            String line=null;
-            while ( (line = br.readLine()) != null) {
+            String line = null;
+            while ((line = br.readLine()) != null) {
                 stringBuffer.append(type + ">" + line + "\n");
             }
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             ioe.printStackTrace();
-         }
+        }
     }
 
     public String getOutput() {

@@ -42,47 +42,45 @@
 -->
 
 <project name="hello-jsp" default="default" basedir=".">
-    <property file="build.properties"/>
-    <property file="${ws.root}/gfproject/${deploy.platform}-config.properties"/>
-   
-    
-    <description>Builds, tests, and runs the project Hello JSP Application</description>
-    <import file="${ws.root}/gfproject/build-impl.xml"/>   
-    <import file="${ws.root}/gfproject/${deploy.platform}-targets.xml"/>
-    
-    <target name="all" depends="build,deploy-upload,runtest,undeploy" />
-    <target name="build-deploy" depends="build,deploy-upload" />
+	<property file="build.properties" />
+	<property file="${ws.root}/gfproject/${deploy.platform}-config.properties" />
 
-    <target name="test-upload">
-        <antcall target="deploy-upload"/>
-        <antcall target="runtest"/>
-        <antcall target="undeploy"/>
-    </target>
+	<description>Builds, tests, and runs the project Hello JSP Application</description>
+	<import file="${ws.root}/gfproject/build-impl.xml" />
+	<import file="${ws.root}/gfproject/${deploy.platform}-targets.xml" />
 
-    <target name="build" depends="compile-tests">
-        <antcall target="build-impl"/>
-    </target>
-    
-    <target name="deploy">
-        <antcall target="deploy-${deploy.platform}-impl"/>
-    </target>
+	<target name="all" depends="build,deploy-upload,runtest,undeploy" />
+	<target name="build-deploy" depends="build,deploy-upload" />
 
-    <target name="deploy-upload">
-        <antcall target="deploy-upload-${deploy.platform}-impl"/>
-    </target>
+	<target name="test-upload">
+		<antcall target="deploy-upload" />
+		<antcall target="runtest" />
+		<antcall target="undeploy" />
+	</target>
 
-    <target  name="runtest"> 
-        <antcall target="runtest-impl">
-        <param name="contextroot" value="hellojsp"/>
-        <param name="testng.test.name" value="${testng.test.name}"/>
-        <param name="testng.testclient" value="HelloJSPTestNG"/>
-        </antcall>
-        
-    </target>
-    
-    <target name="undeploy">
-        <antcall target="undeploy-${deploy.platform}-impl"/>
-    </target>
-    
-    
+	<target name="build" depends="compile-tests">
+		<antcall target="build-impl" />
+	</target>
+
+	<target name="deploy">
+		<antcall target="deploy-${deploy.platform}-impl" />
+	</target>
+
+	<target name="deploy-upload">
+		<antcall target="deploy-upload-${deploy.platform}-impl" />
+	</target>
+
+	<target name="runtest">
+		<antcall target="runtest-impl">
+			<param name="contextroot" value="hellojsp" />
+			<param name="testng.test.name" value="${testng.test.name}" />
+			<param name="testng.testclient" value="HelloJSPTestNG" />
+		</antcall>
+
+	</target>
+
+	<target name="undeploy">
+		<antcall target="undeploy-${deploy.platform}-impl" />
+	</target>
+
 </project>

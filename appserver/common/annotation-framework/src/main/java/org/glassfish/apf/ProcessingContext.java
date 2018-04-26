@@ -40,7 +40,6 @@
 
 package org.glassfish.apf;
 
-import org.glassfish.apf.Scanner;
 import java.util.Set;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 

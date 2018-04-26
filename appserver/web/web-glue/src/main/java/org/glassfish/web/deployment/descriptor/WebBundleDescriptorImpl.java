@@ -121,6 +121,8 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  */
 public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
+    private static final long serialVersionUID = 1L;
+
     private final static String DEPLOYMENT_DESCRIPTOR_DIR = "WEB-INF";
 
     private static LocalStringManagerImpl localStrings =
@@ -190,6 +192,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     private Set<String> conflictedMimeMappingExtensions = null;
     private boolean servletInitializersEnabled = true;
     private boolean jaxrsRolesAllowedEnabled = true;
+    private String appContextId;
 
     /**
      * Construct an empty web app [{0}].
@@ -2605,6 +2608,14 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     @Override
     public void setJaxrsRolesAllowedEnabled(boolean jaxrsRolesAllowedEnabled) {
         this.jaxrsRolesAllowedEnabled = jaxrsRolesAllowedEnabled;
+    }
+    
+    public String getAppContextId() {
+        return appContextId;
+    }
+    
+    public void setAppContextId(String appContextId) {
+        this.appContextId = appContextId;
     }
 
     private static final class ServletFilterMappingInfo {
