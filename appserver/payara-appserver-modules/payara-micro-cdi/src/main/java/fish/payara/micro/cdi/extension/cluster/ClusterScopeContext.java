@@ -45,6 +45,9 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import fish.payara.cluster.Clustered;
 import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScoped;
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.Contextual;
@@ -52,7 +55,6 @@ import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.soteria.cdi.CdiUtils;
 
 /**
  * @Clustered singleton CDI context implementation
@@ -126,7 +128,47 @@ class ClusterScopeContext implements Context {
         return getAnnotation(beanManager, bean.getBeanClass());
     }
 
-    static <TT> Clustered getAnnotation(BeanManager beanManager, Class<?> clazz) {
-        return CdiUtils.getAnnotation(beanManager, clazz, Clustered.class).get();
+    /**
+     * Copied from Soteria's CdiUtils.getAnnotation() because it is JDK 8 only
+     * This version works with JDK 7 and is specific to Clustered Singleton
+     * Do NOT propagate this code into JDK 8-compliant code,
+     * use CdiUtils.getAnnotation() from Soteria instead
+     *
+     * @param <TT>
+     * @param beanManager
+     * @param annotated
+     * @return annotation type
+     */
+    static <TT> Clustered getAnnotation(BeanManager beanManager, Class<?> annotated) {
+
+        annotated.getAnnotation(Clustered.class);
+
+        if (annotated.getAnnotations().length == 0) {
+            throw new IllegalStateException("No Clustered Annotation Present");
+        }
+
+        if (annotated.isAnnotationPresent(Clustered.class)) {
+            return annotated.getAnnotation(Clustered.class);
+        }
+
+        Queue<Annotation> annotations = new LinkedList<>(Arrays.asList(annotated.getAnnotations()));
+
+        while (!annotations.isEmpty()) {
+            Annotation annotation = annotations.remove();
+
+            if (annotation.annotationType().equals(Clustered.class)) {
+                return Clustered.class.cast(annotation);
+            }
+
+            if (beanManager.isStereotype(annotation.annotationType())) {
+                annotations.addAll(
+                    beanManager.getStereotypeDefinition(
+                        annotation.annotationType()
+                    )
+                );
+            }
+        }
+
+        throw new IllegalStateException("No Clustered Annotation Present");
     }
 }
