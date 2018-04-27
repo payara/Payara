@@ -140,7 +140,7 @@ public class MachineMemoryUsageHealthCheck extends BaseThresholdHealthCheck<Heal
                     memAvailable = memFree + memActiveFile + memInactiveFile + memReclaimable;
                 }
 
-                double usedPercentage = ((double) memAvailable / memTotal) * 100;
+                double usedPercentage = ((double) (memTotal - memAvailable) / memTotal) * 100;
 
                 result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(usedPercentage),
                         "Physical Memory Used: " + prettyPrintBytes(memTotal - memAvailable) + " - " +
