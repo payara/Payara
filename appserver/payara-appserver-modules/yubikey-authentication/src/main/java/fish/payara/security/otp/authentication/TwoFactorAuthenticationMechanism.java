@@ -65,7 +65,7 @@ public class TwoFactorAuthenticationMechanism implements HttpAuthenticationMecha
 
     private LoginToContinue loginToContinue;
     private CredentialValidationResult firstValidationResult;
-
+    
     @Override
     public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext 
             httpMessageContext) throws AuthenticationException {
