@@ -113,7 +113,7 @@ public class PayaraConfigBuilder implements ConfigBuilder {
 
     @Override
     public Config build() {
-        this.converters.addAll(resolver.getDefaultConverters());
+        this.converters.putAll(resolver.getDefaultConverters());
         return new PayaraConfig(sources, converters);
     }
 
