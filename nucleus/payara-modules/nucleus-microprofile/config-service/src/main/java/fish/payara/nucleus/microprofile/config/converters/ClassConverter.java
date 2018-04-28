@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.microprofile.config.converters;
 
+import com.sun.enterprise.util.Utility;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.config.spi.Converter;
 
@@ -49,10 +50,10 @@ import org.eclipse.microprofile.config.spi.Converter;
 public class ClassConverter implements Converter<Class> {
 
     @Override
-    public Class convert(String string) {
-        if (string == null || string.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
+    public Class convert(String propertyValue) {
+        if (propertyValue == null || propertyValue.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
         try {
-            return Class.forName(string,true,Thread.currentThread().getContextClassLoader());
+            return Class.forName(propertyValue, true, Utility.getClassLoader());
         } catch (ClassNotFoundException ex) {
             throw new IllegalArgumentException(ex);
         }

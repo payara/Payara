@@ -71,12 +71,12 @@ public class CommonSenseConverter implements Converter<Object> {
         return result;
     }
     
-    private Object convertViaConstructor(String string) {
+    private Object convertViaConstructor(String propertyValue) {
         Object result = null;
         try {
             // need to do common sense reflected conversion
             Constructor method = clazz.getConstructor(String.class);
-            result = method.newInstance(string);
+            result = method.newInstance(propertyValue);
             
         } catch (NoSuchMethodException | SecurityException |InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             // do nothing as this is normal
@@ -84,12 +84,12 @@ public class CommonSenseConverter implements Converter<Object> {
         return result;
     }
 
-    private Object convertViaValueOf(String string) {
+    private Object convertViaValueOf(String propertyValue) {
         Object result = null;
         try {
             // need to do common sense reflected conversion
-            Method method = clazz.getMethod("valueOf",String.class);
-            result = method.invoke(null,string);
+            Method method = clazz.getMethod("valueOf", String.class);
+            result = method.invoke(null, propertyValue);
             
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             // do nothing as this is normal
@@ -97,12 +97,12 @@ public class CommonSenseConverter implements Converter<Object> {
         return result;
     }
 
-    private Object convertViaCharSequence(String string) {
+    private Object convertViaCharSequence(String propertyValue) {
         Object result = null;
         try {
             // need to do common sense reflected conversion
-            Method method = clazz.getMethod("parse",CharSequence.class);
-            result = method.invoke(null,string);
+            Method method = clazz.getMethod("parse", CharSequence.class);
+            result = method.invoke(null, propertyValue);
             
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             // do nothing as this is normal
