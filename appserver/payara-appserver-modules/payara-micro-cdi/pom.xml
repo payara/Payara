@@ -100,9 +100,5 @@
             <artifactId>payara-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.soteria</groupId>
-            <artifactId>javax.security.enterprise</artifactId>
-        </dependency>
     </dependencies>
 </project>
