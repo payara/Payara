@@ -111,15 +111,13 @@ public class OAuth2MechanismHandler implements Extension {
         logger.log(Level.FINE, "Creating OAuth2 Mechanism");
         
         if (!annotations.isEmpty() && beanManager.getBeans(IdentityStore.class).isEmpty()) {
-            afterBean.addBean()
-                    .scope(ApplicationScoped.class)
-                    .types(IdentityStore.class, Object.class)
+            afterBean.addBean(new CdiProducer<IdentityStore>().
+                    scope(ApplicationScoped.class)
                     .beanClass(IdentityStore.class)
-                    .createWith(obj -> {
-                        return CDI.current()
-                                .select(OAuthIdentityStore.class).get();
-                    });
-
+                    .types(IdentityStore.class, Object.class)
+                    .create(obj -> {return CDI.current()
+                               .select(OAuthIdentityStore.class).get();}
+                    ));
         }
         for (OAuth2AuthenticationDefinition annotation : annotations) {
 
@@ -129,7 +127,7 @@ public class OAuth2MechanismHandler implements Extension {
                     .types(HttpAuthenticationMechanism.class, Object.class)
                     .create(obj -> {return CDI.current()
                                .select(OAuth2AuthenticationMechanism.class).get().setDefinition(annotation);}
-                    )); // --> Leads to NPE in CdiProducer.create(104)
+                    ));
             logger.log(Level.FINE, "OAuth2 Mechanism created successfully");
 
         }
