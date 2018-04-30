@@ -94,6 +94,17 @@ public interface JavaEEContextUtil {
      */
     String getInvocationComponentId();
 
+    /**
+     * @return component ID for the current instance, or null
+     */
+    String getInstanceComponentId();
+
+    /**
+     * Set a valid component invocation that's empty,
+     * i.e. doesn't belong to any module
+     */
+    void setEmptyInvocation();
+
     interface Context extends Closeable {};
     interface Closeable extends AutoCloseable {
         @Override

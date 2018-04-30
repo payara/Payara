@@ -63,9 +63,9 @@ class ContextImpl {
             }
         }
 
-        private final ClassLoader oldClassLoader;
         private final ComponentInvocation invocation;
         private final InvocationManager invMgr;
+        private final ClassLoader oldClassLoader;
     }
 
     @RequiredArgsConstructor
