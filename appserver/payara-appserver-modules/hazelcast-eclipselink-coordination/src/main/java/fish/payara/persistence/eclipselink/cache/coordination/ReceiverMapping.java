@@ -39,6 +39,8 @@
  */
 package fish.payara.persistence.eclipselink.cache.coordination;
 
+import fish.payara.nucleus.eventbus.MessageReceiver;
+
 import java.util.UUID;
 
 /**
@@ -47,7 +49,7 @@ import java.util.UUID;
  *
  * @author Sven Diedrichsen
  */
-class TopicIdMapping {
+class ReceiverMapping {
 
     /**
      * The internal id.
@@ -61,9 +63,14 @@ class TopicIdMapping {
      * The hazelcast message receiver has been registered.
      */
     private boolean registered = false;
+    /**
+     * The message receiver.
+     */
+    private final MessageReceiver<HazelcastPayload> messageReceiver;
 
-    TopicIdMapping(String topic) {
+    ReceiverMapping(String topic, MessageReceiver<HazelcastPayload> messageReceiver) {
         this.topic = topic;
+        this.messageReceiver = messageReceiver;
         this.internalId = UUID.randomUUID().toString();
     }
 
@@ -81,6 +88,10 @@ class TopicIdMapping {
 
     String getTopic() {
         return topic;
+    }
+
+    MessageReceiver<HazelcastPayload> getMessageReceiver() {
+        return this.messageReceiver;
     }
 
 }

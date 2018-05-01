@@ -54,9 +54,7 @@ import org.jvnet.hk2.annotations.Service;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
@@ -76,7 +74,7 @@ public class HazelcastTopicStorage implements EventListener {
     /**
      * The message listener cache.
      */
-    private final Map<MessageReceiver<HazelcastPayload>, TopicIdMapping> messageReceiver = new ConcurrentHashMap<>();
+    private final Map<String, ReceiverMapping> messageReceiver = new ConcurrentHashMap<>();
     /**
      * Event bus to propagate cache coordination messages over.
      */
@@ -115,48 +113,42 @@ public class HazelcastTopicStorage implements EventListener {
 
     @Override
     public void event(Event event) {
-        if (isShutdown(event)) {
-            destroy();
-        } else if(isBootstrapComplete(event)) {
-            registerUnregisteredReceiver();
+        if (event.is(EventTypes.SERVER_SHUTDOWN)) {
+            clearMessageReceivers();
+        } else if(event.is(HazelcastEvents.HAZELCAST_SHUTDOWN_STARTED)) {
+            unregisterRegisteredReceivers();
+        } else if(event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)) {
+            registerUnregisteredReceivers();
         }
-    }
-
-    /**
-     * Show if the event shows that the Hazelcast bootstrap has completed.
-     * @param event the event to query.
-     * @return The event show that Hazelcast bootstrap has finished.
-     */
-    private static boolean isBootstrapComplete(Event event) {
-        return event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE);
-    }
-
-    /**
-     * Shows that the event is of type 'Shutdown'. Either the whole server or just Hazelcast.
-     * @param event The event to check its type of.
-     * @return is of type 'Shutdown'
-     */
-    private static boolean isShutdown(Event event) {
-        return event.is(EventTypes.SERVER_SHUTDOWN)
-                || event.is(HazelcastEvents.HAZELCAST_SHUTDOWN_COMPLETE);
     }
 
     /**
      * Registers all yet unregistered {@link MessageReceiver}.
      */
-    private void registerUnregisteredReceiver() {
-        messageReceiver.entrySet().stream()
-            .filter(entry -> !entry.getValue().isRegistered())
-            .forEach(entry -> {
-                TopicIdMapping mapping = entry.getValue();
-                mapping.setRegistered(eventBus.addMessageReceiver(mapping.getTopic(), entry.getKey()));
+    private void registerUnregisteredReceivers() {
+        messageReceiver.values().stream()
+            .filter(mapping -> !mapping.isRegistered())
+            .forEach(mapping -> mapping.setRegistered(
+                eventBus.addMessageReceiver(mapping.getTopic(), mapping.getMessageReceiver())
+            ));
+    }
+
+    /**
+     * Unregisters all registered {@link MessageReceiver}.
+     */
+    private void unregisterRegisteredReceivers() {
+        messageReceiver.values().stream()
+            .filter(ReceiverMapping::isRegistered)
+            .forEach(mapping -> {
+                eventBus.removeMessageReceiver(mapping.getTopic(), mapping.getMessageReceiver());
+                mapping.setRegistered(false);
             });
     }
 
     /**
      * Removing all listeners.
      */
-    private void destroy() {
+    private void clearMessageReceivers() {
         messageReceiver.clear();
     }
 
@@ -177,26 +169,20 @@ public class HazelcastTopicStorage implements EventListener {
      * @return The internal id for the registered listener usable for removing the listener.
      */
     String registerMessageReceiver(String topic, MessageReceiver<HazelcastPayload> receiver) {
-        TopicIdMapping topicIdMapping = new TopicIdMapping(topic);
-        topicIdMapping.setRegistered(eventBus.addMessageReceiver(topic, receiver));
-        messageReceiver.put(receiver, topicIdMapping);
-        return topicIdMapping.getInternalId();
+        ReceiverMapping receiverMapping = new ReceiverMapping(topic, receiver);
+        receiverMapping.setRegistered(eventBus.addMessageReceiver(topic, receiver));
+        messageReceiver.put(receiverMapping.getInternalId(), receiverMapping);
+        return receiverMapping.getInternalId();
     }
 
     /**
-     * Unregisters the listener identified by its internal id for the provided topic..
+     * Unregisters the listener identified by its internal id for the provided topic.
      * @param internalId The internal id identifying the listener.
      */
     void removeMessageReceiver(String internalId) {
-        Iterator<Map.Entry<MessageReceiver<HazelcastPayload>, TopicIdMapping>> iterator = messageReceiver.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<MessageReceiver<HazelcastPayload>, TopicIdMapping> entry = iterator.next();
-            if(Objects.equals(entry.getValue().getInternalId(), internalId)) {
-                if(entry.getValue().isRegistered()) {
-                    eventBus.removeMessageReceiver(entry.getValue().getTopic(), entry.getKey());
-                }
-                iterator.remove();
-            }
+        ReceiverMapping removedReceiver = messageReceiver.remove(internalId);
+        if (removedReceiver != null) {
+            eventBus.removeMessageReceiver(removedReceiver.getTopic(), removedReceiver.getMessageReceiver());
         }
     }
 
