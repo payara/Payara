@@ -78,7 +78,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>3.7.0</version>
                 <configuration>
                     <source>${java.compiler.source.version}</source>
                     <target>${java.compiler.target.version}</target>
@@ -129,7 +129,10 @@
                                     fish.payara.nucleus.notification.service,
                                     fish.payara.cdi.jsr107.implementation,
                                     javax.inject,
-                                    javax.enterprise.util
+                                    javax.enterprise.util,
+                                    javax.security.enterprise.credential,
+                                    javax.security.enterprise.identitystore,
+                                    javax.security.jacc
                                 </Import-Package>
                                 <Export-Package>
                                     fish.payara.cdi.auth.roles,
@@ -139,7 +142,11 @@
                                     fish.payara.nucleus.requesttracing.api,
                                     fish.payara.notification.eventbus,
                                     fish.payara.nucleus.notification.domain,
-                                    fish.payara.nucleus.notification.service
+                                    fish.payara.nucleus.notification.service,
+                                    fish.payara.notification.healthcheck,
+                                    fish.payara.notification.requesttracing,
+                                    fish.payara.security.oauth2.annotation,
+                                    fish.payara.security.oauth2.api
                                 </Export-Package>
                             </instructions>
                         </configuration>
@@ -167,4 +174,126 @@
             <optional>true</optional>
         </dependency>
     </dependencies>
+        
+    <profiles>
+        <profile>
+            <id>jdk7</id>
+            <activation>
+                <jdk>1.7</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>  
+                            <excludes>
+                                <exclude>fish/payara/security/oauth2/annotation/OAuth2AuthenticationDefinition.java</exclude>
+                                <exclude>fish/payara/security/oauth2/api/OAuthIdentityStore.java</exclude>
+                                <exclude>fish/payara/security/oauth2/api/OAuth2State.java</exclude>
+                                <exclude>fish/payara/security/oauth2/api/OAuth2AccessToken.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.felix</groupId>
+                        <artifactId>maven-bundle-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>bundle-manifest</id>
+                                <phase>process-classes</phase>
+                                <goals>
+                                    <goal>manifest</goal>
+                                </goals>
+                                <configuration>
+                                    <instructions>
+                                        <Import-Package>
+                                            fish.payara.nucleus.notification.domain,
+                                            fish.payara.nucleus.notification.service,
+                                            fish.payara.cdi.jsr107.implementation,
+                                            javax.inject,
+                                            javax.enterprise.util,
+                                            javax.security.jacc
+                                        </Import-Package>
+                                        <Export-Package>
+                                            fish.payara.cdi.auth.roles,
+                                            fish.payara.cdi.jsr107.impl,
+                                            fish.payara.cluster,
+                                            fish.payara.micro.cdi,
+                                            fish.payara.nucleus.requesttracing.api,
+                                            fish.payara.notification.eventbus,
+                                            fish.payara.nucleus.notification.domain,
+                                            fish.payara.nucleus.notification.service,
+                                            fish.payara.notification.healthcheck,
+                                            fish.payara.notification.requesttracing,
+                                        </Export-Package>
+                                    </instructions>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
+        <profile>
+            <id>jdk8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>javax.security.enterprise</groupId>
+                    <artifactId>javax.security.enterprise-api</artifactId>
+                    <version>1.0</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.felix</groupId>
+                        <artifactId>maven-bundle-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>bundle-manifest</id>
+                                <phase>process-classes</phase>
+                                <goals>
+                                    <goal>manifest</goal>
+                                </goals>
+                                <configuration>
+                                    <instructions>
+                                        <Import-Package>
+                                            fish.payara.nucleus.notification.domain,
+                                            fish.payara.nucleus.notification.service,
+                                            fish.payara.cdi.jsr107.implementation,
+                                            javax.inject,
+                                            javax.enterprise.util,
+                                            javax.security.enterprise.credential,
+                                            javax.security.enterprise.identitystore,
+                                            javax.security.jacc
+                                        </Import-Package>
+                                        <Export-Package>
+                                            fish.payara.cdi.auth.roles,
+                                            fish.payara.cdi.jsr107.impl,
+                                            fish.payara.cluster,
+                                            fish.payara.micro.cdi,
+                                            fish.payara.nucleus.requesttracing.api,
+                                            fish.payara.notification.eventbus,
+                                            fish.payara.nucleus.notification.domain,
+                                            fish.payara.nucleus.notification.service,
+                                            fish.payara.notification.healthcheck,
+                                            fish.payara.notification.requesttracing,
+                                            fish.payara.security.oauth2.annotation,
+                                            fish.payara.security.oauth2.api
+                                        </Export-Package>
+                                    </instructions>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles> 
 </project>
