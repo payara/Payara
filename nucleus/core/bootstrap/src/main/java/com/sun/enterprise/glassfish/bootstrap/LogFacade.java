@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.glassfish.bootstrap;
 
 import java.util.logging.Level;
@@ -81,7 +83,7 @@ public class LogFacade {
     }
     
     @LogMessageInfo(
-            message = "GlassFish requires JDK {0}, you are using JDK version {1}.",
+            message = "Payara Server requires JDK {0}, you are using JDK version {1}.",
             level = "SEVERE",
             cause="Incorrect JDK version is used.",
             action="Please use correct JDK version.")
@@ -271,6 +273,13 @@ public class LogFacade {
             message = "Got an unexpected exception.",
             level = "WARNING")
     public static final String CAUGHT_EXCEPTION = "NCLS-BOOTSTRAP-00039";
+    
+     @LogMessageInfo(
+            message = "Minimum JDK version required by Payara Server to run is {0}, you are using JDK version {1}.",
+            level = "SEVERE",
+            cause="JDK version used doesn't meet the minimum requirement",
+            action="Please use JDK version {0} or above.")
+    public static final String BOOTSTRAP_MINIMUM_JDKVERSION_REQUIRED = "NCLS-BOOTSTRAP-00040";
 
 }
 
