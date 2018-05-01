@@ -40,8 +40,10 @@
 package fish.payara.monitoring.rest.app;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
+
 import javax.ejb.Startup;
 import javax.inject.Singleton;
+import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
@@ -53,7 +55,7 @@ import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
 /**
- * 
+ *
  * @author Fraser Savage
  */
 @Startup
@@ -100,6 +102,28 @@ public class MBeanServerDelegate {
      */
     public Object getMBeanAttribute(String mbeanname, String attributename) throws MBeanException, AttributeNotFoundException, InstanceNotFoundException, ReflectionException, MalformedObjectNameException {
         return platformServer.getAttribute(getMBeanName(mbeanname), attributename);
+    }
+
+    /**
+     * Retrieves the values of several attributes of a named MBean. The MBean is identified by its object name.
+     * If one or more attributes cannot be retrieved for some reason, they will be omitted from the returned
+     * {@code AttributeList}.
+     *
+     * @param mbeanname
+     *            The object name of the MBean from which the attributes are retrieved.
+     * @param attributenames
+     *            A list of the attributes to be retrieved.
+     * @return The list of the retrieved attributes.
+     * @throws InstanceNotFoundException
+     *             {@inheritDoc}
+     * @throws MalformedObjectNameException
+     *             {@inheritDoc}
+     * @throws ReflectionException
+     *             {@inheritDoc}
+     */
+    public AttributeList getMBeanAttributes(final String mbeanname, final String[] attributenames)
+            throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException {
+        return platformServer.getAttributes(getMBeanName(mbeanname), attributenames);
     }
 
     /**

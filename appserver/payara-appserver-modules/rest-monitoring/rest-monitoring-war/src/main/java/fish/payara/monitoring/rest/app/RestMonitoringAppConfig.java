@@ -41,6 +41,7 @@ package fish.payara.monitoring.rest.app;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
@@ -51,7 +52,7 @@ import javax.ws.rs.core.Application;
 // @HOLD - FANG-3: Implement Fang 'State' handler and resource.
 @ApplicationPath("/rest")
 public class RestMonitoringAppConfig extends Application {
-   
+
     @Override
     public Set<Class<?>> getClasses() {
         Set<Class<?>> resources = new HashSet<>();
@@ -59,8 +60,9 @@ public class RestMonitoringAppConfig extends Application {
         return resources;
     }
 
-    private void addRestResourceClasses(Set<Class<?>> resources) {
+    private void addRestResourceClasses(final Set<Class<?>> resources) {
         resources.add(fish.payara.monitoring.rest.app.resource.MBeanReadResource.class);
+        resources.add(fish.payara.monitoring.rest.app.resource.MBeanBulkReadResource.class);
         resources.add(fish.payara.monitoring.rest.app.resource.RestMonitoringAppStateResource.class);
     }
 }
