@@ -132,6 +132,28 @@
                         </goals>
                         <configuration>
                             <instructions>
+                                <Import-Package>
+                                    com.fasterxml.jackson.core,
+                                    com.fasterxml.jackson.databind,
+                                    fish.payara.security.oauth2.annotation,
+                                    fish.payara.security.oauth2.api,
+                                    javax.inject,
+                                    javax.enterprise.context,
+                                    javax.enterprise.context.spi,
+                                    javax.enterprise.event,
+                                    javax.enterprise.inject,
+                                    javax.enterprise.inject.spi,
+                                    javax.enterprise.util, 
+                                    javax.security.enterprise,
+                                    javax.security.enterprise.authentication.mechanism.http,
+                                    javax.security.enterprise.credential,
+                                    javax.security.enterprise.identitystore,
+                                    javax.servlet.http,
+                                    javax.ws.rs.client,
+                                    javax.ws.rs.core,
+                                    org.glassfish.config.support,
+                                    org.glassfish.soteria.cdi
+                                </Import-Package> 
                                 <Export-Package>
                                     fish.payara.security.oauth2
                                 </Export-Package>

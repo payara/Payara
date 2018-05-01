@@ -219,18 +219,24 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
             logger.log(Level.WARNING, "[OAUTH-001] Error occurred authenticating user: {0} caused by {1}", new Object[]{error, errorDescription});
             return context.notifyContainerAboutLogin(CredentialValidationResult.INVALID_RESULT);
         } else {
-            
             tokenHolder.setAccessToken(object.get("access_token").asText());
-            tokenHolder.setRefreshToken(object.get("refresh_token").asText());
-            tokenHolder.setScope(object.get("scope").asText());
-            String expiresIn = object.get("expires_in").asText();
-            if (expiresIn != null) {
-                tokenHolder.setExpiresIn(Integer.parseInt(expiresIn));
+            JsonNode value = object.get("refresh_token");
+            if (value != null){
+                tokenHolder.setRefreshToken(value.asText());
+            }
+            value = object.get("scope");
+            if (value != null){
+            tokenHolder.setScope(value.asText());
+            }
+            value = object.get("expires_in");
+            if (value != null) {
+                tokenHolder.setExpiresIn(value.asInt());
             }
             
             RememberMeCredential credential = new RememberMeCredential(result);
             CredentialValidationResult validationResult = identityStoreHandler.validate(credential);
-            return context.notifyContainerAboutLogin(validationResult);
+             return context.notifyContainerAboutLogin(validationResult);
+           
         }
     }
 

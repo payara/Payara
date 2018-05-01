@@ -195,9 +195,47 @@
                             </excludes>
                         </configuration>
                     </plugin>
+                    <plugin>
+                        <groupId>org.apache.felix</groupId>
+                        <artifactId>maven-bundle-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>bundle-manifest</id>
+                                <phase>process-classes</phase>
+                                <goals>
+                                    <goal>manifest</goal>
+                                </goals>
+                                <configuration>
+                                    <instructions>
+                                        <Import-Package>
+                                            fish.payara.nucleus.notification.domain,
+                                            fish.payara.nucleus.notification.service,
+                                            fish.payara.cdi.jsr107.implementation,
+                                            javax.inject,
+                                            javax.enterprise.util,
+                                            javax.security.jacc
+                                        </Import-Package>
+                                        <Export-Package>
+                                            fish.payara.cdi.auth.roles,
+                                            fish.payara.cdi.jsr107.impl,
+                                            fish.payara.cluster,
+                                            fish.payara.micro.cdi,
+                                            fish.payara.nucleus.requesttracing.api,
+                                            fish.payara.notification.eventbus,
+                                            fish.payara.nucleus.notification.domain,
+                                            fish.payara.nucleus.notification.service,
+                                            fish.payara.notification.healthcheck,
+                                            fish.payara.notification.requesttracing,
+                                        </Export-Package>
+                                    </instructions>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
+        
         <profile>
             <id>jdk8</id>
             <activation>
@@ -211,6 +249,51 @@
                     <scope>provided</scope>
                 </dependency>
             </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.felix</groupId>
+                        <artifactId>maven-bundle-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>bundle-manifest</id>
+                                <phase>process-classes</phase>
+                                <goals>
+                                    <goal>manifest</goal>
+                                </goals>
+                                <configuration>
+                                    <instructions>
+                                        <Import-Package>
+                                            fish.payara.nucleus.notification.domain,
+                                            fish.payara.nucleus.notification.service,
+                                            fish.payara.cdi.jsr107.implementation,
+                                            javax.inject,
+                                            javax.enterprise.util,
+                                            javax.security.enterprise.credential,
+                                            javax.security.enterprise.identitystore,
+                                            javax.security.jacc
+                                        </Import-Package>
+                                        <Export-Package>
+                                            fish.payara.cdi.auth.roles,
+                                            fish.payara.cdi.jsr107.impl,
+                                            fish.payara.cluster,
+                                            fish.payara.micro.cdi,
+                                            fish.payara.nucleus.requesttracing.api,
+                                            fish.payara.notification.eventbus,
+                                            fish.payara.nucleus.notification.domain,
+                                            fish.payara.nucleus.notification.service,
+                                            fish.payara.notification.healthcheck,
+                                            fish.payara.notification.requesttracing,
+                                            fish.payara.security.oauth2.annotation,
+                                            fish.payara.security.oauth2.api
+                                        </Export-Package>
+                                    </instructions>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles> 
 </project>
