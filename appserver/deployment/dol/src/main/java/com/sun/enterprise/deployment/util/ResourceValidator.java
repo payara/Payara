@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.util;
 
@@ -110,7 +110,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
     private Domain domain;
     
     @Inject
-    JavaEEContextUtil contextUtil;
+    private JavaEEContextUtil contextUtil;
 
     private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ResourceValidator.class);
 
@@ -123,7 +123,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
     }
 
     @Override
-    public void event(Event event) {
+    public void event(Event<?> event) {
         if (event.is(Deployment.AFTER_APPLICATION_CLASSLOADER_CREATION)) {
             DeploymentContext deploymentContext = (DeploymentContext) event.hook();
             Application application = deploymentContext.getModuleMetaData(Application.class);
@@ -139,18 +139,9 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             AppResources appResources = new AppResources();
             // Puts all resources found in the application via annotation or xml into appResources
             parseResources(deploymentContext, application, appResources);
-            
+
             // Ensure we have a valid component invocation before triggering lookups
-            String componentId = null;
-            for (BundleDescriptor bundleDescriptor : application.getBundleDescriptors()) {
-                if (bundleDescriptor instanceof JndiNameEnvironment) {
-                    componentId = DOLUtils.getComponentEnvId((JndiNameEnvironment) bundleDescriptor);
-                    if (componentId != null) {
-                        break;
-                    }
-                }
-            }
-            contextUtil.setInstanceComponentId(componentId);
+            contextUtil.setEmptyInvocation();
             try (Context ctx = contextUtil.pushContext()) {
                 validateResources(deploymentContext, application, appResources);
             }
