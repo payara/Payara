@@ -36,45 +36,33 @@
  *     and therefore, elected the GPL Version 2 license, then the option applies
  *     only if the new code is made subject to such option by the copyright
  *     holder.
- *
  */
 
-package fish.payara.security.otp.identitystores;
+package fish.payara.security.authentication.twoFactor;
 
-import javax.security.enterprise.credential.Credential;
+import fish.payara.security.annotations.TwoFactorAuthenticationMechanismDefinition;
+import javax.enterprise.util.AnnotationLiteral;
+import javax.security.enterprise.authentication.mechanism.http.LoginToContinue;
 
 /**
- * Class representing a Yubikey One Time Password (OTP)
+ * A literal representation of the {@link fish.payara.security.annotations.TwoFactorAuthenticationMechanismDefinition}
+ * 
  * @author Mark Wareham
-*/
-public class YubikeyCredential implements Credential {
-
-    public static final int PUBLIC_ID_LENGTH = 12;
-    private String oneTimePasswordString;
-
-    public YubikeyCredential(String oneTimePasswordString) {
-        this.oneTimePasswordString = oneTimePasswordString;
+ */
+@SuppressWarnings("AnnotationAsSuperInterface")
+public class TwoFactorAuthenticationMechanismDefinitionAnnotationLiteral 
+        extends AnnotationLiteral<TwoFactorAuthenticationMechanismDefinition> 
+        implements TwoFactorAuthenticationMechanismDefinition {
+    
+    private final LoginToContinue loginToContinue;
+    
+    public TwoFactorAuthenticationMechanismDefinitionAnnotationLiteral(LoginToContinue loginToContinue) {
+        this.loginToContinue = loginToContinue;
     }
     
-    public String getOneTimePasswordString() {
-        return oneTimePasswordString;
-    }
-
-    public void clearCredential (){
-        oneTimePasswordString=null;
+    @Override
+    public LoginToContinue loginToContinue() {
+        return loginToContinue;
     }
     
-    public String getPublicID(){
-        String fullKey = getOneTimePasswordString();
-        if(fullKey==null){
-            return null;
-        }
-        if (fullKey.isEmpty()){
-            return "";
-        }
-        if(fullKey.length()<12){
-            return fullKey;
-        }
-        return fullKey.substring(0, PUBLIC_ID_LENGTH);
-    }
 }

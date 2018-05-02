@@ -38,14 +38,14 @@
  *     holder.
  */
 
-package fish.payara.security.otp.identitystores;
+package fish.payara.security.identitystores;
 
+import fish.payara.security.annotations.YubikeyIdentityStoreDefinition;
 import com.yubico.client.v2.ResponseStatus;
 import com.yubico.client.v2.YubicoClient;
 import com.yubico.client.v2.exceptions.YubicoValidationFailure;
 import com.yubico.client.v2.exceptions.YubicoVerificationException;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,7 +55,10 @@ import javax.security.enterprise.identitystore.IdentityStore;
 import static javax.security.enterprise.identitystore.IdentityStore.ValidationType.VALIDATE;
 
 /**
- *
+ * A Yubikey identity store. Supports connecting to the Yubico's cloud validation service. You must provide an API 
+ * client ID and key for this service in the {@link YubikeyIdentityStoreDefinition}
+ * You can obtain one directly from Yubico at https://upgrade.yubico.com/getapikey/
+ * 
  * @author Mark Wareham
  */
 public class YubikeyIdentityStore implements IdentityStore {
@@ -75,9 +78,9 @@ public class YubikeyIdentityStore implements IdentityStore {
         if (!(credential instanceof YubikeyCredential)) {
             return CredentialValidationResult.NOT_VALIDATED_RESULT;
         }
-        YubikeyCredential oneTimePasswordCredential = ((YubikeyCredential) credential);
+        YubikeyCredential yubikeyCredential = ((YubikeyCredential) credential);
         try {
-            String oneTimePassword = oneTimePasswordCredential.getOneTimePasswordString();
+            String oneTimePassword = yubikeyCredential.getOneTimePasswordString();
             
             if (!YubicoClient.isValidOTPFormat(oneTimePassword)) {
                 return CredentialValidationResult.INVALID_RESULT;
@@ -107,7 +110,7 @@ public class YubikeyIdentityStore implements IdentityStore {
 
             
             CredentialValidationResult credentialValidationResult = new CredentialValidationResult(
-                    oneTimePasswordCredential.getPublicID());
+                    yubikeyCredential.getPublicID());
             
             return credentialValidationResult;
         

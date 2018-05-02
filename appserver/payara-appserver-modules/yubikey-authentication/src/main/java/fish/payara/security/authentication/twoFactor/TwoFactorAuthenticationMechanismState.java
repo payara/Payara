@@ -36,26 +36,42 @@
  *     and therefore, elected the GPL Version 2 license, then the option applies
  *     only if the new code is made subject to such option by the copyright
  *     holder.
+ *
  */
 
-package fish.payara.security.otp.authentication;
+package fish.payara.security.authentication.twoFactor;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import javax.enterprise.util.Nonbinding;
-import javax.security.enterprise.authentication.mechanism.http.LoginToContinue;
+import java.io.Serializable;
+import javax.enterprise.context.SessionScoped;
+import javax.security.enterprise.identitystore.CredentialValidationResult;
 
 /**
- *
+ * Maintains the state of the TwoFactorAuthenticationMechanism per session
+ * 
  * @author Mark Wareham
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface TwoFactorAuthenticationMechanismDefinition {
+
+@SessionScoped
+public class TwoFactorAuthenticationMechanismState implements Serializable{
     
-    @Nonbinding
-    LoginToContinue loginToContinue();
+    private CredentialValidationResult firstValidationResult;
+    private boolean firstFactorBeenAttempted = true;
+
+    public CredentialValidationResult getFirstValidationResult() {
+        return firstValidationResult;
+    }
+
+    public void setFirstValidationResult(CredentialValidationResult firstValidationResult) {
+        this.firstValidationResult = firstValidationResult;
+        this.setFirstFactor(false);
+    }
+
+    public boolean isFirstFactor() {
+        return firstFactorBeenAttempted;
+    }
+
+    public void setFirstFactor(boolean firstFactorBeenAttempted) {
+        this.firstFactorBeenAttempted = firstFactorBeenAttempted;
+    }
     
 }

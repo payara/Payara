@@ -1,1 +1,1 @@
-fish.payara.security.otp.authentication.CDIExtension
+fish.payara.security.authentication.twoFactor.CDIExtension

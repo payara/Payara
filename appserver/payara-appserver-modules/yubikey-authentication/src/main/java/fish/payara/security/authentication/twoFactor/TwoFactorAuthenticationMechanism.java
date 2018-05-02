@@ -37,10 +37,11 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.security.otp.authentication;
+package fish.payara.security.authentication.twoFactor;
 
 import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.spi.CDI;
+import javax.inject.Inject;
 import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
 import javax.security.enterprise.authentication.mechanism.http.AutoApplySession;
@@ -57,14 +58,18 @@ import org.glassfish.soteria.mechanisms.LoginToContinueHolder;
  * Authentication mechanism that ensures two successful authentications. This can be with any two identity stores.
  *
  * @author Mark Wareham
+ * 
+ * @see fish.payara.security.annotations.TwoFactorAuthenticationMechanismDefinition
  */
 @AutoApplySession
 @LoginToContinue
-@Typed(TwoFactorAuthenticationMechanism.class) //Restricts the type
+@Typed(TwoFactorAuthenticationMechanism.class)
 public class TwoFactorAuthenticationMechanism implements HttpAuthenticationMechanism,LoginToContinueHolder {
 
     private LoginToContinue loginToContinue;
-    private CredentialValidationResult firstValidationResult;
+    
+    @Inject
+    private TwoFactorAuthenticationMechanismState state;
     
     @Override
     public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext 
@@ -77,14 +82,15 @@ public class TwoFactorAuthenticationMechanism implements HttpAuthenticationMecha
         IdentityStoreHandler identityStoreHandler = CDI.current().select(IdentityStoreHandler.class).get();
         CredentialValidationResult currentRoundValidationResult = identityStoreHandler.validate(
                         httpMessageContext.getAuthParameters().getCredential());
-
+      
         //first factor
-        if (firstValidationResult == null) {
-            firstValidationResult = currentRoundValidationResult;
+        if (state.isFirstFactor()) {
+            state.setFirstValidationResult(currentRoundValidationResult);
             return httpMessageContext.doNothing();
         }
+        
         //second factor
-        CredentialValidationResult finalResult = collateResult(firstValidationResult, currentRoundValidationResult);
+        CredentialValidationResult finalResult = collateResult(state.getFirstValidationResult(), currentRoundValidationResult);
         return httpMessageContext.notifyContainerAboutLogin(finalResult);
 
     }
@@ -101,7 +107,7 @@ public class TwoFactorAuthenticationMechanism implements HttpAuthenticationMecha
     @Override
     public void cleanSubject(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) {
         httpMessageContext.cleanClientSubject();
-        this.firstValidationResult = null;
+        this.state = new TwoFactorAuthenticationMechanismState();
     }
 
     private CredentialValidationResult collateResult(

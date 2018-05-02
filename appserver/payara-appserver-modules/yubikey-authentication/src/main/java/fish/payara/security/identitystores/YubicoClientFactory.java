@@ -38,32 +38,28 @@
  *     holder.
  */
 
-package fish.payara.security.otp.identitystores;
+package fish.payara.security.identitystores;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
+import fish.payara.security.annotations.YubikeyIdentityStoreDefinition;
+import com.yubico.client.v2.YubicoClient;
 
 /**
- *
+ * Factory class for obtaining an instance of Yubico Client.
+ * 
  * @author Mark Wareham
  */
+public class YubicoClientFactory {
 
-@Retention(value=RetentionPolicy.RUNTIME)
-@Target(value=ElementType.TYPE)
-public @interface YubikeyIdentityStoreDefinition {
     
-    String yubikeyAPIClientID();    
+    private static final YubicoClientFactory INSTANCE = new YubicoClientFactory();
 
-    String yubikeyAPIKey();
+    private YubicoClient createYubicoClient(YubikeyIdentityStoreDefinition definition) {
+        return YubicoClient.getClient(Integer.valueOf(definition.yubikeyAPIClientID()), 
+                definition.yubikeyAPIKey());
+    }
     
-    YubicoServerType serverType() default YubicoServerType.CLOUD;
-    
-    String serverEnpoint() default "";
-    
-    int priority() default 100;
-    
-    String priorityExpression() default "";
+    public static YubicoClient getYubicoClient(YubikeyIdentityStoreDefinition definition) {
+        return INSTANCE.createYubicoClient(definition);
+    }
+   
 }

@@ -38,12 +38,24 @@
  *     holder.
  */
 
-package fish.payara.security.otp.identitystores;
+package fish.payara.security.annotations;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import javax.enterprise.util.Nonbinding;
+import javax.security.enterprise.authentication.mechanism.http.LoginToContinue;
 
 /**
- * Represents a type of yubico validation server
+ * Used to define a Two Factor Authentication Mechanism with an annotation and provide configuration options
  * @author Mark Wareham
  */
-public enum YubicoServerType {
-    PRIVATE, CLOUD;
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface TwoFactorAuthenticationMechanismDefinition {
+    
+    @Nonbinding
+    LoginToContinue loginToContinue();
+    
 }
