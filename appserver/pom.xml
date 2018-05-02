@@ -689,6 +689,11 @@
                 <artifactId>javax.security.enterprise-api</artifactId>
                 <version>${javax.security.enterprise-api.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.glassfish.soteria</groupId>
+                <artifactId>javax.security.enterprise</artifactId>
+                <version>${javax.security.enterprise.version}</version>
+            </dependency>
             
             <!-- JACC -->
             <dependency>
