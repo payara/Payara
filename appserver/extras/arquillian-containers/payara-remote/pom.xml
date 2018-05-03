@@ -121,10 +121,9 @@
          <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
-            <version>${version.javaee.api}</version>
         </dependency>
-
         
+
         <!-- Test -->
 
         <dependency>
