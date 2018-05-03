@@ -58,7 +58,6 @@ import static com.sun.enterprise.util.StringUtils.ok;
  */
 class JvmOptions {
 
-    final static Pattern p = Pattern.compile("([^\\$]*)\\$\\{([^\\}]*)\\}([^\\$]*)");
     private final static Pattern envP = Pattern.compile("([^\\$]*)\\$\\{ENV=([^\\}]*)\\}([^\\$]*)");
     private static final int MAX_SUBSTITUTION_DEPTH = 100;
     
@@ -91,6 +90,9 @@ class JvmOptions {
                     m2.reset(s);
                 } 
                 i++;     
+            }
+            if (!s.startsWith("-")){
+                s = "-" + s;
             }
             
             if (s.startsWith("-D")) {
