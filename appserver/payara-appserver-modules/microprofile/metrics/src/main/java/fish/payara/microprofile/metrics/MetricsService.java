@@ -155,7 +155,7 @@ public class MetricsService implements EventListener {
         }
         return config;
     }
-    
+
     public Boolean isMetricsEnabled() {
         if (metricsEnabled == null) {
             metricsEnabled = Boolean.valueOf(metricsServiceConfiguration.getEnabled());
