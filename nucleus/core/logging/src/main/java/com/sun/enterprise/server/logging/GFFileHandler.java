@@ -142,7 +142,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     protected File absoluteFile = null;
     private int flushFrequency = 1;
     protected int maxHistoryFiles = 10;
-    private boolean logToFile;
+    private boolean logToFile = true;
     private boolean rotationOnDateChange;
     private String excludeFields;
     private Integer rotationLimitAttrValue;
@@ -223,9 +223,9 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         int otherFormatter = 0;
         boolean mustRotate = false;
 
-   String propertyValue = null;
+        String propertyValue = null;
         propertyValue = manager.getProperty(className + ".logtoFile");
-        logToFile = false;
+        logToFile = true;
 
         if (propertyValue != null) {
             logToFile = Boolean.parseBoolean(propertyValue);
