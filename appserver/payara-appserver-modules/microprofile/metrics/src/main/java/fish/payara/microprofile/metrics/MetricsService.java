@@ -89,6 +89,10 @@ public class MetricsService implements EventListener {
     ServiceLocator serviceLocator;
     
     private MetricsServiceConfiguration metricsServiceConfiguration;
+    
+    private Boolean metricsEnabled;
+    
+    private Boolean metricsSecure;
 
     private final Map<String, MetricRegistry> REGISTRIES = new ConcurrentHashMap<>();//stores registries of base, vendor, app1, app2, ... app(n) etc
 
@@ -151,13 +155,27 @@ public class MetricsService implements EventListener {
         }
         return config;
     }
-
+    
     public Boolean isMetricsEnabled() {
-        return Boolean.valueOf(metricsServiceConfiguration.getEnabled());
+        if (metricsEnabled == null) {
+            metricsEnabled = Boolean.valueOf(metricsServiceConfiguration.getEnabled());
+        }
+        return metricsEnabled;
+    }
+
+    public void resetMetricsEnabledProperty() {
+        metricsEnabled = null;
     }
 
     public Boolean isMetricsSecure() {
-        return Boolean.valueOf(metricsServiceConfiguration.getSecure());
+        if (metricsSecure == null) {
+            metricsSecure = Boolean.valueOf(metricsServiceConfiguration.getSecure());
+        }
+        return metricsSecure;
+    }
+    
+    public void resetMetricsSecureProperty() {
+        metricsSecure = null;
     }
 
     public Map<String, Metric> getMetricsAsMap(String registryName) throws NoSuchRegistryException {
