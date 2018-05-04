@@ -71,8 +71,9 @@
                         <configuration>
                             <instructions>
                                 <Export-Package>
-                                    fish.payara.security.otp.authentication,
-                                    fish.payara.security.otp.identitystores
+                                    fish.payara.security.annotations,
+                                    fish.payara.security.authentication.twoFactor,
+                                    fish.payara.security.identitystores
                                 </Export-Package>
                             </instructions>
                         </configuration>
