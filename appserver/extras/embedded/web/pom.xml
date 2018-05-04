@@ -290,11 +290,11 @@
 
         <!-- Notification Package -->
         <dependency>
-           <groupId>fish.payara.packager</groupId>
-           <artifactId>notification-package</artifactId>
-           <version>${project.version}</version>
-           <type>zip</type>
-           <optional>true</optional>
+            <groupId>fish.payara.packager</groupId>
+            <artifactId>notification-package</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
         </dependency>
        
         <dependency>
@@ -374,17 +374,9 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-	    <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>payara-executor-service</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <!-- roles api -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>cdi-auth-roles</artifactId>
+            <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
@@ -402,6 +394,14 @@
                 <dependency>
                     <groupId>org.glassfish.main.packager</groupId>
                     <artifactId>microprofile-package</artifactId>
+                    <version>${project.version}</version>
+                    <type>zip</type>
+                    <optional>true</optional>
+                </dependency>
+                <!-- roles api -->
+                <dependency>
+                    <groupId>org.glassfish.main.packager</groupId>
+                    <artifactId>cdi-auth-roles</artifactId>
                     <version>${project.version}</version>
                     <type>zip</type>
                     <optional>true</optional>
