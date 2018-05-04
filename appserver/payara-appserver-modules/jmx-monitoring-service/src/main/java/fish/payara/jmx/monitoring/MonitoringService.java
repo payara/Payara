@@ -153,7 +153,7 @@ public class MonitoringService implements EventListener {
      * if enabled in the configuration.
      */
     public void bootstrapMonitoringService() {
-        if (configuration != null && configuration.getEnabled().equals("true")) {
+        if (configuration != null && configuration.getEnabled().equalsIgnoreCase("true")) {
             shutdownMonitoringService();//To make sure that there aren't multiple monitoring services running
             
             executor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
