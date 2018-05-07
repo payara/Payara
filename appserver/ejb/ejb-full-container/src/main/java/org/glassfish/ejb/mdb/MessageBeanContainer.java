@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.mdb;
 
 import static com.sun.appserv.connectors.internal.api.ConnectorConstants.CONNECTOR_MESSAGE_BEAN_CLIENT_FACTORY;
@@ -45,7 +45,6 @@ import static com.sun.ejb.containers.EJBContextImpl.BeanState.POOLED;
 import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType.POST_CONSTRUCT;
 import static com.sun.enterprise.util.Utility.setContextClassLoader;
 import static com.sun.logging.LogDomains.MDB_LOGGER;
-import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 import static javax.transaction.xa.XAResource.TMSUCCESS;
@@ -234,9 +233,6 @@ public final class MessageBeanContainer extends BaseContainer implements Message
             componentInvocation.container = this;
             invocationManager.preInvoke(componentInvocation);
             messageBeanClient_.setup(this);
-
-            registerMonitorableComponents(msgListenerMethods);
-
             createCallFlowAgent(ComponentType.MDB);
         } catch (Exception ex) {
 
@@ -254,12 +250,28 @@ public final class MessageBeanContainer extends BaseContainer implements Message
         }
     }
 
-    protected void registerMonitorableComponents(Method[] msgListenerMethods) {
+    @Override
+    public void initialize() {
+        super.initialize();
+        ComponentInvocation inv = createComponentInvocation();
+        try {
+            invocationManager.preInvoke(inv);
+            messageBeanClient_.start();
+            registerMonitorableComponents();
+        } catch (Exception ex) {
+            throw new EJBException("Can't start message bean client", ex);
+        }
+        finally {
+            invocationManager.postInvoke(inv);
+        }
+    }
+
+    protected void registerMonitorableComponents() {
         super.registerMonitorableComponents();
-                poolProbeListener = new EjbPoolStatsProvider(messageBeanPool_,
-                        getContainerId(), containerInfo.appName, containerInfo.modName,
-                        containerInfo.ejbName);
-                poolProbeListener.register();
+        poolProbeListener = new EjbPoolStatsProvider(messageBeanPool_,
+                getContainerId(), containerInfo.appName, containerInfo.modName,
+                containerInfo.ejbName);
+        poolProbeListener.register();
         // registryMediator.registerProvider(messageBeanPool_);
         // super.setMonitorOn(mdbc.isMonitoringEnabled());
         _logger.log(Level.FINE, "[MessageBeanContainer] registered monitorable");
@@ -882,33 +894,6 @@ public final class MessageBeanContainer extends BaseContainer implements Message
 
     // default
     public void activateEJB(Object ctx, Object instanceKey) {
-    }
-
-    /**
-     * Called when the application containing this message-bean has
-     * successfully gotten through the initial load phase of each
-     * module.  Now we can "turn on the spigot" and allow incoming
-     * requests, which could result in the creation of message-bean
-     * instances.
-     * @param deploy true if this method is called during application deploy
-     */
-    @Override
-    public void startApplication(boolean deploy) {
-        super.startApplication(deploy);
-
-        // Start delivery of messages to message bean instances.
-        try {
-
-            messageBeanClient_.start();
-
-        } catch (Exception e) {
-
-            _logger.log(FINE, e.getClass().getName(), e);
-
-            throw new RuntimeException("MessageBeanContainer.start failure for app " +
-                appEJBName_, e);
-
-        }
     }
 
     private ComponentInvocation createComponentInvocation() {
