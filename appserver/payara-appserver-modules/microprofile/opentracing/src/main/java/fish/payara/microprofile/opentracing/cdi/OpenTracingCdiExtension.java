@@ -37,51 +37,24 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.opentracing;
+package fish.payara.microprofile.opentracing.cdi;
 
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.opentracing.tracers.TracerFactory;
-import fish.payara.opentracing.tracers.TracerFactoryImpl;
-import io.opentracing.Tracer;
-import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.annotations.Service;
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.BeforeBeanDiscovery;
+import javax.enterprise.inject.spi.Extension;
+import org.eclipse.microprofile.opentracing.Traced;
 
 /**
  *
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
-@Service(name = "opentracing-service")
-public class OpenTracingService {
-
-    private static final Logger logger = Logger.getLogger(OpenTracingService.class.getCanonicalName());
-    private TracerFactory tracerFactory;
-
-    private ThreadLocal<Tracer> tracer;
-
-    String wibbles = "wibbles";
+public class OpenTracingCdiExtension implements Extension {
     
-    @PostConstruct
-    void postConstruct() {
-        tracerFactory = new TracerFactoryImpl();
-        tracer = new ThreadLocal<Tracer>() {
-            @Override
-            protected Tracer initialValue() {
-                return null;
-            }
-        };
-    }
-
-    public Tracer getTracer() {
-        if (tracer.get() == null) {
-            tracer.set(tracerFactory.createTracer());
-        }
-        
-        return tracer.get();
-    }
-
-    public boolean isEnabled() {
-        return Globals.getDefaultBaseServiceLocator().getService(RequestTracingService.class).isRequestTracingEnabled();
+    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
+        beforeBeanDiscovery.addInterceptorBinding(Traced.class);
+        AnnotatedType<TracedInterceptor> tracedInterceptor = beanManager.createAnnotatedType(TracedInterceptor.class);
+        beforeBeanDiscovery.addAnnotatedType(tracedInterceptor, TracedInterceptor.class.getName());
     }
 }

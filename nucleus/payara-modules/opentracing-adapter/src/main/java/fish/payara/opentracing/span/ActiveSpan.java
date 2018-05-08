@@ -64,11 +64,7 @@ public class ActiveSpan implements io.opentracing.ActiveSpan {
 
     @PostConstruct
     public void postConstruct() {
-        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
-
-        if (serviceLocator != null) {
-            openTracing = serviceLocator.getService(OpenTracingService.class);
-        }
+        getOpenTracingServiceIfNull();
     }
 
     @Override
@@ -150,6 +146,7 @@ public class ActiveSpan implements io.opentracing.ActiveSpan {
     @Override
     public void deactivate() {
         referenceCount--;
+        getOpenTracingServiceIfNull();
         ((Tracer) openTracing.getTracer()).deactivate(this);
     }
 
@@ -180,6 +177,16 @@ public class ActiveSpan implements io.opentracing.ActiveSpan {
         }
     }
 
+    private void getOpenTracingServiceIfNull() {
+        if (openTracing == null) {
+            ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
+
+            if (serviceLocator != null) {
+                openTracing = serviceLocator.getService(OpenTracingService.class);
+            }
+        }
+    }
+
     public class Continuation implements io.opentracing.ActiveSpan.Continuation {
 
         @Override
@@ -191,7 +198,7 @@ public class ActiveSpan implements io.opentracing.ActiveSpan {
                     openTracing = serviceLocator.getService(OpenTracingService.class);
                 }
             }
-            
+
             ((Tracer) openTracing.getTracer()).makeActive(ActiveSpan.this);
             return ActiveSpan.this;
         }
