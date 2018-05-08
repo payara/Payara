@@ -58,6 +58,10 @@ import static com.sun.enterprise.util.StringUtils.ok;
  */
 class JvmOptions {
 
+    /**
+     * Pattern for recognising environment variables which are in the style of ${ENV=foo}
+     * @see org.glassfish.config.support.TranslatedConfigView
+     */
     private final static Pattern envP = Pattern.compile("([^\\$]*)\\$\\{ENV=([^\\}]*)\\}([^\\$]*)");
     private static final int MAX_SUBSTITUTION_DEPTH = 100;
     
