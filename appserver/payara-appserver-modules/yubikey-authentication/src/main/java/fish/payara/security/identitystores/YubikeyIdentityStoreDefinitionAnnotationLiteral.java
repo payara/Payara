@@ -42,6 +42,7 @@ package fish.payara.security.identitystores;
 
 import fish.payara.security.annotations.YubikeyIdentityStoreDefinition;
 import javax.enterprise.util.AnnotationLiteral;
+import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.soteria.cdi.AnnotationELPProcessor;
 
 import static org.glassfish.soteria.cdi.AnnotationELPProcessor.emptyIfImmediate;
@@ -56,18 +57,20 @@ import static org.glassfish.soteria.cdi.AnnotationELPProcessor.evalImmediate;
 public class YubikeyIdentityStoreDefinitionAnnotationLiteral extends AnnotationLiteral<YubikeyIdentityStoreDefinition>
         implements YubikeyIdentityStoreDefinition {
 
-    private final String yubikeyAPIClientID;
+    private final int yubikeyAPIClientID;
     private final String yubikeyAPIKey;
     private final int priority;
     private final String priorityExpression;
+    private final String yubikeyAPIClientIDExpression;
     
     public YubikeyIdentityStoreDefinitionAnnotationLiteral(
-            String yubikeyAPIClientID, String yubikeyAPIKey, int priority, String priorityExpression) {
+            int yubikeyAPIClientID, String yubikeyAPIKey, int priority, String priorityExpression, String yubikeyAPIClientIDExpression) {
         
-        this.yubikeyAPIClientID = yubikeyAPIClientID;
+        this.yubikeyAPIClientID = (Integer) TranslatedConfigView.getTranslatedValue(yubikeyAPIClientID);
         this.yubikeyAPIKey = yubikeyAPIKey;
         this.priority = priority;
         this.priorityExpression = priorityExpression;
+        this.yubikeyAPIClientIDExpression = yubikeyAPIClientIDExpression;
     }
 
     /**
@@ -83,20 +86,23 @@ public class YubikeyIdentityStoreDefinitionAnnotationLiteral extends AnnotationL
 
         YubikeyIdentityStoreDefinitionAnnotationLiteral out
                 = new YubikeyIdentityStoreDefinitionAnnotationLiteral(
-                        evalImmediate(in.yubikeyAPIClientID()), 
+                        evalImmediate(in.yubikeyAPIClientIDExpression(), in.yubikeyAPIClientID()), 
                         evalImmediate(in.yubikeyAPIKey()),
                         evalImmediate(in.priorityExpression(), in.priority()),
-                        emptyIfImmediate(in.priorityExpression()));
+                        emptyIfImmediate(in.priorityExpression()),
+                        emptyIfImmediate(in.yubikeyAPIClientIDExpression())
+                        );
         return out;
     }
 
     private static boolean hasAnyELExpression(YubikeyIdentityStoreDefinition in) {
-        return AnnotationELPProcessor.hasAnyELExpression(in.yubikeyAPIClientID()) 
-                && AnnotationELPProcessor.hasAnyELExpression(in.yubikeyAPIKey());
+        return AnnotationELPProcessor.hasAnyELExpression(in.yubikeyAPIClientIDExpression()) 
+                && AnnotationELPProcessor.hasAnyELExpression(in.yubikeyAPIKey())
+                && AnnotationELPProcessor.hasAnyELExpression(in.priorityExpression());
     }
 
     @Override
-    public String yubikeyAPIClientID() {
+    public int yubikeyAPIClientID() {
         return yubikeyAPIClientID;
     }
 
@@ -114,5 +120,13 @@ public class YubikeyIdentityStoreDefinitionAnnotationLiteral extends AnnotationL
     public String priorityExpression(){
         return priorityExpression;
     }
+
+    @Override
+    public String yubikeyAPIClientIDExpression() {
+        return yubikeyAPIClientIDExpression;
+    }
+
+
+    
 
 }

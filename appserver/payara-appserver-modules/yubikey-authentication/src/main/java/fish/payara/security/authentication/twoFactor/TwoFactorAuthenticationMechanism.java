@@ -78,19 +78,19 @@ public class TwoFactorAuthenticationMechanism implements HttpAuthenticationMecha
         if (!hasCredential(httpMessageContext)) {
             return httpMessageContext.doNothing();
         }
-        
         IdentityStoreHandler identityStoreHandler = CDI.current().select(IdentityStoreHandler.class).get();
         CredentialValidationResult currentRoundValidationResult = identityStoreHandler.validate(
                         httpMessageContext.getAuthParameters().getCredential());
-      
+
         //first factor
-        if (state.isFirstFactor()) {
+        if (!state.isFirstFactorBeenAttempted()) {
             state.setFirstValidationResult(currentRoundValidationResult);
             return httpMessageContext.doNothing();
         }
         
         //second factor
         CredentialValidationResult finalResult = collateResult(state.getFirstValidationResult(), currentRoundValidationResult);
+        this.state.clean();
         return httpMessageContext.notifyContainerAboutLogin(finalResult);
 
     }
@@ -107,7 +107,7 @@ public class TwoFactorAuthenticationMechanism implements HttpAuthenticationMecha
     @Override
     public void cleanSubject(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext) {
         httpMessageContext.cleanClientSubject();
-        this.state = new TwoFactorAuthenticationMechanismState();
+        this.state.clean();
     }
 
     private CredentialValidationResult collateResult(

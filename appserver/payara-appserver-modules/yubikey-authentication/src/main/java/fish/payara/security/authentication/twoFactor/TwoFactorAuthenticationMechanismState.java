@@ -55,23 +55,28 @@ import javax.security.enterprise.identitystore.CredentialValidationResult;
 public class TwoFactorAuthenticationMechanismState implements Serializable{
     
     private CredentialValidationResult firstValidationResult;
-    private boolean firstFactorBeenAttempted = true;
+    private boolean firstFactorBeenAttempted;
 
-    public CredentialValidationResult getFirstValidationResult() {
+    CredentialValidationResult getFirstValidationResult() {
         return firstValidationResult;
     }
 
-    public void setFirstValidationResult(CredentialValidationResult firstValidationResult) {
+    void setFirstValidationResult(CredentialValidationResult firstValidationResult) {
         this.firstValidationResult = firstValidationResult;
-        this.setFirstFactor(false);
+        this.setFirstFactorBeenAttempted(true);
     }
 
-    public boolean isFirstFactor() {
+    boolean isFirstFactorBeenAttempted() {
         return firstFactorBeenAttempted;
     }
 
-    public void setFirstFactor(boolean firstFactorBeenAttempted) {
+    void setFirstFactorBeenAttempted(boolean firstFactorBeenAttempted) {
         this.firstFactorBeenAttempted = firstFactorBeenAttempted;
+    }
+
+    void clean() {
+        firstValidationResult = null;
+        firstFactorBeenAttempted = false;
     }
     
 }

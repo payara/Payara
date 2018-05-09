@@ -85,19 +85,32 @@
     
     <dependencies>
         <dependency>
+            <groupId>org.glassfish.main.admin</groupId>
+            <artifactId>config-api</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
             <version>8.0</version>
             <type>jar</type>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.yubico</groupId>
             <artifactId>yubico-validation-client2</artifactId>
             <version>${yubico-validation-client2.version}</version>
+            <type>jar</type>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.soteria</groupId>
             <artifactId>javax.security.enterprise</artifactId>
+            <type>jar</type>
+            <scope>provided</scope>
         </dependency>
+        
     </dependencies>
 </project>

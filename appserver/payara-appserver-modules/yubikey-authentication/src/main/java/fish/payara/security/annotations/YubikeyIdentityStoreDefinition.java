@@ -58,11 +58,13 @@ import java.lang.annotation.Target;
 @Target(value=ElementType.TYPE)
 public @interface YubikeyIdentityStoreDefinition {
     
-    String yubikeyAPIClientID();    
+    int yubikeyAPIClientID() default 0; //default is needed to allow yubikeyAPIClientIDExpression alone.
 
     String yubikeyAPIKey();
     
     int priority() default 100;
     
     String priorityExpression() default "";
+    
+    String yubikeyAPIClientIDExpression() default "";
 }

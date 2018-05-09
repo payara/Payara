@@ -40,6 +40,8 @@
 
 package fish.payara.security.identitystores;
 
+import static javax.security.enterprise.identitystore.IdentityStore.ValidationType.VALIDATE;
+
 import fish.payara.security.annotations.YubikeyIdentityStoreDefinition;
 import com.yubico.client.v2.ResponseStatus;
 import com.yubico.client.v2.YubicoClient;
@@ -52,7 +54,7 @@ import java.util.logging.Logger;
 import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
-import static javax.security.enterprise.identitystore.IdentityStore.ValidationType.VALIDATE;
+import org.glassfish.config.support.TranslatedConfigView;
 
 /**
  * A Yubikey identity store. Supports connecting to the Yubico's cloud validation service. You must provide an API 
@@ -70,7 +72,18 @@ public class YubikeyIdentityStore implements IdentityStore {
     
     public YubikeyIdentityStore(YubikeyIdentityStoreDefinition definition) {
         this.definition = definition;
-        yubicoClient = YubicoClientFactory.getYubicoClient(this.definition);
+        int clientID = definition.yubikeyAPIClientID();
+        if(clientID==0){//if client ID default, use expression
+            try{
+                clientID = Integer.parseInt((String) TranslatedConfigView.getTranslatedValue(definition.yubikeyAPIClientIDExpression()));
+            } catch (NumberFormatException numberFormatException) {
+                LOG.warning("Yubico API Client ID specified is not a valid number.");
+            }
+        }
+        yubicoClient = YubicoClientFactory.getYubicoClient(
+                clientID, 
+                (String) TranslatedConfigView.getTranslatedValue(definition.yubikeyAPIKey())
+        );
     }
 
     @Override
@@ -128,6 +141,10 @@ public class YubikeyIdentityStore implements IdentityStore {
 
     @Override
     public int priority() {
-        return definition.priority();
+        if(!definition.priorityExpression().equals("")){
+           return (Integer) TranslatedConfigView.getTranslatedValue(definition.priorityExpression());
+        }else{
+            return definition.priority();
+        }
     }
 }

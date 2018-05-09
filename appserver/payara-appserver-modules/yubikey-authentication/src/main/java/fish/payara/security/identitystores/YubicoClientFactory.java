@@ -40,8 +40,9 @@
 
 package fish.payara.security.identitystores;
 
-import fish.payara.security.annotations.YubikeyIdentityStoreDefinition;
 import com.yubico.client.v2.YubicoClient;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Factory class for obtaining an instance of Yubico Client.
@@ -52,14 +53,15 @@ public class YubicoClientFactory {
 
     
     private static final YubicoClientFactory INSTANCE = new YubicoClientFactory();
+    private static final Logger LOGGER = Logger.getLogger(YubicoClientFactory.class.getName());
 
-    private YubicoClient createYubicoClient(YubikeyIdentityStoreDefinition definition) {
-        return YubicoClient.getClient(Integer.valueOf(definition.yubikeyAPIClientID()), 
-                definition.yubikeyAPIKey());
+    private YubicoClient createYubicoClient(int apiClientID, String apiClientKey) {
+        LOGGER.log(Level.INFO, "Set up YubicoClient with clientID of {0}", apiClientID);
+        return YubicoClient.getClient(apiClientID, apiClientKey);
     }
     
-    public static YubicoClient getYubicoClient(YubikeyIdentityStoreDefinition definition) {
-        return INSTANCE.createYubicoClient(definition);
+    public static YubicoClient getYubicoClient(int apiClientID, String apiClientKey) {
+        return INSTANCE.createYubicoClient(apiClientID, apiClientKey);
     }
    
 }
