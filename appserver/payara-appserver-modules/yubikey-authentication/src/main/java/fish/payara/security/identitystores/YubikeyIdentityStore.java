@@ -47,6 +47,10 @@ import com.yubico.client.v2.ResponseStatus;
 import com.yubico.client.v2.YubicoClient;
 import com.yubico.client.v2.exceptions.YubicoValidationFailure;
 import com.yubico.client.v2.exceptions.YubicoVerificationException;
+import fish.payara.notification.requesttracing.EventType;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -55,6 +59,7 @@ import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
 import org.glassfish.config.support.TranslatedConfigView;
+import org.glassfish.internal.api.Globals;
 
 /**
  * A Yubikey identity store. Supports connecting to the Yubico's cloud validation service. You must provide an API 
@@ -69,6 +74,7 @@ public class YubikeyIdentityStore implements IdentityStore {
     
     private final YubicoClient yubicoClient;
     private final YubikeyIdentityStoreDefinition definition;
+    private RequestTracingService requestTracing;
     
     public YubikeyIdentityStore(YubikeyIdentityStoreDefinition definition) {
         this.definition = definition;
@@ -82,8 +88,13 @@ public class YubikeyIdentityStore implements IdentityStore {
         }
         yubicoClient = YubicoClientFactory.getYubicoClient(
                 clientID, 
-                (String) TranslatedConfigView.getTranslatedValue(definition.yubikeyAPIKey())
-        );
+                (String) TranslatedConfigView.getTranslatedValue(definition.yubikeyAPIKey()));
+        try {
+            this.requestTracing = Globals.get(RequestTracingService.class);
+        } catch (NullPointerException e) {
+            LOG.log(Level.INFO, "Error retrieving Request Tracing service "
+                    + "during initialisation of Concurrent Context - NullPointerException");
+        }
     }
 
     @Override
@@ -98,10 +109,12 @@ public class YubikeyIdentityStore implements IdentityStore {
             if (!YubicoClient.isValidOTPFormat(oneTimePassword)) {
                 return CredentialValidationResult.INVALID_RESULT;
             }
-            ResponseStatus verificationStatus = yubicoClient.verify(oneTimePassword).getStatus();
-            LOG.log(Level.FINE, "Yubico server reported {1}", verificationStatus.name());
+            RequestTraceSpan span = beginTrace(yubikeyCredential);
+            ResponseStatus responseStatus = yubicoClient.verify(oneTimePassword).getStatus();
+            doTrace(span, responseStatus);
+            LOG.log(Level.FINE, "Yubico server reported {1}", responseStatus.name());
 
-            switch (verificationStatus) {
+            switch (responseStatus) {
                 case BAD_OTP:
                 case REPLAYED_OTP:
                 case BAD_SIGNATURE:
@@ -113,7 +126,7 @@ public class YubikeyIdentityStore implements IdentityStore {
                 case NOT_ENOUGH_ANSWERS:
                 case REPLAYED_REQUEST:
                     LOG.log(Level.WARNING, "Yubico reported {0}",
-                            verificationStatus.name());
+                            responseStatus.name());
                     return CredentialValidationResult.NOT_VALIDATED_RESULT;
                 case OK:
                     break;//carry on.
@@ -145,6 +158,25 @@ public class YubikeyIdentityStore implements IdentityStore {
            return (Integer) TranslatedConfigView.getTranslatedValue(definition.priorityExpression());
         }else{
             return definition.priority();
+        }
+    }
+
+    private RequestTraceSpan beginTrace(YubikeyCredential yubikeyCredential) {
+        if (requestTracing==null || !requestTracing.isRequestTracingEnabled()) {
+            return null;
+        }
+        
+        RequestTraceSpan span = new RequestTraceSpan(EventType.REQUEST_EVENT, "verifyYubikeyCloudServiceRequest");
+        span.addSpanTag("API Client ID", ""+yubicoClient.getClientId());
+        span.addSpanTag("Yubikey public ID", yubikeyCredential.getPublicID());
+        span.addSpanTag("Yubico validation URLs", Arrays.toString(yubicoClient.getWsapiUrls()));
+        return span;
+    }
+
+    private void doTrace(RequestTraceSpan span, ResponseStatus responseStatus) {
+        if(span !=null){
+            span.addSpanTag("Yubico response status", responseStatus.name());
+            requestTracing.traceSpan(span);
         }
     }
 }

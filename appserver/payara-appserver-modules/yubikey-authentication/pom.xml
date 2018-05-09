@@ -111,6 +111,19 @@
             <type>jar</type>
             <scope>provided</scope>
         </dependency>
-        
+        <dependency>
+            <groupId>fish.payara.api</groupId>
+            <artifactId>payara-api</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>requesttracing-core</artifactId>
+            <version>${project.version}</version>
+             <type>jar</type>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>
