@@ -73,7 +73,7 @@
                 <artifactId>maven-bundle-plugin</artifactId>
                 <configuration>
                     <instructions>
-                        <Export-Package>io.opentracing,io.opentracing.propagation,io.opentracing.tag</Export-Package>
+                        <Export-Package>io.opentracing,io.opentracing.propagation,io.opentracing.tag,io.opentracing.mock,io.opentracing.util</Export-Package>
                         <Private-Package>*</Private-Package>
                         <Include-Resource>META-INF/hk2-locator/=target/classes/META-INF/hk2-locator/</Include-Resource>
                     </instructions>
@@ -95,6 +95,18 @@
         <dependency>
             <groupId>io.opentracing</groupId>
             <artifactId>opentracing-api</artifactId>
+            <version>${opentracing.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-mock</artifactId>
+            <version>${opentracing.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-util</artifactId>
             <version>${opentracing.version}</version>
             <optional>true</optional>
         </dependency>

@@ -40,9 +40,10 @@
 package fish.payara.opentracing;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.opentracing.tracers.TracerFactory;
-import fish.payara.opentracing.tracers.TracerFactoryImpl;
 import io.opentracing.Tracer;
+import io.opentracing.mock.MockTracer;
+import io.opentracing.mock.MockTracer.Propagator;
+import io.opentracing.util.ThreadLocalActiveSpanSource;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import org.glassfish.internal.api.Globals;
@@ -56,15 +57,12 @@ import org.jvnet.hk2.annotations.Service;
 public class OpenTracingService {
 
     private static final Logger logger = Logger.getLogger(OpenTracingService.class.getCanonicalName());
-    private TracerFactory tracerFactory;
 
     private ThreadLocal<Tracer> tracer;
-
-    String wibbles = "wibbles";
     
     @PostConstruct
     void postConstruct() {
-        tracerFactory = new TracerFactoryImpl();
+        
         tracer = new ThreadLocal<Tracer>() {
             @Override
             protected Tracer initialValue() {
@@ -75,7 +73,11 @@ public class OpenTracingService {
 
     public Tracer getTracer() {
         if (tracer.get() == null) {
-            tracer.set(tracerFactory.createTracer());
+            if (Boolean.getBoolean("USE_OPENTRACING_MOCK_TRACER")) {
+                tracer.set(new MockTracer(new ThreadLocalActiveSpanSource(), Propagator.TEXT_MAP));
+            } else {
+                tracer.set(new fish.payara.opentracing.tracers.Tracer());
+            }
         }
         
         return tracer.get();
