@@ -70,6 +70,7 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
+import fish.payara.admin.amx.config.AMXConfiguration;
 
 /**
  * Asadmin command to set the monitoring service's configuration.
@@ -102,6 +103,11 @@ public class SetMonitoringConfiguration implements AdminCommand {
     @Param(name = "enabled", optional = true)
     private Boolean enabled;
 
+    /**
+     * 
+     * @deprecated Since 4.1.2.182. Use set-amx-enabled command instead.
+     */
+    @Deprecated
     @Param(name = "amx", optional = true)
     private Boolean amx;
 
@@ -174,7 +180,9 @@ public class SetMonitoringConfiguration implements AdminCommand {
             monitoringConfig.setEnabled(String.valueOf(enabled));
         } 
         if (null != amx) {
-            monitoringConfig.setAmx(String.valueOf(amx));
+            AMXConfiguration amxConfig = serviceLocator.getService(AMXConfiguration.class);
+            amxConfig.setEnabled(String.valueOf(amx));
+            monitoringConfig.setAmx(null);
         } 
         if (null != logfrequency) {
             monitoringConfig.setLogFrequency(String.valueOf(logfrequency));

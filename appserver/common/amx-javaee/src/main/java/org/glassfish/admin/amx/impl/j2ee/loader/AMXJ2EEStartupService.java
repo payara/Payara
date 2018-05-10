@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.impl.j2ee.loader;
 
@@ -74,6 +75,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.admin.amx.j2ee.AMXEELoggerInfo;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.PostStartupRunLevel;
 
 
 /**
@@ -81,14 +84,8 @@ import org.glassfish.admin.amx.j2ee.AMXEELoggerInfo;
  * triggered is not yet clear.
  */
 @Service
-public final class AMXJ2EEStartupService
-        implements org.glassfish.hk2.api.PostConstruct,
-        org.glassfish.hk2.api.PreDestroy,
-        AMXLoader, ConfigListener {
-
-    private static void debug(final String s) {
-        System.out.println(s);
-    }
+@RunLevel(mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING, value=PostStartupRunLevel.VAL)
+public final class AMXJ2EEStartupService implements org.glassfish.hk2.api.PostConstruct, org.glassfish.hk2.api.PreDestroy, AMXLoader, ConfigListener {
 
     @Inject
     private MBeanServer mMBeanServer;
@@ -117,9 +114,10 @@ public final class AMXJ2EEStartupService
 
 
     public AMXJ2EEStartupService() {
-        //debug( "AMXStartupService.AMXStartupService()" );
+        logger.log(Level.FINEST, "AMXStartupService.AMXStartupService()");
     }
 
+    @Override
     public void postConstruct() {
         addListenerToServer();
     }
@@ -149,6 +147,7 @@ public final class AMXJ2EEStartupService
          * @param changedType     type of the configuration object
          * @param changedInstance changed instance.
          */
+        @Override
         public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
             switch (type) {
                 case ADD:
@@ -197,6 +196,7 @@ public final class AMXJ2EEStartupService
         }
     }
 
+    @Override
     public void preDestroy() {
         unloadAMXMBeans();
     }
@@ -205,18 +205,16 @@ public final class AMXJ2EEStartupService
         return ProxyFactory.getInstance(mMBeanServer).getDomainRootProxy();
     }
 
-    public ObjectName
-    getJ2EEDomain() {
+    public ObjectName getJ2EEDomain() {
         return getDomainRootProxy().child(J2EETypes.J2EE_DOMAIN).extra().objectName();
     }
 
-    private J2EEDomain
-    getJ2EEDomainProxy() {
+    private J2EEDomain getJ2EEDomainProxy() {
         return ProxyFactory.getInstance(mMBeanServer).getProxy(getJ2EEDomain(), J2EEDomain.class);
     }
 
-    public synchronized ObjectName
-    loadAMXMBeans() {
+    @Override
+    public synchronized ObjectName loadAMXMBeans() {
         FeatureAvailability.getInstance().waitForFeature(FeatureAvailability.AMX_CORE_READY_FEATURE, "" + this);
         FeatureAvailability.getInstance().waitForFeature(AMXConfigConstants.AMX_CONFIG_READY_FEATURE, "" + this);
 
@@ -243,6 +241,7 @@ public final class AMXJ2EEStartupService
         return objectName;
     }
 
+    @Override
     public synchronized void unloadAMXMBeans() {
         final J2EEDomain j2eeDomain = getJ2EEDomainProxy();
         if (j2eeDomain != null) {
