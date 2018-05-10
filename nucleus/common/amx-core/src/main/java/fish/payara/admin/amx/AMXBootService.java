@@ -45,15 +45,16 @@ package fish.payara.admin.amx;
 
 import fish.payara.admin.amx.config.AMXConfiguration;
 import java.beans.PropertyChangeEvent;
+import java.util.Collections;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.management.MBeanServer;
 import org.glassfish.admin.mbeanserver.BootAMX;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 /**
@@ -89,25 +90,20 @@ public class AMXBootService implements ConfigListener {
     }
     
     public void setEnabled(boolean enabled){
-        if (this.enabled && !enabled){
-            shutdown();
-        } else if (!this.enabled && enabled){
+        this.enabled = enabled;
+        if (enabled){
             startup();
-        }
-        // else they are already the same, do nothing
-    }
-    
-    private void shutdown(){
-        bootAMX.shutdown();
+        }   
     }
 
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
+        UnprocessedChangeEvents unchanged = null;
         for (PropertyChangeEvent event: events){
             if (event.getPropertyName().contains("enabled")){
                 String change = (String) event.getNewValue();
                 if (change.equalsIgnoreCase("false")){
-                    setEnabled(false);
+                    unchanged = new UnprocessedChangeEvents(new UnprocessedChangeEvent(event, "Unable to stop AMX dynamically"));
                 } else if (change.equalsIgnoreCase("true")){
                     setEnabled(true);
                 } else {
@@ -115,7 +111,8 @@ public class AMXBootService implements ConfigListener {
                 }
             }
         }
-        return null;
+
+        return unchanged;
     }
     
     

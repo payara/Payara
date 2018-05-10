@@ -74,8 +74,9 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 /**
- * Comment to enable AMX, as separate from JMX
- *
+ * Comment to enable AMX, as separate from JMX.
+ * <p>
+ * Note that while AMX can be started dynamically, it cannot be stopped dynamically and requires a server restart.
  * @author jonathan coustick
  * @since 4.1.2.182
  */
