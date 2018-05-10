@@ -93,13 +93,13 @@ public class SetAmxEnabled implements AdminCommand {
 
     private static final Logger LOGGER = AMXLoggerInfo.getLogger();
 
-    @Param(optional = false, primary = true, defaultValue = "true")
+    @Param(name = "enabled", optional = false, primary = true, defaultValue = "true")
     Boolean enabled;
 
-    @Param(optional = false)
+    @Param(name = "dynamic", optional = false, defaultValue = "true")
     private Boolean dynamic;
 
-    @Param(optional = true, defaultValue = "server-config")
+    @Param(name="target", optional = true, defaultValue = "server-config")
     private String target;
 
     @Inject

@@ -174,14 +174,20 @@ public class SetMonitoringConfiguration implements AdminCommand {
      * @param monitoringConfig
      * @throws PropertyVetoException
      */
-    private void updateConfiguration(MonitoringServiceConfiguration monitoringConfig) throws PropertyVetoException {
+    private void updateConfiguration(MonitoringServiceConfiguration monitoringConfig) throws PropertyVetoException, TransactionFailure {
          
         if (null != enabled) {
             monitoringConfig.setEnabled(String.valueOf(enabled));
         } 
         if (null != amx) {
             AMXConfiguration amxConfig = serviceLocator.getService(AMXConfiguration.class);
-            amxConfig.setEnabled(String.valueOf(amx));
+            ConfigSupport.apply(new SingleConfigCode<AMXConfiguration>() {
+                @Override
+                public Object run(final AMXConfiguration amxConfigProxy) throws PropertyVetoException, TransactionFailure {
+                    amxConfigProxy.setEnabled((String.valueOf(amx)));
+                    return amxConfigProxy;
+                }
+            }, amxConfig);
             monitoringConfig.setAmx(null);
         } 
         if (null != logfrequency) {

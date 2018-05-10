@@ -104,11 +104,11 @@ public class AMXBootService implements ConfigListener {
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         for (PropertyChangeEvent event: events){
-            if (event.getPropertyName().contains("amx")){
-                Object change = event.getNewValue();
-                if (change.equals(Boolean.FALSE)){
+            if (event.getPropertyName().contains("enabled")){
+                String change = (String) event.getNewValue();
+                if (change.equalsIgnoreCase("false")){
                     setEnabled(false);
-                } else if (change.equals(Boolean.TRUE)){
+                } else if (change.equalsIgnoreCase("true")){
                     setEnabled(true);
                 } else {
                     throw new IllegalArgumentException("Not boolean change" + event.toString());

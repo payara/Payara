@@ -50,7 +50,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 /**
- *
+ * AMX Configuration
  * @author jonathan
  * @since 4.1.2.182
  */
