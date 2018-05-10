@@ -43,16 +43,29 @@ import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
 import io.opentracing.ActiveSpan;
 import io.opentracing.ActiveSpan.Continuation;
+import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
+import io.opentracing.Tracer.SpanBuilder;
+import io.opentracing.propagation.Format;
+import io.opentracing.propagation.TextMap;
 import io.opentracing.tag.Tags;
 import java.io.IOException;
+import java.util.AbstractMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.container.ResourceInfo;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
@@ -61,50 +74,71 @@ import org.glassfish.internal.api.Globals;
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 @Provider
-public class PayaraJaxrsContainerRequestTracingFilter implements ContainerRequestFilter, ContainerResponseFilter {
+public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     private ServiceLocator serviceLocator;
     private RequestTracingService requestTracing;
     private OpenTracingService openTracing;
-    
+
     private ThreadLocal<Continuation> continuation;
+
+    @Context
+    private ResourceInfo resourceInfo;
     
     @PostConstruct
     public void postConstruct() {
         // Get the default Payara service locator - injecting a service locator will give you the one used by Jersey
         serviceLocator = Globals.getDefaultBaseServiceLocator();
-        
+
         if (serviceLocator != null) {
             requestTracing = serviceLocator.getService(RequestTracingService.class);
             openTracing = serviceLocator.getService(OpenTracingService.class);
         }
-        
+
         continuation = new ThreadLocal<>();
     }
-    
+
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        if (requestTracing!= null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()) {
-            Tracer tracer = openTracing.getTracer();
-            ActiveSpan activeSpan = tracer.buildSpan(requestContext.getMethod())
+        if (requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress() 
+                && isTracedAnnotationPresent()) {
+            Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
+                    serviceLocator.getService(InvocationManager.class)));
+            SpanBuilder spanBuilder = tracer.buildSpan(requestContext.getMethod() 
+                    + ":" 
+                    + resourceInfo.getResourceClass().getCanonicalName() 
+                    + "." 
+                    + resourceInfo.getResourceMethod().getName())
                     .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
                     .withTag(Tags.HTTP_METHOD.getKey(), requestContext.getMethod())
-                    .withTag(Tags.HTTP_URL.getKey(), requestContext.getUriInfo().getRequestUri().toURL().toString())
-                    .startActive();
+                    .withTag(Tags.HTTP_URL.getKey(), requestContext.getUriInfo().getRequestUri().toURL().toString());
+
+            // Don't extract if using in-built tracer as we don't support it yet
+            if (!(tracer instanceof fish.payara.opentracing.tracer.Tracer)) {
+                SpanContext spanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, new MultivaluedMapToTextMap(
+                        requestContext.getHeaders()));
+                
+                if (spanContext != null) {
+                    spanBuilder.asChildOf(spanContext);
+                }
+            }
+            
+            ActiveSpan activeSpan = spanBuilder.startActive();
             
             continuation.set(activeSpan.capture());
+            activeSpan.deactivate();
         }
     }
 
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-        if (requestTracing!= null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()) {
-            
+        if (requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()) {
+
             try (ActiveSpan activeSpan = continuation.get().activate()) {
                 Response.StatusType statusInfo = responseContext.getStatusInfo();
-                
+
                 activeSpan.setTag(Tags.HTTP_STATUS.getKey(), statusInfo.getStatusCode());
-            
+
                 if (statusInfo.getFamily() == Response.Status.Family.CLIENT_ERROR || statusInfo.getFamily() == Response.Status.Family.SERVER_ERROR) {
                     activeSpan.setTag(Tags.ERROR.getKey(), true);
                 }
@@ -113,5 +147,72 @@ public class PayaraJaxrsContainerRequestTracingFilter implements ContainerReques
             }
         }
     }
+
+    private boolean isTracedAnnotationPresent() {
+        boolean annotationPresent = false;
+        
+        
+        
+        
+        return annotationPresent;
+    }
     
+    private class MultivaluedMapToTextMap implements TextMap {
+
+        private final MultivaluedMap<String, String> map;
+
+        public MultivaluedMapToTextMap(MultivaluedMap<String, String> map) {
+            this.map = map;
+        }
+
+        @Override
+        public Iterator<Map.Entry<String, String>> iterator() {
+            return new MultivaluedMapIterator<>(map.entrySet());
+        }
+
+        @Override
+        public void put(String key, String value) {
+            map.add(key, value);
+        }
+
+    }
+    
+    private class MultivaluedMapIterator<K, V> implements Iterator<Map.Entry<K, V>> {
+
+        private final Iterator<Map.Entry<K, List<V>>> mapIterator;
+
+        private Map.Entry<K, List<V>> mapEntry;
+        private Iterator<V> mapEntryIterator;
+
+        public MultivaluedMapIterator(Set<Map.Entry<K, List<V>>> multiValuesEntrySet) {
+            this.mapIterator = multiValuesEntrySet.iterator();
+        }
+
+        @Override
+        public boolean hasNext() {
+            return ((mapEntryIterator != null && mapEntryIterator.hasNext()) || mapIterator.hasNext());
+        }
+
+        @Override
+        public Map.Entry<K, V> next() {
+            if (mapEntry == null || (!mapEntryIterator.hasNext() && mapIterator.hasNext())) {
+                mapEntry = mapIterator.next();
+                mapEntryIterator = mapEntry.getValue().iterator();
+            }
+
+            // Return either the next map entry, or an entry with no value if there isn't one
+            if (mapEntryIterator.hasNext()) {
+                return new AbstractMap.SimpleImmutableEntry<>(mapEntry.getKey(), mapEntryIterator.next());
+            } else {
+                return new AbstractMap.SimpleImmutableEntry<>(mapEntry.getKey(), null);
+            }
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+        
+    }
+
 }

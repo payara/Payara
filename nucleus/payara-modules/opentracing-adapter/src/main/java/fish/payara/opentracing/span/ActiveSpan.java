@@ -40,7 +40,7 @@
 package fish.payara.opentracing.span;
 
 import fish.payara.opentracing.OpenTracingService;
-import fish.payara.opentracing.tracers.Tracer;
+import fish.payara.opentracing.tracer.Tracer;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -54,12 +54,12 @@ public class ActiveSpan implements io.opentracing.ActiveSpan {
 
     private final Span wrappedSpan;
     private int referenceCount;
-
+    
     private OpenTracingService openTracing;
 
     public ActiveSpan(Span span) {
         this.wrappedSpan = span;
-        referenceCount = 0;
+        referenceCount = 1;
     }
 
     @PostConstruct
@@ -147,7 +147,7 @@ public class ActiveSpan implements io.opentracing.ActiveSpan {
     public void deactivate() {
         referenceCount--;
         getOpenTracingServiceIfNull();
-        ((Tracer) openTracing.getTracer()).deactivate(this);
+        ((Tracer) openTracing.getTracer(wrappedSpan.getApplicationName())).deactivate(this);
     }
 
     @Override
@@ -199,7 +199,7 @@ public class ActiveSpan implements io.opentracing.ActiveSpan {
                 }
             }
 
-            ((Tracer) openTracing.getTracer()).makeActive(ActiveSpan.this);
+            ((Tracer) openTracing.getTracer(wrappedSpan.getApplicationName())).makeActive(ActiveSpan.this);
             return ActiveSpan.this;
         }
 

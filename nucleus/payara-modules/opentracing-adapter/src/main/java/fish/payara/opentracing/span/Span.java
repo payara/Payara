@@ -57,6 +57,7 @@ import org.glassfish.internal.api.Globals;
 public class Span extends RequestTraceSpan implements io.opentracing.Span {
     
     private RequestTracingService requestTracing;
+    private final String applicationName;
     
     @PostConstruct
     public void postConstruct() {
@@ -67,8 +68,13 @@ public class Span extends RequestTraceSpan implements io.opentracing.Span {
         }
     }
 
-    public Span(String operationName) {
+    public Span(String operationName, String applicationName) {
         super(operationName);
+        this.applicationName = applicationName;
+    }
+    
+    public String getApplicationName() {
+        return applicationName;
     }
 
     @Override

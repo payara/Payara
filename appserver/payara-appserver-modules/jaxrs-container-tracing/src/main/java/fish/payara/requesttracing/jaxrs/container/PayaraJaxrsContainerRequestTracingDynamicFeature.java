@@ -53,7 +53,7 @@ public class PayaraJaxrsContainerRequestTracingDynamicFeature implements Dynamic
 
     @Override
     public void configure(ResourceInfo resourceInfo, FeatureContext context) {
-        context.register(PayaraJaxrsContainerRequestTracingFilter.class);
+        context.register(JaxrsContainerRequestTracingFilter.class);
     }
 
 }

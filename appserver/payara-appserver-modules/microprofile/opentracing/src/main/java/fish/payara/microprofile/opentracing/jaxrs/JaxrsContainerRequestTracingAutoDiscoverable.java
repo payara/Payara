@@ -37,29 +37,29 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.opentracing.cdi;
+package fish.payara.microprofile.opentracing.jaxrs;
 
-import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.Tracer;
-import javax.enterprise.inject.Produces;
-import org.glassfish.api.invocation.InvocationManager;
+import javax.ws.rs.core.FeatureContext;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
+import com.sun.enterprise.deployment.util.DOLUtils;
 
 /**
  *
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
-public class TracerProducer {
-    
-    private OpenTracingService openTracing;
-    
-    public TracerProducer() {
-        openTracing = Globals.getDefaultBaseServiceLocator().getService(OpenTracingService.class);
+public class JaxrsContainerRequestTracingAutoDiscoverable implements ForcedAutoDiscoverable {
+
+    @Override
+    public void configure(FeatureContext context) {
+        // Only register for application deployments (not the admin console) - this will throw an exception 
+        DOLUtils.getCurrentBundleForContext(
+                Globals.getDefaultHabitat().getService(Deployment.class).getCurrentDeploymentContext());
+        
+        if (!context.getConfiguration().isRegistered(JaxrsContainerRequestTracingDynamicFeature.class)) {
+            context.register(JaxrsContainerRequestTracingDynamicFeature.class);
+        }
     }
     
-    @Produces
-    public Tracer getTracer() {
-        return openTracing.getTracer(openTracing.getApplicationName(
-                Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
-    }
 }

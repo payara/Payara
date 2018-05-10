@@ -44,9 +44,19 @@ import io.opentracing.Tracer;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.mock.MockTracer.Propagator;
 import io.opentracing.util.ThreadLocalActiveSpanSource;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
+import javax.interceptor.InvocationContext;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -54,36 +64,112 @@ import org.jvnet.hk2.annotations.Service;
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 @Service(name = "opentracing-service")
-public class OpenTracingService {
+public class OpenTracingService implements EventListener {
 
     private static final Logger logger = Logger.getLogger(OpenTracingService.class.getCanonicalName());
 
-    private ThreadLocal<Tracer> tracer;
+    private final Map<String, Tracer> tracers = new ConcurrentHashMap<>();
+    
+    private OpenTracingServiceConfiguration opentracingConfiguration;
     
     @PostConstruct
     void postConstruct() {
-        
-        tracer = new ThreadLocal<Tracer>() {
-            @Override
-            protected Tracer initialValue() {
-                return null;
-            }
-        };
+        Globals.getDefaultBaseServiceLocator().getService(Events.class).register(this);
+        opentracingConfiguration = Globals.getDefaultBaseServiceLocator().getService(OpenTracingServiceConfiguration.class);
     }
 
-    public Tracer getTracer() {
-        if (tracer.get() == null) {
-            if (Boolean.getBoolean("USE_OPENTRACING_MOCK_TRACER")) {
-                tracer.set(new MockTracer(new ThreadLocalActiveSpanSource(), Propagator.TEXT_MAP));
-            } else {
-                tracer.set(new fish.payara.opentracing.tracers.Tracer());
+    @Override
+    public void event(Event<?> event) {
+        if (event.is(Deployment.APPLICATION_UNLOADED)) {
+            ApplicationInfo info = (ApplicationInfo) event.hook();
+            removeApplicationTracer(info.getName());
+        }
+    }
+    
+    public Tracer getTracer(String applicationName) {
+        
+        Tracer tracer = tracers.get(applicationName);
+        
+        if (tracer == null) {
+            synchronized(this) {
+                tracer = tracers.get(applicationName);
+                
+                if (tracer == null) {
+                    if (Boolean.getBoolean("USE_OPENTRACING_MOCK_TRACER")) {
+                        tracer = new MockTracer(new ThreadLocalActiveSpanSource(), MockTracer.Propagator.TEXT_MAP);
+                    } else {
+                        tracer = new fish.payara.opentracing.tracer.Tracer(applicationName);
+                    }
+                    
+                    tracers.put(applicationName, tracer);
+                }
             }
         }
         
-        return tracer.get();
+        return tracer;
     }
 
     public boolean isEnabled() {
         return Globals.getDefaultBaseServiceLocator().getService(RequestTracingService.class).isRequestTracingEnabled();
     }
+
+    private void removeApplicationTracer(String applicationName) {
+        tracers.remove(applicationName);
+    }
+
+    /**
+     * Gets the application name from the invocation manager. Failing that, it will use the module name or component name.
+     * @param invocationManager The invocation manager to get the application name from
+     * @return The application name
+     */
+    public String getApplicationName(InvocationManager invocationManager) {
+        String appName = invocationManager.getCurrentInvocation().getAppName();
+        if (appName == null) {
+            appName = invocationManager.getCurrentInvocation().getModuleName();
+
+            if (appName == null) {
+                appName = invocationManager.getCurrentInvocation().getComponentId();
+            }
+        }
+        
+        return appName;
+    }
+    
+    /**
+     * Gets the application name from the invocation manager. Failing that, it will use the module name, component name,
+     * or method signature (in that order).
+     * @param invocationManager The invocation manager to get the application name from
+     * @param invocationContext The context of the current invocation
+     * @return The application name
+     */
+    public String getApplicationName(InvocationManager invocationManager, InvocationContext invocationContext) {
+        String appName = invocationManager.getCurrentInvocation().getAppName();
+        if (appName == null) {
+            appName = invocationManager.getCurrentInvocation().getModuleName();
+
+            if (appName == null) {
+                appName = invocationManager.getCurrentInvocation().getComponentId();
+
+                if (appName == null && invocationContext != null) {
+                    appName = getFullMethodSignature(invocationContext.getMethod());
+                }
+            }
+        }
+        
+        return appName;
+    }
+    
+    /**
+     * Helper method to generate a full method signature consisting of canonical class name, method name, 
+     * parameter types, and return type.
+     * @param annotatedMethod The annotated Method to generate the signature for
+     * @return A String in the format of CanonicalClassName#MethodName({ParameterTypes})>ReturnType
+     */
+    private String getFullMethodSignature(Method annotatedMethod) {
+        return annotatedMethod.getDeclaringClass().getCanonicalName() 
+                + "#" + annotatedMethod.getName() 
+                + "(" + Arrays.toString(annotatedMethod.getParameterTypes()) + ")"
+                + ">" + annotatedMethod.getReturnType().getSimpleName();
+    }
+    
 }

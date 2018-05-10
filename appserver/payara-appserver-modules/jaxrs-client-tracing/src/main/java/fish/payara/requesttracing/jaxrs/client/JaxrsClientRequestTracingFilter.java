@@ -46,15 +46,21 @@ import fish.payara.opentracing.OpenTracingService;
 import io.opentracing.ActiveSpan;
 import io.opentracing.ActiveSpan.Continuation;
 import io.opentracing.Tracer;
+import io.opentracing.propagation.Format;
+import io.opentracing.propagation.TextMap;
 import io.opentracing.tag.Tags;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.client.ClientResponseContext;
 import javax.ws.rs.client.ClientResponseFilter;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response.Status.Family;
 import javax.ws.rs.core.Response.StatusType;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
@@ -63,7 +69,7 @@ import org.glassfish.internal.api.Globals;
  * 
  * @author Andrew Pielage
  */
-public class PayaraJaxrsClientRequestTracingFilter implements ClientRequestFilter, ClientResponseFilter {
+public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, ClientResponseFilter {
     
     private ServiceLocator serviceLocator;
     private RequestTracingService requestTracing;
@@ -116,18 +122,27 @@ public class PayaraJaxrsClientRequestTracingFilter implements ClientRequestFilte
                 }               
             }
             
-            Tracer tracer = openTracing.getTracer();
+            Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
+                    Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
             ActiveSpan activeSpan = tracer.buildSpan(requestContext.getMethod())
                     .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
                     .withTag(Tags.HTTP_METHOD.getKey(), requestContext.getMethod())
                     .withTag(Tags.HTTP_URL.getKey(), requestContext.getUri().toURL().toString())
                     .startActive();
          
+            // Don't inject if using in-built tracer as we don't support it yet
+            if (!(tracer instanceof fish.payara.opentracing.tracer.Tracer)) {
+                tracer.inject(
+                        activeSpan.context(), 
+                        Format.Builtin.HTTP_HEADERS, 
+                        new MultivaluedMapToTextMap(requestContext.getHeaders()));
+            }
+            
             continuation.set(activeSpan.capture());
+            activeSpan.deactivate();
         }
     }
 
-    // THIS IS ONLY FOR THE RESPONSE - NOT FOR INBOUND REQUESTS
     /**
      * Inbound response filter.
      * @param requestContext
@@ -149,6 +164,26 @@ public class PayaraJaxrsClientRequestTracingFilter implements ClientRequestFilte
                 }
             }
         }
+    }
+    
+    private class MultivaluedMapToTextMap implements TextMap {
+
+        private final MultivaluedMap<String, Object> map;
+        
+        public MultivaluedMapToTextMap(MultivaluedMap<String, Object> map) {
+            this.map = map;
+        }
+        
+        @Override
+        public Iterator<Map.Entry<String, String>> iterator() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void put(String key, String value) {
+            map.add(key, value);
+        }
+        
     }
     
 }

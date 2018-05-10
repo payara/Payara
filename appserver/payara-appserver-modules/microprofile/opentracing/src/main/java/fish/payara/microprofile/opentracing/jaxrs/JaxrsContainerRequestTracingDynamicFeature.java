@@ -37,29 +37,23 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.opentracing.cdi;
+package fish.payara.microprofile.opentracing.jaxrs;
 
-import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.Tracer;
-import javax.enterprise.inject.Produces;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.internal.api.Globals;
+import javax.ws.rs.container.DynamicFeature;
+import javax.ws.rs.container.ResourceInfo;
+import javax.ws.rs.core.FeatureContext;
+import javax.ws.rs.ext.Provider;
 
 /**
  *
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
-public class TracerProducer {
-    
-    private OpenTracingService openTracing;
-    
-    public TracerProducer() {
-        openTracing = Globals.getDefaultBaseServiceLocator().getService(OpenTracingService.class);
+@Provider
+public class JaxrsContainerRequestTracingDynamicFeature implements DynamicFeature {
+
+    @Override
+    public void configure(ResourceInfo resourceInfo, FeatureContext context) {
+        context.register(JaxrsContainerRequestTracingFilter.class);
     }
-    
-    @Produces
-    public Tracer getTracer() {
-        return openTracing.getTracer(openTracing.getApplicationName(
-                Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
-    }
+
 }

@@ -353,7 +353,7 @@
         <jacoco.plugin.version>0.8.0</jacoco.plugin.version>
 
         <!-- MicroProfile API Versions -->
-        <microprofile-opentracing.version>1.0</microprofile-opentracing.version>
+        <microprofile-opentracing.version>1.0.payara-p1</microprofile-opentracing.version>
     </properties>
 
     <modules>

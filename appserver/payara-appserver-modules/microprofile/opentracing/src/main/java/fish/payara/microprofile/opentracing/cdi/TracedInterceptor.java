@@ -41,6 +41,7 @@ package fish.payara.microprofile.opentracing.cdi;
 
 import fish.payara.opentracing.OpenTracingService;
 import io.opentracing.ActiveSpan;
+import io.opentracing.tag.Tags;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Priority;
@@ -49,6 +50,17 @@ import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.OPTIONS;
+import javax.ws.rs.PATCH;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.core.Response;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.opentracing.Traced;
@@ -69,9 +81,16 @@ public class TracedInterceptor {
     @Inject
     private BeanManager beanManager;
 
+    @Inject
+    HttpServletRequest request;
+    
+    @Inject
+    HttpServletResponse response;
+    
     @AroundInvoke
     public Object traceCdiCall(InvocationContext invocationContext) throws Exception {
         OpenTracingService openTracing = Globals.getDefaultHabitat().getService(OpenTracingService.class);
+        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
 
         Config config = null;
 
@@ -90,23 +109,72 @@ public class TracedInterceptor {
                     .getOverrideValue(config, Traced.class, "operationName", invocationContext, String.class)
                     .orElse(traced.operationName());
 
+            String jaxRsMethodAnnotationName = getJaxRsMethodAnnotationName(invocationContext);
+            if (operationName.equals("")) {
+                if (jaxRsMethodAnnotationName != null) {
+                    operationName = jaxRsMethodAnnotationName + ":";
+                }
+                
+                operationName = invocationContext.getMethod().getDeclaringClass().getCanonicalName()
+                        + "."
+                        + invocationContext.getMethod().getName();
+            }
+
             boolean tracingEnabled = (boolean) OpenTracingCdiUtils
                     .getOverrideValue(config, Traced.class, "value", invocationContext, boolean.class)
                     .orElse(traced.value());
 
             if (tracingEnabled) {
-                try (ActiveSpan span = openTracing.getTracer().buildSpan(operationName).startActive()) {
-                    span.setTag("TargetClass", invocationContext.getTarget().getClass().getName());
-                    span.setTag("MethodName", invocationContext.getMethod().getName());
+                try (ActiveSpan activeSpan = openTracing
+                        .getTracer(openTracing.getApplicationName(invocationManager, invocationContext))
+                        .buildSpan(operationName).startActive()) {
 
                     proceed = invocationContext.proceed();
+                    
+                    if (jaxRsMethodAnnotationName != null) {
+                        activeSpan.setTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER);
+                        activeSpan.setTag(Tags.HTTP_METHOD.getKey(), request.getMethod());
+                        activeSpan.setTag(Tags.HTTP_URL.getKey(), request.getRequestURL().toString());
+                        activeSpan.setTag(Tags.HTTP_STATUS.getKey(), response.getStatus());
+                        
+                        // CHECK ME!!!!!!!!!!!
+                        
+                        if (response.getStatus() >= 400) {
+                            activeSpan.setTag(Tags.ERROR.getKey(), true);
+                        }
+                    }
                 }
+            } else {
+                proceed = invocationContext.proceed();
             }
-
         } else {
             proceed = invocationContext.proceed();
         }
 
         return proceed;
     }
+
+    private String getJaxRsMethodAnnotationName(InvocationContext invocationContext) {
+        String jaxRsHttpMethodName = null;
+
+        // There must be a better way of doing this...
+        if (OpenTracingCdiUtils.getAnnotation(beanManager, GET.class, invocationContext) != null) {
+            jaxRsHttpMethodName = "GET";
+        } else if (OpenTracingCdiUtils.getAnnotation(beanManager, POST.class, invocationContext) != null) {
+            jaxRsHttpMethodName = "POST";
+        } else if (OpenTracingCdiUtils.getAnnotation(beanManager, DELETE.class, invocationContext) != null) {
+            jaxRsHttpMethodName = "DELETE";
+        } else if (OpenTracingCdiUtils.getAnnotation(beanManager, PUT.class, invocationContext) != null) {
+            jaxRsHttpMethodName = "PUT";
+        } else if (OpenTracingCdiUtils.getAnnotation(beanManager, HEAD.class, invocationContext) != null) {
+            jaxRsHttpMethodName = "HEAD";
+        } else if (OpenTracingCdiUtils.getAnnotation(beanManager, PATCH.class, invocationContext) != null) {
+            jaxRsHttpMethodName = "PATCH";
+        } else if (OpenTracingCdiUtils.getAnnotation(beanManager, OPTIONS.class, invocationContext) != null) {
+            jaxRsHttpMethodName = "OPTIONS";
+        }
+        
+        return jaxRsHttpMethodName;
+    }
+    
 }

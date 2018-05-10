@@ -52,7 +52,7 @@ public class PayaraJaxrsRequestTracingClientBuilder extends JerseyClientBuilder 
     @Override
     public JerseyClient build() {
         // Register the Request Tracing filter, then build the client as per normal
-        this.register(PayaraJaxrsClientRequestTracingFilter.class);
+        this.register(JaxrsClientRequestTracingFilter.class);
         return super.build();
     }
 }

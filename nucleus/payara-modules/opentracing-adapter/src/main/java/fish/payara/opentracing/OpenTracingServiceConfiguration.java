@@ -37,29 +37,22 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.opentracing.cdi;
+package fish.payara.opentracing;
 
-import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.Tracer;
-import javax.enterprise.inject.Produces;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.internal.api.Globals;
+import org.glassfish.api.admin.config.ConfigExtension;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
 
 /**
  *
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
-public class TracerProducer {
+@Configured(name = "opentracing-configuration")
+public interface OpenTracingServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
     
-    private OpenTracingService openTracing;
+    @Attribute(defaultValue = "fish.payara.opentracing.tracer.TracerFactory", dataType = String.class)
+    public String getTracerFactoryClassName();
+    public void setTracerFactoryClass(String tracerFactoryClassName);
     
-    public TracerProducer() {
-        openTracing = Globals.getDefaultBaseServiceLocator().getService(OpenTracingService.class);
-    }
-    
-    @Produces
-    public Tracer getTracer() {
-        return openTracing.getTracer(openTracing.getApplicationName(
-                Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
-    }
 }

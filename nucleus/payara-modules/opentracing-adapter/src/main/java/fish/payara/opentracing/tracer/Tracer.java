@@ -37,7 +37,7 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.opentracing.tracers;
+package fish.payara.opentracing.tracer;
 
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.notification.requesttracing.RequestTraceSpan.SpanContextRelationshipType;
@@ -55,6 +55,12 @@ import java.util.concurrent.TimeUnit;
  */
 public class Tracer extends ActiveSpanSource implements io.opentracing.Tracer {
 
+    private final String applicationName;
+    
+    public Tracer(String applicationName) {
+        this.applicationName = applicationName;
+    }
+    
     @Override
     public SpanBuilder buildSpan(String operationName) {
         return new SpanBuilder(operationName);
@@ -79,7 +85,7 @@ public class Tracer extends ActiveSpanSource implements io.opentracing.Tracer {
         public SpanBuilder(String operationName) {
             ignoreActiveSpan = false;
             microsecondsStartTime = 0;
-            span = new fish.payara.opentracing.span.Span(operationName);
+            span = new fish.payara.opentracing.span.Span(operationName, applicationName);
         }
 
         @Override
