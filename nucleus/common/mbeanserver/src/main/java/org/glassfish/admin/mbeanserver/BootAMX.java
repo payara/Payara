@@ -41,8 +41,12 @@
 
 package org.glassfish.admin.mbeanserver;
 
+import java.lang.management.ManagementFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
 import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.StandardMBean;
@@ -53,57 +57,49 @@ import org.glassfish.external.amx.BootAMXMBean;
 import org.glassfish.external.amx.AMXGlassfish;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.logging.annotation.LogMessageInfo;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * The MBean implementation for BootAMXMBean.
  *
  * Public API is the name of the booter MBean eg {@link BootAMXMBean.OBJECT_NAME}
  */
+@Service
 public final class BootAMX implements BootAMXMBean {
 
     private static final Logger JMX_LOGGER = Util.JMX_LOGGER;
 
+    @Inject
+    private ServiceLocator mHabitat;    
     private final MBeanServer mMBeanServer;
     private final ObjectName mObjectName;
-    private final ServiceLocator mHabitat;
     private ObjectName mDomainRootObjectName;
-
-    private BootAMX(final ServiceLocator habitat, final MBeanServer mbeanServer) {
-        mHabitat = habitat;
-        mMBeanServer = mbeanServer;
+    
+    public BootAMX(){
+        mMBeanServer = ManagementFactory.getPlatformMBeanServer();
         mObjectName = getBootAMXMBeanObjectName();
         mDomainRootObjectName = null;
-
         if (mMBeanServer.isRegistered(mObjectName)) {
             throw new IllegalStateException("AMX Booter MBean is already registered: " + mObjectName);
         }
     }
-
-    public static ObjectName getBootAMXMBeanObjectName() {
-        return AMXGlassfish.DEFAULT.getBootAMXMBeanObjectName();
-    }
-
-    /**
-     * Create an instance of the booter.
-     * @param habitat
-     * @param server
-     * @return 
-     */
-    public static synchronized BootAMX create(final ServiceLocator habitat, final MBeanServer server) {
-        final BootAMX booter = new BootAMX(habitat, server);
-        final ObjectName objectName = getBootAMXMBeanObjectName();
-
+    
+    @PostConstruct
+    public void postConstuct(){
         try {
-            final StandardMBean mbean = new StandardMBean(booter, BootAMXMBean.class);
+            final StandardMBean mbean = new StandardMBean(this, BootAMXMBean.class);
 
-            if (!server.registerMBean(mbean, objectName).getObjectName().equals(objectName)) {
+            if (!mMBeanServer.registerMBean(mbean, mObjectName).getObjectName().equals(mObjectName)) {
                 throw new IllegalStateException();
             }
         } catch (JMException e) {
             JMX_LOGGER.log(Level.SEVERE, null, e);
             throw new IllegalStateException(e);
         }
-        return booter;
+    }
+
+    public static ObjectName getBootAMXMBeanObjectName() {
+        return AMXGlassfish.DEFAULT.getBootAMXMBeanObjectName();
     }
 
     AMXStartupServiceMBean getLoader() {
@@ -119,6 +115,7 @@ public final class BootAMX implements BootAMXMBean {
      * We need to dynamically load the AMX module. HOW? we can't depend on the amx-impl module.
      *
      * For now though, assume that a well-known MBean is available through other means via the amx-impl module.
+     * @return 
      */
     @Override
     public synchronized ObjectName bootAMX() {
@@ -157,11 +154,12 @@ public final class BootAMX implements BootAMXMBean {
             level = "WARNING")
     static final String errorDuringShutdown = Util.LOG_PREFIX + "-00008";
 
+    @PreDestroy
     public void shutdown() {
         try {
             mMBeanServer.unregisterMBean(getBootAMXMBeanObjectName());
         } catch (final Exception e) {
-            Util.getLogger().log(java.util.logging.Level.WARNING, errorDuringShutdown, e);
+            Util.getLogger().log(Level.WARNING, errorDuringShutdown, e);
         }
     }
 }

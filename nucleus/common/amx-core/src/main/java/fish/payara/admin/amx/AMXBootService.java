@@ -84,8 +84,7 @@ public class AMXBootService implements ConfigListener {
     }
     
     private void startup(){
-        MBeanServer server = habitat.getService(MBeanServer.class);
-        bootAMX = BootAMX.create(habitat, server);
+        bootAMX = habitat.getService(BootAMX.class);
         bootAMX.bootAMX();
     }
     

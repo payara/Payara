@@ -38,6 +38,7 @@
  * holder.
  */
 // Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.mbeanserver;
 
 import java.util.logging.Level;
@@ -177,13 +178,12 @@ public final class JMXStartupService implements PostConstruct {
 
     @Override
     public void postConstruct() {
-
-        mBootAMX = BootAMX.create(mHabitat, mMBeanServer);
+        mBootAMX = mHabitat.getService(BootAMX.class);
 
         final List<JmxConnector> configuredConnectors = mAdminService.getJmxConnector();
 
         mConnectorsStarterThread = new JMXConnectorsStarterThread(
-                AdminAuthorizedMBeanServer.newInstance(mMBeanServer, serverEnv.isInstance(), mBootAMX), configuredConnectors, mBootAMX, this);
+                AdminAuthorizedMBeanServer.newInstance(mMBeanServer, serverEnv.isInstance()), configuredConnectors, mBootAMX, this);
         mConnectorsStarterThread.start();
 
         mEvents.register(new ShutdownListener());
@@ -295,8 +295,7 @@ public final class JMXStartupService implements PostConstruct {
                     break;
                 case "jmxmp":
                     starter = new JMXMPConnectorStarter(mMBeanServer, address, port,
-                            securityEnabled,
-                            habitat, listener);
+                            securityEnabled, habitat, listener);
                     server = ((JMXMPConnectorStarter) starter).start();
                     break;
                 default:

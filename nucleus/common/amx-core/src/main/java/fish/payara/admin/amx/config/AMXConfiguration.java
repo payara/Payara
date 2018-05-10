@@ -62,7 +62,7 @@ public interface AMXConfiguration extends ConfigBeanProxy, ConfigExtension {
      *
      * @return
      */
-    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    @Attribute(dataType = Boolean.class)
     String getEnabled();
 
     void setEnabled(String value) throws PropertyVetoException;
