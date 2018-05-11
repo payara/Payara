@@ -165,6 +165,18 @@
             <artifactId>microprofile-metrics</artifactId>
             <version>${project.version}</version>
         </dependency>
+      
+        <!-- OpenAPI -->
+        <dependency>
+            <groupId>org.eclipse.microprofile.openapi</groupId>
+            <artifactId>microprofile-openapi-api</artifactId>
+            <version>${microprofile-openapi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.microprofile.openapi</groupId>
+            <artifactId>microprofile-openapi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         
         <!-- JWT -->
         <dependency>
