@@ -226,7 +226,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                 initialiseApplicationConfig(appInfo);
                 LinkedList<ConfigSource> sources = new LinkedList<>();
                 LinkedList<Converter> converters = new LinkedList<>();
-                sources.addAll(getDefaultSources());
+                sources.addAll(getDefaultSources(appInfo));
                 sources.addAll(getDiscoveredSources(appInfo));
                 converters.addAll(getDefaultConverters());
                 converters.addAll(getDiscoveredConverters(appInfo));
@@ -260,22 +260,8 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         return result;
     }
 
-    List<ConfigSource> getDefaultSources() {
+    private List<ConfigSource> getDefaultSources(String appName, String moduleName) {
         LinkedList<ConfigSource> sources = new LinkedList<>();
-        String appName = null;
-        String moduleName = null;
-        ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
-        if (currentInvocation == null) {
-            ApplicationInfo info = getAppInfo(Thread.currentThread().getContextClassLoader());
-            if (info != null) {
-                appName = info.getName();
-                moduleName = appName;
-            }
-        } else {
-            appName = currentInvocation.getAppName();
-            moduleName = currentInvocation.getModuleName();
-        }
-
         String serverName = context.getInstanceName();
         String configName = context.getConfigBean().getConfig().getName();
         sources.add(new DomainConfigSource());
@@ -293,8 +279,31 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             sources.add(new ModuleConfigSource(appName, moduleName));
             for (Properties props : getDeployedApplicationProperties(appName)) {
                 sources.add(new PropertiesConfigSource(props, appName));
-            }        }
+            }
+        }
         return sources;
+    }
+    List<ConfigSource> getDefaultSources() {
+        return getDefaultSources(null);
+    }
+
+    List<ConfigSource> getDefaultSources(ApplicationInfo appInfo) {
+        String appName = null;
+        String moduleName = null;
+        ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
+        if (currentInvocation == null) {
+            if (appInfo == null) {
+                appInfo = getAppInfo(Thread.currentThread().getContextClassLoader());
+            }
+            if (appInfo != null) {
+                appName = appInfo.getName();
+                moduleName = appName;
+            }
+        } else {
+            appName = currentInvocation.getAppName();
+            moduleName = currentInvocation.getModuleName();
+        }
+        return getDefaultSources(appName, moduleName);
     }
 
     @Override
