@@ -45,12 +45,12 @@ import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadataConfig;
-import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.registerMetadata;
+import fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import static java.util.Collections.singletonMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -88,6 +88,9 @@ public class MetricsService implements EventListener {
     @Inject
     ServiceLocator serviceLocator;
     
+    @Inject
+    private MBeanMetadataHelper helper;
+    
     private MetricsServiceConfiguration metricsServiceConfiguration;
 
     private final Map<String, MetricRegistry> REGISTRIES = new ConcurrentHashMap<>();//stores registries of base, vendor, app1, app2, ... app(n) etc
@@ -100,7 +103,7 @@ public class MetricsService implements EventListener {
     public void init() {
         events.register(this);
         metricsServiceConfiguration = serviceLocator.getService(MetricsServiceConfiguration.class);
-        initMetadataConfig(getConfig());
+        initMetadataConfig(getConfig(), false);
     }
 
     @Override
@@ -115,20 +118,29 @@ public class MetricsService implements EventListener {
     }
 
      /**
-     * metrics.xml contains the base & vendor metrics metadata.
+     * Initialise metrics from the
+     * metrics.xml containing the base & vendor metrics metadata.
      *
      * @param metadataConfig
      */
-    private void initMetadataConfig(MBeanMetadataConfig metadataConfig) {
+    private void initMetadataConfig(MBeanMetadataConfig metadataConfig, boolean isRetry) {
         Map<String, String> globalTags = MetricsHelper.getGlobalTagsMap();
-        registerMetadata(
+        helper.registerMetadata(
                 getOrAddRegistry(BASE.getName()),
                 metadataConfig.getBaseMetadata(),
-                globalTags);
-        registerMetadata(
+                globalTags, isRetry);
+        helper.registerMetadata(
                 getOrAddRegistry(VENDOR.getName()),
                 metadataConfig.getVendorMetadata(),
-                globalTags);
+                globalTags, isRetry);
+    }
+    
+    /**
+     * Rereads the domain.xml and registers MBeans if they have been started after
+     * the metrics service.
+     */
+    public void reregisterMetadataConfig(){
+        initMetadataConfig(getConfig(), true);
     }
     
     private MBeanMetadataConfig getConfig() {
@@ -174,7 +186,7 @@ public class MetricsService implements EventListener {
         MetricRegistry registry = getRegistry(registryName);
         Map<String, Metric> metricMap = registry.getMetrics();
         if (metricMap.containsKey(metricName)) {
-            return singletonMap(metricName, metricMap.get(metricName));
+            return Collections.singletonMap(metricName, metricMap.get(metricName));
         } else {
             throw new NoSuchMetricException(metricName);
         }
@@ -184,7 +196,7 @@ public class MetricsService implements EventListener {
         MetricRegistry registry = getRegistry(registryName);
         Map<String, Metadata> metricMetadataMap = registry.getMetadata();
         if (metricMetadataMap.containsKey(metricName)) {
-            return singletonMap(metricName, metricMetadataMap.get(metricName));
+            return Collections.singletonMap(metricName, metricMetadataMap.get(metricName));
         } else {
             throw new NoSuchMetricException(metricName);
         }
