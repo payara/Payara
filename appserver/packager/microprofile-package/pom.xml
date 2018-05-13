@@ -203,11 +203,6 @@
             <version>${microprofile-rest-client.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.microprofile.rest.client</groupId>
-            <artifactId>microprofile-rest-client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.jersey.ext</groupId>
             <artifactId>jersey-proxy-client</artifactId>
         </dependency>

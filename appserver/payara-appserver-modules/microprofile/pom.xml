@@ -57,6 +57,5 @@ holder.
         <module>healthcheck</module>
         <module>jwt-auth</module>
         <module>metrics</module>
-        <module>rest-client</module>
     </modules>
 </project>
