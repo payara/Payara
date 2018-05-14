@@ -182,16 +182,12 @@
 
     <target name="replaceDomainWeb" if="web.distribution">
         <echo message="replacing domain"/>
-        <copy file="../../../admin/gf_template_web/src/main/resources/config/domain.xml" todir="${jardir}/${install.dir.name}/glassfish/config/" description="Copying domain"/>
-        <!--<fileset dir="${gfdir}" includes="**/appserver-domain-web.jar"/>
-        <fileset dir="${gfdir}" includes="**/payara-domain-web.jar"/> -->
+        <copy file="src/main/resources/config/domain.xml" todir="${jardir}/${install.dir.name}/glassfish/config/" description="Copying domain"/>
     </target>
    
    
     <target name="replaceDomainFull" if="full.distribution">
         <echo message="replacing domain.xml"/>
-        <copy file="../../../admin/gf_template/src/main/resources/config/domain.xml" todir="${jardir}/${install.dir.name}/glassfish/config/" description="Copying domain"/>
-        <fileset dir="${gfdir}" includes="**/appserver-domain.jar"/>
-        <fileset dir="${gfdir}" includes="**/payara-domain.jar"/>
+        <copy file="src/main/resources/config/domain.xml" todir="${jardir}/${install.dir.name}/glassfish/config/" description="Copying domain"/>
     </target>
 </project>
