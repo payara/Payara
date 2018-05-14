@@ -125,7 +125,7 @@ public class PayaraApplicationHandlers {
     @Handler(id = "py.getAllSelectedTarget",
             input = {
                 @HandlerInput(name = "targetList", type = List.class, required = true),
-                @HandlerInput(name = "resName", type = String.class, required = true)},
+                @HandlerInput(name = "resourceName", type = String.class, required = true)},
             output = {
                 @HandlerOutput(name = "slectedTarget", type = List.class)
             })
@@ -133,19 +133,19 @@ public class PayaraApplicationHandlers {
         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
 
         List<String> targetList = (List) handlerCtx.getInputValue("targetList");
-        String resName = (String) handlerCtx.getInputValue("resName");
+        String resourceName = (String) handlerCtx.getInputValue("resName");
         List<String> selectedTargetList = new ArrayList<>();
         String endpoint;
 
         for (String targetName : targetList) {
-            endpoint = prefix + "/clusters/cluster/" + targetName + "/resource-ref/" + resName;
+            endpoint = prefix + "/clusters/cluster/" + targetName + "/resource-ref/" + resourceName;
             boolean existsInCluster = checkIfEndPointExist(endpoint);
 
             if (!existsInCluster) {
-                endpoint = prefix + "/deployment-groups/deployment-group/" + targetName + "/resource-ref/" + resName;
+                endpoint = prefix + "/deployment-groups/deployment-group/" + targetName + "/resource-ref/" + resourceName;
                 boolean existsInDeploymentGroup = checkIfEndPointExist(endpoint);
                 if (!existsInDeploymentGroup) {
-                    endpoint = prefix + "/servers/server/" + targetName + "/resource-ref/" + resName;
+                    endpoint = prefix + "/servers/server/" + targetName + "/resource-ref/" + resourceName;
                     boolean existsInServer = checkIfEndPointExist(endpoint);
                     if (existsInServer) {
                         selectedTargetList.add(targetName);
@@ -185,126 +185,36 @@ public class PayaraApplicationHandlers {
         return result;
 
     }
-    
-     @Handler(id="py.containedInDG",
-    	input={
-            @HandlerInput(name="list", type=List.class, required=true),
-            @HandlerInput(name="selectedTargets", type=List.class, required=true),
-            @HandlerInput(name="testStr", type=String.class, required=true)},
-             
-        output={
-        @HandlerOutput(name="contain", type=Boolean.class)})
-    public static void containedInDG(HandlerContext handlerCtx) {
-         System.out.println("------------- Contain in DG------------------------");
-        List<String> deploymentGroups = (List)handlerCtx.getInputValue("list");
-        List<String> slectedTargets = (List)handlerCtx.getInputValue("selectedTargets");
-        
-         boolean contain = false;
-        
-         //http://localhost:4848/management/domain/deployment-groups/deployment-group/dg1/list-instances
-         if (deploymentGroups != null) {
-             for (int i = 0; i < deploymentGroups.size(); i++) {
-                 System.out.println("Contain in list dg=  " + deploymentGroups.get(i));
-             }
-         }
-
-         if (slectedTargets != null) {
-             for (int i = 0; i < slectedTargets.size(); i++) {
-                 System.out.println("Contain in list selcted in dg=  " + slectedTargets.get(i));
-             }
-         }
-         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
-         String endpoint; 
-       
-           List<Map> instances = new ArrayList<>();
-           
-         if (deploymentGroups != null) {
-             for (String deploymentGroup : deploymentGroups) {
-                 System.out.println("deplouyment group = " + deploymentGroup);
-                 if (slectedTargets.contains(deploymentGroup)) {
-                     endpoint = prefix + "/deployment-groups/deployment-group/" + deploymentGroup + "/list-instances";
-                     System.out.println("Contain in list DG=  " + deploymentGroup);
-                     System.out.println("Endpont in dg = " + endpoint);
-                     Map responseMap = RestUtil.restRequest(endpoint, null, "GET", handlerCtx, false, true);
-                     Map data = (Map) responseMap.get("data");
-
-                     if (data != null) {
-                         Map extraProperties = (Map) data.get("extraProperties");
-                         if (extraProperties != null) {
-                             try {
-                                 instances = (List<Map>) extraProperties.get("instanceList");
-                                 if (instances == null) {
-                                     // Re-initialise to empty if members is not found
-                                     instances = new ArrayList<>();
-                                 } else {
-                                     for (Map instance : instances) {
-                                         System.out.println("Instance = " + instance);
-                                         System.out.println("is in deployemnt = " + instance.containsValue(handlerCtx.getInputValue("testStr")));
-                                         if (instance.get("name").equals(handlerCtx.getInputValue("testStr"))){
-                                             contain = true;
-                                             break;
-                                         }
-                                     }
-                                 }
-                             } catch (ClassCastException ex) {
-                                 // This exception should only be caught if Hazelcast is not enabled, as the command returns a 
-                                 // String instead of a List. In such a case, re-initialise to an empty List
-                                 instances = new ArrayList<>();
-                             }
-                         }
-                     }
-                 }
-
-             }
-         }
-
-        
-         System.out.println("test String = " + handlerCtx.getInputValue("testStr"));
-         System.out.println("Contains ------ = " + contain);
-         handlerCtx.setOutputValue("contain", contain);
-    }
-    
-     @Handler(id = "py.checkIfResourceIsInInstance",
+ 
+    @Handler(id = "py.checkIfResourceIsInInstance",
             input = {
                 @HandlerInput(name = "instanceName", type = String.class, required = true),
                 @HandlerInput(name = "resourceName", type = String.class, required = true)},
             output = {
                 @HandlerOutput(name = "isPresent", type = Boolean.class)})
     public static void checkIfResourceIsInInstance(HandlerContext handlerCtx) {
-         String instanceName = (String) handlerCtx.getInputValue("instanceName");
-         String resourceName = (String) handlerCtx.getInputValue("resourceName");
-         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
-         //http://localhost:4848/management/domain/servers/server/dg1i1/resource-ref
-         String endpoint = prefix + "/servers/server/" + instanceName + "/resource-ref";
+        String instanceName = (String) handlerCtx.getInputValue("instanceName");
+        String resourceName = (String) handlerCtx.getInputValue("resourceName");
+        String prefix = (String) GuiUtil.getSessionValue("REST_URL");
+        String endpoint = prefix + "/servers/server/" + instanceName + "/resource-ref";
 
-         boolean contain = false;
-         System.out.println("erource name = " + resourceName);
-         Map responseMap = RestUtil.restRequest(endpoint, null, "GET", handlerCtx, false, true);
-         Map data = (Map) responseMap.get("data");
-         System.out.println("data in uu = " + data.toString());
+        boolean isPresent = false;
+        Map responseMap = RestUtil.restRequest(endpoint, null, "GET", handlerCtx, false, true);
+        Map data = (Map) responseMap.get("data");
 
-         if (data != null) {
-             Map extraProperties = (Map) data.get("extraProperties");
-             if (extraProperties != null) {
-                 Map childResources = (Map) extraProperties.get("childResources");
-
-                 List<String> listOfResources = new ArrayList<String>(childResources.keySet());
-
-                 if (listOfResources.contains(resourceName)) {
-                     contain = true;
-                 }
-
-                 for (int i = 0; i < listOfResources.size(); i++) {
-                     System.out.println("resourec in chi =" + listOfResources.get(i));
-                 }
-
-                 System.out.println("exyra  -=  " + extraProperties.toString());
-                 System.out.println("Chil;dresource = " + childResources.toString());
-             }
-         }
-
-         System.out.println("Respone is instance = " + responseMap.toString());
-         handlerCtx.setOutputValue("isPresent", contain);
+        if (data != null) {
+            Map extraProperties = (Map) data.get("extraProperties");
+            if (extraProperties != null) {
+                Map childResources = (Map) extraProperties.get("childResources");
+                List<String> listOfResources = new ArrayList<String>(childResources.keySet());
+                
+                if (listOfResources.contains(resourceName)) {
+                    isPresent = true;
+                }
+            }
+        }
+        
+        handlerCtx.setOutputValue("isPresent", isPresent);
     }
-    
+
 }

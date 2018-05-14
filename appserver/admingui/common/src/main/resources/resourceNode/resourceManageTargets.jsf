@@ -57,7 +57,7 @@
             urlencode(value="#{pageSession.resName}" encoding="UTF-8" result="#{pageSession.encodedResName}");
 #include "/common/shared/targetsList.inc"
              
-            py.getAllSelectedTarget(targetList="#{pageSession.targetList}" resName="#{pageSession.encodedResName}" slectedTarget="#{pageSession.selectedTargetList}");
+            py.getAllSelectedTarget(targetList="#{pageSession.targetList}" resourceName="#{pageSession.encodedResName}" slectedTarget="#{pageSession.selectedTargetList}");
             convertListToArray(list="#{pageSession.selectedTargetList}" array="#{pageSession.selectedTargets}");
         />
     </event>
