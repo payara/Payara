@@ -56,26 +56,9 @@
             setPageSessionAttribute(key="resourceName" value="#{pageSession.resName}");
             urlencode(value="#{pageSession.resName}" encoding="UTF-8" result="#{pageSession.encodedResName}");
 #include "/common/shared/targetsList.inc"
-            setPageSessionAttribute(key="resTargets" value={});
-            foreach(var="targetName" list="#{pageSession.targetList}") {
-                 gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{requestScope.targetName}/resource-ref/#{pageSession.encodedResName}" exists="isCluster");
-                 if ("!#{requestScope.isCluster}") {
-                     gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/servers/server/#{requestScope.targetName}/resource-ref/#{pageSession.encodedResName}" exists="isServer");
-                     if ("!#{requestScope.isServer}") {
-                        gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{requestScope.targetName}/resource-ref/#{pageSession.encodedResName}" exists="isDG"); 
-                        if("#{requestScope.isDG}") {
-                          listAdd(list="#{pageSession.resTargets}" value="#{requestScope.targetName}");
-                        } 
-                     }
-                     if("#{requestScope.isServer}") {
-                         listAdd(list="#{pageSession.resTargets}" value="#{requestScope.targetName}");
-                     }
-                 }
-                 if ("#{requestScope.isCluster}") {
-                     listAdd(list="#{pageSession.resTargets}" value="#{requestScope.targetName}");
-                 }
-             }
-             convertListToArray(list="#{pageSession.resTargets}" array="#{pageSession.selectedTargets}");
+             
+            py.getAllSelectedTarget(targetList="#{pageSession.targetList}" resName="#{pageSession.encodedResName}" slectedTarget="#{pageSession.selectedTargetList}");
+            convertListToArray(list="#{pageSession.selectedTargetList}" array="#{pageSession.selectedTargets}");
         />
     </event>
 <sun:form id="form">
@@ -92,6 +75,7 @@
                 <!command
                     setAttribute(key="clusterEndpoint" value="#{sessionScope.REST_URL}/clusters/cluster");
                     setAttribute(key="serverEndpoint" value="#{sessionScope.REST_URL}/servers/server");
+                    setAttribute(key="deploymentEndpoint" value="#{sessionScope.REST_URL}/deployment-groups/deployment-group");
                     //Convert the seleted Targets Array to String
                     convertArrayToCommaString(array="#{pageSession.selectedTargets}" commaString="#{requestScope.selTargetsString}");
                     convertStringtoList(str="#{requestScope.selTargetsString}" result="#{requestScope.selTargetsList}");
@@ -100,32 +84,55 @@
                     //If it is already associated, no need to add or remove.
                     //If it is a new target, create an element under the target.
                     foreach(var="newTarget" list="#{requestScope.selTargetsList}") {
-                        gf.containedIn(list="#{pageSession.resTargets}" testStr="#{newTarget}" contain="#{requestScope.isAssociatedTarget}");
+                        gf.containedIn(list="#{pageSession.selectedTargetList}" testStr="#{newTarget}" contain="#{requestScope.isAssociatedTarget}");
                         if (#{requestScope.isAssociatedTarget}) {
                             //no need to add or remove.
-                            removeListElement(list="#{pageSession.resTargets}" name="#{newTarget}" finalList="#{pageSession.resTargets}");
+                            removeListElement(list="#{pageSession.selectedTargetList}" name="#{newTarget}" finalList="#{pageSession.selectedTargetList}");
                         }
                         if (!#{requestScope.isAssociatedTarget}) {
                             gf.containedIn(list="#{pageSession.clusterList}" testStr="#{newTarget}" contain="#{requestScope.isCluster}");
+                            gf.containedIn(list="#{pageSession.dgList}" testStr="#{newTarget}" contain="#{requestScope.isDeploymentGroup}");
+                                                     
                             if (#{requestScope.isCluster}) {
                                 setAttribute(key="endpoint" value="#{clusterEndpoint}/#{newTarget}/resource-ref");
                             }
-                            if (!#{requestScope.isCluster}) {
-                                setAttribute(key="endpoint" value="#{serverEndpoint}/#{newTarget}/resource-ref");
+                            
+                            if (#{requestScope.isDeploymentGroup}) {
+                                setAttribute(key="endpoint" value="#{deploymentEndpoint}/#{newTarget}/resource-ref");
                             }
-                            createMap(result="#{requestScope.resAttrsMap}");
-                            mapPut(map="#{requestScope.resAttrsMap}" key="id" value="#{pageSession.resName}");
-                            mapPut(map="#{requestScope.resAttrsMap}" key="target" value="#{newTarget}");
-                            gf.restRequest(endpoint="#{endpoint}" attrs="#{requestScope.resAttrsMap}", method="post");
+                            
+                            if (!#{requestScope.isCluster}) {
+                                if (!#{requestScope.isDeploymentGroup}) {                             
+                                    py.checkIfResourceIsInInstance(instanceName="#{newTarget}" resourceName="#{pageSession.resName}" isPresent="#{requestScope.isResourceInInstance}");
+                                    setAttribute(key="endpoint" value="#{serverEndpoint}/#{newTarget}/resource-ref");
+                                }
+                            }
+                            
+                          if (!#{requestScope.isResourceInInstance}) {                            
+                                createMap(result="#{requestScope.resAttrsMap}");
+                                mapPut(map="#{requestScope.resAttrsMap}" key="id" value="#{pageSession.resName}");
+                                mapPut(map="#{requestScope.resAttrsMap}" key="target" value="#{newTarget}");
+                                gf.restRequest(endpoint="#{endpoint}" attrs="#{requestScope.resAttrsMap}", method="post");
+                            }
                         }
                     }
-                    foreach(var="oTarget" list="#{pageSession.resTargets}") {
+                    foreach(var="oTarget" list="#{pageSession.selectedTargetList}") {
                         gf.containedIn(list="#{pageSession.clusterList}" testStr="#{oTarget}" contain="#{requestScope.isCluster}");
+                        gf.containedIn(list="#{pageSession.dgList}" testStr="#{oTarget}" contain="#{requestScope.isDeploymentGroup}");
+                        //gf.containedIn(list="#{pageSession.serverList}" testStr="#{oTarget}" contain="#{requestScope.isServer}");
+                            
                         if (#{requestScope.isCluster}) {
                             setAttribute(key="endpoint" value="#{clusterEndpoint}/#{oTarget}/resource-ref/#{pageSession.encodedResName}");
                         }
+                        
+                        if (#{requestScope.isDeploymentGroup}) {
+                            setAttribute(key="endpoint" value="#{deploymentEndpoint}/#{oTarget}/resource-ref/#{pageSession.encodedResName}");
+                        }
+                        
                         if (!#{requestScope.isCluster}) {
-                            setAttribute(key="endpoint" value="#{serverEndpoint}/#{oTarget}/resource-ref/#{pageSession.encodedResName}");
+                            if (!#{requestScope.isDeploymentGroup}) {
+                                setAttribute(key="endpoint" value="#{serverEndpoint}/#{oTarget}/resource-ref/#{pageSession.encodedResName}");
+                            }
                         }
                         createMap(result="#{requestScope.resRefAttrsMap}");
                         mapPut(map="#{requestScope.resRefAttrsMap}" key="target" value="#{oTarget}");

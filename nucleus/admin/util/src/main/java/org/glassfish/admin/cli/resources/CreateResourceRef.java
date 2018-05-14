@@ -184,9 +184,11 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
             }
             // create new ResourceRef for all instances of DG, if it's a dg
             if (refContainer instanceof DeploymentGroup && isElegibleResource(refName)) {
-                DeploymentGroup dg = (DeploymentGroup)refContainer;
+                DeploymentGroup dg = (DeploymentGroup) refContainer;
                 for (Server svr : dg.getInstances()) {
-                    svr.createResourceRef(enabled.toString(), refName);
+                    if (svr.getResourceRef(refName) == null) {
+                        svr.createResourceRef(enabled.toString(), refName);
+                    }
                 }
             }
             
