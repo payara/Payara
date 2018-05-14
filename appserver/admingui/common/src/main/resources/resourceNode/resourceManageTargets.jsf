@@ -119,8 +119,7 @@
                     foreach(var="oTarget" list="#{pageSession.selectedTargetList}") {
                         gf.containedIn(list="#{pageSession.clusterList}" testStr="#{oTarget}" contain="#{requestScope.isCluster}");
                         gf.containedIn(list="#{pageSession.dgList}" testStr="#{oTarget}" contain="#{requestScope.isDeploymentGroup}");
-                        //gf.containedIn(list="#{pageSession.serverList}" testStr="#{oTarget}" contain="#{requestScope.isServer}");
-                            
+                                                 
                         if (#{requestScope.isCluster}) {
                             setAttribute(key="endpoint" value="#{clusterEndpoint}/#{oTarget}/resource-ref/#{pageSession.encodedResName}");
                         }
