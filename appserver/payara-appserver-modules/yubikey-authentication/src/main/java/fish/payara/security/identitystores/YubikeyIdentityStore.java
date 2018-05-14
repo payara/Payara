@@ -58,7 +58,6 @@ import java.util.logging.Logger;
 import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
-import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.internal.api.Globals;
 
 /**
@@ -69,7 +68,8 @@ import org.glassfish.internal.api.Globals;
  * @author Mark Wareham
  */
 public class YubikeyIdentityStore implements IdentityStore {
-
+    
+    
     private static final Logger LOG = Logger.getLogger(YubikeyIdentityStore.class.getName());
     
     private final YubicoClient yubicoClient;
@@ -81,19 +81,17 @@ public class YubikeyIdentityStore implements IdentityStore {
         int clientID = definition.yubikeyAPIClientID();
         if(clientID==0){//if client ID default, use expression
             try{
-                clientID = Integer.parseInt((String) TranslatedConfigView.getTranslatedValue(definition.yubikeyAPIClientIDExpression()));
+                clientID = Integer.parseInt(ConfigRetriever.get(definition.yubikeyAPIClientIDExpression()));
             } catch (NumberFormatException numberFormatException) {
                 LOG.warning("Yubico API Client ID specified is not a valid number.");
             }
         }
-        yubicoClient = YubicoClientFactory.getYubicoClient(
-                clientID, 
-                (String) TranslatedConfigView.getTranslatedValue(definition.yubikeyAPIKey()));
+        yubicoClient = YubicoClientFactory.getYubicoClient(clientID, ConfigRetriever.get(definition.yubikeyAPIKey()));
         try {
             this.requestTracing = Globals.get(RequestTracingService.class);
         } catch (NullPointerException e) {
             LOG.log(Level.INFO, "Error retrieving Request Tracing service "
-                    + "during initialisation of Concurrent Context - NullPointerException");
+                    + "during initialisation of Yubikey Identity Store - NullPointerException");
         }
     }
 
@@ -154,9 +152,14 @@ public class YubikeyIdentityStore implements IdentityStore {
 
     @Override
     public int priority() {
-        if(!definition.priorityExpression().equals("")){
-           return (Integer) TranslatedConfigView.getTranslatedValue(definition.priorityExpression());
-        }else{
+        if(definition.priorityExpression().equals("")){
+            return definition.priority();
+        }
+        try{
+            return Integer.parseInt(ConfigRetriever.get(definition.priorityExpression()));
+        }catch(NumberFormatException e){
+            LOG.log(Level.WARNING, "priority expression resolves to NaN with '{0}'. Using default.", 
+                    ConfigRetriever.get(definition.priorityExpression()));
             return definition.priority();
         }
     }
