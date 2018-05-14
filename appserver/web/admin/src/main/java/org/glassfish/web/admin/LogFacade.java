@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] [Payara Foundation and/or its affiliates] 
+ * Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates] 
  */
 
 package org.glassfish.web.admin;
@@ -312,4 +312,9 @@ public class LogFacade {
             message = "No protocol with the name `{0}` was found for target `{1}`.",
             level = "WARNING")
     public static final String UNKNOWN_PROTOCOL = prefix + "00049";
+    
+    @LogMessageInfo(
+            message="{0} is out of range. It must be between 0 and 65535",
+            level = "INFO")
+    public static final String PORT_OUT_OF_RANGE = prefix + "00050";
 }

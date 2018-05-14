@@ -116,16 +116,6 @@
             <artifactId>config-types</artifactId>
             <version>${project.version}</version>
         </dependency>
-         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
-            <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
-            <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
             <groupId>stax</groupId>
             <artifactId>stax</artifactId>
@@ -150,11 +140,5 @@
              <version>${grizzly.npn.version}</version>
              <scope>test</scope>
          </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.common</groupId>
-            <artifactId>internal-api</artifactId>
-            <version>5.182-SNAPSHOT</version>
-            <type>jar</type>
-        </dependency>
     </dependencies>
 </project>
