@@ -122,10 +122,7 @@ public class MemberAddressPicker implements MemberAddressProvider {
                 return;
             }
         }
-   
-        // ok first check if interfaces is defined and if so use that
-        String interfaceDefinition = config.getInterface();
-        
+       
         
         //add to list filtering out docker0
         HashSet<NetworkInterface> possibleInterfaces = new HashSet<>();
