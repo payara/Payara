@@ -43,11 +43,14 @@ import com.hazelcast.spi.MemberAddressProvider;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.logging.Level;
 import org.glassfish.api.admin.ServerEnvironment;
 import java.util.logging.Logger;
@@ -120,6 +123,10 @@ public class MemberAddressPicker implements MemberAddressProvider {
             }
         }
    
+        // ok first check if interfaces is defined and if so use that
+        String interfaceDefinition = config.getInterface();
+        
+        
         //add to list filtering out docker0
         HashSet<NetworkInterface> possibleInterfaces = new HashSet<>();
         try {
@@ -141,17 +148,35 @@ public class MemberAddressPicker implements MemberAddressProvider {
         }
         
         if (possibleInterfaces.size() >= 1) {
-            // this is our interface
-            // get first address on the interface
-            NetworkInterface intf = possibleInterfaces.iterator().next();
-            Enumeration<InetAddress> addresses = intf.getInetAddresses();
+            
             InetAddress chosenAddress = null;
-            while (addresses.hasMoreElements()) {
-                chosenAddress = addresses.nextElement();
-                if (chosenAddress instanceof Inet4Address) {
-                    // prefer Inet4Address
-                    break;
-                }   
+            if (!config.getInterface().isEmpty()) {
+                List<String> interfaces = Arrays.asList(config.getInterface().split(","));
+                // first compare with the chosen interfaces in the config
+                for (NetworkInterface possibleInterface : possibleInterfaces) {
+                    // go through each interface and choose the first one that matches the interfaces definition
+                    for (InterfaceAddress interfaceAddress : possibleInterface.getInterfaceAddresses()) {
+                        if (interfaces.contains(interfaceAddress.getAddress().getHostAddress())) {
+                            chosenAddress = interfaceAddress.getAddress();
+                            break;
+                        }
+                    }
+                    if (chosenAddress != null) {
+                        break;
+                    }
+                }
+            } else {
+                // this is our interface
+                // get first address on the interface
+                NetworkInterface intf = possibleInterfaces.iterator().next();
+                Enumeration<InetAddress> addresses = intf.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    chosenAddress = addresses.nextElement();
+                    if (chosenAddress instanceof Inet4Address) {
+                        // prefer Inet4Address
+                        break;
+                    }   
+                }
             }
             logger.log(Level.FINE, "Picked address {0}", chosenAddress);
             bindAddress = new InetSocketAddress(chosenAddress,port);
