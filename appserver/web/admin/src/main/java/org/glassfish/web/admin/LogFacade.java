@@ -317,4 +317,9 @@ public class LogFacade {
             message="{0} is out of range. It must be between 0 and 65535",
             level = "INFO")
     public static final String PORT_OUT_OF_RANGE = prefix + "00050";
+    
+    @LogMessageInfo(
+            message="UnprocessedChangeEvent: {0} port changed from {1} to {2}",
+            level = "INFO")
+    public static final String ADMIN_PORT_CHANGED = prefix + "00051";
 }

@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.glassfish.api.ActionReport;
@@ -65,11 +66,13 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
+import org.glassfish.api.event.Events;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.grizzly.Grizzly;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.grizzly.config.dom.NetworkListeners;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Target;
 import org.glassfish.internal.config.UnprocessedConfigListener;
@@ -146,9 +149,16 @@ public class SetNetworkListenerConfiguration implements AdminCommand, EventListe
     @Inject
     UnprocessedConfigListener ucl;
     
+    @Inject
+    Events events;
+    
+    @PostConstruct
+    public void postConstuct(){
+        events.register(this);
+    }
     @Override
     public void event(EventListener.Event event) {
-            if (event.is(EventTypes.SERVER_SHUTDOWN)) {
+            if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
                 shutdownChange();
             }
     }
@@ -169,16 +179,11 @@ public class SetNetworkListenerConfiguration implements AdminCommand, EventListe
         }
 
         try {
-            String oldPort = listener.getPort();
-            
             ConfigSupport.apply(new SingleConfigCode<NetworkListener>() {
                     @Override
                     public Object run(final NetworkListener listenerProxy) throws PropertyVetoException, TransactionFailure {
                         if (enabled != null){
                             listenerProxy.setEnabled(enabled.toString());
-                        }
-                        if (dynamic && port != null){
-                            listenerProxy.setPort(port.toString());
                         }
                         if (address != null){
                             listenerProxy.setAddress(address);
@@ -203,11 +208,17 @@ public class SetNetworkListenerConfiguration implements AdminCommand, EventListe
                     }
 
                 }, listener);
-            if (!dynamic){
-            UnprocessedChangeEvent unprocessed = new UnprocessedChangeEvent(new PropertyChangeEvent(this, "port", oldPort, port), "");
-            List<UnprocessedChangeEvents> unprocessedList = new ArrayList<>();
-            unprocessedList.add(new UnprocessedChangeEvents(unprocessed));
-            ucl.unprocessedTransactedEvents(unprocessedList);
+            
+            String oldPort = listener.getPort();
+            if (port != null){
+                
+                UnprocessedChangeEvent unprocessed = new UnprocessedChangeEvent(
+                        new PropertyChangeEvent(this, "port", oldPort, port), listener.getName() + " port changed from " + oldPort + " to " + port);
+                LOGGER.log(Level.INFO, MessageFormat.format(rb.getString(LogFacade.ADMIN_PORT_CHANGED), listenerName, oldPort, port));
+                actionReport.setMessage(MessageFormat.format(rb.getString(LogFacade.ADMIN_PORT_CHANGED), listenerName, oldPort, port.toString()));
+                List<UnprocessedChangeEvents> unprocessedList = new ArrayList<>();
+                unprocessedList.add(new UnprocessedChangeEvents(unprocessed));
+                ucl.unprocessedTransactedEvents(unprocessedList);
             }
             
         } catch (TransactionFailure e) {
@@ -245,15 +256,34 @@ public class SetNetworkListenerConfiguration implements AdminCommand, EventListe
     }
 
     private void shutdownChange() { 
+        List<UnprocessedChangeEvent> processed = new ArrayList<>();
         for (UnprocessedChangeEvents unchangedEvents: ucl.getUnprocessedChangeEvents()){
             for (UnprocessedChangeEvent unprocessedEvent: unchangedEvents.getUnprocessed()){
                 PropertyChangeEvent event = unprocessedEvent.getEvent();
                 if (event.getSource().getClass().equals(this.getClass()) && event.getPropertyName().equals("port")){
                     SetNetworkListenerConfiguration oldConfig =  (SetNetworkListenerConfiguration) event.getSource();
-                    oldConfig.confign.getNetworkListeners();
+                     NetworkListeners listeners = oldConfig.confign.getNetworkListeners();
+                     for (NetworkListener listener: listeners.getNetworkListener()){
+                         if (listener.getName().equals(oldConfig.listenerName)){
+                             try {
+                                 ConfigSupport.apply(new SingleConfigCode<NetworkListener>() {
+                                     @Override
+                                     public Object run(final NetworkListener listenerProxy) throws PropertyVetoException, TransactionFailure {
+                                         listenerProxy.setPort((event.getNewValue().toString()));
+                                         return null;
+                                     }}, listener);
+                             } catch (TransactionFailure ex) {
+                                 Logger.getLogger(SetNetworkListenerConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+                             } finally {
+                                 processed.add(unprocessedEvent);
+                             }
+                         }
+                     }
+                     
                 }
             }
         }
+        ucl.getUnprocessedChangeEvents().removeAll(processed);
     }
 
 }
