@@ -162,7 +162,14 @@ public class MemberAddressPicker implements MemberAddressProvider {
                         break;
                     }
                 }
-            } else {
+                
+                if (chosenAddress == null) {
+                    logger.warning("Interface(s) " + config.getInterface() + " specified in the configuration but there is no interface with that address. Will pick any valid interface");
+                }
+            }
+            
+            // we haven't found an address
+            if (chosenAddress == null) {
                 // this is our interface
                 // get first address on the interface
                 NetworkInterface intf = possibleInterfaces.iterator().next();
