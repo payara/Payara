@@ -71,17 +71,23 @@
 
         foreach (var="inst" list="#{pageSession.standaloneList}") {
             //getResourceRefTargets
-            setAttribute(key="instUrl" value="#{sessionScope.REST_URL}/servers/server/#{inst}");
-            gf.getChildrenNamesList(endpoint="#{instUrl}/resource-ref"
-                                    result=>$attribute{serverRefs});
-            gf.containedIn(list="#{serverRefs}" testStr="#{oneRow['name']}" contain=>$attribute{isTarget});
-            if (#{isTarget}) {
-                listAdd(list="#{resourceTargets}" value="#{oneRow['name']}");
-                mapPut(map="#{targetsMap}" key="#{instUrl}" value="#{inst}");
-                listAdd(list="#{targetUrls}" value="#{instUrl}");
-                gf.getEntityAttrs(endpoint="#{instUrl}/resource-ref/#{oneRow['encodedName']}" valueMap="#{requestScope.refAttrs}");
-                if ("#{refAttrs.enabled} = true") {
-                    inc(number="#{enabledTargetsCount}" value="#{enabledTargetsCount}");
+            urlencode(value="#{oneRow['name']}" encoding="UTF-8" result="#{pageSession.encodedName}");
+            py.getAllSelectedTarget(targetList="#{pageSession.targetList}" resourceName="#{pageSession.encodedName}" selectedTarget="#{pageSession.selectedTargetList}");
+            py.checkIfInstanceIsInDeploymentGroup(selectedTarget="#{pageSession.selectedTargetList}" target="#{inst}" resourceName="#{pageSession.encodedName}" isPresent="isInstancePresentInDeployemntGroup");
+               
+            if ("!#{requestScope.isInstancePresentInDeployemntGroup}") {
+                setAttribute(key="instUrl" value="#{sessionScope.REST_URL}/servers/server/#{inst}");
+                gf.getChildrenNamesList(endpoint="#{instUrl}/resource-ref"
+                                        result=>$attribute{serverRefs});
+                gf.containedIn(list="#{serverRefs}" testStr="#{oneRow['name']}" contain=>$attribute{isTarget});
+                if (#{isTarget}) {
+                    listAdd(list="#{resourceTargets}" value="#{oneRow['name']}");
+                    mapPut(map="#{targetsMap}" key="#{instUrl}" value="#{inst}");
+                    listAdd(list="#{targetUrls}" value="#{instUrl}");
+                    gf.getEntityAttrs(endpoint="#{instUrl}/resource-ref/#{oneRow['encodedName']}" valueMap="#{requestScope.refAttrs}");
+                    if ("#{refAttrs.enabled} = true") {
+                        inc(number="#{enabledTargetsCount}" value="#{enabledTargetsCount}");
+                    }
                 }
             }
         }
