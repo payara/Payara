@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
@@ -47,6 +48,9 @@ public class StringEditDistance {
       *
       * <p>
       * The complexity is O(nm) where n=a.length() and m=b.length().
+     * @param a
+     * @param b
+     * @return 
       */
      public static int editDistance(String a, String b) {
          return new StringEditDistance(a, b).calc();
@@ -56,16 +60,18 @@ public class StringEditDistance {
       * Finds the string in the <code>group</code> closest to
       * <code>key</code> and returns it.
       *
+     * @param key
+     * @param group
       * @return null if group.length==0.
       */
      public static String findNearest(String key, String[] group) {
          int c = Integer.MAX_VALUE;
          String r = null;
-         for (int i = 0; i < group.length; i++) {
-             int ed = editDistance(key, group[i]);
+         for (String group1 : group) {
+             int ed = editDistance(key, group1);
              if (c > ed) {
                  c = ed;
-                 r = group[i];
+                 r = group1;
              }
          }
          return r;

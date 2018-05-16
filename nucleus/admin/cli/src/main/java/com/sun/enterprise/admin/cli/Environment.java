@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
@@ -78,6 +79,7 @@ public final class Environment {
     /**
      * Get the prefix for environment variables referenced from the system 
      * environment by Environment objects.
+     * @return 
      */
     public static String getPrefix() {
         return PREFIX;
@@ -85,7 +87,8 @@ public final class Environment {
     
     /**
      * Set the short prefix for environment variables referenced from the system
-     * enviornment by Environment objects. This effects methods such as debug(), trace(), etc.
+     * environment by Environment objects. This effects methods such as debug(), trace(), etc.
+     * @param p
      */
     public static void setShortPrefix(String p) {
         SHORT_PREFIX = p;
@@ -93,25 +96,27 @@ public final class Environment {
     
     /** 
      * Get the name of the environment variable used to set debugging on
+     * @return 
      */
     public static String getDebugVar() {
         return SHORT_PREFIX + "DEBUG";
     }
     
     /**
-     * Initialize the enviroment with all relevant system environment entries.
+     * Initialise the environment with all relevant system environment entries.
      */
     public Environment() {
         this(false);
     }
 
     /**
-     * Constructor that ignores the system environment,
-     * mostly used to enable repeatable tests.
+     * Initialise the environment with all relevant entries
+     * @param ignoreEnvironment true for constructor that ignores the system environment, mostly used to enable repeatable tests.
      */
     public Environment(boolean ignoreEnvironment) {
-        if (ignoreEnvironment)
+        if (ignoreEnvironment){
             return;
+        }
         // initialize it with all relevant system environment entries
         for (Map.Entry<String, String> e : System.getenv().entrySet()) {
             if (e.getKey().startsWith(PREFIX)) {
@@ -120,19 +125,17 @@ public final class Environment {
         }
         String debugFlag = "Debug";
         String debugProp = getDebugVar();
-        debug = System.getProperty(debugFlag) != null ||
-                Boolean.parseBoolean(System.getenv(debugProp)) ||
-                Boolean.getBoolean(debugProp);
+        debug = System.getProperty(debugFlag) != null || Boolean.parseBoolean(System.getenv(debugProp)) || Boolean.getBoolean(debugProp);
 
         String traceProp = SHORT_PREFIX + "TRACE";
-        trace = System.getProperty(traceProp) != null ||
-                Boolean.parseBoolean(System.getenv(traceProp)) ||
-                Boolean.getBoolean(traceProp);
+        trace = System.getProperty(traceProp) != null || Boolean.parseBoolean(System.getenv(traceProp)) || Boolean.getBoolean(traceProp);
                
         // System Prop trumps environmental variable
         String logProp = SHORT_PREFIX + "LOGFILE";
         String fname = System.getProperty(logProp);
-        if (fname == null) fname = System.getenv(logProp);
+        if (fname == null){
+            fname = System.getenv(logProp);
+        }
         if (fname != null) {
             File f = new File(fname);
 
@@ -220,6 +223,7 @@ public final class Environment {
 
     /**
      * Return a set of all the entries, just like a Map does.
+     * @return 
      */
     public Set<Map.Entry<String, String>> entrySet() {
         return env.entrySet();
@@ -233,8 +237,7 @@ public final class Environment {
      * @return the environment variable name
      */
     private String optionToEnv(String name) {
-        return PREFIX +
-            name.replace('-', '_').toUpperCase(Locale.ENGLISH);
+        return PREFIX + name.replace('-', '_').toUpperCase(Locale.ENGLISH);
     }
     
     public boolean debug() {

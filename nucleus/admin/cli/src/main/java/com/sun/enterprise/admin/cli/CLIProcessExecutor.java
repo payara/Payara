@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
@@ -55,12 +56,12 @@ public class CLIProcessExecutor {
 
     /**
      * This method invokes the runtime exec
+     * @param name
      * @param cmd the command to execute
      * @param wait if true, wait for process to end.
      * @exception Exception
      */
-    public void execute(String name, String[] cmd, boolean wait)
-                                throws Exception {
+    public void execute(String name, String[] cmd, boolean wait) throws Exception {
         process = Runtime.getRuntime().exec(cmd);
         ProcessStreamDrainer.redirect(name, process);
 
@@ -73,13 +74,15 @@ public class CLIProcessExecutor {
     }
 
     /**
-     * return the exit value of this process.
-     * if process is null, then there is no process running
+     * Return the exit value of this process.
+     * If process is null, then there is no process running
      * therefore the return value is 0.
+     * @return 
      */
     public int exitValue() {
-        if (process == null)
+        if (process == null) {
             return -1;
+        }
         return process.exitValue();
     }
 
