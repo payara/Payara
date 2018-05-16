@@ -101,7 +101,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
 
     @Inject
     private IdentityStoreHandler identityStoreHandler;
-
+    
     /**
      * Creates an OAuth2AuthenticationMechanism.
      * <p>
@@ -130,48 +130,17 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
      */
     public OAuth2AuthenticationMechanism setDefinition(OAuth2AuthenticationDefinition definition) {
         Config provider = Globals.getDefaultBaseServiceLocator().getService(ConfigProviderResolverImpl.class).getConfig();
-        authEndpoint = (String) TranslatedConfigView.getTranslatedValue(definition.authEndpoint());
-        Optional<String> configResult = provider.getOptionalValue(authEndpoint, String.class);
-        if (configResult.isPresent()) {
-            authEndpoint = configResult.get();
-        }
-        tokenEndpoint = (String) TranslatedConfigView.getTranslatedValue(definition.tokenEndpoint());
-        configResult = provider.getOptionalValue(tokenEndpoint, String.class);
-        if (configResult.isPresent()) {
-            tokenEndpoint = configResult.get();
-        }
-        clientID = (String) TranslatedConfigView.getTranslatedValue(definition.clientId());
-        configResult = provider.getOptionalValue(clientID, String.class);
-        if (configResult.isPresent()) {
-            clientID = configResult.get();
-        }
-        clientSecret = ((String) TranslatedConfigView.getTranslatedValue(definition.clientSecret())).toCharArray();
-        configResult = provider.getOptionalValue(new String(clientSecret), String.class);
-        if (configResult.isPresent()) {
-            clientSecret = configResult.get().toCharArray();
-        }
-        redirectURI = (String) TranslatedConfigView.getTranslatedValue(definition.redirectURI());
-        if (redirectURI != null && !redirectURI.isEmpty()) {
-            configResult = provider.getOptionalValue(redirectURI, String.class);
-            if (configResult.isPresent()) {
-                redirectURI = configResult.get();
-            }
-        }
-        scopes = (String) TranslatedConfigView.getTranslatedValue(definition.scope());
-        if (scopes != null && !scopes.isEmpty()) {
-            configResult = provider.getOptionalValue(scopes, String.class);
-            if (configResult.isPresent()) {
-                scopes = configResult.get();
-            }
-        }
+        authEndpoint = getConfiguredValue(definition.authEndpoint(), provider);
+        tokenEndpoint = getConfiguredValue(definition.tokenEndpoint(), provider);
+        clientID = getConfiguredValue(definition.clientId(), provider);
+        clientSecret = getConfiguredValue(definition.clientSecret(), provider).toCharArray();
+        redirectURI = getConfiguredValue(definition.redirectURI(), provider);
+
+        scopes = getConfiguredValue(definition.scope(), provider);
         String[] params = definition.extraParameters();
         extraParameters = new String[params.length];
         for (int i = 0; i < params.length; i++) {
-            extraParameters[i] = (String) TranslatedConfigView.getTranslatedValue(params[i]);
-            configResult = provider.getOptionalValue(extraParameters[i], String.class);
-            if (configResult.isPresent()) {
-                scopes = configResult.get();
-            }
+            extraParameters[i] = getConfiguredValue(params[i], provider);
         }
         return this;
     }
@@ -288,4 +257,13 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
         return context.redirect(authTokenRequest.toString());
     }
 
+    
+    private String getConfiguredValue(String value, Config provider){
+        String result = (String) TranslatedConfigView.getTranslatedValue(value);
+        Optional<String> configResult = provider.getOptionalValue(tokenEndpoint, String.class);
+        if (configResult.isPresent()) {
+            result = configResult.get();
+        }
+        return result;
+    }
 }
