@@ -73,7 +73,7 @@
             //getResourceRefTargets
             urlencode(value="#{oneRow['name']}" encoding="UTF-8" result="#{pageSession.encodedName}");
             py.getAllSelectedTarget(targetList="#{pageSession.targetList}" resourceName="#{pageSession.encodedName}" selectedTarget="#{pageSession.selectedTargetList}");
-            py.checkIfInstanceIsInDeploymentGroup(selectedTarget="#{pageSession.selectedTargetList}" target="#{inst}" resourceName="#{pageSession.encodedName}" isPresent="isInstancePresentInDeployemntGroup");
+            py.isInstanceInDeploymentGroupWithResource(selectedTarget="#{pageSession.selectedTargetList}" target="#{inst}" resourceName="#{pageSession.encodedName}" isPresent="isInstancePresentInDeployemntGroup");
                
             if ("!#{requestScope.isInstancePresentInDeployemntGroup}") {
                 setAttribute(key="instUrl" value="#{sessionScope.REST_URL}/servers/server/#{inst}");
