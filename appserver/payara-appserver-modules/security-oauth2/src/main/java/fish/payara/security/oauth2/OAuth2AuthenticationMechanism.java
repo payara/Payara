@@ -39,13 +39,13 @@
  */
 package fish.payara.security.oauth2;
 
-import fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition;
-import fish.payara.security.oauth2.api.OAuth2State;
 import java.io.StringReader;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.inject.Typed;
 import javax.inject.Inject;
+
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.security.enterprise.AuthenticationException;
@@ -65,7 +65,13 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import fish.payara.nucleus.microprofile.config.spi.ConfigProviderResolverImpl;
+import fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition;
+import fish.payara.security.oauth2.api.OAuth2State;
+import org.eclipse.microprofile.config.Config;
 import org.glassfish.config.support.TranslatedConfigView;
+import org.glassfish.internal.api.Globals;
 
 /**
  * The AuthenticationMechanism used for authenticate users using the OAuth2 protocol
@@ -92,7 +98,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
 
     @Inject
     private OAuth2StateHolder tokenHolder;
-    
+
     @Inject
     private IdentityStoreHandler identityStoreHandler;
 
@@ -108,7 +114,8 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
 
     /**
      * Creates an OAuth2AuthenticationMechanism that has been defined using an annotation
-     * @param definition 
+     *
+     * @param definition
      */
     public OAuth2AuthenticationMechanism(OAuth2AuthenticationDefinition definition) {
         setDefinition(definition);
@@ -116,36 +123,68 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
     }
 
     /**
-     * Sets the properties of the OAuth2AuthenticationMechanism as defined in an
-     * {@link OAuth2AuthenticationDefinition} annotation.
+     * Sets the properties of the OAuth2AuthenticationMechanism as defined in an {@link OAuth2AuthenticationDefinition} annotation.
+     *
      * @param definition
-     * @return 
+     * @return
      */
-    public OAuth2AuthenticationMechanism setDefinition(OAuth2AuthenticationDefinition definition) {;
+    public OAuth2AuthenticationMechanism setDefinition(OAuth2AuthenticationDefinition definition) {
+        Config provider = Globals.getDefaultBaseServiceLocator().getService(ConfigProviderResolverImpl.class).getConfig();
         authEndpoint = (String) TranslatedConfigView.getTranslatedValue(definition.authEndpoint());
+        Optional<String> configResult = provider.getOptionalValue(authEndpoint, String.class);
+        if (configResult.isPresent()) {
+            authEndpoint = configResult.get();
+        }
         tokenEndpoint = (String) TranslatedConfigView.getTranslatedValue(definition.tokenEndpoint());
+        configResult = provider.getOptionalValue(tokenEndpoint, String.class);
+        if (configResult.isPresent()) {
+            tokenEndpoint = configResult.get();
+        }
         clientID = (String) TranslatedConfigView.getTranslatedValue(definition.clientId());
+        configResult = provider.getOptionalValue(clientID, String.class);
+        if (configResult.isPresent()) {
+            clientID = configResult.get();
+        }
         clientSecret = ((String) TranslatedConfigView.getTranslatedValue(definition.clientSecret())).toCharArray();
+        configResult = provider.getOptionalValue(new String(clientSecret), String.class);
+        if (configResult.isPresent()) {
+            clientSecret = configResult.get().toCharArray();
+        }
         redirectURI = (String) TranslatedConfigView.getTranslatedValue(definition.redirectURI());
+        if (redirectURI != null && !redirectURI.isEmpty()) {
+            configResult = provider.getOptionalValue(redirectURI, String.class);
+            if (configResult.isPresent()) {
+                redirectURI = configResult.get();
+            }
+        }
         scopes = (String) TranslatedConfigView.getTranslatedValue(definition.scope());
+        if (scopes != null && !scopes.isEmpty()) {
+            configResult = provider.getOptionalValue(scopes, String.class);
+            if (configResult.isPresent()) {
+                scopes = configResult.get();
+            }
+        }
         String[] params = definition.extraParameters();
         extraParameters = new String[params.length];
-        for (int i = 0; i < params.length; i++){
+        for (int i = 0; i < params.length; i++) {
             extraParameters[i] = (String) TranslatedConfigView.getTranslatedValue(params[i]);
+            configResult = provider.getOptionalValue(extraParameters[i], String.class);
+            if (configResult.isPresent()) {
+                scopes = configResult.get();
+            }
         }
         return this;
     }
 
     @Override
     public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext)
-            throws AuthenticationException {        
-        
-        if (httpMessageContext.isProtected() && request.getUserPrincipal() == null){
+            throws AuthenticationException {
+
+        if (httpMessageContext.isProtected() && request.getUserPrincipal() == null) {
             //Needs to login and has not already done so
-            return redirectForAuth(httpMessageContext);   
+            return redirectForAuth(httpMessageContext);
         }
-        
-        
+
         String recievedState = request.getParameter("state");
         if (request.getRequestURL().toString().equals(redirectURI) && recievedState != null) {
             //In the process of logging in
@@ -156,7 +195,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
                 return httpMessageContext.notifyContainerAboutLogin(CredentialValidationResult.NOT_VALIDATED_RESULT);
             }
         } else {
-            
+
             // Is not trying to login, has not logged in already and does not need to login
             logger.log(Level.FINEST, "Authentication mechanism doing nothing");
             return httpMessageContext.doNothing();
@@ -165,72 +204,73 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
 
     /**
      * Called when the callback URL is hit, this gets the authorisation token and logs the user in
+     *
      * @param request
      * @param context
-     * @return 
+     * @return
      */
-    private AuthenticationStatus validateCallback(HttpServletRequest request, HttpMessageContext context){
+    private AuthenticationStatus validateCallback(HttpServletRequest request, HttpMessageContext context) {
         logger.log(Level.FINER, "User Authenticated, now getting authorisation token");
-                Client jaxrsClient = ClientBuilder.newClient();
+        Client jaxrsClient = ClientBuilder.newClient();
 
-                //Creates a new JAX-RS form with all paramters
-                Form form = new Form()
-                        .param("grant_type", "authorization_code")
-                        .param("client_id", clientID)
-                        .param("client_secret", new String(clientSecret))
-                        .param("code", request.getParameter("code"))
-                        .param("state", state.getState());
-                if (redirectURI != null && !redirectURI.isEmpty()) {
-                    form.param("redirect_uri", redirectURI);
-                }
-                if (scopes != null && !scopes.isEmpty()) {
-                    form.param("scope", scopes);
-                }
-                for (String extra : extraParameters) {
-                    String[] parts = extra.split("=");
-                    form.param(parts[0], parts[1]);
-                }
+        //Creates a new JAX-RS form with all paramters
+        Form form = new Form()
+                .param("grant_type", "authorization_code")
+                .param("client_id", clientID)
+                .param("client_secret", new String(clientSecret))
+                .param("code", request.getParameter("code"))
+                .param("state", state.getState());
+        if (redirectURI != null && !redirectURI.isEmpty()) {
+            form.param("redirect_uri", redirectURI);
+        }
+        if (scopes != null && !scopes.isEmpty()) {
+            form.param("scope", scopes);
+        }
+        for (String extra : extraParameters) {
+            String[] parts = extra.split("=");
+            form.param(parts[0], parts[1]);
+        }
 
-                WebTarget target = jaxrsClient.target(tokenEndpoint);
-                Response oauthResponse = target.request()
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header("referer", request.getRequestURL().toString())
-                        .post(Entity.form(form));
+        WebTarget target = jaxrsClient.target(tokenEndpoint);
+        Response oauthResponse = target.request()
+                .accept(MediaType.APPLICATION_JSON)
+                .header("referer", request.getRequestURL().toString())
+                .post(Entity.form(form));
 
-                // Get back the result of the REST request
-                String result = oauthResponse.readEntity(String.class);
-                JsonObject object = Json.createReader(new StringReader(result)).readObject();
-                logger.log(Level.FINEST, result);
-                if (oauthResponse.getStatus() != 200) {
+        // Get back the result of the REST request
+        String result = oauthResponse.readEntity(String.class);
+        JsonObject object = Json.createReader(new StringReader(result)).readObject();
+        logger.log(Level.FINEST, "Response code from endpoint: {0}", oauthResponse.getStatus());
+        if (oauthResponse.getStatus() != 200) {
 
-                    String error = object.getString("error", "Unknown Error");
-                    String errorDescription = object.getString("error_description", "Unknown");
-                    logger.log(Level.WARNING, "[OAUTH-001] Error occurred authenticating user: {0} caused by {1}", new Object[]{error, errorDescription});
-                    return context.notifyContainerAboutLogin(CredentialValidationResult.INVALID_RESULT);
-                } else {
+            String error = object.getString("error", "Unknown Error");
+            String errorDescription = object.getString("error_description", "Unknown");
+            logger.log(Level.WARNING, "[OAUTH-001] Error occurred authenticating user: {0} caused by {1}", new Object[]{error, errorDescription});
+            return context.notifyContainerAboutLogin(CredentialValidationResult.INVALID_RESULT);
+        } else {
 
-                    tokenHolder.setAccessToken(object.getString("access_token"));
-                    tokenHolder.setRefreshToken(object.getString("refresh_token", null));
-                    tokenHolder.setScope(object.getString("scope", null));
-                    String expiresIn = object.getString("expires_in", null);
-                    if (expiresIn != null){
-                        tokenHolder.setExpiresIn(Integer.parseInt(expiresIn));
-                    }
-                    
-                    RememberMeCredential credential = new RememberMeCredential(result);
-                    CredentialValidationResult validationResult = identityStoreHandler.validate(credential);
-                    return context.notifyContainerAboutLogin(validationResult);
-                }
+            tokenHolder.setAccessToken(object.getString("access_token"));
+            tokenHolder.setRefreshToken(object.getString("refresh_token", null));
+            tokenHolder.setScope(object.getString("scope", null));
+            String expiresIn = object.getString("expires_in", null);
+            if (expiresIn != null) {
+                tokenHolder.setExpiresIn(Integer.parseInt(expiresIn));
+            }
+
+            RememberMeCredential credential = new RememberMeCredential(result);
+            CredentialValidationResult validationResult = identityStoreHandler.validate(credential);
+            return context.notifyContainerAboutLogin(validationResult);
+        }
     }
-    
-    
+
     /**
      * If the user is not logged in then redirect them to OAuth provider
+     *
      * @param context
-     * @return 
+     * @return
      */
     private AuthenticationStatus redirectForAuth(HttpMessageContext context) {
-        logger.log(Level.FINE, "Redirecting for authentication to {0}", authEndpoint);
+        logger.log(Level.FINEST, "Redirecting for authentication to {0}", authEndpoint);
         StringBuilder authTokenRequest = new StringBuilder(authEndpoint);
         authTokenRequest.append("?client_id=").append(clientID);
         authTokenRequest.append("&state=").append(state.getState());
