@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.modularity.command;
 
@@ -98,11 +99,13 @@ import java.util.logging.Logger;
 @Service(name = "delete-module-config")
 @PerLookup
 @I18n("delete.module.config")
-public final class DeleteModuleConfigCommand extends AbstractConfigModularityCommand implements AdminCommand, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
-    private final Logger LOG = getLogger();
-    final private static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(DeleteModuleConfigCommand.class);
+public final class DeleteModuleConfigCommand extends AbstractConfigModularityCommand 
+        implements AdminCommand, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
+    
+    private static final Logger LOG = getLogger();
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteModuleConfigCommand.class);
     private static final String DEFAULT_FORMAT = "";
+    
     private ActionReport report;
 
     @Inject
@@ -314,7 +317,7 @@ public final class DeleteModuleConfigCommand extends AbstractConfigModularityCom
             while (!(curParent instanceof SystemPropertyBag)) {
                 curParent = curParent.getParent();
             }
-            if (configBeanDefaultValue.getCustomizationTokens().size() != 0) {
+            if (!configBeanDefaultValue.getCustomizationTokens().isEmpty()) {
                 final SystemPropertyBag bag = (SystemPropertyBag) curParent;
                 final List<ConfigCustomizationToken> tokens = configBeanDefaultValue.getCustomizationTokens();
                 removeSystemPropertyForTokens(tokens, bag);

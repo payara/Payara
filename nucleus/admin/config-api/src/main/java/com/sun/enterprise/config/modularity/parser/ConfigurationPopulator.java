@@ -37,12 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] PAyara Foundation and/or affiliates
 
 package com.sun.enterprise.config.modularity.parser;
 
 import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
-import com.sun.enterprise.util.LocalStringManager;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigParser;
@@ -67,7 +66,7 @@ import java.util.logging.Logger;
  */
 public class ConfigurationPopulator {
 
-    private final static Logger LOG = ConfigApiLoggerInfo.getLogger();
+    private static final Logger LOG = ConfigApiLoggerInfo.getLogger();
     private final DomDocument doc;
     private final ConfigBeanProxy parent;
     private final String xmlContent;
