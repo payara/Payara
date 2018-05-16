@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 -->
 
 <!-- applications/targetListing.jsf -->
@@ -61,7 +61,7 @@
             setSessionAttribute(key="resEditTabs" value="targetTab");
             getRequestValue(key="generalPage" value="#{pageSession.generalPage}");
             setPageSessionAttribute(key="targetPage" value="#{request.contextPath}/common/resourceNode/resourceEditTargets.jsf?name=#{pageSession.encodedName}");
-            setPageSessionAttribute(key="updateEndpoint" value="#{sessionScope.REST_URL}/resources/update-resource-ref");
+            setPageSessionAttribute(key="updateEndpoint" value="#{sessionScope.REST_URL}/resources/update-resource-ref");           
         />
     </event>
 <sun:form id="propertyForm">
@@ -141,14 +141,20 @@
                  setAttribute(key="endpoint" value="#{sessionScope.REST_URL}/clusters/cluster/#{requestScope.targetName}/resource-ref/#{pageSession.encodedName}");
                  gf.checkIfEndPointExist(endpoint="#{endpoint}" exists="isCluster");
                  if ("!#{requestScope.isCluster}") {
-                     setAttribute(key="endpoint" value="#{sessionScope.REST_URL}/servers/server/#{requestScope.targetName}/resource-ref/#{pageSession.encodedName}");
-                     gf.checkIfEndPointExist(endpoint="#{endpoint}" exists="isServer");
-                     if("!#{requestScope.isServer}") {
-                        setAttribute(key="endpoint" value="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{requestScope.targetName}/resource-ref/#{pageSession.encodedName}");
-                        gf.checkIfEndPointExist(endpoint="#{endpoint}" exists="isDG");
-                        if ("!#{requestScope.isDG}") {
+                     setAttribute(key="endpoint" value="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{requestScope.targetName}/resource-ref/#{pageSession.encodedName}");
+                     gf.checkIfEndPointExist(endpoint="#{endpoint}" exists="isDG");       
+                     if("!#{requestScope.isDG}") {
+                        setAttribute(key="endpoint" value="#{sessionScope.REST_URL}/servers/server/#{requestScope.targetName}/resource-ref/#{pageSession.encodedName}");
+                        gf.checkIfEndPointExist(endpoint="#{endpoint}" exists="isServer");
+                        py.getAllSelectedTarget(targetList="#{pageSession.targetList}" resourceName="#{pageSession.encodedName}" selectedTarget="#{pageSession.selectedTargetList}");
+                        py.isInstanceInDeploymentGroupWithResource(selectedTarget="#{pageSession.selectedTargetList}" target="#{requestScope.targetName}" resourceName="#{pageSession.encodedName}" isPresent="isInstancePresentInDeployemntGroup");
+                        if ("!#{requestScope.isServer}") {
                             setAttribute(key="endpoint" value="");
                         } 
+                        
+                        if ("#{requestScope.isInstancePresentInDeployemntGroup}"){
+                            setAttribute(key="endpoint" value="");
+                        }
                     }
                  }
                  if ("#{endpoint}") {
