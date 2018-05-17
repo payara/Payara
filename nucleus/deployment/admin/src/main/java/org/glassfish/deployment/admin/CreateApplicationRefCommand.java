@@ -226,7 +226,24 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
         while (it.hasNext()) {
             String appName = (String) it.next();
             Application app = applications.getApplication(appName);
+            List<DeploymentGroup> deploymentGroups = domain.getDeploymentGroupsForInstance(target);
+            boolean isAppOnDeploymentGroupInstance = false;
 
+            if (deploymentGroups != null && deploymentGroups.size() > 0) {
+                List<Application> applications = domain.getApplicationsInTarget(target);
+                List<String> listOfApplications = new ArrayList<>();
+                for (Application application : applications) {
+                    listOfApplications.add(application.getName());
+                }
+                if (listOfApplications.contains(appName)) {
+                    isAppOnDeploymentGroupInstance = true;
+                    break;
+                }
+                
+                
+            }
+            
+            if (!isAppOnDeploymentGroupInstance){
             ApplicationRef applicationRef = domain.getApplicationRefInTarget(appName, target);
             if ( applicationRef != null ) {
                 // we provides warning messages
@@ -390,6 +407,7 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
                         logger.log(Level.INFO, "Error while closing deployable artifact : " + file.getAbsolutePath(), e);
                     }
                 }
+            }
             }
         }
     } 
