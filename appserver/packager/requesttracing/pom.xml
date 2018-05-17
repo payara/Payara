@@ -111,12 +111,6 @@
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
- <!--       <dependency>
-            <groupId>fish.payara.payara-appserver-modules</groupId>
-            <artifactId>jaxrs-container-tracing</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>-->
         <dependency>
             <groupId>fish.payara.payara-appserver-modules</groupId>
             <artifactId>opentracing-cdi</artifactId>

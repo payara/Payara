@@ -59,11 +59,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.logging.Level;
 import javax.annotation.PostConstruct;
-import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
-import javax.inject.Inject;
+import javax.servlet.ServletException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -72,7 +70,6 @@ import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.Provider;
 import org.eclipse.microprofile.opentracing.Traced;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -82,7 +79,6 @@ import org.glassfish.internal.api.Globals;
  *
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
-@Provider
 public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     private ServiceLocator serviceLocator;
@@ -93,7 +89,7 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
 
     @Context
     private ResourceInfo resourceInfo;
-    
+
     @PostConstruct
     public void postConstruct() {
         // Get the default Payara service locator - injecting a service locator will give you the one used by Jersey
@@ -113,10 +109,10 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                 && !isTracedAnnotationPresent()) {
             Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
                     serviceLocator.getService(InvocationManager.class)));
-            SpanBuilder spanBuilder = tracer.buildSpan(requestContext.getMethod() 
-                    + ":" 
-                    + resourceInfo.getResourceClass().getCanonicalName() 
-                    + "." 
+            SpanBuilder spanBuilder = tracer.buildSpan(requestContext.getMethod()
+                    + ":"
+                    + resourceInfo.getResourceClass().getCanonicalName()
+                    + "."
                     + resourceInfo.getResourceMethod().getName())
                     .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
                     .withTag(Tags.HTTP_METHOD.getKey(), requestContext.getMethod())
@@ -126,14 +122,14 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
             if (!(tracer instanceof fish.payara.opentracing.tracer.Tracer)) {
                 SpanContext spanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, new MultivaluedMapToTextMap(
                         requestContext.getHeaders()));
-                
+
                 if (spanContext != null) {
                     spanBuilder.asChildOf(spanContext);
                 }
             }
-            
+
             ActiveSpan activeSpan = spanBuilder.startActive();
-            
+
             continuation.set(activeSpan.capture());
             activeSpan.deactivate();
         }
@@ -141,30 +137,37 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
 
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-        if (requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()) {
-
-            if (!isTracedAnnotationPresent()) {
+        try {
+            if (requestTracing != null 
+                    && requestTracing.isRequestTracingEnabled() 
+                    && requestTracing.isTraceInProgress() 
+                    && !isTracedAnnotationPresent()) {
                 try (ActiveSpan activeSpan = continuation.get().activate()) {
                     Response.StatusType statusInfo = responseContext.getStatusInfo();
 
                     activeSpan.setTag(Tags.HTTP_STATUS.getKey(), statusInfo.getStatusCode());
 
-                    if (statusInfo.getFamily() == Response.Status.Family.CLIENT_ERROR 
+                    if (statusInfo.getFamily() == Response.Status.Family.CLIENT_ERROR
                             || statusInfo.getFamily() == Response.Status.Family.SERVER_ERROR) {
                         activeSpan.setTag(Tags.ERROR.getKey(), true);
                     }
                 } finally {
                     continuation.set(null);
                 }
-            }  
+            }
+        } finally {
+            if (responseContext.hasEntity() && responseContext.getEntity() instanceof Throwable) {
+                throw new IOException((Throwable) responseContext.getEntity());
+            }
         }
+
     }
 
     private boolean isTracedAnnotationPresent() {
         boolean annotationPresent = false;
-        
+
         Class<?> annotatedClass = resourceInfo.getResourceClass();
-        
+
         // Try to get the annotation from the method, otherwise attempt to get it from the class
         if (resourceInfo.getResourceMethod().isAnnotationPresent(Traced.class)) {
             annotationPresent = true;
@@ -189,11 +192,10 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                 }
             }
         }
-        
-        
+
         return annotationPresent;
     }
-    
+
     private class MultivaluedMapToTextMap implements TextMap {
 
         private final MultivaluedMap<String, String> map;
@@ -213,7 +215,7 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
         }
 
     }
-    
+
     private class MultivaluedMapIterator<K, V> implements Iterator<Map.Entry<K, V>> {
 
         private final Iterator<Map.Entry<K, List<V>>> mapIterator;
@@ -249,7 +251,7 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
         public void remove() {
             throw new UnsupportedOperationException();
         }
-        
+
     }
 
 }

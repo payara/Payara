@@ -40,7 +40,10 @@
 package fish.payara.microprofile.opentracing.cdi;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.inject.spi.BeanManager;
@@ -70,8 +73,26 @@ public class OpenTracingCdiUtils {
             if (annotatedClass.isAnnotationPresent(annotationClass)) {
                 logger.log(Level.FINER, "Annotation was directly present on the class");
                 annotation = annotatedClass.getAnnotation(annotationClass);
-            } 
-            // Do we need to account for stereotypes?
+            } else {
+                logger.log(Level.FINER, "Annotation wasn't directly present on the method or class, "
+                        + "checking stereotypes");
+                // Account for Stereotypes
+                Queue<Annotation> annotations = new LinkedList<>(Arrays.asList(annotatedClass.getAnnotations()));
+
+                while (!annotations.isEmpty()) {
+                    Annotation a = annotations.remove();
+
+                    if (a.annotationType().equals(annotationClass)) {
+                        logger.log(Level.FINER, "Annotation was found in a stereotype");
+                        annotation = annotationClass.cast(a);
+                        break;
+                    }
+
+                    if (beanManager.isStereotype(a.annotationType())) {
+                        annotations.addAll(beanManager.getStereotypeDefinition(a.annotationType()));
+                    }
+                }
+            }
         }
 
         return annotation;

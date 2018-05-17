@@ -60,6 +60,10 @@ public class JaxrsContainerRequestTracingAutoDiscoverable implements ForcedAutoD
         if (!context.getConfiguration().isRegistered(JaxrsContainerRequestTracingDynamicFeature.class)) {
             context.register(JaxrsContainerRequestTracingDynamicFeature.class);
         }
+        
+        if (!context.getConfiguration().isRegistered(JaxrsContainerRequestTracingExceptionMapper.class)) {
+            context.register(JaxrsContainerRequestTracingExceptionMapper.class);
+        }
     }
     
 }

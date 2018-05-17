@@ -37,29 +37,20 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.requesttracing.jaxrs.container;
+package fish.payara.microprofile.opentracing.jaxrs;
 
-import javax.ws.rs.core.FeatureContext;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
-import com.sun.enterprise.deployment.util.DOLUtils;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
 
 /**
  *
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
-public class PayaraJaxrsContainerRequestTracingAutoDiscoverable implements ForcedAutoDiscoverable {
+public class JaxrsContainerRequestTracingExceptionMapper implements ExceptionMapper<Throwable> {
 
     @Override
-    public void configure(FeatureContext context) {
-        // Only register for application deployments (not the admin console) - this will throw an exception 
-        DOLUtils.getCurrentBundleForContext(
-                Globals.getDefaultHabitat().getService(Deployment.class).getCurrentDeploymentContext());
-        
-        if (!context.getConfiguration().isRegistered(PayaraJaxrsContainerRequestTracingDynamicFeature.class)) {
-            context.register(PayaraJaxrsContainerRequestTracingDynamicFeature.class);
-        }
+    public Response toResponse(Throwable exception) {
+        return Response.serverError().entity(exception).build();
     }
-    
+
 }
