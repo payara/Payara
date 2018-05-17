@@ -107,14 +107,14 @@ public class AddInstanceToDeploymentGroupCommand implements AdminCommand {
     public void execute(AdminCommandContext context) {
 
         ActionReport report = context.getActionReport();
-        
+
         DeploymentGroup dg = domain.getDeploymentGroupNamed(deploymentGroup);
         if (dg == null && env.isDas()) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Deployment Group " + deploymentGroup + " does not exist");
             return;
         }
-        
+
         final List<String> instances = new ArrayList<String>(Arrays.asList(instanceName.split(",")));
 
         for (String instance : instances) {
@@ -166,4 +166,4 @@ public class AddInstanceToDeploymentGroupCommand implements AdminCommand {
         }
     }
 
-    }
+}
