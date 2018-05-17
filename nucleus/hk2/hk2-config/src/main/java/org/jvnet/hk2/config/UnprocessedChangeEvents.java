@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.jvnet.hk2.config;
 
-import java.lang.StringBuffer;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -73,8 +73,9 @@ public final class UnprocessedChangeEvents {
     
     public int size() { return mUnprocessed == null ? 0 : mUnprocessed.size(); }
     
+    @Override
     public String toString() {
-        StringBuffer result = new StringBuffer("UnprocessedChangeEvents: " + size());
+        StringBuilder result = new StringBuilder("UnprocessedChangeEvents: " + size());
         if ( size() != 0 ) {
             result.append(" {");
             for( final UnprocessedChangeEvent e : mUnprocessed )

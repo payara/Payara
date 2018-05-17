@@ -81,6 +81,7 @@ public class MBeanMetadataHelper {
 
         resolveDynamicMetadata(metadataList);
         for (MBeanMetadata beanMetadata: metadataList){
+          try {
             if (metricRegistry.getNames().contains(beanMetadata.getName()) && isRetry){
                 //
                 continue;
@@ -99,6 +100,9 @@ public class MBeanMetadataHelper {
                     throw new IllegalStateException("Unsupported type : " + beanMetadata);
             }
             metricRegistry.register(beanMetadata, type);
+            } catch (IllegalArgumentException e) {
+                LOGGER.log(Level.WARNING, e.getMessage());
+            }
         }
     }
 
