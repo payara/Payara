@@ -50,6 +50,7 @@ import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 import io.opentracing.tag.Tags;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import javax.annotation.PostConstruct;
@@ -66,62 +67,63 @@ import org.glassfish.internal.api.Globals;
 
 /**
  * A filter that adds Payara request tracing propagation headers to JAX-RS Client requests.
- * 
+ *
  * @author Andrew Pielage
  */
 public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, ClientResponseFilter {
-    
+
     private ServiceLocator serviceLocator;
     private RequestTracingService requestTracing;
     private OpenTracingService openTracing;
-    
+
     private static ThreadLocal<Continuation> continuation;
-    
+
     @PostConstruct
     public void postConstruct() {
         // Get the default Payara service locator - injecting a service locator will give you the one used by Jersey
         serviceLocator = Globals.getDefaultBaseServiceLocator();
-        
+
         if (serviceLocator != null) {
             requestTracing = serviceLocator.getService(RequestTracingService.class);
             openTracing = serviceLocator.getService(OpenTracingService.class);
         }
-        
+
         continuation = new ThreadLocal<>();
     }
-    
+
     /**
      * Outbound request filter.
+     *
      * @param requestContext
-     * @throws IOException 
+     * @throws IOException
      */
     @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
         // If request tracing is enabled, and there's a trace actually in progress, add the propagation headers
-        if (requestTracing!= null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()) {
+        if (requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()) {
             // Check that we aren't overwriting a header
             if (!requestContext.getHeaders().containsKey(PropagationHeaders.PROPAGATED_TRACE_ID)) {
-                requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_TRACE_ID, 
+                requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_TRACE_ID,
                         requestTracing.getConversationID());
             }
 
             // Check that we aren't overwriting a header
             if (!requestContext.getHeaders().containsKey(PropagationHeaders.PROPAGATED_PARENT_ID)) {
-                requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_PARENT_ID, 
+                requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_PARENT_ID,
                         requestTracing.getStartingTraceID());
             }
-            
+
             // Check that we aren't overwriting a relationship type
             if (!requestContext.getHeaders().containsKey(PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE)) {
                 if (requestContext.getMethod().equals("POST")) {
-                    requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE, 
+                    requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE,
                             RequestTraceSpan.SpanContextRelationshipType.FollowsFrom);
                 } else {
-                    requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE, 
+                    requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE,
                             RequestTraceSpan.SpanContextRelationshipType.ChildOf);
-                }               
+                }
             }
-            
+
             Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
                     Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
             ActiveSpan activeSpan = tracer.buildSpan(requestContext.getMethod())
@@ -129,15 +131,15 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
                     .withTag(Tags.HTTP_METHOD.getKey(), requestContext.getMethod())
                     .withTag(Tags.HTTP_URL.getKey(), requestContext.getUri().toURL().toString())
                     .startActive();
-         
+
             // Don't inject if using in-built tracer as we don't support it yet
             if (!(tracer instanceof fish.payara.opentracing.tracer.Tracer)) {
                 tracer.inject(
-                        activeSpan.context(), 
-                        Format.Builtin.HTTP_HEADERS, 
+                        activeSpan.context(),
+                        Format.Builtin.HTTP_HEADERS,
                         new MultivaluedMapToTextMap(requestContext.getHeaders()));
             }
-            
+
             continuation.set(activeSpan.capture());
             activeSpan.deactivate();
         }
@@ -145,35 +147,38 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
 
     /**
      * Inbound response filter.
+     *
      * @param requestContext
      * @param responseContext
-     * @throws IOException 
+     * @throws IOException
      */
     @Override
     public void filter(ClientRequestContext requestContext, ClientResponseContext responseContext) throws IOException {
         // If request tracing is enabled, and there's a trace actually in progress, add info about method
-        if (requestTracing!= null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()) {
-            
+        if (requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()) {
+
             try (ActiveSpan activeSpan = continuation.get().activate()) {
                 StatusType statusInfo = responseContext.getStatusInfo();
-                
+
                 activeSpan.setTag(Tags.HTTP_STATUS.getKey(), statusInfo.getStatusCode());
-            
+
                 if (statusInfo.getFamily() == Family.CLIENT_ERROR || statusInfo.getFamily() == Family.SERVER_ERROR) {
                     activeSpan.setTag(Tags.ERROR.getKey(), true);
+                    activeSpan.log(Collections.singletonMap("event", "error"));
+                    activeSpan.log(Collections.singletonMap("error.object", statusInfo.getFamily()));
                 }
             }
         }
     }
-    
+
     private class MultivaluedMapToTextMap implements TextMap {
 
         private final MultivaluedMap<String, Object> map;
-        
+
         public MultivaluedMapToTextMap(MultivaluedMap<String, Object> map) {
             this.map = map;
         }
-        
+
         @Override
         public Iterator<Map.Entry<String, String>> iterator() {
             throw new UnsupportedOperationException("Not supported yet.");
@@ -183,7 +188,7 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
         public void put(String key, String value) {
             map.add(key, value);
         }
-        
+
     }
-    
+
 }

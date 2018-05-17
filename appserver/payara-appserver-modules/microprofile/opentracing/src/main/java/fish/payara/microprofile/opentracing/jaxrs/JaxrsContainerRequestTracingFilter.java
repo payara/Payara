@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.opentracing.jaxrs;
 
+import fish.payara.microprofile.opentracing.cdi.OpenTracingCdiUtils;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
 import io.opentracing.ActiveSpan;
@@ -50,15 +51,13 @@ import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 import io.opentracing.tag.Tags;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.util.AbstractMap;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.enterprise.inject.spi.CDI;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -79,6 +78,8 @@ import org.glassfish.internal.api.Globals;
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilter, ContainerResponseFilter {
+
+    private static final Logger logger = Logger.getLogger(JaxrsContainerRequestTracingFilter.class.getName());
 
     private ServiceLocator serviceLocator;
     private RequestTracingService requestTracing;
@@ -104,54 +105,66 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        if (requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()
-                && !isTracedAnnotationPresent()) {
-            Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
-                    serviceLocator.getService(InvocationManager.class)));
-            SpanBuilder spanBuilder = tracer.buildSpan(requestContext.getMethod()
-                    + ":"
-                    + resourceInfo.getResourceClass().getCanonicalName()
-                    + "."
-                    + resourceInfo.getResourceMethod().getName())
-                    .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
-                    .withTag(Tags.HTTP_METHOD.getKey(), requestContext.getMethod())
-                    .withTag(Tags.HTTP_URL.getKey(), requestContext.getUriInfo().getRequestUri().toURL().toString());
+        if (requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()) {
 
-            // Don't extract if using in-built tracer as we don't support it yet
-            if (!(tracer instanceof fish.payara.opentracing.tracer.Tracer)) {
-                SpanContext spanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, new MultivaluedMapToTextMap(
-                        requestContext.getHeaders()));
+            Traced tracedAnnotation = OpenTracingCdiUtils.getAnnotation(CDI.current().getBeanManager(), 
+                    Traced.class, resourceInfo);
 
-                if (spanContext != null) {
-                    spanBuilder.asChildOf(spanContext);
+            if (tracedAnnotation == null || tracedAnnotation.value()) {
+                Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
+                        serviceLocator.getService(InvocationManager.class)));
+                SpanBuilder spanBuilder = tracer.buildSpan(determineOperationName(requestContext, tracedAnnotation))
+                        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
+                        .withTag(Tags.HTTP_METHOD.getKey(), requestContext.getMethod())
+                        .withTag(Tags.HTTP_URL.getKey(), requestContext.getUriInfo().getRequestUri().toURL().toString());
+
+                // Don't extract if using in-built tracer as we don't support it yet
+                if (!(tracer instanceof fish.payara.opentracing.tracer.Tracer)) {
+                    SpanContext spanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, new MultivaluedMapToTextMap(
+                            requestContext.getHeaders()));
+
+                    if (spanContext != null) {
+                        spanBuilder.asChildOf(spanContext);
+                    }
                 }
+
+                ActiveSpan activeSpan = spanBuilder.startActive();
+
+                continuation.set(activeSpan.capture());
+                activeSpan.deactivate();
             }
-
-            ActiveSpan activeSpan = spanBuilder.startActive();
-
-            continuation.set(activeSpan.capture());
-            activeSpan.deactivate();
         }
     }
 
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
         try {
-            if (requestTracing != null 
-                    && requestTracing.isRequestTracingEnabled() 
-                    && requestTracing.isTraceInProgress() 
-                    && !isTracedAnnotationPresent()) {
-                try (ActiveSpan activeSpan = continuation.get().activate()) {
-                    Response.StatusType statusInfo = responseContext.getStatusInfo();
+            if (requestTracing != null
+                    && requestTracing.isRequestTracingEnabled()
+                    && requestTracing.isTraceInProgress()) {
 
-                    activeSpan.setTag(Tags.HTTP_STATUS.getKey(), statusInfo.getStatusCode());
+                Traced tracedAnnotation = OpenTracingCdiUtils.getAnnotation(CDI.current().getBeanManager(),
+                        Traced.class, resourceInfo);
 
-                    if (statusInfo.getFamily() == Response.Status.Family.CLIENT_ERROR
-                            || statusInfo.getFamily() == Response.Status.Family.SERVER_ERROR) {
-                        activeSpan.setTag(Tags.ERROR.getKey(), true);
+                if (tracedAnnotation == null || (boolean) OpenTracingCdiUtils.getConfigOverrideValue(
+                        Traced.class, "value", resourceInfo, boolean.class).orElse(tracedAnnotation.value())) {
+                    try (ActiveSpan activeSpan = continuation.get().activate()) {
+                        Response.StatusType statusInfo = responseContext.getStatusInfo();
+
+                        activeSpan.setTag(Tags.HTTP_STATUS.getKey(), statusInfo.getStatusCode());
+
+                        if (statusInfo.getFamily() == Response.Status.Family.CLIENT_ERROR
+                                || statusInfo.getFamily() == Response.Status.Family.SERVER_ERROR) {
+                            activeSpan.setTag(Tags.ERROR.getKey(), true);
+                            activeSpan.log(Collections.singletonMap("event", "error"));
+
+                            if (responseContext.hasEntity() && responseContext.getEntity() instanceof Throwable) {
+                                activeSpan.log(Collections.singletonMap("error.object", responseContext.getEntity()));
+                            }
+                        }
+                    } finally {
+                        continuation.set(null);
                     }
-                } finally {
-                    continuation.set(null);
                 }
             }
         } finally {
@@ -162,37 +175,19 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
 
     }
 
-    private boolean isTracedAnnotationPresent() {
-        boolean annotationPresent = false;
-
-        Class<?> annotatedClass = resourceInfo.getResourceClass();
-
-        // Try to get the annotation from the method, otherwise attempt to get it from the class
-        if (resourceInfo.getResourceMethod().isAnnotationPresent(Traced.class)) {
-            annotationPresent = true;
+    private String determineOperationName(ContainerRequestContext requestContext, Traced tracedAnnotation) {
+        if (tracedAnnotation == null || ((String) OpenTracingCdiUtils.getConfigOverrideValue(
+                Traced.class, "operationName", resourceInfo, String.class)
+                .orElse(tracedAnnotation.operationName()))
+                .equals("")) {
+            return requestContext.getMethod()
+                    + ":"
+                    + resourceInfo.getResourceClass().getCanonicalName()
+                    + "."
+                    + resourceInfo.getResourceMethod().getName();
         } else {
-            if (annotatedClass.isAnnotationPresent(Traced.class)) {
-                annotationPresent = true;
-            } else {
-                // Account for Stereotypes
-                Queue<Annotation> annotations = new LinkedList<>(Arrays.asList(annotatedClass.getAnnotations()));
-
-                while (!annotations.isEmpty()) {
-                    Annotation annotation = annotations.remove();
-
-                    if (annotation.annotationType().equals(Traced.class)) {
-                        annotationPresent = true;
-                        break;
-                    }
-
-                    if (CDI.current().getBeanManager().isStereotype(annotation.annotationType())) {
-                        annotations.addAll(CDI.current().getBeanManager().getStereotypeDefinition(annotation.annotationType()));
-                    }
-                }
-            }
+            return tracedAnnotation.operationName();
         }
-
-        return annotationPresent;
     }
 
     private class MultivaluedMapToTextMap implements TextMap {

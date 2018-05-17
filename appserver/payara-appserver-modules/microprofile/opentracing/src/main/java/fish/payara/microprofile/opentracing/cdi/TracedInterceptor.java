@@ -42,7 +42,7 @@ package fish.payara.microprofile.opentracing.cdi;
 import fish.payara.opentracing.OpenTracingService;
 import io.opentracing.ActiveSpan;
 import io.opentracing.tag.Tags;
-import java.util.logging.Level;
+import java.util.Collections;
 import java.util.logging.Logger;
 import javax.annotation.Priority;
 import javax.enterprise.inject.spi.BeanManager;
@@ -50,7 +50,6 @@ import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
@@ -58,8 +57,6 @@ import javax.ws.rs.OPTIONS;
 import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.opentracing.Traced;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
@@ -78,44 +75,28 @@ public class TracedInterceptor {
     @Inject
     private BeanManager beanManager;
 
-    @Inject
-    private HttpServletRequest request;
-
     @AroundInvoke
     public Object traceCdiCall(InvocationContext invocationContext) throws Exception {
         OpenTracingService openTracing = Globals.getDefaultHabitat().getService(OpenTracingService.class);
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
 
-        Config config = null;
-
-        try {
-            config = ConfigProvider.getConfig();
-        } catch (IllegalArgumentException ex) {
-            logger.log(Level.INFO, "No config could be found", ex);
-        }
-
         Object proceed = null;
 
-        if (openTracing != null && openTracing.isEnabled()) {
+        if (openTracing != null && openTracing.isEnabled() && !isJaxRsMethod(invocationContext)) {
             Traced traced = OpenTracingCdiUtils.getAnnotation(beanManager, Traced.class, invocationContext);
 
             String operationName = (String) OpenTracingCdiUtils
-                    .getOverrideValue(config, Traced.class, "operationName", invocationContext, String.class)
+                    .getConfigOverrideValue(Traced.class, "operationName", invocationContext, String.class)
                     .orElse(traced.operationName());
-
-            String jaxRsMethodAnnotationName = getJaxRsMethodAnnotationName(invocationContext);
+            
             if (operationName.equals("")) {
-                if (jaxRsMethodAnnotationName != null) {
-                    operationName = jaxRsMethodAnnotationName + ":";
-                }
-
                 operationName = invocationContext.getMethod().getDeclaringClass().getCanonicalName()
                         + "."
                         + invocationContext.getMethod().getName();
             }
 
             boolean tracingEnabled = (boolean) OpenTracingCdiUtils
-                    .getOverrideValue(config, Traced.class, "value", invocationContext, boolean.class)
+                    .getConfigOverrideValue(Traced.class, "value", invocationContext, boolean.class)
                     .orElse(traced.value());
 
             if (tracingEnabled) {
@@ -126,11 +107,11 @@ public class TracedInterceptor {
                     try {
                         proceed = invocationContext.proceed();
                     } catch (Exception ex) {
-                        finishSpan(activeSpan, jaxRsMethodAnnotationName);
+                        activeSpan.setTag(Tags.ERROR.getKey(), true);
+                        activeSpan.log(Collections.singletonMap("event", "error"));
+                        activeSpan.log(Collections.singletonMap("error.object", ex));
                         throw ex;
                     }
-                    
-                    finishSpan(activeSpan, jaxRsMethodAnnotationName);
                 }
             } else {
                 proceed = invocationContext.proceed();
@@ -142,32 +123,16 @@ public class TracedInterceptor {
         return proceed;
     }
 
-    private String getJaxRsMethodAnnotationName(InvocationContext invocationContext) {
-        String jaxRsHttpMethodName = null;
-
+    private boolean isJaxRsMethod(InvocationContext invocationContext) {
         Class[] httpMethods = {GET.class, POST.class, DELETE.class, PUT.class, HEAD.class, PATCH.class, OPTIONS.class};
 
         for (Class httpMethod : httpMethods) {
             if (OpenTracingCdiUtils.getAnnotation(beanManager, httpMethod, invocationContext) != null) {
-                jaxRsHttpMethodName = httpMethod.getSimpleName();
-                break;
+                return true;
             }
         }
 
-        return jaxRsHttpMethodName;
-    }
-
-    private void finishSpan(ActiveSpan activeSpan, String jaxRsMethodAnnotationName) {
-        if (jaxRsMethodAnnotationName != null) {
-            activeSpan.setTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER);
-            activeSpan.setTag(Tags.HTTP_METHOD.getKey(), request.getMethod());
-            activeSpan.setTag(Tags.HTTP_URL.getKey(), request.getRequestURL().toString());
-    //        activeSpan.setTag(Tags.HTTP_STATUS.getKey(), response.getStatus());
-    //
-    //        if (response.getStatus() >= 400) {
-                activeSpan.setTag(Tags.ERROR.getKey(), true);
-    //        }
-        }
+        return false;
     }
     
 }

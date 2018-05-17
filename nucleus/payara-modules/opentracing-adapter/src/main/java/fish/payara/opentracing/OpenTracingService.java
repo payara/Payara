@@ -42,7 +42,6 @@ package fish.payara.opentracing;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import io.opentracing.Tracer;
 import io.opentracing.mock.MockTracer;
-import io.opentracing.mock.MockTracer.Propagator;
 import io.opentracing.util.ThreadLocalActiveSpanSource;
 import java.lang.reflect.Method;
 import java.util.Arrays;
