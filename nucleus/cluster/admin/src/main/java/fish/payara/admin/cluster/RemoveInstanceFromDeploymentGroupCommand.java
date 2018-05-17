@@ -46,6 +46,9 @@ import com.sun.enterprise.config.serverbeans.Server;
 import fish.payara.enterprise.config.serverbeans.DGServerRef;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroups;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -102,15 +105,8 @@ public class RemoveInstanceFromDeploymentGroupCommand implements AdminCommand {
 
     @Override
     public void execute(AdminCommandContext context) {
-
-        Server server = domain.getServerNamed(instanceName);
         ActionReport report = context.getActionReport();
-        if (server == null) {
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage("Instance " + instanceName + " does not exist");
-            return;
-        }
-
+        
         DeploymentGroup dg = domain.getDeploymentGroupNamed(deploymentGroup);
         if (dg == null) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -118,10 +114,23 @@ public class RemoveInstanceFromDeploymentGroupCommand implements AdminCommand {
             return;
         }
         
-        DGServerRef ref = dg.getDGServerRefByRef(instanceName);
+        final List<String> instances = new ArrayList<String>(Arrays.asList(instanceName.split(",")));
+        
+        
+        
+        for (String instance : instances) {
+        Server server = domain.getServerNamed(instance);
+        
+        if (server == null) {
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage("Instance " + instance + " does not exist");
+            return;
+        }
+        
+        DGServerRef ref = dg.getDGServerRefByRef(instance);
         if (ref == null) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage("Deployment Group " + deploymentGroup + " does not contain server " + instanceName);
+            report.setMessage("Deployment Group " + deploymentGroup + " does not contain server " + instance);
             return;            
         }
 
@@ -142,7 +151,7 @@ public class RemoveInstanceFromDeploymentGroupCommand implements AdminCommand {
         for (ApplicationRef applicationRef : dg.getApplicationRef()) {
             CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("delete-application-ref", report, context.getSubject());
             ParameterMap parameters = new ParameterMap();
-            parameters.add("target", instanceName);
+            parameters.add("target", instance);
             parameters.add("name", applicationRef.getRef());
             inv.parameters(parameters).execute();
         }
@@ -151,12 +160,12 @@ public class RemoveInstanceFromDeploymentGroupCommand implements AdminCommand {
         for (ResourceRef resourceRef : dg.getResourceRef()) {
             CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("delete-resource-ref", report, context.getSubject());
             ParameterMap parameters = new ParameterMap();
-            parameters.add("target", instanceName);
+            parameters.add("target", instance);
             parameters.add("reference_name", resourceRef.getRef());
             inv.parameters(parameters).execute();
         }
-
         
+    }
     }
 
 }
