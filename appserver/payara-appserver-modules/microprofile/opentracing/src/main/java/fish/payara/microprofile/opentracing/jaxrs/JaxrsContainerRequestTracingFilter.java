@@ -61,7 +61,6 @@ import java.util.Queue;
 import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.enterprise.inject.spi.CDI;
-import javax.servlet.ServletException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
