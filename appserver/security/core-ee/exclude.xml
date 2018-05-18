@@ -39,7 +39,7 @@
     holder.
 
 -->
-
+<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
 <FindBugsFilter>
     <!--
         This code uses reflection to construct an object.  The actual object
