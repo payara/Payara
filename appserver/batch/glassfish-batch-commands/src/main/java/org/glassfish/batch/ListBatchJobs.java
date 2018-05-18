@@ -115,10 +115,16 @@ public class ListBatchJobs
             extraProps.put("simpleMode", false);
             List<Map<String, Object>> jobExecutions = new ArrayList<>();
             extraProps.put("listBatchJobs", jobExecutions);
+            
+            Map<String, Integer> jobInstanceCount = null;
+            if (Arrays.asList(getOutputHeaders()).contains(INSTANCE_COUNT)) {
+                jobInstanceCount = getJobInstanceCount();
+            }
+            
             for (JobExecution je : findJobExecutions()) {
                 try {
                     if (glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) je).getTagName()))
-                        jobExecutions.add(handleJob(je, columnFormatter));
+                       jobExecutions.add(handleJob(je, columnFormatter, jobInstanceCount));
                 } catch (Exception ex) {
                     logger.log(Level.WARNING, "Exception while getting jobExecution details: " + ex);
                     logger.log(Level.FINE, "Exception while getting jobExecution details ", ex);
@@ -151,24 +157,32 @@ public class ListBatchJobs
         return getOutputHeaders().length == 2;
     }
 
-    private Map<String, Integer> findSimpleJobInfo(ColumnFormatter columnFormatter)
-        throws JobSecurityException, NoSuchJobException {
+    private Map<String, Integer> findSimpleJobInfo(ColumnFormatter columnFormatter) {
 
-        Map<String, Integer> jobToInstanceCountMap = new HashMap<>();
+        Map<String, Integer> jobToInstanceCountMap = getJobInstanceCount();
+
+        for (Map.Entry<String, Integer> e : jobToInstanceCountMap.entrySet()) {
+            columnFormatter.addRow(new Object[]{e.getKey(), e.getValue()});
+        }
+        return jobToInstanceCountMap;
+    }
+
+    private Map<String, Integer> getJobInstanceCount()
+            throws JobSecurityException, NoSuchJobException {
+
+        Map<String, Integer> jobInstanceCount = new HashMap<>();
         List<JobExecution> jobExecutions = findJobExecutions();
         for (JobExecution je : jobExecutions) {
             if (glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) je).getTagName())) {
                 String jobName = je.getJobName();
                 int count = 0;
-                if (jobToInstanceCountMap.containsKey(jobName)) {
-                    count = jobToInstanceCountMap.get(jobName);
+                if (jobInstanceCount.containsKey(jobName)) {
+                    count = jobInstanceCount.get(jobName);
                 }
-                jobToInstanceCountMap.put(jobName, count+1);
+                jobInstanceCount.put(jobName, count + 1);
             }
         }
-        for (Map.Entry<String, Integer> e : jobToInstanceCountMap.entrySet())
-            columnFormatter.addRow(new Object[] {e.getKey(), e.getValue()});
-        return jobToInstanceCountMap;
+        return jobInstanceCount;
     }
 
     private List<JobExecution> findJobExecutions()
@@ -200,7 +214,7 @@ public class ListBatchJobs
         return jobExecutions;
     }
 
-    private Map<String, Object> handleJob(JobExecution je, ColumnFormatter columnFormatter)
+    private Map<String, Object> handleJob(JobExecution je, ColumnFormatter columnFormatter, Map<String, Integer>  instanceCount)
         throws  JobSecurityException, NoSuchJobException, NoSuchJobExecutionException {
         Map<String, Object> jobInfo = new HashMap<>();
 
@@ -223,7 +237,7 @@ public class ListBatchJobs
                     }
                     break;
                 case INSTANCE_COUNT:
-                    data = jobOperator.getJobInstanceCount(je.getJobName());
+                    data = instanceCount != null ? instanceCount.get(je.getJobName()) : "";
                     break;
                 case INSTANCE_ID:
                     data = jobOperator.getJobInstance(je.getExecutionId()).getInstanceId();
