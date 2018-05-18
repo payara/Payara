@@ -77,7 +77,7 @@ public class HttpServletHelper extends ConfigHelper {
             }
         }
 
-        // set realmName before init
+        // Set realmName before init
         init(HTTPSERVLET, appContext, map, cbh);
 
         if (webBundle != null) {

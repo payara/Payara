@@ -51,18 +51,13 @@ import static java.security.AccessController.doPrivileged;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
-import static javax.security.auth.message.AuthStatus.SEND_CONTINUE;
-import static javax.security.auth.message.AuthStatus.SEND_FAILURE;
-import static javax.security.auth.message.AuthStatus.SUCCESS;
 
 import java.io.IOException;
 import java.security.AccessController;
-import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -70,14 +65,12 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
 import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 // jsr 196 interface types
 import javax.security.auth.message.AuthException;
 import javax.security.auth.message.AuthStatus;
 import javax.security.auth.message.MessageInfo;
 import javax.security.auth.message.MessagePolicy;
-import javax.security.auth.message.callback.CallerPrincipalCallback;
 import javax.security.auth.message.config.AuthConfig;
 import javax.security.auth.message.config.AuthConfigFactory;
 import javax.security.auth.message.config.AuthConfigProvider;
@@ -93,13 +86,6 @@ import org.glassfish.internal.api.Globals;
 import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 
-// types to support backward compatability of pre-standard 196 auth modules
-
-import com.sun.enterprise.security.jauth.AuthParam;
-import com.sun.enterprise.security.jauth.AuthPolicy;
-import com.sun.enterprise.security.jauth.FailureException;
-import com.sun.enterprise.security.jauth.HttpServletAuthParam;
-import com.sun.enterprise.security.jauth.PendingException;
 import com.sun.enterprise.security.jmac.AuthMessagePolicy;
 import com.sun.enterprise.security.jmac.WebServicesDelegate;
 import com.sun.logging.LogDomains;
@@ -111,6 +97,8 @@ import com.sun.logging.LogDomains;
  * @author Ronald Monzillo
  */
 public class GFServerConfigProvider implements AuthConfigProvider {
+    
+    private static final Logger logger = LogDomains.getLogger(GFServerConfigProvider.class, LogDomains.SECURITY_LOGGER);
 
     public static final String SOAP = "SOAP";
     public static final String HTTPSERVLET = "HttpServlet";
@@ -118,8 +106,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
     protected static final String CLIENT = "client";
     protected static final String SERVER = "server";
     protected static final String MANAGES_SESSIONS_OPTION = "managessessions";
-
-    private static final Logger logger = LogDomains.getLogger(GFServerConfigProvider.class, LogDomains.SECURITY_LOGGER);
+    
     private static final String DEFAULT_PARSER_CLASS = "com.sun.enterprise.security.jmac.config.ConfigDomainParser";
 
     // since old api does not have subject in PasswordValdiationCallback,
@@ -129,7 +116,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
     protected static final ReadWriteLock rwLock = new ReentrantReadWriteLock();
     protected static final Map<String, String> layerDefaultRegisIDMap = new HashMap<String, String>();
 
-    // mutable statics should be kept package private to eliminate
+    // Mutable statics should be kept package private to eliminate
     // the ability for subclasses to access them
     static int epoch;
     static String parserClassName;
@@ -212,11 +199,11 @@ public class GFServerConfigProvider implements AuthConfigProvider {
     }
 
     /**
-     * Instantiate+initialize module class
+     * Instantiate and initialize module class
      */
     static ModuleInfo createModuleInfo(Entry entry, CallbackHandler handler, String type, Map<String, Object> properties) throws AuthException {
         try {
-            // instantiate module using no-arg constructor
+            // Instantiate module using no-arg constructor
             Object newModule = entry.newInstance();
 
             Map<String, Object> map = properties;
@@ -231,37 +218,13 @@ public class GFServerConfigProvider implements AuthConfigProvider {
                 map.putAll(entryOptions);
             }
 
-            // No doPrivilege at this point, need to revisit
+            // Initialize Module
             if (SERVER.equals(type)) {
-                if (newModule instanceof ServerAuthModule) {
-                    ServerAuthModule sam = (ServerAuthModule) newModule;
-                    sam.initialize(entry.getRequestPolicy(), entry.getResponsePolicy(), handler, map);
-                } else if (newModule instanceof com.sun.enterprise.security.jauth.ServerAuthModule) {
-
-                    // TODO REMOVE
-                    com.sun.enterprise.security.jauth.ServerAuthModule sam0 = (com.sun.enterprise.security.jauth.ServerAuthModule) newModule;
-
-                    AuthPolicy requestPolicy = (entry.getRequestPolicy() != null) ? new AuthPolicy(entry.getRequestPolicy()) : null;
-
-                    AuthPolicy responsePolicy = (entry.getResponsePolicy() != null) ? new AuthPolicy(entry.getResponsePolicy()) : null;
-
-                    sam0.initialize(requestPolicy, responsePolicy, handler, map);
-                }
+                ServerAuthModule sam = (ServerAuthModule) newModule;
+                sam.initialize(entry.getRequestPolicy(), entry.getResponsePolicy(), handler, map);
             } else { // CLIENT
-                if (newModule instanceof ClientAuthModule) {
-                    ClientAuthModule cam = (ClientAuthModule) newModule;
-                    cam.initialize(entry.getRequestPolicy(), entry.getResponsePolicy(), handler, map);
-                } else if (newModule instanceof com.sun.enterprise.security.jauth.ClientAuthModule) {
-
-                    // TODO REMOVE
-                    com.sun.enterprise.security.jauth.ClientAuthModule cam0 = (com.sun.enterprise.security.jauth.ClientAuthModule) newModule;
-
-                    AuthPolicy requestPolicy = new AuthPolicy(entry.getRequestPolicy());
-
-                    AuthPolicy responsePolicy = new AuthPolicy(entry.getResponsePolicy());
-
-                    cam0.initialize(requestPolicy, responsePolicy, handler, map);
-                }
+                ClientAuthModule cam = (ClientAuthModule) newModule;
+                cam.initialize(entry.getRequestPolicy(), entry.getResponsePolicy(), handler, map);
             }
 
             return new ModuleInfo(newModule, map);
@@ -269,9 +232,8 @@ public class GFServerConfigProvider implements AuthConfigProvider {
             if (e instanceof AuthException) {
                 throw (AuthException) e;
             }
-            AuthException ae = new AuthException();
-            ae.initCause(e);
-            throw ae;
+            
+            throw (AuthException) new AuthException().initCause(e);
         }
     }
 
@@ -711,6 +673,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
     }
 
     class GFAuthConfig implements AuthConfig {
+        
         protected AuthConfigProvider provider;
         protected String layer;
         protected String appContext;
@@ -726,11 +689,8 @@ public class GFServerConfigProvider implements AuthConfigProvider {
             this.provider = provider;
             this.layer = layer;
             this.appContext = appContext;
+            this.handler = handler != null ? handler : AuthMessagePolicy.getDefaultCallbackHandler();
             this.type = type;
-            if (handler == null) {
-                handler = AuthMessagePolicy.getDefaultCallbackHandler();
-            }
-            this.handler = handler;
         }
 
         /**
@@ -774,15 +734,13 @@ public class GFServerConfigProvider implements AuthConfigProvider {
         public String getAuthContextID(MessageInfo messageInfo) {
             if (HTTPSERVLET.equals(layer)) {
                 return Boolean.valueOf((String) messageInfo.getMap().get(IS_MANDATORY)).toString();
-            } else if (GFServerConfigProvider.SOAP.equals(layer)) {
-                if (wsdelegate != null) {
-                    return wsdelegate.getAuthContextID(messageInfo);
-                }
-                
-                return null;
-            } else {
-                return null;
             }
+            
+            if (SOAP.equals(layer) && wsdelegate != null) {
+                return wsdelegate.getAuthContextID(messageInfo);
+            }
+            
+            return null;
         }
 
         // we should be able to replace the following with a method on packet
@@ -812,18 +770,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
             // XXX TBD
             return true;
         }
-
-        protected AuthParam getAuthParam(MessageInfo info) throws AuthException {
-            if (GFServerConfigProvider.HTTPSERVLET.equals(layer)) {
-                return new HttpServletAuthParam(info);
-            } else if (SOAP.equals(layer)) {
-                if (wsdelegate != null) {
-                    return wsdelegate.newSOAPAuthParam(info);
-                }
-            }
-            
-            throw new AuthException("unsupported AuthParam type");
-        }
+        
 
         CallbackHandler getCallbackHandler() {
             return handler;
@@ -847,7 +794,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
 
             Entry entry = getEntry(layer, providerID, requestPolicy, responsePolicy, type);
 
-            return (entry != null) ? createModuleInfo(entry, handler, type, properties) : null;
+            return entry != null ? createModuleInfo(entry, handler, type, properties) : null;
         }
 
         // lazy initialize this as SunWebApp is not available in
@@ -864,7 +811,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
                     onePolicy = oneSOAPPolicy(binding);
                 }
 
-                // handlerContext need to be explictly set by caller
+                // HandlerContext need to be explicitly set by caller
                 init = true;
             }
         }
@@ -877,22 +824,14 @@ public class GFServerConfigProvider implements AuthConfigProvider {
         }
 
         public ServerAuthContext getAuthContext(String authContextID, Subject serviceSubject, @SuppressWarnings("rawtypes") Map properties) throws AuthException {
-            ServerAuthContext serverAuthContext = null;
-            
             @SuppressWarnings("unchecked")
             ModuleInfo moduleInfo = getModuleInfo(authContextID, (Map<String, Object>) properties);
 
             if (moduleInfo != null && moduleInfo.getModule() != null) {
-                Object moduleObj = moduleInfo.getModule();
-                Map<String, Object> map = moduleInfo.getMap();
-                if (moduleObj instanceof ServerAuthModule) {
-                    serverAuthContext = new GFServerAuthContext(this, (ServerAuthModule) moduleObj, map);
-                } else {
-                    serverAuthContext = new GFServerAuthContext(this, (com.sun.enterprise.security.jauth.ServerAuthModule) moduleObj, map);
-                }
+                return new GFServerAuthContext(moduleInfo.getModule());
             }
 
-            return serverAuthContext;
+            return null;
         }
     }
 
@@ -903,200 +842,80 @@ public class GFServerConfigProvider implements AuthConfigProvider {
         }
 
         public ClientAuthContext getAuthContext(String authContextID, Subject clientSubject, @SuppressWarnings("rawtypes") Map properties) throws AuthException {
-            ClientAuthContext clientAuthContext = null;
-            
             @SuppressWarnings("unchecked")
             ModuleInfo moduleInfo = getModuleInfo(authContextID, (Map<String, Object>) properties);
 
             if (moduleInfo != null && moduleInfo.getModule() != null) {
-                Object moduleObj = moduleInfo.getModule();
-                Map<String, Object> map = moduleInfo.getMap();
-                if (moduleObj instanceof ClientAuthModule) {
-                    clientAuthContext = new GFClientAuthContext(this, (ClientAuthModule) moduleObj, map);
-                } else {
-                    clientAuthContext = new GFClientAuthContext(this, (com.sun.enterprise.security.jauth.ClientAuthModule) moduleObj, map);
-                }
+                return new GFClientAuthContext(moduleInfo.getModule());
             }
 
-            return clientAuthContext;
+            return null;
         }
     }
 
     static protected class GFServerAuthContext implements ServerAuthContext {
 
-        private GFServerAuthConfig config;
-        private ServerAuthModule module;
-        private com.sun.enterprise.security.jauth.ServerAuthModule oldModule;
+        private final ServerAuthModule module;
 
-        boolean managesSession = false;
-
-        GFServerAuthContext(GFServerAuthConfig config, ServerAuthModule module, Map<String, Object> map) {
-            this.config = config;
+        GFServerAuthContext(ServerAuthModule module) {
             this.module = module;
-            this.oldModule = null;
-        }
-
-        GFServerAuthContext(GFServerAuthConfig config, com.sun.enterprise.security.jauth.ServerAuthModule module, Map<String, Object> map) {
-            this.config = config;
-            this.module = null;
-            this.oldModule = module;
-            if (map != null) {
-                String msStr = (String) map.get(GFServerConfigProvider.MANAGES_SESSIONS_OPTION);
-                if (msStr != null) {
-                    managesSession = Boolean.valueOf(msStr);
-                }
-            }
-        }
-
-        // for old modules
-        private static void _setCallerPrincipals(Subject s, CallbackHandler handler, Subject pvcSubject) throws AuthException {
-
-            if (handler != null) { // handler should be non-null
-                Set<Principal> ps = s.getPrincipals();
-                if (ps == null || ps.isEmpty()) {
-                    return;
-                }
-                Iterator<Principal> it = ps.iterator();
-
-                Callback[] callbacks = new Callback[] { new CallerPrincipalCallback(s, it.next().getName()) };
-                if (pvcSubject != null) {
-                    s.getPrincipals().addAll(pvcSubject.getPrincipals());
-                }
-
-                try {
-                    handler.handle(callbacks);
-                } catch (Exception e) {
-                    AuthException aex = new AuthException();
-                    aex.initCause(e);
-                    throw aex;
-                }
-            }
-        }
-
-        // for old modules
-        private static void setCallerPrincipals(final Subject s, final CallbackHandler handler, final Subject pvcSubject)
-                throws AuthException {
-            if (System.getSecurityManager() == null) {
-                _setCallerPrincipals(s, handler, pvcSubject);
-            } else {
-                try {
-                    doPrivileged(new PrivilegedExceptionAction<Object>() {
-                        public Object run() throws Exception {
-                            _setCallerPrincipals(s, handler, pvcSubject);
-                            return null;
-                        }
-                    });
-                } catch (PrivilegedActionException pae) {
-                    AuthException aex = new AuthException();
-                    aex.initCause(pae.getCause());
-                    throw aex;
-                }
-            }
         }
 
         public AuthStatus validateRequest(MessageInfo messageInfo, Subject clientSubject, Subject serviceSubject) throws AuthException {
-            if (module != null) {
-                return module.validateRequest(messageInfo, clientSubject, serviceSubject);
-            }
-
-            if (oldModule != null) {
-                try {
-                    subjectLocal.remove();
-                    oldModule.validateRequest(config.getAuthParam(messageInfo), clientSubject, messageInfo.getMap());
-                    setCallerPrincipals(clientSubject, config.getCallbackHandler(), subjectLocal.get());
-                    if (!managesSession && GFServerConfigProvider.HTTPSERVLET.equals(config.getMessageLayer())) {
-                        messageInfo.getMap().put(HttpServletConstants.REGISTER_WITH_AUTHENTICATOR, Boolean.TRUE.toString());
-                    }
-                    
-                    return SUCCESS;
-                } catch (PendingException pe) {
-                    return SEND_CONTINUE;
-                } catch (FailureException fe) {
-                    return SEND_FAILURE;
-                } finally {
-                    subjectLocal.remove();
-                }
-            } else {
+            if (module == null) {
                 throw new AuthException();
             }
+            
+            return module.validateRequest(messageInfo, clientSubject, serviceSubject);
         }
 
         public AuthStatus secureResponse(MessageInfo messageInfo, Subject serviceSubject) throws AuthException {
-            if (module != null) {
-                return module.secureResponse(messageInfo, serviceSubject);
-            }
-
-            if (oldModule != null) {
-                oldModule.secureResponse(config.getAuthParam(messageInfo), serviceSubject, messageInfo.getMap());
-                return AuthStatus.SEND_SUCCESS;
-            } else {
+            if (module == null) {
                 throw new AuthException();
             }
+            
+            return module.secureResponse(messageInfo, serviceSubject);
         }
 
         public void cleanSubject(MessageInfo messageInfo, Subject subject) throws AuthException {
-            if (module != null) {
-                module.cleanSubject(messageInfo, subject);
-            } else if (oldModule != null) {
-                oldModule.disposeSubject(subject, messageInfo.getMap());
-            } else {
+            if (module == null) {
                 throw new AuthException();
             }
+            
+            module.cleanSubject(messageInfo, subject);
         }
     }
 
     static protected class GFClientAuthContext implements ClientAuthContext {
 
-        private GFClientAuthConfig config;
-        private ClientAuthModule module;
-        private com.sun.enterprise.security.jauth.ClientAuthModule oldModule;
+        private final ClientAuthModule module;
 
-        GFClientAuthContext(GFClientAuthConfig config, ClientAuthModule module, Map<String, Object> map) {
-            this.config = config;
+        GFClientAuthContext(ClientAuthModule module) {
             this.module = module;
-            this.oldModule = null;
-        }
-
-        GFClientAuthContext(GFClientAuthConfig config, com.sun.enterprise.security.jauth.ClientAuthModule module, Map<String, Object> map) {
-            this.config = config;
-            this.module = null;
-            this.oldModule = module;
         }
 
         public AuthStatus secureRequest(MessageInfo messageInfo, Subject clientSubject) throws AuthException {
-            if (module != null) {
-                return module.secureRequest(messageInfo, clientSubject);
-            }
-
-            if (oldModule != null) {
-                oldModule.secureRequest(config.getAuthParam(messageInfo), clientSubject, messageInfo.getMap());
-                return AuthStatus.SEND_SUCCESS;
-            } else {
+            if (module == null) {
                 throw new AuthException();
             }
+            
+            return module.secureRequest(messageInfo, clientSubject);
         }
 
         public AuthStatus validateResponse(MessageInfo messageInfo, Subject clientSubject, Subject serviceSubject) throws AuthException {
-            if (module != null) {
-                return module.validateResponse(messageInfo, clientSubject, serviceSubject);
-            }
-
-            if (oldModule != null) {
-                oldModule.validateResponse(config.getAuthParam(messageInfo), clientSubject, messageInfo.getMap());
-                return AuthStatus.SUCCESS;
-            } else {
+            if (module == null) {
                 throw new AuthException();
             }
+            
+            return module.validateResponse(messageInfo, clientSubject, serviceSubject);
         }
 
         public void cleanSubject(MessageInfo messageInfo, Subject subject) throws AuthException {
-            if (module != null) {
-                module.cleanSubject(messageInfo, subject);
-            } else if (oldModule != null) {
-                oldModule.disposeSubject(subject, messageInfo.getMap());
-            } else {
+            if (module == null) {
                 throw new AuthException();
             }
+            
+            module.cleanSubject(messageInfo, subject);
         }
     }
     
@@ -1143,16 +962,18 @@ public class GFServerConfigProvider implements AuthConfigProvider {
      * A data object contains module object and the corresponding map.
      */
     protected static class ModuleInfo {
-        private Object module;
-        private Map<String, Object> map;
+        
+        private final Object module;
+        private final Map<String, Object> map;
 
         ModuleInfo(Object module, Map<String, Object> map) {
             this.module = module;
             this.map = map;
         }
 
-        Object getModule() {
-            return module;
+        @SuppressWarnings("unchecked")
+        <T> T getModule() {
+            return (T) module;
         }
 
         Map<String, Object> getMap() {

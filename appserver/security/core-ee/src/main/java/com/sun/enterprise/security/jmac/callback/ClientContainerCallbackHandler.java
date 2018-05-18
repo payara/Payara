@@ -67,52 +67,54 @@ import com.sun.enterprise.security.UsernamePasswordStore;
 
 /**
  * Appclient side Callback Handler for WSS.
- * @author  Harpreet Singh
- * @author  Shing Wai Chan
+ * 
+ * @author Harpreet Singh
+ * @author Shing Wai Chan
  */
-final class ClientContainerCallbackHandler
-        extends BaseContainerCallbackHandler {
-    
+final class ClientContainerCallbackHandler extends BaseContainerCallbackHandler {
+
     private static final String LOGIN_NAME = "j2eelogin.name";
     private static final String LOGIN_PASSWORD = "j2eelogin.password";
 
     ClientContainerCallbackHandler() {
     }
 
-    //TODO:V3 trying to read system properties here
-    protected void handleSupportedCallbacks(Callback[] callbacks) 
-            throws IOException, UnsupportedCallbackException {
+    // TODO:V3 trying to read system properties here
+    protected void handleSupportedCallbacks(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
 
         // this variable is set to true if we have used the older jaas
-        // mechanisms to process the callbacks - and we will not need 
+        // mechanisms to process the callbacks - and we will not need
         // to process further as the inside loop, just takes care
         // of processing all callbacks
         boolean processedSomeAppclientCallbacks = false;
 
-        int i=0;
+        int i = 0;
         while (i < callbacks.length) {
             if (!processedSomeAppclientCallbacks) {
-                if ((callbacks[i] instanceof NameCallback) ||
-                        (callbacks[i] instanceof PasswordCallback) ||
-                        (callbacks[i] instanceof ChoiceCallback)) {
+                if ((callbacks[i] instanceof NameCallback) || (callbacks[i] instanceof PasswordCallback)
+                        || (callbacks[i] instanceof ChoiceCallback)) {
 
                     String loginName = UsernamePasswordStore.getUsername();
                     char[] password = UsernamePasswordStore.getPassword();
                     boolean doSet = false;
+                    
                     if (loginName == null) {
                         loginName = System.getProperty(LOGIN_NAME);
                         doSet = true;
                     }
+                    
                     if (password == null) {
                         password = System.getProperty(LOGIN_PASSWORD).toCharArray();
                         doSet = true;
                     }
+                    
                     if (doSet) {
                         UsernamePasswordStore.set(loginName, password);
                     }
-                    //TODO: V3 CallbackHandler callbackHandler = AppContainer.getCallbackHandler();
+                    
+                    // TODO: V3 CallbackHandler callbackHandler = AppContainer.getCallbackHandler();
                     CallbackHandler callbackHandler = SecurityServicesUtil.getInstance().getCallbackHandler();
-                    if(loginName != null && password != null){
+                    if (loginName != null && password != null) {
                         // username/password set already
                         for (Callback callback : callbacks) {
                             if (callback instanceof NameCallback) {
@@ -123,7 +125,7 @@ final class ClientContainerCallbackHandler
                                 pc.setPassword(password);
                             }
                         }
-                    } else{
+                    } else {
                         // once this is called all callbacks will be handled by
                         // callbackHandler and then we dont have to check for
                         // NameCallback PasswordCallback and ChoiceCallback
@@ -131,31 +133,28 @@ final class ClientContainerCallbackHandler
                         // Let control flow to the callback processors
                         callbackHandler.handle(callbacks);
                     }
+                    
                     processedSomeAppclientCallbacks = true;
                     break;
                 }
             }
+            
             processCallback(callbacks[i]);
             i++;
         }
     }
 
-    protected boolean isSupportedCallback(Callback callback) 
-    {
-       boolean supported = false;
-        if (callback instanceof NameCallback ||
-                callback instanceof PasswordCallback ||
-                callback instanceof ChoiceCallback ||
-                callback instanceof CallerPrincipalCallback ||
-                callback instanceof GroupPrincipalCallback ||
-                callback instanceof CertStoreCallback ||
-                callback instanceof PasswordValidationCallback ||
-                callback instanceof SecretKeyCallback ||
-                callback instanceof PrivateKeyCallback ||
-                callback instanceof TrustStoreCallback) {
-            supported = true;
-        }
-        return supported;
+    protected boolean isSupportedCallback(Callback callback) {
+        return callback instanceof NameCallback 
+                || callback instanceof PasswordCallback 
+                || callback instanceof ChoiceCallback
+                || callback instanceof CallerPrincipalCallback 
+                || callback instanceof GroupPrincipalCallback
+                || callback instanceof CertStoreCallback 
+                || callback instanceof PasswordValidationCallback
+                || callback instanceof SecretKeyCallback 
+                || callback instanceof PrivateKeyCallback
+                || callback instanceof TrustStoreCallback;
     }
-    
+
 }

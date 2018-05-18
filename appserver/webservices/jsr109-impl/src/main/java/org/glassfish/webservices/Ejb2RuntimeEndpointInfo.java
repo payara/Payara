@@ -42,19 +42,18 @@ package org.glassfish.webservices;
 
 import java.rmi.Remote;
 
-import com.sun.enterprise.deployment.WebServiceEndpoint;
-import org.glassfish.ejb.api.EjbEndpointFacade;
-import org.glassfish.ejb.api.EJBInvocation;
-import org.glassfish.internal.api.Globals;
 import org.glassfish.api.invocation.ComponentInvocation;
-import com.sun.xml.rpc.spi.runtime.Handler;
+import org.glassfish.ejb.api.EJBInvocation;
+import org.glassfish.ejb.api.EjbEndpointFacade;
+import org.glassfish.internal.api.Globals;
+
+import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.xml.rpc.spi.runtime.Tie;
 
 /**
- * Runtime dispatch information about one ejb web service
- * endpoint.  This class must support concurrent access,
- * since a single instance will be used for all web
- * service invocations through the same ejb endpoint.
+ * Runtime dispatch information about one ejb web service endpoint. This class must support
+ * concurrent access, since a single instance will be used for all web service invocations through
+ * the same ejb endpoint.
  *
  * @author Kenneth Saks
  */
@@ -62,54 +61,51 @@ public class Ejb2RuntimeEndpointInfo extends EjbRuntimeEndpointInfo {
 
     private Class tieClass;
 
-    // Lazily instantiated and cached due to overhead
-    // of initialization.
+    // Lazily instantiated and cached due to overhead of initialization.
     private Tie tieInstance;
 
     private Object serverAuthConfig;
 
-    public Ejb2RuntimeEndpointInfo(WebServiceEndpoint webServiceEndpoint,
-                                  EjbEndpointFacade ejbContainer,
-                                  Object servant, Class tie) {
-                                  
+    public Ejb2RuntimeEndpointInfo(WebServiceEndpoint webServiceEndpoint, EjbEndpointFacade ejbContainer, Object servant, Class tie) {
+
         super(webServiceEndpoint, ejbContainer, servant);
         tieClass = tie;
-        
+
         if (Globals.getDefaultHabitat() != null) {
-            org.glassfish.webservices.SecurityService secServ = Globals.get(
-                    org.glassfish.webservices.SecurityService.class);
-            if (secServ != null) {
-                serverAuthConfig = secServ.mergeSOAPMessageSecurityPolicies(webServiceEndpoint.getMessageSecurityBinding());
+            SecurityService securityService = Globals.get(SecurityService.class);
+            if (securityService != null) {
+                serverAuthConfig = securityService.mergeSOAPMessageSecurityPolicies(webServiceEndpoint.getMessageSecurityBinding());
             }
         }
-        
+
     }
 
-    public AdapterInvocationInfo getHandlerImplementor()
-        throws Exception {
+    public AdapterInvocationInfo getHandlerImplementor() throws Exception {
 
-        ComponentInvocation inv =  container.startInvocation();
-        AdapterInvocationInfo aInfo = new AdapterInvocationInfo();
-        aInfo.setInv(inv);
-        synchronized(this) {
-            if(tieClass == null) {
+        ComponentInvocation invocation = container.startInvocation();
+        AdapterInvocationInfo adapterInvocationInfo = new AdapterInvocationInfo();
+        adapterInvocationInfo.setInv(invocation);
+
+        synchronized (this) {
+            if (tieClass == null) {
                 tieClass = Thread.currentThread().getContextClassLoader().loadClass(getEndpoint().getTieClassName());
             }
-            if( tieInstance == null ) {
+            if (tieInstance == null) {
                 tieInstance = (Tie) tieClass.newInstance();
                 tieInstance.setTarget((Remote) webServiceEndpointServant);
             }
         }
-        EJBInvocation.class.cast(inv).setWebServiceTie(tieInstance);
-        aInfo.setHandler((Handler)tieInstance);
-        return aInfo;
+
+        EJBInvocation.class.cast(invocation).setWebServiceTie(tieInstance);
+        adapterInvocationInfo.setHandler(tieInstance);
+
+        return adapterInvocationInfo;
     }
 
     /**
-     * Called after attempt to handle message.  This is coded defensively
-     * so we attempt to clean up no matter how much progress we made in
-     * getImplementor.  One important thing is to complete the invocation
-     * manager preInvoke().
+     * Called after attempt to handle message. This is coded defensively so we attempt to clean up no
+     * matter how much progress we made in getImplementor. One important thing is to complete the
+     * invocation manager preInvoke().
      */
     @Override
     public void releaseImplementor(ComponentInvocation inv) {
@@ -120,14 +116,15 @@ public class Ejb2RuntimeEndpointInfo extends EjbRuntimeEndpointInfo {
     public EjbMessageDispatcher getMessageDispatcher() {
         // message dispatcher is stateless, no need to synchronize, worse
         // case, we'll create too many.
-        if (messageDispatcher==null) {
+        if (messageDispatcher == null) {
             messageDispatcher = new EjbWebServiceDispatcher();
         }
+
         return messageDispatcher;
     }
 
     public Object getServerAuthConfig() {
-     return serverAuthConfig;
+        return serverAuthConfig;
     }
 
 }

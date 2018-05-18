@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.security.jmac.provider; 
+package com.sun.enterprise.security.jmac.provider;
 
 import com.sun.enterprise.security.jauth.*;
 import java.util.ArrayList;
@@ -52,90 +52,75 @@ import com.sun.xml.rpc.spi.runtime.StreamingHandler;
 import javax.xml.soap.SOAPMessage;
 
 /**
- * This class is the client container's interface to the AuthConfig subsystem
- * to get AuthContext objects on which to invoke message layer authentication
- * providers. It is not intended to be layer or web services specific (see
- * getMechanisms method at end).
+ * This class is the client container's interface to the AuthConfig subsystem to get AuthContext
+ * objects on which to invoke message layer authentication providers. It is not intended to be layer
+ * or web services specific (see getMechanisms method at end).
  */
 public class ClientAuthConfig extends BaseAuthConfig {
 
     private ClientAuthConfig(ClientAuthContext defaultContext) {
-	super(defaultContext);
+        super(defaultContext);
     }
 
-    private ClientAuthConfig (ArrayList descriptors, ArrayList authContexts) {
-	super(descriptors,authContexts);
+    private ClientAuthConfig(ArrayList descriptors, ArrayList authContexts) {
+        super(descriptors, authContexts);
     }
 
-    public static ClientAuthConfig getConfig
-	(String authLayer, MessageSecurityBindingDescriptor binding, 
-	 CallbackHandler cbh) throws AuthException {
-	ClientAuthConfig rvalue = null;
-	String provider = null;
-	ArrayList descriptors = null;
-	ClientAuthContext defaultContext = null;
-	if (binding != null) {
-	    String layer = binding.getAttributeValue
-		(MessageSecurityBindingDescriptor.AUTH_LAYER);
-	    if (authLayer != null && layer.equals(authLayer)) {
-		provider = binding.getAttributeValue
-		    (MessageSecurityBindingDescriptor.PROVIDER_ID);
-		descriptors = binding.getMessageSecurityDescriptors();
-	    }
-	}
-	if (descriptors == null || descriptors.size() == 0) {
-	    defaultContext = getAuthContext(authLayer,provider,null,null,cbh);
-	    if (defaultContext != null) {
-		rvalue = new ClientAuthConfig(defaultContext);
-	    }
-	} else {
-	    boolean hasPolicy = false;
-	    ArrayList authContexts = new ArrayList();
-	    for (int i = 0; i < descriptors.size(); i++) {
-		MessageSecurityDescriptor msd = 
-		    (MessageSecurityDescriptor) descriptors.get(i);
-		AuthPolicy requestPolicy = 
-		    getAuthPolicy(msd.getRequestProtectionDescriptor());
-		AuthPolicy responsePolicy = 
-		    getAuthPolicy(msd.getResponseProtectionDescriptor());
- 		if (requestPolicy.authRequired()||responsePolicy.authRequired()) {
-		    authContexts.add
-			(getAuthContext
-			 (authLayer,provider,requestPolicy,responsePolicy,cbh));
-		    hasPolicy = true;
-		} else {
-		    authContexts.add(null);
-		}
-	    }
-	    if (hasPolicy) {
-		rvalue = new ClientAuthConfig(descriptors,authContexts);
-	    }
-	}
-	return rvalue;
+    public static ClientAuthConfig getConfig(String authLayer, MessageSecurityBindingDescriptor binding, CallbackHandler cbh)
+            throws AuthException {
+        ClientAuthConfig rvalue = null;
+        String provider = null;
+        ArrayList descriptors = null;
+        ClientAuthContext defaultContext = null;
+        if (binding != null) {
+            String layer = binding.getAttributeValue(MessageSecurityBindingDescriptor.AUTH_LAYER);
+            if (authLayer != null && layer.equals(authLayer)) {
+                provider = binding.getAttributeValue(MessageSecurityBindingDescriptor.PROVIDER_ID);
+                descriptors = binding.getMessageSecurityDescriptors();
+            }
+        }
+        if (descriptors == null || descriptors.size() == 0) {
+            defaultContext = getAuthContext(authLayer, provider, null, null, cbh);
+            if (defaultContext != null) {
+                rvalue = new ClientAuthConfig(defaultContext);
+            }
+        } else {
+            boolean hasPolicy = false;
+            ArrayList authContexts = new ArrayList();
+            for (int i = 0; i < descriptors.size(); i++) {
+                MessageSecurityDescriptor msd = (MessageSecurityDescriptor) descriptors.get(i);
+                AuthPolicy requestPolicy = getAuthPolicy(msd.getRequestProtectionDescriptor());
+                AuthPolicy responsePolicy = getAuthPolicy(msd.getResponseProtectionDescriptor());
+                if (requestPolicy.authRequired() || responsePolicy.authRequired()) {
+                    authContexts.add(getAuthContext(authLayer, provider, requestPolicy, responsePolicy, cbh));
+                    hasPolicy = true;
+                } else {
+                    authContexts.add(null);
+                }
+            }
+            if (hasPolicy) {
+                rvalue = new ClientAuthConfig(descriptors, authContexts);
+            }
+        }
+        return rvalue;
     }
 
-    private static ClientAuthContext getAuthContext 
-	(String layer, String provider, AuthPolicy requestPolicy, 
-	 AuthPolicy responsePolicy,CallbackHandler cbh) throws AuthException {
-	AuthConfig authConfig = AuthConfig.getAuthConfig();
-	return authConfig.getClientAuthContext
-	    (layer,provider,requestPolicy,responsePolicy,cbh);
+    private static ClientAuthContext getAuthContext(String layer, String provider, AuthPolicy requestPolicy, AuthPolicy responsePolicy,
+            CallbackHandler cbh) throws AuthException {
+        AuthConfig authConfig = AuthConfig.getAuthConfig();
+        return authConfig.getClientAuthContext(layer, provider, requestPolicy, responsePolicy, cbh);
     }
 
-    public ClientAuthContext 
-	getAuthContext(StreamingHandler handler, SOAPMessage message) {
-	return (ClientAuthContext) getContext(handler,message);
+    public ClientAuthContext getAuthContext(StreamingHandler handler, SOAPMessage message) {
+        return (ClientAuthContext) getContext(handler, message);
     }
 
-    public ClientAuthContext getAuthContext
-	(javax.xml.ws.handler.soap.SOAPMessageContext context) {
-	return (ClientAuthContext) getContext(context);
+    public ClientAuthContext getAuthContext(javax.xml.ws.handler.soap.SOAPMessageContext context) {
+        return (ClientAuthContext) getContext(context);
     }
 
-    public ClientAuthContext 
-	getAuthContextForOpCode(StreamingHandler handler, int opcode) throws
-	    ClassNotFoundException, NoSuchMethodException {
-	return (ClientAuthContext) getContextForOpCode(handler,opcode);
+    public ClientAuthContext getAuthContextForOpCode(StreamingHandler handler, int opcode) throws ClassNotFoundException, NoSuchMethodException {
+        return (ClientAuthContext) getContextForOpCode(handler, opcode);
     }
 
 }

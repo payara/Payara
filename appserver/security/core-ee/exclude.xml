@@ -42,38 +42,6 @@
 
 <FindBugsFilter>
     <!--
-        Request: Kumar & Ron
-        Approval: Bill Shannon
-        Date:08/12/2009
-        Notes from Ron:
-        The proprietary callback classes predate Glassfish v2. we
-        maintained support for them in v2 and v3, where they are
-        available for use by auth modules written to the proprietary spi
-        (which we continue to support in v3).  We only made the
-        proprietary spi available to parties within sun; including the
-        opensso/then access manager team, and for the native ws-security
-        auth-modules created by the xwss team for appserver 8.1.  The
-        ws-secuity modules are being phased out in favor of the new
-        wsit/ws-policy based auth modules, and the opensso modules should
-        evolve to the standard spi.
-    -->
-    <Match>
-    <Or>
-        <Class name="com.sun.enterprise.security.jauth.callback.CertStoreCallback"/>
-        <Class name="com.sun.enterprise.security.jauth.callback.SecretKeyCallback"/>
-        <Class name="com.sun.enterprise.security.jauth.callback.PrivateKeyCallback"/>
-        <Class name="com.sun.enterprise.security.jauth.callback.PrivateKeyCallback$IssuerSerialNumRequest"/>
-        <Class name="com.sun.enterprise.security.jauth.AuthException"/>
-        <Class name="com.sun.enterprise.security.jauth.callback.SecretKeyCallback$AliasRequest"/>
-        <Class name="com.sun.enterprise.security.jauth.callback.TrustStoreCallback"/>
-        <Class name="com.sun.enterprise.security.jauth.callback.PrivateKeyCallback$SubjectKeyIDRequest"/>
-        <Class name="com.sun.enterprise.security.jauth.callback.PasswordValidationCallback"/>
-        <Class name="com.sun.enterprise.security.jauth.callback.PrivateKeyCallback$AliasRequest"/>
-    </Or>
-    <Bug pattern="NM_SAME_SIMPLE_NAME_AS_SUPERCLASS"/>
-    </Match>
-
-    <!--
         This code uses reflection to construct an object.  The actual object
         will be constructed for use later, this code just makes sure that
         the constructor exists and doesn't fail.  The object is thrown away.

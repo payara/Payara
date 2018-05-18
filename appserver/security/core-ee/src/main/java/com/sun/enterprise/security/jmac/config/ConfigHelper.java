@@ -138,7 +138,7 @@ public abstract class ConfigHelper {
         if (clientConfig != null) {
             return clientConfig.getAuthContext(clientConfig.getAuthContextID(info), clientSubject, map);
         }
-        
+
         return null;
     }
 
@@ -147,13 +147,13 @@ public abstract class ConfigHelper {
         if (serverAuthConfig != null) {
             return serverAuthConfig.getAuthContext(serverAuthConfig.getAuthContextID(info), serviceSubject, map);
         }
-        
+
         return null;
     }
 
     protected AuthConfig getAuthConfig(AuthConfigProvider authConfigProvider, boolean isServer) throws AuthException {
         AuthConfig authConfig = null;
-        
+
         if (authConfigProvider != null) {
             if (isServer) {
                 authConfig = authConfigProvider.getServerAuthConfig(layer, appCtxt, callbackHandler);
@@ -161,7 +161,7 @@ public abstract class ConfigHelper {
                 authConfig = authConfigProvider.getClientAuthConfig(layer, appCtxt, callbackHandler);
             }
         }
-        
+
         return authConfig;
     }
 
@@ -196,7 +196,7 @@ public abstract class ConfigHelper {
                 writeLock.lock();
                 if (listenerWrapper.getConfigData() == null) {
                     AuthConfigProvider nextConfigProvider = factory.getConfigProvider(layer, appCtxt, getRegistrationListener());
-                    
+
                     if (nextConfigProvider != null) {
                         listenerWrapper.setConfigData(new ConfigData(nextConfigProvider, getAuthConfig(nextConfigProvider, isServer)));
                     } else {
@@ -217,9 +217,9 @@ public abstract class ConfigHelper {
      */
     protected boolean hasExactMatchAuthProvider() {
         boolean exactMatch = false;
-        
+
         AuthConfigProvider configProvider = factory.getConfigProvider(layer, appCtxt, null);
-        
+
         if (configProvider != null) {
             for (String registrationId : factory.getRegistrationIDs(configProvider)) {
                 RegistrationContext registrationContext = factory.getRegistrationContext(registrationId);
@@ -238,7 +238,7 @@ public abstract class ConfigHelper {
      */
     private CallbackHandler getCallbackHandler() {
         CallbackHandler callbackHandler = AuthMessagePolicy.getDefaultCallbackHandler();
-        
+
         if (callbackHandler instanceof CallbackHandlerConfig) {
             ((CallbackHandlerConfig) callbackHandler).setHandlerContext(getHandlerContext(map));
         }
@@ -264,7 +264,7 @@ public abstract class ConfigHelper {
 
         ConfigData(AuthConfigProvider authConfigProvider, AuthConfig authConfig) {
             provider = authConfigProvider;
-            
+
             if (authConfig == null) {
                 serverConfig = null;
                 clientConfig = null;
@@ -301,24 +301,10 @@ public abstract class ConfigHelper {
             this.appCtxt = appCtxt;
             this.rwLock = new ReentrantReadWriteLock(true);
             this.wLock = rwLock.writeLock();
-            
+
             enabled = factory != null;
             listener = new AuthConfigRegistrationListener(layer, appCtxt);
-            
-            if (Globals.getDefaultHabitat() != null) {
-                delegate = Globals.get(WebServicesDelegate.class);
-            } else {
-                try {
-                    // For non HK2 environments
-                    // Try to get WebServicesDelegateImpl by reflection.
-                    delegate = (WebServicesDelegate) Thread.currentThread()
-                                                           .getContextClassLoader()
-                                                           .loadClass("com.sun.enterprise.security.webservices.WebServicesDelegateImpl")
-                                                           .newInstance();
-                    
-                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
-                }
-            }
+            delegate = Globals.get(WebServicesDelegate.class);
         }
 
         public AuthConfigRegistrationListener getListener() {
@@ -331,14 +317,14 @@ public abstract class ConfigHelper {
 
         public void disable() {
             this.wLock.lock();
-            
+
             try {
                 setEnabled(false);
             } finally {
                 this.wLock.unlock();
                 data = null;
             }
-            
+
             if (factory != null) {
                 factory.detachListener(this.listener, layer, appCtxt);
                 if (getJmacProviderRegisID() != null) {

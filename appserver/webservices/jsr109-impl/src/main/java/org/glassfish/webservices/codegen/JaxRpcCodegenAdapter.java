@@ -42,9 +42,8 @@ package org.glassfish.webservices.codegen;
 
 /**
  *
- * @author  Jerome Dochez
+ * @author Jerome Dochez
  */
 public interface JaxRpcCodegenAdapter extends Codegen {
-    
-    public void done();
+    void done();
 }

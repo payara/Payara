@@ -41,48 +41,46 @@
 package org.glassfish.webservices;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.glassfish.api.container.EndpointRegistrationException;
+import org.glassfish.api.container.RequestDispatcher;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.ApplicationContext;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
-
-
-import org.glassfish.api.container.RequestDispatcher;
-import org.glassfish.api.container.EndpointRegistrationException;
-
+import org.glassfish.grizzly.servlet.ServletHandler;
 import org.glassfish.web.deployment.util.WebServerInfo;
 
-import java.util.Set;
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import com.sun.enterprise.deployment.*;
-import org.glassfish.grizzly.servlet.ServletHandler;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.WebService;
+import com.sun.enterprise.deployment.WebServiceEndpoint;
+import com.sun.enterprise.deployment.WebServicesDescriptor;
 
 /**
  * This class implements the ApplicationContainer and will be used
  * to register endpoints to the grizzly ServletAdapter
- * Thus when a request is received it is directed to our EjbWebServiceServlet
+ *
+ * <p>
+ * Thus when a request is received it is directed to our {@link EjbWebServiceServlet}
  * so that it can process the request
  *
  * @author Bhakti Mehta
  */
 
-public class WebServicesApplication implements ApplicationContainer {
-
-    private ArrayList<EjbEndpoint> ejbendpoints;
-
-    private ServletHandler httpHandler;
-
-    private final RequestDispatcher dispatcher;
-
-    private DeploymentContext deploymentCtx;
+public class WebServicesApplication implements ApplicationContainer<Object> {
 
     private static final Logger logger = LogUtils.getLogger();
+
+    private ArrayList<EjbEndpoint> ejbendpoints;
+    private ServletHandler httpHandler;
+    private final RequestDispatcher dispatcher;
+    private DeploymentContext deploymentCtx;
 
     private ClassLoader cl;
     private Application app;
@@ -95,11 +93,13 @@ public class WebServicesApplication implements ApplicationContainer {
         this.httpHandler = new EjbWSAdapter();
         this.publishedFiles = publishedFiles;
     }
-    
+
+    @Override
     public Object getDescriptor() {
         return null;
     }
 
+    @Override
     public boolean start(ApplicationContext startupContext) throws Exception {
 
         cl = startupContext.getClassLoader();
@@ -156,6 +156,7 @@ public class WebServicesApplication implements ApplicationContainer {
         }
     }
 
+    @Override
     public boolean stop(ApplicationContext stopContext) {
         try {
             Iterator<EjbEndpoint> iter = ejbendpoints.iterator();
@@ -173,14 +174,17 @@ public class WebServicesApplication implements ApplicationContainer {
         return true;
     }
 
+    @Override
     public boolean suspend() {
         return false;
     }
 
+    @Override
     public boolean resume() throws Exception {
         return false;
     }
 
+    @Override
     public ClassLoader getClassLoader() {
         return cl;
     }

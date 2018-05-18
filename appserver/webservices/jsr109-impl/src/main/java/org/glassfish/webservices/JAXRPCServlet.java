@@ -40,15 +40,21 @@
 
 package org.glassfish.webservices;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.catalina.Loader;
+import org.glassfish.webservices.monitoring.Endpoint;
+import org.glassfish.webservices.monitoring.HttpResponseInfoImpl;
+import org.glassfish.webservices.monitoring.ThreadLocalInfo;
+import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
+import org.glassfish.webservices.monitoring.WebServiceTesterServlet;
 
 import com.sun.xml.rpc.spi.JaxRpcObjectFactory;
 import com.sun.xml.rpc.spi.runtime.ServletDelegate;
-import com.sun.xml.rpc.spi.runtime.ServletSecondDelegate;
-import org.glassfish.webservices.monitoring.*;
-import org.apache.catalina.Loader;
-
 
 /**
  * The JAX-RPC dispatcher servlet.
@@ -56,18 +62,21 @@ import org.apache.catalina.Loader;
  */
 public class JAXRPCServlet extends HttpServlet {
 
-    private volatile ServletDelegate delegate_;
-    private volatile ServletWebServiceDelegate myDelegate_=null;
+    private static final long serialVersionUID = 5486495210696942602L;
 
+    private volatile ServletDelegate delegate;
+    private volatile ServletWebServiceDelegate myDelegate;
+
+    @Override
     public void init(ServletConfig servletConfig) throws ServletException {
         try {
             super.init(servletConfig);
-            JaxRpcObjectFactory rpcFactory = JaxRpcObjectFactory.newInstance();
-            delegate_ =
-                    (ServletDelegate) rpcFactory.createServletDelegate();
-            myDelegate_ = new ServletWebServiceDelegate(delegate_);
-            delegate_.setSecondDelegate(myDelegate_);
-            delegate_.init(servletConfig);
+
+            delegate = JaxRpcObjectFactory.newInstance().createServletDelegate();
+            myDelegate = new ServletWebServiceDelegate(delegate);
+
+            delegate.setSecondDelegate(myDelegate);
+            delegate.init(servletConfig);
         } catch (ServletException e) {
             throw e;
         } catch (Throwable e) {
@@ -75,72 +84,69 @@ public class JAXRPCServlet extends HttpServlet {
         }
     }
 
-    public void destroy() {
-        if (delegate_ != null) {
-            delegate_.destroy();
-        }
-        if (myDelegate_ != null) {
-            myDelegate_.destroy();
-        }
-    }
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException {
 
-    protected void doPost(HttpServletRequest request,
-                          HttpServletResponse response)
-        throws ServletException {
-        
-        WebServiceEngineImpl wsEngine_ = WebServiceEngineImpl.getInstance();
+        WebServiceEngineImpl wsEngine = WebServiceEngineImpl.getInstance();
 
         if ("Tester".equalsIgnoreCase(request.getQueryString())) {
-            Endpoint endpt = wsEngine_.getEndpoint(request.getServletPath());
-            if (endpt!=null && Boolean.parseBoolean(endpt.getDescriptor().getDebugging())) {
-                WebServiceTesterServlet.invoke(request, response,
-                        endpt.getDescriptor());
+            Endpoint endpt = wsEngine.getEndpoint(request.getServletPath());
+            if (endpt != null && Boolean.parseBoolean(endpt.getDescriptor().getDebugging())) {
+                WebServiceTesterServlet.invoke(request, response, endpt.getDescriptor());
                 return;
             }
         }
-                
-        if (delegate_ != null) {
+
+        if (delegate != null) {
             // check if we need to trace this...
-            String messageId=null;
-            if (wsEngine_.getGlobalMessageListener()!=null) {
-                Endpoint endpt = wsEngine_.getEndpoint(request.getServletPath());
-                messageId = wsEngine_.preProcessRequest(endpt);
-                if (messageId!=null) {
+            String messageId = null;
+            if (wsEngine.getGlobalMessageListener() != null) {
+                Endpoint endpt = wsEngine.getEndpoint(request.getServletPath());
+                messageId = wsEngine.preProcessRequest(endpt);
+                if (messageId != null) {
                     ThreadLocalInfo config = new ThreadLocalInfo(messageId, request);
-                    wsEngine_.getThreadLocal().set(config);
+                    wsEngine.getThreadLocal().set(config);
                 }
             }
 
-            delegate_.doPost(request, response);
+            delegate.doPost(request, response);
 
-            if (messageId!=null) {
-                HttpResponseInfoImpl info = new HttpResponseInfoImpl(response);
-                wsEngine_.postProcessResponse(messageId, info);
+            if (messageId != null) {
+                wsEngine.postProcessResponse(messageId, new HttpResponseInfoImpl(response));
             }
         }
     }
 
-    protected void doGet(HttpServletRequest request, 
-                         HttpServletResponse response)
-        throws ServletException {
-        
-        // test for tester servlet invocation.
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException {
+
+        // Test for tester servlet invocation.
         if ("Tester".equalsIgnoreCase(request.getQueryString())) {
 
             Endpoint endpt = WebServiceEngineImpl.getInstance().getEndpoint(request.getServletPath());
-            if (endpt!=null && Boolean.parseBoolean(endpt.getDescriptor().getDebugging())) {
+            if (endpt != null && Boolean.parseBoolean(endpt.getDescriptor().getDebugging())) {
                 Loader loader = (Loader) endpt.getDescriptor().getBundleDescriptor().getExtraAttribute("WEBLOADER");
                 if (loader != null) {
                     endpt.getDescriptor().getBundleDescriptor().setClassLoader(loader.getClassLoader());
                     endpt.getDescriptor().getBundleDescriptor().removeExtraAttribute("WEBLOADER");
                 }
-                WebServiceTesterServlet.invoke(request, response,
-                        endpt.getDescriptor());
+                WebServiceTesterServlet.invoke(request, response, endpt.getDescriptor());
                 return;
             }
         }
-        if (delegate_ != null) {
-            delegate_.doGet(request, response);
+
+        if (delegate != null) {
+            delegate.doGet(request, response);
+        }
+    }
+
+    @Override
+    public void destroy() {
+        if (delegate != null) {
+            delegate.destroy();
+        }
+        if (myDelegate != null) {
+            myDelegate.destroy();
         }
     }
 }

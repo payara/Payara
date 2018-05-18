@@ -40,18 +40,33 @@
 
 package org.glassfish.webservices;
 
+import static java.util.logging.Level.WARNING;
+import static org.glassfish.webservices.LogUtils.SERVLET_ENDPOINT_FAILURE;
+import static org.glassfish.webservices.LogUtils.SERVLET_ENDPOINT_GET_ERROR;
+
+import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.logging.Logger;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.ws.WebServiceException;
+
+import org.glassfish.internal.api.Globals;
+import org.glassfish.webservices.monitoring.JAXRPCEndpointImpl;
+import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
+
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
-import com.sun.enterprise.deployment.WebServicesDescriptor;
-import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
-
-import org.glassfish.webservices.monitoring.JAXRPCEndpointImpl;
+import com.sun.enterprise.deployment.WebServiceEndpoint;
+import com.sun.enterprise.deployment.WebServicesDescriptor;
 
 //TBD
 //import com.sun.enterprise.security.jmac.provider.ServerAuthConfig;
-
 
 // JAX-RPC SPI
 import com.sun.xml.rpc.spi.JaxRpcObjectFactory;
@@ -61,22 +76,11 @@ import com.sun.xml.rpc.spi.runtime.RuntimeEndpointInfo;
 import com.sun.xml.rpc.spi.runtime.ServletDelegate;
 import com.sun.xml.rpc.spi.runtime.ServletSecondDelegate;
 import com.sun.xml.rpc.spi.runtime.SystemHandlerDelegate;
-import java.text.MessageFormat;
-
-import javax.servlet.*;
-import javax.servlet.http.*;
-import javax.xml.ws.WebServiceException;
-import java.util.*;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
 
 /**
- * This class is delegated to by the container-provided servlet-class 
- * that is written into the web.xml at deployment time.  It overrides
- * the JAXRPC servlet delegate to register endpoint information and
- * intercept certain events.
+ * This class is delegated to by the container-provided servlet-class that is written into the
+ * web.xml at deployment time. It overrides the JAXRPC servlet delegate to register endpoint
+ * information and intercept certain events.
  */
 public class ServletWebServiceDelegate extends ServletSecondDelegate {
 
@@ -90,14 +94,14 @@ public class ServletWebServiceDelegate extends ServletSecondDelegate {
     private WebServiceEngineImpl wsEngine_;
     private JAXRPCEndpointImpl endpointImpl_;
 
-    private org.glassfish.webservices.SecurityService  secServ;
+    private SecurityService securityService;
 
-    public ServletWebServiceDelegate (ServletDelegate firstDelegate) {
+    public ServletWebServiceDelegate(ServletDelegate firstDelegate) {
         rpcDelegate_ = firstDelegate;
         rpcFactory_ = JaxRpcObjectFactory.newInstance();
         wsEngine_ = WebServiceEngineImpl.getInstance();
         if (Globals.getDefaultHabitat() != null) {
-            secServ = Globals.get(org.glassfish.webservices.SecurityService.class);
+            securityService = Globals.get(org.glassfish.webservices.SecurityService.class);
         }
     }
 
@@ -111,29 +115,31 @@ public class ServletWebServiceDelegate extends ServletSecondDelegate {
             ComponentEnvManager compEnvManager = wscImpl.getComponentEnvManager();
             JndiNameEnvironment jndiNameEnv = compEnvManager.getCurrentJndiNameEnvironment();
             WebBundleDescriptor webBundle = null;
-            if (jndiNameEnv != null && jndiNameEnv instanceof WebBundleDescriptor){
-                webBundle = ((WebBundleDescriptor)jndiNameEnv);
+
+            if (jndiNameEnv != null && jndiNameEnv instanceof WebBundleDescriptor) {
+                webBundle = ((WebBundleDescriptor) jndiNameEnv);
             } else {
-               throw new WebServiceException("Cannot intialize the JAXRPCServlet for " + jndiNameEnv);
+                throw new WebServiceException("Cannot intialize the JAXRPCServlet for " + jndiNameEnv);
             }
+
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             servletName = servletConfig.getServletName();
-            WebComponentDescriptor webComponent =
-                    webBundle.getWebComponentByCanonicalName(servletName);
-            if( webComponent != null ) {
+            WebComponentDescriptor webComponent = webBundle.getWebComponentByCanonicalName(servletName);
+
+            if (webComponent != null) {
                 WebServicesDescriptor webServices = webBundle.getWebServices();
-                Collection endpoints =
-                        webServices.getEndpointsImplementedBy(webComponent);
+                Collection endpoints = webServices.getEndpointsImplementedBy(webComponent);
+
                 // Only 1 endpoint per servlet is supported, even though
-                // data structure implies otherwise. 
+                // data structure implies otherwise.
                 endpoint_ = (WebServiceEndpoint) endpoints.iterator().next();
                 registerEndpoint(classLoader);
 
-                // if a conventional authentication mechanism has NOT been configured
+                // If a conventional authentication mechanism has NOT been configured
                 // for the endpoint create and install system handler for web services
                 // security
-                if (secServ != null) {
-                    SystemHandlerDelegate securityHandlerDelegate = secServ.getSecurityHandler(endpoint_);
+                if (securityService != null) {
+                    SystemHandlerDelegate securityHandlerDelegate = securityService.getSecurityHandler(endpoint_);
                     if (securityHandlerDelegate != null) {
                         rpcDelegate_.setSystemHandlerDelegate(securityHandlerDelegate);
 
@@ -146,11 +152,9 @@ public class ServletWebServiceDelegate extends ServletSecondDelegate {
             } else {
                 throw new ServletException(servletName + " not found");
             }
-        } catch(Throwable t) {
-            String msg = MessageFormat.format(
-                    logger.getResourceBundle().getString(LogUtils.SERVLET_ENDPOINT_FAILURE),
-                    servletName);
-            logger.log(Level.WARNING, msg, t);
+        } catch (Throwable t) {
+            String msg = MessageFormat.format(logger.getResourceBundle().getString(SERVLET_ENDPOINT_FAILURE), servletName);
+            logger.log(WARNING, msg, t);
             throw new ServletException(t);
         }
     }
@@ -160,26 +164,21 @@ public class ServletWebServiceDelegate extends ServletSecondDelegate {
     }
 
     @Override
-    public void doGet(HttpServletRequest request,
-                      HttpServletResponse response) throws ServletException {
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException {
 
-        // normal WSDL retrieval invocation
+        // Normal WSDL retrieval invocation
         WsUtil wsUtil = new WsUtil();
         try {
             wsUtil.handleGet(request, response, endpoint_);
-        } catch(Exception e) {
-            String msg = MessageFormat.format(
-                    logger.getResourceBundle().getString(LogUtils.SERVLET_ENDPOINT_GET_ERROR),
+        } catch (Exception e) {
+            String msg = MessageFormat.format(logger.getResourceBundle().getString(SERVLET_ENDPOINT_GET_ERROR),
                     endpoint_.getEndpointName());
-            logger.log(Level.WARNING, msg, e);
+            logger.log(WARNING, msg, e);
         }
     }
 
-    public  void doPost(HttpServletRequest request,
-                        HttpServletResponse response) throws ServletException {
-
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException {
         rpcDelegate_.doPost(request, response);
-
     }
 
     @Override
@@ -191,29 +190,24 @@ public class ServletWebServiceDelegate extends ServletSecondDelegate {
     @Override
     public ImplementorCache createImplementorCache(ServletConfig sc) {
         ImplementorCache ic = rpcFactory_.createImplementorCache(sc);
-        ImplementorCacheDelegate delegate =
-                new ImplementorCacheDelegateImpl(sc);
+        ImplementorCacheDelegate delegate = new ImplementorCacheDelegateImpl(sc);
         ic.setDelegate(delegate);
         return ic;
     }
 
-    private void registerEndpoint(ClassLoader loader)
-            throws Exception {
+    private void registerEndpoint(ClassLoader loader) throws Exception {
 
         //
-        // Convert J2EE deployment descriptor information into 
+        // Convert J2EE deployment descriptor information into
         // JAXRPC endpoint data structure
         //
 
-        RuntimeEndpointInfo endpointInfo =
-                rpcFactory_.createRuntimeEndpointInfo();
+        RuntimeEndpointInfo endpointInfo = rpcFactory_.createRuntimeEndpointInfo();
 
-        Class serviceEndpointInterfaceClass =
-                loader.loadClass(endpoint_.getServiceEndpointInterface());
-        Class implementationClass =
-                loader.loadClass(endpoint_.getServletImplClass());
+        Class serviceEndpointInterfaceClass = loader.loadClass(endpoint_.getServiceEndpointInterface());
+        Class implementationClass = loader.loadClass(endpoint_.getServletImplClass());
         String tieClassName = endpoint_.getTieClassName();
-        if(tieClassName != null) {
+        if (tieClassName != null) {
             Class tieClass = loader.loadClass(tieClassName);
             endpointInfo.setTieClass(tieClass);
         }
@@ -223,11 +217,10 @@ public class ServletWebServiceDelegate extends ServletSecondDelegate {
 
         endpointInfo.setName(endpoint_.getEndpointName());
 
-
         // No need to set model file name or wsdl file, since we override
         // the code that serves up the final WSDL.
-        //endpointInfo.setModelFileName()
-        //endpointInfo.setWSDLFileName()
+        // endpointInfo.setModelFileName()
+        // endpointInfo.setWSDLFileName()
 
         endpointInfo.setDeployed(true);
         endpointInfo.setPortName(endpoint_.getWsdlPort());
@@ -235,7 +228,7 @@ public class ServletWebServiceDelegate extends ServletSecondDelegate {
         endpointInfo.setServiceName(endpoint_.getServiceName());
 
         // For web components, this will be relative to the web app
-        // context root.  Make sure there is a leading slash.
+        // context root. Make sure there is a leading slash.
         String uri = endpoint_.getEndpointAddressUri();
         uri = uri.startsWith("/") ? uri : "/" + uri;
         endpointInfo.setUrlPattern(uri);
