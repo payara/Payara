@@ -37,42 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.openapi.impl.visitor;
+package fish.payara.microprofile.openapi.impl.admin;
 
-import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.eclipse.microprofile.openapi.models.Operation;
+import java.beans.PropertyVetoException;
 
-import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import org.glassfish.api.admin.config.ConfigExtension;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
 
-public class OpenApiContext implements ApiContext {
+/**
+ * Configuration for the OpenAPI Service.
+ */
+@Configured(name = "microprofile-openapi-configuration")
+public interface OpenApiServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
 
-    private final OpenAPI api;
-    private final String path;
-    private final Operation operation;
+    /**
+     * @return whether the service is enabled or not.
+     */
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    String getEnabled();
 
-    public OpenApiContext(OpenAPI api, String path, Operation operation) {
-        this.api = api;
-        this.path = path;
-        this.operation = operation;
-    }
-
-    public OpenApiContext(OpenAPI api, String path) {
-        this(api, path, null);
-    }
-
-    @Override
-    public OpenAPI getApi() {
-        return api;
-    }
-
-    @Override
-    public String getPath() {
-        return path;
-    }
-
-    @Override
-    public Operation getWorkingOperation() {
-        return operation;
-    }
+    void setEnabled(String value) throws PropertyVetoException;
 
 }

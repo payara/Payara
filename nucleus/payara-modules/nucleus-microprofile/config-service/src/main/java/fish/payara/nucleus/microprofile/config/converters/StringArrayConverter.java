@@ -37,42 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.openapi.impl.visitor;
+package fish.payara.nucleus.microprofile.config.converters;
 
-import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.eclipse.microprofile.openapi.models.Operation;
+import javax.annotation.Priority;
 
-import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.config.spi.Converter;
 
-public class OpenApiContext implements ApiContext {
-
-    private final OpenAPI api;
-    private final String path;
-    private final Operation operation;
-
-    public OpenApiContext(OpenAPI api, String path, Operation operation) {
-        this.api = api;
-        this.path = path;
-        this.operation = operation;
-    }
-
-    public OpenApiContext(OpenAPI api, String path) {
-        this(api, path, null);
-    }
+@Priority(1)
+public class StringArrayConverter implements Converter<String[]> {
 
     @Override
-    public OpenAPI getApi() {
-        return api;
-    }
-
-    @Override
-    public String getPath() {
-        return path;
-    }
-
-    @Override
-    public Operation getWorkingOperation() {
-        return operation;
+    public String[] convert(String value) {
+        if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE))
+            return null;
+        String[] result = null;
+        if (!value.contains(",")) {
+            result = new String[] { value };
+        } else {
+            result = value.split(",");
+        }
+        return result;
     }
 
 }

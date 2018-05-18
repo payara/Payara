@@ -37,42 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.openapi.impl.visitor;
+package fish.payara.microprofile.openapi.test.app.data;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.eclipse.microprofile.openapi.models.Operation;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.resource.rule.ApplicationProcessedDocument;
 
-public class OpenApiContext implements ApiContext {
+/**
+ * A test to check that schema objects without a @Schema annotation at the top are created.
+ */
+public class TestComponent {
 
-    private final OpenAPI api;
-    private final String path;
-    private final Operation operation;
+    public transient static OpenAPI document;
 
-    public OpenApiContext(OpenAPI api, String path, Operation operation) {
-        this.api = api;
-        this.path = path;
-        this.operation = operation;
+    @BeforeClass
+    public static void createDocument() {
+        try {
+            document = new ApplicationProcessedDocument();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail("Failed to build document.");
+        }
     }
 
-    public OpenApiContext(OpenAPI api, String path) {
-        this(api, path, null);
+    @Schema(description = "Test property")
+    private int property;
+
+    @Test
+    public void pojoCreationTest() {
+        assertNotNull(document.getComponents().getSchemas().get("TestComponent"));
     }
 
-    @Override
-    public OpenAPI getApi() {
-        return api;
-    }
-
-    @Override
-    public String getPath() {
-        return path;
-    }
-
-    @Override
-    public Operation getWorkingOperation() {
-        return operation;
-    }
 
 }

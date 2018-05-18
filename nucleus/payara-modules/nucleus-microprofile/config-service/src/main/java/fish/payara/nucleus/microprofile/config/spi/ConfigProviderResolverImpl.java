@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,34 +39,6 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
-import fish.payara.nucleus.microprofile.config.converters.BooleanConverter;
-import fish.payara.nucleus.microprofile.config.converters.ChronoUnitConverter;
-import fish.payara.nucleus.microprofile.config.converters.DoubleConverter;
-import fish.payara.nucleus.microprofile.config.converters.DurationConverter;
-import fish.payara.nucleus.microprofile.config.converters.FloatConverter;
-import fish.payara.nucleus.microprofile.config.converters.InetAddressConverter;
-import fish.payara.nucleus.microprofile.config.converters.InstantConverter;
-import fish.payara.nucleus.microprofile.config.converters.IntegerConverter;
-import fish.payara.nucleus.microprofile.config.converters.LocalDateConverter;
-import fish.payara.nucleus.microprofile.config.converters.LocalDateTimeConverter;
-import fish.payara.nucleus.microprofile.config.converters.LocalTimeConverter;
-import fish.payara.nucleus.microprofile.config.converters.LongConverter;
-import fish.payara.nucleus.microprofile.config.converters.OffsetDateTimeConverter;
-import fish.payara.nucleus.microprofile.config.converters.OffsetTimeConverter;
-import fish.payara.nucleus.microprofile.config.converters.URLConverter;
-import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
-import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
-import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
-import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
-import fish.payara.nucleus.microprofile.config.source.EnvironmentConfigSource;
-import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
-import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
-import fish.payara.nucleus.microprofile.config.source.PasswordAliasConfigSource;
-import fish.payara.nucleus.microprofile.config.source.PayaraServerProperties;
-import fish.payara.nucleus.microprofile.config.source.PropertiesConfigSource;
-import fish.payara.nucleus.microprofile.config.source.SecretsDirConfigSource;
-import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
-import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -79,9 +51,11 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
@@ -99,6 +73,36 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ModuleInfo;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.nucleus.microprofile.config.converters.BooleanConverter;
+import fish.payara.nucleus.microprofile.config.converters.ChronoUnitConverter;
+import fish.payara.nucleus.microprofile.config.converters.DoubleConverter;
+import fish.payara.nucleus.microprofile.config.converters.DurationConverter;
+import fish.payara.nucleus.microprofile.config.converters.FloatConverter;
+import fish.payara.nucleus.microprofile.config.converters.InetAddressConverter;
+import fish.payara.nucleus.microprofile.config.converters.InstantConverter;
+import fish.payara.nucleus.microprofile.config.converters.IntegerConverter;
+import fish.payara.nucleus.microprofile.config.converters.LocalDateConverter;
+import fish.payara.nucleus.microprofile.config.converters.LocalDateTimeConverter;
+import fish.payara.nucleus.microprofile.config.converters.LocalTimeConverter;
+import fish.payara.nucleus.microprofile.config.converters.LongConverter;
+import fish.payara.nucleus.microprofile.config.converters.OffsetDateTimeConverter;
+import fish.payara.nucleus.microprofile.config.converters.OffsetTimeConverter;
+import fish.payara.nucleus.microprofile.config.converters.StringArrayConverter;
+import fish.payara.nucleus.microprofile.config.converters.URLConverter;
+import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
+import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
+import fish.payara.nucleus.microprofile.config.source.EnvironmentConfigSource;
+import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
+import fish.payara.nucleus.microprofile.config.source.PasswordAliasConfigSource;
+import fish.payara.nucleus.microprofile.config.source.PayaraServerProperties;
+import fish.payara.nucleus.microprofile.config.source.PropertiesConfigSource;
+import fish.payara.nucleus.microprofile.config.source.SecretsDirConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
+import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource;
 
 /**
  * This Service implements the Microprofile Config API and provides integration
@@ -374,6 +378,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
     List<Converter> getDefaultConverters() {
         LinkedList<Converter> result = new LinkedList<>();
+        result.add(new StringArrayConverter());
         result.add(new BooleanConverter());
         result.add(new IntegerConverter());
         result.add(new LongConverter());

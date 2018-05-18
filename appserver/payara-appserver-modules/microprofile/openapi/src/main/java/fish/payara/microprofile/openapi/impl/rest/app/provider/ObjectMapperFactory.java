@@ -1,7 +1,45 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
 package fish.payara.microprofile.openapi.impl.rest.app.provider;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -9,6 +47,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator.Feature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -16,72 +55,10 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 
-import org.eclipse.microprofile.openapi.models.Components;
-import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
-import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.eclipse.microprofile.openapi.models.Operation;
-import org.eclipse.microprofile.openapi.models.PathItem;
-import org.eclipse.microprofile.openapi.models.Paths;
-import org.eclipse.microprofile.openapi.models.callbacks.Callback;
-import org.eclipse.microprofile.openapi.models.examples.Example;
-import org.eclipse.microprofile.openapi.models.headers.Header;
-import org.eclipse.microprofile.openapi.models.info.Contact;
-import org.eclipse.microprofile.openapi.models.info.Info;
-import org.eclipse.microprofile.openapi.models.info.License;
-import org.eclipse.microprofile.openapi.models.links.Link;
-import org.eclipse.microprofile.openapi.models.media.Content;
-import org.eclipse.microprofile.openapi.models.media.Discriminator;
-import org.eclipse.microprofile.openapi.models.media.Encoding;
-import org.eclipse.microprofile.openapi.models.media.MediaType;
-import org.eclipse.microprofile.openapi.models.media.Schema;
-import org.eclipse.microprofile.openapi.models.media.XML;
-import org.eclipse.microprofile.openapi.models.parameters.Parameter;
-import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
-import org.eclipse.microprofile.openapi.models.responses.APIResponse;
-import org.eclipse.microprofile.openapi.models.responses.APIResponses;
-import org.eclipse.microprofile.openapi.models.security.OAuthFlow;
-import org.eclipse.microprofile.openapi.models.security.OAuthFlows;
-import org.eclipse.microprofile.openapi.models.security.Scopes;
-import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
-import org.eclipse.microprofile.openapi.models.security.SecurityScheme;
-import org.eclipse.microprofile.openapi.models.servers.Server;
-import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
-import org.eclipse.microprofile.openapi.models.servers.ServerVariables;
-import org.eclipse.microprofile.openapi.models.tags.Tag;
+import org.eclipse.microprofile.openapi.models.Constructible;
 
-import fish.payara.microprofile.openapi.impl.model.ComponentsImpl;
-import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
-import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
-import fish.payara.microprofile.openapi.impl.model.OperationImpl;
-import fish.payara.microprofile.openapi.impl.model.PathItemImpl;
-import fish.payara.microprofile.openapi.impl.model.PathsImpl;
-import fish.payara.microprofile.openapi.impl.model.callbacks.CallbackImpl;
-import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
-import fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl;
-import fish.payara.microprofile.openapi.impl.model.info.ContactImpl;
-import fish.payara.microprofile.openapi.impl.model.info.InfoImpl;
-import fish.payara.microprofile.openapi.impl.model.info.LicenseImpl;
-import fish.payara.microprofile.openapi.impl.model.links.LinkImpl;
-import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
-import fish.payara.microprofile.openapi.impl.model.media.DiscriminatorImpl;
-import fish.payara.microprofile.openapi.impl.model.media.EncodingImpl;
-import fish.payara.microprofile.openapi.impl.model.media.MediaTypeImpl;
-import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
-import fish.payara.microprofile.openapi.impl.model.media.XMLImpl;
-import fish.payara.microprofile.openapi.impl.model.parameters.ParameterImpl;
-import fish.payara.microprofile.openapi.impl.model.parameters.RequestBodyImpl;
-import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
-import fish.payara.microprofile.openapi.impl.model.responses.APIResponsesImpl;
-import fish.payara.microprofile.openapi.impl.model.security.OAuthFlowImpl;
-import fish.payara.microprofile.openapi.impl.model.security.OAuthFlowsImpl;
-import fish.payara.microprofile.openapi.impl.model.security.ScopesImpl;
-import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementImpl;
-import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
-import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
-import fish.payara.microprofile.openapi.impl.model.servers.ServerVariableImpl;
-import fish.payara.microprofile.openapi.impl.model.servers.ServerVariablesImpl;
-import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
-import fish.payara.microprofile.openapi.impl.model.util.ExtensionsMixin;
+import fish.payara.microprofile.openapi.impl.model.OASFactoryResolverImpl;
+import fish.payara.microprofile.openapi.impl.rest.app.provider.mixin.ExtensionsMixin;
 
 public final class ObjectMapperFactory {
 
@@ -98,58 +75,30 @@ public final class ObjectMapperFactory {
         return create(factory);
     }
 
-    public static ObjectMapper create(JsonFactory factory) {
+    @SuppressWarnings("unchecked")
+    public static <T extends Constructible> ObjectMapper create(JsonFactory factory) {
         ObjectMapper mapper = new ObjectMapper(factory);
         mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
         mapper.setSerializationInclusion(Include.NON_DEFAULT);
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
+        mapper.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.enable(Feature.WRITE_BIGDECIMAL_AS_PLAIN);
 
         // Create mapping module
         SimpleModule module = new SimpleModule();
 
-        module.addAbstractTypeMapping(Callback.class, CallbackImpl.class);
-        module.addAbstractTypeMapping(Example.class, ExampleImpl.class);
-        module.addAbstractTypeMapping(Header.class, HeaderImpl.class);
-        module.addAbstractTypeMapping(Info.class, InfoImpl.class);
-        module.addAbstractTypeMapping(Contact.class, ContactImpl.class);
-        module.addAbstractTypeMapping(License.class, LicenseImpl.class);
-        module.addAbstractTypeMapping(Link.class, LinkImpl.class);
-        module.addAbstractTypeMapping(Content.class, ContentImpl.class);
-        module.addAbstractTypeMapping(Discriminator.class, DiscriminatorImpl.class);
-        module.addAbstractTypeMapping(Encoding.class, EncodingImpl.class);
-        module.addAbstractTypeMapping(MediaType.class, MediaTypeImpl.class);
-        module.addAbstractTypeMapping(Schema.class, SchemaImpl.class);
-        module.addAbstractTypeMapping(XML.class, XMLImpl.class);
-        module.addAbstractTypeMapping(Parameter.class, ParameterImpl.class);
-        module.addAbstractTypeMapping(RequestBody.class, RequestBodyImpl.class);
-        module.addAbstractTypeMapping(APIResponse.class, APIResponseImpl.class);
-        module.addAbstractTypeMapping(APIResponses.class, APIResponsesImpl.class);
-        module.addAbstractTypeMapping(OAuthFlow.class, OAuthFlowImpl.class);
-        module.addAbstractTypeMapping(OAuthFlows.class, OAuthFlowsImpl.class);
-        module.addAbstractTypeMapping(Scopes.class, ScopesImpl.class);
-        module.addAbstractTypeMapping(SecurityRequirement.class, SecurityRequirementImpl.class);
-        module.addAbstractTypeMapping(SecurityScheme.class, SecuritySchemeImpl.class);
-        module.addAbstractTypeMapping(Server.class, ServerImpl.class);
-        module.addAbstractTypeMapping(ServerVariable.class, ServerVariableImpl.class);
-        module.addAbstractTypeMapping(ServerVariables.class, ServerVariablesImpl.class);
-        module.addAbstractTypeMapping(Tag.class, TagImpl.class);
-        module.addAbstractTypeMapping(Components.class, ComponentsImpl.class);
-        module.addAbstractTypeMapping(ExternalDocumentation.class, ExternalDocumentationImpl.class);
-        module.addAbstractTypeMapping(OpenAPI.class, OpenAPIImpl.class);
-        module.addAbstractTypeMapping(Operation.class, OperationImpl.class);
-        module.addAbstractTypeMapping(PathItem.class, PathItemImpl.class);
-        module.addAbstractTypeMapping(Paths.class, PathsImpl.class);
+        // Configure the implementation of each class
+        for (Entry<Class<? extends Constructible>, Class<? extends Constructible>> entry : OASFactoryResolverImpl.MODEL_MAP
+                .entrySet()) {
+            module.addAbstractTypeMapping((Class<T>) entry.getKey(), (Class<T>) entry.getValue());
+        }
 
-        List<Class<?>> mixinTargets = Arrays.asList(APIResponse.class, Callback.class, Components.class, Contact.class,
-                Encoding.class, Example.class, ExternalDocumentation.class, Header.class, Info.class, License.class,
-                Link.class, MediaType.class, OAuthFlow.class, OAuthFlows.class, OpenAPI.class, Operation.class,
-                Parameter.class, PathItem.class, Paths.class, RequestBody.class, Scopes.class, SecurityScheme.class,
-                Server.class, ServerVariable.class, ServerVariables.class, Tag.class, XML.class, Schema.class);
-        mapper.setMixIns(
-                mixinTargets.stream().collect(Collectors.toMap(Function.identity(), c -> ExtensionsMixin.class)));
+        // Configure the mixins for each type
+        mapper.setMixIns(OASFactoryResolverImpl.MODEL_MAP.keySet().stream()
+                .collect(Collectors.toMap(Function.identity(), c -> ExtensionsMixin.class)));
 
         mapper.registerModule(module);
 

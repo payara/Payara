@@ -1,3 +1,42 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
 package fish.payara.microprofile.openapi.impl.model.util;
 
 import java.lang.annotation.Annotation;
@@ -7,6 +46,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.ws.rs.BeanParam;
@@ -26,6 +68,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.Provider;
 
+import org.eclipse.microprofile.openapi.models.Constructible;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.PathItem;
@@ -41,6 +84,36 @@ public final class ModelUtils {
      * Private constructor to hide public one.
      */
     private ModelUtils() {
+    }
+
+
+
+    /**
+     * Normalises a path string. A normalised path has:
+     * <ul>
+     * <li>no multiple slashes.</li>
+     * <li>no trailing slash.</li>
+     * </ul>
+     * 
+     * @param path the path to be normalised.
+     */
+    public static String normaliseUrl(String path) {
+        if (path == null) {
+            return null;
+        }
+        // Remove multiple slashes
+        path = path.replaceAll("/+", "/");
+
+        // Remove trailing slash
+        if (path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
+        }
+
+        // Assure that there is one slash
+        if (path.isEmpty()) {
+            path = "/";
+        }
+        return path;
     }
 
     /**
@@ -68,6 +141,31 @@ public final class ModelUtils {
             return HttpMethod.OPTIONS;
         }
         if (method.isAnnotationPresent(PATCH.class)) {
+            return HttpMethod.PATCH;
+        }
+        return null;
+    }
+
+    public static HttpMethod getHttpMethod(String method) {
+        if (method.equalsIgnoreCase("GET")) {
+            return HttpMethod.GET;
+        }
+        if (method.equalsIgnoreCase("POST")) {
+            return HttpMethod.POST;
+        }
+        if (method.equalsIgnoreCase("PUT")) {
+            return HttpMethod.PUT;
+        }
+        if (method.equalsIgnoreCase("DELETE")) {
+            return HttpMethod.DELETE;
+        }
+        if (method.equalsIgnoreCase("HEAD")) {
+            return HttpMethod.HEAD;
+        }
+        if (method.equalsIgnoreCase("OPTIONS")) {
+            return HttpMethod.OPTIONS;
+        }
+        if (method.equalsIgnoreCase("PATCH")) {
             return HttpMethod.PATCH;
         }
         return null;
@@ -291,9 +389,21 @@ public final class ModelUtils {
                     Object value = m.invoke(annotation);
                     if (value != null) {
                         if (value.getClass().isArray() && Array.getLength(value) > 0) {
-                            allNull = false;
+                            return false;
+                        } else if (value instanceof Collection && Collection.class.cast(value).size() > 0) {
+                            return false;
+                        } else if (value instanceof Boolean && Boolean.class.cast(value)) {
+                            return false;
+                        } else if (value.getClass().equals(Class.class)
+                                && !Class.class.cast(value).getTypeName().equals("java.lang.Void")) {
+                            return false;
+                        } else if (value.getClass().isEnum() && !Enum.class.cast(value).name().isEmpty()
+                                && !Enum.class.cast(value).name().equalsIgnoreCase("DEFAULT")) {
+                            return false;
                         } else if (String.class.isAssignableFrom(value.getClass()) && !value.toString().isEmpty()) {
-                            allNull = false;
+                            return false;
+                        } else if (value instanceof Annotation) {
+                            allNull = isAnnotationNull((Annotation) value);
                         }
                     }
                 } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
@@ -307,6 +417,10 @@ public final class ModelUtils {
     public static <E> E mergeProperty(E current, E offer, boolean override) {
         // Treat empty strings as null
         if (offer instanceof String && offer.toString().isEmpty()) {
+            offer = null;
+        }
+        // Treat max or min integers as null
+        if (offer instanceof Integer && (offer.equals(Integer.MAX_VALUE) || offer.equals(Integer.MIN_VALUE))) {
             offer = null;
         }
         E resolve = current;
@@ -360,32 +474,56 @@ public final class ModelUtils {
     }
 
     public static <T> void overwrite(T from, T to) {
-        if (to != null) {
+        if (to != null && from != null) {
             for (Field f : to.getClass().getDeclaredFields()) {
-                boolean accessible = f.isAccessible();
                 f.setAccessible(true);
                 try {
                     f.set(to, f.get(from));
                 } catch (IllegalArgumentException | IllegalAccessException e) {
                     // Ignore errors
-                } finally {
-                    f.setAccessible(accessible);
                 }
             }
         }
     }
 
     public static <T> void merge(T from, T to, boolean override) {
-        if (to != null) {
+        if (from != null && to != null) {
             for (Field f : to.getClass().getDeclaredFields()) {
-                boolean accessible = f.isAccessible();
                 f.setAccessible(true);
                 try {
-                    f.set(to, mergeProperty(f.get(to), f.get(from), override));
-                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    // Get the new and old value
+                    Object newValue = f.get(from);
+                    Object currentValue = f.get(to);
+                    if (newValue != null) {
+                        if (newValue instanceof Map) {
+                            for (Entry<Object, Object> entry : (Set<Entry<Object, Object>>) Map.class.cast(newValue)
+                                    .entrySet()) {
+                                if (!Map.class.cast(currentValue).containsKey(entry.getKey())) {
+                                    Map.class.cast(currentValue).put(entry.getKey(), entry.getValue());
+                                } else {
+                                    merge(entry.getValue(), Map.class.cast(currentValue).get(entry.getKey()), override);
+                                }
+                            }
+                        }
+                        if (newValue instanceof Collection) {
+                            for (Object o : Collection.class.cast(newValue)) {
+                                if (!Collection.class.cast(currentValue).contains(o)) {
+                                    Collection.class.cast(currentValue).add(o);
+                                }
+                            }
+                        }
+                        if (newValue instanceof Constructible) {
+                            if (currentValue == null) {
+                                f.set(to, newValue.getClass().newInstance());
+                                currentValue = f.get(to);
+                            }
+                            merge(newValue, currentValue, override);
+                        } else {
+                            f.set(to, mergeProperty(f.get(to), f.get(from), override));
+                        }
+                    }
+                } catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
                     // Ignore errors
-                } finally {
-                    f.setAccessible(accessible);
                 }
             }
         }

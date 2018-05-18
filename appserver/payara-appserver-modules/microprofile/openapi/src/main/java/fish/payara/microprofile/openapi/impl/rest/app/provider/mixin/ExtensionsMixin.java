@@ -37,42 +37,36 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.openapi.impl.visitor;
+package fish.payara.microprofile.openapi.impl.rest.app.provider.mixin;
 
-import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.eclipse.microprofile.openapi.models.Operation;
+import java.util.List;
 
-import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class OpenApiContext implements ApiContext {
+import org.eclipse.microprofile.openapi.models.Paths;
+import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
 
-    private final OpenAPI api;
-    private final String path;
-    private final Operation operation;
+public abstract class ExtensionsMixin {
 
-    public OpenApiContext(OpenAPI api, String path, Operation operation) {
-        this.api = api;
-        this.path = path;
-        this.operation = operation;
-    }
+    @JsonProperty("enum")
+    public abstract void getEnumeration();
 
-    public OpenApiContext(OpenAPI api, String path) {
-        this(api, path, null);
-    }
+    @JsonProperty("default")
+    public abstract void getDefaultValue();
 
-    @Override
-    public OpenAPI getApi() {
-        return api;
-    }
+    @JsonProperty("$ref")
+    public abstract void getRef();
 
-    @Override
-    public String getPath() {
-        return path;
-    }
+    @JsonIgnore
+    public abstract void setAdditionalProperties(Boolean additionalProperties);
 
-    @Override
-    public Operation getWorkingOperation() {
-        return operation;
-    }
+    @JsonInclude(Include.NON_EMPTY)
+    public abstract List<SecurityRequirement> getSecurity();
+
+    @JsonInclude(Include.ALWAYS)
+    public abstract Paths getPaths();
 
 }
