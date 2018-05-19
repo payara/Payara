@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
 import java.util.logging.Logger;
+
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.glassfish.logging.annotation.LoggerInfo;
@@ -49,7 +51,7 @@ import org.glassfish.logging.annotation.LoggerInfo;
  * @author lukas
  */
 public class LogUtils {
-private static final String LOGMSG_PREFIX = "AS-WSSECURITY";
+    private static final String LOGMSG_PREFIX = "AS-WSSECURITY";
 
     @LogMessagesResourceBundle
     public static final String LOG_MESSAGES = "com.sun.enterprise.security.webservices.LogMessages";
@@ -63,83 +65,37 @@ private static final String LOGMSG_PREFIX = "AS-WSSECURITY";
         return LOGGER;
     }
 
-    @LogMessageInfo(
-            message = "Request processing failed.",
-            level = "SEVERE",
-            cause = "unknown",
-            action = "unknown")
+    @LogMessageInfo(message = "Request processing failed.", level = "SEVERE", cause = "unknown", action = "unknown")
     public static final String NEXT_PIPE = LOGMSG_PREFIX + "-00001";
 
-    @LogMessageInfo(
-            message = "SEC2002: Container-auth: wss: Error validating request.",
-            level = "SEVERE",
-            cause = "unknown",
-            action = "unknown")
+    @LogMessageInfo(message = "SEC2002: Container-auth: wss: Error validating request.", level = "SEVERE", cause = "unknown", action = "unknown")
     public static final String ERROR_REQUEST_VALIDATION = LOGMSG_PREFIX + "-00002";
 
-    @LogMessageInfo(
-            message = "SEC2003: Container-auth: wss: Error securing response.",
-            level = "SEVERE",
-            cause = "unknown",
-            action = "unknown")
+    @LogMessageInfo(message = "SEC2003: Container-auth: wss: Error securing response.", level = "SEVERE", cause = "unknown", action = "unknown")
     public static final String ERROR_RESPONSE_SECURING = LOGMSG_PREFIX + "-00003";
 
-    @LogMessageInfo(
-            message = "SEC2004: Container-auth: wss: Error securing request.",
-            level = "SEVERE",
-            cause = "unknown",
-            action = "unknown")
+    @LogMessageInfo(message = "SEC2004: Container-auth: wss: Error securing request.", level = "SEVERE", cause = "unknown", action = "unknown")
     public static final String ERROR_REQUEST_SECURING = LOGMSG_PREFIX + "-00004";
 
-    @LogMessageInfo(
-            message = "SEC2005: Container-auth: wss: Error validating response.",
-            level = "SEVERE",
-            cause = "unknown",
-            action = "unknown")
+    @LogMessageInfo(message = "SEC2005: Container-auth: wss: Error validating response.", level = "SEVERE", cause = "unknown", action = "unknown")
     public static final String ERROR_RESPONSE_VALIDATION = LOGMSG_PREFIX + "-00005";
 
-    @LogMessageInfo(
-            message = "SEC2006: Container-auth: wss: Not a SOAP message context.",
-            level = "WARNING",
-            cause = "unknown",
-            action = "unknown")
+    @LogMessageInfo(message = "SEC2006: Container-auth: wss: Not a SOAP message context.", level = "WARNING", cause = "unknown", action = "unknown")
     public static final String NOT_SOAP = LOGMSG_PREFIX + "-00006";
 
-    @LogMessageInfo(
-            message = "EJB Webservice security configuration Failure.",
-            level = "SEVERE",
-            cause = "unknown",
-            action = "unknown")
+    @LogMessageInfo(message = "EJB Webservice security configuration Failure.", level = "SEVERE", cause = "unknown", action = "unknown")
     public static final String EJB_SEC_CONFIG_FAILURE = LOGMSG_PREFIX + "-00007";
 
-    @LogMessageInfo(
-            message = "Servlet Webservice security configuration Failure",
-            level = "SEVERE",
-            cause = "unknown",
-            action = "unknown")
+    @LogMessageInfo(message = "Servlet Webservice security configuration Failure", level = "SEVERE", cause = "unknown", action = "unknown")
     public static final String SERVLET_SEC_CONFIG_FAILURE = LOGMSG_PREFIX + "-00008";
 
-    @LogMessageInfo(
-            message = "BASIC AUTH username/password http header parsing error for {0}",
-            comment = "{0} - endpont",
-            level = "WARNING",
-            cause = "unknown",
-            action = "unknown")
+    @LogMessageInfo(message = "BASIC AUTH username/password http header parsing error for {0}", comment = "{0} - endpont", level = "WARNING", cause = "unknown", action = "unknown")
     public static final String BASIC_AUTH_ERROR = LOGMSG_PREFIX + "-00009";
 
-    @LogMessageInfo(
-            message = "Servlet Webservice security configuration Failure",
-            comment = "{0} - endpont",
-            level = "WARNING",
-            cause = "unknown",
-            action = "unknown")
+    @LogMessageInfo(message = "Servlet Webservice security configuration Failure", comment = "{0} - endpont", level = "WARNING", cause = "unknown", action = "unknown")
     public static final String CLIENT_CERT_ERROR = LOGMSG_PREFIX + "-00010";
 
-    @LogMessageInfo(
-            message = "Following exception was thrown:",
-            level = "SEVERE",
-            cause = "unknown",
-            action = "unknown")
+    @LogMessageInfo(message = "Following exception was thrown:", level = "SEVERE", cause = "unknown", action = "unknown")
     public static final String EXCEPTION_THROWN = LOGMSG_PREFIX + "-00011";
 
 }

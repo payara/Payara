@@ -37,68 +37,62 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
-
-import com.sun.xml.ws.api.pipe.TubeCloner;
-import com.sun.xml.ws.api.pipe.helper.AbstractTubeImpl;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.security.auth.Subject;
-import javax.security.auth.message.config.*;
 import javax.security.auth.message.AuthStatus;
+import javax.security.auth.message.config.ClientAuthContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.ws.WebServiceException;
 
-import com.sun.enterprise.security.jmac.provider.PacketMessageInfo;
 import com.sun.enterprise.security.jmac.provider.PacketMapMessageInfo;
+import com.sun.enterprise.security.jmac.provider.PacketMessageInfo;
 import com.sun.enterprise.security.jmac.provider.config.PipeHelper;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-
-import com.sun.xml.ws.api.model.wsdl.WSDLPort;
-import com.sun.xml.ws.api.message.Packet;
 import com.sun.xml.ws.api.message.Message;
-
+import com.sun.xml.ws.api.message.Packet;
+import com.sun.xml.ws.api.model.wsdl.WSDLPort;
 import com.sun.xml.ws.api.pipe.NextAction;
 import com.sun.xml.ws.api.pipe.Tube;
+import com.sun.xml.ws.api.pipe.TubeCloner;
 import com.sun.xml.ws.api.pipe.helper.AbstractFilterTubeImpl;
+import com.sun.xml.ws.api.pipe.helper.AbstractTubeImpl;
 import com.sun.xml.ws.security.secconv.SecureConversationInitiator;
 import com.sun.xml.ws.security.secconv.WSSecureConversationException;
-import javax.xml.bind.JAXBElement;
 
 /**
  * This pipe is used to do client side security for app server
  */
-public class ClientSecurityTube extends AbstractFilterTubeImpl
-    implements SecureConversationInitiator {
+public class ClientSecurityTube extends AbstractFilterTubeImpl implements SecureConversationInitiator {
 
     protected PipeHelper helper;
-   
+
     protected static final Logger _logger = LogUtils.getLogger();
 
-    protected static final LocalStringManagerImpl localStrings = 
-        new LocalStringManagerImpl(ClientSecurityTube.class);
+    protected static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ClientSecurityTube.class);
 
-    private static final String WSIT_CLIENT_AUTH_CONTEXT="com.sun.xml.wss.provider.wsit.WSITClientAuthContext";
-    
-    //Pipe to Tube Conversion
+    private static final String WSIT_CLIENT_AUTH_CONTEXT = "com.sun.xml.wss.provider.wsit.WSITClientAuthContext";
+
+    // Pipe to Tube Conversion
     private ClientAuthContext cAC = null;
     private PacketMessageInfo info = null;
     private Subject clientSubject = null;
-    
+
     public ClientSecurityTube(Map props, Tube next) {
-        
+
         super(next);
-	props.put(PipeConstants.SECURITY_PIPE,this);
-        WSDLPort wsdlModel = (WSDLPort)props.get(PipeConstants.WSDL_MODEL);
+        props.put(PipeConstants.SECURITY_PIPE, this);
+        WSDLPort wsdlModel = (WSDLPort) props.get(PipeConstants.WSDL_MODEL);
         if (wsdlModel != null) {
-            props.put(PipeConstants.WSDL_SERVICE,
-                wsdlModel.getOwner().getName());
+            props.put(PipeConstants.WSDL_SERVICE, wsdlModel.getOwner().getName());
         }
-	this.helper = new PipeHelper(PipeConstants.SOAP_LAYER,props,null);
+        this.helper = new PipeHelper(PipeConstants.SOAP_LAYER, props, null);
 
     }
 
@@ -106,44 +100,40 @@ public class ClientSecurityTube extends AbstractFilterTubeImpl
         super(that, cloner);
         this.helper = that.helper;
     }
-		       
+
     @Override
     public void preDestroy() {
-        //Give the AuthContext a chance to cleanup 
-        //create a dummy request packet
+        // Give the AuthContext a chance to cleanup
+        // create a dummy request packet
         try {
             Packet request = new Packet();
             PacketMessageInfo locInfo = new PacketMapMessageInfo(request, new Packet());
             Subject subj = getClientSubject(request);
             ClientAuthContext locCAC = helper.getClientAuthContext(locInfo, subj);
-             if (locCAC != null && WSIT_CLIENT_AUTH_CONTEXT.equals(locCAC.getClass().getName())) {
+            if (locCAC != null && WSIT_CLIENT_AUTH_CONTEXT.equals(locCAC.getClass().getName())) {
                 locCAC.cleanSubject(locInfo, subj);
             }
         } catch (Exception ex) {
-        //ignore exceptions
+            // ignore exceptions
         }
         helper.disable();
-    }    
-    
+    }
+
     @Override
     public NextAction processRequest(Packet request) {
-        
+
         try {
 
             /*
-             * XXX should there be code like the following?
-            if(isHttpBinding) {
-            return next.process(request);
-            }
+             * XXX should there be code like the following? if(isHttpBinding) { return next.process(request); }
              */
 
             info = new PacketMapMessageInfo(request, new Packet());
             AuthStatus status = AuthStatus.SEND_SUCCESS;
-            info.getMap().put(javax.xml.ws.Endpoint.WSDL_SERVICE,
-                    helper.getProperty(PipeConstants.WSDL_SERVICE));
+            info.getMap().put(javax.xml.ws.Endpoint.WSDL_SERVICE, helper.getProperty(PipeConstants.WSDL_SERVICE));
 
             Subject locClientSubject = getClientSubject(request);
-            
+
             cAC = helper.getClientAuthContext(info, locClientSubject);
 
             if (cAC != null) {
@@ -155,20 +145,19 @@ public class ClientSecurityTube extends AbstractFilterTubeImpl
                     _logger.log(Level.FINE, "ws.status_secure_request", status);
                 }
                 throw new WebServiceException(localStrings.getLocalString("enterprise.webservice.cantSecureRequst",
-                        "Cannot secure request for {0}",
-                        new Object[]{helper.getModelName()}), new Exception("An Error occured while Securing the Request"));
+                        "Cannot secure request for {0}", new Object[] { helper.getModelName() }),
+                        new Exception("An Error occured while Securing the Request"));
             } else {
                 return doInvoke(super.next, info.getRequestPacket());
             }
         } catch (Exception e) {
             _logger.log(Level.SEVERE, LogUtils.ERROR_REQUEST_SECURING, e);
             throw new WebServiceException(localStrings.getLocalString("enterprise.webservice.cantSecureRequst",
-                    "Cannot secure request for {0}",
-                    new Object[]{helper.getModelName()}), e);
+                    "Cannot secure request for {0}", new Object[] { helper.getModelName() }), e);
         }
 
     }
-     
+
     @Override
     public NextAction processResponse(Packet response) {
         try {
@@ -181,14 +170,11 @@ public class ClientSecurityTube extends AbstractFilterTubeImpl
                     try {
                         status = cAC.validateResponse(info, clientSubject, null);
                     } catch (Exception e) {
-                        return doThrow(new WebServiceException(
-                                localStrings.getLocalString(
-                                "enterprise.webservice.cantValidateResponse",
-                                "Cannot validate response for {0}",
-                                new Object[]{helper.getModelName()}), e));
+                        return doThrow(new WebServiceException(localStrings.getLocalString("enterprise.webservice.cantValidateResponse",
+                                "Cannot validate response for {0}", new Object[] { helper.getModelName() }), e));
                     }
                     if (status == AuthStatus.SEND_CONTINUE) {
-                        //response = processSecureRequest(info, cAC, clientSubject);
+                        // response = processSecureRequest(info, cAC, clientSubject);
                         return doInvoke(super.next, info.getRequestPacket());
                     } else {
                         response = info.getResponsePacket();
@@ -204,65 +190,62 @@ public class ClientSecurityTube extends AbstractFilterTubeImpl
         }
 
     }
-        
+
     private static Subject getClientSubject(Packet p) {
 
-	Subject s = null;
+        Subject s = null;
 
-	if (p != null) {
-	    s = (Subject) 
-		p.invocationProperties.get(PipeConstants.CLIENT_SUBJECT);
-	}
+        if (p != null) {
+            s = (Subject) p.invocationProperties.get(PipeConstants.CLIENT_SUBJECT);
+        }
 
-	if (s == null) {
+        if (s == null) {
 
-	    s = PipeHelper.getClientSubject();
+            s = PipeHelper.getClientSubject();
 
             if (p != null) {
-	        p.invocationProperties.put(PipeConstants.CLIENT_SUBJECT,s);
+                p.invocationProperties.put(PipeConstants.CLIENT_SUBJECT, s);
             }
-	}
-	
-	return s;
+        }
+
+        return s;
     }
-			
+
     @Override
-    public JAXBElement startSecureConversation(Packet packet) 
-            throws WSSecureConversationException {
+    public JAXBElement startSecureConversation(Packet packet) throws WSSecureConversationException {
 
-	PacketMessageInfo locInfo = new PacketMapMessageInfo(packet,new Packet());
-	JAXBElement token = null;
+        PacketMessageInfo locInfo = new PacketMapMessageInfo(packet, new Packet());
+        JAXBElement token = null;
 
-	try {
+        try {
 
-	    // gets the subject from the packet (puts one there if not found)
-	    Subject locClientSubject = getClientSubject(packet);
+            // gets the subject from the packet (puts one there if not found)
+            Subject locClientSubject = getClientSubject(packet);
 
-	    // put MessageInfo in properties map, since MessageInfo 
-	    // is not passed to getAuthContext, key idicates function
-	    HashMap map = new HashMap();
-	    map.put(PipeConstants.SECURITY_TOKEN,locInfo);
+            // put MessageInfo in properties map, since MessageInfo
+            // is not passed to getAuthContext, key idicates function
+            HashMap map = new HashMap();
+            map.put(PipeConstants.SECURITY_TOKEN, locInfo);
 
-	    helper.getSessionToken(map,locInfo,locClientSubject);
+            helper.getSessionToken(map, locInfo, locClientSubject);
 
-	    // helper returns token in map of msgInfo, using same key
-	    Object o = locInfo.getMap().get(PipeConstants.SECURITY_TOKEN);
+            // helper returns token in map of msgInfo, using same key
+            Object o = locInfo.getMap().get(PipeConstants.SECURITY_TOKEN);
 
-	    if (o != null && o instanceof JAXBElement) {
-		token = (JAXBElement) o;
-	    }
+            if (o != null && o instanceof JAXBElement) {
+                token = (JAXBElement) o;
+            }
 
-	} catch(Exception e) {
+        } catch (Exception e) {
 
-	    if (e instanceof WSSecureConversationException) {
-		throw (WSSecureConversationException) e;
-	    } else {
-		throw new WSSecureConversationException
-		    ("Secure Conversation failure: ", e);
-	    }
-	} 
+            if (e instanceof WSSecureConversationException) {
+                throw (WSSecureConversationException) e;
+            } else {
+                throw new WSSecureConversationException("Secure Conversation failure: ", e);
+            }
+        }
 
-	return token;
+        return token;
     }
 
     @Override
@@ -270,15 +253,3 @@ public class ClientSecurityTube extends AbstractFilterTubeImpl
         return new ClientSecurityTube(this, cloner);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-

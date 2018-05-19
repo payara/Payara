@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * ServerContainerCallbackHandler.java
@@ -49,7 +50,6 @@ package com.sun.enterprise.security.jmac.callback;
 import java.io.IOException;
 
 import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.*;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.message.callback.CallerPrincipalCallback;
 import javax.security.auth.message.callback.CertStoreCallback;
@@ -61,34 +61,28 @@ import javax.security.auth.message.callback.TrustStoreCallback;
 
 /**
  * Callback Handler for ServerContainer
- * @author  Harpreet Singh
- * @author  Shing Wai Chan
+ * 
+ * @author Harpreet Singh
+ * @author Shing Wai Chan
  */
-final class ServerContainerCallbackHandler
-        extends BaseContainerCallbackHandler {
-    
+final class ServerContainerCallbackHandler extends BaseContainerCallbackHandler {
+
     ServerContainerCallbackHandler() {
     }
 
-    protected void handleSupportedCallbacks(Callback[] callbacks) 
-            throws IOException, UnsupportedCallbackException { 
-        for (int i=0; i < callbacks.length; i++) {
-            processCallback(callbacks[i]);
+    protected void handleSupportedCallbacks(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+        for (Callback callback : callbacks) {
+            processCallback(callback);
         }
     }
 
     protected boolean isSupportedCallback(Callback callback) {
-        boolean isSupported = false;
-        if (callback instanceof CertStoreCallback ||
-                callback instanceof PasswordValidationCallback ||
-                callback instanceof CallerPrincipalCallback ||
-                callback instanceof GroupPrincipalCallback ||
-                callback instanceof SecretKeyCallback ||
-                callback instanceof PrivateKeyCallback ||
-                callback instanceof TrustStoreCallback) {
-
-            isSupported = true;
-        }
-        return isSupported;
+        return callback instanceof CertStoreCallback 
+                || callback instanceof PasswordValidationCallback
+                || callback instanceof CallerPrincipalCallback 
+                || callback instanceof GroupPrincipalCallback
+                || callback instanceof SecretKeyCallback 
+                || callback instanceof PrivateKeyCallback
+                || callback instanceof TrustStoreCallback; 
     }
 }
