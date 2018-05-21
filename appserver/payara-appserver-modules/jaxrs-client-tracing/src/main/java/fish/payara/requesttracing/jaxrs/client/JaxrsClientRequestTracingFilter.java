@@ -44,7 +44,6 @@ import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
 import fish.payara.opentracing.OpenTracingService;
 import io.opentracing.ActiveSpan;
-import io.opentracing.ActiveSpan.Continuation;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
@@ -76,8 +75,6 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
     private RequestTracingService requestTracing;
     private OpenTracingService openTracing;
 
-    private static ThreadLocal<Continuation> continuation;
-
     @PostConstruct
     public void postConstruct() {
         // Get the default Payara service locator - injecting a service locator will give you the one used by Jersey
@@ -87,8 +84,6 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
             requestTracing = serviceLocator.getService(RequestTracingService.class);
             openTracing = serviceLocator.getService(OpenTracingService.class);
         }
-
-        continuation = new ThreadLocal<>();
     }
 
     /**
@@ -139,9 +134,6 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
                         Format.Builtin.HTTP_HEADERS,
                         new MultivaluedMapToTextMap(requestContext.getHeaders()));
             }
-
-            continuation.set(activeSpan.capture());
-            activeSpan.deactivate();
         }
     }
 
@@ -157,7 +149,9 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
         // If request tracing is enabled, and there's a trace actually in progress, add info about method
         if (requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()) {
 
-            try (ActiveSpan activeSpan = continuation.get().activate()) {
+            try (ActiveSpan activeSpan = openTracing.getTracer(openTracing.getApplicationName(
+                    Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)))
+                    .activeSpan()) {
                 StatusType statusInfo = responseContext.getStatusInfo();
 
                 activeSpan.setTag(Tags.HTTP_STATUS.getKey(), statusInfo.getStatusCode());

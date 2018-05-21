@@ -85,8 +85,6 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
     private RequestTracingService requestTracing;
     private OpenTracingService openTracing;
 
-    private ThreadLocal<Continuation> continuation;
-
     @Context
     private ResourceInfo resourceInfo;
 
@@ -99,8 +97,6 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
             requestTracing = serviceLocator.getService(RequestTracingService.class);
             openTracing = serviceLocator.getService(OpenTracingService.class);
         }
-
-        continuation = new ThreadLocal<>();
     }
 
     @Override
@@ -129,9 +125,6 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                 }
 
                 ActiveSpan activeSpan = spanBuilder.startActive();
-
-                continuation.set(activeSpan.capture());
-                activeSpan.deactivate();
             }
         }
     }
@@ -148,7 +141,9 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
 
                 if (tracedAnnotation == null || (boolean) OpenTracingCdiUtils.getConfigOverrideValue(
                         Traced.class, "value", resourceInfo, boolean.class).orElse(tracedAnnotation.value())) {
-                    try (ActiveSpan activeSpan = continuation.get().activate()) {
+//                    try (ActiveSpan activeSpan = continuation.get().activate()) {
+                    try (ActiveSpan activeSpan = openTracing.getTracer(openTracing.getApplicationName(
+                        serviceLocator.getService(InvocationManager.class))).activeSpan()) {
                         Response.StatusType statusInfo = responseContext.getStatusInfo();
 
                         activeSpan.setTag(Tags.HTTP_STATUS.getKey(), statusInfo.getStatusCode());
@@ -162,8 +157,10 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                                 activeSpan.log(Collections.singletonMap("error.object", responseContext.getEntity()));
                             }
                         }
+                        
+                        activeSpan.deactivate();
                     } finally {
-                        continuation.set(null);
+//                        continuation.set(null);
                     }
                 }
             }

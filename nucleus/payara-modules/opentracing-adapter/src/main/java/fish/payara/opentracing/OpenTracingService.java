@@ -40,6 +40,7 @@
 package fish.payara.opentracing;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import io.opentracing.ActiveSpan;
 import io.opentracing.Tracer;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.util.ThreadLocalActiveSpanSource;
@@ -69,12 +70,9 @@ public class OpenTracingService implements EventListener {
 
     private final Map<String, Tracer> tracers = new ConcurrentHashMap<>();
     
-    private OpenTracingServiceConfiguration opentracingConfiguration;
-    
     @PostConstruct
     void postConstruct() {
         Globals.getDefaultBaseServiceLocator().getService(Events.class).register(this);
-        opentracingConfiguration = Globals.getDefaultBaseServiceLocator().getService(OpenTracingServiceConfiguration.class);
     }
 
     @Override
@@ -84,40 +82,35 @@ public class OpenTracingService implements EventListener {
             removeApplicationTracer(info.getName());
         }
     }
-    
-    public Tracer getTracer(String applicationName) {
-        
+
+    public synchronized Tracer getTracer(String applicationName) {
         Tracer tracer = tracers.get(applicationName);
-        
+
         if (tracer == null) {
-            synchronized(this) {
-                tracer = tracers.get(applicationName);
-                
-                if (tracer == null) {
-                    if (Boolean.getBoolean("USE_OPENTRACING_MOCK_TRACER")) {
-                        tracer = new MockTracer(new ThreadLocalActiveSpanSource(), MockTracer.Propagator.TEXT_MAP);
-                    } else {
-                        tracer = new fish.payara.opentracing.tracer.Tracer(applicationName);
-                    }
-                    
-                    tracers.put(applicationName, tracer);
-                }
+            if (Boolean.getBoolean("USE_OPENTRACING_MOCK_TRACER")) {
+                tracer = new MockTracer(new ThreadLocalActiveSpanSource(), MockTracer.Propagator.TEXT_MAP);
+            } else {
+                tracer = new fish.payara.opentracing.tracer.Tracer(applicationName);
             }
+
+            tracers.put(applicationName, tracer);
         }
-        
+
         return tracer;
     }
 
     public boolean isEnabled() {
         return Globals.getDefaultBaseServiceLocator().getService(RequestTracingService.class).isRequestTracingEnabled();
     }
-
+    
     private void removeApplicationTracer(String applicationName) {
         tracers.remove(applicationName);
     }
 
     /**
-     * Gets the application name from the invocation manager. Failing that, it will use the module name or component name.
+     * Gets the application name from the invocation manager. Failing that, it will use the module name or component
+     * name.
+     *
      * @param invocationManager The invocation manager to get the application name from
      * @return The application name
      */
@@ -130,13 +123,14 @@ public class OpenTracingService implements EventListener {
                 appName = invocationManager.getCurrentInvocation().getComponentId();
             }
         }
-        
+
         return appName;
     }
-    
+
     /**
      * Gets the application name from the invocation manager. Failing that, it will use the module name, component name,
      * or method signature (in that order).
+     *
      * @param invocationManager The invocation manager to get the application name from
      * @param invocationContext The context of the current invocation
      * @return The application name
@@ -154,21 +148,22 @@ public class OpenTracingService implements EventListener {
                 }
             }
         }
-        
+
         return appName;
     }
-    
+
     /**
-     * Helper method to generate a full method signature consisting of canonical class name, method name, 
-     * parameter types, and return type.
+     * Helper method to generate a full method signature consisting of canonical class name, method name, parameter
+     * types, and return type.
+     *
      * @param annotatedMethod The annotated Method to generate the signature for
      * @return A String in the format of CanonicalClassName#MethodName({ParameterTypes})>ReturnType
      */
     private String getFullMethodSignature(Method annotatedMethod) {
-        return annotatedMethod.getDeclaringClass().getCanonicalName() 
-                + "#" + annotatedMethod.getName() 
+        return annotatedMethod.getDeclaringClass().getCanonicalName()
+                + "#" + annotatedMethod.getName()
                 + "(" + Arrays.toString(annotatedMethod.getParameterTypes()) + ")"
                 + ">" + annotatedMethod.getReturnType().getSimpleName();
     }
-    
+
 }
