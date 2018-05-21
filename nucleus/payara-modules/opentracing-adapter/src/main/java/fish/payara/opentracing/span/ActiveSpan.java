@@ -39,12 +39,8 @@
  */
 package fish.payara.opentracing.span;
 
-import fish.payara.opentracing.OpenTracingService;
-import fish.payara.opentracing.tracer.Tracer;
 import java.util.Map;
-import javax.annotation.PostConstruct;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -53,18 +49,15 @@ import org.glassfish.internal.api.Globals;
 public class ActiveSpan implements io.opentracing.ActiveSpan {
 
     private final Span wrappedSpan;
-    private int referenceCount;
-    
-    private OpenTracingService openTracing;
+    private final AtomicInteger referenceCount;
+    private final ActiveSpan previouslyActiveSpan;
+    private final ActiveSpanSource activeSpanSource;
 
-    public ActiveSpan(Span span) {
+    public ActiveSpan(Span span, ActiveSpan previouslyActiveSpan, ActiveSpanSource activeSpanSource) {
         this.wrappedSpan = span;
-        referenceCount = 1;
-    }
-
-    @PostConstruct
-    public void postConstruct() {
-        getOpenTracingServiceIfNull();
+        this.previouslyActiveSpan = previouslyActiveSpan;
+        this.activeSpanSource = activeSpanSource;
+        referenceCount = new AtomicInteger(1);
     }
 
     @Override
@@ -145,9 +138,14 @@ public class ActiveSpan implements io.opentracing.ActiveSpan {
 
     @Override
     public void deactivate() {
-        referenceCount--;
-        getOpenTracingServiceIfNull();
-        ((Tracer) openTracing.getTracer(wrappedSpan.getApplicationName())).deactivate(this);
+        if (activeSpanSource.activeSpan() == this) {
+            activeSpanSource.makeActive(previouslyActiveSpan);
+            
+            referenceCount.decrementAndGet();
+            if (shouldFinishSpan()) {
+                wrappedSpan.finish();
+            }
+        }
     }
 
     @Override
@@ -157,7 +155,7 @@ public class ActiveSpan implements io.opentracing.ActiveSpan {
 
     @Override
     public Continuation capture() {
-        referenceCount++;
+        referenceCount.incrementAndGet();
         return new Continuation();
     }
 
@@ -170,20 +168,10 @@ public class ActiveSpan implements io.opentracing.ActiveSpan {
     }
 
     public boolean shouldFinishSpan() {
-        if (referenceCount <= 0) {
+        if (referenceCount.get() <= 0) {
             return true;
         } else {
             return false;
-        }
-    }
-
-    private void getOpenTracingServiceIfNull() {
-        if (openTracing == null) {
-            ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
-
-            if (serviceLocator != null) {
-                openTracing = serviceLocator.getService(OpenTracingService.class);
-            }
         }
     }
 
@@ -191,15 +179,7 @@ public class ActiveSpan implements io.opentracing.ActiveSpan {
 
         @Override
         public io.opentracing.ActiveSpan activate() {
-            if (openTracing == null) {
-                ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
-
-                if (serviceLocator != null) {
-                    openTracing = serviceLocator.getService(OpenTracingService.class);
-                }
-            }
-
-            ((Tracer) openTracing.getTracer(wrappedSpan.getApplicationName())).makeActive(ActiveSpan.this);
+            activeSpanSource.makeActive(ActiveSpan.this);
             return ActiveSpan.this;
         }
 

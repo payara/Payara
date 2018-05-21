@@ -57,22 +57,13 @@ public class ActiveSpanSource implements io.opentracing.ActiveSpanSource {
 
     @Override
     public ActiveSpan makeActive(Span span) {     
-        activeSpan = new fish.payara.opentracing.span.ActiveSpan((fish.payara.opentracing.span.Span) span);
+        activeSpan = new fish.payara.opentracing.span.ActiveSpan(
+                (fish.payara.opentracing.span.Span) span, activeSpan, this);
         return activeSpan;
     }
     
     public void makeActive(fish.payara.opentracing.span.ActiveSpan activeSpan) {
         this.activeSpan = (fish.payara.opentracing.span.ActiveSpan) activeSpan;
-    }
-    
-    public void deactivate(ActiveSpan span) {
-        if (activeSpan == span) {
-            if (activeSpan.shouldFinishSpan()) {
-                activeSpan.getWrappedSpan().finish();
-            }
-                 
-            activeSpan = null;
-        }
     }
     
 }
