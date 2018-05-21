@@ -40,7 +40,6 @@
 package fish.payara.opentracing;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import io.opentracing.ActiveSpan;
 import io.opentracing.Tracer;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.util.ThreadLocalActiveSpanSource;
@@ -68,7 +67,7 @@ public class OpenTracingService implements EventListener {
 
     private static final Logger logger = Logger.getLogger(OpenTracingService.class.getCanonicalName());
 
-    private final Map<String, Tracer> tracers = new ConcurrentHashMap<>();
+    private final Map<String, InheritableThreadLocal<Tracer>> tracers = new ConcurrentHashMap<>();
     
     @PostConstruct
     void postConstruct() {
@@ -84,7 +83,7 @@ public class OpenTracingService implements EventListener {
     }
 
     public synchronized Tracer getTracer(String applicationName) {
-        Tracer tracer = tracers.get(applicationName);
+        Tracer tracer = tracers.get(applicationName).get();
 
         if (tracer == null) {
             if (Boolean.getBoolean("USE_OPENTRACING_MOCK_TRACER")) {
@@ -93,7 +92,9 @@ public class OpenTracingService implements EventListener {
                 tracer = new fish.payara.opentracing.tracer.Tracer(applicationName);
             }
 
-            tracers.put(applicationName, tracer);
+            InheritableThreadLocal<Tracer> tracerThreadLocal = new InheritableThreadLocal<>();
+            tracerThreadLocal.set(tracer);
+            tracers.put(applicationName, tracerThreadLocal);
         }
 
         return tracer;

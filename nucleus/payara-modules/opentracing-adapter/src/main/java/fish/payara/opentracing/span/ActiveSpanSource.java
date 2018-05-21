@@ -48,22 +48,22 @@ import io.opentracing.Span;
  */
 public class ActiveSpanSource implements io.opentracing.ActiveSpanSource {
 
-    private fish.payara.opentracing.span.ActiveSpan activeSpan = null;
+    private final ThreadLocal<fish.payara.opentracing.span.ActiveSpan> activeSpan = new ThreadLocal<>();
     
     @Override
     public ActiveSpan activeSpan() {
-        return activeSpan;
+        return activeSpan.get();
     }
 
     @Override
     public ActiveSpan makeActive(Span span) {     
-        activeSpan = new fish.payara.opentracing.span.ActiveSpan(
-                (fish.payara.opentracing.span.Span) span, activeSpan, this);
-        return activeSpan;
+        activeSpan.set(new fish.payara.opentracing.span.ActiveSpan(
+                (fish.payara.opentracing.span.Span) span, activeSpan.get(), this));
+        return activeSpan.get();
     }
     
     public void makeActive(fish.payara.opentracing.span.ActiveSpan activeSpan) {
-        this.activeSpan = (fish.payara.opentracing.span.ActiveSpan) activeSpan;
+        this.activeSpan.set((fish.payara.opentracing.span.ActiveSpan) activeSpan);
     }
     
 }

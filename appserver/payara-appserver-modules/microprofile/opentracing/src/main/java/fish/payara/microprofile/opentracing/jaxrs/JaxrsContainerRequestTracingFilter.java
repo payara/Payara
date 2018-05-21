@@ -156,8 +156,6 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                                 activeSpan.log(Collections.singletonMap("error.object", responseContext.getEntity()));
                             }
                         }
-                        
-                        activeSpan.deactivate();
                     }
                 }
             }
