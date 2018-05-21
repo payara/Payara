@@ -178,16 +178,16 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
             if (refContainer instanceof Cluster && isElegibleResource(refName)) {
                 Target tgt = locator.getService(Target.class);
                 List<Server> instances = tgt.getInstances(target);
-                for (Server svr : instances) {
-                    svr.createResourceRef(enabled.toString(), refName);
+                for (Server server : instances) {
+                    server.createResourceRef(enabled.toString(), refName);
                 }
             }
-            // create new ResourceRef for all instances of DG, if it's a dg
+            // create new ResourceRef for all instances of DeploymentGroup, if it's a DeploymentGroup
             if (refContainer instanceof DeploymentGroup && isElegibleResource(refName)) {
-                DeploymentGroup dg = (DeploymentGroup) refContainer;
-                for (Server svr : dg.getInstances()) {
-                    if (svr.getResourceRef(refName) == null) {
-                        svr.createResourceRef(enabled.toString(), refName);
+                DeploymentGroup deploymentGroup = (DeploymentGroup) refContainer;
+                for (Server server : deploymentGroup.getInstances()) {
+                    if (server.getResourceRef(refName) == null) {
+                        server.createResourceRef(enabled.toString(), refName);
                     }
                 }
             }
@@ -280,9 +280,9 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
             if (server != null) {
                 return server;
             }
-            DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
-            if (dg != null) {
-                return dg;
+            DeploymentGroup deploymentGroup = domain.getDeploymentGroupNamed(target);
+            if (deploymentGroup != null) {
+                return deploymentGroup;
             }
             Cluster cluster = domain.getClusterNamed(target);
             return cluster;
