@@ -43,7 +43,6 @@ import fish.payara.microprofile.opentracing.cdi.OpenTracingCdiUtils;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
 import io.opentracing.ActiveSpan;
-import io.opentracing.ActiveSpan.Continuation;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
@@ -129,7 +128,7 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
             }
         }
     }
-//app
+    
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
         try {
