@@ -57,6 +57,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.enterprise.inject.spi.CDI;
@@ -124,11 +125,11 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                     }
                 }
 
-                ActiveSpan activeSpan = spanBuilder.startActive();
+                spanBuilder.startActive();
             }
         }
     }
-
+//app
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
         try {
@@ -141,7 +142,6 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
 
                 if (tracedAnnotation == null || (boolean) OpenTracingCdiUtils.getConfigOverrideValue(
                         Traced.class, "value", resourceInfo, boolean.class).orElse(tracedAnnotation.value())) {
-//                    try (ActiveSpan activeSpan = continuation.get().activate()) {
                     try (ActiveSpan activeSpan = openTracing.getTracer(openTracing.getApplicationName(
                         serviceLocator.getService(InvocationManager.class))).activeSpan()) {
                         Response.StatusType statusInfo = responseContext.getStatusInfo();
@@ -159,14 +159,14 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                         }
                         
                         activeSpan.deactivate();
-                    } finally {
-//                        continuation.set(null);
                     }
                 }
             }
         } finally {
             if (responseContext.hasEntity() && responseContext.getEntity() instanceof Throwable) {
-                throw new IOException((Throwable) responseContext.getEntity());
+                Throwable throwable = (Throwable) responseContext.getEntity();
+                logger.log(Level.SEVERE, throwable.toString());
+                responseContext.setEntity(throwable.toString());
             }
         }
 
