@@ -748,7 +748,6 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             Field classesField = ClassLoader.class.getDeclaredField("classes");
             classesField.setAccessible(true);
             classes = new HashSet<>((Vector<Class<?>>) classesField.get(classLoader));
-            classesField.setAccessible(false);
         } catch (Exception ex) {
             LOGGER.log(Level.WARNING, "Unable to get classes from classloader.", ex);
         }

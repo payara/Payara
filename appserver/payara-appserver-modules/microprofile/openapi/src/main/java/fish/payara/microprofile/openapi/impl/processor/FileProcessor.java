@@ -79,12 +79,13 @@ public class FileProcessor implements OASProcessor {
         try {
             // Search for a the correct file
             URL fileUrl = appClassLoader.getResource("META-INF/openapi.json");
-            if (fileUrl == null) {
-                fileUrl = appClassLoader.getResource("META-INF/openapi.yaml");
-                if (fileUrl == null) {
-                    fileUrl = appClassLoader.getResource("META-INF/openapi.yml");
-                }
-            }
+            fileUrl = (fileUrl != null) ? fileUrl : appClassLoader.getResource("../../META-INF/openapi.json");
+            fileUrl = (fileUrl != null) ? fileUrl : appClassLoader.getResource("META-INF/openapi.yaml");
+            fileUrl = (fileUrl != null) ? fileUrl : appClassLoader.getResource("../../META-INF/openapi.yaml");
+            fileUrl = (fileUrl != null) ? fileUrl : appClassLoader.getResource("META-INF/openapi.yml");
+            fileUrl = (fileUrl != null) ? fileUrl : appClassLoader.getResource("../../META-INF/openapi.yml");
+
+            // If the file is found, configure the public variables
             if (fileUrl != null) {
                 file = new File(fileUrl.toURI());
                 if (file.getPath().endsWith(".json")) {

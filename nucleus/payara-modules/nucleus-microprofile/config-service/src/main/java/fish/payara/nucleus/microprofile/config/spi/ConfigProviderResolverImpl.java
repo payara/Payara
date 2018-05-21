@@ -417,18 +417,25 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         info.addTransientAppMetaData(APP_METADATA_KEY, appConfigProperties);
         try {
             // Read application defined properties and add as transient metadata
-            Enumeration<URL> resources = info.getAppClassLoader().getResources("META-INF/microprofile-config.properties");
-            while (resources.hasMoreElements()) {
-                URL url = resources.nextElement();
-                Properties p = new Properties();
-                try (InputStream is = url.openStream()) {
-                    p.load(url.openStream());
-                }
-                appConfigProperties.add(p);
-            }
+            appConfigProperties.add(getPropertiesFromFile(info.getAppClassLoader(), "META-INF/microprofile-config.properties"));
+            appConfigProperties.add(getPropertiesFromFile(info.getAppClassLoader(), "../../META-INF/microprofile-config.properties"));
         } catch (IOException ex) {
             Logger.getLogger(ConfigProviderResolverImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    private Properties getPropertiesFromFile(ClassLoader appClassLoader, String fileName) throws IOException {
+        // Read application defined properties and add as transient metadata
+        Enumeration<URL> resources = appClassLoader.getResources(fileName);
+        while (resources.hasMoreElements()) {
+            URL url = resources.nextElement();
+            Properties p = new Properties();
+            try (InputStream is = url.openStream()) {
+                p.load(url.openStream());
+            }
+            return p;
+        }
+        return new Properties();
     }
 
 }
