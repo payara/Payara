@@ -69,7 +69,11 @@ import javax.ws.rs.core.Response;
 import fish.payara.nucleus.microprofile.config.spi.ConfigProviderResolverImpl;
 import fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition;
 import fish.payara.security.oauth2.api.OAuth2State;
+import javax.el.ELProcessor;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.CDI;
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.internal.api.Globals;
 
@@ -84,6 +88,8 @@ import org.glassfish.internal.api.Globals;
 public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanism {
 
     private static final Logger logger = Logger.getLogger("OAuth2Mechanism");
+    
+    private final ELProcessor elProcessor;
 
     private String authEndpoint;
     private String tokenEndpoint;
@@ -109,7 +115,9 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
      * called before any requests are validated.
      */
     public OAuth2AuthenticationMechanism() {
-        //no-op constuctor
+        elProcessor = new ELProcessor();
+        BeanManager beanManager = CDI.current().getBeanManager();
+        elProcessor.getELManager().addELResolver(beanManager.getELResolver());
     }
 
     /**
@@ -118,6 +126,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
      * @param definition
      */
     public OAuth2AuthenticationMechanism(OAuth2AuthenticationDefinition definition) {
+        this();
         setDefinition(definition);
 
     }
@@ -129,7 +138,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
      * @return
      */
     public OAuth2AuthenticationMechanism setDefinition(OAuth2AuthenticationDefinition definition) {
-        Config provider = Globals.getDefaultBaseServiceLocator().getService(ConfigProviderResolverImpl.class).getConfig();
+        Config provider = ConfigProvider.getConfig();
         authEndpoint = getConfiguredValue(definition.authEndpoint(), provider);
         tokenEndpoint = getConfiguredValue(definition.tokenEndpoint(), provider);
         clientID = getConfiguredValue(definition.clientId(), provider);
@@ -260,10 +269,24 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
     
     private String getConfiguredValue(String value, Config provider){
         String result = (String) TranslatedConfigView.getTranslatedValue(value);
-        Optional<String> configResult = provider.getOptionalValue(tokenEndpoint, String.class);
+        if (isELExpression(value)){
+            result = (String) elProcessor.getValue(toRawExpression(result), String.class);
+        }
+        Optional<String> configResult = provider.getOptionalValue(result, String.class);
         if (configResult.isPresent()) {
             result = configResult.get();
         }
         return result;
+    }
+    
+    private static boolean isELExpression(String expression) {
+        return !expression.isEmpty() && isDeferredExpression(expression);
+    }
+    
+    private static boolean isDeferredExpression(String expression) {
+        return expression.startsWith("#{") && expression.endsWith("}");
+    }
+    private static String toRawExpression(String expression) {
+        return expression.substring(2, expression.length() - 1);
     }
 }
