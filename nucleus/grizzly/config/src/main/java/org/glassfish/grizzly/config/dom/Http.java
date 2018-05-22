@@ -457,45 +457,46 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     /**
      * Controls whether or not HTTP/2 is enabled.
      * The default is true.
+     * @return 
      */
     @Attribute(defaultValue = "" + HTTP2_ENABLED, dataType = Boolean.class)
-    boolean isHttp2Enabled();
+    String getHttp2Enabled();
 
-    void setHttp2Enabled(boolean http2Enabled);
+    void setHttp2Enabled(String http2Enabled);
 
     /**
      * Configures the number of concurrent streams allowed per HTTP2 connection.
      * The default is 100.
      */
     @Attribute(defaultValue = "" + HTTP2_MAX_CONCURRENT_STREAMS, dataType = Integer.class)
-    int getHttp2MaxConcurrentStreams();
+    String getHttp2MaxConcurrentStreams();
 
-    void setHttp2MaxConcurrentStreams(int maxConcurrentStreams);
+    void setHttp2MaxConcurrentStreams(String maxConcurrentStreams);
 
     /**
      * Configures the initial window size in bytes.  The default is 64K - 1.
      */
     @Attribute(defaultValue = "" + HTTP2_INITIAL_WINDOW_SIZE_IN_BYTES, dataType = Integer.class)
-    int getHttp2InitialWindowSizeInBytes();
+    String getHttp2InitialWindowSizeInBytes();
 
-    void setHttp2InitialWindowSizeInBytes(int initialWindowSizeInBytes);
+    void setHttp2InitialWindowSizeInBytes(String initialWindowSizeInBytes);
 
     /**
      * Configures the maximum size of the HTTP2 frame payload to be accepted.
      * The default is 2^24 - 1.
      */
     @Attribute(defaultValue = "" + HTTP2_MAX_FRAME_PAYLOAD_SIZE_IN_BYTES, dataType = Integer.class)
-    int getHttp2MaxFramePayloadSizeInBytes();
+    String getHttp2MaxFramePayloadSizeInBytes();
 
-    void setHttp2MaxFramePayloadSizeInBytes(int maxFramePayloadSizeInBytes);
+    void setHttp2MaxFramePayloadSizeInBytes(String maxFramePayloadSizeInBytes);
 
     /**
      * Configures the maximum size, in bytes, of the header list. The default is 4096.
      */
     @Attribute(defaultValue = "" + HTTP2_MAX_HEADER_LIST_SIZE_IN_BYTES, dataType = Integer.class)
-    int getHttp2MaxHeaderListSizeInBytes();
+    String getHttp2MaxHeaderListSizeInBytes();
 
-    void setHttp2MaxHeaderListSizeInBytes(int maxHeaderListSizeInBytes);
+    void setHttp2MaxHeaderListSizeInBytes(String maxHeaderListSizeInBytes);
 
     /**
      * Streams are periodically cleaned when the stream count exceeds this value,
@@ -525,29 +526,30 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
      * The default is 50.
      */
     @Attribute(defaultValue = "" + HTTP2_CLEAN_FREQUENCY_CHECK, dataType = Integer.class)
-    int getHttp2CleanFrequencyCheck();
+    String getHttp2CleanFrequencyCheck();
 
-    void setHttp2CleanFrequencyCheck(int cleanFrequencyCheck);
+    void setHttp2CleanFrequencyCheck(String cleanFrequencyCheck);
 
     /**
      * Controls whether or not insecure cipher suites are allowed to establish TLS connections.
      * The default is false.
      */
     @Attribute(defaultValue = "" + HTTP2_DISABLE_CIPHER_CHECK, dataType = Boolean.class)
-    boolean isHttp2DisableCipherCheck();
+    String getHttp2DisableCipherCheck();
 
-    void setHttp2DisableCipherCheck(boolean disableCipherCheck);
+    void setHttp2DisableCipherCheck(String disableCipherCheck);
 
     /**
      * Controls whether or not push is allowed by the server endpoints.
      * The default is true.
      */
     @Attribute(defaultValue = "" + HTTP2_PUSH_ENABLED, dataType = Boolean.class)
-    boolean isHttp2PushEnabled();
+    String getHttp2PushEnabled();
 
-    void setHttp2PushEnabled(boolean pushEnabled);
+    void setHttp2PushEnabled(String pushEnabled);
 
     @DuckTyped
+    @Override
     Protocol getParent();
 
     class Duck {

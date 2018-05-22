@@ -37,33 +37,48 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.webservices;
 
-import java.io.InputStream;
-import java.io.IOException;
+import static com.sun.xml.rpc.spi.runtime.SOAPConstants.FAULT_CODE_SERVER;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.WARNING;
+import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static org.glassfish.webservices.LogUtils.EJB_ENDPOINT_EXCEPTION;
+import static org.glassfish.webservices.LogUtils.ERROR_ON_EJB;
+import static org.glassfish.webservices.LogUtils.MISSING_MONITORING_INFO;
+import static org.glassfish.webservices.LogUtils.NULL_MESSAGE;
+import static org.glassfish.webservices.LogUtils.UNSUPPORTED_METHOD_REQUEST;
+import static org.glassfish.webservices.LogUtils.WEBSERVICE_DISPATCHER_INFO;
+
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.MessageFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletContext;
-import javax.xml.soap.MimeHeaders;
-import javax.xml.soap.SOAPMessage;
-import javax.xml.soap.SOAPException;
-
 import javax.xml.namespace.QName;
+import javax.xml.soap.MimeHeaders;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPMessage;
+
+import org.glassfish.ejb.api.EJBInvocation;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.webservices.monitoring.EndpointImpl;
+import org.glassfish.webservices.monitoring.HttpResponseInfoImpl;
+import org.glassfish.webservices.monitoring.JAXRPCEndpointImpl;
+import org.glassfish.webservices.monitoring.ThreadLocalInfo;
+import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
+
 import com.sun.xml.messaging.saaj.util.ByteInputStream;
 import com.sun.xml.rpc.spi.JaxRpcObjectFactory;
-import com.sun.xml.rpc.spi.runtime.SOAPMessageContext;
 import com.sun.xml.rpc.spi.runtime.SOAPConstants;
+import com.sun.xml.rpc.spi.runtime.SOAPMessageContext;
 import com.sun.xml.rpc.spi.runtime.StreamingHandler;
-import java.text.MessageFormat;
-
-import org.glassfish.webservices.monitoring.*;
-
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.ejb.api.EJBInvocation;
 
 /**
  * Handles dispatching of ejb web service http invocations.
@@ -74,227 +89,217 @@ public class EjbWebServiceDispatcher implements EjbMessageDispatcher {
 
     private static final Logger logger = LogUtils.getLogger();
 
-    private JaxRpcObjectFactory rpcFactory;
-    private final WsUtil wsUtil = new WsUtil();
-    private WebServiceEngineImpl wsEngine;
-
     // @@@ This should be added to jaxrpc spi, probably within
     // SOAPConstants.
-    private static final QName FAULT_CODE_CLIENT =
-        new QName(SOAPConstants.URI_ENVELOPE, "Client");
+    private static final QName FAULT_CODE_CLIENT = new QName(SOAPConstants.URI_ENVELOPE, "Client");
 
     // @@@ Used to set http servlet response object so that TieBase
     // will correctly flush response code for one-way operations.
     // Should be added to SPI
-    private static final String HTTP_SERVLET_RESPONSE = 
-        "com.sun.xml.rpc.server.http.HttpServletResponse";
+    private static final String HTTP_SERVLET_RESPONSE = "com.sun.xml.rpc.server.http.HttpServletResponse";
 
-    //the security service
-    org.glassfish.webservices.SecurityService  secServ;
+    private JaxRpcObjectFactory jaxRpcObjectFactory;
+    private final WsUtil wsUtil = new WsUtil();
+    private WebServiceEngineImpl wsEngine;
+
+    // the security service
+    private SecurityService securityService;
 
     public EjbWebServiceDispatcher() {
-        rpcFactory = JaxRpcObjectFactory.newInstance();
+        jaxRpcObjectFactory = JaxRpcObjectFactory.newInstance();
         wsEngine = WebServiceEngineImpl.getInstance();
-        if (Globals.getDefaultHabitat() != null) {
-            secServ = Globals.get(org.glassfish.webservices.SecurityService.class);
-        }
-    }           
+        securityService = Globals.get(SecurityService.class);
+    }
 
     @Override
-    public void invoke(HttpServletRequest req, 
-                       HttpServletResponse resp,
-                       ServletContext ctxt,
-                       EjbRuntimeEndpointInfo endpointInfo) {
+    public void invoke(HttpServletRequest req, HttpServletResponse resp, ServletContext ctxt, EjbRuntimeEndpointInfo endpointInfo) {
 
         String method = req.getMethod();
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, LogUtils.WEBSERVICE_DISPATCHER_INFO,
-                    new Object[] {req.getMethod(), req.getRequestURI(), req.getQueryString()});
+        if (logger.isLoggable(FINE)) {
+            logger.log(FINE, WEBSERVICE_DISPATCHER_INFO, new Object[] { req.getMethod(), req.getRequestURI(), req.getQueryString() });
         }
+
         try {
-            if( method.equals("POST") ) {
+            if (method.equals("POST")) {
                 handlePost(req, resp, endpointInfo);
-            } else if( method.equals("GET") ) {
+            } else if (method.equals("GET")) {
                 handleGet(req, resp, ctxt, endpointInfo);
             } else {
-                String errorMessage = MessageFormat.format(
-                        logger.getResourceBundle().getString(LogUtils.UNSUPPORTED_METHOD_REQUEST),
-                        new Object[] {method, endpointInfo.getEndpoint().getEndpointName(),
-                            endpointInfo.getEndpointAddressUri()});
-                logger.log(Level.WARNING, errorMessage);
+                String errorMessage =
+                    MessageFormat.format(
+                        logger.getResourceBundle().getString(UNSUPPORTED_METHOD_REQUEST),
+                        new Object[] { method, endpointInfo.getEndpoint().getEndpointName(), endpointInfo.getEndpointAddressUri() });
+
+                logger.log(WARNING, errorMessage);
                 wsUtil.writeInvalidMethodType(resp, errorMessage);
             }
-        } catch(Exception e) {
-            logger.log(Level.WARNING, LogUtils.EJB_ENDPOINT_EXCEPTION, e);
+        } catch (Exception e) {
+            logger.log(WARNING, EJB_ENDPOINT_EXCEPTION, e);
         }
     }
 
-    private void handlePost(HttpServletRequest req,
-                            HttpServletResponse resp,
-                            EjbRuntimeEndpointInfo endpointInfo)
-        throws IOException, SOAPException {
-        
-        JAXRPCEndpointImpl endpoint = null;               
+    private void handlePost(HttpServletRequest req, HttpServletResponse resp, EjbRuntimeEndpointInfo endpointInfo) throws IOException, SOAPException {
+
+        JAXRPCEndpointImpl endpoint = null;
         String messageID = null;
         SOAPMessageContext msgContext = null;
-        
+
         try {
-            
+
             MimeHeaders headers = wsUtil.getHeaders(req);
             if (!wsUtil.hasTextXmlContentType(headers)) {
                 wsUtil.writeInvalidContentType(resp);
                 return;
             }
-            
-            msgContext = rpcFactory.createSOAPMessageContext();
+
+            msgContext = jaxRpcObjectFactory.createSOAPMessageContext();
             SOAPMessage message = createSOAPMessage(req, headers);
-                        
-    	    boolean wssSucceded = true;
-            
-            if (message != null) {                                
-                
+
+            boolean wssSucceded = true;
+
+            if (message != null) {
+
                 msgContext.setMessage(message);
 
                 // get the endpoint info
                 endpoint = (JAXRPCEndpointImpl) endpointInfo.getEndpoint().getExtraAttribute(EndpointImpl.NAME);
-                
-                if (endpoint!=null) {
+
+                if (endpoint != null) {
                     // first global notification
                     if (wsEngine.hasGlobalMessageListener()) {
                         messageID = wsEngine.preProcessRequest(endpoint);
                     }
                 } else {
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.log(Level.FINE, LogUtils.MISSING_MONITORING_INFO, req.getRequestURI());
+                    if (logger.isLoggable(FINE)) {
+                        logger.log(FINE, MISSING_MONITORING_INFO, req.getRequestURI());
                     }
-                }                                   
-                
-                AdapterInvocationInfo aInfo = null;
-                
+                }
+
+                AdapterInvocationInfo adapterInvocationInfo = null;
+
                 if (!(endpointInfo instanceof Ejb2RuntimeEndpointInfo)) {
                     throw new IllegalArgumentException(endpointInfo + "is not instance of Ejb2RuntimeEndpointInfo.");
                 }
 
                 try {
-                    Ejb2RuntimeEndpointInfo endpointInfo2 = (Ejb2RuntimeEndpointInfo)endpointInfo;
-                    // Do ejb container pre-invocation and pre-handler
-                    // logic
-                    aInfo = endpointInfo2.getHandlerImplementor();
+                    Ejb2RuntimeEndpointInfo endpointInfo2 = (Ejb2RuntimeEndpointInfo) endpointInfo;
+
+                    // Do ejb container pre-invocation and pre-handler logic
+                    adapterInvocationInfo = endpointInfo2.getHandlerImplementor();
 
                     // Set message context in invocation
-                    EJBInvocation.class.cast(aInfo.getInv()).setMessageContext(msgContext);
-
+                    EJBInvocation.class.cast(adapterInvocationInfo.getInv()).setMessageContext(msgContext);
 
                     // Set http response object so one-way operations will
                     // response before actual business method invocation.
                     msgContext.setProperty(HTTP_SERVLET_RESPONSE, resp);
-                    if (secServ != null) {
-                        wssSucceded = secServ.validateRequest(endpointInfo2.getServerAuthConfig(),
-                                (StreamingHandler)aInfo.getHandler(), msgContext);
+
+                    if (securityService != null) {
+                        wssSucceded =
+                            securityService.validateRequest(
+                                        endpointInfo2.getServerAuthConfig(),
+                                        (StreamingHandler) adapterInvocationInfo.getHandler(),
+                                        msgContext);
                     }
+
                     // Trace if necessary
-                    if (messageID!=null || (endpoint!=null && endpoint.hasListeners())) {
+                    if (messageID != null || (endpoint != null && endpoint.hasListeners())) {
+
                         // create the thread local
                         ThreadLocalInfo threadLocalInfo = new ThreadLocalInfo(messageID, req);
                         wsEngine.getThreadLocal().set(threadLocalInfo);
+
                         if (endpoint != null) {
                             endpoint.processRequest(msgContext);
                         } else {
-                            if (logger.isLoggable(Level.FINE)) {
-                                logger.log(Level.FINE, LogUtils.MISSING_MONITORING_INFO, req.getRequestURI());
+                            if (logger.isLoggable(FINE)) {
+                                logger.log(FINE, MISSING_MONITORING_INFO, req.getRequestURI());
                             }
                         }
                     }
-                    
-                    // Pass control back to jaxrpc runtime to invoke
-                    // any handlers and call the webservice method itself,
-                    // which will be flow back into the ejb container.
+
+                    // Pass control back to jaxrpc runtime to invoke any handlers and call the webservice method itself,
+                    // which will be flow back into the EJB container.
                     if (wssSucceded) {
-                        aInfo.getHandler().handle(msgContext);
+                        adapterInvocationInfo.getHandler().handle(msgContext);
                     }
                 } finally {
-                    // Always call release, even if an error happened
-                    // during getImplementor(), since some of the
-                    // preInvoke steps might have occurred.  It's ok
-                    // if implementor is null.
-                    if (aInfo != null) {
-                        endpointInfo.releaseImplementor(aInfo.getInv());
+                    // Always call release, even if an error happened during getImplementor(), since some of the
+                    // preInvoke steps might have occurred. It's ok if implementor is null.
+                    if (adapterInvocationInfo != null) {
+                        endpointInfo.releaseImplementor(adapterInvocationInfo.getInv());
                     }
                 }
             } else {
-                String errorMsg = MessageFormat.format(
-                        logger.getResourceBundle().getString(LogUtils.NULL_MESSAGE),
+                String errorMsg = MessageFormat.format(logger.getResourceBundle().getString(NULL_MESSAGE),
                         endpointInfo.getEndpoint().getEndpointName(), endpointInfo.getEndpointAddressUri());
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.fine(errorMsg);
-                    }
-                    msgContext.writeSimpleErrorResponse
-                    (FAULT_CODE_CLIENT, errorMsg);
+
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine(errorMsg);
+                }
+
+                msgContext.writeSimpleErrorResponse(FAULT_CODE_CLIENT, errorMsg);
             }
-            if (messageID!=null || endpoint!=null) {
+
+            if (messageID != null || endpoint != null) {
                 endpoint.processResponse(msgContext);
             }
+
             SOAPMessage reply = msgContext.getMessage();
-            if (secServ != null && wssSucceded) {
+
+            if (securityService != null && wssSucceded) {
                 if (!(endpointInfo instanceof Ejb2RuntimeEndpointInfo)) {
                     throw new IllegalArgumentException(endpointInfo + "is not instance of Ejb2RuntimeEndpointInfo.");
                 }
 
-                Ejb2RuntimeEndpointInfo endpointInfo2 = (Ejb2RuntimeEndpointInfo)endpointInfo;
-                secServ.secureResponse(endpointInfo2.getServerAuthConfig(),(StreamingHandler)endpointInfo2.getHandlerImplementor().getHandler(),msgContext);
+                Ejb2RuntimeEndpointInfo endpointInfo2 = (Ejb2RuntimeEndpointInfo) endpointInfo;
+
+                securityService.secureResponse(
+                        endpointInfo2.getServerAuthConfig(),
+                        (StreamingHandler) endpointInfo2.getHandlerImplementor().getHandler(),
+                        msgContext);
             }
-            
+
             if (reply.saveRequired()) {
                 reply.saveChanges();
             }
             wsUtil.writeReply(resp, msgContext);
         } catch (Throwable e) {
-            String errorMessage = MessageFormat.format(
-                    logger.getResourceBundle().getString(LogUtils.ERROR_ON_EJB),
-                    new Object[] {endpointInfo.getEndpoint().getEndpointName(),
-                        endpointInfo.getEndpointAddressUri(), e.getMessage()});
-            logger.log(Level.WARNING, errorMessage, e);
-            SOAPMessageContext errorMsgContext =
-                rpcFactory.createSOAPMessageContext();
-            errorMsgContext.writeSimpleErrorResponse
-                (SOAPConstants.FAULT_CODE_SERVER, errorMessage);
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            if (messageID!=null || endpoint!=null) {
+            String errorMessage = MessageFormat.format(logger.getResourceBundle().getString(ERROR_ON_EJB),
+                    new Object[] { endpointInfo.getEndpoint().getEndpointName(), endpointInfo.getEndpointAddressUri(), e.getMessage() });
+
+            logger.log(WARNING, errorMessage, e);
+
+            SOAPMessageContext errorMsgContext = jaxRpcObjectFactory.createSOAPMessageContext();
+            errorMsgContext.writeSimpleErrorResponse(FAULT_CODE_SERVER, errorMessage);
+            resp.setStatus(SC_INTERNAL_SERVER_ERROR);
+
+            if (messageID != null || endpoint != null) {
                 endpoint.processResponse(errorMsgContext);
             }
+
             wsUtil.writeReply(resp, errorMsgContext);
         }
 
-        // final tracing notification
-        if (messageID!=null) {
+        // Final tracing notification
+        if (messageID != null) {
             HttpResponseInfoImpl response = new HttpResponseInfoImpl(resp);
             wsEngine.postProcessResponse(messageID, response);
         }
     }
 
-    private void handleGet(HttpServletRequest req, 
-                           HttpServletResponse resp,
-                           ServletContext ctxt,
-                           EjbRuntimeEndpointInfo endpointInfo)
-        throws IOException
-    {
-       
-        wsUtil.handleGet(req, resp, endpointInfo.getEndpoint());           
+    private void handleGet(HttpServletRequest req, HttpServletResponse resp, ServletContext ctxt, EjbRuntimeEndpointInfo endpointInfo) throws IOException {
+        wsUtil.handleGet(req, resp, endpointInfo.getEndpoint());
+    }
 
-    }    
-
-    protected SOAPMessage createSOAPMessage(HttpServletRequest request,
-                                            MimeHeaders headers)
-        throws IOException {
-
+    protected SOAPMessage createSOAPMessage(HttpServletRequest request, MimeHeaders headers) throws IOException {
         InputStream is = request.getInputStream();
-        
+
         byte[] bytes = readFully(is);
-        int length = request.getContentLength() == -1 ? bytes.length 
-            : request.getContentLength();
+        int length = request.getContentLength() == -1 ? bytes.length : request.getContentLength();
         ByteInputStream in = new ByteInputStream(bytes, length);
 
-        SOAPMessageContext msgContext = rpcFactory.createSOAPMessageContext();
+        SOAPMessageContext msgContext = jaxRpcObjectFactory.createSOAPMessageContext();
         SOAPMessage message = msgContext.createMessage(headers, in);
 
         return message;
@@ -304,7 +309,7 @@ public class EjbWebServiceDispatcher implements EjbMessageDispatcher {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         byte[] buf = new byte[1024];
         int num = 0;
-        while( (num = istream.read(buf)) != -1) {
+        while ((num = istream.read(buf)) != -1) {
             bout.write(buf, 0, num);
         }
         byte[] ret = bout.toByteArray();

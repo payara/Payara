@@ -37,56 +37,61 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.webservices.codegen;
 
-import com.sun.appserv.ClassLoaderUtil;
-import com.sun.enterprise.deployment.util.DOLUtils;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.io.File;
-import java.io.InputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URI;
-import java.util.logging.Logger;
 import java.util.logging.Level;
-
-import com.sun.enterprise.util.LocalStringManagerImpl;
-
-
-// DOL imports
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.loader.util.ASClassLoaderUtil;
-import com.sun.enterprise.deploy.shared.FileArchive;
-import com.sun.enterprise.deployment.io.JaxrpcMappingDeploymentDescriptorFile;
-import com.sun.enterprise.deployment.JaxrpcMappingDescriptor.Mapping;
-import com.sun.enterprise.deployment.util.ApplicationVisitor;
-import com.sun.enterprise.deployment.util.AppClientVisitor;
-import com.sun.enterprise.deployment.util.EjbBundleVisitor;
-import com.sun.enterprise.deployment.util.ModuleContentLinker;
-import com.sun.enterprise.deployment.*;
-import org.glassfish.deployment.common.InstalledLibrariesResolver;
-import org.glassfish.deployment.common.ClientArtifactsManager;
-import org.glassfish.hk2.api.ServiceLocator;
-
-import com.sun.enterprise.loader.ASURLClassLoader;
+import java.util.logging.Logger;
 
 // TODO : Neds quivalent
 //import com.sun.enterprise.deployment.backend.Deployer;
 
 import javax.xml.rpc.Stub;
 
-// web service impl imports
-import org.glassfish.webservices.WsUtil;
-import org.glassfish.webservices.WsCompile;
-
+// DOL imports
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.deployment.common.ClientArtifactsManager;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.InstalledLibrariesResolver;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.web.deployment.util.WebBundleVisitor;
 import org.glassfish.web.deployment.util.WebServerInfo;
+import org.glassfish.webservices.LogUtils;
+import org.glassfish.webservices.WsCompile;
+// web service impl imports
+import org.glassfish.webservices.WsUtil;
 
+import com.sun.appserv.ClassLoaderUtil;
+import com.sun.enterprise.deploy.shared.FileArchive;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.ApplicationClientDescriptor;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.JaxrpcMappingDescriptor;
+import com.sun.enterprise.deployment.JaxrpcMappingDescriptor.Mapping;
+import com.sun.enterprise.deployment.ServiceRefPortInfo;
+import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.WebService;
+import com.sun.enterprise.deployment.WebServiceEndpoint;
+import com.sun.enterprise.deployment.io.JaxrpcMappingDeploymentDescriptorFile;
+import com.sun.enterprise.deployment.util.AppClientVisitor;
+import com.sun.enterprise.deployment.util.ApplicationVisitor;
+import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.util.EjbBundleVisitor;
+import com.sun.enterprise.deployment.util.ModuleContentLinker;
+import com.sun.enterprise.loader.ASURLClassLoader;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 //JAX-RPC SPI
 import com.sun.xml.rpc.spi.JaxRpcObjectFactory;
 import com.sun.xml.rpc.spi.tools.CompileTool;
@@ -98,17 +103,15 @@ import com.sun.xml.rpc.spi.tools.ModelInfo;
 import com.sun.xml.rpc.spi.tools.NamespaceMappingInfo;
 import com.sun.xml.rpc.spi.tools.NamespaceMappingRegistryInfo;
 import com.sun.xml.rpc.spi.tools.NoMetadataModelInfo;
-import org.glassfish.webservices.LogUtils;
 
 /**
- * This class is responsible for generating all non portable 
- * jax-rpc artifacts for a single .ear or standalone module.
+ * This class is responsible for generating all non portable jax-rpc artifacts for a single .ear or
+ * standalone module.
  *
- * @author  Jerome Dochez
+ * @author Jerome Dochez
  */
 public class JaxRpcRICodegen extends ModuleContentLinker
-        implements JaxRpcCodegenAdapter, ApplicationVisitor, EjbBundleVisitor, WebBundleVisitor, AppClientVisitor  
-{
+        implements JaxRpcCodegenAdapter, ApplicationVisitor, EjbBundleVisitor, WebBundleVisitor, AppClientVisitor {
     protected DeploymentContext context = null;
     protected ServiceLocator habitat = null;
     protected String moduleClassPath = null;
@@ -125,13 +128,12 @@ public class JaxRpcRICodegen extends ModuleContentLinker
     private int wscompileInvocationCount = 0;
 
     // resources...
-    private static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(JaxRpcRICodegen.class);
+    private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(JaxRpcRICodegen.class);
 
     private CompileTool wscompileForAccept = null;
     private CompileTool wscompileForWebServices = null;
 
-    //is this invocation for processing service references or services?
+    // is this invocation for processing service references or services?
     private boolean processServiceReferences = false;
 
     private boolean hasWebServiceClients = false;
@@ -149,7 +151,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         if (bundle.hasWebServiceClients() && (bundle instanceof ApplicationClientDescriptor)) {
             hasWebServiceClients = true;
         }
-        if(bundle.isStandalone()) {
+        if (bundle.isStandalone()) {
             rootLocation_.open(context.getSourceDir().toURI());
         } else {
             rootLocation_.open(context.getSource().getParentArchive().getURI());
@@ -158,17 +160,17 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         this.habitat = habitat;
         this.moduleClassPath = cp;
         Application application = context.getModuleMetaData(Application.class);
-        application.visit((ApplicationVisitor) this);
+        application.visit(this);
     }
 
     /**
      * Visits a webs service reference
      */
     @Override
-    public void accept(ServiceReferenceDescriptor serviceRef)  {
+    public void accept(ServiceReferenceDescriptor serviceRef) {
 
-        if(!processServiceReferences) {
-           return;
+        if (!processServiceReferences) {
+            return;
         }
         boolean codegenRequired = false;
 
@@ -179,7 +181,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         try {
             ClassLoader clr = serviceRef.getBundleDescriptor().getClassLoader();
 
-            if ( serviceRef.getServiceInterface() != null ) {
+            if (serviceRef.getServiceInterface() != null) {
                 Class serviceInterface = clr.loadClass(serviceRef.getServiceInterface());
 
                 if (javax.xml.ws.Service.class.isAssignableFrom(serviceInterface)) {
@@ -193,31 +195,28 @@ public class JaxRpcRICodegen extends ModuleContentLinker
             //
             // Also set port-qname based on linked port's qname if not
             // already set.
-            for(Iterator ports = serviceRef.getPortsInfo().iterator(); ports.hasNext();) {
+            for (Iterator ports = serviceRef.getPortsInfo().iterator(); ports.hasNext();) {
                 ServiceRefPortInfo portInfo = (ServiceRefPortInfo) ports.next();
 
-                if( portInfo.isLinkedToPortComponent() ) {
+                if (portInfo.isLinkedToPortComponent()) {
                     WebServiceEndpoint linkedPortComponent = portInfo.getPortComponentLink();
 
-                    if (linkedPortComponent==null) {
-                        throw new Exception(localStrings.getLocalString(
-                                "enterprise.webservice.componentlinkunresolved",
-                                "The port-component-link {0} cannot be resolved",
-                                new Object[] {portInfo.getPortComponentLinkName()}));
+                    if (linkedPortComponent == null) {
+                        throw new Exception(localStrings.getLocalString("enterprise.webservice.componentlinkunresolved",
+                                "The port-component-link {0} cannot be resolved", new Object[] { portInfo.getPortComponentLinkName() }));
                     }
                     WsUtil wsUtil = new WsUtil();
                     WebServerInfo wsi = wsUtil.getWebServerInfoForDAS();
                     URL rootURL = wsi.getWebServerRootURL(linkedPortComponent.isSecure());
                     URL actualAddress = linkedPortComponent.composeEndpointAddress(rootURL);
-                    if(jaxwsClient) {
-                        portInfo.addStubProperty(javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
-                                actualAddress.toExternalForm());
+                    if (jaxwsClient) {
+                        portInfo.addStubProperty(javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY, actualAddress.toExternalForm());
                     } else {
                         portInfo.addStubProperty(Stub.ENDPOINT_ADDRESS_PROPERTY, actualAddress.toExternalForm());
                     }
                     if (serviceRef.getBundleDescriptor().getModuleType().equals(DOLUtils.carType())) {
                         wsdlOverride = serviceRef.getWsdlOverride();
-                        if (wsdlOverride!=null) {
+                        if (wsdlOverride != null) {
                             wsdlOverriden = true;
                             serviceRef.setWsdlOverride(linkedPortComponent.getWebService().getWsdlFileUrl());
                         }
@@ -226,94 +225,87 @@ public class JaxRpcRICodegen extends ModuleContentLinker
             }
 
             // If this is a post JAXRPC-1.1 based web service, then no need for code gen etc etc
-            if(jaxwsClient) {
+            if (jaxwsClient) {
                 return;
             }
 
-            if( serviceRef.hasGeneratedServiceInterface() ) {
+            if (serviceRef.hasGeneratedServiceInterface()) {
 
-                if( serviceRef.hasWsdlFile() && serviceRef.hasMappingFile() ) {
+                if (serviceRef.hasWsdlFile() && serviceRef.hasMappingFile()) {
                     codegenRequired = true;
                 } else {
-                    throw new Exception
-                            ("Deployment error for service-ref " + serviceRef.getName()
-                                    + ".\nService references with generated service " +
-                                    "interface must include WSDL and mapping information.");
+                    throw new Exception("Deployment error for service-ref " + serviceRef.getName()
+                            + ".\nService references with generated service " + "interface must include WSDL and mapping information.");
                 }
 
             } else {
 
-                if( serviceRef.hasWsdlFile() ) {
-                    if( serviceRef.hasMappingFile() ) {
+                if (serviceRef.hasWsdlFile()) {
+                    if (serviceRef.hasMappingFile()) {
                         codegenRequired = true;
                     } else {
-                        throw new Exception
-                                ("Deployment error for service-ref " + serviceRef.getName()
-                                        + ".\nService references with wsdl must also have " +
-                                        "mapping information.");
+                        throw new Exception("Deployment error for service-ref " + serviceRef.getName()
+                                + ".\nService references with wsdl must also have " + "mapping information.");
                     }
                 }
             }
 
-            if( codegenRequired ) {
+            if (codegenRequired) {
                 ModelInfo modelInfo = createModelInfo(serviceRef);
 
                 /*
-                 * If clients exist, force regeneration so that the
-                 * ClientArtifactsManager is populated. Issue 10612.
+                 * If clients exist, force regeneration so that the ClientArtifactsManager is populated. Issue
+                 * 10612.
                  */
-                String args[] = createJaxrpcCompileArgs(
-                    false, hasWebServiceClients);
+                String args[] = createJaxrpcCompileArgs(false, hasWebServiceClients);
 
-                CompileTool wscompile =
-                        rpcFactory.createCompileTool(System.out, "wscompile");
+                CompileTool wscompile = rpcFactory.createCompileTool(System.out, "wscompile");
                 wscompileForAccept = wscompile;
-                WsCompile delegate =
-                        new WsCompile(wscompile, serviceRef);
+                WsCompile delegate = new WsCompile(wscompile, serviceRef);
                 delegate.setModelInfo(modelInfo);
                 wscompile.setDelegate(delegate);
 
                 jaxrpc(args, delegate, serviceRef, files);
-                if (hasWebServiceClients)   {
+                if (hasWebServiceClients) {
                     addArtifactsForAppClient();
                 }
             }
             if (wsdlOverriden) {
                 serviceRef.setWsdlOverride(wsdlOverride);
             }
-        } catch(IllegalStateException e) {
-            //do nothing
-           logger.info("Attempting to add artifacts for appClient after artifacts were generated" +
-                   " "+e.getMessage());
+        } catch (IllegalStateException e) {
+            // do nothing
+            logger.info("Attempting to add artifacts for appClient after artifacts were generated" + " " + e.getMessage());
 
-        }  catch(Exception e) {
+        } catch (Exception e) {
             RuntimeException re = new RuntimeException(e.getMessage());
             re.initCause(e);
             throw re;
         }
     }
 
-    private void addArtifactsForAppClient(){
+    private void addArtifactsForAppClient() {
         ClientArtifactsManager cArtifactsManager = ClientArtifactsManager.get(context);
-        for (int i = 0; i < files.size(); i ++) {
+        for (int i = 0; i < files.size(); i++) {
             URI baseURI = context.getScratchDir("ejb").toURI();
             File file = new File(files.get(i));
             URI artifact = baseURI.relativize(file.toURI());
-            //Fix for issue 9734
-            if (!cArtifactsManager.contains(baseURI,artifact) ){
-               cArtifactsManager.add(baseURI, artifact);
+            // Fix for issue 9734
+            if (!cArtifactsManager.contains(baseURI, artifact)) {
+                cArtifactsManager.add(baseURI, artifact);
             }
         }
     }
 
     /**
      * visits a web service definition
+     *
      * @param webService
      */
     @Override
     public void accept(WebService webService) {
-        if(processServiceReferences) {
-           return;
+        if (processServiceReferences) {
+            return;
         }
 
         if (!webServiceInContext(webService)) {
@@ -321,22 +313,22 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         }
         super.accept(webService);
         try {
-            if((new WsUtil()).isJAXWSbasedService(webService)) {
+            if ((new WsUtil()).isJAXWSbasedService(webService)) {
                 WsUtil wsUtil = new WsUtil();
                 Collection<WebServiceEndpoint> endpoints = webService.getEndpoints();
-                for(WebServiceEndpoint ep : endpoints) {
-                    if( ep.implementedByWebComponent() ) {
+                for (WebServiceEndpoint ep : endpoints) {
+                    if (ep.implementedByWebComponent()) {
                         wsUtil.updateServletEndpointRuntime(ep);
                     } else {
                         wsUtil.validateEjbEndpoint(ep);
                     }
                 }
-                //wsImport(webService,  files);
+                // wsImport(webService, files);
             } else {
                 jaxrpcWebService(webService, files);
             }
-        } catch(Exception e) {
-            RuntimeException ge =new RuntimeException(e.getMessage());
+        } catch (Exception e) {
+            RuntimeException ge = new RuntimeException(e.getMessage());
             ge.initCause(e);
             throw ge;
         }
@@ -354,28 +346,28 @@ public class JaxRpcRICodegen extends ModuleContentLinker
     }
 
     /**
-     *Releases resources used during the code gen and compilation.
+     * Releases resources used during the code gen and compilation.
      */
     @Override
     public void done() {
 //        done(CompileTool) is now invoked after each compilation is complete
 //        from inside the jaxrpc method.  Otherwise, multiple uses of jaxrpc could
-//        cause continued file locking on Windows since only the last one was 
+//        cause continued file locking on Windows since only the last one was
 //        recorded in the wscompileForxxx variables.
-//        
+//
 //        done(wscompileForAccept);
 //        done(wscompileForWebServices);
     }
 
     /**
-     *Navigates to the URLClassLoader used by the jaxrpc compilation and 
-     *releases it.
-     *@param wscompile the CompileTool whose loader is to be released
+     * Navigates to the URLClassLoader used by the jaxrpc compilation and releases it.
+     *
+     * @param wscompile the CompileTool whose loader is to be released
      */
     private void done(CompileTool wscompile) {
         /*
-         *Follow the object graph to the loader: 
-         *basically CompileTool -> ProcessorEnvironment -> the URLClassLoader.
+         * Follow the object graph to the loader: basically CompileTool -> ProcessorEnvironment -> the
+         * URLClassLoader.
          */
         if (wscompile != null && wscompile instanceof com.sun.xml.rpc.tools.wscompile.CompileTool) {
             com.sun.xml.rpc.tools.wscompile.CompileTool compileTool = (com.sun.xml.rpc.tools.wscompile.CompileTool) wscompile;
@@ -388,16 +380,13 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         }
     }
 
-    private JaxrpcMappingDescriptor getJaxrpcMappingInfo(URL mappingFileUrl,
-                                                         Descriptor desc)
-            throws Exception {
+    private JaxrpcMappingDescriptor getJaxrpcMappingInfo(URL mappingFileUrl, Descriptor desc) throws Exception {
         JaxrpcMappingDescriptor mappingDesc = null;
 
         InputStream is = null;
         try {
             is = mappingFileUrl.openStream();
-            JaxrpcMappingDeploymentDescriptorFile jaxrpcDD =
-                    new JaxrpcMappingDeploymentDescriptorFile();
+            JaxrpcMappingDeploymentDescriptorFile jaxrpcDD = new JaxrpcMappingDeploymentDescriptorFile();
 
             // useful for validation errors...
             if (desc instanceof ServiceReferenceDescriptor) {
@@ -410,11 +399,11 @@ public class JaxRpcRICodegen extends ModuleContentLinker
                 jaxrpcDD.setDeploymentDescriptorPath(ws.getMappingFileUri());
                 jaxrpcDD.setErrorReportingString(ws.getBundleDescriptor().getModuleDescriptor().getArchiveUri());
             }
-            //jaxrpcDD.setXMLValidationLevel(Deployer.getValidationLevel());
+            // jaxrpcDD.setXMLValidationLevel(Deployer.getValidationLevel());
             jaxrpcDD.setXMLValidationLevel("none");
             mappingDesc = JaxrpcMappingDescriptor.class.cast(jaxrpcDD.read(is));
         } finally {
-            if( is != null ) {
+            if (is != null) {
                 is.close();
             }
         }
@@ -424,34 +413,33 @@ public class JaxRpcRICodegen extends ModuleContentLinker
 
     private boolean isJaxrpcRIModelFile(URL mappingFileUrl) {
         boolean isModel = false;
-        InputStream is  = null;
+        InputStream is = null;
         try {
             is = mappingFileUrl.openStream();
             isModel = rpcFactory.createXMLModelFileFilter().isModelFile(is);
-        } catch(Throwable t) {
+        } catch (Throwable t) {
         } finally {
-            if( is != null ) {
+            if (is != null) {
                 try {
                     is.close();
-                } catch(Exception e) {}
+                } catch (Exception e) {
+                }
             }
         }
         return isModel;
     }
 
-    private ModelInfo createModelInfo(WebService webService)
-            throws Exception {
+    private ModelInfo createModelInfo(WebService webService) throws Exception {
 
         ModelInfo modelInfo = null;
         URL mappingFileUrl = webService.getMappingFile().toURL();
         modelInfo = createModelFileModelInfo(mappingFileUrl);
-        if( isJaxrpcRIModelFile(mappingFileUrl) ) {
+        if (isJaxrpcRIModelFile(mappingFileUrl)) {
             debug("000. JaxrpcRIModelFile.");
             modelInfo = createModelFileModelInfo(mappingFileUrl);
         } else {
-            JaxrpcMappingDescriptor mappingDesc =
-                    getJaxrpcMappingInfo(mappingFileUrl, webService);
-            if( mappingDesc.isSimpleMapping() ) {
+            JaxrpcMappingDescriptor mappingDesc = getJaxrpcMappingInfo(mappingFileUrl, webService);
+            if (mappingDesc.isSimpleMapping()) {
                 debug("111. SimpleMapping.");
                 modelInfo = createNoMetadataModelInfo(webService, mappingDesc);
             } else {
@@ -463,19 +451,16 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         return modelInfo;
     }
 
-    private ModelInfo createModelInfo(ServiceReferenceDescriptor serviceRef)
-            throws Exception {
+    private ModelInfo createModelInfo(ServiceReferenceDescriptor serviceRef) throws Exception {
 
         ModelInfo modelInfo = null;
         URL mappingFileUrl = serviceRef.getMappingFile().toURL();
-        if( isJaxrpcRIModelFile(mappingFileUrl) ) {
+        if (isJaxrpcRIModelFile(mappingFileUrl)) {
             modelInfo = createModelFileModelInfo(mappingFileUrl);
         } else {
-            JaxrpcMappingDescriptor mappingDesc =
-                    getJaxrpcMappingInfo(mappingFileUrl, serviceRef);
-            if( mappingDesc.isSimpleMapping() &&
-                    serviceRef.hasGeneratedServiceInterface() ) {
-                // model info for this modeler requires generated service 
+            JaxrpcMappingDescriptor mappingDesc = getJaxrpcMappingInfo(mappingFileUrl, serviceRef);
+            if (mappingDesc.isSimpleMapping() && serviceRef.hasGeneratedServiceInterface()) {
+                // model info for this modeler requires generated service
                 // interface name.
                 modelInfo = createNoMetadataModelInfo(serviceRef, mappingDesc);
             } else {
@@ -486,8 +471,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         return modelInfo;
     }
 
-    private ModelFileModelInfo createModelFileModelInfo(URL modelFileUrl)
-            throws Exception {
+    private ModelFileModelInfo createModelFileModelInfo(URL modelFileUrl) throws Exception {
 
         ModelFileModelInfo modelInfo = rpcFactory.createModelFileModelInfo();
         modelInfo.setLocation(modelFileUrl.toExternalForm());
@@ -495,8 +479,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         return modelInfo;
     }
 
-    private J2EEModelInfo createFullMappingModelInfo(WebService webService)
-            throws Exception {
+    private J2EEModelInfo createFullMappingModelInfo(WebService webService) throws Exception {
 
         URL mappingFileUrl = webService.getMappingFile().toURL();
         URL wsdlFileUrl = webService.getWsdlFileUrl();
@@ -504,17 +487,14 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         return createFullMappingModelInfo(mappingFileUrl, wsdlFileUrl);
     }
 
-    private J2EEModelInfo createFullMappingModelInfo
-            (ServiceReferenceDescriptor serviceRef) throws Exception {
+    private J2EEModelInfo createFullMappingModelInfo(ServiceReferenceDescriptor serviceRef) throws Exception {
 
         URL mappingFileUrl = serviceRef.getMappingFile().toURL();
-        URL wsdlFileUrl = serviceRef.hasWsdlOverride() ?
-                serviceRef.getWsdlOverride() : serviceRef.getWsdlFileUrl();
+        URL wsdlFileUrl = serviceRef.hasWsdlOverride() ? serviceRef.getWsdlOverride() : serviceRef.getWsdlFileUrl();
         return createFullMappingModelInfo(mappingFileUrl, wsdlFileUrl);
     }
 
-    private J2EEModelInfo createFullMappingModelInfo
-            (URL mappingFile, URL wsdlFile) throws Exception {
+    private J2EEModelInfo createFullMappingModelInfo(URL mappingFile, URL wsdlFile) throws Exception {
 
         J2EEModelInfo modelInfo = rpcFactory.createJ2EEModelInfo(mappingFile);
         modelInfo.setLocation(wsdlFile.toExternalForm());
@@ -524,24 +504,18 @@ public class JaxRpcRICodegen extends ModuleContentLinker
 
     }
 
-    private NoMetadataModelInfo createNoMetadataModelInfo
-            (WebService webService, JaxrpcMappingDescriptor mappingDesc)
-            throws Exception {
+    private NoMetadataModelInfo createNoMetadataModelInfo(WebService webService, JaxrpcMappingDescriptor mappingDesc) throws Exception {
 
         NoMetadataModelInfo modelInfo = rpcFactory.createNoMetadataModelInfo();
         URL wsdlFileUrl = webService.getWsdlFileUrl();
 
         Collection endpoints = webService.getEndpoints();
-        if( endpoints.size() != 1 ) {
-            throw new Exception
-                    ("Deployment code generation error for webservice " +
-                            webService.getName() + ". " +
-                            " jaxrpc-mapping-file is required if web service has " +
-                            "multiple endpoints");
+        if (endpoints.size() != 1) {
+            throw new Exception("Deployment code generation error for webservice " + webService.getName() + ". "
+                    + " jaxrpc-mapping-file is required if web service has " + "multiple endpoints");
         }
 
-        WebServiceEndpoint endpoint = (WebServiceEndpoint)
-                endpoints.iterator().next();
+        WebServiceEndpoint endpoint = (WebServiceEndpoint) endpoints.iterator().next();
 
         modelInfo.setLocation(wsdlFileUrl.toExternalForm());
         modelInfo.setInterfaceName(endpoint.getServiceEndpointInterface());
@@ -552,34 +526,28 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         return modelInfo;
     }
 
-    private void addNamespaceMappingRegistry
-            (NoMetadataModelInfo modelInfo, JaxrpcMappingDescriptor mappingDesc) {
+    private void addNamespaceMappingRegistry(NoMetadataModelInfo modelInfo, JaxrpcMappingDescriptor mappingDesc) {
 
-        NamespaceMappingRegistryInfo namespaceRegistry =
-                rpcFactory.createNamespaceMappingRegistryInfo();
+        NamespaceMappingRegistryInfo namespaceRegistry = rpcFactory.createNamespaceMappingRegistryInfo();
 
         modelInfo.setNamespaceMappingRegistry(namespaceRegistry);
 
         Collection mappings = mappingDesc.getMappings();
-        for(Iterator iter = mappings.iterator(); iter.hasNext();) {
+        for (Iterator iter = mappings.iterator(); iter.hasNext();) {
             Mapping next = (Mapping) iter.next();
-            NamespaceMappingInfo namespaceInfo =
-                    rpcFactory.createNamespaceMappingInfo(next.getNamespaceUri(),
-                            next.getPackage());
+            NamespaceMappingInfo namespaceInfo = rpcFactory.createNamespaceMappingInfo(next.getNamespaceUri(), next.getPackage());
             namespaceRegistry.addMapping(namespaceInfo);
         }
     }
 
-    private NoMetadataModelInfo createNoMetadataModelInfo
-            (ServiceReferenceDescriptor serviceRef,
-             JaxrpcMappingDescriptor mappingDesc) throws Exception {
+    private NoMetadataModelInfo createNoMetadataModelInfo(ServiceReferenceDescriptor serviceRef, JaxrpcMappingDescriptor mappingDesc)
+            throws Exception {
 
         NoMetadataModelInfo modelInfo = rpcFactory.createNoMetadataModelInfo();
-        URL wsdlFile = serviceRef.hasWsdlOverride() ?
-                serviceRef.getWsdlOverride() : serviceRef.getWsdlFileUrl();
+        URL wsdlFile = serviceRef.hasWsdlOverride() ? serviceRef.getWsdlOverride() : serviceRef.getWsdlFileUrl();
         modelInfo.setLocation(wsdlFile.toExternalForm());
 
-        // Service endpoint interface is required.  Parse generated
+        // Service endpoint interface is required. Parse generated
         // service interface for it since we can't count on SEI
         // having been listed in standard deployment information.
         WsUtil wsUtil = new WsUtil();
@@ -589,7 +557,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         if (cl instanceof ASURLClassLoader) {
             String modClassPath = ASClassLoaderUtil.getModuleClassPath(habitat, context);
             List<URL> moduleList = ASClassLoaderUtil.getURLsFromClasspath(modClassPath, File.pathSeparator, null);
-            for (Iterator<URL> itr=moduleList.iterator();itr.hasNext();) {
+            for (Iterator<URL> itr = moduleList.iterator(); itr.hasNext();) {
                 ((ASURLClassLoader) cl).appendURL(itr.next());
             }
         }
@@ -597,14 +565,11 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         Class serviceInterface = cl.loadClass(serviceInterfaceName);
         Collection seis = wsUtil.getSEIsFromGeneratedService(serviceInterface);
 
-        if( seis.size() == 0 ) {
-            throw new Exception("Invalid Generated Service Interface "
-                    + serviceInterfaceName + " . ");
-        } else if( seis.size() > 1 ) {
-            throw new Exception("Deployment error : If no " +
-                    "jaxrpc-mapping file is provided, " +
-                    "Generated Service Interface must have"
-                    +" only 1 Service Endpoint Interface");
+        if (seis.size() == 0) {
+            throw new Exception("Invalid Generated Service Interface " + serviceInterfaceName + " . ");
+        } else if (seis.size() > 1) {
+            throw new Exception("Deployment error : If no " + "jaxrpc-mapping file is provided, " + "Generated Service Interface must have"
+                    + " only 1 Service Endpoint Interface");
         }
 
         String serviceEndpointInterface = (String) seis.iterator().next();
@@ -617,29 +582,26 @@ public class JaxRpcRICodegen extends ModuleContentLinker
 
     private boolean keepJaxrpcGeneratedFile(String fileType, Descriptor desc) {
         boolean keep = true;
-        if( (fileType.equals(GeneratorConstants.FILE_TYPE_WSDL) ||
-                fileType.equals(GeneratorConstants.FILE_TYPE_REMOTE_INTERFACE)) ) {
+        if ((fileType.equals(GeneratorConstants.FILE_TYPE_WSDL) || fileType.equals(GeneratorConstants.FILE_TYPE_REMOTE_INTERFACE))) {
             keep = false;
-        } else if( fileType.equals(GeneratorConstants.FILE_TYPE_SERVICE ) ) {
+        } else if (fileType.equals(GeneratorConstants.FILE_TYPE_SERVICE)) {
             // Only keep the service interface if this is a service reference
-            // with generic service interface.  In this case, the interface
+            // with generic service interface. In this case, the interface
             // is generated during deployment instead of being packaged in
             // the module.
-            keep = (desc instanceof ServiceReferenceDescriptor) &&
-                    ((ServiceReferenceDescriptor)desc).hasGenericServiceInterface();
+            keep = (desc instanceof ServiceReferenceDescriptor) && ((ServiceReferenceDescriptor) desc).hasGenericServiceInterface();
         }
 
         return keep;
     }
 
     // dummy file for jax-rpc wscompile bug
-    File dummyConfigFile=null;
+    File dummyConfigFile = null;
 
-    private String[] createJaxrpcCompileArgs(boolean generateTies,
-        boolean forceRegen) throws IOException {
-        
+    private String[] createJaxrpcCompileArgs(boolean generateTies, boolean forceRegen) throws IOException {
+
         int numJaxrpcArgs = 11;
-        if (logger.isLoggable(Level.FINE) ) {
+        if (logger.isLoggable(Level.FINE)) {
             numJaxrpcArgs = 16;
         }
         if (forceRegen) {
@@ -650,11 +612,11 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         // standalone module, use the -infix option to reduce the
         // chances that generated non-portable jaxrpc artifacts will clash
         // with generated artifacts from other service-refs and endpoints
-        // loaded by the same classloader at runtime.   
+        // loaded by the same classloader at runtime.
         wscompileInvocationCount++;
         String infix = null;
 
-        if( wscompileInvocationCount > 1 ) {
+        if (wscompileInvocationCount > 1) {
             numJaxrpcArgs++;
             infix = wscompileInvocationCount + "";
         }
@@ -662,36 +624,29 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         String[] jaxrpcArgs = new String[numJaxrpcArgs];
         int jaxrpcCnt = 0;
 
-        if( dummyConfigFile == null ) {
-            dummyConfigFile = File.createTempFile("dummy_wscompile_config",
-                    "config");
+        if (dummyConfigFile == null) {
+            dummyConfigFile = File.createTempFile("dummy_wscompile_config", "config");
             dummyConfigFile.deleteOnExit();
         }
 
         // wscompile doesn't support the -extdirs option, so the best we
         // can do is prepend the ext dir jar files to the classpath.
-        String optionalDependencyClassPath =
-                InstalledLibrariesResolver.getExtDirFilesAsClasspath();
-        if(optionalDependencyClassPath.length() > 0) {
-            moduleClassPath = optionalDependencyClassPath +
-                    File.pathSeparatorChar + moduleClassPath;
+        String optionalDependencyClassPath = InstalledLibrariesResolver.getExtDirFilesAsClasspath();
+        if (optionalDependencyClassPath.length() > 0) {
+            moduleClassPath = optionalDependencyClassPath + File.pathSeparatorChar + moduleClassPath;
         }
-        
+
         // Could also check if getSourceDir() ends in 'war,' but
         // this is a little more general.
         String moduleBasePath = context.getSourceDir().getAbsolutePath();
-        String moduleWebInfPath = moduleBasePath +
-            File.separatorChar + "WEB-INF" +
-            File.separatorChar + "classes";
+        String moduleWebInfPath = moduleBasePath + File.separatorChar + "WEB-INF" + File.separatorChar + "classes";
         File moduleWebInfFile = new File(moduleWebInfPath);
         if (moduleWebInfFile.exists()) {
-            moduleClassPath = moduleWebInfPath +
-                File.pathSeparatorChar + moduleClassPath;
+            moduleClassPath = moduleWebInfPath + File.pathSeparatorChar + moduleClassPath;
         } else {
-            moduleClassPath = moduleBasePath +
-                File.pathSeparatorChar + moduleClassPath;
+            moduleClassPath = moduleBasePath + File.pathSeparatorChar + moduleClassPath;
         }
-        
+
         if (!context.getScratchDir("ejb").mkdirs() && logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, LogUtils.DIR_EXISTS, context.getScratchDir("ejb"));
         }
@@ -704,7 +659,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
             jaxrpcArgs[jaxrpcCnt++] = "-f:donotoverride";
         }
 
-        if( infix != null ) {
+        if (infix != null) {
             jaxrpcArgs[jaxrpcCnt++] = "-f:infix:" + infix;
         }
 
@@ -713,14 +668,10 @@ public class JaxRpcRICodegen extends ModuleContentLinker
 
         if (logger.isLoggable(Level.FINE)) {
             long timeStamp = System.currentTimeMillis();
-            jaxrpcArgs[jaxrpcCnt++] = "-Xdebugmodel:" +
-                    context.getScratchDir("ejb") + File.separator + "debugModel.txt." +
-                    timeStamp;
+            jaxrpcArgs[jaxrpcCnt++] = "-Xdebugmodel:" + context.getScratchDir("ejb") + File.separator + "debugModel.txt." + timeStamp;
             jaxrpcArgs[jaxrpcCnt++] = "-Xprintstacktrace";
             jaxrpcArgs[jaxrpcCnt++] = "-model";
-            jaxrpcArgs[jaxrpcCnt++] =
-                    context.getScratchDir("ejb") + File.separator + "debugModel.model" +
-                            timeStamp;
+            jaxrpcArgs[jaxrpcCnt++] = context.getScratchDir("ejb") + File.separator + "debugModel.model" + timeStamp;
             jaxrpcArgs[jaxrpcCnt++] = "-verbose";
         }
 
@@ -735,8 +686,8 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         // will not pass CompileTool argument validation.
         jaxrpcArgs[jaxrpcCnt++] = dummyConfigFile.getPath();
 
-        if ( logger.isLoggable(Level.FINE)) {
-            for ( int i = 0; i < jaxrpcArgs.length; i++ ) {
+        if (logger.isLoggable(Level.FINE)) {
+            for (int i = 0; i < jaxrpcArgs.length; i++) {
                 logger.fine(jaxrpcArgs[i]);
             }
         }
@@ -744,9 +695,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         return jaxrpcArgs;
     }
 
-    private void jaxrpc(String[] args, WsCompile wsCompile, Descriptor desc,
-                        ArrayList<String> files)
-            throws Exception {
+    private void jaxrpc(String[] args, WsCompile wsCompile, Descriptor desc, ArrayList<String> files) throws Exception {
 
         try {
             if (logger.isLoggable(Level.FINE)) {
@@ -757,21 +706,18 @@ public class JaxRpcRICodegen extends ModuleContentLinker
             }
             boolean compiled = wsCompile.getCompileTool().run(args);
             done(wsCompile.getCompileTool());
-            if( compiled ) {
-                Iterator generatedFiles =
-                        wsCompile.getGeneratedFiles().iterator();
+            if (compiled) {
+                Iterator generatedFiles = wsCompile.getGeneratedFiles().iterator();
 
-                while(generatedFiles.hasNext()) {
-                    GeneratedFileInfo next = (GeneratedFileInfo)
-                            generatedFiles.next();
+                while (generatedFiles.hasNext()) {
+                    GeneratedFileInfo next = (GeneratedFileInfo) generatedFiles.next();
                     String fileType = next.getType();
                     File file = next.getFile();
                     String origPath = file.getPath();
-                    if( origPath.endsWith(".java") ) {
+                    if (origPath.endsWith(".java")) {
                         int javaIndex = origPath.lastIndexOf(".java");
-                        String newPath = origPath.substring(0, javaIndex) +
-                                ".class";
-                        if( keepJaxrpcGeneratedFile(fileType, desc) ) {
+                        String newPath = origPath.substring(0, javaIndex) + ".class";
+                        if (keepJaxrpcGeneratedFile(fileType, desc)) {
                             files.add(newPath);
                         }
                     }
@@ -780,29 +726,25 @@ public class JaxRpcRICodegen extends ModuleContentLinker
                 throw new Exception("jaxrpc compilation exception");
             }
         } catch (Throwable t) {
-            Exception ge =
-                    new Exception(t.getMessage());
+            Exception ge = new Exception(t.getMessage());
             ge.initCause(t);
             throw ge;
         }
     }
 
-    private void jaxrpcWebService(WebService webService, ArrayList<String> files)
-            throws Exception {
+    private void jaxrpcWebService(WebService webService, ArrayList<String> files) throws Exception {
 
-        if((webService.getWsdlFileUrl() == null) ||
-                (webService.getMappingFileUri() == null)) {
-            throw new Exception(localStrings.getLocalString(
-                    "enterprise.webservice.jaxrpcFilesNotFound",
-                    "Service {0} seems to be a JAXRPC based web service but without "+
-                            "the mandatory WSDL and Mapping file. Deployment cannot proceed",
-                    new Object[] {webService.getName()}));
+        if ((webService.getWsdlFileUrl() == null) || (webService.getMappingFileUri() == null)) {
+            throw new Exception(
+                    localStrings.getLocalString("enterprise.webservice.jaxrpcFilesNotFound",
+                            "Service {0} seems to be a JAXRPC based web service but without "
+                                    + "the mandatory WSDL and Mapping file. Deployment cannot proceed",
+                            new Object[] { webService.getName() }));
         }
         ModelInfo modelInfo = createModelInfo(webService);
         String args[] = createJaxrpcCompileArgs(true, false);
 
-        CompileTool wscompile =
-                rpcFactory.createCompileTool(System.out, "wscompile");
+        CompileTool wscompile = rpcFactory.createCompileTool(System.out, "wscompile");
         wscompileForWebServices = wscompile;
         WsCompile delegate = new WsCompile(wscompile, webService);
         delegate.setModelInfo(modelInfo);
@@ -812,29 +754,27 @@ public class JaxRpcRICodegen extends ModuleContentLinker
     }
 
     private void debug(String msg) {
-        if (logger.isLoggable(Level.FINE) ) {
+        if (logger.isLoggable(Level.FINE)) {
             logger.fine("[JaxRpcRICodegen] --> " + msg);
         }
     }
 
     /*
-     * The run() method calls visit() on the entire application.
-     * If this is being called in the context of a submodule within
-     * the application, then accept(WebService) will be called
-     * for every web service in the app, not just in the current
-     * module. We want to ignore the unrelated web services --
-     * they will be handled when their module is loaded.
+     * The run() method calls visit() on the entire application. If this is being called in the context
+     * of a submodule within the application, then accept(WebService) will be called for every web
+     * service in the app, not just in the current module. We want to ignore the unrelated web services
+     * -- they will be handled when their module is loaded.
      */
     private boolean webServiceInContext(WebService webService) {
-        BundleDescriptor contextBundleDescriptor =
-            context.getModuleMetaData(BundleDescriptor.class);
+        BundleDescriptor contextBundleDescriptor = context.getModuleMetaData(BundleDescriptor.class);
         String moduleId = contextBundleDescriptor.getModuleID();
         return moduleId.equals(webService.getBundleDescriptor().getModuleID());
     }
 
-    public void accept (BundleDescriptor descriptor) {
+    @Override
+    public void accept(BundleDescriptor descriptor) {
         if (descriptor instanceof Application) {
-            Application application = (Application)descriptor;
+            Application application = (Application) descriptor;
             for (BundleDescriptor ebd : application.getBundleDescriptorsOfType(DOLUtils.ejbType())) {
                 ebd.visit(getSubDescriptorVisitor(ebd));
             }
@@ -853,28 +793,31 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         }
     }
 
-
     /**
      * visit an application object
+     *
      * @param the application descriptor
      */
+    @Override
     public void accept(Application application) {
     }
 
     /**
      * visits an ejb bundle descriptor
+     *
      * @param an ejb bundle descriptor
      */
+    @Override
     public void accept(EjbBundleDescriptor bundleDescriptor) {
     }
 
-
     /**
      * visits a appclient descriptor
-     * @param appclientdescriptor
-     * get the visitor for its sub descriptor
+     *
+     * @param appclientdescriptor get the visitor for its sub descriptor
      * @param sub descriptor to return visitor for
      */
+    @Override
     public void accept(ApplicationClientDescriptor appclientdescriptor) {
     }
 
@@ -883,6 +826,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
      *
      * @param the web bundle descriptor
      */
+    @Override
     public void accept(WebBundleDescriptor descriptor) {
     }
 }

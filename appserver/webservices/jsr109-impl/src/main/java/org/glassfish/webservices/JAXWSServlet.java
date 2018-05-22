@@ -41,15 +41,18 @@
 
 package org.glassfish.webservices;
 
-import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
-import com.sun.enterprise.deployment.*;
-import com.sun.xml.ws.api.server.Adapter;
-import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.notification.requesttracing.RequestTraceSpan;
-import org.glassfish.webservices.monitoring.Endpoint;
-import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
-import org.glassfish.webservices.monitoring.WebServiceTesterServlet;
+import static java.util.logging.Level.WARNING;
+import static javax.xml.ws.http.HTTPBinding.HTTP_BINDING;
+import static org.glassfish.webservices.LogUtils.SERVLET_ENDPOINT_FAILURE;
+
+import java.io.IOException;
+import java.net.URI;
+import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -58,19 +61,26 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.http.HTTPBinding;
-import java.io.IOException;
-import java.net.URI;
-import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.glassfish.external.probe.provider.annotations.Probe;
 import org.glassfish.external.probe.provider.annotations.ProbeParam;
 import org.glassfish.external.probe.provider.annotations.ProbeProvider;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.webservices.monitoring.Endpoint;
+import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
+import org.glassfish.webservices.monitoring.WebServiceTesterServlet;
+
+import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.WebComponentDescriptor;
+import com.sun.enterprise.deployment.WebServiceEndpoint;
+import com.sun.enterprise.deployment.WebServicesDescriptor;
+import com.sun.xml.ws.api.server.Adapter;
+import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
+
+import fish.payara.notification.requesttracing.RequestTraceSpan;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
 
 /**
  * The JAX-WS dispatcher servlet.
@@ -81,7 +91,9 @@ import org.glassfish.external.probe.provider.annotations.ProbeProvider;
 @ProbeProvider(moduleProviderName = "glassfish", moduleName = "webservices", probeProviderName = "servlet-109")
 public class JAXWSServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 304728296263071933L;
     private static final Logger logger = LogUtils.getLogger();
+
     private WebServiceEndpoint endpoint;
     private String contextRoot;
     private transient WebServiceEngineImpl wsEngine_;
@@ -89,6 +101,7 @@ public class JAXWSServlet extends HttpServlet {
     private String urlPattern;
     private RequestTracingService requestTracing;
 
+    @Override
     public void init(ServletConfig servletConfig) throws ServletException {
         String servletName = "unknown";
 
@@ -97,79 +110,69 @@ public class JAXWSServlet extends HttpServlet {
             wsEngine_ = WebServiceEngineImpl.getInstance();
             // Register endpoints here
 
-
             WebServiceContractImpl wscImpl = WebServiceContractImpl.getInstance();
             ComponentEnvManager compEnvManager = wscImpl.getComponentEnvManager();
             JndiNameEnvironment jndiNameEnv = compEnvManager.getCurrentJndiNameEnvironment();
             WebBundleDescriptor webBundle = null;
+
             if (jndiNameEnv != null && jndiNameEnv instanceof WebBundleDescriptor) {
                 webBundle = ((WebBundleDescriptor) jndiNameEnv);
             } else {
                 throw new WebServiceException("Cannot intialize the JAXWSServlet for " + jndiNameEnv);
             }
 
-
             servletName = servletConfig.getServletName();
             contextRoot = webBundle.getContextRoot();
-            WebComponentDescriptor webComponent =
-                    webBundle.getWebComponentByCanonicalName(servletName);
+            WebComponentDescriptor webComponent = webBundle.getWebComponentByCanonicalName(servletName);
 
             if (webComponent != null) {
                 WebServicesDescriptor webServices = webBundle.getWebServices();
-                Collection<WebServiceEndpoint> endpoints =
-                        webServices.getEndpointsImplementedBy(webComponent);
+                Collection<WebServiceEndpoint> endpoints = webServices.getEndpointsImplementedBy(webComponent);
                 // Only 1 endpoint per servlet is supported, even though
                 // data structure implies otherwise.
                 endpoint = endpoints.iterator().next();
             } else {
                 throw new ServletException(servletName + " not found");
             }
-            // need to invoke the endpoint lifecylcle
-            if (!(HTTPBinding.HTTP_BINDING.equals(endpoint.getProtocolBinding()))) {
+
+            // Need to invoke the endpoint lifecylcle
+            if (!HTTP_BINDING.equals(endpoint.getProtocolBinding())) {
                 // Doing this so that restful service are not monitored
                 wsEngine_.createHandler(endpoint);
             }
+
             if (endpoint.getWsdlExposed() != null) {
                 wsdlExposed = Boolean.parseBoolean(endpoint.getWsdlExposed());
             }
+
             // For web components, this will be relative to the web app
-            // context root.  Make sure there is a leading slash.
+            // context root. Make sure there is a leading slash.
             String uri = endpoint.getEndpointAddressUri();
             urlPattern = uri.startsWith("/") ? uri : "/" + uri;
 
         } catch (Throwable t) {
-            String msg = MessageFormat.format(
-                    logger.getResourceBundle().getString(LogUtils.SERVLET_ENDPOINT_FAILURE),
-                    servletName);
-            logger.log(Level.WARNING, msg, t);
+            logger.log(WARNING, MessageFormat.format(logger.getResourceBundle().getString(SERVLET_ENDPOINT_FAILURE), servletName), t);
+
             throw new ServletException(t);
         }
 
-        requestTracing = org.glassfish.internal.api.Globals.getDefaultHabitat().getService(RequestTracingService.class);
+        requestTracing = Globals.get(RequestTracingService.class);
     }
 
-    public void destroy() {
-        synchronized (this) {
-            wsEngine_.removeHandler(endpoint);
-        }
-    }
-
-    protected void doPost(HttpServletRequest request,
-                          HttpServletResponse response)
-            throws ServletException {
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException {
         startedEvent(endpoint.getEndpointAddressPath());
-        if (("Tester".equalsIgnoreCase(request.getQueryString())) &&
-                (!(HTTPBinding.HTTP_BINDING.equals(endpoint.getProtocolBinding())))) {
+
+        if ("Tester".equalsIgnoreCase(request.getQueryString()) && !(HTTPBinding.HTTP_BINDING.equals(endpoint.getProtocolBinding()))) {
             Endpoint endpt = wsEngine_.getEndpoint(request.getServletPath());
             if (endpt != null && Boolean.parseBoolean(endpt.getDescriptor().getDebugging())) {
-                WebServiceTesterServlet.invoke(request, response,
-                        endpt.getDescriptor());
+                WebServiceTesterServlet.invoke(request, response, endpt.getDescriptor());
                 endedEvent(endpoint.getEndpointAddressPath());
                 return;
             }
         }
 
-        // lookup registered URLs and get the appropriate adapter;
+        // Lookup registered URLs and get the appropriate adapter;
         // pass control to the adapter
         RequestTraceSpan span = null;
         try {
@@ -183,9 +186,7 @@ public class JAXWSServlet extends HttpServlet {
                 throw new ServletException("Service not found");
             }
         } catch (Throwable t) {
-            ServletException se = new ServletException();
-            se.initCause(t);
-            throw se;
+            throw new ServletException(t);
         } finally {
             if (requestTracing.isRequestTracingEnabled() && span != null) {
                 requestTracing.traceSpan(span);
@@ -194,52 +195,21 @@ public class JAXWSServlet extends HttpServlet {
         endedEvent(endpoint.getEndpointAddressPath());
     }
 
-    private RequestTraceSpan constructWsRequestSpan(HttpServletRequest httpServletRequest,
-                                                       URI uri) {
-        RequestTraceSpan span  = new RequestTraceSpan("processSoapWebserviceRequest");
-        span.addSpanTag("URI",uri.toString());
-        span.addSpanTag("URL",httpServletRequest.getRequestURL().toString());
-        Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String headerName = headerNames.nextElement();
-            List<String> headers = Collections.list(httpServletRequest.getHeaders(headerName));
-            span.addSpanTag(headerName, headers.toString());
-        }
-        span.addSpanTag("Method",httpServletRequest.getMethod());
-        return span;
-    }
-
-    @Probe(name = "startedEvent")
-    private void startedEvent(
-            @ProbeParam("endpointAddress") String endpointAddress) {
-
-    }
-
-    @Probe(name = "endedEvent")
-    private void endedEvent(
-            @ProbeParam("endpointAddress") String endpointAddress) {
-
-    }
-
-    protected void doGet(HttpServletRequest request,
-                         HttpServletResponse response)
-            throws ServletException, IOException {
-        if (("Tester".equalsIgnoreCase(request.getQueryString())) &&
-                (!(HTTPBinding.HTTP_BINDING.equals(endpoint.getProtocolBinding())))) {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        if (("Tester".equalsIgnoreCase(request.getQueryString())) && (!(HTTP_BINDING.equals(endpoint.getProtocolBinding())))) {
 
             Endpoint endpt = wsEngine_.getEndpoint(request.getServletPath());
-            if ((endpt != null) && ((endpt.getDescriptor().isSecure()) ||
-                    (endpt.getDescriptor().getMessageSecurityBinding() != null) ||
-                    endpoint.hasSecurePipeline())) {
-                String message = endpt.getDescriptor().getWebService().getName() +
-                        "is a secured web service; Tester feature is not supported for secured services";
+            if ((endpt != null) && ((endpt.getDescriptor().isSecure()) || (endpt.getDescriptor().getMessageSecurityBinding() != null)
+                    || endpoint.hasSecurePipeline())) {
+                String message = endpt.getDescriptor().getWebService().getName()
+                        + "is a secured web service; Tester feature is not supported for secured services";
                 (new WsUtil()).writeInvalidMethodType(response, message);
                 return;
             }
             if (endpt != null && Boolean.parseBoolean(endpt.getDescriptor().getDebugging())) {
 
-                WebServiceTesterServlet.invoke(request, response,
-                        endpt.getDescriptor());
+                WebServiceTesterServlet.invoke(request, response, endpt.getDescriptor());
 
                 return;
             }
@@ -248,27 +218,56 @@ public class JAXWSServlet extends HttpServlet {
         // If it is not a "Tester request" and it is not a WSDL request,
         // this might be a restful service
 
-        if (!("WSDL".equalsIgnoreCase(request.getQueryString())) &&
-                (HTTPBinding.HTTP_BINDING.equals(endpoint.getProtocolBinding()))) {
+        if (!("WSDL".equalsIgnoreCase(request.getQueryString())) && HTTP_BINDING.equals(endpoint.getProtocolBinding())) {
             doPost(request, response);
             return;
         }
 
-        // normal WSDL retrieval invocation
+        // Normal WSDL retrieval invocation
         try {
             ServletAdapter targetEndpoint = (ServletAdapter) getEndpointFor(request);
             if (targetEndpoint != null && wsdlExposed) {
                 targetEndpoint.publishWSDL(getServletContext(), request, response);
             } else {
-                String message =
-                        "Invalid wsdl request " + request.getRequestURL();
+                String message = "Invalid wsdl request " + request.getRequestURL();
                 (new WsUtil()).writeInvalidMethodType(response, message);
             }
         } catch (Throwable t) {
-            ServletException se = new ServletException();
-            se.initCause(t);
-            throw se;
+            throw new ServletException(t);
         }
+    }
+
+    @Override
+    public void destroy() {
+        synchronized (this) {
+            wsEngine_.removeHandler(endpoint);
+        }
+    }
+
+    private RequestTraceSpan constructWsRequestSpan(HttpServletRequest httpServletRequest, URI uri) {
+        RequestTraceSpan span = new RequestTraceSpan("processSoapWebserviceRequest");
+        span.addSpanTag("URI", uri.toString());
+        span.addSpanTag("URL", httpServletRequest.getRequestURL().toString());
+        Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
+
+        while (headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
+            List<String> headers = Collections.list(httpServletRequest.getHeaders(headerName));
+            span.addSpanTag(headerName, headers.toString());
+        }
+        span.addSpanTag("Method", httpServletRequest.getMethod());
+
+        return span;
+    }
+
+    @Probe(name = "startedEvent")
+    private void startedEvent(@ProbeParam("endpointAddress") String endpointAddress) {
+
+    }
+
+    @Probe(name = "endedEvent")
+    private void endedEvent(@ProbeParam("endpointAddress") String endpointAddress) {
+
     }
 
     private Adapter getEndpointFor(HttpServletRequest request) {

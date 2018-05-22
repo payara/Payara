@@ -40,9 +40,12 @@
 package fish.payara.microprofile.config.cdi;
 
 import fish.payara.nucleus.microprofile.config.spi.PayaraConfig;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Member;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Set;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.DeploymentException;
@@ -61,7 +64,7 @@ public class ConfigPropertyProducer {
      * General producer method for injecting a property into a field annotated 
      * with the @ConfigProperty annotation.
      * Note this does not have @Produces annotation as a synthetic bean using this method
-     * is created in teh CDI Extension.
+     * is created in the CDI Extension.
      * @param ip
      * @return 
      */
@@ -89,11 +92,18 @@ public class ConfigPropertyProducer {
             name =  sb.toString();
         }
         
-        Type type = ip.getType();
+        Type type = ip.getType();      
         if (type instanceof Class) {
             result = config.getValue(name, property.defaultValue(),(Class<?>)type);
         } else if ( type instanceof ParameterizedType) {
-            result = config.getValue(name, (Class<?>)((ParameterizedType)type).getRawType());
+            ParameterizedType ptype = (ParameterizedType)type;
+            if (List.class.equals(ptype.getRawType())) {
+                result = config.getListValues(name, property.defaultValue(), (Class<?>) ptype.getActualTypeArguments()[0]);
+            } else if (Set.class.equals(ptype.getRawType())) {
+                result = config.getSetValues(name, property.defaultValue(), (Class<?>) ptype.getActualTypeArguments()[0]);                
+            } else {
+                result = config.getValue(name, (Class<?>)((ParameterizedType)type).getRawType());
+            }
         }
         
         if (result == null) {

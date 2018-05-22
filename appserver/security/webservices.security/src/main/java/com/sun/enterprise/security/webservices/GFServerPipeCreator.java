@@ -37,70 +37,66 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
 import java.util.HashMap;
 
-
-import com.sun.xml.ws.api.pipe.Pipe;
-import com.sun.xml.ws.api.model.SEIModel;
-import com.sun.xml.ws.api.model.wsdl.WSDLPort;
-import com.sun.xml.ws.api.server.WSEndpoint;
-import com.sun.xml.ws.policy.PolicyMap;
-
-import com.sun.enterprise.deployment.WebServiceEndpoint;
-import com.sun.xml.ws.api.model.wsdl.WSDLBoundOperation;
-import com.sun.xml.ws.policy.Policy;
-import com.sun.xml.ws.policy.PolicyException;
-import com.sun.xml.ws.policy.PolicyMapKey;
-
-import com.sun.xml.wss.provider.wsit.PipeConstants;
-
-import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 
+import org.jvnet.hk2.annotations.Service;
+
+import com.sun.enterprise.deployment.WebServiceEndpoint;
+import com.sun.xml.ws.api.model.SEIModel;
+import com.sun.xml.ws.api.model.wsdl.WSDLBoundOperation;
+import com.sun.xml.ws.api.model.wsdl.WSDLPort;
+import com.sun.xml.ws.api.pipe.Pipe;
+import com.sun.xml.ws.api.server.WSEndpoint;
+import com.sun.xml.ws.policy.Policy;
+import com.sun.xml.ws.policy.PolicyException;
+import com.sun.xml.ws.policy.PolicyMap;
+import com.sun.xml.ws.policy.PolicyMapKey;
+import com.sun.xml.wss.provider.wsit.PipeConstants;
 
 /**
- * This is used by JAXWSContainer to return proper 196 security and
- *  app server monitoing pipes to the StandAlonePipeAssembler and 
- *  TangoPipeAssembler
+ * This is used by JAXWSContainer to return proper 196 security and app server monitoing pipes to
+ * the StandAlonePipeAssembler and TangoPipeAssembler
  */
 @Service
 @Singleton
 public class GFServerPipeCreator extends org.glassfish.webservices.ServerPipeCreator {
-    
-    private static final String SECURITY_POLICY_NAMESPACE_URI_SUBMISSION = 
-            "http://schemas.xmlsoap.org/ws/2005/07/securitypolicy";
-    private static final String SECURITY_POLICY_NAMESPACE_URI_SPECVERSION= 
-            "http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702";       
-    
-    public GFServerPipeCreator(){
+
+    private static final String SECURITY_POLICY_NAMESPACE_URI_SUBMISSION = "http://schemas.xmlsoap.org/ws/2005/07/securitypolicy";
+    private static final String SECURITY_POLICY_NAMESPACE_URI_SPECVERSION = "http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702";
+
+    public GFServerPipeCreator() {
         super();
     }
-    
+
+    @Override
     public void init(WebServiceEndpoint ep) {
         super.init(ep);
     }
-    public Pipe createSecurityPipe(PolicyMap map, SEIModel sei,
-            WSDLPort port, WSEndpoint owner, Pipe tail) {
 
-	HashMap props = new HashMap();
+    @Override
+    public Pipe createSecurityPipe(PolicyMap map, SEIModel sei, WSDLPort port, WSEndpoint owner, Pipe tail) {
 
-	props.put(PipeConstants.POLICY,map);
-	props.put(PipeConstants.SEI_MODEL,sei);
-	props.put(PipeConstants.WSDL_MODEL,port);
-	props.put(PipeConstants.ENDPOINT,owner);
-	props.put(PipeConstants.SERVICE_ENDPOINT,endpoint);
-	props.put(PipeConstants.NEXT_PIPE,tail);
+        HashMap props = new HashMap();
+
+        props.put(PipeConstants.POLICY, map);
+        props.put(PipeConstants.SEI_MODEL, sei);
+        props.put(PipeConstants.WSDL_MODEL, port);
+        props.put(PipeConstants.ENDPOINT, owner);
+        props.put(PipeConstants.SERVICE_ENDPOINT, endpoint);
+        props.put(PipeConstants.NEXT_PIPE, tail);
         props.put(PipeConstants.CONTAINER, owner.getContainer());
         if (isSecurityEnabled(map, port)) {
-		endpoint.setSecurePipeline();
+            endpoint.setSecurePipeline();
         }
 
         return new CommonServerSecurityPipe(props, tail, isHttpBinding);
-    }    
-    
+    }
+
 //    @Override
 //    public @NotNull
 //    Tube createSecurityTube(ServerTubelineAssemblyContext ctxt) {
@@ -127,45 +123,43 @@ public class GFServerPipeCreator extends org.glassfish.webservices.ServerPipeCre
      * @param wsdlPort wsdl:port
      * @return true if Security is enabled, false otherwise
      */
-    //TODO - this code has been copied from PipelineAssemblerFactoryImpl.java and needs
-    //to be maintained in both places.  In the future, code needs to be moved somewhere
-    //where it can be invoked from both places.
-    public static  boolean isSecurityEnabled(PolicyMap policyMap, WSDLPort wsdlPort) {
+    // TODO - this code has been copied from PipelineAssemblerFactoryImpl.java and needs
+    // to be maintained in both places. In the future, code needs to be moved somewhere
+    // where it can be invoked from both places.
+    public static boolean isSecurityEnabled(PolicyMap policyMap, WSDLPort wsdlPort) {
         if (policyMap == null || wsdlPort == null)
             return false;
 
         try {
-            PolicyMapKey endpointKey = policyMap.createWsdlEndpointScopeKey(wsdlPort.getOwner().getName(),
-                    wsdlPort.getName());
+            PolicyMapKey endpointKey = policyMap.createWsdlEndpointScopeKey(wsdlPort.getOwner().getName(), wsdlPort.getName());
             Policy policy = policyMap.getEndpointEffectivePolicy(endpointKey);
-            
-            if ((policy != null) && (policy.contains(SECURITY_POLICY_NAMESPACE_URI_SPECVERSION) ||
-                    policy.contains(SECURITY_POLICY_NAMESPACE_URI_SUBMISSION))) {
+
+            if ((policy != null) && (policy.contains(SECURITY_POLICY_NAMESPACE_URI_SPECVERSION)
+                    || policy.contains(SECURITY_POLICY_NAMESPACE_URI_SUBMISSION))) {
                 return true;
             }
 
             for (WSDLBoundOperation wbo : wsdlPort.getBinding().getBindingOperations()) {
-                PolicyMapKey operationKey = policyMap.createWsdlOperationScopeKey(wsdlPort.getOwner().getName(),
-                        wsdlPort.getName(),
+                PolicyMapKey operationKey = policyMap.createWsdlOperationScopeKey(wsdlPort.getOwner().getName(), wsdlPort.getName(),
                         wbo.getName());
                 policy = policyMap.getOperationEffectivePolicy(operationKey);
-                if ((policy != null) && (policy.contains(SECURITY_POLICY_NAMESPACE_URI_SPECVERSION) ||
-                    policy.contains(SECURITY_POLICY_NAMESPACE_URI_SUBMISSION)))
+                if ((policy != null) && (policy.contains(SECURITY_POLICY_NAMESPACE_URI_SPECVERSION)
+                        || policy.contains(SECURITY_POLICY_NAMESPACE_URI_SUBMISSION)))
                     return true;
 
                 policy = policyMap.getInputMessageEffectivePolicy(operationKey);
-                if ((policy != null) && (policy.contains(SECURITY_POLICY_NAMESPACE_URI_SPECVERSION) ||
-                    policy.contains(SECURITY_POLICY_NAMESPACE_URI_SUBMISSION)))
+                if ((policy != null) && (policy.contains(SECURITY_POLICY_NAMESPACE_URI_SPECVERSION)
+                        || policy.contains(SECURITY_POLICY_NAMESPACE_URI_SUBMISSION)))
                     return true;
 
                 policy = policyMap.getOutputMessageEffectivePolicy(operationKey);
-                if ((policy != null) && (policy.contains(SECURITY_POLICY_NAMESPACE_URI_SPECVERSION) ||
-                    policy.contains(SECURITY_POLICY_NAMESPACE_URI_SUBMISSION)))
+                if ((policy != null) && (policy.contains(SECURITY_POLICY_NAMESPACE_URI_SPECVERSION)
+                        || policy.contains(SECURITY_POLICY_NAMESPACE_URI_SUBMISSION)))
                     return true;
 
                 policy = policyMap.getFaultMessageEffectivePolicy(operationKey);
-                if ((policy != null) && (policy.contains(SECURITY_POLICY_NAMESPACE_URI_SPECVERSION) ||
-                    policy.contains(SECURITY_POLICY_NAMESPACE_URI_SUBMISSION)))
+                if ((policy != null) && (policy.contains(SECURITY_POLICY_NAMESPACE_URI_SPECVERSION)
+                        || policy.contains(SECURITY_POLICY_NAMESPACE_URI_SUBMISSION)))
                     return true;
             }
         } catch (PolicyException e) {

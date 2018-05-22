@@ -37,17 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jmac.callback;
 
-import com.sun.enterprise.security.common.AppservAccessController;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.util.Set;
+
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.message.callback.GroupPrincipalCallback;
+
 import org.glassfish.security.common.Group;
+
+import com.sun.enterprise.security.common.AppservAccessController;
 
 /**
  *
@@ -56,29 +59,30 @@ import org.glassfish.security.common.Group;
 public class ServerLoginCBHUtil {
 
     private static void processGP(GroupPrincipalCallback gpCallback) {
-        final Subject fs = gpCallback.getSubject();
-        final String[] groups = gpCallback.getGroups();
+        Subject subject = gpCallback.getSubject();
+        String[] groups = gpCallback.getGroups();
+        
         if (groups != null && groups.length > 0) {
-            AppservAccessController.doPrivileged(new PrivilegedAction(){
-                public java.lang.Object run() {
+            AppservAccessController.doPrivileged(new PrivilegedAction<Subject>() {
+                public Subject run() {
                     for (String group : groups) {
-                        fs.getPrincipals().add(new Group(group));
+                        subject.getPrincipals().add(new Group(group));
                     }
-                    return fs;
+                    return subject;
                 }
             });
         } else if (groups == null) {
-            AppservAccessController.doPrivileged(new PrivilegedAction(){
-                public java.lang.Object run() {
-                    Set<Principal> principalSet = fs.getPrincipals();
-                    principalSet.removeAll(fs.getPrincipals(Group.class));
-                    return fs;
+            AppservAccessController.doPrivileged(new PrivilegedAction<Subject>() {
+                public Subject run() {
+                    Set<Principal> principalSet = subject.getPrincipals();
+                    principalSet.removeAll(subject.getPrincipals(Group.class));
+                    return subject;
                 }
             });
         }
     }
 
-    //NOTE: this method is called by reflection from ServerLoginCallbackHandler
+    // NOTE: this method is called by reflection from ServerLoginCallbackHandler
     public static void processGroupPrincipal(Callback gpCallback) {
         if (gpCallback instanceof GroupPrincipalCallback) {
             processGP((GroupPrincipalCallback) gpCallback);

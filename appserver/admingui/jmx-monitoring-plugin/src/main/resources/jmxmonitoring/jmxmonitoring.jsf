@@ -2,7 +2,7 @@
 
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-   Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -63,12 +63,9 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLOG}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
                 
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "amx"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic"});
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
-        }
-        if (#{pageSession.valueMap['amx']}=true) {
-            setPageSessionAttribute(key="amxSelected", value="true");
         }
 
         setPageSessionAttribute(key="dynamic", value="true");
@@ -96,7 +93,6 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                     onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
                  <!command
                      mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
-                     mapPut(map="#{pageSession.valueMap}" key="amx" value="#{pageSession.amxSelected}");
                      mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                      prepareSuccessfulMsg();
                      gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-monitoring-configuration" 
@@ -120,9 +116,6 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
             <sun:property id="enabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.Enabled}" helpText="$resource{i18njmx.jmxmonitoring.EnabledHelp}">
                 <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.enabledSelected}" selectedValue="true"/>
-            </sun:property>
-            <sun:property id="amxProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.AMXEnabled}" helpText="$resource{i18njmx.jmxmonitoring.AMXEnabledHelp}">
-                <sun:checkbox id="amx" label="$resource{i18n.common.Enabled}" selected="#{pageSession.amxSelected}" selectedValue="true"/>
             </sun:property>
             <sun:property id="dynamicProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmx.jmxmonitoring.Dynamic}" helpText="$resource{i18njmx.jmxmonitoring.DynamicHelp}">
                 <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.dynamic}" selectedValue="true"/>

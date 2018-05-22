@@ -502,13 +502,13 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             ComponentInvocation componentInvocation = createComponentInvocation(applicationInfo);
 
             try {
+                invocationManager.preInvoke(componentInvocation);
                 bootstrap.startExtensions(postProcessExtensions(deploymentImpl.getExtensions(), archives));
                 bootstrap.startContainer(deploymentImpl.getContextId() + ".bda", SERVLET, deploymentImpl);
                 bootstrap.startInitialization();
                 fireProcessInjectionTargetEvents(bootstrap, deploymentImpl);
                 bootstrap.deployBeans();
                 bootstrap.validateBeans();
-                invocationManager.preInvoke(componentInvocation);
                 bootstrap.endInitialization();
             } catch (Throwable t) {
                 doBootstrapShutdown(applicationInfo);

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 /*
  * JAXWSServletModule.java
  *
@@ -47,67 +47,64 @@
 
 package org.glassfish.webservices;
 
-import com.sun.xml.ws.transport.http.servlet.ServletModule;
-import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
-import com.sun.istack.NotNull;
-import com.sun.xml.ws.api.server.BoundEndpoint;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.sun.istack.NotNull;
+import com.sun.xml.ws.api.server.BoundEndpoint;
+import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
+import com.sun.xml.ws.transport.http.servlet.ServletModule;
+
 /**
  * Implementation of JAX-WS ServletModule SPI used by WSIT WS-MetadataExchange.
- * In the current 109 design, each endpoint has a unique JAXWSContainer.  On
- * the other hand, the requirements imposed by WSIT WS-MetadataExchange
- * require that all endpoints sharing a context root share a ServletMoule.
- * Therefore, in general, multiple JAXWSContainers will share a JAXWSServletModule,
- * so JAXWSContainer must use a lookup in the static 
- * <code>JAXWSServletModule.modules</code> to find its associatiated module. 
+ *
+ * <p>
+ * In the current JSR 109 design, each endpoint has a unique JAXWSContainer. On the other hand, the
+ * requirements imposed by WSIT WS-MetadataExchange require that all endpoints sharing a context root
+ * share a ServletMoule.
+ *
+ * <p>
+ * Therefore, in general, multiple JAXWSContainers will share a JAXWSServletModule, so
+ * JAXWSContainer must use a lookup in the static <code>JAXWSServletModule.modules</code> to find
+ * its associated module.
+ *
  */
-
 public class JAXWSServletModule extends ServletModule {
-    
-    //Map of context-roots to JAXWSServletModules
-    private final static Map<String, JAXWSServletModule> modules =
-            new ConcurrentHashMap<String, JAXWSServletModule>();
 
-    //Map of uri->BoundEndpoint used to implement getBoundEndpoint.  Map is rather
-    //than Set, so that when a new endpoint is redeployed at a given uri, the old
-    //endpoint will be replaced by the new endpoint.  The values() method of the
-    //field is returned by <code>getBoundEndpoints</code>.
-     private final Map<String, BoundEndpoint> endpoints =
-             new ConcurrentHashMap<String, BoundEndpoint>();
-     
-    //the context-root for endpoints belonging to this module.
+    // Map of context-roots to JAXWSServletModules
+    private final static Map<String, JAXWSServletModule> modules = new ConcurrentHashMap<>();
+
+    // Map of uri->BoundEndpoint used to implement getBoundEndpoint.
+    //
+    // A Map is uses rather than a Set, so that when a new endpoint is redeployed at a given uri, the old
+    // endpoint will be replaced by the new endpoint.
+    // The values() method of the field is returned by <code>getBoundEndpoints</code>.
+    private final Map<String, BoundEndpoint> endpoints = new ConcurrentHashMap<>();
+
+    // The context-root for endpoints belonging to this module.
     private final String contextPath;
-    
-         
-    public static synchronized JAXWSServletModule getServletModule(String contextPath) {
 
-        JAXWSServletModule ret = modules.get(contextPath);
-        if (ret == null) {
-            ret = new JAXWSServletModule(contextPath);
-            modules.put(contextPath, ret);
-        }
-        return ret;
-    } 
+    public static JAXWSServletModule getServletModule(String contextPath) {
+        return modules.computeIfAbsent(contextPath, JAXWSServletModule::new);
+    }
 
     public static void destroy(String contextPath) {
         modules.remove(contextPath);
     }
 
     private JAXWSServletModule(String contextPath) {
-            this.contextPath = contextPath;
+        this.contextPath = contextPath;
     }
-  
+
     public void addEndpoint(String uri, ServletAdapter adapter) {
         endpoints.put(uri, adapter);
     }
 
     @Override
     public @NotNull List<BoundEndpoint> getBoundEndpoints() {
-            return new ArrayList(endpoints.values());
+        return new ArrayList<>(endpoints.values());
     }
 
     @Override

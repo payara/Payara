@@ -1761,7 +1761,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
 
         if (this.minHttpThreads != Integer.MIN_VALUE) {
-            preBootCommands.add(new BootCommand("set", "configs.config.server-config..thread-pools.thread-pool.http-thread-pool.min-thread-pool-size=" + minHttpThreads));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.thread-pools.thread-pool.http-thread-pool.min-thread-pool-size=" + minHttpThreads));
         }
     }
 
