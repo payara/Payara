@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,8 +39,11 @@
  */
 package fish.payara.microprofile.healthcheck;
 
+import java.beans.PropertyChangeEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,6 +55,8 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.servlet.http.HttpServletResponse;
+
+import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.glassfish.api.StartupRunLevel;
@@ -63,33 +68,40 @@ import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.UnprocessedChangeEvent;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 /**
  * Service that handles the registration, execution, and response of MicroProfile HealthChecks.
+ *
  * @author Andrew Pielage
  */
 @Service(name = "healthcheck-service")
 @RunLevel(StartupRunLevel.VAL)
-public class HealthCheckService implements EventListener {
-    
+public class HealthCheckService implements EventListener, ConfigListener {
+
     @Inject
     Events events;
-    
+
     @Inject
     ApplicationRegistry applicationRegistry;
     
+    @Inject
+    MetricsHealthCheckConfiguration configuration;
+
     private final Map<String, Set<HealthCheck>> healthChecks = new ConcurrentHashMap<>();
     private final Map<String, ClassLoader> applicationClassLoaders = new ConcurrentHashMap<>();
-    
+
     @PostConstruct
     public void postConstruct() {
         if (events == null) {
             events = Globals.getDefaultBaseServiceLocator().getService(Events.class);
         }
-        
+
         events.register(this);
     }
-    
+
     @Override
     public void event(Event event) {
         // Remove healthchecks when the app is undeployed.
@@ -101,9 +113,10 @@ public class HealthCheckService implements EventListener {
             }
         }
     }
-    
+
     /**
      * Register a HealthCheck to the Set of HealthChecks to execute when performHealthChecks is called.
+     *
      * @param appName The name of the application being deployed
      * @param healthCheck The HealthCheck to register
      */
@@ -111,7 +124,7 @@ public class HealthCheckService implements EventListener {
         // If we don't already have the app registered, we need to create a new Set for it
         if (!healthChecks.containsKey(appName)) {
             // Sync so that we don't get clashes
-            synchronized(this) {
+            synchronized (this) {
                 // Check again so that we don't overwrite
                 if (!healthChecks.containsKey(appName)) {
                     // Create a new Map entry and set for the Healthchecks.
@@ -119,13 +132,14 @@ public class HealthCheckService implements EventListener {
                 }
             }
         }
-        
+
         // Add the healthcheck to the Set in the Map
         healthChecks.get(appName).add(healthCheck);
     }
-    
+
     /**
      * Register a ClassLoader for an application.
+     *
      * @param appName The name of the application being deployed
      * @param classloader
      */
@@ -133,7 +147,7 @@ public class HealthCheckService implements EventListener {
         // If we don't already have the app registered, we need to create a new Set for it
         if (!applicationClassLoaders.containsKey(appName)) {
             // Sync so that we don't get clashes
-            synchronized(this) {
+            synchronized (this) {
                 // Check again so that we don't overwrite
                 if (!applicationClassLoaders.containsKey(appName)) {
                     // Create a new Map entry and set for the Healthchecks.
@@ -142,15 +156,16 @@ public class HealthCheckService implements EventListener {
             }
         }
     }
-    
+
     /**
      * Execute the call method of every registered HealthCheck and generate the response.
+     *
      * @param response The response to return
      * @throws IOException If there's an issue writing the response
      */
     public void performHealthChecks(HttpServletResponse response) throws IOException {
         Set<HealthCheckResponse> healthCheckResponses = new HashSet<>();
-        
+
         // Iterate over every HealthCheck stored in the Map
         for (Map.Entry<String, Set<HealthCheck>> healthChecksEntry : healthChecks.entrySet()) {
             for (HealthCheck healthCheck : healthChecksEntry.getValue()) {
@@ -167,33 +182,33 @@ public class HealthCheckService implements EventListener {
                         Thread.currentThread().setContextClassLoader(originalClassLoader);
                     }
                 } catch (Exception ex) {
-                    Logger.getLogger(HealthCheckService.class.getName()).log(Level.WARNING, 
+                    Logger.getLogger(HealthCheckService.class.getName()).log(Level.WARNING,
                             "Exception executing HealthCheck: " + healthCheck.getClass().getCanonicalName(), ex);
                     // If there's any issue, set the response to an error
                     response.setStatus(500);
                 }
             }
         }
-        
+
         // If we haven't encountered an exception, construct the JSON response
         if (response.getStatus() != 500) {
             constructResponse(response, healthCheckResponses);
         }
     }
-    
-    private void constructResponse(HttpServletResponse httpResponse, 
+
+    private void constructResponse(HttpServletResponse httpResponse,
             Set<HealthCheckResponse> healthCheckResponses) throws IOException {
         httpResponse.setContentType("application/json");
-        
+
         // For each HealthCheckResponse we got from executing the health checks...
         JsonArrayBuilder checksArray = Json.createArrayBuilder();
         for (HealthCheckResponse healthCheckResponse : healthCheckResponses) {
             JsonObjectBuilder healthCheckObject = Json.createObjectBuilder();
-            
+
             // Add the name and state
             healthCheckObject.add("name", healthCheckResponse.getName());
             healthCheckObject.add("state", healthCheckResponse.getState().toString());
-            
+
             // Add data if present
             JsonObjectBuilder healthCheckData = Json.createObjectBuilder();
             if (healthCheckResponse.getData().isPresent() && !healthCheckResponse.getData().get().isEmpty()) {
@@ -202,32 +217,43 @@ public class HealthCheckService implements EventListener {
                 }
             }
             healthCheckObject.add("data", healthCheckData);
-            
+
             // Add finished Object to checks array
             checksArray.add(healthCheckObject);
-            
+
             // Check if we need to set the response as 503. Check against status 200 so we don't repeatedly set it
-            if (httpResponse.getStatus() == 200 
+            if (httpResponse.getStatus() == 200
                     && healthCheckResponse.getState().equals(HealthCheckResponse.State.DOWN)) {
                 httpResponse.setStatus(503);
             }
         }
-        
+
         // Create the final aggregate object
         JsonObjectBuilder responseObject = Json.createObjectBuilder();
-        
+
         // Set the aggregate outcome
         if (httpResponse.getStatus() == 200) {
             responseObject.add("outcome", "UP");
         } else {
             responseObject.add("outcome", "DOWN");
         }
-        
+
         // Add all of the checks
         responseObject.add("checks", checksArray);
-        
+
         // Print the outcome
         httpResponse.getOutputStream().print(responseObject.build().toString());
+    }
+
+    @Override
+    public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
+        List<UnprocessedChangeEvent> unchangedList = new ArrayList<>();
+        for (PropertyChangeEvent event : events) {
+            unchangedList.add(new UnprocessedChangeEvent(event, "Microprofile HealthCheck configuration changed:" + event.getPropertyName()
+                    + " was changed from " + event.getOldValue().toString() + " to " + event.getNewValue().toString()));
+        }
+        
+        return new UnprocessedChangeEvents(unchangedList);
     }
 
 }
