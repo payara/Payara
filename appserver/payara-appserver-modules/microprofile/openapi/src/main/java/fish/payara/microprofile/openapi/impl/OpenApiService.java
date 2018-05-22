@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl;
 
+import java.beans.PropertyChangeEvent;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.Map;
@@ -59,6 +60,12 @@ import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.Changed;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.NotProcessed;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 import fish.payara.microprofile.openapi.impl.admin.OpenApiServiceConfiguration;
 import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
@@ -71,7 +78,7 @@ import fish.payara.microprofile.openapi.impl.processor.ModelReaderProcessor;
 
 @Service(name = "microprofile-openapi-service")
 @RunLevel(StartupRunLevel.VAL)
-public class OpenApiService implements PostConstruct, PreDestroy, EventListener {
+public class OpenApiService implements PostConstruct, PreDestroy, EventListener, ConfigListener {
 
     private static final Logger LOGGER = Logger.getLogger(OpenApiService.class.getName());
 
@@ -98,6 +105,31 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener 
         return Boolean.parseBoolean(config.getEnabled());
     }
 
+    /**
+     * Listen for OpenAPI config changes.
+     */
+	@Override
+	public UnprocessedChangeEvents changed(PropertyChangeEvent[] event) {
+        return ConfigSupport.sortAndDispatch(event, new Changed(){
+            @Override
+            public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> tClass, T t) {
+                if (tClass == OpenApiServiceConfiguration.class) {
+                    if (type == TYPE.CHANGE) {
+                        if (isEnabled()) {
+                            LOGGER.info("OpenAPIService enabled.");
+                        } else {
+                            LOGGER.info("OpenAPIService disabled.");
+                        }
+                    }
+                }
+                return null;
+            }
+        }, LOGGER);
+	}
+
+    /**
+     * Listen for application deployment events.
+     */
     @Override
     public void event(Event<?> event) {
         if (event.is(Deployment.APPLICATION_STARTED)) {
@@ -105,11 +137,16 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener 
             ApplicationInfo appInfo = (ApplicationInfo) event.hook();
 
             // Create all the relevant resources
-            if (isEnabled()) {
+            if (isEnabled() && isValidApp(appInfo)) {
+                // Create the OpenAPI config
                 OpenApiConfiguration appConfig = new OpenApiConfiguration(appInfo.getAppClassLoader());
+
+                // Map the application info to a new openapi document, and store it in the list
                 Map<ApplicationInfo, OpenAPI> map = Collections.singletonMap(appInfo,
                         createOpenApiDocument(appInfo.getAppClassLoader(), getContextRoot(appInfo), appConfig));
                 models.add(map);
+
+                LOGGER.info("OpenAPI document created.");
             }
         } else if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo appInfo = (ApplicationInfo) event.hook();
@@ -122,6 +159,16 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener 
         }
     }
 
+    /**
+     * @return boolean if the app is a valid target for an OpenAPI document.
+     */
+    private boolean isValidApp(ApplicationInfo appInfo) {
+        return appInfo.getMetaData(WebBundleDescriptorImpl.class) != null;
+    }
+
+    /**
+     * @return boolean the context root of the application.
+     */
     private String getContextRoot(ApplicationInfo appInfo) {
         return appInfo.getMetaData(WebBundleDescriptorImpl.class).getContextRoot();
     }

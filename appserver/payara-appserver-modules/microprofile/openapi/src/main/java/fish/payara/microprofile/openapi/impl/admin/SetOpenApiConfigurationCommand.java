@@ -106,12 +106,6 @@ public class SetOpenApiConfigurationCommand implements AdminCommand {
             adminCommandContext.getActionReport().failure(LOGGER, "Failed to update OpenAPI configuration", ex);
             return;
         }
-
-        if (enabled) {
-            LOGGER.info("OpenAPIService enabled.");
-        } else {
-            LOGGER.info("OpenAPIService disabled.");
-        }
     }
     
 }

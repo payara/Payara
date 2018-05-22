@@ -71,6 +71,7 @@ public class OpenApiResource {
         // If the server is disabled, throw an error
         if (!OpenApiService.getInstance().isEnabled()) {
             response.sendError(FORBIDDEN.getStatusCode(), "OpenAPI Service is disabled.");
+            return Response.status(FORBIDDEN).build();
         }
 
         // Get the OpenAPI document
