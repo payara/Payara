@@ -39,16 +39,20 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
+import fish.payara.nucleus.microprofile.config.converters.CommonSenseConverter;
+import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
-import javax.annotation.Priority;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.Converter;
@@ -60,44 +64,13 @@ import org.eclipse.microprofile.config.spi.Converter;
 public class PayaraConfig implements Config {
     
     private final List<ConfigSource> configSources;
-    private final HashMap<Type, Converter> converters;
+    private final Map<Type, Converter> converters;
 
-    public PayaraConfig(List<ConfigSource> configSources, List<Converter> convertersList) {
+    public PayaraConfig(List<ConfigSource> configSources, Map<Type,Converter> convertersMap) {
         this.configSources = configSources;
         this.converters = new HashMap<>();
-        for (Converter converter : convertersList) {
-            // add each converter to the map for later lookup
-            Type types[] = converter.getClass().getGenericInterfaces();
-            for (Type type : types) {
-                if (type instanceof ParameterizedType) {
-                    Type args[] = ((ParameterizedType) type).getActualTypeArguments();
-                    if (args.length == 1) {
-                        // check if there is one there already
-                        Type cType = args[0];
-                        Converter old = converters.get(cType);
-                        if (old != null) {
-                            if (getPriority(converter) > getPriority(old)) {
-                                this.converters.put(cType, converter);                                
-                            }
-                        }else {
-                            this.converters.put(cType, converter);
-                        }
-                    }
-                }
-            }
-        }
+        this.converters.putAll(convertersMap);
         Collections.sort(configSources, new ConfigSourceComparator());
-    }
-    
-    public <T> T getValue(String propertyName, String defaultValue, Class<T>  propertyType) {
-        String result = getValue(propertyName);
-        if (result == null) {
-            result = defaultValue;
-        }
-        if (result == null) {
-            throw new NoSuchElementException("Unable to find property with name " + propertyName);
-        }
-        return convertString(result, propertyType);
     }
 
     @Override
@@ -141,9 +114,52 @@ public class PayaraConfig implements Config {
     
     public Set<Type> getConverterTypes() {
         return converters.keySet();
+    }  
+        
+    public <T> List<T> getListValues(String propertyName, String defaultValue, Class<T> elementType) {
+        String value = getValue(propertyName);
+        if (value == null) {
+            value = defaultValue;
+        }
+        if (value == null) {
+            throw new NoSuchElementException("Unable to find property with name " + propertyName);
+        }
+        String keys[] = splitValue(value);
+        List<T> result = new ArrayList<>(keys.length);
+        for (String key : keys) {
+            result.add(convertString(key, elementType));
+        }
+        return result;
     }
     
+    public <T> Set<T> getSetValues(String propertyName, String defaultValue, Class<T> elementType) {
+        String value = getValue(propertyName);
+        if (value == null) {
+            value = defaultValue;
+        }
+        if (value == null) {
+            throw new NoSuchElementException("Unable to find property with name " + propertyName);
+        }
+        String keys[] = splitValue(value);
+        Set<T> result = new HashSet<>(keys.length);
+        for (String key : keys) {
+            result.add(convertString(key, elementType));
+        }
+        return result;
+    }
+
     
+    public <T> T getValue(String propertyName, String defaultValue, Class<T>  propertyType) {
+        String result = getValue(propertyName);
+        if (result == null) {
+            result = defaultValue;
+        }
+        if (result == null) {
+            throw new NoSuchElementException("Unable to find property with name " + propertyName);
+        }
+        return convertString(result, propertyType);
+    }
+
     private String getValue(String propertyName) {
         String result = null;
         for (ConfigSource configSource : configSources) {
@@ -187,15 +203,6 @@ public class PayaraConfig implements Config {
         return converter;
     }
     
-    private int getPriority(Converter converter) {
-        int result = 100;
-        Priority annotation = converter.getClass().getAnnotation(Priority.class);
-        if (annotation != null) {
-            result = annotation.value();
-        }
-        return result;
-    }
-    
     private <T> T convertString(String value, Class<T>  propertyType) {
         if (String.class.equals(propertyType)) {
             return (T) value;
@@ -204,10 +211,40 @@ public class PayaraConfig implements Config {
         // find a converter
         Converter<T> converter = getConverter(propertyType);
         if (converter == null) {
+            // OK try common sense convertor
+            if (propertyType.isArray()) {
+                // find converter for the array type
+                Class componentClazz = propertyType.getComponentType();
+                converter = getConverter(componentClazz);
+                if (converter != null) {
+                    // array convert
+                    String keys[] = splitValue(value);
+                    Object arrayResult = Array.newInstance(componentClazz, keys.length);
+                    for (int i=0; i < keys.length; i++) {
+                        Array.set(arrayResult, i, converter.convert(keys[i]));
+                    }
+                    return (T) arrayResult;
+                }
+            }
+            
+            CommonSenseConverter conv = new CommonSenseConverter(propertyType);
+            Object result = conv.convert(value);
+            if (result != null) {
+                converters.put(propertyType, conv);
+                return (T) result;
+            }
             throw new IllegalArgumentException("No converter for class " + propertyType);
         }
         
         return converter.convert(value);       
+    }
+    
+    private String[] splitValue(String value) {
+        String keys[] = value.split("(?<!\\\\),");
+        for (int i=0; i < keys.length; i++) {
+            keys[i] = keys[i].replaceAll("\\\\,", ",");
+        }
+        return keys;
     }
     
 }
