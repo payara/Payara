@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 -->
 
 <!initPage
@@ -55,7 +56,7 @@
         setSessionAttribute(key="#{pageSession.tabSetName}" value="batchJobs");
         createMap(result="#{requestScope.attrsMap}");
         mapPut(map="#{requestScope.attrsMap}" key="target" value="#{pageSession.encodedTarget}");
-        mapPut(map="#{requestScope.attrsMap}"  key="long" value="true");
+        mapPut(map="#{requestScope.attrsMap}"  key="output" value="executionid,jobname,batchstatus,exitstatus,instanceid,starttime,endtime");
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-jobs" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.resp}");
         setAttribute(key="listOfRows", value="#{requestScope.resp.data.extraProperties.listBatchJobs}");
         setPageSessionAttribute(key="tableTitle" value="$resource{i18nf.batch.batchJobsTableTitle}");
