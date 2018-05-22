@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
 
 <project name="glassfish-embedded-all" default="create.distribution" basedir=".">
     <property name="rootdir" value="target"/>
@@ -51,28 +51,30 @@
     <property name="filedir" value="${rootdir}/packager_files"/>
 
     <target name="get.distribution.type">
-      <condition property="full.distribution">
-	<equals arg1="${bundlename}" arg2="org.glassfish.main.embedded.all"/>
-      </condition>
-      <condition property="web.distribution">
-	<equals arg1="${bundlename}" arg2="org.glassfish.main.embedded.web"/>
-      </condition>
-      <condition property="nucleus.distribution">
-	<equals arg1="${bundlename}" arg2="org.glassfish.main.embedded.nucleus"/>
-      </condition>
+        <condition property="full.distribution">
+            <equals arg1="${bundlename}" arg2="org.glassfish.main.embedded.all"/>
+        </condition>
+        <condition property="web.distribution">
+            <equals arg1="${bundlename}" arg2="org.glassfish.main.embedded.web"/>
+        </condition>
+        <condition property="nucleus.distribution">
+            <equals arg1="${bundlename}" arg2="org.glassfish.main.embedded.nucleus"/>
+        </condition>
     </target>
 
     <target name="create.distribution" depends="get.distribution.type">
         <antcall target="makeJarDir"/>
         <antcall target="removeJarsNotNeeded"/>
-	<antcall target="addDtds"/>
-   	<antcall target="addRars"/>
-	<antcall target="addEjbTimer"/>
+        <antcall target="addDtds"/>
+        <antcall target="addRars"/>
+        <antcall target="addEjbTimer"/>
+        <antcall target="replaceDomainFull"/>
+        <antcall target="replaceDomainWeb"/>
         <antcall target="rejar"/>
         <attachArtifact file="${finaljar}"/>
-     </target>
+    </target>
 
-     <target name="makeJarDir">
+    <target name="makeJarDir">
         <echo message="creating jar directory..."/>
         <copy todir="${jardir}">
             <fileset dir="${zipdir}">
@@ -88,57 +90,58 @@
             </fileset>
         </unzip>
 
-    	<mkdir dir="${rootdir}/temp"/>
-     </target>
+        <mkdir dir="${rootdir}/temp"/>
+    </target>
 
-     <target name="removeJarsNotNeeded">
-	<delete file="${modulesdir}/javahelp.jar"/>
-	<delete file="${modulesdir}/upgrade-tool.jar"/>
-	<delete file="${modulesdir}/web-gui-plugin-common.jar"/>
-	<delete file="${modulesdir}/ant.jar" failonerror="false"/>
-	<delete verbose="true" failonerror="false">
-	  <fileset dir="${modulesdir}" includes="console-**-help.jar"/>
-	  <fileset dir="${modulesdir}" includes="console-**-plugin.jar"/>
-	  <!-- skip the domain creation template jar files viz., nucleus-domain.jar, appserver-domain.jar -->
-	  <fileset dir="${gfdir}" includes="**/appserver-domain*.jar"/>
-	  <fileset dir="${gfdir}" includes="**/nucleus-domain.jar"/>
-          <fileset dir="${gfdir}" includes="**/production-domain*.jar"/>
-	  <fileset dir="${gfdir}" includes="**/weld-se-shaded.jar"/>
-	  <fileset dir="${gfdir}" includes="**/weld-environment-common.jar"/>
-	</delete>
-	<delete file="${modulesdir}/autostart/osgi-cdi.jar" failonerror="false"/>
-     </target>
+    <target name="removeJarsNotNeeded">
+        <delete file="${modulesdir}/javahelp.jar"/>
+        <delete file="${modulesdir}/upgrade-tool.jar"/>
+        <delete file="${modulesdir}/web-gui-plugin-common.jar"/>
+        <delete file="${modulesdir}/ant.jar" failonerror="false"/>
+        <delete verbose="true" failonerror="false">
+            <fileset dir="${modulesdir}" includes="console-**-help.jar"/>
+            <fileset dir="${modulesdir}" includes="console-**-plugin.jar"/>
+            <!-- skip the domain creation template jar files viz., nucleus-domain.jar, appserver-domain.jar -->
+            <fileset dir="${gfdir}" includes="**/appserver-domain*.jar"/>
+            <fileset dir="${gfdir}" includes="**/nucleus-domain.jar"/>
+            <fileset dir="${gfdir}" includes="**/production-domain*.jar"/>
+            <fileset dir="${gfdir}" includes="**/weld-se-shaded.jar"/>
+            <fileset dir="${gfdir}" includes="**/weld-environment-common.jar"/>
+        </delete>
+        <delete file="${modulesdir}/autostart/osgi-cdi.jar" failonerror="false"/>
+    </target>
 
 
     <target name="addDtds" unless="nucleus.distribution">
         <echo message="adding dtds"/>
         <jar jarfile="${jardir}/dtds.jar" basedir="${jardir}/${install.dir.name}/glassfish/lib" includes="dtds/**/*"/>
-	<jar jarfile="${jardir}/schemas.jar" basedir="${jardir}/${install.dir.name}/glassfish/lib" includes="schemas/**/*"/>
+        <jar jarfile="${jardir}/schemas.jar" basedir="${jardir}/${install.dir.name}/glassfish/lib" includes="schemas/**/*"/>
     </target>
     
     <target name="rejar">
         <echo message="rejarring and processing metadata..."/>
         <taskdef name="rejar" classname="org.jvnet.maven.plugin.antrun.RejarTask" />
 
-	<defaultexcludes add="META-INF/**.RSA"/>
-	<defaultexcludes add="META-INF/**.inf"/>
-	<defaultexcludes add="META-INF/**.SF"/>
+        <defaultexcludes add="META-INF/**.RSA"/>
+        <defaultexcludes add="META-INF/**.inf"/>
+        <defaultexcludes add="META-INF/**.SF"/>
 
         <rejar destfile="${finaljar}" duplicate="preserve" >
-           <manifest>
+            <manifest>
                 <attribute name="Bundle-SymbolicName" value="${bundlename}"/>
                 <attribute name="Main-Class" value="com.sun.enterprise.glassfish.bootstrap.UberMain"/>
-            </manifest>
+            </manifest>    
             <zipgroupfileset dir="${jardir}" includes="**/*.jar"/>
             <fileset dir="${rootdir}/temp" includes="*.rar, *.war"/>
+            <fileset dir="${jardir}/${install.dir.name}/glassfish/" includes="config/domain.xml" />
         </rejar>
     </target>
 
 
     <target name="addExtraRars" if="full.distribution">
-	<echo message="Adding additional rars"/>
+        <echo message="Adding additional rars"/>
 
-	<!-- Include property files i.e., glassfish4/mq/lib/props/broker/*.properties of mq.zip in jmsra.rar --> 
+        <!-- Include property files i.e., glassfish4/mq/lib/props/broker/*.properties of mq.zip in jmsra.rar --> 
         <unzip dest="${jardir}">
             <fileset dir="${zipdir}">
                 <include name="mq**.zip"/>
@@ -161,21 +164,30 @@
         <jar jarfile="${jardir}/__ds_jdbc_ra.rar" basedir="${jardir}/${install.dir.name}/glassfish" includes="lib/install/applications/__ds_jdbc_ra/**/*"/>
         <jar jarfile="${jardir}/__dm_jdbc_ra.rar" basedir="${jardir}/${install.dir.name}/glassfish" includes="lib/install/applications/__dm_jdbc_ra/**/*"/>
         <jar jarfile="${jardir}/__xa_jdbc_ra.rar" basedir="${jardir}/${install.dir.name}/glassfish" includes="lib/install/applications/__xa_jdbc_ra/**/*"/>
-	<copy todir="${rootdir}/temp">
-  		<fileset dir="${jardir}">
-    			<include name="*.rar"/>
-  		</fileset>
+        <copy todir="${rootdir}/temp">
+            <fileset dir="${jardir}">
+                <include name="*.rar"/>
+            </fileset>
         </copy>
-   <!--     <jar jarfile="${finaljar}" update="true" basedir="${jardir}" includes="__cp_jdbc_ra.rar, __ds_jdbc_ra.rar, __dm_jdbc_ra.rar, __xa_jdbc_ra.rar"/>  -->
+        <!--     <jar jarfile="${finaljar}" update="true" basedir="${jardir}" includes="__cp_jdbc_ra.rar, __ds_jdbc_ra.rar, __dm_jdbc_ra.rar, __xa_jdbc_ra.rar"/>  -->
     </target>
 
-  <target name="addEjbTimer" if="full.distribution">
+    <target name="addEjbTimer" if="full.distribution">
         <echo message="adding EJBTimer"/>
-	<copy file="${jardir}/${install.dir.name}/glassfish/lib/install/applications/ejb-timer-service-app.war" todir= "${rootdir}/temp"/>
-<!--
-        <jar jarfile="${finaljar}" update="true"  basedir="${jardir}/glassfish4/glassfish/lib/install/applications" includes="ejb-timer-service-app.war"/>
--->
-   </target>
+        <copy file="${jardir}/${install.dir.name}/glassfish/lib/install/applications/ejb-timer-service-app.war" todir= "${rootdir}/temp"/>
+        <!--
+                <jar jarfile="${finaljar}" update="true"  basedir="${jardir}/glassfish4/glassfish/lib/install/applications" includes="ejb-timer-service-app.war"/>
+        -->
+    </target>
 
-
+    <target name="replaceDomainWeb" if="web.distribution">
+        <echo message="replacing domain"/>
+        <copy file="src/main/resources/config/domain.xml" todir="${jardir}/${install.dir.name}/glassfish/config/" description="Copying domain"/>
+    </target>
+   
+   
+    <target name="replaceDomainFull" if="full.distribution">
+        <echo message="replacing domain.xml"/>
+        <copy file="src/main/resources/config/domain.xml" todir="${jardir}/${install.dir.name}/glassfish/config/" description="Copying domain"/>
+    </target>
 </project>

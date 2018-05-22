@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jmac.config;
 
 import static com.sun.enterprise.security.jmac.config.GFServerConfigProvider.HTTPSERVLET;
@@ -77,7 +77,7 @@ public class HttpServletHelper extends ConfigHelper {
             }
         }
 
-        // set realmName before init
+        // Set realmName before init
         init(HTTPSERVLET, appContext, map, cbh);
 
         if (webBundle != null) {

@@ -40,6 +40,7 @@
 package fish.payara.microprofile.metrics.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import fish.payara.microprofile.metrics.MetricsService;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.Param;
@@ -58,6 +59,7 @@ import static org.glassfish.config.support.CommandTarget.DEPLOYMENT_GROUP;
 import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -85,11 +87,14 @@ public class SetMetricsConfigurationCommand implements AdminCommand {
     @Inject
     private Target targetUtil;
     
-    @Param(name = "enabled", optional = false)
+    @Param(name = "enabled", optional = true)
     private Boolean enabled;
     
-    @Param(name = "secureMetrics", optional = true, defaultValue = "false")
+    @Param(name = "secureMetrics", optional = true)
     private Boolean secure;
+    
+    @Param(name = "dynamic", optional = true)
+    private Boolean dynamic;
 
     @Param(optional = true, defaultValue = "server-config")
     private String target;
@@ -98,14 +103,31 @@ public class SetMetricsConfigurationCommand implements AdminCommand {
     public void execute(AdminCommandContext adminCommandContext) {
         Config targetConfig = targetUtil.getConfig(target);
         MetricsServiceConfiguration metricsConfiguration = targetConfig.getExtensionByType(MetricsServiceConfiguration.class);
-        
+        MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
         try {
             ConfigSupport.apply(metricsConfigurationProxy -> {
+                if (dynamic != null) {
+                    metricsConfigurationProxy.setDynamic(String.valueOf(dynamic));
+                }
                 if (enabled != null) {
                     metricsConfigurationProxy.setEnabled(String.valueOf(enabled));
+                    if (dynamic != null) {
+                        if (dynamic) {
+                            metricsService.resetMetricsEnabledProperty();
+                        }
+                    } else if (Boolean.valueOf(metricsConfiguration.getDynamic())) {
+                        metricsService.resetMetricsEnabledProperty();
+                    }
                 }
                 if (secure != null) {
                     metricsConfigurationProxy.setSecure(String.valueOf(secure));
+                    if (dynamic != null) {
+                        if (dynamic) {
+                            metricsService.resetMetricsSecureProperty();
+                        }
+                    } else if (Boolean.valueOf(metricsConfiguration.getDynamic())) {
+                        metricsService.resetMetricsSecureProperty();
+                    }
                 }
                 return metricsConfigurationProxy;
             }, metricsConfiguration);

@@ -42,27 +42,27 @@ package org.glassfish.webservices.codegen;
 
 /**
  *
- * @author  Jerome Dochez
+ * @author Jerome Dochez
  */
 public class JaxRpcCodegenFactory {
-    
+
     private volatile static JaxRpcCodegenFactory registeredFactory;
-    
-    /** Creates a new instance of WSCompileFactory */
+
     private JaxRpcCodegenFactory() {
     }
-    
+
     public static JaxRpcCodegenFactory newInstance() {
-        
-        //  for now, there is only one around, later, we may have
+
+        // for now, there is only one around, later, we may have
         // to look into some property file to find out which
         // jaxrpc implementation we want to use.
-        if (registeredFactory==null) {
+        if (registeredFactory == null) {
             registeredFactory = new JaxRpcCodegenFactory();
         }
+
         return registeredFactory;
     }
-    
+
     public JaxRpcCodegenAdapter getAdapter(boolean processServiceReferences) {
         return new JaxRpcRICodegen(processServiceReferences);
     }

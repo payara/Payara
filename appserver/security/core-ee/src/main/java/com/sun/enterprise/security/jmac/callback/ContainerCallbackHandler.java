@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * ContainerCallbackHandler
@@ -61,15 +62,14 @@ import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * @author  Shing Wai Chan
+ * @author Shing Wai Chan
  */
 @Service
-@ContractsProvided({ContainerCallbackHandler.class, CallbackHandler.class})
-public final class ContainerCallbackHandler 
-        implements CallbackHandler, CallbackHandlerConfig {
-    private CallbackHandler handler = null;
+@ContractsProvided({ ContainerCallbackHandler.class, CallbackHandler.class })
+public final class ContainerCallbackHandler implements CallbackHandler, CallbackHandlerConfig {
     
-    
+    private final CallbackHandler handler;
+
     public ContainerCallbackHandler() {
         if (Globals.getDefaultHabitat() == null || SecurityServicesUtil.getInstance().isACC()) {
             handler = new ClientContainerCallbackHandler();
@@ -78,27 +78,15 @@ public final class ContainerCallbackHandler
         }
     }
 
-    public void handle(Callback[] callbacks)
-            throws IOException, UnsupportedCallbackException {
+    public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         handler.handle(callbacks);
     }
 
     public void setHandlerContext(HandlerContext handlerContext) {
-        ((CallbackHandlerConfig)handler).setHandlerContext(handlerContext);
+        ((CallbackHandlerConfig) handler).setHandlerContext(handlerContext);
     }
-    
-    public void setHandlerContext(String realm) {
-        final String fRealmName = realm;
-        HandlerContext handlerContext = new HandlerContext() {
 
-            public String getRealmName() {
-                return fRealmName;
-            }
-        };
-        ((BaseContainerCallbackHandler) handler).setHandlerContext(handlerContext);
+    public void setHandlerContext(String realm) {
+        ((BaseContainerCallbackHandler) handler).setHandlerContext(() -> realm);
     }
-    
-/*    private  boolean isAppclientContainer() {
-        return SecurityServicesUtil.getInstance().isACC();
-    }*/
 }

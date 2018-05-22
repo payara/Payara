@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2018] Payara Foundation and/or affiliates -->
 
 <!initPage 
     setResourceBundle(key="common" bundle="org.glassfish.common.admingui.Strings")
@@ -56,9 +57,12 @@
         setPageSessionAttribute(key="childType" value="monitoring-service");
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}");
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
+        setPageSessionAttribute(key="amxUrl", value="#{pageSession.parentUrl}/amx-configuration");
         setPageSessionAttribute(key="rest-api" value="true");
         gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
-        setPageSessionAttribute(key="convertToFalseList" value={"dtraceEnabled", "monitoringEnabled", "mbeanEnabled"});
+        gf.getEntityAttrs(endpoint="#{pageSession.amxUrl}", valueMap="#{pageSession.amxMap}");
+        setPageSessionAttribute(key="convertToFalseList" value={"dtraceEnabled", "monitoringEnabled", "mbeanEnabled", "enabled"});
+        setPageSessionAttribute(key="skipAttrsList" value={"amxSelected"});
         gf.getMonitorLevels(endpoint="#{pageSession.parentUrl}" monitorCompList="#{requestScope.tableList}")
         
     />
@@ -80,6 +84,9 @@
                         convertToFalse="#{pageSession.convertToFalseList}"
                         onlyUseAttrs="#{pageSession.onlyUseAttrs}"
                     );
+                    gf.updateEntity(endpoint="#{pageSession.amxUrl}" attrs="#{pageSession.amxMap}"
+                        convertToFalse="#{pageSession.convertToFalseList}"
+                    );
                     prepareSuccessfulMsg();
                     gf.redirect(page="#{request.contextPath}/common/monitor/monitoringPage.jsf?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}&name=#{pageSession.Name}&configName=#{pageSession.encodedConfigName}");
                 />
@@ -99,6 +106,9 @@
         </sun:property>
         <sun:property id="monMbeansProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{common.monitoring.monMbeans}"  helpText="$resource{common.monitoring.monMbeansHelp}">
             <sun:checkbox id="momBbeanCheckbox" label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['mbeanEnabled']}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="amxProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{common.monitoring.AMXEnabled}" helpText="$resource{common.monitoring.AMXEnabledHelp}">
+            <sun:checkbox id="amx" label="$resource{i18n.common.Enabled}" selected="#{pageSession.amxMap['enabled']}" selectedValue="true"/>
         </sun:property>
         "<br />
     </sun:propertySheetSection>

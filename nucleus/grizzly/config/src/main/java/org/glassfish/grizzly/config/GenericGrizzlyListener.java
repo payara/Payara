@@ -797,18 +797,18 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                                         final FilterChainBuilder builder,
                                         final boolean secure) {
         isHttp2Enabled = false;
-        if (!skipHttp2 && httpElement != null && httpElement.isHttp2Enabled()) {
+        if (!skipHttp2 && httpElement != null && Boolean.parseBoolean(httpElement.getHttp2Enabled())) {
             try {
                 Http2AddOn http2Addon = new Http2AddOn(Http2Configuration.builder()
-                        .maxConcurrentStreams(httpElement.getHttp2MaxConcurrentStreams())
-                        .initialWindowSize(httpElement.getHttp2InitialWindowSizeInBytes())
-                        .maxFramePayloadSize(httpElement.getHttp2MaxFramePayloadSizeInBytes())
-                        .maxHeaderListSize(httpElement.getHttp2MaxHeaderListSizeInBytes())
+                        .maxConcurrentStreams(Integer.parseInt(httpElement.getHttp2MaxConcurrentStreams()))
+                        .initialWindowSize(Integer.parseInt(httpElement.getHttp2InitialWindowSizeInBytes()))
+                        .maxFramePayloadSize(Integer.parseInt(httpElement.getHttp2MaxFramePayloadSizeInBytes()))
+                        .maxHeaderListSize(Integer.parseInt(httpElement.getHttp2MaxHeaderListSizeInBytes()))
                         .streamsHighWaterMark(Float.parseFloat(httpElement.getHttp2StreamsHighWaterMark()))
                         .cleanPercentage(Float.parseFloat(httpElement.getHttp2CleanPercentage()))
-                        .cleanFrequencyCheck(httpElement.getHttp2CleanFrequencyCheck())
-                        .disableCipherCheck(httpElement.isHttp2DisableCipherCheck())
-                        .enablePush(httpElement.isHttp2PushEnabled())
+                        .cleanFrequencyCheck(Integer.parseInt(httpElement.getHttp2CleanFrequencyCheck()))
+                        .disableCipherCheck(Boolean.valueOf(httpElement.getHttp2DisableCipherCheck()))
+                        .enablePush(Boolean.parseBoolean(httpElement.getHttp2PushEnabled()))
                         .executorService(transport.getWorkerThreadPool())
                         .build());
                 // The Http2AddOn requires access to more information compared to the other addons

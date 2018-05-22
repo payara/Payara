@@ -145,10 +145,10 @@ public class GetProtocol implements AdminCommand {
 
         // Write HTTP/2 config options
         report.appendMessage("\nHTTP/2:\n");
-        report.appendMessage(String.format("Enabled: %s\n", protocol.getHttp().isHttp2Enabled()));
-        if (protocol.getHttp().isHttp2Enabled()) {
-            report.appendMessage(String.format("Push Enabled: %s\n", protocol.getHttp().isHttp2PushEnabled()));
-            report.appendMessage(String.format("Cipher Check: %s\n", !protocol.getHttp().isHttp2DisableCipherCheck()));
+        report.appendMessage(String.format("Enabled: %s\n", protocol.getHttp().getHttp2Enabled()));
+        if (Boolean.parseBoolean(protocol.getHttp().getHttp2Enabled())) {
+            report.appendMessage(String.format("Push Enabled: %s\n", protocol.getHttp().getHttp2PushEnabled()));
+            report.appendMessage(String.format("Cipher Check: %s\n", !Boolean.parseBoolean(protocol.getHttp().getHttp2DisableCipherCheck())));
             if (verbose) {
                 report.appendMessage(String.format("Max Concurrent Streams: %s\n", protocol.getHttp().getHttp2MaxConcurrentStreams()));
                 report.appendMessage(String.format("Initial Window Size: %s bytes\n", protocol.getHttp().getHttp2InitialWindowSizeInBytes()));
@@ -172,7 +172,7 @@ public class GetProtocol implements AdminCommand {
         properties.put("timeoutSeconds", protocol.getHttp().getTimeoutSeconds());
         properties.put("dnsLookupEnabled", protocol.getHttp().getDnsLookupEnabled());
         properties.put("xFrameOptions", protocol.getHttp().getXframeOptions());
-        properties.put("http2Enabled", protocol.getHttp().isHttp2Enabled());
+        properties.put("http2Enabled", protocol.getHttp().getHttp2Enabled());
         properties.put("http2MaxConcurrentStreams", protocol.getHttp().getHttp2MaxConcurrentStreams());
         properties.put("http2InitialWindowSizeInBytes", protocol.getHttp().getHttp2InitialWindowSizeInBytes());
         properties.put("http2MaxFramePayloadSizeInBytes", protocol.getHttp().getHttp2MaxFramePayloadSizeInBytes());
@@ -180,8 +180,8 @@ public class GetProtocol implements AdminCommand {
         properties.put("http2StreamsHighWaterMark", protocol.getHttp().getHttp2StreamsHighWaterMark());
         properties.put("http2CleanPercentage", protocol.getHttp().getHttp2CleanPercentage());
         properties.put("http2CleanFrequencyCheck", protocol.getHttp().getHttp2CleanFrequencyCheck());
-        properties.put("http2DisableCipherCheck", protocol.getHttp().isHttp2DisableCipherCheck());
-        properties.put("http2PushEnabled", protocol.getHttp().isHttp2PushEnabled());
+        properties.put("http2DisableCipherCheck", protocol.getHttp().getHttp2DisableCipherCheck());
+        properties.put("http2PushEnabled", protocol.getHttp().getHttp2PushEnabled());
         report.setExtraProperties(properties);
     }
 
