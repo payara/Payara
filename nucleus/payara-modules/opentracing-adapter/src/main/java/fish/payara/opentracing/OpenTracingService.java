@@ -67,7 +67,7 @@ public class OpenTracingService implements EventListener {
 
     private static final Logger logger = Logger.getLogger(OpenTracingService.class.getCanonicalName());
 
-    private final Map<String, InheritableThreadLocal<Tracer>> tracers = new ConcurrentHashMap<>();
+    private static final Map<String, Tracer> tracers = new ConcurrentHashMap<>();
     
     @PostConstruct
     void postConstruct() {
@@ -83,18 +83,16 @@ public class OpenTracingService implements EventListener {
     }
 
     public synchronized Tracer getTracer(String applicationName) {
-        Tracer tracer = tracers.get(applicationName).get();
-
+        Tracer tracer = tracers.get(applicationName);
+       
         if (tracer == null) {
             if (Boolean.getBoolean("USE_OPENTRACING_MOCK_TRACER")) {
                 tracer = new MockTracer(new ThreadLocalActiveSpanSource(), MockTracer.Propagator.TEXT_MAP);
             } else {
                 tracer = new fish.payara.opentracing.tracer.Tracer(applicationName);
             }
-
-            InheritableThreadLocal<Tracer> tracerThreadLocal = new InheritableThreadLocal<>();
-            tracerThreadLocal.set(tracer);
-            tracers.put(applicationName, tracerThreadLocal);
+            
+            tracers.put(applicationName, tracer);
         }
 
         return tracer;
