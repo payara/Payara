@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.cli;
 
 import com.sun.enterprise.admin.remote.Metrix;
@@ -182,19 +184,13 @@ public final class CLIContainer {
         Map<String, String> result = new HashMap<String, String>();
         Set<File> extFiles = expandExtensions();
         for (File file : extFiles) {
-            BufferedReader reader = null;
-            JarFile jar = null;
-            try {
-                jar = new JarFile(file);
+            
+            try (JarFile jar = new JarFile(file)){
                 ZipEntry entry = jar.getEntry("META-INF/hk2-locator/default");
                 if (entry != null) {
-                    reader = new BufferedReader(new InputStreamReader(jar.getInputStream(entry)));
-                    parseInHk2LocatorOrig(reader, result);
-                }
-            } finally {
-                try { reader.close(); } catch (Exception ex) {
-                }
-                try { jar.close(); } catch (Exception ex) {
+                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(jar.getInputStream(entry)))){
+                        parseInHk2LocatorOrig(reader, result);
+                    }
                 }
             }
         }
@@ -232,25 +228,19 @@ public final class CLIContainer {
             try {
                 String className = getCommandClassName(name);
                 if (className == null) {
-                    if (logger.isLoggable(Level.FINER)) {
-                        logger.log(Level.FINER, "CLICommand not found for name {0}", name);
-                    }
+                    logger.log(Level.FINER, "CLICommand not found for name {0}", name);
                     return null;
                 }
                 CLICommand result = (CLICommand) createInstance(className);
                 if (result != null) {
-                    if (logger.isLoggable(Level.FINER)) {
                         logger.log(Level.FINER, "CLIContainer creates instance for command {0}", name);
-                    }
                     return result;
                 }
             } catch (Exception ex) {
                 //Not special case. 
             }
         }
-        if (logger.isLoggable(Level.FINER)) {
-            logger.log(Level.FINER, "HK2 Service locator will be used for command {0}", name);
-        }
+        logger.log(Level.FINER, "HK2 Service locator will be used for command {0}", name);
         return getServiceLocator().getService(CLICommand.class, name);
     }
     

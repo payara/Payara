@@ -174,14 +174,13 @@
         <json.version>1.0</json.version>
         <ddl.version>RELEASE65</ddl.version>
         <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
-        
-        <!-- Microprofile version properties -->
-        <microprofile-config.version>1.1</microprofile-config.version>
-        <microprofile-fault-tolerance.version>1.0</microprofile-fault-tolerance.version>
-	<microprofile-jwt-auth.version>1.0</microprofile-jwt-auth.version>
-	<microprofile-healthcheck.version>1.0</microprofile-healthcheck.version>
-        <microprofile-metrics.version>1.1</microprofile-metrics.version>
-        <microprofile-rest-client.version>1.0.1</microprofile-rest-client.version>
+
+         <!-- Microprofile version properties -->
+         <microprofile-fault-tolerance.version>1.0</microprofile-fault-tolerance.version>
+         <microprofile-jwt-auth.version>1.0</microprofile-jwt-auth.version>
+         <microprofile-healthcheck.version>1.0</microprofile-healthcheck.version>
+         <microprofile-metrics.version>1.1</microprofile-metrics.version>
+         <microprofile-rest-client.version>1.0.1</microprofile-rest-client.version>
     </properties>
 
     <modules>

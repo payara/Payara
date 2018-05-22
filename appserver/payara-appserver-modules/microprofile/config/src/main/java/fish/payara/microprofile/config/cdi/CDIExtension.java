@@ -40,6 +40,8 @@
 package fish.payara.microprofile.config.cdi;
 
 import fish.payara.nucleus.microprofile.config.spi.PayaraConfig;
+import java.lang.reflect.Array;
+import java.lang.reflect.ParameterizedType;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -48,7 +50,9 @@ import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.*;
 import java.lang.reflect.Type;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
+import javax.inject.Provider;
 
 /**
  * CDI extension that implements the Microprofile Config API ConfigProperty injection
@@ -68,9 +72,15 @@ public class CDIExtension implements Extension {
         if (property != null) {
             // see if we can resolve the injection point in the future
             try {
+                Type t = pip.getInjectionPoint().getType();
                 if (Class.class.isInstance(pip.getInjectionPoint().getType())) {
                     ConfigPropertyProducer.getGenericProperty(pip.getInjectionPoint());
-                }
+                } else if (t instanceof ParameterizedType ){
+                    Class rawClazz = (Class) ((ParameterizedType) t).getRawType();
+                    if (rawClazz != Provider.class && rawClazz != Optional.class) {
+                        ConfigPropertyProducer.getGenericProperty(pip.getInjectionPoint());
+                    }
+                } 
             }catch (Throwable de ) {
                 Class failingClass = null;
                 Bean bean = pip.getInjectionPoint().getBean();
@@ -79,7 +89,7 @@ public class CDIExtension implements Extension {
                 } else {
                     failingClass = pip.getInjectionPoint().getBean().getBeanClass();
                 }
-                pip.addDefinitionError(new DeploymentException("Deploment Failure for ConfigProperty " + property.name() + " in class " + failingClass.getCanonicalName() + " Reason " + de.getMessage(),de));
+                pip.addDefinitionError(new DeploymentException("Deployment Failure for ConfigProperty " + property.name() + " in class " + failingClass.getCanonicalName() + " Reason " + de.getMessage(),de));
             }
         }
     }
@@ -125,22 +135,52 @@ public class CDIExtension implements Extension {
                 }
             }
             
+            // we have the method
             if (beanAttr != null) {
                 HashSet<Type> types = new HashSet<>();
                 types.addAll(((PayaraConfig) config).getConverterTypes());
-                // add string explictly
+                // add String explictly
                 types.add(String.class);
                 
+                // go through each type which has a converter either custom or built in
+                // create a bean with a Producer method using the bean factory and with custom bean attributes
+                // also override the set of types depending on the type of the converter
                 for (final Type converterType : types) {
-                    // go through each type which has a converter
-                    // create a bean with a Producer method using the bean factory and with custom bean attributes
                     Bean<?> bean = bm.createBean(new TypesBeanAttributes<Object>(beanAttr) {
                         
-                        // overrides the bean types to return the type registered for a Converter
+                        // overrides the bean types to return the types registered for a Converter
                         @Override
                         public Set<Type> getTypes() {
                             HashSet<Type> result = new HashSet<>();
+                            // add the type that the converter converts
                             result.add(converterType);
+                            
+                            // also indicate support array of the type.
+                            if (converterType instanceof Class) {
+                                Object array = Array.newInstance((Class)converterType, 0);
+                                result.add(array.getClass());
+                            }
+                            
+                            // ok we will have to do specific code for wrappers
+                            // for each wrapper indicate we can also convert the primitive
+                            // and we can convert the primitive array
+                            if (converterType == Long.class) {
+                                result.add(long.class);
+                                result.add((new long[0]).getClass());
+                            } else if (converterType == Boolean.class) {
+                                result.add(boolean.class);
+                                result.add((new boolean[0]).getClass());
+                            } else if (converterType == Integer.class) {
+                                result.add(int.class);
+                                result.add((new int[0]).getClass());
+                            } else if (converterType == Float.class) {
+                                result.add(float.class);
+                                result.add((new float[0]).getClass());
+                            } else if (converterType == Double.class) {
+                                result.add(double.class);
+                                result.add((new double[0]).getClass());
+                            }
+                            
                             return result;
                         }
                     }, ConfigPropertyProducer.class, bm.getProducerFactory(method, null));

@@ -253,6 +253,9 @@
         <org.osgi.core.version>4.2.0</org.osgi.core.version>
         <org.osgi.compendium.version>4.2.0</org.osgi.compendium.version>
         <woodstox.version>4.2.0</woodstox.version>
+        <!-- Microprofile -->
+        <microprofile-config.version>1.2.1</microprofile-config.version>
+
         <jansi.version>1.17</jansi.version>
         <deploy.skip>true</deploy.skip>
     </properties>

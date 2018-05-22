@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
@@ -50,7 +51,7 @@ public class CLIConstants {
     ////////////////////////////////////////////////////////////////////////////
     public static final int     DEFAULT_ADMIN_PORT              = 4848;
     public static final String  DEFAULT_HOSTNAME                = "localhost";
-    public static final String  EOL                             = System.getProperty("line.separator");
+    public static final String  EOL                             = System.lineSeparator();
 
     public static final long    WAIT_FOR_DAS_TIME_MS            = 10 * 60 * 1000; // 10 minutes
     public static final int     RESTART_NORMAL                  = 10;

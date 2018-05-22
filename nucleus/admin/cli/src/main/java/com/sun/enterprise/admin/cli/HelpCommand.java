@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
@@ -98,10 +99,11 @@ public class HelpCommand extends CLICommand {
     }
 
     private int getPageLength() {
-      if (programOpts.isInteractive())
-          return DEFAULT_PAGE_LENGTH;
-      else
-          return NO_PAGE_LENGTH;
+        if (programOpts.isInteractive()) {
+            return DEFAULT_PAGE_LENGTH;
+        } else {
+            return NO_PAGE_LENGTH;
+        }
     }
 
     private String getPrompt() {
@@ -112,13 +114,12 @@ public class HelpCommand extends CLICommand {
         return strings.get("ManpageQuit");
     }
 
-    private Reader getSource()
-            throws CommandException, CommandValidationException {
+    private Reader getSource() throws CommandException, CommandValidationException {
         CLICommand cmd = CLICommand.getCommand(habitat, getCommandName());
         Reader r = cmd.getManPage();
-        if (r == null)
-            throw new CommandException(
-                        strings.get("ManpageMissing", getCommandName()));
+        if (r == null){
+            throw new CommandException(strings.get("ManpageMissing", getCommandName()));
+        }
         return expandManPage(r);
     }
 

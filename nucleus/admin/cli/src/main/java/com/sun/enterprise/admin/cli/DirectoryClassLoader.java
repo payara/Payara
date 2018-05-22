@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
@@ -51,8 +52,8 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  * in a specified directory.
  */
 public class DirectoryClassLoader extends URLClassLoader {
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(DirectoryClassLoader.class);
+    
+    private static final LocalStringsImpl strings = new LocalStringsImpl(DirectoryClassLoader.class);
 
     /**
      * Create a DirectoryClassLoader to load from jar files in
@@ -78,8 +79,7 @@ public class DirectoryClassLoader extends URLClassLoader {
      * @param parent the parent class loader
      * @throws IOException if the directory can't be accessed
      */
-    public DirectoryClassLoader(File dir, ClassLoader parent)
-                        throws IOException {
+    public DirectoryClassLoader(File dir, ClassLoader parent) throws IOException {
         super(getJars(dir), parent);
     }
     
@@ -100,15 +100,18 @@ public class DirectoryClassLoader extends URLClassLoader {
 
     private static URL[] getJars(File dir) throws IOException {
         File[] fjars = dir.listFiles(new FilenameFilter() {
+            @Override
             public boolean accept(File dir, String name) {
                 return name.endsWith(".jar");
             }
         });
-        if (fjars == null)
+        if (fjars == null){
             throw new IOException(strings.get("DirError", dir));
+        }
         URL[] jars = new URL[fjars.length];
-        for (int i = 0; i < fjars.length; i++)
+        for (int i = 0; i < fjars.length; i++){
             jars[i] = fjars[i].toURI().toURL();
+        }
         return jars;
     }
 }

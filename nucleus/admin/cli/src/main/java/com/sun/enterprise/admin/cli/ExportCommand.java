@@ -37,17 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portion Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
 import java.util.*;
 import org.jvnet.hk2.annotations.*;
-import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
 
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import java.util.logging.Level;
 
 /**
  * A local export command.
@@ -58,50 +59,48 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 @PerLookup
 public class ExportCommand extends CLICommand {
 
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(ExportCommand.class);
+    private static final LocalStringsImpl strings = new LocalStringsImpl(ExportCommand.class);
 
-    @Param(name = "environment-variable", primary = true, optional = true,
-	    multiple = true)
+    @Param(name = "environment-variable", primary = true, optional = true, multiple = true)
     private List<String> vars;
 
     @Override
-    public int executeCommand()
-            throws CommandException, CommandValidationException {
+    public int executeCommand() throws CommandException, CommandValidationException {
         int ret = 0;    // by default, success
 
         // if no operands, print out everything
-        if (vars == null || vars.size() == 0) {
+        if (vars == null || vars.isEmpty()) {
             for (Map.Entry<String, String> e : env.entrySet())
-                logger.info(e.getKey() + " = " + quote(e.getValue()));
+                logger.log(Level.INFO, "{0} = {1}", new Object[]{e.getKey(), quote(e.getValue())});
         } else {
             // otherwise, process each operand
             for (String arg : vars) {
                 // separate into name and value
-                String name, value;
+                String envname;
+                String value;
                 int eq = arg.indexOf('=');
                 if (eq < 0) {   // no value
-                    name = arg;
+                    envname = arg;
                     value = null;
                 } else {
-                    name = arg.substring(0, eq);
+                    envname = arg.substring(0, eq);
                     value = arg.substring(eq + 1);
                 }
 
                 // check that name is legitimate
-                if (!name.startsWith(Environment.getPrefix())) {
-                    logger.info(strings.get("badEnvVarSet", name, Environment.getPrefix()));
+                if (!envname.startsWith(Environment.getPrefix())) {
+                    logger.info(strings.get("badEnvVarSet", envname, Environment.getPrefix()));
                     ret = -1;
                     continue;
                 }
 
                 // if no value, print it, otherwise set it
                 if (value == null) {
-                    String v = env.get(name);
+                    String v = env.get(envname);
                     if (v != null)
-                        logger.info(name + " = " + v);
+                        logger.log(Level.INFO, "{0} = {1}", new Object[]{envname, v});
                 } else
-                    env.put(name, value);
+                    env.put(envname, value);
             }
         }
         return ret;
