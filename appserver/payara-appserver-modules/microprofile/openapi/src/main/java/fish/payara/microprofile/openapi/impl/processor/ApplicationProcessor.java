@@ -46,6 +46,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -763,12 +764,12 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             try {
                 // Get the classpath url.
                 // If the classpath is currently WEB-INF/lib, resolve WEB-INF/classes instead
-                URI classpath = classLoader.getResource("../classes").toURI();
+                URL classpath = classLoader.getResource("../classes");
 
                 if (classpath != null) {
 
                     List<File> expand = new LinkedList<>();
-                    expand.add(new File(classpath));
+                    expand.add(new File(classpath.toURI()));
 
                     while (!expand.isEmpty()) {
                         List<File> subFiles = new LinkedList<>();
