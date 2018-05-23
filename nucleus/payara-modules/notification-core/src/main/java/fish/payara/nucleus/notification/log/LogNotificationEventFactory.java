@@ -39,7 +39,6 @@
 package fish.payara.nucleus.notification.log;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.EventSource;
 import fish.payara.nucleus.notification.domain.NotificationEventFactory;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
@@ -49,6 +48,7 @@ import javax.annotation.PostConstruct;
 import java.util.logging.Level;
 
 /**
+ * Factory to build events for {@link LogNotifier}
  * @author mertcaliskan
  */
 @Service
@@ -60,6 +60,7 @@ public class LogNotificationEventFactory extends NotificationEventFactory<LogNot
         registerEventFactory(NotifierType.LOG, this);
     }
 
+    @Override
     public LogNotificationEvent buildNotificationEvent(String subject, String message) {
         LogNotificationEvent event = initializeEvent(new LogNotificationEvent());
         event.setSubject(subject);
@@ -79,4 +80,5 @@ public class LogNotificationEventFactory extends NotificationEventFactory<LogNot
 
         return notificationEvent;
     }
+
 }
