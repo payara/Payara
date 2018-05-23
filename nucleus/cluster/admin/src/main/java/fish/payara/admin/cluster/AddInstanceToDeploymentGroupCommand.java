@@ -92,7 +92,7 @@ public class AddInstanceToDeploymentGroupCommand implements AdminCommand {
     String instanceName;
 
     @Param(name = "deploymentGroup")
-    String deploymentGroup;
+    String deploymentGroupName;
 
     @Inject
     private Domain domain;
@@ -108,14 +108,14 @@ public class AddInstanceToDeploymentGroupCommand implements AdminCommand {
 
         ActionReport report = context.getActionReport();
 
-        DeploymentGroup dg = domain.getDeploymentGroupNamed(deploymentGroup);
-        if (dg == null && env.isDas()) {
+        DeploymentGroup deploymentGroup = domain.getDeploymentGroupNamed(deploymentGroupName);
+        if (deploymentGroup == null && env.isDas()) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Deployment Group " + deploymentGroup + " does not exist");
             return;
         }
 
-        final List<String> instances = new ArrayList<String>(Arrays.asList(instanceName.split(",")));
+        List<String> instances = Arrays.asList(instanceName.split(","));
 
         for (String instance : instances) {
             Server server = domain.getServerNamed(instance);
@@ -129,11 +129,11 @@ public class AddInstanceToDeploymentGroupCommand implements AdminCommand {
             // OK set up the reference
             try {
                 ConfigSupport.apply((DeploymentGroup dg1) -> {
-                    DGServerRef ref = dg1.createChild(DGServerRef.class);
-                    ref.setRef(instance);
-                    dg1.getDGServerRef().add(ref);
-                    return ref;
-                }, dg);
+                    DGServerRef deploymentGroupServerRef = dg1.createChild(DGServerRef.class);
+                    deploymentGroupServerRef.setRef(instance);
+                    dg1.getDGServerRef().add(deploymentGroupServerRef);
+                    return deploymentGroupServerRef;
+                }, deploymentGroup);
 
             } catch (TransactionFailure e) {
                 report.setMessage("Failed to add instance to deployment group");
@@ -142,7 +142,7 @@ public class AddInstanceToDeploymentGroupCommand implements AdminCommand {
             }
 
             // now run the command to add application ref to the instance
-            for (ApplicationRef applicationRef : dg.getApplicationRef()) {
+            for (ApplicationRef applicationRef : deploymentGroup.getApplicationRef()) {
                 CommandInvocation inv = commandRunner.getCommandInvocation("create-application-ref", report, context.getSubject());
                 ParameterMap parameters = new ParameterMap();
                 parameters.add("target", instance);
@@ -154,7 +154,7 @@ public class AddInstanceToDeploymentGroupCommand implements AdminCommand {
             }
 
             // for all resource refs add resource ref to instance
-            for (ResourceRef resourceRef : dg.getResourceRef()) {
+            for (ResourceRef resourceRef : deploymentGroup.getResourceRef()) {
                 CommandInvocation inv = commandRunner.getCommandInvocation("create-resource-ref", report, context.getSubject());
                 ParameterMap parameters = new ParameterMap();
                 parameters.add("target", instance);
