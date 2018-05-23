@@ -61,13 +61,8 @@ public class LogNotificationEventFactory extends NotificationEventFactory<LogNot
     }
 
     @Override
-    protected LogNotificationEvent createEventInstance() {
-        return new LogNotificationEvent();
-    }
-
-    @Override
-    public LogNotificationEvent buildNotificationEvent(String subject, RequestTrace requestTrace) {
-        LogNotificationEvent event = initializeEvent(createEventInstance());
+    public LogNotificationEvent buildNotificationEvent(String subject, String message) {
+        LogNotificationEvent event = initializeEvent(new LogNotificationEvent());
         event.setSubject(subject);
         event.setLevel(Level.INFO);
         event.setMessage(message);
@@ -86,10 +81,4 @@ public class LogNotificationEventFactory extends NotificationEventFactory<LogNot
         return notificationEvent;
     }
 
-    @Override
-    public LogNotificationEvent buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
-        LogNotificationEvent event = super.buildNotificationEvent(level, subject, message, parameters);
-        event.setLevel(level);
-        return event;
-    }
 }
