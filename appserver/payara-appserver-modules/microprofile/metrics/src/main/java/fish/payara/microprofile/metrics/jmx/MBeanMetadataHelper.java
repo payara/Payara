@@ -83,17 +83,22 @@ public class MBeanMetadataHelper {
 
         MBeanMetadataHelper.getInstance().resolveDynamicMetadata(metadataList);
         metadataList.forEach(beanMetadata -> {
-            beanMetadata.getTags().putAll(globalTags);
-            org.eclipse.microprofile.metrics.Metric type;
-            MBeanExpression mBeanExpression = new MBeanExpression(beanMetadata.getMBean());
-             if (beanMetadata.getTypeRaw() == COUNTER) {
-                 type = new MBeanCounterImpl(mBeanExpression);
-            } else if (beanMetadata.getTypeRaw() == GAUGE) {
-                type = (Gauge<Number>) mBeanExpression::getNumberValue;
-            }  else {
-                throw new IllegalStateException("Unsupported type : " + beanMetadata);
+            try {
+                beanMetadata.getTags().putAll(globalTags);
+                org.eclipse.microprofile.metrics.Metric type;
+                MBeanExpression mBeanExpression = new MBeanExpression(beanMetadata.getMBean());
+                if (beanMetadata.getTypeRaw() == COUNTER) {
+                    type = new MBeanCounterImpl(mBeanExpression);
+                } else if (beanMetadata.getTypeRaw() == GAUGE) {
+                    type = (Gauge<Number>) mBeanExpression::getNumberValue;
+                } else {
+                    throw new IllegalStateException("Unsupported type : " + beanMetadata);
+                }
+
+                metricRegistry.register(beanMetadata.getName(), type, beanMetadata);
+            } catch (IllegalArgumentException e) {
+                LOGGER.log(Level.WARNING, e.getMessage());
             }
-            metricRegistry.register(beanMetadata.getName(), type, beanMetadata);
         });
     }
 

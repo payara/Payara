@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,33 +39,24 @@
  */
 package fish.payara.nucleus.microprofile.config.converters;
 
-import javax.annotation.Priority;
+import com.sun.enterprise.util.Utility;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.config.spi.Converter;
 
 /**
  *
- * @author Steve Millidge (Payara Foundation)
+ * @author steve
  */
-@Priority(1)
-public class BooleanConverter implements Converter<Boolean> {
+public class ClassConverter implements Converter<Class> {
 
     @Override
-    public Boolean convert(String value) {
-        if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
-        boolean result = false;
-        switch (value.toLowerCase()) {
-            case "true":
-            case "1":
-            case "yes":
-            case "y":
-            case "on":
-                result = true;
-                break;
-            default:
-                result = false;
+    public Class convert(String propertyValue) {
+        if (propertyValue == null || propertyValue.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
+        try {
+            return Class.forName(propertyValue, true, Utility.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+            throw new IllegalArgumentException(ex);
         }
-        return result;
     }
     
 }
