@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl.model.examples;
 
+import static fish.payara.microprofile.openapi.impl.model.OpenAPIImpl.UNKNOWN_NAME;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 
@@ -158,7 +159,7 @@ public class ExampleImpl extends ExtensibleImpl implements Example {
         // Get the example name
         String exampleName = example.name();
         if (example.name() == null || example.name().isEmpty()) {
-            exampleName = "?";
+            exampleName = UNKNOWN_NAME;
         }
 
         // Get or create the example

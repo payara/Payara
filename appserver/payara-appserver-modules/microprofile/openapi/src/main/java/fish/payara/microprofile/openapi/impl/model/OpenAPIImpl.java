@@ -63,6 +63,11 @@ import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
 public class OpenAPIImpl extends ExtensibleImpl implements OpenAPI {
 
+    /**
+     * The name of a variable in the model tree that is unrecognised.
+     */
+    public static transient String UNKNOWN_NAME = "?";
+
     protected String openapi;
     protected Info info;
     protected ExternalDocumentation externalDocs;

@@ -39,14 +39,18 @@
  */
 package fish.payara.microprofile.openapi.impl.processor;
 
+import java.io.File;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -751,6 +755,47 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         } catch (Exception ex) {
             LOGGER.log(Level.WARNING, "Unable to get classes from classloader.", ex);
         }
+
+        // If no classes were found, the classloader could be deploying from a directory.
+        // If so, scan the directory structure for expected classes.
+        if (classes.isEmpty()) {
+            LOGGER.fine("Unable to find loaded classes in classloader, searching in classpath for files.");
+            try {
+                // Get the classpath url.
+                // If the classpath is currently WEB-INF/lib, resolve WEB-INF/classes instead
+                URI classpath = classLoader.getResource("../classes").toURI();
+
+                if (classpath != null) {
+
+                    List<File> expand = new LinkedList<>();
+                    expand.add(new File(classpath));
+
+                    while (!expand.isEmpty()) {
+                        List<File> subFiles = new LinkedList<>();
+                        for (File file : expand) {
+                            if (file.isDirectory()) {
+                                subFiles.addAll(Arrays.asList(file.listFiles()));
+                            } else if (file.getPath().endsWith(".class")) {
+                                String className = file.getPath().replaceAll(".+WEB-INF/classes/", "").replace("/", ".").replace(".class", "");
+                                LOGGER.finer("Adding class: " + className);
+                                try {
+									classes.add(Class.forName(className));
+								} catch (ClassNotFoundException ex) {
+                                    LOGGER.log(Level.WARNING, "Unable to find class.", ex);
+								}
+                            }
+                        }
+                        expand.clear();
+                        expand.addAll(subFiles);
+                    }
+                } else {
+                    LOGGER.log(Level.WARNING, "Unrecognised classpath.");
+                }
+			} catch (URISyntaxException ex) {
+                LOGGER.log(Level.WARNING, "Unable to get classes from classpath.", ex);
+			}
+        }
+
         return classes;
     }
 
