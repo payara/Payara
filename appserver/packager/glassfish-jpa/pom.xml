@@ -83,7 +83,7 @@
         <profile>
             <id>ips</id>
             <activation>
-                <activeByDefault>false</activeByDefault>  
+                <activeByDefault>false</activeByDefault>
             </activation>
             <build>
                 <plugins>
@@ -121,7 +121,7 @@
             </profile>
 
     </profiles>
-       
+
 
     <dependencies>
        <dependency>
@@ -180,6 +180,12 @@
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.asm</artifactId>
+        </dependency>
+        <!-- JPA hazelcast cache coordination -->
+        <dependency>
+            <groupId>fish.payara.persistence.coordination</groupId>
+            <artifactId>hazelcast-eclipselink-coordination</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>
