@@ -62,7 +62,6 @@ import static org.glassfish.config.support.CommandTarget.CLUSTER;
 import static org.glassfish.config.support.CommandTarget.CLUSTERED_INSTANCE;
 import static org.glassfish.config.support.CommandTarget.CONFIG;
 import static org.glassfish.config.support.CommandTarget.DAS;
-import static org.glassfish.config.support.CommandTarget.DEPLOYMENT_GROUP;
 import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -83,7 +82,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name = "set-amx-enabled")
 @PerLookup
 @ExecuteOn({RuntimeType.ALL})
-@TargetType({DAS, DEPLOYMENT_GROUP, STANDALONE_INSTANCE, CLUSTER, CLUSTERED_INSTANCE, CONFIG})
+@TargetType({DAS, STANDALONE_INSTANCE, CLUSTER, CLUSTERED_INSTANCE, CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = AMXConfiguration.class,
             opType = RestEndpoint.OpType.POST,
@@ -121,10 +120,10 @@ public class SetAmxEnabled implements AdminCommand {
                 @Override
                 public Object run(final AMXConfiguration configProxy) throws PropertyVetoException, TransactionFailure {
                     configProxy.setEnabled(enabled.toString());
-                    actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                     return configProxy;
                 }
             }, metricsConfiguration);
+            actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 
             if (dynamic) {
                 AMXBootService bootService = habitat.getService(AMXBootService.class);
