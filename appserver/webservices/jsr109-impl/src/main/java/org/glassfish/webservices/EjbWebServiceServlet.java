@@ -43,8 +43,8 @@ package org.glassfish.webservices;
 
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import org.glassfish.api.logging.LogHelper;
 import org.glassfish.ejb.api.EjbEndpointFacade;
 import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
@@ -159,11 +159,17 @@ public class EjbWebServiceServlet extends HttpServlet {
                     }
                 }
                 if (dispatch) {
-                    dispatchToEjbEndpoint(hreq, hresp, ejbEndpoint);
+                    RequestTraceSpan span = null;
+                    try {
+                        if (requestTracing.isRequestTracingEnabled()) {
+                            span = constructWsRequestSpan(hreq, ejbEndpoint);
+                        }
 
-                    if (requestTracing.isRequestTracingEnabled()) {
-                        RequestEvent requestEvent = constructWsRequestEvent(hreq, ejbEndpoint);
-                        requestTracing.traceRequestEvent(requestEvent);
+                        dispatchToEjbEndpoint(hreq, hresp, ejbEndpoint);
+                    } finally {
+                        if (requestTracing.isRequestTracingEnabled() && span != null) {
+                            requestTracing.traceSpan(span);
+                        }
                     }
                 }
             }
@@ -172,19 +178,21 @@ public class EjbWebServiceServlet extends HttpServlet {
         }
     }
 
-    private RequestEvent constructWsRequestEvent(HttpServletRequest httpServletRequest,
-                                                        EjbRuntimeEndpointInfo ejbEndpoint) {
-        RequestEvent requestEvent  = new RequestEvent("SOAPWSRequestTrace");
-        requestEvent.addProperty("URI",ejbEndpoint.getEndpoint().getEndpointAddressUri());
-        requestEvent.addProperty("URL",httpServletRequest.getRequestURL().toString());
+    private RequestTraceSpan constructWsRequestSpan(HttpServletRequest httpServletRequest, EjbRuntimeEndpointInfo ejbEndpoint) {
+        RequestTraceSpan span = new RequestTraceSpan("processSoapWebserviceRequest");
+        span.addSpanTag("URI", ejbEndpoint.getEndpoint().getEndpointAddressUri());
+        span.addSpanTag("URL", httpServletRequest.getRequestURL().toString());
         Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
+
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
             List<String> headers = Collections.list(httpServletRequest.getHeaders(headerName));
-            requestEvent.addProperty(headerName, headers.toString());
+            span.addSpanTag(headerName, headers.toString());
         }
-        requestEvent.addProperty("Method",httpServletRequest.getMethod());
-        return requestEvent;
+
+        span.addSpanTag("Method", httpServletRequest.getMethod());
+
+        return span;
     }
 
     private void dispatchToEjbEndpoint(HttpServletRequest hreq,

@@ -1761,7 +1761,7 @@ public class StandardWrapper
         Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
-            span.addSpanTag(headerName, list(httpServletRequest.getHeaders(headerName)).toString());
+            span.addSpanTag(headerName, Collections.list(httpServletRequest.getHeaders(headerName)).toString());
         }
         span.addSpanTag("Method", httpServletRequest.getMethod());
 
@@ -1775,7 +1775,7 @@ public class StandardWrapper
         Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
-            span.addSpanTag(headerName, list(httpServletRequest.getHeaders(headerName)).toString());
+            span.addSpanTag(headerName, Collections.list(httpServletRequest.getHeaders(headerName)).toString());
         }
 
         span.addSpanTag("Method",httpServletRequest.getMethod());
