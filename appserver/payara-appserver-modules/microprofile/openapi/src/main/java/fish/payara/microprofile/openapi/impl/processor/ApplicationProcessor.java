@@ -777,11 +777,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                                 subFiles.addAll(Arrays.asList(file.listFiles()));
                             } else if (file.getPath().endsWith(".class")) {
                                 String className = file.getPath().replaceAll(".+WEB-INF/classes/", "").replace("/", ".").replace(".class", "");
-                                LOGGER.finer("Adding class: " + className);
+                                LOGGER.finer("Attempting to add class: " + className);
                                 try {
 									classes.add(Class.forName(className));
 								} catch (ClassNotFoundException ex) {
-                                    LOGGER.log(Level.WARNING, "Unable to find class.", ex);
+                                    LOGGER.finer("Unable to add class: " + className);
 								}
                             }
                         }
