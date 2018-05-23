@@ -124,29 +124,29 @@ public class PayaraApplicationHandlers {
 
     @Handler(id = "py.getAllSelectedTarget",
             input = {
-                @HandlerInput(name = "targetList", type = List.class, required = true),
+                @HandlerInput(name = "targetList", type = java.util.List.class, required = true),
                 @HandlerInput(name = "resourceName", type = String.class, required = true)},
             output = {
-                @HandlerOutput(name = "slectedTarget", type = List.class)
+                @HandlerOutput(name = "selectedTarget", type = java.util.List.class)
             })
     public static void getAllSelectedTarget(HandlerContext handlerCtx) {
         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
 
         List<String> targetList = (List) handlerCtx.getInputValue("targetList");
-        String resourceName = (String) handlerCtx.getInputValue("resName");
+        String resourceName = (String) handlerCtx.getInputValue("resourceName");
         List<String> selectedTargetList = new ArrayList<>();
         String endpoint;
 
         for (String targetName : targetList) {
             endpoint = prefix + "/clusters/cluster/" + targetName + "/resource-ref/" + resourceName;
-            boolean existsInCluster = checkIfEndPointExist(endpoint);
+            boolean existsInCluster = isEndpointValid(endpoint);
 
             if (!existsInCluster) {
                 endpoint = prefix + "/deployment-groups/deployment-group/" + targetName + "/resource-ref/" + resourceName;
-                boolean existsInDeploymentGroup = checkIfEndPointExist(endpoint);
+                boolean existsInDeploymentGroup = isEndpointValid(endpoint);
                 if (!existsInDeploymentGroup) {
                     endpoint = prefix + "/servers/server/" + targetName + "/resource-ref/" + resourceName;
-                    boolean existsInServer = checkIfEndPointExist(endpoint);
+                    boolean existsInServer = isEndpointValid(endpoint);
                     if (existsInServer) {
                         selectedTargetList.add(targetName);
                     }
@@ -161,10 +161,10 @@ public class PayaraApplicationHandlers {
             }
         }
         
-        handlerCtx.setOutputValue("slectedTarget", selectedTargetList);
+        handlerCtx.setOutputValue("selectedTarget", selectedTargetList);
     }
 
-    private static boolean checkIfEndPointExist(String endpoint) {
+    private static boolean isEndpointValid(String endpoint) {
         boolean result = false;
         RestResponse response = null;
 
@@ -192,7 +192,7 @@ public class PayaraApplicationHandlers {
                 @HandlerInput(name = "resourceName", type = String.class, required = true)},
             output = {
                 @HandlerOutput(name = "isPresent", type = Boolean.class)})
-    public static void checkIfResourceIsInInstance(HandlerContext handlerCtx) {
+    public static void isResourceInInstance(HandlerContext handlerCtx) {
         String instanceName = (String) handlerCtx.getInputValue("instanceName");
         String resourceName = (String) handlerCtx.getInputValue("resourceName");
         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
@@ -216,5 +216,39 @@ public class PayaraApplicationHandlers {
         
         handlerCtx.setOutputValue("isPresent", isPresent);
     }
+    
+    
+    @Handler(id = "py.isInstanceInDeploymentGroupWithResource",
+            input = {
+                @HandlerInput(name = "selectedTarget", type = java.util.List.class, required = true),
+                @HandlerInput(name = "target", type = String.class, required = true),
+                @HandlerInput(name = "resourceName", type = String.class, required = true)},
+            output = {
+                @HandlerOutput(name = "isPresent", type = Boolean.class)})
+    public static void isInstanceInDeploymentGroupWithResource(HandlerContext handlerCtx) {
+        List<String> selectedTargetList = (List) handlerCtx.getInputValue("selectedTarget");
+        String target = (String) handlerCtx.getInputValue("target");
+        String prefix = (String) GuiUtil.getSessionValue("REST_URL");
+        String resourceName = (String) handlerCtx.getInputValue("resourceName");
+        String endpoint;
+        boolean isPresent = false;
 
+        for (String selectedTarget : selectedTargetList) {
+            if (TargetUtil.isDeploymentGroup(selectedTarget)) {
+                List<String> instancesInDeploymentGroup = TargetUtil.getDGInstances(selectedTarget);
+
+                for (String instance : instancesInDeploymentGroup) {
+                    if (instance.equals(target)) {
+                        endpoint = prefix + "/deployment-groups/deployment-group/" + selectedTarget + "/resource-ref/" + resourceName;
+                        if (isEndpointValid(endpoint)) {
+                            isPresent = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        handlerCtx.setOutputValue("isPresent", isPresent);
+    }
 }
