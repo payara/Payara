@@ -80,19 +80,14 @@ import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.admin.amx.util.AMXLoggerInfo;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
 
 /**
-An {@link AMXLoader} responsible for loading core amx MBeans
+ * An {@link AMXLoader} responsible for loading core AMX MBeans
  */
 @Service
-public final class AMXStartupService
-        implements org.glassfish.hk2.api.PostConstruct,
-        org.glassfish.hk2.api.PreDestroy,
-        AMXStartupServiceMBean {
-
-    private static void debug(final String s) {
-        System.out.println(s);
-    }
+public final class AMXStartupService implements PostConstruct, PreDestroy, AMXStartupServiceMBean {
 
     @Inject
     ServiceLocator mHabitat;
@@ -110,15 +105,14 @@ public final class AMXStartupService
         return MBeanServerInvocationHandler.newProxyInstance(server, MBeanTrackerMBean.MBEAN_TRACKER_OBJECT_NAME, MBeanTrackerMBean.class, false);
     }
 
-
     public AMXStartupService() {
         new StringifierRegistryIniterImpl(StringifierRegistryImpl.DEFAULT);
         new StringifierRegistryIniter(StringifierRegistryImpl.DEFAULT);
     }
 
-
     private final class ShutdownListener implements EventListener {
 
+        @Override
         public void event(EventListener.Event event) {
             if (event.is(EventTypes.SERVER_SHUTDOWN)) {
                 shutdown();
@@ -126,14 +120,13 @@ public final class AMXStartupService
         }
     }
 
-
     private void shutdown() {
         logger.fine("AMX Startup Service: Shutting down AMX MBeans");
         unloadAMXMBeans();
 
         final ObjectName allAMXPattern = AMXUtil.newObjectName(AMXGlassfish.DEFAULT.amxJMXDomain(), "*");
         final Set<ObjectName> remainingAMX = mMBeanServer.queryNames(allAMXPattern, null);
-        if (remainingAMX.size() != 0) {
+        if (!remainingAMX.isEmpty()) {
             logger.log(Level.WARNING, AMXLoggerInfo.shutdownNotUnregistered, remainingAMX);
             try {
                 Thread.sleep(1000);
@@ -141,10 +134,10 @@ public final class AMXStartupService
             }
         }
         FeatureAvailability.getInstance().deRegisterFeatures();
-        logger.log(Level.INFO,"AMX Startup Service: AMX MBeans shutdown: {0}.",mMBeanServer.queryNames(allAMXPattern, null));
+        logger.log(Level.INFO, "AMX Startup Service: AMX MBeans shutdown: {0}.", mMBeanServer.queryNames(allAMXPattern, null));
     }
 
-
+    @Override
     public void postConstruct() {
         final TimingDelta delta = new TimingDelta();
 
@@ -169,19 +162,18 @@ public final class AMXStartupService
             logger.log(Level.WARNING, "AMX Startup Service: Initialisation error.", e);
             throw new Error(e);
         }
-        //debug( "AMXStartupService.postConstruct(): registered: " + OBJECT_NAME );
-        logger.log(Level.INFO,"AMX Startup Service: Created in {0}ms. MBean: `{1}`.",new Object[] {delta.elapsedMillis(),OBJECT_NAME});
+        logger.log(Level.INFO, "AMX Startup Service: Created in {0}ms. MBean: `{1}`.", new Object[]{delta.elapsedMillis(), OBJECT_NAME});
 
         mEvents.register(new ShutdownListener());
     }
 
-
+    @Override
     public void preDestroy() {
-        logger.log(Level.INFO,"AMX Startup Service: Destroying service.");
+        logger.log(Level.INFO, "AMX Startup Service: Destroying service.");
         unloadAMXMBeans();
     }
 
-
+    @Override
     public JMXServiceURL[] getJMXServiceURLs() {
         try {
             return (JMXServiceURL[]) mMBeanServer.getAttribute(AMXGlassfish.DEFAULT.getBootAMXMBeanObjectName(), "JMXServiceURLs");
@@ -190,9 +182,8 @@ public final class AMXStartupService
         }
     }
 
-
     /**
-    Return a proxy to the AMXStartupService.
+     * Return a proxy to the AMXStartupService.
      */
     public static AMXStartupServiceMBean getAMXStartupServiceMBeanProxy(final MBeanServer mbs) {
         AMXStartupServiceMBean ss = null;
@@ -204,7 +195,7 @@ public final class AMXStartupService
         return ss;
     }
 
-
+    @Override
     public synchronized ObjectName getDomainRoot() {
         try {
             // might not be ready yet
@@ -215,29 +206,30 @@ public final class AMXStartupService
         return null;
     }
 
-
     DomainRoot getDomainRootProxy() {
         return ProxyFactory.getInstance(mMBeanServer).getDomainRootProxy(false);
     }
 
-
+    @Override
     public ObjectName loadAMXMBeans() {
         ObjectName objectName = AMXGlassfish.DEFAULT.domainRoot();
         if (!mMBeanServer.isRegistered(objectName)) {
             try {
                 objectName = _loadAMXMBeans();
             } catch (final Exception e) {
-                logger.log(Level.SEVERE,"AMX Startup Service: Error loading AMX Beans.",e);
+                logger.log(Level.SEVERE, "AMX Startup Service: Error loading AMX Beans.", e);
                 throw new RuntimeException(e);
             }
         }
         return objectName;
     }
 
-    /** also works as a loaded/not loaded flag: null if not yet loaded */
+    /**
+     * also works as a loaded/not loaded flag: null if not yet loaded
+     */
     private volatile ObjectName DOMAIN_ROOT_OBJECTNAME = null;
 
-    private synchronized ObjectName loadDomainRoot() {        
+    private synchronized ObjectName loadDomainRoot() {
         if (DOMAIN_ROOT_OBJECTNAME != null) {
             return DOMAIN_ROOT_OBJECTNAME;
         }
@@ -256,22 +248,22 @@ public final class AMXStartupService
         return DOMAIN_ROOT_OBJECTNAME;
     }
 
-
     protected final ObjectName loadSystemInfo()
             throws NotCompliantMBeanException, MBeanRegistrationException,
             InstanceAlreadyExistsException {
         final SystemInfoImpl systemInfo = SystemInfoFactory.createInstance(mMBeanServer);
 
-        ObjectName systemInfoObjectName =
-                ObjectNameBuilder.buildChildObjectName(mMBeanServer, DOMAIN_ROOT_OBJECTNAME, SystemInfo.class);
-        
+        ObjectName systemInfoObjectName
+                = ObjectNameBuilder.buildChildObjectName(mMBeanServer, DOMAIN_ROOT_OBJECTNAME, SystemInfo.class);
+
         systemInfoObjectName = mMBeanServer.registerMBean(systemInfo, systemInfoObjectName).getObjectName();
-        
+
         return systemInfoObjectName;
     }
 
-
-    /** run each AMXLoader in its own thread */
+    /**
+     * run each AMXLoader in its own thread
+     */
     private static final class AMXLoaderThread extends Thread {
 
         private final AMXLoader mLoader;
@@ -283,9 +275,10 @@ public final class AMXStartupService
             mLatch = new CountDownLatch(1);
         }
 
+        @Override
         public void run() {
             try {
-                logger.fine("AMXStartupServiceNew.AMXLoaderThread: loading: " + mLoader.getClass().getName());
+                logger.log(Level.FINE, "AMXStartupServiceNew.AMXLoaderThread: loading: {0}", mLoader.getClass().getName());
                 mTop = mLoader.loadAMXMBeans();
             } catch (final Exception e) {
                 logger.log(Level.INFO, AMXLoggerInfo.failToLoad, e);
@@ -307,17 +300,15 @@ public final class AMXStartupService
         }
     }
 
-
     class MyListener extends MBeanListener.CallbackImpl {
 
         @Override
         public void mbeanRegistered(final ObjectName objectName, final MBeanListener listener) {
             super.mbeanRegistered(objectName, listener);
             // verification code, nothing more to do
-            //debug( "MBean registered: " + objectName );
+            logger.log(Level.FINER, "MBean registered: {0}", objectName);
         }
     }
-
 
     public synchronized ObjectName _loadAMXMBeans() {
         // self-check important MBeans
@@ -334,11 +325,11 @@ public final class AMXStartupService
         try {
             // Find and load any additional AMX subsystems
             final Collection<AMXLoader> loaders = mHabitat.getAllServices(AMXLoader.class);
-            logger.fine( "AMXStartupService._loadAMXMBeans(): found this many loaders: " + loaders.size() );
+            logger.fine("AMXStartupService._loadAMXMBeans(): found this many loaders: " + loaders.size());
             final AMXLoaderThread[] threads = new AMXLoaderThread[loaders.size()];
             int i = 0;
             for (final AMXLoader loader : loaders) {
-                logger.fine( "AMXStartupService._loadAMXMBeans(): found this many loaders: " + loader);
+                logger.fine("AMXStartupService._loadAMXMBeans(): found this many loaders: " + loader);
                 threads[i] = new AMXLoaderThread(loader);
                 threads[i].start();
                 ++i;
@@ -364,8 +355,8 @@ public final class AMXStartupService
 
         return getDomainRoot();
     }
-    
 
+    @Override
     public synchronized void unloadAMXMBeans() {
         if (getDomainRoot() != null) {
             final Collection<AMXLoader> loaders = mHabitat.getAllServices(AMXLoader.class);
@@ -391,13 +382,3 @@ public final class AMXStartupService
     }
     // public Startup.Lifecycle getLifecycle() { return Startup.Lifecycle.SERVER; }
 }
-
-
-
-
-
-
-
-
-
-

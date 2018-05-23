@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.mbeanserver;
 
@@ -55,7 +56,6 @@ import org.glassfish.internal.api.PostStartupRunLevel;
 @Service
 @RunLevel(mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING, value=PostStartupRunLevel.VAL)
 public final class MBeanServerFactory implements Factory<MBeanServer> {
-    private static void debug( final String s ) { System.out.println(s); }
     
     private final MBeanServer     mMBeanServer;
     
@@ -69,7 +69,7 @@ public final class MBeanServerFactory implements Factory<MBeanServer> {
     {
     }
 
-    /* (non-Javadoc)
+    /**
      * @see org.glassfish.hk2.api.Factory#provide()
      */
     @Override
@@ -77,7 +77,7 @@ public final class MBeanServerFactory implements Factory<MBeanServer> {
         return mMBeanServer;
     }
 
-    /* (non-Javadoc)
+    /**
      * @see org.glassfish.hk2.api.Factory#dispose(java.lang.Object)
      */
     @Override

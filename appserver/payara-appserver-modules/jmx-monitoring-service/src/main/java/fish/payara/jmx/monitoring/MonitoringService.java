@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -69,13 +69,9 @@ import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.types.Property;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
-import javax.management.ReflectionException;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 import java.util.ArrayList;
@@ -83,6 +79,8 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ConfigView;
 import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
+import fish.payara.admin.amx.config.AMXConfiguration;
+import java.beans.PropertyVetoException;
 
 /**
  * Service which monitors a set of MBeans and their attributes while logging the data as a series of key-value pairs.
@@ -171,7 +169,13 @@ public class MonitoringService implements EventListener {
             Logger.getLogger(MonitoringService.class.getName()).log(Level.INFO, "Monitoring Service will startup");
 
             if (Boolean.valueOf(configuration.getAmx())) {
-                executor.schedule(new AMXBoot(server), amxBootDelay, TimeUnit.SECONDS);
+                AMXConfiguration amxConfig = habitat.getService(AMXConfiguration.class);
+                try {
+                    amxConfig.setEnabled(String.valueOf(configuration.getAmx()));
+                    configuration.setAmx(null);
+                } catch (PropertyVetoException ex) {
+                    Logger.getLogger(MonitoringService.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
 
             executor.scheduleAtFixedRate(formatter, monitoringDelay * 1000,
@@ -275,43 +279,7 @@ public class MonitoringService implements EventListener {
         }
         return jobs;
     }
-
-    /**
-     * Runnable class to schedule invocation of the bootAMX operation.
-     * 
-     * @author savage
-     */
-    private static class AMXBoot implements Runnable {
-
-        private final String BOOT_AMX_MBEAN_NAME = "amx-support:type=boot-amx";
-        private final String BOOT_AMX_OPERATION_NAME = "bootAMX";
-
-        private final MBeanServer server;
-
-        /**
-         * Constructor for the AMXBoot class.
-         *
-         * @param server MBeanServer to invoke the bootAMX operation on.
-         */
-        public AMXBoot(MBeanServer server) {
-            this.server = server;
-        }
-
-        /**
-         * Class runnable method.
-         *  Boots AMX by invoking the bootAMX operation on the boot-amx MBean.
-         */
-        @Override
-        public void run() {
-            try {
-                ObjectName bootAMXObject = new ObjectName(BOOT_AMX_MBEAN_NAME);
-                server.invoke(bootAMXObject, BOOT_AMX_OPERATION_NAME, null, null);
-            } catch (MalformedObjectNameException | InstanceNotFoundException | MBeanException | ReflectionException ex) {
-                Logger.getLogger(MonitoringService.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-    }
-    
+  
     public LocalStringManagerImpl getLocalStringManager() {
         return strings;
     }
