@@ -41,6 +41,11 @@
             <artifactId>requesttracing-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>rest-client-tracing</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
 
