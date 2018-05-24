@@ -60,9 +60,9 @@ import java.util.logging.Level;
 
 /**
  * Command to list batch jobs info
- *
- *         1      *             1      *
- * jobName --------> instanceId --------> executionId
+
+         1      *             1      *
+ jobname --------> instanceId --------> executionId
  *
  * @author Mahesh Kannan
  */
@@ -172,14 +172,15 @@ public class ListBatchJobs
 
         Map<String, Integer> jobInstanceCount = new HashMap<>();
         List<JobExecution> jobExecutions = findJobExecutions();
+         String jobname;
         for (JobExecution jobExecution : jobExecutions) {
             if (glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) jobExecution).getTagName())) {
-                String jobName = jobExecution.getJobName();
+                jobname = jobExecution.getJobName();
                 int count = 0;
-                if (jobInstanceCount.containsKey(jobName)) {
-                    count = jobInstanceCount.get(jobName);
+                if (jobInstanceCount.containsKey(jobname)) {
+                    count = jobInstanceCount.get(jobname);
                 }
-                jobInstanceCount.put(jobName, count + 1);
+                jobInstanceCount.put(jobname, count + 1);
             }
         }
         return jobInstanceCount;
