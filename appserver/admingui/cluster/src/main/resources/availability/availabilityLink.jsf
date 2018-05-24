@@ -40,7 +40,7 @@
 
 -->
 
-<sun:property rendered="$pageSession{availShowIt}">
+<sun:property>
     <sun:hyperlink 
         toolTip="$resource{i18n.tree.availabilityService.tooltip}"
         url="/cluster/availability/availabilityService.jsf?configName=#{configName}"
@@ -49,11 +49,5 @@
         <sun:staticText text="$resource{i18n.tree.availabilityService}" />
     />
     </sun:hyperlink>
-    <!beforeCreate
-        setPageSessionAttribute(key="availShowIt" value="$boolean{false}");
-        if ("!(server-config=#{configName})") {
-            setPageSessionAttribute(key="availShowIt" value="$boolean{true}");
-        }
-    />
 </sun:property>
 

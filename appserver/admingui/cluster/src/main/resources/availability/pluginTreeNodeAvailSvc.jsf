@@ -45,14 +45,10 @@ id="availabilityService"
 text="$resource{i18ncs.tree.availsvc}"
 url="/cluster/availability/availabilityService.jsf?configName=${configName}"
 imageURL="/resource/cluster/images/availabilityservice.gif"
-rendered="$pageSession{availShowIt}"
 >
 <!beforeCreate
     setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
     setPageSessionAttribute(key="availShowIt" value="$boolean{false}");
-    if ("!(server-config=${configName})") {
-        setPageSessionAttribute(key="availShowIt" value="$boolean{true}");
-    }
 />
 </sun:treeNode>
 

@@ -51,7 +51,7 @@
     <event>
     <!beforeCreate
         setSessionAttribute(key="availabilityTabs" value="availabilityTab");
-        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+            getRequestValue(key="configName" value=>$page{configName} default="server-config");
         setPageSessionAttribute(key="childType" value="availability-service");
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}");
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
