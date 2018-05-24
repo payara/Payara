@@ -44,7 +44,6 @@ import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
@@ -68,8 +67,7 @@ public abstract class AbstractWriter implements MessageBodyWriter<OpenAPI> {
 
     @Override
     public void writeTo(OpenAPI t, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
-            MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
-            throws IOException, WebApplicationException {
+            MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException {
         entityStream.write(mapper.writeValueAsBytes(t));
     }
 

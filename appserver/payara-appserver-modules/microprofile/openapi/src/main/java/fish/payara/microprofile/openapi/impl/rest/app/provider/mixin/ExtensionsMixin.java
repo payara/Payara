@@ -49,7 +49,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.models.Paths;
 import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
 
-public abstract class ExtensionsMixin {
+public interface ExtensionsMixin {
 
     @JsonProperty("enum")
     public abstract void getEnumeration();

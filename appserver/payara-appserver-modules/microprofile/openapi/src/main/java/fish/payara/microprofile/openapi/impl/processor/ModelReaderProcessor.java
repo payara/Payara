@@ -39,7 +39,8 @@
  */
 package fish.payara.microprofile.openapi.impl.processor;
 
-import java.util.logging.Level;
+import static java.util.logging.Level.WARNING;
+
 import java.util.logging.Logger;
 
 import org.eclipse.microprofile.openapi.OASModelReader;
@@ -68,15 +69,14 @@ public class ModelReaderProcessor implements OASProcessor {
                 reader = config.getModelReader().newInstance();
             }
         } catch (InstantiationException | IllegalAccessException ex) {
-            LOGGER.log(Level.WARNING, "Error creating OASModelReader instance.", ex);
+            LOGGER.log(WARNING, "Error creating OASModelReader instance.", ex);
         }
         if (reader != null) {
             OpenAPI model = reader.buildModel();
             if (model != null) {
                 return model;
             } else {
-                LOGGER.log(Level.WARNING,
-                        "The OpenAPI model returned by " + reader.getClass().getName() + " was null!");
+                LOGGER.log(WARNING, "The OpenAPI model returned by " + reader.getClass().getName() + " was null!");
             }
         } else {
             LOGGER.fine("No OASModelReader provided.");

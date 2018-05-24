@@ -292,12 +292,10 @@ public class ComponentsImpl extends ExtensibleImpl implements Components {
         // Handle @Callback
         if (from.callbacks() != null) {
             for (org.eclipse.microprofile.openapi.annotations.callbacks.Callback callback : from.callbacks()) {
-                if (callback != null) {
-                    if (callback.name() != null) {
-                        Callback newCallback = new CallbackImpl();
-                        CallbackImpl.merge(callback, newCallback, override, currentSchemas);
-                        to.addCallback(callback.name(), newCallback);
-                    }
+                if (callback != null && callback.name() != null) {
+                    Callback newCallback = new CallbackImpl();
+                    CallbackImpl.merge(callback, newCallback, override, currentSchemas);
+                    to.addCallback(callback.name(), newCallback);
                 }
             }
         }

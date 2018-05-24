@@ -39,6 +39,8 @@
  */
 package fish.payara.microprofile.openapi.impl.model.util;
 
+import static java.util.logging.Level.WARNING;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -49,6 +51,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.ws.rs.BeanParam;
@@ -80,13 +83,18 @@ import fish.payara.microprofile.openapi.impl.model.OperationImpl;
 
 public final class ModelUtils {
 
+    private static final Logger LOGGER = Logger.getLogger(ModelUtils.class.getName());
+
+    /**
+     * The name of a variable in the model tree that is unrecognised.
+     */
+    public static final String UNKNOWN_ELEMENT_NAME = "?";
+
     /**
      * Private constructor to hide public one.
      */
     private ModelUtils() {
     }
-
-
 
     /**
      * Normalises a path string. A normalised path has:
@@ -378,7 +386,7 @@ public final class ModelUtils {
         return null;
     }
 
-    public static <T, A extends Annotation> boolean isAnnotationNull(Annotation annotation) {
+    public static boolean isAnnotationNull(Annotation annotation) {
         if (annotation == null) {
             return true;
         }
@@ -390,7 +398,7 @@ public final class ModelUtils {
                     if (value != null) {
                         if (value.getClass().isArray() && Array.getLength(value) > 0) {
                             return false;
-                        } else if (value instanceof Collection && Collection.class.cast(value).size() > 0) {
+                        } else if (value instanceof Collection && !Collection.class.cast(value).isEmpty()) {
                             return false;
                         } else if (value instanceof Boolean && Boolean.class.cast(value)) {
                             return false;
@@ -406,8 +414,8 @@ public final class ModelUtils {
                             allNull = isAnnotationNull((Annotation) value);
                         }
                     }
-                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                    e.printStackTrace();
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                    LOGGER.log(WARNING, "Unable to access annotation element.", ex);
                 }
             }
         }
@@ -486,6 +494,7 @@ public final class ModelUtils {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> void merge(T from, T to, boolean override) {
         if (from != null && to != null) {
             for (Field f : to.getClass().getDeclaredFields()) {

@@ -71,7 +71,7 @@ public class SecurityRequirementImpl extends LinkedHashMap<String, List<String>>
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement from,
-            SecurityRequirement to, boolean override) {
+            SecurityRequirement to) {
         if (isAnnotationNull(from)) {
             return;
         }

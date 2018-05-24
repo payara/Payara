@@ -47,8 +47,8 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.Method;
-import java.util.Comparator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -109,23 +109,20 @@ public class OpenApiWalker implements ApiWalker {
     public OpenApiWalker(OpenAPI api, Set<Class<?>> allowedClasses, Map<String, Set<Class<?>>> resourceMapping) {
         this.api = api;
         this.resourceMapping = resourceMapping;
-        this.classes = new TreeSet<>(new Comparator<Class<?>>() {
-            @Override
-            public int compare(Class<?> class1, Class<?> class2) {
-                if (class1.equals(class2)) {
-                    return 0;
-                }
-                // Non contextual objects at the start
-                if (!class1.isAnnotationPresent(ApplicationPath.class) && !class1.isAnnotationPresent(Path.class)) {
-                    return -1;
-                }
-                // Followed by applications
-                if (class1.isAnnotationPresent(ApplicationPath.class)) {
-                    return -1;
-                }
-                // Followed by everything else
-                return 1;
+        this.classes = new TreeSet<>((class1, class2) -> {
+            if (class1.equals(class2)) {
+                return 0;
             }
+            // Non contextual objects at the start
+            if (!class1.isAnnotationPresent(ApplicationPath.class) && !class1.isAnnotationPresent(Path.class)) {
+                return -1;
+            }
+            // Followed by applications
+            if (class1.isAnnotationPresent(ApplicationPath.class)) {
+                return -1;
+            }
+            // Followed by everything else
+            return 1;
         });
         this.classes.addAll(allowedClasses);
     }
@@ -280,9 +277,9 @@ public class OpenApiWalker implements ApiWalker {
 
             // If the class is a resource and contains a mapping
             if (clazz.isAnnotationPresent(Path.class)) {
-                for (String key : resourceMapping.keySet()) {
-                    if (resourceMapping.get(key).contains(clazz)) {
-                        path = key + "/" + clazz.getDeclaredAnnotation(Path.class).value();
+                for (Entry<String, Set<Class<?>>> entry : resourceMapping.entrySet()) {
+                    if (entry.getValue() != null && entry.getValue().contains(clazz)) {
+                        path = entry.getKey() + "/" + clazz.getDeclaredAnnotation(Path.class).value();
                     }
                 }
             }

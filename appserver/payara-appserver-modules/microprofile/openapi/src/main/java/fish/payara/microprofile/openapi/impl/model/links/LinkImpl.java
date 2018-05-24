@@ -39,7 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl.model.links;
 
-import static fish.payara.microprofile.openapi.impl.model.OpenAPIImpl.UNKNOWN_NAME;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.UNKNOWN_ELEMENT_NAME;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
@@ -210,7 +210,7 @@ public class LinkImpl extends ExtensibleImpl implements Link {
         // Get the link name
         String linkName = link.name();
         if (link.name() == null || link.name().isEmpty()) {
-            linkName = UNKNOWN_NAME;
+            linkName = UNKNOWN_ELEMENT_NAME;
         }
 
         // Get or create the link
@@ -232,7 +232,7 @@ public class LinkImpl extends ExtensibleImpl implements Link {
         // Get the parameter name
         String parameterName = parameter.name();
         if (parameterName == null || parameterName.isEmpty()) {
-            parameterName = UNKNOWN_NAME;
+            parameterName = UNKNOWN_ELEMENT_NAME;
         }
 
         // Create the object

@@ -39,12 +39,13 @@
  */
 package fish.payara.microprofile.openapi.impl.processor;
 
+import static java.util.logging.Level.WARNING;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.microprofile.openapi.OASFilter;
@@ -86,10 +87,10 @@ public class FilterProcessor implements OASProcessor {
                 filter = config.getFilter().newInstance();
             }
         } catch (InstantiationException | IllegalAccessException ex) {
-            LOGGER.log(Level.WARNING, "Error creating OASFilter instance.", ex);
+            LOGGER.log(WARNING, "Error creating OASFilter instance.", ex);
         }
         if (filter != null) {
-            return (OpenAPI) filterObject(api, null);
+            return (OpenAPI) filterObject(api);
         } else {
             LOGGER.fine("No OASFilter provided.");
         }
@@ -97,16 +98,16 @@ public class FilterProcessor implements OASProcessor {
     }
 
     @SuppressWarnings("unchecked")
-    private Object filterObject(Object object, Object parent) {
+    private Object filterObject(Object object) {
         if (object != null) {
 
             // If the object is a map
             if (object instanceof Map) {
-                List<Object> resultsToRemove = new ArrayList<Object>();
+                List<Object> resultsToRemove = new ArrayList<>();
 
                 // Filter each object in the value list
                 for (Object item : Map.class.cast(object).values()) {
-                    Object result = filterObject(item, object);
+                    Object result = filterObject(item);
 
                     if (result == null) {
                         resultsToRemove.add(item);
@@ -121,11 +122,11 @@ public class FilterProcessor implements OASProcessor {
 
             // If the object is iterable
             if (object instanceof Iterable) {
-                List<Object> resultsToRemove = new ArrayList<Object>();
+                List<Object> resultsToRemove = new ArrayList<>();
 
                 // Filter each object in the list
                 for (Object item : Iterable.class.cast(object)) {
-                    Object result = filterObject(item, object);
+                    Object result = filterObject(item);
 
                     if (result == null) {
                         resultsToRemove.add(item);
@@ -152,14 +153,14 @@ public class FilterProcessor implements OASProcessor {
                         Object fieldValue = field.get(object);
 
                         // Filter the object
-                        Object result = filterObject(fieldValue, object);
+                        Object result = filterObject(fieldValue);
 
                         // Remove it if it's null
                         if (result == null) {
                             field.set(object, null);
                         }
                     } catch (IllegalArgumentException | IllegalAccessException ex) {
-                        LOGGER.log(Level.WARNING, "Unable to access field in OpenAPI model.", ex);
+                        LOGGER.log(WARNING, "Unable to access field in OpenAPI model.", ex);
                     }
                 }
 

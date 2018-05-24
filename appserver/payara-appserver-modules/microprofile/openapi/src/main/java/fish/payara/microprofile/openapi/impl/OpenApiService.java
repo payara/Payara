@@ -110,7 +110,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
      */
 	@Override
 	public UnprocessedChangeEvents changed(PropertyChangeEvent[] event) {
-        return ConfigSupport.sortAndDispatch(event, new Changed(){
+        return ConfigSupport.sortAndDispatch(event, new Changed() {
             @Override
             public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> tClass, T t) {
                 if (tClass == OpenApiServiceConfiguration.class) {

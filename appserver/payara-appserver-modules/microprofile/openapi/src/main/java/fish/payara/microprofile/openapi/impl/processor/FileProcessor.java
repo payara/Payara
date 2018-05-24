@@ -40,12 +40,12 @@
 package fish.payara.microprofile.openapi.impl.processor;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.merge;
+import static java.util.logging.Level.WARNING;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -97,7 +97,7 @@ public class FileProcessor implements OASProcessor {
                 LOGGER.fine("No static OpenAPI document provided.");
             }
         } catch (URISyntaxException ex) {
-            LOGGER.log(Level.WARNING, "Invalid URI syntax", ex);
+            LOGGER.log(WARNING, "Invalid URI syntax", ex);
         }
     }
 
@@ -108,7 +108,7 @@ public class FileProcessor implements OASProcessor {
             try {
                 readResult = mapper.readValue(file, OpenAPIImpl.class);
             } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, "Error when reading static OpenAPI document.", ex);
+                LOGGER.log(WARNING, "Error when reading static OpenAPI document.", ex);
             }
             if (readResult != null) {
                 merge(readResult, api, true);

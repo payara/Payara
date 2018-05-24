@@ -62,6 +62,12 @@ import fish.payara.microprofile.openapi.impl.rest.app.provider.mixin.ExtensionsM
 
 public final class ObjectMapperFactory {
 
+    /**
+     * Private constructor to hide default public one.
+     */
+    private ObjectMapperFactory() {
+    }
+
     public static ObjectMapper createJson() {
         return create(new JsonFactory());
     }

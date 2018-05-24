@@ -39,6 +39,8 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
+import static java.util.Collections.unmodifiableMap;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -106,40 +108,45 @@ import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 
 public class OASFactoryResolverImpl extends OASFactoryResolver {
 
-    public static final Map<Class<? extends Constructible>, Class<? extends Constructible>> MODEL_MAP = new HashMap<>();
+    /**
+     * A map of each OpenAPI model element to the class that models it.
+     */
+    public static final Map<Class<? extends Constructible>, Class<? extends Constructible>> MODEL_MAP;
     static {
-        MODEL_MAP.put(Components.class, ComponentsImpl.class);
-        MODEL_MAP.put(ExternalDocumentation.class, ExternalDocumentationImpl.class);
-        MODEL_MAP.put(OpenAPI.class, OpenAPIImpl.class);
-        MODEL_MAP.put(Operation.class, OperationImpl.class);
-        MODEL_MAP.put(PathItem.class, PathItemImpl.class);
-        MODEL_MAP.put(Paths.class, PathsImpl.class);
-        MODEL_MAP.put(Callback.class, CallbackImpl.class);
-        MODEL_MAP.put(Example.class, ExampleImpl.class);
-        MODEL_MAP.put(Header.class, HeaderImpl.class);
-        MODEL_MAP.put(Contact.class, ContactImpl.class);
-        MODEL_MAP.put(Info.class, InfoImpl.class);
-        MODEL_MAP.put(License.class, LicenseImpl.class);
-        MODEL_MAP.put(Link.class, LinkImpl.class);
-        MODEL_MAP.put(Content.class, ContentImpl.class);
-        MODEL_MAP.put(Discriminator.class, DiscriminatorImpl.class);
-        MODEL_MAP.put(Encoding.class, EncodingImpl.class);
-        MODEL_MAP.put(MediaType.class, MediaTypeImpl.class);
-        MODEL_MAP.put(Schema.class, SchemaImpl.class);
-        MODEL_MAP.put(XML.class, XMLImpl.class);
-        MODEL_MAP.put(Parameter.class, ParameterImpl.class);
-        MODEL_MAP.put(RequestBody.class, RequestBodyImpl.class);
-        MODEL_MAP.put(APIResponse.class, APIResponseImpl.class);
-        MODEL_MAP.put(APIResponses.class, APIResponsesImpl.class);
-        MODEL_MAP.put(OAuthFlow.class, OAuthFlowImpl.class);
-        MODEL_MAP.put(OAuthFlows.class, OAuthFlowsImpl.class);
-        MODEL_MAP.put(Scopes.class, ScopesImpl.class);
-        MODEL_MAP.put(SecurityRequirement.class, SecurityRequirementImpl.class);
-        MODEL_MAP.put(SecurityScheme.class, SecuritySchemeImpl.class);
-        MODEL_MAP.put(Server.class, ServerImpl.class);
-        MODEL_MAP.put(ServerVariable.class, ServerVariableImpl.class);
-        MODEL_MAP.put(ServerVariables.class, ServerVariablesImpl.class);
-        MODEL_MAP.put(Tag.class, TagImpl.class);
+        Map<Class<? extends Constructible>, Class<? extends Constructible>> map = new HashMap<>();
+        map.put(Components.class, ComponentsImpl.class);
+        map.put(ExternalDocumentation.class, ExternalDocumentationImpl.class);
+        map.put(OpenAPI.class, OpenAPIImpl.class);
+        map.put(Operation.class, OperationImpl.class);
+        map.put(PathItem.class, PathItemImpl.class);
+        map.put(Paths.class, PathsImpl.class);
+        map.put(Callback.class, CallbackImpl.class);
+        map.put(Example.class, ExampleImpl.class);
+        map.put(Header.class, HeaderImpl.class);
+        map.put(Contact.class, ContactImpl.class);
+        map.put(Info.class, InfoImpl.class);
+        map.put(License.class, LicenseImpl.class);
+        map.put(Link.class, LinkImpl.class);
+        map.put(Content.class, ContentImpl.class);
+        map.put(Discriminator.class, DiscriminatorImpl.class);
+        map.put(Encoding.class, EncodingImpl.class);
+        map.put(MediaType.class, MediaTypeImpl.class);
+        map.put(Schema.class, SchemaImpl.class);
+        map.put(XML.class, XMLImpl.class);
+        map.put(Parameter.class, ParameterImpl.class);
+        map.put(RequestBody.class, RequestBodyImpl.class);
+        map.put(APIResponse.class, APIResponseImpl.class);
+        map.put(APIResponses.class, APIResponsesImpl.class);
+        map.put(OAuthFlow.class, OAuthFlowImpl.class);
+        map.put(OAuthFlows.class, OAuthFlowsImpl.class);
+        map.put(Scopes.class, ScopesImpl.class);
+        map.put(SecurityRequirement.class, SecurityRequirementImpl.class);
+        map.put(SecurityScheme.class, SecuritySchemeImpl.class);
+        map.put(Server.class, ServerImpl.class);
+        map.put(ServerVariable.class, ServerVariableImpl.class);
+        map.put(ServerVariables.class, ServerVariablesImpl.class);
+        map.put(Tag.class, TagImpl.class);
+        MODEL_MAP = unmodifiableMap(map);
     }
 
     @SuppressWarnings("unchecked")
@@ -162,7 +169,17 @@ public class OASFactoryResolverImpl extends OASFactoryResolver {
         try {
             return (T) implClass.newInstance();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new OpenAPIClassCreationException(e);
         }
     }
+
+    private class OpenAPIClassCreationException extends RuntimeException {
+
+        private static final long serialVersionUID = 7668110028310822354L;
+
+        OpenAPIClassCreationException(Exception ex) {
+            super(ex);
+        }
+    }
+
 }

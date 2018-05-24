@@ -53,9 +53,6 @@ import java.util.Properties;
 
 import javax.inject.Inject;
 
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.util.ColumnFormatter;
-
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -89,21 +86,17 @@ public class GetOpenApiConfigurationCommand implements AdminCommand {
 
     @Override
     public void execute(AdminCommandContext adminCommandContext) {
-        Config targetConfig = targetUtil.getConfig(target);
-
-        if (targetConfig == null) {
+        // Check for the existing config
+        if (targetUtil.getConfig(target) == null) {
             adminCommandContext.getActionReport().setMessage("No such config name: " + targetUtil);
             adminCommandContext.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
 
-        OpenApiServiceConfiguration openApiConfig = targetConfig.getExtensionByType(OpenApiServiceConfiguration.class);
+        OpenApiServiceConfiguration openApiConfig = targetUtil.getConfig(target)
+                .getExtensionByType(OpenApiServiceConfiguration.class);
 
-        ColumnFormatter columnFormatter = new ColumnFormatter(new String[] { "Enabled" });
-        Object[] outputValues = { openApiConfig.getEnabled() };
-        columnFormatter.addRow(outputValues);
-
-        adminCommandContext.getActionReport().appendMessage(columnFormatter.toString());
+        adminCommandContext.getActionReport().appendMessage("Enabled: " + openApiConfig.getEnabled());
 
         Map<String, Object> extraPropertiesMap = new HashMap<>();
         extraPropertiesMap.put("enabled", openApiConfig.getEnabled());
@@ -112,4 +105,5 @@ public class GetOpenApiConfigurationCommand implements AdminCommand {
         extraProperties.put("openApiConfiguration", extraPropertiesMap);
         adminCommandContext.getActionReport().setExtraProperties(extraProperties);
     }
+
 }

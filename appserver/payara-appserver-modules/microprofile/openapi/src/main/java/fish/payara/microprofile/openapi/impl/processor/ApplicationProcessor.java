@@ -39,12 +39,14 @@
  */
 package fish.payara.microprofile.openapi.impl.processor;
 
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.WARNING;
+
 import java.io.File;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
@@ -56,7 +58,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -451,9 +452,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
             // Get the parent schema object name
             String parentName = null;
-            try {
+            if (Field.class.cast(element).getDeclaringClass().isAnnotationPresent(Schema.class)) {
                 parentName = Field.class.cast(element).getDeclaringClass().getDeclaredAnnotation(Schema.class).name();
-            } catch (NullPointerException ex) {
             }
             if (parentName == null || parentName.isEmpty()) {
                 parentName = Field.class.cast(element).getDeclaringClass().getSimpleName();
@@ -567,8 +567,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (apiResponse.responseCode() != null && !apiResponse.responseCode().isEmpty() && !apiResponse.responseCode()
                 .equals(org.eclipse.microprofile.openapi.models.responses.APIResponses.DEFAULT)) {
             // If the element doesn't also contain a response mapping to the default
-            if (!Arrays.asList(element.getDeclaredAnnotationsByType(APIResponse.class)).stream()
-                    .anyMatch(a -> a.responseCode() == null || a.responseCode().isEmpty() || a.responseCode()
+            if (Arrays.asList(element.getDeclaredAnnotationsByType(APIResponse.class)).stream()
+                    .noneMatch(a -> a.responseCode() == null || a.responseCode().isEmpty() || a.responseCode()
                             .equals(org.eclipse.microprofile.openapi.models.responses.APIResponses.DEFAULT))) {
                 // Then remove the default response
                 context.getWorkingOperation().getResponses()
@@ -723,7 +723,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (element instanceof Method) {
             if (securityRequirement.name() != null && !securityRequirement.name().isEmpty()) {
                 org.eclipse.microprofile.openapi.models.security.SecurityRequirement model = new SecurityRequirementImpl();
-                SecurityRequirementImpl.merge(securityRequirement, model, true);
+                SecurityRequirementImpl.merge(securityRequirement, model);
                 context.getWorkingOperation().addSecurityRequirement(model);
             }
         }
@@ -748,18 +748,18 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
      */
     @SuppressWarnings("unchecked")
     private Set<Class<?>> getClassesFromLoader(ClassLoader classLoader) {
-        Set<Class<?>> classes = new HashSet<>();
+        Set<Class<?>> loaderClasses = new HashSet<>();
         try {
             Field classesField = ClassLoader.class.getDeclaredField("classes");
             classesField.setAccessible(true);
-            classes = new HashSet<>((Vector<Class<?>>) classesField.get(classLoader));
+            loaderClasses = new HashSet<>((Vector<Class<?>>) classesField.get(classLoader));
         } catch (Exception ex) {
-            LOGGER.log(Level.WARNING, "Unable to get classes from classloader.", ex);
+            LOGGER.log(WARNING, "Unable to get classes from classloader.", ex);
         }
 
         // If no classes were found, the classloader could be deploying from a directory.
         // If so, scan the directory structure for expected classes.
-        if (classes.isEmpty()) {
+        if (loaderClasses.isEmpty()) {
             LOGGER.fine("Unable to find loaded classes in classloader, searching in classpath for files.");
             try {
                 // Get the classpath url.
@@ -780,7 +780,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                                 String className = file.getPath().replaceAll(".+WEB-INF/classes/", "").replace("/", ".").replace(".class", "");
                                 LOGGER.finer("Attempting to add class: " + className);
                                 try {
-									classes.add(Class.forName(className));
+									loaderClasses.add(Class.forName(className));
 								} catch (ClassNotFoundException ex) {
                                     LOGGER.finer("Unable to add class: " + className);
 								}
@@ -790,14 +790,14 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                         expand.addAll(subFiles);
                     }
                 } else {
-                    LOGGER.log(Level.WARNING, "Unrecognised classpath.");
+                    LOGGER.log(WARNING, "Unrecognised classpath.");
                 }
 			} catch (URISyntaxException ex) {
-                LOGGER.log(Level.WARNING, "Unable to get classes from classpath.", ex);
+                LOGGER.log(WARNING, "Unable to get classes from classpath.", ex);
 			}
         }
 
-        return classes;
+        return loaderClasses;
     }
 
     /**
@@ -816,8 +816,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                     Application app = (Application) clazz.newInstance();
                     // Add all classes contained in the application
                     resourceClasses.addAll(app.getClasses());
-                } catch (InstantiationException | IllegalAccessException e) {
-                    e.printStackTrace();
+                } catch (InstantiationException | IllegalAccessException ex) {
+                    LOGGER.log(WARNING, "Unable to initialise application class.", ex);
                 }
             }
         }
@@ -831,7 +831,6 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // If there is no application, add all classes to the context root.
-        // TODO: parse the web xml to find the correct mapping in this case
         if (resourceMapping.isEmpty()) {
             resourceMapping.put("/", classList);
         }
@@ -890,14 +889,16 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
      * @return the {@link javax.ws.rs.core.MediaType} with the given name. Defaults to <code>WILDCARD</code>.
      */
     private String getContentType(String name) {
+        String contentType = javax.ws.rs.core.MediaType.WILDCARD;
         try {
             javax.ws.rs.core.MediaType mediaType = javax.ws.rs.core.MediaType.valueOf(name);
             if (mediaType != null) {
-                return mediaType.toString();
+                contentType = mediaType.toString();
             }
         } catch (IllegalArgumentException ex) {
+            LOGGER.log(FINE, "Unrecognised content type.", ex);
         }
-        return javax.ws.rs.core.MediaType.WILDCARD;
+        return contentType;
     }
 
     private org.eclipse.microprofile.openapi.models.media.Schema createSchema(OpenAPI api, Class<?> type) {

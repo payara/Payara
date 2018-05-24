@@ -62,7 +62,7 @@ import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
 @Path("/")
 public class OpenApiResource {
 
-    private Logger LOGGER = Logger.getLogger(OpenApiResource.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(OpenApiResource.class.getName());
 
     @GET
     @Produces({ APPLICATION_YAML, APPLICATION_JSON })

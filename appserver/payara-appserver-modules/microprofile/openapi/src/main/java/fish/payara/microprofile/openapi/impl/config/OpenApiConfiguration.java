@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl.config;
 
+import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toSet;
 
 import java.util.ArrayList;
@@ -49,7 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.microprofile.config.Config;
@@ -192,7 +192,7 @@ public class OpenApiConfiguration {
                 // If exclude packages are specified, check that the class package doesn't start
                 // with any in the list
                 .filter(clazz -> excludePackages.isEmpty()
-                        || !excludePackages.stream().anyMatch(pkg -> clazz.getPackage().getName().startsWith(pkg)))
+                        || excludePackages.stream().noneMatch(pkg -> clazz.getPackage().getName().startsWith(pkg)))
                 .collect(toSet());
     }
 
@@ -336,7 +336,7 @@ public class OpenApiConfiguration {
         try {
             return classLoader.loadClass(className);
         } catch (ClassNotFoundException ex) {
-            LOGGER.log(Level.WARNING, "Unable to find class.", ex);
+            LOGGER.log(WARNING, "Unable to find class.", ex);
         }
         return null;
     }

@@ -39,7 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl.model.headers;
 
-import static fish.payara.microprofile.openapi.impl.model.OpenAPIImpl.UNKNOWN_NAME;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.UNKNOWN_ELEMENT_NAME;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
@@ -285,7 +285,7 @@ public class HeaderImpl extends ExtensibleImpl implements Header {
         // Get the header name
         String headerName = header.name();
         if (header.name() == null || header.name().isEmpty()) {
-            headerName = UNKNOWN_NAME;
+            headerName = UNKNOWN_ELEMENT_NAME;
         }
 
         // Get or create the header

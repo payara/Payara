@@ -51,8 +51,7 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
-import com.sun.enterprise.config.serverbeans.Config;
-
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -80,21 +79,28 @@ import org.jvnet.hk2.config.TransactionFailure;
 public class SetOpenApiConfigurationCommand implements AdminCommand {
     
     private static final Logger LOGGER = Logger.getLogger(SetOpenApiConfigurationCommand.class.getName());
-    
+
     @Inject
     private Target targetUtil;
-    
+
     @Param(name = "enabled", optional = true)
     private Boolean enabled;
-    
+
     @Param(optional = true, defaultValue = "server-config")
     private String target;
-    
+
     @Override
     public void execute(AdminCommandContext adminCommandContext) {
-        Config targetConfig = targetUtil.getConfig(target);
-        OpenApiServiceConfiguration openApiConfig = targetConfig.getExtensionByType(OpenApiServiceConfiguration.class);
-        
+        // Check for the existing config
+        if (targetUtil.getConfig(target) == null) {
+            adminCommandContext.getActionReport().setMessage("No such config name: " + targetUtil);
+            adminCommandContext.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
+
+        OpenApiServiceConfiguration openApiConfig = targetUtil.getConfig(target)
+                .getExtensionByType(OpenApiServiceConfiguration.class);
+
         try {
             ConfigSupport.apply(configProxy -> {
                 if (enabled != null) {
@@ -104,8 +110,7 @@ public class SetOpenApiConfigurationCommand implements AdminCommand {
             }, openApiConfig);
         } catch (TransactionFailure ex) {
             adminCommandContext.getActionReport().failure(LOGGER, "Failed to update OpenAPI configuration", ex);
-            return;
         }
     }
-    
+
 }

@@ -42,6 +42,7 @@ package fish.payara.microprofile.openapi.impl.model.media;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
+import static java.util.logging.Level.WARNING;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.eclipse.microprofile.openapi.annotations.media.DiscriminatorMapping;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
@@ -61,6 +63,8 @@ import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
 public class SchemaImpl extends ExtensibleImpl implements Schema {
+
+    private static final Logger LOGGER = Logger.getLogger(SchemaImpl.class.getName());
 
     protected Object defaultValue;
 
@@ -826,8 +830,8 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
             if (Schema.class.isAssignableFrom(from.not())) {
                 try {
                     to.setNot((Schema) from.not().newInstance());
-                } catch (InstantiationException | IllegalAccessException e) {
-                    e.printStackTrace();
+                } catch (InstantiationException | IllegalAccessException ex) {
+                    LOGGER.log(WARNING, "Unable to create Schema class instance.", ex);
                 }
             }
         }
@@ -852,8 +856,8 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
                     }
                     try {
                         to.addAllOf((Schema) allOfClass.newInstance());
-                    } catch (InstantiationException | IllegalAccessException e) {
-                        e.printStackTrace();
+                    } catch (InstantiationException | IllegalAccessException ex) {
+                        LOGGER.log(WARNING, "Unable to create Schema class instance.", ex);
                     }
                 }
             }
@@ -866,8 +870,8 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
                     }
                     try {
                         to.addAnyOf((Schema) anyOfClass.newInstance());
-                    } catch (InstantiationException | IllegalAccessException e) {
-                        e.printStackTrace();
+                    } catch (InstantiationException | IllegalAccessException ex) {
+                        LOGGER.log(WARNING, "Unable to create Schema class instance.", ex);
                     }
                 }
             }
@@ -880,8 +884,8 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
                     }
                     try {
                         to.addOneOf((Schema) oneOfClass.newInstance());
-                    } catch (InstantiationException | IllegalAccessException e) {
-                        e.printStackTrace();
+                    } catch (InstantiationException | IllegalAccessException ex) {
+                        LOGGER.log(WARNING, "Unable to create Schema class instance.", ex);
                     }
                 }
             }

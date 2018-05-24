@@ -80,7 +80,7 @@ public class BaseProcessor implements OASProcessor {
         }
 
         // Add the config specified servers
-        if (config != null && config.getServers().size() > 0) {
+        if (config != null && !config.getServers().isEmpty()) {
             // Clear all the other servers
             api.getServers().clear();
             // Add all the specified ones
@@ -88,9 +88,10 @@ public class BaseProcessor implements OASProcessor {
         }
 
         // Add the default server if there are none
-        if (api.getServers().size() == 0) {
-            api.addServer(
-                    new ServerImpl().url("http://localhost:8080" + applicationPath).description("Default Server."));
+        if (api.getServers().isEmpty()) {
+            api.addServer(new ServerImpl()
+                    .url("http://localhost:8080" + applicationPath)
+                    .description("Default Server."));
         }
 
         // Add the path servers
