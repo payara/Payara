@@ -53,13 +53,18 @@ import javax.ws.rs.core.Configuration;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 
 /**
- *
+ * Decorator for the default JerseyClientBuilder class to allow us to add our ClientFilter and instrument asynchronous
+ * clients.
+ * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 public class JaxrsClientBuilderDecorator extends ClientBuilder {
 
     protected ClientBuilder clientBuilder;
     
+    /**
+     * Initialises a new JerseyClientBuilder and sets it as the decorated object.
+     */
     public JaxrsClientBuilderDecorator() {
         this.clientBuilder = new JerseyClientBuilder();
     }
@@ -111,9 +116,10 @@ public class JaxrsClientBuilderDecorator extends ClientBuilder {
 
     @Override
     public Client build() {
-        // Register the Request Tracing filter, then build the client as per normal
+        // Register the Request Tracing filter
         this.register(JaxrsClientRequestTracingFilter.class);
 
+        // Build and return a decorated client
         return new JaxrsClientDecorator(this.clientBuilder.build());
     }
 

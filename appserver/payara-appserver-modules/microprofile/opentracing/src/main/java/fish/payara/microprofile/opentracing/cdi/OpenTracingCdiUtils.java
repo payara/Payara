@@ -53,13 +53,23 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 
 /**
- *
+ * Utilities class for various CDI-based operations used by the OpenTracing Service classes.
+ * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 public class OpenTracingCdiUtils {
     
     private static final Logger logger = Logger.getLogger(OpenTracingCdiUtils.class.getName());
     
+    /**
+     * Gets the annotation from the method that triggered the interceptor.
+     * 
+     * @param <A> The annotation type to return
+     * @param beanManager The invoking interceptor's BeanManager
+     * @param annotationClass The class of the annotation to get
+     * @param invocationContext The context of the method invocation
+     * @return The annotation that triggered the interceptor.
+     */
     public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, 
             InvocationContext invocationContext) {
         A annotation = null;
@@ -81,15 +91,19 @@ public class OpenTracingCdiUtils {
                 // Account for Stereotypes
                 Queue<Annotation> annotations = new LinkedList<>(Arrays.asList(annotatedClass.getAnnotations()));
 
+                // Loop over each individual annotation
                 while (!annotations.isEmpty()) {
                     Annotation a = annotations.remove();
 
+                    // Check if this is the annotation we're looking for
                     if (a.annotationType().equals(annotationClass)) {
                         logger.log(Level.FINER, "Annotation was found in a stereotype");
                         annotation = annotationClass.cast(a);
                         break;
                     }
 
+                    // If the found annotation is a stereotype, get the individual annotations and add them to the list
+                    // to be iterated over
                     if (beanManager.isStereotype(a.annotationType())) {
                         annotations.addAll(beanManager.getStereotypeDefinition(a.annotationType()));
                     }
@@ -100,6 +114,15 @@ public class OpenTracingCdiUtils {
         return annotation;
     }
     
+    /**
+     * Gets the annotation from the method that triggered the interceptor.
+     * 
+     * @param <A> The annotation type to return
+     * @param beanManager The invoking interceptor's BeanManager
+     * @param annotationClass The class of the annotation to get
+     * @param resourceInfo The targeted jaxrs resource
+     * @return The annotation that triggered the interceptor.
+     */
     public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, 
             ResourceInfo resourceInfo) {
         A annotation = null;
@@ -121,15 +144,19 @@ public class OpenTracingCdiUtils {
                 // Account for Stereotypes
                 Queue<Annotation> annotations = new LinkedList<>(Arrays.asList(annotatedClass.getAnnotations()));
 
+                // Loop over each individual annotation
                 while (!annotations.isEmpty()) {
                     Annotation a = annotations.remove();
 
+                    // Check if this is the annotation we're looking for
                     if (a.annotationType().equals(annotationClass)) {
                         logger.log(Level.FINER, "Annotation was found in a stereotype");
                         annotation = annotationClass.cast(a);
                         break;
                     }
 
+                    // If the found annotation is a stereotype, get the individual annotations and add them to the list
+                    // to be iterated over
                     if (beanManager.isStereotype(a.annotationType())) {
                         annotations.addAll(beanManager.getStereotypeDefinition(a.annotationType()));
                     }
@@ -142,12 +169,13 @@ public class OpenTracingCdiUtils {
     
     /**
      * Gets overriding config parameter values if they're present from an invocation context.
+     * 
      * @param <A> The annotation type
      * @param annotationClass The annotation class
      * @param parameterName The name of the parameter to get the override value of
      * @param invocationContext The context of the invoking request
      * @param parameterType The type of the parameter to get the override value of
-     * @return 
+     * @return An Optional containing the override value from the config if there is one
      */
     public static <A extends Annotation> Optional getConfigOverrideValue(Class<A> annotationClass, 
             String parameterName, InvocationContext invocationContext, Class parameterType) {
@@ -208,6 +236,16 @@ public class OpenTracingCdiUtils {
         return value;
     }
     
+    /**
+     * Gets overriding config parameter values if they're present from an invocation context.
+     * 
+     * @param <A> The annotation type
+     * @param annotationClass The annotation class
+     * @param parameterName The name of the parameter to get the override value of
+     * @param resourceInfo The targeted jaxrs resource
+     * @param parameterType The type of the parameter to get the override value of
+     * @return An Optional containing the override value from the config if there is one
+     */
     public static <A extends Annotation> Optional getConfigOverrideValue(Class<A> annotationClass, 
             String parameterName, ResourceInfo resourceInfo, Class parameterType) {
         Optional value = Optional.empty();

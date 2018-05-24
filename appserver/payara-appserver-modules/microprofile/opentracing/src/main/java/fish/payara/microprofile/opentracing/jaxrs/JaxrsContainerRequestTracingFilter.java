@@ -74,7 +74,8 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
 /**
- *
+ * ContainerFilter used for instrumenting JaxRs methods with tracing.
+ * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilter, ContainerResponseFilter {
@@ -99,59 +100,81 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
         }
     }
 
+    // Before method invocation
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
+        // If request tracing is enabled, and there's a trace in progress (which there should be!)
         if (requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()) {
-
+            // Get the Traced annotation from the target method
             Traced tracedAnnotation = OpenTracingCdiUtils.getAnnotation(CDI.current().getBeanManager(), 
                     Traced.class, resourceInfo);
 
-            if (tracedAnnotation == null || tracedAnnotation.value()) {
+            // If there is no annotation, or if there is an annotation and a config override indicating that we should
+            // trace the method...
+            if (tracedAnnotation == null || (boolean) OpenTracingCdiUtils.getConfigOverrideValue(
+                    Traced.class, "value", resourceInfo, boolean.class)
+                    .orElse(tracedAnnotation.value())) {
+                // Get the application's tracer instance
                 Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
                         serviceLocator.getService(InvocationManager.class)));
+                
+                // Create a Span and instrument it with details about the request
                 SpanBuilder spanBuilder = tracer.buildSpan(determineOperationName(requestContext, tracedAnnotation))
                         .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
                         .withTag(Tags.HTTP_METHOD.getKey(), requestContext.getMethod())
                         .withTag(Tags.HTTP_URL.getKey(), requestContext.getUriInfo().getRequestUri().toURL().toString());
 
-                // Don't extract if using in-built tracer as we don't support it yet
+                // Don't extract a context if using in-built tracer as we don't support it yet
                 if (!(tracer instanceof fish.payara.opentracing.tracer.Tracer)) {
+                    // Extract the context from the tracer if there is one
                     SpanContext spanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, new MultivaluedMapToTextMap(
                             requestContext.getHeaders()));
 
+                    // If there was a context injected into the tracer, add it as a parent of the new span
                     if (spanContext != null) {
                         spanBuilder.asChildOf(spanContext);
                     }
                 }
 
+                // Start the span and continue on to the targeted method
                 spanBuilder.startActive();
             }
         }
     }
     
+    // After method invocation
     @Override
-    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
+    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) 
+            throws IOException {
+        // Try block so that we can always attach error info if there is any
         try {
+            // If request tracing is enabled, and there is a trace in progress (which there should be!)
             if (requestTracing != null
                     && requestTracing.isRequestTracingEnabled()
                     && requestTracing.isTraceInProgress()) {
 
+                // Get the traced annotation from the method
                 Traced tracedAnnotation = OpenTracingCdiUtils.getAnnotation(CDI.current().getBeanManager(),
                         Traced.class, resourceInfo);
 
+                // If there is no annotation, or if there is an annotation and a config override indicating that we 
+                // should trace the method...
                 if (tracedAnnotation == null || (boolean) OpenTracingCdiUtils.getConfigOverrideValue(
                         Traced.class, "value", resourceInfo, boolean.class).orElse(tracedAnnotation.value())) {
+                    // Get the active span from the application's tracer - this *should* never be null
                     try (ActiveSpan activeSpan = openTracing.getTracer(openTracing.getApplicationName(
                         serviceLocator.getService(InvocationManager.class))).activeSpan()) {
+                        // Get and add the response status to the active span
                         Response.StatusType statusInfo = responseContext.getStatusInfo();
-
                         activeSpan.setTag(Tags.HTTP_STATUS.getKey(), statusInfo.getStatusCode());
 
+                        // If the response status is an error, add error information to the span
                         if (statusInfo.getFamily() == Response.Status.Family.CLIENT_ERROR
                                 || statusInfo.getFamily() == Response.Status.Family.SERVER_ERROR) {
                             activeSpan.setTag(Tags.ERROR.getKey(), true);
                             activeSpan.log(Collections.singletonMap("event", "error"));
 
+                            // If there's an attached exception, add it to the span
                             if (responseContext.hasEntity() && responseContext.getEntity() instanceof Throwable) {
                                 activeSpan.log(Collections.singletonMap("error.object", responseContext.getEntity()));
                             }
@@ -160,6 +183,8 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                 }
             }
         } finally {
+            // If there's an attached error on the response, log the exception and set the response entity as the 
+            // error message (instead of as the error object)
             if (responseContext.hasEntity() && responseContext.getEntity() instanceof Throwable) {
                 Throwable throwable = (Throwable) responseContext.getEntity();
                 logger.log(Level.SEVERE, throwable.toString());
@@ -169,31 +194,53 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
 
     }
 
+    /**
+     * Helper method that determines what the operation name of the span.
+     * 
+     * @param requestContext The context of the request, obtained from the filter methods
+     * @param tracedAnnotation The Traced annotation obtained from the target method
+     * @return The name to use as the Span's operation name
+     */
     private String determineOperationName(ContainerRequestContext requestContext, Traced tracedAnnotation) {
+        // If there is no annotation, or if there is an annotation and a config override providing an empty name
         if (tracedAnnotation == null || ((String) OpenTracingCdiUtils.getConfigOverrideValue(
                 Traced.class, "operationName", resourceInfo, String.class)
                 .orElse(tracedAnnotation.operationName()))
                 .equals("")) {
+            // Set the name equal to the HTTP Method, followed by the method signature
             return requestContext.getMethod()
                     + ":"
                     + resourceInfo.getResourceClass().getCanonicalName()
                     + "."
                     + resourceInfo.getResourceMethod().getName();
         } else {
-            return tracedAnnotation.operationName();
+            // If there is no annotation, or if there is an annotation and a config override that provides
+            // a non-empty name, use it as the operation name
+            return (String) OpenTracingCdiUtils.getConfigOverrideValue(
+                    Traced.class, "operationName", resourceInfo, String.class)
+                    .orElse(tracedAnnotation.operationName());
         }
     }
 
+    /**
+     * Class used for converting a MultivaluedMap from Headers to a TextMap, to allow it to be extracted from the Tracer.
+     */
     private class MultivaluedMapToTextMap implements TextMap {
 
         private final MultivaluedMap<String, String> map;
 
+        /**
+         * Initialises this object with the MultivaluedMap to wrap.
+         * 
+         * @param map The MultivaluedMap to convert to a TextMap
+         */
         public MultivaluedMapToTextMap(MultivaluedMap<String, String> map) {
             this.map = map;
         }
 
         @Override
         public Iterator<Map.Entry<String, String>> iterator() {
+            // Use the helper iterator
             return new MultivaluedMapIterator<>(map.entrySet());
         }
 
@@ -204,6 +251,12 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
 
     }
 
+    /**
+     * Helper Class used for iterating over the MultivaluedMapToTextMap class.
+     * 
+     * @param <K> The map key class
+     * @param <V> The map value class
+     */
     private class MultivaluedMapIterator<K, V> implements Iterator<Map.Entry<K, V>> {
 
         private final Iterator<Map.Entry<K, List<V>>> mapIterator;
@@ -211,12 +264,18 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
         private Map.Entry<K, List<V>> mapEntry;
         private Iterator<V> mapEntryIterator;
 
+        /**
+         * Initialise the iterator to use on this map.
+         * 
+         * @param multiValuesEntrySet The map to initialise the iterator from.
+         */
         public MultivaluedMapIterator(Set<Map.Entry<K, List<V>>> multiValuesEntrySet) {
             this.mapIterator = multiValuesEntrySet.iterator();
         }
 
         @Override
         public boolean hasNext() {
+            // True if the MapEntry (value) is not equal to null and has another value, or if there is another key
             return ((mapEntryIterator != null && mapEntryIterator.hasNext()) || mapIterator.hasNext());
         }
 
@@ -237,6 +296,7 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
 
         @Override
         public void remove() {
+            // Not needed; we're only iterating over the map, not editing it
             throw new UnsupportedOperationException();
         }
 

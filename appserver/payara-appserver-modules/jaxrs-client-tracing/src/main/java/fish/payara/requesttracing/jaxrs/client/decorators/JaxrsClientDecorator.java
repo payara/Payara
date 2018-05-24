@@ -51,7 +51,8 @@ import javax.ws.rs.core.Link;
 import javax.ws.rs.core.UriBuilder;
 
 /**
- *
+ * Decorator class used to return a decorated WebTarget.
+ * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 public class JaxrsClientDecorator implements Client {
@@ -84,6 +85,7 @@ public class JaxrsClientDecorator implements Client {
 
     @Override
     public WebTarget target(Link link) {
+        // Return a decorated WebTarget
         return new JaxrsWebTargetDecorator(this.client.target(link));
     }
 

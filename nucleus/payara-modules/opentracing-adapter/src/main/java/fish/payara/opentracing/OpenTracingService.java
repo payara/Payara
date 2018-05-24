@@ -59,7 +59,8 @@ import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- *
+ * Service class for the OpenTracing integration.
+ * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 @Service(name = "opentracing-service")
@@ -67,43 +68,58 @@ public class OpenTracingService implements EventListener {
 
     private static final Logger logger = Logger.getLogger(OpenTracingService.class.getCanonicalName());
 
+    // The tracer instances
     private static final Map<String, Tracer> tracers = new ConcurrentHashMap<>();
     
     @PostConstruct
     void postConstruct() {
+        // Listen for events
         Globals.getDefaultBaseServiceLocator().getService(Events.class).register(this);
     }
 
     @Override
     public void event(Event<?> event) {
+        // Listen for application unloaded events (happens during undeployment), so that we remove the tracer instance
+        // registered to that application (if there is one)
         if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo info = (ApplicationInfo) event.hook();
-            removeApplicationTracer(info.getName());
+            tracers.remove(info.getName());
         }
     }
 
+    /**
+     * Gets the tracer instance for the given application, or creates one if there isn't one.
+     * 
+     * @param applicationName The name of the application to get or create the Tracer for
+     * @return The Tracer instance for the given application
+     */
     public synchronized Tracer getTracer(String applicationName) {
+        // Get the tracer if there is one
         Tracer tracer = tracers.get(applicationName);
        
+        // If there isn't a tracer for the application, create one
         if (tracer == null) {
+            // Check which type of Tracer to create
             if (Boolean.getBoolean("USE_OPENTRACING_MOCK_TRACER")) {
                 tracer = new MockTracer(new ThreadLocalActiveSpanSource(), MockTracer.Propagator.TEXT_MAP);
             } else {
                 tracer = new fish.payara.opentracing.tracer.Tracer(applicationName);
             }
             
+            // Register the tracer instance to the application
             tracers.put(applicationName, tracer);
         }
 
         return tracer;
     }
 
+    /**
+     * Pass-through method that checks if Request Tracing is enabled.
+     * 
+     * @return True if the Request Tracing Service is enabled
+     */
     public boolean isEnabled() {
         return Globals.getDefaultBaseServiceLocator().getService(RequestTracingService.class).isRequestTracingEnabled();
-    }
-    
-    private void removeApplicationTracer(String applicationName) {
-        tracers.remove(applicationName);
     }
 
     /**
@@ -135,14 +151,19 @@ public class OpenTracingService implements EventListener {
      * @return The application name
      */
     public String getApplicationName(InvocationManager invocationManager, InvocationContext invocationContext) {
+        // Check the obvious one first
         String appName = invocationManager.getCurrentInvocation().getAppName();
+        
         if (appName == null) {
+            // Set it to the module name if possible
             appName = invocationManager.getCurrentInvocation().getModuleName();
 
             if (appName == null) {
+                // Set to the component name if possible
                 appName = invocationManager.getCurrentInvocation().getComponentId();
 
                 if (appName == null && invocationContext != null) {
+                    // Set it to the full method signature of the method
                     appName = getFullMethodSignature(invocationContext.getMethod());
                 }
             }

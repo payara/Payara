@@ -45,7 +45,8 @@ import javax.ws.rs.core.FeatureContext;
 import javax.ws.rs.ext.Provider;
 
 /**
- *
+ * DynamicFeature that registers the ContainerFilter.
+ * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 @Provider

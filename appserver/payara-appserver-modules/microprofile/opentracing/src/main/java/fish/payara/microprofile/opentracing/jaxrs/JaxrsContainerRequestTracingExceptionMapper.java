@@ -43,13 +43,16 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
 /**
- *
+ * ExceptionMapper that catches all Exceptions. We need this because we need to add details about any exceptions to the
+ * active span - if this isn't here, we don't go back through the container filter.
+ * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 public class JaxrsContainerRequestTracingExceptionMapper implements ExceptionMapper<Throwable> {
 
     @Override
     public Response toResponse(Throwable exception) {
+        // Send an error response with the caught exception attached
         return Response.serverError().entity(exception).build();
     }
 

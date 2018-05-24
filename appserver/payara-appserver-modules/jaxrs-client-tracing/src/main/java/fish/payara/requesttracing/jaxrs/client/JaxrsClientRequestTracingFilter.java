@@ -77,25 +77,25 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
     private RequestTracingService requestTracing;
     private OpenTracingService openTracing;
 
+    /**
+     * Initialises the service variables.
+     */
     @PostConstruct
     public void postConstruct() {
         // Get the default Payara service locator - injecting a service locator will give you the one used by Jersey
         serviceLocator = Globals.getDefaultBaseServiceLocator();
 
+        // Initialise service variables
         if (serviceLocator != null) {
             requestTracing = serviceLocator.getService(RequestTracingService.class);
             openTracing = serviceLocator.getService(OpenTracingService.class);
         }
     }
 
-    /**
-     * Outbound request filter.
-     *
-     * @param requestContext
-     * @throws IOException
-     */
+    // Before method invocation
     @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
+        // ***** Request Tracing Service Instrumentation *****
         // If request tracing is enabled, and there's a trace actually in progress, add the propagation headers
         if (requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()) {
             // Check that we aren't overwriting a header
@@ -121,25 +121,33 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
                 }
             }
 
+            // ***** OpenTracing Instrumentation *****
+            // Get or create the tracer instance for this application
             Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
                     Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
 
+            // Build a span with the required MicroProfile Opentracing tags
             SpanBuilder spanBuilder = tracer.buildSpan(requestContext.getMethod())
                     .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
                     .withTag(Tags.HTTP_METHOD.getKey(), requestContext.getMethod())
                     .withTag(Tags.HTTP_URL.getKey(), requestContext.getUri().toURL().toString());
 
+            // Get the propagated span context from the request if present
+            // This is required to account for asynchronous client requests
             SpanContext parentSpanContext = (SpanContext) requestContext.getProperty(
                     PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT);
 
+            // If there is a propagated span context, set it as a parent of the new span
             if (parentSpanContext != null) {
                 spanBuilder.asChildOf(parentSpanContext);
             }
 
+            // Start the span and mark it as active
             ActiveSpan activeSpan = spanBuilder.startActive();
 
             // Don't inject if using in-built tracer as we don't support it yet
             if (!(tracer instanceof fish.payara.opentracing.tracer.Tracer)) {
+                // Inject the active span context for propagation
                 tracer.inject(
                         activeSpan.context(),
                         Format.Builtin.HTTP_HEADERS,
@@ -148,25 +156,20 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
         }
     }
 
-    /**
-     * Inbound response filter.
-     *
-     * @param requestContext
-     * @param responseContext
-     * @throws IOException
-     */
+    // After method invocation
     @Override
     public void filter(ClientRequestContext requestContext, ClientResponseContext responseContext) throws IOException {
         // If request tracing is enabled, and there's a trace actually in progress, add info about method
         if (requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()) {
-
+            // Get the active span from the application's tracer instance
             try (ActiveSpan activeSpan = openTracing.getTracer(openTracing.getApplicationName(
-                    Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)))
+                    serviceLocator.getService(InvocationManager.class)))
                     .activeSpan()) {
+                // Get the response status and add it to the active span
                 StatusType statusInfo = responseContext.getStatusInfo();
-
                 activeSpan.setTag(Tags.HTTP_STATUS.getKey(), statusInfo.getStatusCode());
 
+                // If the response status is an error, add error info to the active span
                 if (statusInfo.getFamily() == Family.CLIENT_ERROR || statusInfo.getFamily() == Family.SERVER_ERROR) {
                     activeSpan.setTag(Tags.ERROR.getKey(), true);
                     activeSpan.log(Collections.singletonMap("event", "error"));
@@ -176,16 +179,25 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
         }
     }
 
+    /**
+     * Class used for converting a MultivaluedMap from Headers to a TextMap, to allow it to be injected into the Tracer.
+     */
     private class MultivaluedMapToTextMap implements TextMap {
 
         private final MultivaluedMap<String, Object> map;
 
+        /**
+         * Initialises this object with the MultivaluedMap to wrap.
+         * 
+         * @param map The MultivaluedMap to convert to a TextMap
+         */
         public MultivaluedMapToTextMap(MultivaluedMap<String, Object> map) {
             this.map = map;
         }
 
         @Override
         public Iterator<Map.Entry<String, String>> iterator() {
+            // Not needed as we're not iterating over the map
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

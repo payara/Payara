@@ -50,13 +50,19 @@ import io.opentracing.propagation.Format;
 import java.util.concurrent.TimeUnit;
 
 /**
- *
+ * Implementation of the OpenTracing Tracer class.
+ * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 public class Tracer extends ActiveSpanSource implements io.opentracing.Tracer {
 
     private final String applicationName;
     
+    /**
+     * Constructor that registers this Tracer to an application.
+     * 
+     * @param applicationName The application to register this tracer to
+     */
     public Tracer(String applicationName) {
         this.applicationName = applicationName;
     }
@@ -68,20 +74,30 @@ public class Tracer extends ActiveSpanSource implements io.opentracing.Tracer {
 
     @Override
     public <C> void inject(SpanContext spanContext, Format<C> format, C carrier) {
+        // To Do
         throw new UnsupportedOperationException("Not supported yet."); 
     }
 
     @Override
     public <C> SpanContext extract(Format<C> format, C carrier) {
+        // To Do
         throw new UnsupportedOperationException("Not supported yet."); 
     }
 
+    /**
+     * Implementation of the OpenTracing SpanBuilder class.
+     */
     public class SpanBuilder implements io.opentracing.Tracer.SpanBuilder {
 
         private boolean ignoreActiveSpan;
         private long microsecondsStartTime;
-        private fish.payara.opentracing.span.Span span;
+        private final fish.payara.opentracing.span.Span span;
 
+        /**
+         * Constructor that gives the Span an operation name.
+         * 
+         * @param operationName The name to give the Span.
+         */
         public SpanBuilder(String operationName) {
             ignoreActiveSpan = false;
             microsecondsStartTime = 0;
@@ -146,6 +162,7 @@ public class Tracer extends ActiveSpanSource implements io.opentracing.Tracer {
         
         @Override
         public Span startManual() {
+            // If we shouldn't ignore the currently active span, set it as this span's parent
             if (!ignoreActiveSpan) {
                 fish.payara.opentracing.span.ActiveSpan activeSpan = (fish.payara.opentracing.span.ActiveSpan) activeSpan();
                 
@@ -154,6 +171,7 @@ public class Tracer extends ActiveSpanSource implements io.opentracing.Tracer {
                 }
             }
 
+            // If we haven't set a start time manually, set it to now
             if (microsecondsStartTime == 0) {
                 span.setStartTime(microsecondsStartTime);
             } else {

@@ -59,10 +59,12 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import org.eclipse.microprofile.opentracing.Traced;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
 /**
- *
+ * Interceptor for MicroProfile Traced annotation.
+ * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 @Interceptor
@@ -77,55 +79,81 @@ public class TracedInterceptor {
 
     @AroundInvoke
     public Object traceCdiCall(InvocationContext invocationContext) throws Exception {
-        OpenTracingService openTracing = Globals.getDefaultHabitat().getService(OpenTracingService.class);
-        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
+        // Get the required HK2 services
+        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
+        OpenTracingService openTracing = serviceLocator.getService(OpenTracingService.class);
+        InvocationManager invocationManager = serviceLocator.getService(InvocationManager.class);
 
+        // Initialise return value
         Object proceed = null;
 
+        // If Request Tracing is enabled, and this isn't a JaxRs method
         if (openTracing != null && openTracing.isEnabled() && !isJaxRsMethod(invocationContext)) {
+            // Get the Traced annotation present on the method or class
             Traced traced = OpenTracingCdiUtils.getAnnotation(beanManager, Traced.class, invocationContext);
 
+            // Get the operationName variable from a config override, or from the annotation if there is no override
             String operationName = (String) OpenTracingCdiUtils
                     .getConfigOverrideValue(Traced.class, "operationName", invocationContext, String.class)
                     .orElse(traced.operationName());
             
+            // If the operation name is blank, set it to the full method signature
             if (operationName.equals("")) {
                 operationName = invocationContext.getMethod().getDeclaringClass().getCanonicalName()
                         + "."
                         + invocationContext.getMethod().getName();
             }
 
+            // Get the enabled (value) variable from a config override, or from the annotation if there is no override
             boolean tracingEnabled = (boolean) OpenTracingCdiUtils
                     .getConfigOverrideValue(Traced.class, "value", invocationContext, boolean.class)
                     .orElse(traced.value());
 
+            // Only trace if we've explicitly been told to (which is the default behaviour)
             if (tracingEnabled) {
+                // If we *have* been told to, get the application's Tracer instance and start an active span.
                 try (ActiveSpan activeSpan = openTracing
                         .getTracer(openTracing.getApplicationName(invocationManager, invocationContext))
                         .buildSpan(operationName).startActive()) {
 
+                    // Proceed the invocation
                     try {
                         proceed = invocationContext.proceed();
                     } catch (Exception ex) {
+                        // If an exception occurs during processing the method, add error info to the span
                         activeSpan.setTag(Tags.ERROR.getKey(), true);
                         activeSpan.log(Collections.singletonMap("event", "error"));
                         activeSpan.log(Collections.singletonMap("error.object", ex));
+                        
+                        // Don't deal with the error here, let it propagate upwards
                         throw ex;
                     }
                 }
             } else {
+                // If we've explicitly been told not to trace the method: don't!
                 proceed = invocationContext.proceed();
             }
         } else {
+            // If request tracing was turned off, or this is a JaxRs method, just carry on
             proceed = invocationContext.proceed();
         }
 
         return proceed;
     }
 
+    /**
+     * Helper method that determines if the annotated method is a JaxRs method or not by inspected it for HTTP Method 
+     * annotations. JaxRs method tracing is handled by the Client/Container filters, so we don't process them using this
+     * interceptor.
+     * 
+     * @param invocationContext The invocation context from the AroundInvoke method.
+     * @return True if the method is a JaxRs method.
+     */
     private boolean isJaxRsMethod(InvocationContext invocationContext) {
+        // Initialise an Array with all supported JaxRs HTTP methods
         Class[] httpMethods = {GET.class, POST.class, DELETE.class, PUT.class, HEAD.class, PATCH.class, OPTIONS.class};
 
+        // Check if any of the HTTP Method annotations are present on the intercepted method
         for (Class httpMethod : httpMethods) {
             if (OpenTracingCdiUtils.getAnnotation(beanManager, httpMethod, invocationContext) != null) {
                 return true;

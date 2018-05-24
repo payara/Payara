@@ -46,13 +46,14 @@ import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
 
 /**
- *
+ * Extension class that adds a Producer for OpenTracing Tracers, allowing injection.
+ * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 public class OpenTracingCdiExtension implements Extension {
     
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
-
+        // Add a producer for OpenTracing Tracers, allowing injection
         AnnotatedType<TracerProducer> at = bm.createAnnotatedType(TracerProducer.class);
         bbd.addAnnotatedType(at, TracerProducer.class.getName());
     }

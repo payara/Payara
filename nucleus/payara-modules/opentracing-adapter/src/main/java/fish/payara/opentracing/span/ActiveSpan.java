@@ -43,7 +43,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- *
+ * Implementation of the OpenTracing ActiveSpan class.
+ * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 public class ActiveSpan implements io.opentracing.ActiveSpan {
@@ -53,6 +54,14 @@ public class ActiveSpan implements io.opentracing.ActiveSpan {
     private final ActiveSpan previouslyActiveSpan;
     private final ActiveSpanSource activeSpanSource;
 
+    /**
+     * Construct an ActiveSpan object with a reference to the actual Span instance, the previous ActiveSpan instance, 
+     * and the ActiveSpanSource.
+     * 
+     * @param span The Span that this instance refers to
+     * @param previouslyActiveSpan The ActiveSpan to restore in the ActiveSpanSource when done
+     * @param activeSpanSource The ActiveSpanSource that this is registered to
+     */
     public ActiveSpan(Span span, ActiveSpan previouslyActiveSpan, ActiveSpanSource activeSpanSource) {
         this.wrappedSpan = span;
         this.previouslyActiveSpan = previouslyActiveSpan;
@@ -138,9 +147,12 @@ public class ActiveSpan implements io.opentracing.ActiveSpan {
 
     @Override
     public void deactivate() {
+        // Check that the currently active span is actually this instance
         if (activeSpanSource.activeSpan() == this) {
+            // Restore the previous ActiveSpan
             activeSpanSource.makeActive(previouslyActiveSpan);
             
+            // Decrement the reference count and check if we should finish the actual Span
             referenceCount.decrementAndGet();
             if (shouldFinishSpan()) {
                 wrappedSpan.finish();
@@ -159,15 +171,31 @@ public class ActiveSpan implements io.opentracing.ActiveSpan {
         return new Continuation();
     }
 
+    /**
+     * Sets the start time of this ActiveSpan.
+     * 
+     * @param startTimeMicros The start time in Microseconds
+     */
     public void setStartTime(long startTimeMicros) {
         wrappedSpan.setStartTime(startTimeMicros);
     }
 
+    /**
+     * Returns the Span that this ActiveSpan refers to.
+     * 
+     * @return The Span that this instance refers to.
+     */
     public Span getWrappedSpan() {
         return wrappedSpan;
     }
 
+    /**
+     * Helper method to determine if we should finish the Span this instance refers to.
+     * 
+     * @return True if the wrapped Span should be finished
+     */
     public boolean shouldFinishSpan() {
+        // If the reference count is 0 or lower (shouldn't ever be lower!), the Span should be finished
         if (referenceCount.get() <= 0) {
             return true;
         } else {
@@ -175,10 +203,14 @@ public class ActiveSpan implements io.opentracing.ActiveSpan {
         }
     }
 
+    /**
+     * Implementation of the OpenTracing Continuation class.
+     */
     public class Continuation implements io.opentracing.ActiveSpan.Continuation {
 
         @Override
         public io.opentracing.ActiveSpan activate() {
+            // Make the enclosing instance the active span and return it
             activeSpanSource.makeActive(ActiveSpan.this);
             return ActiveSpan.this;
         }

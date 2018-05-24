@@ -46,7 +46,8 @@ import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
 import com.sun.enterprise.deployment.util.DOLUtils;
 
 /**
- *
+ * AutoDiscoverable that adds the JaxRs ContainerFilter and ExceptionMapper classes.
+ * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 public class JaxrsContainerRequestTracingAutoDiscoverable implements ForcedAutoDiscoverable {
@@ -57,10 +58,12 @@ public class JaxrsContainerRequestTracingAutoDiscoverable implements ForcedAutoD
         DOLUtils.getCurrentBundleForContext(
                 Globals.getDefaultHabitat().getService(Deployment.class).getCurrentDeploymentContext());
         
+        // Add the ContainerFilter
         if (!context.getConfiguration().isRegistered(JaxrsContainerRequestTracingDynamicFeature.class)) {
             context.register(JaxrsContainerRequestTracingDynamicFeature.class);
         }
         
+        // Add the ExceptionMapper
         if (!context.getConfiguration().isRegistered(JaxrsContainerRequestTracingExceptionMapper.class)) {
             context.register(JaxrsContainerRequestTracingExceptionMapper.class);
         }

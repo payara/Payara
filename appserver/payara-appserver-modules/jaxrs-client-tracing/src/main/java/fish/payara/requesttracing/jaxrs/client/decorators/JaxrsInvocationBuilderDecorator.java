@@ -42,7 +42,6 @@ package fish.payara.requesttracing.jaxrs.client.decorators;
 import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
 import fish.payara.opentracing.OpenTracingService;
 import io.opentracing.ActiveSpan;
-import io.opentracing.Tracer;
 import java.util.Locale;
 import javax.ws.rs.client.AsyncInvoker;
 import javax.ws.rs.client.CompletionStageRxInvoker;
@@ -60,7 +59,8 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
 /**
- *
+ * Decorator class used for instrumenting asynchronous clients.
+ * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 public class JaxrsInvocationBuilderDecorator implements Invocation.Builder {
@@ -103,16 +103,20 @@ public class JaxrsInvocationBuilderDecorator implements Invocation.Builder {
 
     @Override
     public AsyncInvoker async() {
+        // Get the ServiceLocator and OpenTracing services
         ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
         OpenTracingService openTracing = serviceLocator.getService(OpenTracingService.class);
         
+        // Get the currently active span if present
         ActiveSpan activeSpan = openTracing.getTracer(openTracing.getApplicationName(
                 serviceLocator.getService(InvocationManager.class))).activeSpan();
         
+        // If there is an active span, add its context to the request as a property so it can be picked up by the filter
         if (activeSpan != null) {
             this.property(PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT, activeSpan.context());
         }
         
+        // Return the asynchronous invoker - end of the decorated chain.
         return this.invocationBuilder.async();
     }
 

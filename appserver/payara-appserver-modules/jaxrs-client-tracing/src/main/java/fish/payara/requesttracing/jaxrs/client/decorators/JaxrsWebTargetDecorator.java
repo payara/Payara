@@ -48,7 +48,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 /**
- *
+ * Decorator class used for returning a decorated InvocationBuilder.
+ * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 public class JaxrsWebTargetDecorator implements WebTarget {
@@ -116,16 +117,19 @@ public class JaxrsWebTargetDecorator implements WebTarget {
 
     @Override
     public Invocation.Builder request() {
+        // Return a decorated InvocationBuilder
         return new JaxrsInvocationBuilderDecorator(this.webTarget.request());
     }
 
     @Override
     public Invocation.Builder request(String... acceptedResponseTypes) {
+        // Return a decorated InvocationBuilder
         return new JaxrsInvocationBuilderDecorator(this.webTarget.request(acceptedResponseTypes));
     }
 
     @Override
     public Invocation.Builder request(MediaType... acceptedResponseTypes) {
+        // Return a decorated InvocationBuilder
         return new JaxrsInvocationBuilderDecorator(this.webTarget.request(acceptedResponseTypes));
     }
 

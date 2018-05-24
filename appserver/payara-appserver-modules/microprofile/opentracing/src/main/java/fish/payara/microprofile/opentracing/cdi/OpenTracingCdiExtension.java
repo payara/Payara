@@ -47,12 +47,14 @@ import javax.enterprise.inject.spi.Extension;
 import org.eclipse.microprofile.opentracing.Traced;
 
 /**
- *
+ * CDI Extension that adds the interceptor binding for the Traced annotation.
+ * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 public class OpenTracingCdiExtension implements Extension {
     
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
+        // Add an interceptor binding for the Traced annotation
         beforeBeanDiscovery.addInterceptorBinding(Traced.class);
         AnnotatedType<TracedInterceptor> tracedInterceptor = beanManager.createAnnotatedType(TracedInterceptor.class);
         beforeBeanDiscovery.addAnnotatedType(tracedInterceptor, TracedInterceptor.class.getName());

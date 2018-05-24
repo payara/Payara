@@ -46,17 +46,26 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 
 /**
- *
+ * Producer class for OpenTracing Tracers.
+ * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 public class TracerProducer {
     
     private OpenTracingService openTracing;
     
+    /**
+     * Constructor that initialises the OpenTracing HK2 service variable.
+     */
     public TracerProducer() {
         openTracing = Globals.getDefaultBaseServiceLocator().getService(OpenTracingService.class);
     }
     
+    /**
+     * Gets a Tracer object for injection into the application.
+     * 
+     * @return An OpenTracing tracer
+     */
     @Produces
     public Tracer getTracer() {
         return openTracing.getTracer(openTracing.getApplicationName(

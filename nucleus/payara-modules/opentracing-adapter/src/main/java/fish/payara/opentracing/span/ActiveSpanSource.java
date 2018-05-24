@@ -43,11 +43,12 @@ import io.opentracing.ActiveSpan;
 import io.opentracing.Span;
 
 /**
- *
+ * Implementation of the OpenTracing ActiveSpanSource class.
+ * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 public class ActiveSpanSource implements io.opentracing.ActiveSpanSource {
-
+    
     private final ThreadLocal<fish.payara.opentracing.span.ActiveSpan> activeSpan = new ThreadLocal<>();
     
     @Override
@@ -56,12 +57,19 @@ public class ActiveSpanSource implements io.opentracing.ActiveSpanSource {
     }
 
     @Override
-    public ActiveSpan makeActive(Span span) {     
+    public ActiveSpan makeActive(Span span) {
+        // If we're using this class, we *must* be using the internal tracing implementation
         activeSpan.set(new fish.payara.opentracing.span.ActiveSpan(
                 (fish.payara.opentracing.span.Span) span, activeSpan.get(), this));
         return activeSpan.get();
     }
     
+    /**
+     * Sets the provided ActiveSpan instance as active. Helper method for setting an orphaned ActiveSpan instance as
+     * active.
+     * 
+     * @param activeSpan The ActiveSpan to to set as active
+     */
     public void makeActive(fish.payara.opentracing.span.ActiveSpan activeSpan) {
         this.activeSpan.set((fish.payara.opentracing.span.ActiveSpan) activeSpan);
     }
