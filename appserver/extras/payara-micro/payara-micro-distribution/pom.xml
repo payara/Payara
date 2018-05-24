@@ -41,7 +41,7 @@
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>fish.payara.extras.payara-micro</groupId>
         <artifactId>payara-micro-parent</artifactId>
@@ -51,9 +51,9 @@
     <groupId>fish.payara.extras</groupId>
     <artifactId>payara-micro</artifactId>
     <packaging>jar</packaging>
-    
+
     <name>Payara Micro Distribution</name>
-    
+
 
     <build>
         <defaultGoal>install</defaultGoal>
@@ -212,7 +212,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-        
+
         <!-- JMS Client dependencies -->
         <dependency>
             <groupId>org.glassfish.main.ejb</groupId>
@@ -246,7 +246,7 @@
             <optional>true</optional>
         </dependency>
         <!-- End of JMS Client Dependencies -->
-        
+
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-jsf</artifactId>
@@ -296,7 +296,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-        
+
         <!-- hazelcast package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -305,7 +305,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-        
+
         <!-- healthcheck package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -314,7 +314,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-        
+
         <!-- request tracing package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -323,7 +323,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-        
+
         <!-- notification package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -332,7 +332,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-        
+
         <!-- phonehome package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -341,7 +341,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-        
+
         <!-- payara api package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -350,7 +350,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-        
+
         <!-- ha package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -359,7 +359,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-        
+
         <!-- payara rest endpoint package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -368,7 +368,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-        
+
         <!-- Add Payara Micro Core -->
         <dependency>
             <groupId>fish.payara.micro</groupId>
@@ -377,7 +377,7 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
-        
+
         <!-- Add Payara Micro Services -->
         <dependency>
             <groupId>fish.payara.micro</groupId>
@@ -386,7 +386,7 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
-        
+
         <!-- Add Boot classes -->
         <dependency>
             <groupId>fish.payara.micro</groupId>
@@ -395,7 +395,7 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
-       
+
         <!-- Add Payara Micro CDI Integration -->
         <dependency>
             <groupId>fish.payara.micro</groupId>
@@ -404,7 +404,7 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
-        
+
         <!-- Add JBatch -->
         <dependency>
             <groupId>org.glassfish.main.batch</groupId>
@@ -427,11 +427,18 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
-       
+
         <!-- Add Hazelcast EJB Timer Store -->
         <dependency>
             <groupId>fish.payara.ejb.timer</groupId>
             <artifactId>hazelcast-ejb-timer</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.persistence.coordination</groupId>
+            <artifactId>hazelcast-eclipselink-coordination</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <optional>true</optional>
@@ -443,7 +450,7 @@
             <type>jar</type>
             <optional>true</optional>
         </dependency>
-        
+
         <!-- JMS Annotation handlers -->
         <dependency>
             <groupId>org.glassfish.main.jms</groupId>
@@ -466,9 +473,9 @@
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
-        </dependency>             
+        </dependency>
     </dependencies>
-    
+
     <profiles>
         <profile>
             <!-- generate empty javadoc jar -->

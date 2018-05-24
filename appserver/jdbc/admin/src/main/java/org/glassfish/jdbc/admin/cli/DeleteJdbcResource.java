@@ -61,7 +61,7 @@ import javax.inject.Inject;
  * Delete JDBC Resource command
  * 
  */
-@TargetType(value={CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG })
+@TargetType(value={CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP })
 @RestEndpoints({
         @RestEndpoint(configBean = Resources.class,
                 opType = RestEndpoint.OpType.DELETE,

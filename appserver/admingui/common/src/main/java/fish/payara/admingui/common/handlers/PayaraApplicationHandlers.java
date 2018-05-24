@@ -47,10 +47,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import org.glassfish.admingui.common.util.DeployUtil;
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
 import org.glassfish.admingui.common.util.TargetUtil;
+import org.glassfish.admingui.common.util.RestResponse;
+import static org.glassfish.admingui.common.util.RestUtil.get;
 
 /**
  *
@@ -118,4 +121,100 @@ public class PayaraApplicationHandlers {
         }
         return listOfInstancesInDeploymentGroup;
     }
+
+    @Handler(id = "py.getAllSelectedTarget",
+            input = {
+                @HandlerInput(name = "targetList", type = List.class, required = true),
+                @HandlerInput(name = "resourceName", type = String.class, required = true)},
+            output = {
+                @HandlerOutput(name = "slectedTarget", type = List.class)
+            })
+    public static void getAllSelectedTarget(HandlerContext handlerCtx) {
+        String prefix = (String) GuiUtil.getSessionValue("REST_URL");
+
+        List<String> targetList = (List) handlerCtx.getInputValue("targetList");
+        String resourceName = (String) handlerCtx.getInputValue("resName");
+        List<String> selectedTargetList = new ArrayList<>();
+        String endpoint;
+
+        for (String targetName : targetList) {
+            endpoint = prefix + "/clusters/cluster/" + targetName + "/resource-ref/" + resourceName;
+            boolean existsInCluster = checkIfEndPointExist(endpoint);
+
+            if (!existsInCluster) {
+                endpoint = prefix + "/deployment-groups/deployment-group/" + targetName + "/resource-ref/" + resourceName;
+                boolean existsInDeploymentGroup = checkIfEndPointExist(endpoint);
+                if (!existsInDeploymentGroup) {
+                    endpoint = prefix + "/servers/server/" + targetName + "/resource-ref/" + resourceName;
+                    boolean existsInServer = checkIfEndPointExist(endpoint);
+                    if (existsInServer) {
+                        selectedTargetList.add(targetName);
+                    }
+                }
+                if (existsInDeploymentGroup) {
+                    selectedTargetList.add(targetName);
+                }
+            }
+
+            if (existsInCluster) {
+                selectedTargetList.add(targetName);
+            }
+        }
+        
+        handlerCtx.setOutputValue("slectedTarget", selectedTargetList);
+    }
+
+    private static boolean checkIfEndPointExist(String endpoint) {
+        boolean result = false;
+        RestResponse response = null;
+
+        try {
+            response = get(endpoint);
+            result = response.isSuccess();
+
+        } catch (Exception exception) {
+            GuiUtil.getLogger().info("CheckIfEndPointExist Failed");
+            if (GuiUtil.getLogger().isLoggable(Level.FINE)) {
+                exception.printStackTrace();
+            }
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
+        return result;
+
+    }
+ 
+    @Handler(id = "py.checkIfResourceIsInInstance",
+            input = {
+                @HandlerInput(name = "instanceName", type = String.class, required = true),
+                @HandlerInput(name = "resourceName", type = String.class, required = true)},
+            output = {
+                @HandlerOutput(name = "isPresent", type = Boolean.class)})
+    public static void checkIfResourceIsInInstance(HandlerContext handlerCtx) {
+        String instanceName = (String) handlerCtx.getInputValue("instanceName");
+        String resourceName = (String) handlerCtx.getInputValue("resourceName");
+        String prefix = (String) GuiUtil.getSessionValue("REST_URL");
+        String endpoint = prefix + "/servers/server/" + instanceName + "/resource-ref";
+
+        boolean isPresent = false;
+        Map responseMap = RestUtil.restRequest(endpoint, null, "GET", handlerCtx, false, true);
+        Map data = (Map) responseMap.get("data");
+
+        if (data != null) {
+            Map extraProperties = (Map) data.get("extraProperties");
+            if (extraProperties != null) {
+                Map childResources = (Map) extraProperties.get("childResources");
+                List<String> listOfResources = new ArrayList<String>(childResources.keySet());
+                
+                if (listOfResources.contains(resourceName)) {
+                    isPresent = true;
+                }
+            }
+        }
+        
+        handlerCtx.setOutputValue("isPresent", isPresent);
+    }
+
 }
