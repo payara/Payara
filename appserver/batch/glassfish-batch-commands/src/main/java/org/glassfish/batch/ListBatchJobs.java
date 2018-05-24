@@ -60,9 +60,9 @@ import java.util.logging.Level;
 
 /**
  * Command to list batch jobs info
-
-         1      *             1      *
- jobName --------> instanceId --------> executionId
+ *
+ *         1      *             1      *
+ * jobName --------> instanceId --------> executionId
  *
  * @author Mahesh Kannan
  */
