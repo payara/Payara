@@ -65,7 +65,7 @@ public class PayaraApplicationHandlers {
             input = {
                 @HandlerInput(name = "appName", type = String.class, required = true)},
             output = {
-                @HandlerOutput(name = "result", type = java.util.List.class)})
+                @HandlerOutput(name = "result", type = List.class)})
     public static void getTargetListInfo(HandlerContext handlerCtx) {
         String applicationName = (String) handlerCtx.getInputValue("appName");
         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
@@ -124,10 +124,10 @@ public class PayaraApplicationHandlers {
 
     @Handler(id = "py.getAllSelectedTarget",
             input = {
-                @HandlerInput(name = "targetList", type = java.util.List.class, required = true),
+                @HandlerInput(name = "targetList", type = List.class, required = true),
                 @HandlerInput(name = "resourceName", type = String.class, required = true)},
             output = {
-                @HandlerOutput(name = "selectedTarget", type = java.util.List.class)
+                @HandlerOutput(name = "selectedTarget", type = List.class)
             })
     public static void getAllSelectedTarget(HandlerContext handlerCtx) {
         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
@@ -220,7 +220,7 @@ public class PayaraApplicationHandlers {
     
     @Handler(id = "py.isInstanceInDeploymentGroupWithResource",
             input = {
-                @HandlerInput(name = "selectedTarget", type = java.util.List.class, required = true),
+                @HandlerInput(name = "selectedTarget", type = List.class, required = true),
                 @HandlerInput(name = "target", type = String.class, required = true),
                 @HandlerInput(name = "resourceName", type = String.class, required = true)},
             output = {
