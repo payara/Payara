@@ -1,1 +1,1 @@
-fish.payara.requesttracing.jaxrs.client.PayaraJaxrsRequestTracingClientBuilder
+fish.payara.requesttracing.jaxrs.client.decorators.JaxrsClientBuilderDecorator

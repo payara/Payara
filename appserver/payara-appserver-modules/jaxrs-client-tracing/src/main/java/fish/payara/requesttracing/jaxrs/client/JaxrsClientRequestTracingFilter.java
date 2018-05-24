@@ -44,7 +44,9 @@ import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
 import fish.payara.opentracing.OpenTracingService;
 import io.opentracing.ActiveSpan;
+import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
+import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 import io.opentracing.tag.Tags;
@@ -121,11 +123,20 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
 
             Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
                     Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
-            ActiveSpan activeSpan = tracer.buildSpan(requestContext.getMethod())
+
+            SpanBuilder spanBuilder = tracer.buildSpan(requestContext.getMethod())
                     .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
                     .withTag(Tags.HTTP_METHOD.getKey(), requestContext.getMethod())
-                    .withTag(Tags.HTTP_URL.getKey(), requestContext.getUri().toURL().toString())
-                    .startActive();
+                    .withTag(Tags.HTTP_URL.getKey(), requestContext.getUri().toURL().toString());
+
+            SpanContext parentSpanContext = (SpanContext) requestContext.getProperty(
+                    PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT);
+
+            if (parentSpanContext != null) {
+                spanBuilder.asChildOf(parentSpanContext);
+            }
+
+            ActiveSpan activeSpan = spanBuilder.startActive();
 
             // Don't inject if using in-built tracer as we don't support it yet
             if (!(tracer instanceof fish.payara.opentracing.tracer.Tracer)) {
