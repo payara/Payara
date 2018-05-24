@@ -56,31 +56,34 @@ import static org.glassfish.weld.WeldDeployer.DEV_MODE_PROPERTY;
 
 /**
  * A class containing Payara specific handler methods for the REST API
+ *
  * @author Andrew Pielage
  */
 public class PayaraRestApiHandlers {
-    
+
     /**
      * Gets information about the instances current registered to the Hazelcast cluster.
-     * @param handlerCtx 
+     *
+     * @param handlerCtx
      */
     @Handler(id = "py.getHazelcastClusterMembers",
             input = {
-                @HandlerInput(name = "parentEndpoint", type = String.class, required = true),
+                @HandlerInput(name = "parentEndpoint", type = String.class, required = true)
+                ,
                 @HandlerInput(name = "type", type = String.class)},
             output = {
                 @HandlerOutput(name = "result", type = java.util.List.class)
-    })
+            })
     public static void getHazelcastClusterMembers(HandlerContext handlerCtx) {
         String parentEndpoint = (String) handlerCtx.getInputValue("parentEndpoint");
         String type = (String) handlerCtx.getInputValue("type");
         String endpoint;
-        
+
         // Check for trailing slashes
-        endpoint = parentEndpoint.endsWith("/") ? parentEndpoint + "list-hazelcast-cluster-members" : parentEndpoint 
+        endpoint = parentEndpoint.endsWith("/") ? parentEndpoint + "list-hazelcast-cluster-members" : parentEndpoint
                 + "/" + "list-hazelcast-cluster-members";
-        
-        try {       
+
+        try {
             // Set a target type if one has been provided
             if (type != null) {
                 if (type.equals("micro")) {
@@ -89,11 +92,11 @@ public class PayaraRestApiHandlers {
                     endpoint += "?type=server";
                 }
             }
-                
+
             // Run the list-hazelcast-cluster-members command using the Rest endpoint
             Map responseMap = RestUtil.restRequest(endpoint, null, "GET", handlerCtx, false, true);
             Map data = (Map) responseMap.get("data");
-           
+
             // Extract the information from the Map and place it in a List for representation in the dataTable
             List<Map> instances = new ArrayList<>();
             if (data != null) {
@@ -113,34 +116,37 @@ public class PayaraRestApiHandlers {
                         // This exception should only be caught if Hazelcast is not enabled, as the command returns a 
                         // String instead of a List. In such a case, re-initialise to an empty List
                         instances = new ArrayList<>();
-                    } 
+                    }
                 }
             }
-            
+
             handlerCtx.setOutputValue("result", instances);
         } catch (Exception ex) {
             GuiUtil.handleException(handlerCtx, ex);
         }
     }
-    
+
     /**
      * Sends the asadmin command with the parameters provided to the instances selected in the table
-     * @param handlerCtx 
+     *
+     * @param handlerCtx
      */
     @Handler(id = "py.sendAsadminCommandToSelectedInstances", input = {
-                @HandlerInput(name = "parentEndpoint", type = String.class, required = true),
-                @HandlerInput(name = "rows", type = List.class, required = true),
+        @HandlerInput(name = "parentEndpoint", type = String.class, required = true)
+        ,
+                @HandlerInput(name = "rows", type = List.class, required = true)
+        ,
                 @HandlerInput(name = "command", type = String.class, required = true)},
             output = {
                 @HandlerOutput(name = "response", type = Map.class)
             })
     public static void sendAsadminCommandToSelectedInstances(HandlerContext handlerCtx) {
         String parentEndpoint = (String) handlerCtx.getInputValue("parentEndpoint");
-        String endpoint = parentEndpoint.endsWith("/") ? parentEndpoint + "send-asadmin-command" : parentEndpoint 
+        String endpoint = parentEndpoint.endsWith("/") ? parentEndpoint + "send-asadmin-command" : parentEndpoint
                 + "/" + "send-asadmin-command";
         List<HashMap> rows = (List<HashMap>) handlerCtx.getInputValue("rows");
         String command = (String) handlerCtx.getInputValue("command");
-        
+
         // Check that the text box isn't empty
         if (command != null) {
             // Get the selected rows
@@ -182,7 +188,7 @@ public class PayaraRestApiHandlers {
                 attrsMap.put("id", parameters);
                 attrsMap.put("logOutput", "true");
 
-                try{
+                try {
                     Map response = RestUtil.restRequest(endpoint, attrsMap, "POST", handlerCtx, false, false);
                     handlerCtx.setOutputValue("response", response);
                 } catch (Exception ex) {
@@ -191,26 +197,28 @@ public class PayaraRestApiHandlers {
             }
         }
     }
-    
+
     /**
      * Gets the REST endpoints from a given app name and optional component name
-     * @param handlerCtx 
+     *
+     * @param handlerCtx
      */
     @Handler(id = "py.getRestEndpoints",
-        input = {
-            @HandlerInput(name = "appName", type = String.class, required = true),
+            input = {
+                @HandlerInput(name = "appName", type = String.class, required = true)
+                ,
             @HandlerInput(name = "componentName", type = String.class, required = false)},
-        output = {
-            @HandlerOutput(name = "result", type = java.util.List.class)})
+            output = {
+                @HandlerOutput(name = "result", type = java.util.List.class)})
     public static void getRestEndpoints(HandlerContext handlerCtx) {
         List result = new ArrayList();
-        try{
+        try {
             String appName = (String) handlerCtx.getInputValue("appName");
             String encodedAppName = URLEncoder.encode(appName, "UTF-8");
             String componentName = (String) handlerCtx.getInputValue("componentName");
             String encodedComponentName = URLEncoder.encode(componentName, "UTF-8");
             String prefix = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + encodedAppName;
-            
+
             // get the extra properties from the list-rest-endpoints command, passing in the component name
             Map attrMap = new HashMap();
             attrMap.put("componentname", encodedComponentName);
@@ -218,37 +226,39 @@ public class PayaraRestApiHandlers {
             Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
 
             // Check if the command returned any endpoints
-            if((List)payaraEndpointsExtraProps.get("endpointList") != null) {
-                result = (List<Map<String, String>>)payaraEndpointsExtraProps.get("endpointList");
+            if ((List) payaraEndpointsExtraProps.get("endpointList") != null) {
+                result = (List<Map<String, String>>) payaraEndpointsExtraProps.get("endpointList");
             }
-          }catch(Exception ex){
+        } catch (Exception ex) {
             GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.getRestEndpoints") + ex.getLocalizedMessage());
-            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
+            if (GuiUtil.getLogger().isLoggable(Level.FINE)) {
                 ex.printStackTrace();
             }
-          }
-          handlerCtx.setOutputValue("result", result);
+        }
+        handlerCtx.setOutputValue("result", result);
     }
-    
+
     /**
      * Gets a map of components and if they are a jersey application
-     * @param handlerCtx 
+     *
+     * @param handlerCtx
      */
     @Handler(id = "py.hasRestEndpoints",
-        input = {
-            @HandlerInput(name = "appName", type = String.class, required = true),
+            input = {
+                @HandlerInput(name = "appName", type = String.class, required = true)
+                ,
             @HandlerInput(name = "rowList", type = java.util.List.class, required = true)},
-        output = {
-            @HandlerOutput(name = "result", type = java.util.Map.class)})
+            output = {
+                @HandlerOutput(name = "result", type = java.util.Map.class)})
     public static void hasRestEndpoints(HandlerContext handlerCtx) {
         Map result = new HashMap();
-        try{
+        try {
             String appName = (String) handlerCtx.getInputValue("appName");
             String encodedAppName = URLEncoder.encode(appName, "UTF-8");
             List rowList = (List) handlerCtx.getInputValue("rowList");
-            for(Object row : rowList) {
+            for (Object row : rowList) {
                 Map rowMap = (Map) row;
-                
+
                 String componentName = (String) rowMap.get("name");
                 String encodedComponentName = URLEncoder.encode(componentName, "UTF-8");
                 String prefix = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + encodedAppName;
@@ -261,52 +271,54 @@ public class PayaraRestApiHandlers {
 
                 // Enter into the map the key of the component and whether it has endpoints or not
                 result.put(componentName, false);
-                if((List)payaraEndpointsExtraProps.get("endpointList") != null) {
+                if ((List) payaraEndpointsExtraProps.get("endpointList") != null) {
                     result.put(componentName, true);
-                     // Change the component type to JAX-RS. Couldn't be obtained at an earlier point since JAX-RS resources are compiled to JSP.
+                    // Change the component type to JAX-RS. Couldn't be obtained at an earlier point since JAX-RS resources are compiled to JSP.
                     rowMap.put("type", "JAX-RS");
                 }
             }
-          }catch(Exception ex){
+        } catch (Exception ex) {
             GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.hasRestEndpoints") + ex.getLocalizedMessage());
-            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
+            if (GuiUtil.getLogger().isLoggable(Level.FINE)) {
                 ex.printStackTrace();
             }
-          }
-          handlerCtx.setOutputValue("result", result);
+        }
+        handlerCtx.setOutputValue("result", result);
     }
-    
+
     /**
      * Gets a map of components with CDI dev mode status
-     * @param handlerCtx 
+     *
+     * @param handlerCtx
      */
     @Handler(id = "py.isCDIDevMode",
-        input = {
-            @HandlerInput(name = "appName", type = String.class, required = true),
+            input = {
+                @HandlerInput(name = "appName", type = String.class, required = true)
+                ,
             @HandlerInput(name = "rowList", type = java.util.List.class, required = true)},
-        output = {
-            @HandlerOutput(name = "result", type = java.util.Map.class)})
+            output = {
+                @HandlerOutput(name = "result", type = java.util.Map.class)})
     public static void isCDIDevMode(HandlerContext handlerCtx) {
         Map result = new HashMap();
-        try{
+        try {
             String appName = (String) handlerCtx.getInputValue("appName");
             String encodedAppName = URLEncoder.encode(appName, "UTF-8");
             List rowList = (List) handlerCtx.getInputValue("rowList");
-            for(Object row : rowList) {
+            for (Object row : rowList) {
                 Map rowMap = (Map) row;
                 boolean enabled = false;
                 String componentName = (String) rowMap.get("name");
                 String encodedComponentName = URLEncoder.encode(componentName, "UTF-8");
                 result.put(componentName, false);
-                if(!((String)rowMap.get("sniffers")).contains("cdi")){
+                if (!((String) rowMap.get("sniffers")).contains("cdi")) {
                     continue;
                 }
-                
+
                 String endpoint = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + encodedAppName + "/property";
                 Map attrMap = Collections.singletonMap("componentname", encodedComponentName);
                 Map payaraEndpointDataMap = RestUtil.restRequest(endpoint, attrMap, "GET", null, true, false);
                 Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
-                List<Map> properties = (List<Map>)payaraEndpointsExtraProps.get("properties");
+                List<Map> properties = (List<Map>) payaraEndpointsExtraProps.get("properties");
                 for (Map property : properties) {
                     if (ServerTags.CDI_DEV_MODE_ENABLED_PROP.equals(property.get("name"))
                             && Boolean.parseBoolean((String) property.get("value"))) {
@@ -320,110 +332,122 @@ public class PayaraRestApiHandlers {
                 }
             }
 
-          }catch(Exception ex){
+        } catch (Exception ex) {
             GuiUtil.getLogger().log(Level.INFO, "{0}{1}", new Object[]{GuiUtil.getCommonMessage("log.error.isCDIDevMode"), ex.getLocalizedMessage()});
-            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
+            if (GuiUtil.getLogger().isLoggable(Level.FINE)) {
                 ex.printStackTrace();
             }
-          }
-          handlerCtx.setOutputValue("result", result);
+        }
+        handlerCtx.setOutputValue("result", result);
     }
-    
+
     /**
      * Sets the successful command message to be displayed
-     * @param handlerCtx 
+     *
+     * @param handlerCtx
      */
-    @Handler(id="py.prepareSuccessfulCommandMsg")
-    public static void prepareSuccessfulCommandMsg(HandlerContext handlerCtx){
+    @Handler(id = "py.prepareSuccessfulCommandMsg")
+    public static void prepareSuccessfulCommandMsg(HandlerContext handlerCtx) {
         GuiUtil.prepareAlert("success", "Command sent successfully", null);
     }
-    
-    @Handler(id="py.sortRequestTracingEnabledNotifierStatus",
-    	input={
-            @HandlerInput(name="specifiedNotifiers", type=String.class, required=true),
-            @HandlerInput(name="avaliableNotifiers", type=List.class, required=true )},
-        output={
-            @HandlerOutput(name="enabled", type=List.class),
-            @HandlerOutput(name="disabled", type=List.class)})
-    public static void sortRequestTracingEnabledNotifierStatus(HandlerContext handlerctx){
+
+    @Handler(id = "py.sortRequestTracingEnabledNotifierStatus",
+            input = {
+                @HandlerInput(name = "specifiedNotifiers", type = String.class, required = true)
+                ,
+            @HandlerInput(name = "avaliableNotifiers", type = List.class, required = true)},
+            output = {
+                @HandlerOutput(name = "enabled", type = List.class)
+                ,
+            @HandlerOutput(name = "disabled", type = List.class)})
+    public static void sortRequestTracingEnabledNotifierStatus(HandlerContext handlerctx) {
         List<String> enabled = new ArrayList<String>();
         List<String> disabled = new ArrayList<String>();
-        
+
         List<String> avaliable = (List) handlerctx.getInputValue("avaliableNotifiers");
-        
+
         String notifiersString = (String) handlerctx.getInputValue("specifiedNotifiers");
         notifiersString = notifiersString.substring(1, notifiersString.length() - 2);
         String[] notifiers = notifiersString.split("\\}\\,");
-        for (String notifier : notifiers){
+        for (String notifier : notifiers) {
             String name = notifier.split("notifierName=", 2)[1];
-            if (notifier.contains("notifierEnabled=true")){
+            if (notifier.contains("notifierEnabled=true")) {
                 enabled.add(name);
             } else {
                 disabled.add(name);
             }
             avaliable.remove(name);
         }
-        for (String unused : avaliable){
+        for (String unused : avaliable) {
             disabled.add(unused);
-        }        
+        }
         handlerctx.setOutputValue("disabled", disabled);
         handlerctx.setOutputValue("enabled", enabled);
-                
+
     }
-    
-        @Handler(id="py.sortHealthcheckEnabledNotifierStatus",
-    	input={
-            @HandlerInput(name="specifiedNotifiers", type=String.class, required=true),
-            @HandlerInput(name="avaliableNotifiers", type=List.class, required=true )},
-        output={
-            @HandlerOutput(name="enabled", type=List.class),
-            @HandlerOutput(name="disabled", type=List.class)})
-    public static void sortHealthcheckEnabledNotifierStatus(HandlerContext handlerctx){
+
+    @Handler(id = "py.sortHealthcheckEnabledNotifierStatus",
+            input = {
+                @HandlerInput(name = "specifiedNotifiers", type = String.class, required = true)
+                ,
+            @HandlerInput(name = "avaliableNotifiers", type = List.class, required = true)},
+            output = {
+                @HandlerOutput(name = "enabled", type = List.class)
+                ,
+            @HandlerOutput(name = "disabled", type = List.class)})
+    public static void sortHealthcheckEnabledNotifierStatus(HandlerContext handlerctx) {
         List<String> enabled = new ArrayList<String>();
         List<String> disabled = new ArrayList<String>();
-        
+
         List<String> avaliable = (List) handlerctx.getInputValue("avaliableNotifiers");
-        
+
         String notifiersString = (String) handlerctx.getInputValue("specifiedNotifiers");
         notifiersString = notifiersString.substring(1, notifiersString.length() - 2);
-        
+
         String[] notifiers = notifiersString.split("[\\}\\]]\\,");
-        for (String notifier : notifiers){
+        for (String notifier : notifiers) {
             //Check to see if this is actually a notifier
             notifier = notifier.trim();
-            if (!notifier.startsWith("notifierList")){
+            if (!notifier.startsWith("notifierList")) {
                 continue;
             }
-            
+
             String name = "service-" + notifier.split("notifierName=", 2)[1].toLowerCase();
-            if (notifier.contains("notifierEnabled=true")){
+            if (notifier.contains("notifierEnabled=true")) {
                 enabled.add(name);
             } else {
                 disabled.add(name);
             }
             avaliable.remove(name);
         }
-        for (String unused : avaliable){
+        for (String unused : avaliable) {
             disabled.add(unused);
-        }        
+        }
         handlerctx.setOutputValue("disabled", disabled);
         handlerctx.setOutputValue("enabled", enabled);
-                
+
     }
-    
+
     /**
      * Updates the request tracing notifiers to be enabled or disabled
-     * @param handlerCtx 
+     *
+     * @param handlerCtx
      */
-    @Handler(id="py.updateNotifiers",
-            input={
-                @HandlerInput(name="endpoint", type=String.class, required=true),
-                @HandlerInput(name="selected", type=String[].class, required=true),
-                @HandlerInput(name="notifiers", type=String[].class, required=true),
-                @HandlerInput(name="dynamic", type=Boolean.class, required=true),
-                @HandlerInput(name="quiet", type=boolean.class, defaultValue="false"),
-                @HandlerInput(name="throwException", type=boolean.class, defaultValue="true"),
-                @HandlerInput(name="target", type=String.class, required=true)
+    @Handler(id = "py.updateNotifiers",
+            input = {
+                @HandlerInput(name = "endpoint", type = String.class, required = true)
+                ,
+                @HandlerInput(name = "selected", type = String[].class, required = true)
+                ,
+                @HandlerInput(name = "notifiers", type = String[].class, required = true)
+                ,
+                @HandlerInput(name = "dynamic", type = Boolean.class, required = true)
+                ,
+                @HandlerInput(name = "quiet", type = boolean.class, defaultValue = "false")
+                ,
+                @HandlerInput(name = "throwException", type = boolean.class, defaultValue = "true")
+                ,
+                @HandlerInput(name = "target", type = String.class, required = true)
             })
     public static void updateNotifiers(HandlerContext handlerCtx) {
         String[] notifiers = (String[]) handlerCtx.getInputValue("notifiers");
@@ -434,7 +458,7 @@ public class PayaraRestApiHandlers {
         Boolean throwException = (Boolean) handlerCtx.getInputValue("throwException");
         String target = (String) handlerCtx.getInputValue("target");
         List<String> enabledNotifiers = Arrays.asList(enabled);
-        
+
         if (dynamic == null) {
             dynamic = false;
         }
@@ -443,26 +467,26 @@ public class PayaraRestApiHandlers {
         boolean forHealthCheck = false;
         boolean forMonitoring = false;
 
-        for (String notifier : notifiers){
+        for (String notifier : notifiers) {
             String name = notifier.split("-")[1];
             String restEndpoint;
-            if (endpoint.contains("request-tracing-service-configuration")){
+            if (endpoint.contains("request-tracing-service-configuration")) {
                 restEndpoint = endpoint + "/requesttracing-" + name + "-notifier-configure";
                 forRequestTracing = true;
-            } else if (endpoint.contains("health-check-service-configuration")){
+            } else if (endpoint.contains("health-check-service-configuration")) {
                 restEndpoint = endpoint + "/healthcheck-" + name + "-notifier-configure";
                 forHealthCheck = true;
-            } else if (endpoint.contains("monitoring-service-configuration")){
+            } else if (endpoint.contains("monitoring-service-configuration")) {
                 restEndpoint = endpoint + "/monitoring-" + name + "-notifier-configure";
                 forMonitoring = true;
             } else {
                 //Unknown service being configured
                 throw new UnknownConfigurationException();
             }
-            
+
             HashMap<String, Object> attrs = new HashMap<>();
-            if (enabledNotifiers.contains(notifier)){
-                attrs.put("enabled", "true");                
+            if (enabledNotifiers.contains(notifier)) {
+                attrs.put("enabled", "true");
             } else {
                 attrs.put("enabled", "false");
             }
@@ -473,36 +497,36 @@ public class PayaraRestApiHandlers {
         }
         // PAYARA-1616
         // manually bootstrap healthCheck and requestTracing services for once so that it doesn't get bootstrapped each time for enabled notifier.
-        if (dynamic){
+        if (dynamic) {
             if (forRequestTracing) {
                 String restEndpoint = endpoint + "/bootstrap-requesttracing";
                 RestUtil.restRequest(restEndpoint, null, "post", handlerCtx, quiet, throwException);
             }
             if (forHealthCheck) {
-                String restEndpoint = endpoint +  "/bootstrap-healthcheck";
+                String restEndpoint = endpoint + "/bootstrap-healthcheck";
                 RestUtil.restRequest(restEndpoint, null, "post", handlerCtx, quiet, throwException);
             }
-            if (forMonitoring){
+            if (forMonitoring) {
                 String restEndpoint = endpoint + "/bootstrap-monitoring";
                 RestUtil.restRequest(restEndpoint, null, "post", handlerCtx, quiet, throwException);
             }
         }
     }
-  
+
     @Handler(id = "py.getHistoricHealthcheckMessages",
             input = @HandlerInput(name = "parentEndpoint", type = String.class, required = true),
             output = @HandlerOutput(name = "result", type = java.util.List.class))
-    public static void getHistoricHealthcheckMessages(HandlerContext handlerCtx){
+    public static void getHistoricHealthcheckMessages(HandlerContext handlerCtx) {
         String parentEndpoint = (String) handlerCtx.getInputValue("parentEndpoint");
         String endpoint;
 
         // Check for trailing slashes
-        endpoint = parentEndpoint.endsWith("/") ? parentEndpoint + "list-historic-healthchecks" : parentEndpoint 
+        endpoint = parentEndpoint.endsWith("/") ? parentEndpoint + "list-historic-healthchecks" : parentEndpoint
                 + "/" + "list-historic-healthchecks";
-        
+
         Map responseMap = RestUtil.restRequest(endpoint, null, "GET", handlerCtx, false, false);
         Map data = (Map) responseMap.get("data");
-         
+
         // Extract the information from the Map and place it in a List for representation in the dataTable
         List<Map> messages = new ArrayList<>();
         if (data != null) {
@@ -521,7 +545,7 @@ public class PayaraRestApiHandlers {
     @Handler(id = "py.getHistoricRequestTracingMessages",
             input = @HandlerInput(name = "parentEndpoint", type = String.class, required = true),
             output = @HandlerOutput(name = "result", type = java.util.List.class))
-    public static void getHistoricRequestTracingMessages(HandlerContext handlerCtx){
+    public static void getHistoricRequestTracingMessages(HandlerContext handlerCtx) {
 
         String parentEndpoint = (String) handlerCtx.getInputValue("parentEndpoint");
         String endpoint;
@@ -539,7 +563,38 @@ public class PayaraRestApiHandlers {
             Map extraProperties = (Map) data.get("extraProperties");
             if (extraProperties != null) {
                 messages = (List<Map>) extraProperties.get("historicmessages");
-                if (messages != null)
+                if (messages != null) {
+                    if (messages == null) {
+                        // Re-initialise to empty if members is not found
+                        messages = new ArrayList<>();
+                    }
+                }
+            }
+        }
+        handlerCtx.setOutputValue("result", messages);
+    }
+
+    @Handler(id = "py.getRequestTracingMessages",
+            input = @HandlerInput(name = "parentEndpoint", type = String.class, required = true),
+            output = @HandlerOutput(name = "result", type = java.util.List.class))
+    public static void getRequestTracingMessages(HandlerContext handlerCtx) {
+
+        String parentEndpoint = (String) handlerCtx.getInputValue("parentEndpoint");
+        String endpoint;
+
+        // Check for trailing slashes
+        endpoint = parentEndpoint.endsWith("/") ? parentEndpoint + "list-requesttraces" : parentEndpoint
+                + "/" + "list-requesttraces";
+
+        Map responseMap = RestUtil.restRequest(endpoint, null, "GET", handlerCtx, false, false);
+        Map data = (Map) responseMap.get("data");
+
+        // Extract the information from the Map and place it in a List for representation in the dataTable
+        List<Map> messages = new ArrayList<>();
+        if (data != null) {
+            Map extraProperties = (Map) data.get("extraProperties");
+            if (extraProperties != null) {
+                messages = (List<Map>) extraProperties.get("traces");
                 if (messages == null) {
                     // Re-initialise to empty if members is not found
                     messages = new ArrayList<>();
@@ -550,22 +605,29 @@ public class PayaraRestApiHandlers {
     }
 
     /**
-     * Gets the context roots of all deployed applications on the domain.
-     * This is outputted as List<Map<String, String>> for usage within the Virtual-Servers page.
-     * @param handlerCtx 
+     * Gets the context roots of all deployed applications on the domain. This is outputted as List<Map<String, String>>
+     * for usage within the Virtual-Servers page.
+     *
+     * @param handlerCtx
      */
     @Handler(id = "py.getVirtualServersAttributes",
             input = {
-                @HandlerInput(name = "configName", type = String.class, required = true),
-                @HandlerInput(name = "sessionScopeRestURL", type = String.class, required = true),
-                @HandlerInput(name = "parentEndpoint", type = String.class, required = true),
-                @HandlerInput(name = "childType", type = String.class, required = true),
-                @HandlerInput(name = "skipList", type = List.class, required = false),
-                @HandlerInput(name = "includeList", type = List.class, required = false),
+                @HandlerInput(name = "configName", type = String.class, required = true)
+                ,
+                @HandlerInput(name = "sessionScopeRestURL", type = String.class, required = true)
+                ,
+                @HandlerInput(name = "parentEndpoint", type = String.class, required = true)
+                ,
+                @HandlerInput(name = "childType", type = String.class, required = true)
+                ,
+                @HandlerInput(name = "skipList", type = List.class, required = false)
+                ,
+                @HandlerInput(name = "includeList", type = List.class, required = false)
+                ,
                 @HandlerInput(name = "id", type = String.class, required = true)},
             output = {
                 @HandlerOutput(name = "result", type = java.util.List.class)
-    })
+            })
     public static void getVirtualServersAttributes(HandlerContext handlerCtx) {
         String parentEndpoint = (String) handlerCtx.getInputValue("parentEndpoint");
         String childType = (String) handlerCtx.getInputValue("childType");
@@ -573,15 +635,15 @@ public class PayaraRestApiHandlers {
         String sessionScopeRestURL = (String) handlerCtx.getInputValue("sessionScopeRestURL");
         sessionScopeRestURL = sessionScopeRestURL.endsWith("/") ? sessionScopeRestURL : sessionScopeRestURL + "/";
         String serverName = "";
-       
+
         try {
             List<Map> table = RestUtil.buildChildEntityList(
-                    (String)handlerCtx.getInputValue("parentEndpoint"),
-                    (String)handlerCtx.getInputValue("childType"),
-                    (List)handlerCtx.getInputValue("skipList"),
-                    (List)handlerCtx.getInputValue("includeList"),
-                    (String)handlerCtx.getInputValue("id"));
-            
+                    (String) handlerCtx.getInputValue("parentEndpoint"),
+                    (String) handlerCtx.getInputValue("childType"),
+                    (List) handlerCtx.getInputValue("skipList"),
+                    (List) handlerCtx.getInputValue("includeList"),
+                    (String) handlerCtx.getInputValue("id"));
+
             if (configName.equals("default-config")) {
                 for (Map row : table) {
                     row.put("contextRoot", "");
@@ -594,14 +656,14 @@ public class PayaraRestApiHandlers {
                         serverName = instance.substring(instance.lastIndexOf("/") + 1);
                     }
                 }
-                String deployedApplicationsEndpoint = sessionScopeRestURL + "servers/server/" + serverName 
+                String deployedApplicationsEndpoint = sessionScopeRestURL + "servers/server/" + serverName
                         + "/application-ref";
 
                 List<String> deployedApplications = RestUtil.getChildList(deployedApplicationsEndpoint);
                 List<String> virtualServers = RestUtil.getChildList(parentEndpoint + "/" + childType);
                 List<String> applications = RestUtil.getChildList(sessionScopeRestURL + "applications/application");
 
-                for (String virtualServer : virtualServers) {         
+                for (String virtualServer : virtualServers) {
                     String virtualServerName = virtualServer.substring(virtualServer.lastIndexOf("/") + 1);
 
                     for (int i = 0; i < deployedApplications.size(); i++) {
@@ -613,23 +675,23 @@ public class PayaraRestApiHandlers {
 
                     for (String application : applications) {
                         String applicationName = application.substring(application.lastIndexOf("/") + 1);
-                        String[] deployedVirtualServers; 
+                        String[] deployedVirtualServers;
                         if (RestUtil.get(deployedApplicationsEndpoint + "/" + applicationName).isSuccess()) {
                             String deployedVirtualServersString = ((String) RestUtil.getAttributesMap(
                                     deployedApplicationsEndpoint + "/" + applicationName).get("virtualServers"));
-			    if (deployedVirtualServersString != null) {
-			    	deployedVirtualServers = deployedVirtualServersString.split(",");
+                            if (deployedVirtualServersString != null) {
+                                deployedVirtualServers = deployedVirtualServersString.split(",");
                                 for (String deployedVirtualServer : deployedVirtualServers) {
-    	                            if (!deployedVirtualServer.equals("") && deployedApplications.contains(applicationName) 
-        	                            && virtualServerName.equals(deployedVirtualServer)) {
-                	                if (!contextRoots.equals("")) {
-                        	            contextRoots += "<br>" + RestUtil.getAttributesMap(application).get("contextRoot");
-                                	} else {
+                                    if (!deployedVirtualServer.equals("") && deployedApplications.contains(applicationName)
+                                            && virtualServerName.equals(deployedVirtualServer)) {
+                                        if (!contextRoots.equals("")) {
+                                            contextRoots += "<br>" + RestUtil.getAttributesMap(application).get("contextRoot");
+                                        } else {
                                             contextRoots += RestUtil.getAttributesMap(application).get("contextRoot");
-	                                }
+                                        }
                                     }
-                            	}
-			    }
+                                }
+                            }
                         }
                     }
 
