@@ -211,6 +211,23 @@
             <artifactId>jersey-microprofile-rest-client</artifactId>
         </dependency>
             
+        <!-- OpenTracing -->
+        <dependency>
+            <groupId>org.eclipse.microprofile.opentracing</groupId>
+            <artifactId>microprofile-opentracing-api</artifactId>
+            <version>${microprofile-opentracing.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.microprofile</groupId>
+            <artifactId>microprofile-opentracing</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.external</groupId>
+            <artifactId>microprofile-opentracing-repackaged</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+           
         <!-- Nimbus -->
         <dependency>
             <groupId>org.glassfish.main.external</groupId>
