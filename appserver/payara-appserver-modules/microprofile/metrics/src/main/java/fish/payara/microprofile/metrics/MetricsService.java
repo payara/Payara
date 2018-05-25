@@ -206,7 +206,7 @@ public class MetricsService implements EventListener {
         MetricRegistry registry = getRegistry(registryName);
         Map<String, Metric> metricMap = registry.getMetrics();
         if (metricMap.containsKey(metricName)) {
-            return singletonMap(metricName, metricMap.get(metricName));
+            return Collections.singletonMap(metricName, metricMap.get(metricName));
         } else {
             throw new NoSuchMetricException(metricName);
         }
@@ -216,7 +216,7 @@ public class MetricsService implements EventListener {
         MetricRegistry registry = getRegistry(registryName);
         Map<String, Metadata> metricMetadataMap = registry.getMetadata();
         if (metricMetadataMap.containsKey(metricName)) {
-            return singletonMap(metricName, metricMetadataMap.get(metricName));
+            return Collections.singletonMap(metricName, metricMetadataMap.get(metricName));
         } else {
             throw new NoSuchMetricException(metricName);
         }
