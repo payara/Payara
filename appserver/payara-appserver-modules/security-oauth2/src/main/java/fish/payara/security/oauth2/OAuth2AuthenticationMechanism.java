@@ -66,8 +66,7 @@ import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import fish.payara.nucleus.microprofile.config.spi.ConfigProviderResolverImpl;
-import fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition;
+import fish.payara.security.annotations.OAuth2AuthenticationDefinition;
 import fish.payara.security.oauth2.api.OAuth2State;
 import javax.el.ELProcessor;
 import javax.enterprise.inject.spi.BeanManager;
@@ -75,7 +74,6 @@ import javax.enterprise.inject.spi.CDI;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.glassfish.config.support.TranslatedConfigView;
-import org.glassfish.internal.api.Globals;
 
 /**
  * The AuthenticationMechanism used for authenticate users using the OAuth2 protocol
