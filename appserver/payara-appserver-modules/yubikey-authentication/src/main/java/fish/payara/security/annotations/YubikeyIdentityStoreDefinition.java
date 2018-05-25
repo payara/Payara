@@ -48,6 +48,19 @@ import java.lang.annotation.Target;
 
 /**
  * Used to define a Yubico Identity store with an annotation and provide configuration options.
+ * Supports connecting to the Yubico's cloud validation service. You must provide an API 
+ * client ID and key for this service
+ * You can obtain one directly from Yubico at https://upgrade.yubico.com/getapikey/
+ * 
+ * These can be passed in as EL <code>#{var}</code>, payara config <code>${ENV=VARNAME}</code> or raw. 
+ * Microprofile config of 
+ * payara.security.yubikey.apikey
+ * payara.security.yubikey.clientid
+ * payara.security.yubikey.identitystore.priority
+ * 
+ * will override the properties within the annotation.
+ * 
+ * Default priority is 100. 
  * 
  * @author Mark Wareham
  * 
