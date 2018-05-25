@@ -340,54 +340,33 @@ public class RequestTracingService implements EventListener, ConfigListener {
      *
      * @return a unique identifier for the request trace
      */
-    public UUID startTrace(String traceName) {
-        if (!isRequestTracingEnabled()) {
-            return null;
-        }
-
-        // Check if the trace came from an admin listener. If it did, and 'applications only' is enabled, ignore the trace.
-        if (executionOptions.getApplicationsOnlyEnabled() == true && Thread.currentThread().getName().matches("admin-thread-pool::admin-listener\\([0-9]+\\)")) {
-            return null;
-        }
-
-        // Determine whether to sample the request, if sampleRateFirstEnabled is true
-        if (executionOptions.getSampleRateFirstEnabled()) {
-            if (!sampleFilter.sample()) {
-                return null;
-            }
-        }
-
-        RequestTraceSpan span = new RequestTraceSpan(EventType.TRACE_START, traceName);
-        span.addSpanTag("Server", server.getName());
-        span.addSpanTag("Domain", domain.getName());
-        requestEventStore.storeEvent(span);
-        return span.getId();
+    public RequestTraceSpan startTrace(String traceName) {
+        return startTrace(new RequestTraceSpan(EventType.TRACE_START, traceName));
     }
 
-    public UUID startTrace(RequestTraceSpan span) {
-        if (!isRequestTracingEnabled()) {
+    public RequestTraceSpan startTrace(RequestTraceSpan span) {
+        if (shouldStartTrace()) {
+            span.addSpanTag("Server", server.getName());
+            span.addSpanTag("Domain", domain.getName());
+            requestEventStore.storeEvent(span);
+            return span;
+        } else {
             return null;
         }
-
-        // Check if the trace came from an admin listener. If it did, and 'applications only' is enabled, ignore the trace.
-        if (executionOptions.getApplicationsOnlyEnabled() == true && Thread.currentThread().getName().matches("admin-thread-pool::admin-listener\\([0-9]+\\)")) {
-            return null;
-        }
-
-        // Determine whether to sample the request, if sampleRateFirstEnabled is true
-        if (executionOptions.getSampleRateFirstEnabled()) {
-            if (!sampleFilter.sample()) {
-                return null;
-            }
-        }
-
-        span.addSpanTag("Server", server.getName());
-        span.addSpanTag("Domain", domain.getName());
-        requestEventStore.storeEvent(span);
-        return span.getId();
     }
 
-    public UUID startTrace(UUID propagatedTraceId, UUID propagatedParentId,
+    public RequestTraceSpan startTrace(RequestTraceSpan span, long timestampMillis) {
+        if (shouldStartTrace()) {
+            span.addSpanTag("Server", server.getName());
+            span.addSpanTag("Domain", domain.getName());
+            requestEventStore.storeEvent(span, timestampMillis);
+            return span;
+        } else {
+            return null;
+        }
+    }
+
+    public RequestTraceSpan startTrace(UUID propagatedTraceId, UUID propagatedParentId,
             RequestTraceSpan.SpanContextRelationshipType propagatedRelationshipType, String traceName) {
         if (!isRequestTracingEnabled()) {
             return null;
@@ -397,7 +376,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
         span.addSpanTag("Server", server.getName());
         span.addSpanTag("Domain", domain.getName());
         requestEventStore.storeEvent(span);
-        return span.getId();
+        return span;
     }
 
     /**
@@ -411,6 +390,31 @@ public class RequestTracingService implements EventListener, ConfigListener {
         }
     }
 
+    public void traceSpan(RequestTraceSpan requestEvent, long timestampMillis) {
+        if (isRequestTracingEnabled() && isTraceInProgress()) {
+            requestEventStore.storeEvent(requestEvent, timestampMillis);
+        }
+    }
+
+    private boolean shouldStartTrace() {
+        if (!isRequestTracingEnabled()) {
+            return false;
+        }
+
+        // Check if the trace came from an admin listener. If it did, and 'applications only' is enabled, ignore the trace.
+        if (executionOptions.getApplicationsOnlyEnabled() == true
+                && Thread.currentThread().getName().matches("admin-thread-pool::admin-listener\\([0-9]+\\)")) {
+            return false;
+        }
+
+        // Determine whether to sample the request, if sampleRateFirstEnabled is true
+        if (executionOptions.getSampleRateFirstEnabled() && !sampleFilter.sample()) {
+            return false;
+        }
+
+        return true;
+    }
+    
     /**
      *
      */
@@ -552,4 +556,5 @@ public class RequestTracingService implements EventListener, ConfigListener {
     public RequestTraceStoreInterface getRequestTraceStore() {
         return requestTraceStore;
     }
+    
 }

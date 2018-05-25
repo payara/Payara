@@ -53,9 +53,11 @@ holder.
     
     <modules>
         <module>config</module>
-	      <module>fault-tolerance</module>
-	      <module>healthcheck</module>
-	      <module>jwt-auth</module>
+        <module>fault-tolerance</module>
+        <module>healthcheck</module>
+        <module>jwt-auth</module>
         <module>metrics</module>
+        <module>opentracing</module>
     </modules>
+    
 </project>

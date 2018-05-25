@@ -52,8 +52,24 @@ public class RequestTraceSpanLog implements Serializable {
     private final long timeMillis;
     private final Map<String, String> logEntries;
     
+    public RequestTraceSpanLog() {
+        timeMillis = System.currentTimeMillis();
+        logEntries = new LinkedHashMap<>();
+    }
+    
+    public RequestTraceSpanLog(long timestampMillis) {
+        timeMillis = timestampMillis;
+        logEntries = new LinkedHashMap<>();
+    }
+    
     public RequestTraceSpanLog(String logName) {
         timeMillis = System.currentTimeMillis();
+        logEntries = new LinkedHashMap<>();
+        logEntries.put("logEvent", logName);
+    }
+    
+    public RequestTraceSpanLog(long timestampMillis, String logName) {
+        timeMillis = timestampMillis;
         logEntries = new LinkedHashMap<>();
         logEntries.put("logEvent", logName);
     }

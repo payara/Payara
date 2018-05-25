@@ -37,15 +37,16 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.appserver</groupId>
-            <artifactId>requesttracing-api</artifactId>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>opentracing-adapter</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
-            <artifactId>rest-client-tracing</artifactId>
+            <groupId>fish.payara.external</groupId>
+            <artifactId>opentracing-repackaged</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
+    
 </project>
 

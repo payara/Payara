@@ -55,16 +55,23 @@ import java.util.UUID;
 public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSpan> {
     
     private final SpanContext spanContext;
-    private final long timestamp;
-    private final long startTime;
+    private long timestamp;
+    private long startTime;
     private long endTime;
     private long spanDuration;
-    private final EventType eventType;
-    private Map<String, String> spanTags;
-    private List<RequestTraceSpanLog> spanLogs;
+    private EventType eventType;
+    private final Map<String, String> spanTags;
+    private final List<RequestTraceSpanLog> spanLogs;
     private String eventName;
     private final List<SpanReference> spanReferences;
 
+    protected RequestTraceSpan() {
+        this.spanContext = new SpanContext();
+        this.spanTags = new HashMap<>();
+        this.spanLogs = new ArrayList<>();
+        this.spanReferences = new ArrayList<>();
+    }
+    
     public RequestTraceSpan(String eventName) {
         this(EventType.REQUEST_EVENT, eventName);
     }
@@ -123,14 +130,22 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         return timestamp;
     }
     
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+    
     /**
      * Gets the time in milliseconds since the epoch (midnight, January 1st 1970)
      * when the the request event occurred.
      * 
      * @return the time the trace occurred
      */
-    public long getTimeOccured(){
+    public long getTimeOccured() {
         return startTime;
+    }
+    
+    public void setTimeOccured(long startTime) {
+        this.startTime = startTime;
     }
 
     /**
@@ -157,16 +172,16 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         return eventName;
     }
     
+    public void setEventName(String eventName) {
+        this.eventName = eventName;
+    }
+    
     /**
      * Adds more information about a span
      * @param name
      * @param value 
      */
     public void addSpanTag(String name, String value) {
-        if (spanTags == null) {
-            spanTags = new HashMap<>();
-        }
-        
         if (value != null) {
             // Escape any quotes
             spanTags.put(name, value.replaceAll("\"", "\\\\\""));
@@ -197,7 +212,6 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
     
     @Override
     public String toString() {
-        
         StringBuilder result = new StringBuilder("\n{");
         result.append("\"operationName\":\"").append(eventName).append("\",")
                 .append("\"spanContext\":{")
@@ -268,6 +282,7 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
     }
     
     public class SpanContext implements Serializable {
+        
         private final UUID spanId;
         private UUID traceId;
         private final Map<String, String> baggageItems;
@@ -305,18 +320,20 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         public void addBaggageItem(String name, String value) {
             if (value != null) {
                 // Escape any quotes
-                spanTags.put(name, value.replaceAll("\"", "\\\""));
+                addSpanTag(name, value.replaceAll("\"", "\\\""));
             } else {
-                spanTags.put(name, value);
+                addSpanTag(name, value);
             }
         }
         
         public Map<String, String> getBaggageItems() {
             return baggageItems;
         }
+        
     }
     
     public class SpanReference implements Serializable {
+        
         private final SpanContext referenceSpanContext;
         private final SpanContextRelationshipType relationshipType;
         
@@ -338,4 +355,5 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         ChildOf,
         FollowsFrom;
     }
+    
 }

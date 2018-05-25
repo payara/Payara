@@ -281,8 +281,8 @@
 
         <!-- Request Tracing Package -->
         <dependency>
-            <groupId>fish.payara.packager</groupId>
-            <artifactId>requesttracing-package</artifactId>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>requesttracing</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
@@ -370,13 +370,6 @@
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>jmx-monitoring-package</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>

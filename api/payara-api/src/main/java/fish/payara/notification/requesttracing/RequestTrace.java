@@ -86,30 +86,13 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
         if (null != span.getEventType()) {
             switch (span.getEventType()) {
                 case TRACE_START:
-                    trace.clear();
-                    startTime = span.getTimestamp();
-                    startTimeEpoched = span.getTimeOccured();
-                    trace.add(span);
-                    started = true;
-                    completed = false;
+                    handleTraceStart(span);
                     break;
                 case PROPAGATED_TRACE:
-                    trace.clear();
-                    startTime = span.getTimestamp();
-                    startTimeEpoched = span.getTimeOccured();
-                    trace.add(span);
-                    started = true;
-                    completed = false;
+                    handlePropagatedTrace(span);
                     break;
                 case REQUEST_EVENT: {
-                    if (!started) {
-                        return;
-                    }
-                    RequestTraceSpan rootSpan = trace.getFirst();
-                    span.setTraceId(rootSpan.getTraceId());
-                    span.setSpanDuration(span.getTimestamp() - startTime);
-                    span.setTraceEndTime(System.nanoTime());
-                    trace.add(span);
+                    handleRequestEvent(span);
                     break;
                 }
                 default:
@@ -118,6 +101,75 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
         }
     }
 
+    public void addEvent(RequestTraceSpan span, long timestampMillis) {
+        // Do not add trace events if completed
+        if (completed
+                && span.getEventType() != TRACE_START
+                && span.getEventType() != PROPAGATED_TRACE) {
+            return;
+        }
+
+        if (null != span.getEventType()) {
+            switch (span.getEventType()) {
+                case TRACE_START:
+                    handleTraceStart(span);
+                    break;
+                case PROPAGATED_TRACE:
+                    handlePropagatedTrace(span);
+                    break;
+                case REQUEST_EVENT: {
+                    handleRequestEvent(span, timestampMillis);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+    }
+
+    private void handleTraceStart(RequestTraceSpan span) {
+        trace.clear();
+        startTime = span.getTimestamp();
+        startTimeEpoched = span.getTimeOccured();
+        trace.add(span);
+        started = true;
+        completed = false;
+    }
+
+    private void handlePropagatedTrace(RequestTraceSpan span) {
+        trace.clear();
+        startTime = span.getTimestamp();
+        startTimeEpoched = span.getTimeOccured();
+        trace.add(span);
+        started = true;
+        completed = false;
+    }
+
+    private void handleRequestEvent(RequestTraceSpan span) {
+        if (!started) {
+            return;
+        }
+        
+        RequestTraceSpan rootSpan = trace.getFirst();
+        span.setTraceId(rootSpan.getTraceId());
+        span.setTraceEndTime(System.nanoTime());
+        span.setSpanDuration(span.getTraceEndTime() - span.getTimestamp());
+        
+        trace.add(span);
+    }
+
+    private void handleRequestEvent(RequestTraceSpan span, long timestampMillis) {
+        if (!started) {
+            return;
+        }
+        
+        RequestTraceSpan rootSpan = trace.getFirst();
+        span.setTraceId(rootSpan.getTraceId());
+        span.setSpanDuration(TimeUnit.NANOSECONDS.convert(timestampMillis, TimeUnit.MILLISECONDS) - span.getTimestamp());
+        span.setTraceEndTime(TimeUnit.NANOSECONDS.convert(timestampMillis, TimeUnit.MILLISECONDS));
+        trace.add(span);
+    }
+    
     public void endTrace() {
         if (!started) {
             return;

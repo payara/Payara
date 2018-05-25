@@ -75,6 +75,11 @@ public class RequestTraceSpanStore {
         currentTrace.addEvent(payaraSpan);
     }
     
+    void storeEvent(RequestTraceSpan payaraSpan, long timestampMillis) {       
+        RequestTrace currentTrace = spanStore.get();
+        currentTrace.addEvent(payaraSpan, timestampMillis);
+    }
+    
     void endTrace() {
         RequestTrace currentTrace = spanStore.get();
         currentTrace.endTrace();

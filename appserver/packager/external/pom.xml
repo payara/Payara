@@ -72,6 +72,7 @@
         <module>jaxr_ra</module>
         <module>jcip</module>
         <module>libpam4j</module>
+        <module>microprofile-opentracing-repackaged</module>
     </modules>
     <build>
         <plugins>

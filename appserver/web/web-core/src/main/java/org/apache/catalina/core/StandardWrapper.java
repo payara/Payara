@@ -1694,6 +1694,8 @@ public class StandardWrapper
                     }
                     finally {
                         if (requestTracing.isRequestTracingEnabled() && span != null) {
+                            span.addSpanTag("ResponseStatus", Integer.toString(
+                                    ((HttpServletResponse) response).getStatus()));
                             requestTracing.traceSpan(span);
                         }
                         
