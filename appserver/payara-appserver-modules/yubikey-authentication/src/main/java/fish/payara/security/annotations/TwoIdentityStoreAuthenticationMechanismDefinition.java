@@ -48,12 +48,12 @@ import javax.enterprise.util.Nonbinding;
 import javax.security.enterprise.authentication.mechanism.http.LoginToContinue;
 
 /**
- * Used to define a Two Factor Authentication Mechanism with an annotation and provide configuration options
+ * Used to define a Two IdentityStore Authentication Mechanism with an annotation and provide configuration options
  * @author Mark Wareham
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface TwoFactorAuthenticationMechanismDefinition {
+public @interface TwoIdentityStoreAuthenticationMechanismDefinition {
     
     @Nonbinding
     LoginToContinue loginToContinue();

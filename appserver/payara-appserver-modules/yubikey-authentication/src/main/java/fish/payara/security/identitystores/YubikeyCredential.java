@@ -70,7 +70,7 @@ public class YubikeyCredential implements Credential {
         if(fullKey==null){
             return null;
         }
-        if (fullKey.isEmpty()){
+        if (fullKey.trim().isEmpty()){
             return "";
         }
         if(fullKey.length()<12){

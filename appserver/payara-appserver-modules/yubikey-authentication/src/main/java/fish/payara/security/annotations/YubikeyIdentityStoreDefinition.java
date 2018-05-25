@@ -58,6 +58,10 @@ import java.lang.annotation.Target;
 @Target(value=ElementType.TYPE)
 public @interface YubikeyIdentityStoreDefinition {
     
+    String YUBICO_API_KEY= "payara.security.yubikey.apikey";
+    String YUBICO_API_CLIENT_ID= "payara.security.yubikey.clientid";
+    String YUBIKEY_ID_STORE_PRIORITY= "payara.security.yubikey.identitystore.priority";
+    
     int yubikeyAPIClientID() default 0; //default is needed to allow yubikeyAPIClientIDExpression alone.
 
     String yubikeyAPIKey();

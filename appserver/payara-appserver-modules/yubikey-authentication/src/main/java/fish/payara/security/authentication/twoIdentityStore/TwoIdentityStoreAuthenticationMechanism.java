@@ -37,7 +37,7 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.security.authentication.twoFactor;
+package fish.payara.security.authentication.twoIdentityStore;
 
 import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.spi.CDI;
@@ -59,17 +59,17 @@ import org.glassfish.soteria.mechanisms.LoginToContinueHolder;
  *
  * @author Mark Wareham
  * 
- * @see fish.payara.security.annotations.TwoFactorAuthenticationMechanismDefinition
+ * @see fish.payara.security.annotations.TwoIdentityStoreAuthenticationMechanismDefinition
  */
 @AutoApplySession
 @LoginToContinue
-@Typed(TwoFactorAuthenticationMechanism.class)
-public class TwoFactorAuthenticationMechanism implements HttpAuthenticationMechanism,LoginToContinueHolder {
+@Typed(TwoIdentityStoreAuthenticationMechanism.class)
+public class TwoIdentityStoreAuthenticationMechanism implements HttpAuthenticationMechanism,LoginToContinueHolder {
 
     private LoginToContinue loginToContinue;
     
     @Inject
-    private TwoFactorAuthenticationMechanismState state;
+    private TwoIdentityStoreAuthenticationMechanismState state;
     
     @Override
     public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext 
@@ -82,13 +82,13 @@ public class TwoFactorAuthenticationMechanism implements HttpAuthenticationMecha
         CredentialValidationResult currentRoundValidationResult = identityStoreHandler.validate(
                         httpMessageContext.getAuthParameters().getCredential());
 
-        //first factor
-        if (!state.isFirstFactorBeenAttempted()) {
+        //first ID Store
+        if (!state.isFirstIDStoreBeenAttempted()) {
             state.setFirstValidationResult(currentRoundValidationResult);
             return httpMessageContext.doNothing();
         }
         
-        //second factor
+        //second ID Store
         CredentialValidationResult finalResult = collateResult(state.getFirstValidationResult(), currentRoundValidationResult);
         this.state.clean();
         return httpMessageContext.notifyContainerAboutLogin(finalResult);
@@ -99,7 +99,7 @@ public class TwoFactorAuthenticationMechanism implements HttpAuthenticationMecha
         return httpMessageContext.getAuthParameters().getCredential() != null;
     }
 
-    public TwoFactorAuthenticationMechanism loginToContinue(LoginToContinue loginToContinue) {
+    public TwoIdentityStoreAuthenticationMechanism loginToContinue(LoginToContinue loginToContinue) {
         setLoginToContinue(loginToContinue);
         return this;
     }

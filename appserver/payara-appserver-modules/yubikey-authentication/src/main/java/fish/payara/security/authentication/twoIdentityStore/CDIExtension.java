@@ -37,14 +37,13 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.security.authentication.twoFactor;
+package fish.payara.security.authentication.twoIdentityStore;
 
-import fish.payara.security.annotations.TwoFactorAuthenticationMechanismDefinition;
 import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 
 import fish.payara.security.identitystores.YubikeyIdentityStore;
-import fish.payara.security.identitystores.YubikeyIdentityStoreDefinitionAnnotationLiteral;
 import fish.payara.security.annotations.YubikeyIdentityStoreDefinition;
+import fish.payara.security.identitystores.YubicoAPIImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,11 +63,13 @@ import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticatio
 import javax.security.enterprise.identitystore.IdentityStore;
 import org.glassfish.soteria.cdi.CdiProducer;
 import org.glassfish.soteria.cdi.LoginToContinueAnnotationLiteral;
+import fish.payara.security.annotations.TwoIdentityStoreAuthenticationMechanismDefinition;
+import fish.payara.security.identitystores.YubikeyIdentityStoreDefinitionAnnotationLiteral;
 
 /**
- * CDI Extension class. Uses Dynamic producers to add {@link TwoFactorAuthenticationMechanism}, 
+ * CDI Extension class. Uses Dynamic producers to add {@link TwoIdentityStoreAuthenticationMechanism},
  * {@link YubikeyIdentityStore} if annotations containing their corresponding *Definition are found.
- * 
+ *
  * @author Mark Wareham
  */
 public class CDIExtension implements Extension {
@@ -76,12 +77,18 @@ public class CDIExtension implements Extension {
     private static final Logger LOG = Logger.getLogger(CDIExtension.class.getName());
     private List<Bean<IdentityStore>> identityStoreBeans = new ArrayList<>();
     private Bean<HttpAuthenticationMechanism> authenticationMechanismBean;
-    
+    private static final String MODULE_PREFIX = "2FA Module Extension ";
+
     public void register(@Observes BeforeBeanDiscovery beforeBean, BeanManager beanManager) {
-        beforeBean.addAnnotatedType(beanManager.createAnnotatedType(TwoFactorAuthenticationMechanism.class),
-                TwoFactorAuthenticationMechanism.class.getName());
-        beforeBean.addAnnotatedType(beanManager.createAnnotatedType(TwoFactorAuthenticationMechanismState.class), 
-                TwoFactorAuthenticationMechanismState.class.getName());
+        beforeBean.addAnnotatedType(beanManager.createAnnotatedType(TwoIdentityStoreAuthenticationMechanism.class),
+                MODULE_PREFIX + TwoIdentityStoreAuthenticationMechanism.class.getName());
+        beforeBean.addAnnotatedType(beanManager.createAnnotatedType(TwoIdentityStoreAuthenticationMechanismState.class),
+                MODULE_PREFIX + TwoIdentityStoreAuthenticationMechanismState.class.getName());
+        beforeBean.addAnnotatedType(beanManager.createAnnotatedType(YubicoAPIImpl.class), 
+                MODULE_PREFIX + YubicoAPIImpl.class.getName());
+        beforeBean.addAnnotatedType(beanManager.createAnnotatedType(YubikeyIdentityStore.class), 
+                MODULE_PREFIX + YubikeyIdentityStore.class.getName());
+        
     }
 
     public <T> void processBean(@Observes ProcessBean<T> eventIn, BeanManager beanManager) {
@@ -100,29 +107,29 @@ public class CDIExtension implements Extension {
             identityStoreBeans.add(new CdiProducer<IdentityStore>()
                     .scope(ApplicationScoped.class)
                     .beanClass(IdentityStore.class)
-                    .types(Object.class, IdentityStore.class, YubikeyIdentityStore.class)
+                    .types(Object.class, IdentityStore.class)
                     .addToId(YubikeyIdentityStoreDefinition.class)
-                    //using the cdi producer to
-                    // create a YubikeyIdentityStore from the definition.
-                    .create(e -> new YubikeyIdentityStore(
-                    YubikeyIdentityStoreDefinitionAnnotationLiteral.eval(yubikeyIdentityStoreDefinition)))
+                    .create(e -> CDI.current().select(YubikeyIdentityStore.class)
+                            .get()
+                            .init(YubikeyIdentityStoreDefinitionAnnotationLiteral.eval(yubikeyIdentityStoreDefinition))
+                    )
             );
         });
 
-        Optional<TwoFactorAuthenticationMechanismDefinition> optionalOneTimePasswordMechanism
-                = getAnnotation(beanManager, event.getAnnotated(), TwoFactorAuthenticationMechanismDefinition.class);
+        Optional<TwoIdentityStoreAuthenticationMechanismDefinition> optionalOneTimePasswordMechanism
+                = getAnnotation(beanManager, event.getAnnotated(), TwoIdentityStoreAuthenticationMechanismDefinition.class);
         optionalOneTimePasswordMechanism.ifPresent(oneTimePasswordAuthenticationMechanismDefinition -> {
-                
-            logActivatedAuthenticationMechanism(TwoFactorAuthenticationMechanismDefinition.class, beanClass);
+
+            logActivatedAuthenticationMechanism(TwoIdentityStoreAuthenticationMechanismDefinition.class, beanClass);
 
             authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
                     .scope(ApplicationScoped.class)
                     .beanClass(HttpAuthenticationMechanism.class)
                     .types(Object.class, HttpAuthenticationMechanism.class)
-                    .addToId(TwoFactorAuthenticationMechanismDefinition.class)
+                    .addToId(TwoIdentityStoreAuthenticationMechanismDefinition.class)
                     .create(e -> {
                         return CDI.current()
-                                .select(TwoFactorAuthenticationMechanism.class)
+                                .select(TwoIdentityStoreAuthenticationMechanism.class)
                                 .get()
                                 .loginToContinue(LoginToContinueAnnotationLiteral.eval(
                                         oneTimePasswordAuthenticationMechanismDefinition.loginToContinue()));
@@ -141,9 +148,9 @@ public class CDIExtension implements Extension {
         if (authenticationMechanismBean != null) {
             afterBeanDiscovery.addBean(authenticationMechanismBean);
         }
-        
+
     }
-    
+
     private void logActivatedIdentityStore(Class<?> identityStoreClass, Class<?> beanClass) {
         LOG.log(Level.INFO, "Activating {0} identity store from {1} class",
                 new String[]{identityStoreClass.getName(), beanClass.getName()});
@@ -153,5 +160,5 @@ public class CDIExtension implements Extension {
         LOG.log(Level.INFO, "Activating {0} authentication mechanism from {1} class",
                 new String[]{authenticationMechanismClass.getName(), beanClass.getName()});
     }
-    
+
 }

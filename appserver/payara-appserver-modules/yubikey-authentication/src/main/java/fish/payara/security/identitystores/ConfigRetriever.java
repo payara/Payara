@@ -40,33 +40,82 @@
  */
 package fish.payara.security.identitystores;
 
-import fish.payara.nucleus.microprofile.config.spi.ConfigProviderResolverImpl;
+import org.glassfish.soteria.cdi.AnnotationELPProcessor;
 import java.util.Optional;
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.glassfish.config.support.TranslatedConfigView;
-import org.glassfish.internal.api.Globals;
 
 /**
- *
+ * Class to retrieve value from config whether Microprofile, Payara/glassfish, EL, or a raw value. In that order.
  * @author Mark Wareham
  */
 public class ConfigRetriever {
 
-    private static final Config CONFIG = Globals.getDefaultBaseServiceLocator().getService(ConfigProviderResolverImpl.class).getConfig();
-
+    private static final Config CONFIG = ConfigProvider.getConfig();
+    
+    private ConfigRetriever(){}//class should not be instanciated.
+    
     /**
-     * Takes a config expression and turns it into a value if there's any password aliases, environment variables, 
-     * or microprofile config values
-     * @param expression the config you are looking for
-     * @return the resulting value
+     * Grabs the config value regardless of where it's stored.
+     * Should a microprofile config exist, that will be returned as top priority.
+     * Otherwise returns the value translated from one of 
+     * - payara/glassfish config ${}
+     * - EL #{}
+     * - raw. Returns the value given if none of the above exist.
+     * @param expression the expression you are looking for
+     * @param microProfileConfigKey a microprofile key.
+     * @return a config value.
      */
-    public static String get(String expression) {
-        String translatedConfigExpression = (String) TranslatedConfigView.getTranslatedValue(expression);
-        Optional<String> microProfileConfigValue = CONFIG.getOptionalValue(expression, String.class);
+    public static String resolveConfigAttribute(String expression, String microProfileConfigKey) {
+        
+        Optional<String> microProfileConfigValue = CONFIG.getOptionalValue(microProfileConfigKey, String.class);
         if (microProfileConfigValue.isPresent()) {
-            return microProfileConfigValue.get();
-        } else {
-            return translatedConfigExpression;
+           return microProfileConfigValue.get();
+        }
+        if(isPayaraConfigFormat(expression)) {
+            String translatedValue = (String)TranslatedConfigView.getTranslatedValue(expression);
+            if(translatedValue.equals(expression) && isELImmediateFormat(expression)) {
+                return AnnotationELPProcessor.evalImmediate(expression);
+            }
+            return translatedValue;
+        }
+        if(isELDeferredFormat(expression)) {
+            return AnnotationELPProcessor.evalELExpression(expression);
+        }
+        return expression;
+    }
+    
+    /**
+     * Grabs the config value regardless of where it's stored. Accounts for overriding expression parameters
+     * Should a microprofile config exist, that will be returned as top priority.
+     * Otherwise returns the value translated from one of 
+     * - payara/glassfish config ${}
+     * - EL #{}
+     * - raw. Returns the value given if none of the above exist.
+     * @param attribute the attribute value to fall back on if there's no value expression param
+     * @param microProfileConfigKey a microprofile key.
+     * @param expression the expression you are looking for
+     * @return a config value.
+     */
+    public static String resolveConfigAttribute(String attribute, String expression, String microProfileConfigKey){
+        if(expression==null || expression.isEmpty()){
+            return resolveConfigAttribute(attribute, microProfileConfigKey);
+        }else{
+            return resolveConfigAttribute(expression, microProfileConfigKey);
         }
     }
+
+    private static boolean isPayaraConfigFormat(String attribute) {
+        return isELImmediateFormat(attribute);//payara format is the same as EL format.
+    }
+
+    private static boolean isELImmediateFormat(String attribute) {
+        return attribute!=null && attribute.startsWith("${") && attribute.endsWith("}");
+    }
+    
+    private static boolean isELDeferredFormat(String attribute) {
+        return attribute!=null && attribute.startsWith("#{") && attribute.endsWith("}");
+    }
+    
 }

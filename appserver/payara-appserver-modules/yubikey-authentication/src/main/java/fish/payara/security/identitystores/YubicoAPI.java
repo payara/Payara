@@ -36,32 +36,22 @@
  *     and therefore, elected the GPL Version 2 license, then the option applies
  *     only if the new code is made subject to such option by the copyright
  *     holder.
+ *
  */
-
 package fish.payara.security.identitystores;
 
-import com.yubico.client.v2.YubicoClient;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.yubico.client.v2.VerificationResponse;
+import com.yubico.client.v2.exceptions.YubicoValidationFailure;
+import com.yubico.client.v2.exceptions.YubicoVerificationException;
 
 /**
- * Factory class for obtaining an instance of Yubico Client.
- * 
+ *
  * @author Mark Wareham
  */
-public class YubicoClientFactory {
-
-    
-    private static final YubicoClientFactory INSTANCE = new YubicoClientFactory();
-    private static final Logger LOGGER = Logger.getLogger(YubicoClientFactory.class.getName());
-
-    private YubicoClient createYubicoClient(int apiClientID, String apiClientKey) {
-        LOGGER.log(Level.INFO, "Set up YubicoClient with clientID of {0}", apiClientID);
-        return YubicoClient.getClient(apiClientID, apiClientKey);
-    }
-    
-    public static YubicoClient getYubicoClient(int apiClientID, String apiClientKey) {
-        return INSTANCE.createYubicoClient(apiClientID, apiClientKey);
-    }
-   
+public interface YubicoAPI {
+     
+    public void init(int apiClientID, String apiClientKey);
+    public VerificationResponse verify(String otp) throws YubicoVerificationException, YubicoValidationFailure;
+    public Integer getClientId();
+    public String[] getWsapiUrls();
 }

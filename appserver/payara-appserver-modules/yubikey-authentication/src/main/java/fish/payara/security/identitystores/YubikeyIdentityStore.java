@@ -41,6 +41,7 @@
 package fish.payara.security.identitystores;
 
 import static javax.security.enterprise.identitystore.IdentityStore.ValidationType.VALIDATE;
+import static fish.payara.security.identitystores.ConfigRetriever.resolveConfigAttribute;
 
 import fish.payara.security.annotations.YubikeyIdentityStoreDefinition;
 import com.yubico.client.v2.ResponseStatus;
@@ -55,6 +56,8 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.inject.Typed;
+import javax.inject.Inject;
 import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
@@ -67,36 +70,33 @@ import org.glassfish.internal.api.Globals;
  * 
  * @author Mark Wareham
  */
+@Typed(YubikeyIdentityStore.class)
 public class YubikeyIdentityStore implements IdentityStore {
     
     
     private static final Logger LOG = Logger.getLogger(YubikeyIdentityStore.class.getName());
     
-    private final YubicoClient yubicoClient;
-    private final YubikeyIdentityStoreDefinition definition;
-    private RequestTracingService requestTracing;
+    @Inject
+    private YubicoAPI yubicoAPI;
     
-    public YubikeyIdentityStore(YubikeyIdentityStoreDefinition definition) {
-        this.definition = definition;
-        int clientID = definition.yubikeyAPIClientID();
-        if(clientID==0){//if client ID default, use expression
-            try{
-                clientID = Integer.parseInt(ConfigRetriever.get(definition.yubikeyAPIClientIDExpression()));
-            } catch (NumberFormatException numberFormatException) {
-                LOG.warning("Yubico API Client ID specified is not a valid number.");
-            }
-        }
-        yubicoClient = YubicoClientFactory.getYubicoClient(clientID, ConfigRetriever.get(definition.yubikeyAPIKey()));
+    private RequestTracingService requestTracing;
+    private int priority; //priority is handled as immediate, not deferred
+        
+    public YubikeyIdentityStore init (YubikeyIdentityStoreDefinition definition){
         try {
             this.requestTracing = Globals.get(RequestTracingService.class);
         } catch (NullPointerException e) {
             LOG.log(Level.INFO, "Error retrieving Request Tracing service "
                     + "during initialisation of Yubikey Identity Store - NullPointerException");
         }
+        priority = definition.priority();
+        yubicoAPI.init(definition.yubikeyAPIClientID(), definition.yubikeyAPIKey());
+        return this;
     }
 
     @Override
     public CredentialValidationResult validate(Credential credential) {
+        
         if (!(credential instanceof YubikeyCredential)) {
             return CredentialValidationResult.NOT_VALIDATED_RESULT;
         }
@@ -108,9 +108,9 @@ public class YubikeyIdentityStore implements IdentityStore {
                 return CredentialValidationResult.INVALID_RESULT;
             }
             RequestTraceSpan span = beginTrace(yubikeyCredential);
-            ResponseStatus responseStatus = yubicoClient.verify(oneTimePassword).getStatus();
+            ResponseStatus responseStatus = yubicoAPI.verify(oneTimePassword).getStatus();
             doTrace(span, responseStatus);
-            LOG.log(Level.FINE, "Yubico server reported {1}", responseStatus.name());
+            LOG.log(Level.FINE, "Yubico server reported {0}", responseStatus.name());
 
             switch (responseStatus) {
                 case BAD_OTP:
@@ -132,11 +132,7 @@ public class YubikeyIdentityStore implements IdentityStore {
                     LOG.log(Level.SEVERE, "Unknown/new yubico return status");
             }
 
-            
-            CredentialValidationResult credentialValidationResult = new CredentialValidationResult(
-                    yubikeyCredential.getPublicID());
-            
-            return credentialValidationResult;
+            return new CredentialValidationResult(yubikeyCredential.getPublicID());
         
         } catch (YubicoVerificationException | YubicoValidationFailure ex) {
             LOG.log(Level.SEVERE, null, ex);
@@ -152,16 +148,7 @@ public class YubikeyIdentityStore implements IdentityStore {
 
     @Override
     public int priority() {
-        if(definition.priorityExpression().equals("")){
-            return definition.priority();
-        }
-        try{
-            return Integer.parseInt(ConfigRetriever.get(definition.priorityExpression()));
-        }catch(NumberFormatException e){
-            LOG.log(Level.WARNING, "priority expression resolves to NaN with '{0}'. Using default.", 
-                    ConfigRetriever.get(definition.priorityExpression()));
-            return definition.priority();
-        }
+       return priority;
     }
 
     private RequestTraceSpan beginTrace(YubikeyCredential yubikeyCredential) {
@@ -170,9 +157,9 @@ public class YubikeyIdentityStore implements IdentityStore {
         }
         
         RequestTraceSpan span = new RequestTraceSpan(EventType.REQUEST_EVENT, "verifyYubikeyCloudServiceRequest");
-        span.addSpanTag("API Client ID", ""+yubicoClient.getClientId());
+        span.addSpanTag("API Client ID", ""+yubicoAPI.getClientId());
         span.addSpanTag("Yubikey public ID", yubikeyCredential.getPublicID());
-        span.addSpanTag("Yubico validation URLs", Arrays.toString(yubicoClient.getWsapiUrls()));
+        span.addSpanTag("Yubico validation URLs", Arrays.toString(yubicoAPI.getWsapiUrls()));
         return span;
     }
 

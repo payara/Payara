@@ -38,45 +38,71 @@
  *     holder.
  *
  */
+package fish.payara.security.identitystores;
 
-package fish.payara.security.authentication.twoFactor;
-
-import java.io.Serializable;
-import javax.enterprise.context.SessionScoped;
-import javax.security.enterprise.identitystore.CredentialValidationResult;
+import com.yubico.client.v2.VerificationResponse;
+import com.yubico.client.v2.YubicoClient;
+import com.yubico.client.v2.exceptions.YubicoValidationFailure;
+import com.yubico.client.v2.exceptions.YubicoVerificationException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.Priority;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Alternative;
 
 /**
- * Maintains the state of the TwoFactorAuthenticationMechanism per session
- * 
+ *
  * @author Mark Wareham
  */
-
-@SessionScoped
-public class TwoFactorAuthenticationMechanismState implements Serializable{
+@ApplicationScoped
+@Alternative
+@Priority(1000)
+public class YubicoAPIImpl implements YubicoAPI {
     
-    private CredentialValidationResult firstValidationResult;
-    private boolean firstFactorBeenAttempted;
-
-    CredentialValidationResult getFirstValidationResult() {
-        return firstValidationResult;
-    }
-
-    void setFirstValidationResult(CredentialValidationResult firstValidationResult) {
-        this.firstValidationResult = firstValidationResult;
-        this.setFirstFactorBeenAttempted(true);
-    }
-
-    boolean isFirstFactorBeenAttempted() {
-        return firstFactorBeenAttempted;
-    }
-
-    void setFirstFactorBeenAttempted(boolean firstFactorBeenAttempted) {
-        this.firstFactorBeenAttempted = firstFactorBeenAttempted;
-    }
-
-    void clean() {
-        firstValidationResult = null;
-        firstFactorBeenAttempted = false;
-    }
+    private static final Logger LOG = Logger.getLogger(YubicoAPIImpl.class.getName());
     
+    private YubicoClient yubicoClient;
+    
+    @Override
+    public void init(int apiClientID, String apiClientKey) {
+        if(apiClientID==0){
+            LOG.log(Level.WARNING, "A Yubico clientID has not been set");
+        }else{
+            LOG.log(Level.INFO, "Set up YubicoClient with clientID of {0}", apiClientID);
+        }
+        yubicoClient = YubicoClient.getClient(apiClientID, apiClientKey);
+    }
+
+    @Override
+    public VerificationResponse verify(String otp) throws YubicoVerificationException, YubicoValidationFailure {
+        performInitialisedCheck();
+        return yubicoClient.verify(otp);
+    }
+
+    @Override
+    public Integer getClientId() {
+        performInitialisedCheck();
+        return yubicoClient.getClientId();
+    }
+
+    @Override
+    public String[] getWsapiUrls() {
+        performInitialisedCheck();
+        return yubicoClient.getWsapiUrls();
+    }
+
+    private void performInitialisedCheck() {
+        if(yubicoClient==null){
+            throw new NotInitialisedException();
+        }
+    }
+
+    /**
+     * To represent a call on a YubicoAPIImpl that has not yet been initialised.
+     */
+    public static class NotInitialisedException extends RuntimeException {
+        public NotInitialisedException() {
+            //default constructor
+        }
+    }
 }
