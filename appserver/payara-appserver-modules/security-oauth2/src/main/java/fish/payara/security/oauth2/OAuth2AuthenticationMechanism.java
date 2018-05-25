@@ -137,17 +137,17 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
      */
     public OAuth2AuthenticationMechanism setDefinition(OAuth2AuthenticationDefinition definition) {
         Config provider = ConfigProvider.getConfig();
-        authEndpoint = getConfiguredValue(definition.authEndpoint(), provider);
-        tokenEndpoint = getConfiguredValue(definition.tokenEndpoint(), provider);
-        clientID = getConfiguredValue(definition.clientId(), provider);
-        clientSecret = getConfiguredValue(definition.clientSecret(), provider).toCharArray();
-        redirectURI = getConfiguredValue(definition.redirectURI(), provider);
-
-        scopes = getConfiguredValue(definition.scope(), provider);
+        authEndpoint = getConfiguredValue(definition.authEndpoint(), provider, OAuth2AuthenticationDefinition.OAUTH2_MP_AUTH_ENDPOINT);
+        tokenEndpoint = getConfiguredValue(definition.tokenEndpoint(), provider, OAuth2AuthenticationDefinition.OAUTH2_MP_TOKEN_ENDPOINT);
+        clientID = getConfiguredValue(definition.clientId(), provider, OAuth2AuthenticationDefinition.OAUTH2_MP_CLIENT_ID);
+        clientSecret = getConfiguredValue(definition.clientSecret(), provider, OAuth2AuthenticationDefinition.OAUTH2_MP_CLIENT_SECRET).toCharArray();
+        redirectURI = getConfiguredValue(definition.redirectURI(), provider, OAuth2AuthenticationDefinition.OAUTH2_MP_REDIRECT_URI);
+        scopes = getConfiguredValue(definition.scope(), provider, OAuth2AuthenticationDefinition.OAUTH2_MP_SCOPE);
+        
         String[] params = definition.extraParameters();
         extraParameters = new String[params.length];
         for (int i = 0; i < params.length; i++) {
-            extraParameters[i] = getConfiguredValue(params[i], provider);
+            extraParameters[i] = getConfiguredValue(params[i], provider, params[i]);
         }
         return this;
     }
@@ -265,15 +265,17 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
     }
 
     
-    private String getConfiguredValue(String value, Config provider){
-        String result = (String) TranslatedConfigView.getTranslatedValue(value);
-        if (isELExpression(value)){
-            result = (String) elProcessor.getValue(toRawExpression(result), String.class);
-        }
-        Optional<String> configResult = provider.getOptionalValue(result, String.class);
+    private String getConfiguredValue(String value, Config provider, String mpConfigKey){
+        String result = value;
+        Optional<String> configResult = provider.getOptionalValue(mpConfigKey, String.class);
         if (configResult.isPresent()) {
             result = configResult.get();
         }
+        result = (String) TranslatedConfigView.getTranslatedValue(result);
+        if (isELExpression(value)){
+            result = (String) elProcessor.getValue(toRawExpression(result), String.class);
+        }
+        
         return result;
     }
     

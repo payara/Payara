@@ -55,48 +55,84 @@ import javax.validation.constraints.NotNull;
  */
 @Target({TYPE, METHOD})
 @Retention(RUNTIME)
-public @interface OAuth2AuthenticationDefinition {
+public @interface OAuth2AuthenticationDefinition{
+    
+    /**
+     * The Microprofile Config key for the auth endpoint is <code>{@value}</code>
+     */
+    public static final String  OAUTH2_MP_AUTH_ENDPOINT="payara.security.oauth2.authEndpoint";
     
     /**
      * Required. The URL for the OAuth2 provider to provide authentication
      * <p>
-     * This must be a https endpoint
+     * This must be a https endpoint.
+     * </p>
+     * To set this using Microprofile Config use {@code payara.security.oauth2.authEndpoint}.
      * @return 
      */
-    @NotNull
     String authEndpoint();
     
     /**
+     * The Microprofile Config key for the token Endpoint is <code>{@value}</code>
+     */
+    public static final String OAUTH2_MP_TOKEN_ENDPOINT="payara.security.oauth2.tokenEndpoint";
+
+    /**
      * Required. The URL for the OAuth2 provider to give the authorisation token
+     * <p>
+     * To set this using Microprofile Config use {@code payara.security.oauth2.tokenEndpoint}
      * @return 
      */
-    @NotNull
     String tokenEndpoint();
     
     /**
+     * The Microprofile Config key for the clientId is <code>{@value}</code>
+     */
+    public static final String OAUTH2_MP_CLIENT_ID="payara.security.oauth2.clientId";
+    
+    /**
      * Required. The client identifier issued when the application was registered
+     * <p>
+     * To set this using Microprofile Config use {@code payara.security.oauth2.cliendId}
      * @return the client identifier
      */
-    @NotNull
     String clientId();
+    
+    /**
+     * The Microprofile Config key for the client secret is <code>{@value}</code>
+     */
+    public static final String OAUTH2_MP_CLIENT_SECRET="payara.security.oauth2.clientSecret";
     
     /**
      * Required. The client secret
      * <p>
      * It is recommended to set this using an alias.
+     * </p>
+     * To set this using Microprofile Config use {@code payara.security.oauth2.clientSecret}
      * @return 
      * @see <a href="https://docs.payara.fish/documentation/payara-server/password-aliases/password-aliases-overview.html">Payara Password Aliases Documentation</a>
      */
-    @NotNull
     String clientSecret();
+    
+    /**
+     * The Microprofile Config key for the redirect URI is <code>{@value}</code>
+     */
+    public static final String OAUTH2_MP_REDIRECT_URI = "payara.security.oauth2.redirectURI";
     
     /**
      * The callback URI.
      * <p>
-     * If supplied this must be equal to one set in the OAuth2 Authentication provider
+     * If supplied this must be equal to one set in the OAuth2 Authentication provider.
+     * <p>
+     * To set this using Microprofile Config use {@code payara.security.oauth2.redirectURI}
      * @return 
      */
     String redirectURI() default "";
+    
+    /**
+     * The Microprofile Config key for the scope is <code>{@value}</code>
+     */
+    public static final String OAUTH2_MP_SCOPE = "payara.security.oauth2.scope";
     
     /**
      * The scope that will be requested from the OAuth provider
