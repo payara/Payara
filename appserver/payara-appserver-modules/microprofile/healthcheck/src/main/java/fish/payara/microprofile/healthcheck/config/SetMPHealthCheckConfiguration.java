@@ -8,8 +8,7 @@
  *  and Distribution License("CDDL") (collectively, the "License").  You
  *  may not use this file except in compliance with the License.  You can
  *  obtain a copy of the License at
- *  https://github.com/payara/Payara/blob/master/LICENSE.txt
- *  See the License for the specific
+d *  See the License for the specific
  *  language governing permissions and limitations under the License.
  * 
  *  When distributing the software, include this License Header Notice in each
@@ -78,7 +77,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
  * @since 4.1.2.172
  */
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
 @Service(name = "set-microprofile-healthcheck-configuration")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
