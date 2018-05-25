@@ -1,7 +1,7 @@
 /*
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-   Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -74,7 +74,6 @@ import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ConfigView;
-import org.jvnet.hk2.config.types.Property;
 import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
 import java.util.ArrayList;
 
@@ -136,14 +135,12 @@ public class GetMonitoringConfiguration implements AdminCommand {
         List<ServiceHandle<BaseNotifierService>> allNotifierServiceHandles = habitat.getAllServiceHandles(BaseNotifierService.class);
 
         actionReport.appendMessage("Monitoring Service Configuration is enabled? " + prettyBool(Boolean.valueOf(monitoringConfig.getEnabled())) + "\n");
-        actionReport.appendMessage("Monitoring Service Configuration has AMX enabled? " + prettyBool(Boolean.valueOf(monitoringConfig.getAmx())) + "\n");
         actionReport.appendMessage("Monitoring Service Configuration log frequency? " + monitoringConfig.getLogFrequency() + " " + monitoringConfig.getLogFrequencyUnit());
         actionReport.appendMessage(StringUtils.EOL);
 
          Map<String, Object> map = new HashMap<>();
         Properties extraProps = new Properties();
         map.put("enabled", monitoringConfig.getEnabled());
-        map.put("amx", monitoringConfig.getAmx());
         map.put("logfrequency", monitoringConfig.getLogFrequency());
         map.put("logfrequencyunit", monitoringConfig.getLogFrequencyUnit());
         

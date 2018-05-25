@@ -203,18 +203,18 @@ public class CreateHttp implements AdminCommand {
                     http.setServerName(serverName);
                     
                     // HTTP2 options
-                    http.setHttp2Enabled(http2Enabled);
+                    http.setHttp2Enabled(http2Enabled.toString());
                     if (http2MaxConcurrentStreams != null) {
-                        http.setHttp2MaxConcurrentStreams(http2MaxConcurrentStreams);
+                        http.setHttp2MaxConcurrentStreams(http2MaxConcurrentStreams.toString());
                     }
                     if (http2InitialWindowSizeInBytes != null) {
-                        http.setHttp2InitialWindowSizeInBytes(http2InitialWindowSizeInBytes);
+                        http.setHttp2InitialWindowSizeInBytes(http2InitialWindowSizeInBytes.toString());
                     }
                     if (http2MaxFramePayloadSizeInBytes != null) {
-                        http.setHttp2MaxFramePayloadSizeInBytes(http2MaxFramePayloadSizeInBytes);
+                        http.setHttp2MaxFramePayloadSizeInBytes(http2MaxFramePayloadSizeInBytes.toString());
                     }
                     if (http2MaxHeaderListSizeInBytes != null) {
-                        http.setHttp2MaxHeaderListSizeInBytes(http2MaxHeaderListSizeInBytes);
+                        http.setHttp2MaxHeaderListSizeInBytes(http2MaxHeaderListSizeInBytes.toString());
                     }
                     if (http2StreamsHighWaterMark != null) {
                         http.setHttp2StreamsHighWaterMark(http2StreamsHighWaterMark.toString());
@@ -223,13 +223,13 @@ public class CreateHttp implements AdminCommand {
                         http.setHttp2CleanPercentage(http2CleanPercentage.toString());
                     }
                     if (http2CleanFrequencyCheck != null) {
-                        http.setHttp2CleanFrequencyCheck(http2CleanFrequencyCheck);
+                        http.setHttp2CleanFrequencyCheck(http2CleanFrequencyCheck.toString());
                     }
                     if (http2DisableCipherCheck != null) {
-                        http.setHttp2DisableCipherCheck(http2DisableCipherCheck);
+                        http.setHttp2DisableCipherCheck(http2DisableCipherCheck.toString());
                     }
                     if (http2PushEnabled != null) {
-                        http.setHttp2PushEnabled(http2PushEnabled);
+                        http.setHttp2PushEnabled(http2PushEnabled.toString());
                     }
                     param.setHttp(http);
                     return http;

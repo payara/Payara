@@ -61,6 +61,9 @@ public class BooleanConverter implements Converter<Boolean> {
             case "y":
             case "on":
                 result = true;
+                break;
+            default:
+                result = false;
         }
         return result;
     }

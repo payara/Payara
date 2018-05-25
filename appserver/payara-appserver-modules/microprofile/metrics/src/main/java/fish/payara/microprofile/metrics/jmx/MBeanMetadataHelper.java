@@ -42,6 +42,7 @@ package fish.payara.microprofile.metrics.jmx;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.management.ObjectName;
@@ -83,17 +84,22 @@ public class MBeanMetadataHelper {
 
         MBeanMetadataHelper.getInstance().resolveDynamicMetadata(metadataList);
         metadataList.forEach(beanMetadata -> {
-            beanMetadata.getTags().putAll(globalTags);
-            org.eclipse.microprofile.metrics.Metric type;
-            MBeanExpression mBeanExpression = new MBeanExpression(beanMetadata.getMBean());
-             if (beanMetadata.getTypeRaw() == COUNTER) {
-                 type = new MBeanCounterImpl(mBeanExpression);
-            } else if (beanMetadata.getTypeRaw() == GAUGE) {
-                type = (Gauge<Number>) mBeanExpression::getNumberValue;
-            }  else {
-                throw new IllegalStateException("Unsupported type : " + beanMetadata);
+            try {
+                beanMetadata.getTags().putAll(globalTags);
+                org.eclipse.microprofile.metrics.Metric type;
+                MBeanExpression mBeanExpression = new MBeanExpression(beanMetadata.getMBean());
+                if (beanMetadata.getTypeRaw() == COUNTER) {
+                    type = new MBeanCounterImpl(mBeanExpression);
+                } else if (beanMetadata.getTypeRaw() == GAUGE) {
+                    type = (Gauge<Number>) mBeanExpression::getNumberValue;
+                } else {
+                    throw new IllegalStateException("Unsupported type : " + beanMetadata);
+                }
+
+                metricRegistry.register(beanMetadata.getName(), type, beanMetadata);
+            } catch (IllegalArgumentException e) {
+                LOGGER.log(Level.WARNING, e.getMessage());
             }
-            metricRegistry.register(beanMetadata.getName(), type, beanMetadata);
         });
     }
 
@@ -111,7 +117,11 @@ public class MBeanMetadataHelper {
                 try {
                     mBeanExpression = new MBeanExpression(metadata.getMBean().replace(SPECIFIER, "*"));
                     String dynamicKey = mBeanExpression.findDynamicKey();
-                    for (ObjectName objName : mBeanExpression.queryNames(null)) {
+                    Set<ObjectName> mBeanObjects = mBeanExpression.queryNames(null);
+                    if (mBeanObjects.isEmpty()){
+                        LOGGER.log(Level.SEVERE, "{0} is invalid", metadata.getMBean());
+                    }
+                    for (ObjectName objName : mBeanObjects) {
                         String dynamicValue = objName.getKeyPropertyList().get(dynamicKey);
                         resolvedMetadataList.add(new MBeanMetadata(
                                 objName.getCanonicalName() + "/" + mBeanExpression.getAttributeName(),

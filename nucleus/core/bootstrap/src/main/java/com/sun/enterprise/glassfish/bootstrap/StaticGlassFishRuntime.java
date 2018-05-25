@@ -225,7 +225,7 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
                     "config/loggingToFile.properties",
                     "config/admin-keyfile",
                     "org/glassfish/web/embed/default-web.xml",
-                    "org/glassfish/embed/domain.xml"
+                    "config/domain.xml"
             };
             /**
              * Create instance config directory
