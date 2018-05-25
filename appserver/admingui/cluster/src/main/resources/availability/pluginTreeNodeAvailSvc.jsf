@@ -48,7 +48,6 @@ imageURL="/resource/cluster/images/availabilityservice.gif"
 >
 <!beforeCreate
     setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
-    setPageSessionAttribute(key="availShowIt" value="$boolean{false}");
 />
 </sun:treeNode>
 
