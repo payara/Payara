@@ -54,8 +54,6 @@ import java.util.UUID;
  *
  * Event class that stores traced values.
  */
-
-
 public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSpan> {
     
     private final SpanContext spanContext;
@@ -129,7 +127,6 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
     /**
      * Gets the time in milliseconds since the epoch (midnight, January 1st 1970)
      * when the the request event occurred.
-
      * @return the time the trace occurred
      */
     public long getTimeOccured() {
@@ -211,13 +208,13 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
                 .append("\"traceId\":\"").append(spanContext.getTraceId()).append("\"");
         
         result.append("},");
-
+        
         result.append("\"startTime\":\"").append(startTime.atZone(ZoneId.systemDefault()).toString())
                 .append("\",");
         result.append("\"endTime\":\"").append(endTime.atZone(ZoneId.systemDefault()).toString())
                 .append("\",");
         result.append("\"traceDuration\":\"").append(spanDuration).append("\"");
-
+        
         if (spanTags != null && !spanTags.isEmpty()) {
             result.append(",\"spanTags\":[");
             for (String key : spanTags.keySet()) {
@@ -264,11 +261,11 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
             }
             result.deleteCharAt(result.length() - 1);
             result.append("]");
-        }       
+        }        
         
         result.append("}");
         return result.toString();
-    }   
+    }      
 
     @Override
     public int compareTo(RequestTraceSpan span) {
@@ -325,7 +322,7 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         }
 
     }
-
+    
     public class SpanReference implements Serializable {
 
         private final SpanContext referenceSpanContext;

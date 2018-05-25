@@ -1688,7 +1688,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         return span;
     }
 
-    private RequestTraceSpan constructServletRequestSpan(HttpServletRequest httpServletRequest, Servlet servlet) {
+    private RequestTraceSpan constructServletRequestSpan(HttpServletRequest httpServletRequest, Servlet serv) {
         RequestTraceSpan span  = new RequestTraceSpan("processServletRequest");
         span.addSpanTag("URL", httpServletRequest.getRequestURL().toString());
 
@@ -1698,9 +1698,9 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             span.addSpanTag(headerName, list(httpServletRequest.getHeaders(headerName)).toString());
         }
 
-        span.addSpanTag("Method", httpServletRequest.getMethod());
+        span.addSpanTag("Method",httpServletRequest.getMethod());
         span.addSpanTag("QueryString", httpServletRequest.getQueryString());
-        span.addSpanTag("Class", servlet.getClass().getCanonicalName());
+        span.addSpanTag("Class",serv.getClass().getCanonicalName());
 
         return span;
     }

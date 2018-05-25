@@ -54,7 +54,6 @@ import static fish.payara.notification.requesttracing.EventType.*;
 /**
  * Class representing a full Request Trace. Stored in a ThreadLocal in the
  * Request Event Store
- *
  * @author steve
  */
 public class RequestTrace implements Serializable, Comparable<RequestTrace> {
@@ -74,7 +73,7 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
     
     /**
      * Add a new event to the series being traced
-     * @param span
+     * @param span 
      */
     public void addEvent(RequestTraceSpan span) {
         // Do not add trace events if completed
@@ -215,7 +214,7 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
     /**
      * Returns true if a trace has started.
      * This will return true even if the trace has completed.
-     * @return
+     * @return 
      */
     public boolean isStarted() {
         return started;
@@ -223,7 +222,6 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
     
     /**
      * Returns a list of all the events that make up the trace.
-     *
      * @return
      */
     public LinkedList<RequestTraceSpan> getTraceSpans() {
@@ -244,7 +242,7 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
      * (midnight, January 1st 1970).
      * <p>
      * This value is 0 until the request trace in finished.
-     * @return
+     * @return 
      */
     public Instant getEndTime() {
         return endTime;
@@ -272,7 +270,7 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
 
     /**
      * Returns true if a complete trace has finished
-     * @return
+     * @return 
      */
     public boolean isCompleted() {
         return completed;

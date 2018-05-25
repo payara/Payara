@@ -56,7 +56,7 @@ public interface PayaraExecutorServiceConfiguration extends ConfigBeanProxy, Con
     public String getThreadPoolExecutorCorePoolSize();
     public void setThreadPoolExecutorCorePoolSize(int corePoolSize);
     
-    @Attribute(defaultValue = "200", dataType = Integer.class)
+    @Attribute(defaultValue = "20", dataType = Integer.class)
     public String getThreadPoolExecutorMaxPoolSize();
     public void setThreadPoolExecutorMaxPoolSize(int maxPoolSize);
     
@@ -68,7 +68,7 @@ public interface PayaraExecutorServiceConfiguration extends ConfigBeanProxy, Con
     public String getThreadPoolExecutorKeepAliveTimeUnit();
     public void setThreadPoolExecutorKeepAliveTimeUnit(String keepAliveTimeUnit);
     
-    @Attribute(defaultValue = "50", dataType = Integer.class)
+    @Attribute(defaultValue = "30", dataType = Integer.class)
     public String getThreadPoolExecutorQueueSize();
     public void setThreadPoolExecutorQueueSize(int queueSize);
     

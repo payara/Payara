@@ -239,7 +239,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
             if (executionOptions.isHistoricTraceStoreEnabled()) {
                 historicRequestTraceStore = RequestTraceStoreFactory.getStore(events, executionOptions.getReservoirSamplingEnabled(), true);
                 historicRequestTraceStore.setSize(executionOptions.getHistoricTraceStoreSize());
-
+                
                 // Disable cleanup task if it's null, less than 0, or reservoir sampling is enabled
                 if (executionOptions.getTraceStoreTimeout() != null 
                         && executionOptions.getTraceStoreTimeout() > 0 
@@ -328,7 +328,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
     /**
      * Returns true if a trace has started and not yet completed
-     * @return
+     * @return 
      */
     public boolean isTraceInProgress() {
         return requestEventStore.isTraceInProgress();
@@ -379,7 +379,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
     /**
      * Adds a new event to the request trace currently in progress
-     * @param requestEvent
+     * @param requestEvent 
      */
     public void traceSpan(RequestTraceSpan requestEvent) {
         if (isRequestTracingEnabled() && isTraceInProgress()) {
@@ -476,7 +476,8 @@ public class RequestTracingService implements EventListener, ConfigListener {
     
     /**
      *
-     * @return @since 4.1.1.164
+     * @return 
+     * @since 4.1.1.164
      */
     public Long getThresholdValueInNanos() {
         if (executionOptions != null) {
@@ -489,7 +490,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
     public boolean isRequestTracingEnabled() {
         return executionOptions != null && executionOptions.isEnabled();
     }
-
+    
     public RequestTracingExecutionOptions getExecutionOptions() {
         return executionOptions;
     }
@@ -531,15 +532,15 @@ public class RequestTracingService implements EventListener, ConfigListener {
     
     /**
      * Returns the RequestTraceStore used for storing historical traces
-     * @return
+     * @return 
      */
     public RequestTraceStoreInterface getHistoricRequestTraceStore() {
         return historicRequestTraceStore;
     }
-
+    
     /**
      * Returns the RequestTraceStore used for storing traces
-     * @return
+     * @return 
      */
     public RequestTraceStoreInterface getRequestTraceStore() {
         return requestTraceStore;
