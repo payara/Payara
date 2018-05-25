@@ -1685,7 +1685,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         }
         span.addSpanTag("Method", httpServletRequest.getMethod());
 
-        return span;     
+        return span;
     }
 
     private RequestTraceSpan constructServletRequestSpan(HttpServletRequest httpServletRequest, Servlet servlet) {

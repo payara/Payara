@@ -88,7 +88,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Main service class that provides methods used by interceptors for tracing requests.
+ * Main service class that provides methods used by interceptors for tracing
+ * requests.
  *
  * @author mertcaliskan
  * @since 4.1.1.163
@@ -98,7 +99,7 @@ import java.util.logging.Logger;
 public class RequestTracingService implements EventListener, ConfigListener {
 
     private static final Logger logger = Logger.getLogger(RequestTracingService.class.getCanonicalName());
-
+    
     public static final String EVENT_BUS_LISTENER_NAME = "RequestTracingEvents";
 
     private static final int SECOND = 1;
@@ -113,7 +114,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
     @Inject
     private Events events;
-
+    
     @Inject
     private EventBus eventBus;
 
@@ -143,7 +144,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
     @Inject
     private NotifierExecutionOptionsFactoryStore executionOptionsFactoryStore;
-
+    
     @Inject
     private HazelcastCore hazelcast;
 
@@ -154,7 +155,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
     private RequestTraceStoreInterface historicRequestTraceStore;
     private RequestTraceStoreInterface requestTraceStore;
-
+    
     /**
      * The filter which determines whether to sample a given request
      */
@@ -194,7 +195,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
                 bootstrapRequestTracingService();
             }
         }
-
+        
         // If Hazelcast has shutdown, reinitialise request tracing
         if (event.is(HazelcastEvents.HAZELCAST_SHUTDOWN_COMPLETE)) {
             bootstrapRequestTracingService();
@@ -205,28 +206,27 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
     /**
      * Starts the request tracing service
-     *
      * @since 4.1.1.171
      */
     public void bootstrapRequestTracingService() {
         if (configuration != null) {
             executionOptions.setEnabled(Boolean.parseBoolean(configuration.getEnabled()));
-
+            
             executionOptions.setSampleRate(Double.valueOf(configuration.getSampleRate()));
             executionOptions.setAdaptiveSamplingEnabled(Boolean.parseBoolean(configuration.getAdaptiveSamplingEnabled()));
             executionOptions.setAdaptiveSamplingTargetCount(Integer.valueOf(configuration.getAdaptiveSamplingTargetCount()));
             executionOptions.setAdaptiveSamplingTimeValue(Integer.valueOf(configuration.getAdaptiveSamplingTimeValue()));
             executionOptions.setAdaptiveSamplingTimeUnit(TimeUnit.valueOf(configuration.getAdaptiveSamplingTimeUnit()));
-
+            
             executionOptions.setApplicationsOnlyEnabled(Boolean.parseBoolean(configuration.getApplicationsOnlyEnabled()));
             executionOptions.setThresholdUnit(TimeUnit.valueOf(configuration.getThresholdUnit()));
             executionOptions.setThresholdValue(Long.parseLong(configuration.getThresholdValue()));
             executionOptions.setSampleRateFirstEnabled(Boolean.parseBoolean(configuration.getSampleRateFirstEnabled()));
-
+            
             executionOptions.setTraceStoreSize(Integer.parseInt(configuration.getTraceStoreSize()));
             executionOptions.setTraceStoreTimeout(TimeUtil.setStoreTimeLimit(configuration.getTraceStoreTimeout()));
             executionOptions.setReservoirSamplingEnabled(Boolean.parseBoolean(configuration.getReservoirSamplingEnabled()));
-
+            
             executionOptions.setHistoricTraceStoreEnabled(Boolean.parseBoolean(configuration.getHistoricTraceStoreEnabled()));
             executionOptions.setHistoricTraceStoreSize(Integer.parseInt(configuration.getHistoricTraceStoreSize()));
             executionOptions.setHistoricTraceStoreTimeout(TimeUtil.setStoreTimeLimit(configuration.getHistoricTraceStoreTimeout()));
@@ -241,35 +241,35 @@ public class RequestTracingService implements EventListener, ConfigListener {
                 historicRequestTraceStore.setSize(executionOptions.getHistoricTraceStoreSize());
 
                 // Disable cleanup task if it's null, less than 0, or reservoir sampling is enabled
-                if (executionOptions.getTraceStoreTimeout() != null
-                        && executionOptions.getTraceStoreTimeout() > 0
+                if (executionOptions.getTraceStoreTimeout() != null 
+                        && executionOptions.getTraceStoreTimeout() > 0 
                         && !executionOptions.getReservoirSamplingEnabled()) {
                     // if timeout is bigger than 5 minutes execute the cleaner task in 5 minutes periods,
                     // if not use timeout value as period
                     long period = executionOptions.getTraceStoreTimeout() > TimeUtil.CLEANUP_TASK_FIVE_MIN_PERIOD
                             ? TimeUtil.CLEANUP_TASK_FIVE_MIN_PERIOD : executionOptions.getTraceStoreTimeout();
                     payaraExecutorService.scheduleAtFixedRate(new RequestTraceStoreCleanupTask(
-                            executionOptions.getTraceStoreTimeout(), historicRequestTraceStore),
+                            executionOptions.getTraceStoreTimeout(), historicRequestTraceStore), 
                             0, period, TimeUnit.SECONDS);
                 }
             }
-
+            
             // Set up the general request trace store
             requestTraceStore = RequestTraceStoreFactory.getStore(events, executionOptions.getReservoirSamplingEnabled(), false);
             requestTraceStore.setSize(executionOptions.getTraceStoreSize());
 
             // Disable cleanup task if it's null, less than 0, or reservoir sampling is enabled
-            if (executionOptions.getTraceStoreTimeout() != null && executionOptions.getTraceStoreTimeout() > 0
+            if (executionOptions.getTraceStoreTimeout() != null && executionOptions.getTraceStoreTimeout() > 0 
                     && !executionOptions.getReservoirSamplingEnabled()) {
                 // if timeout is bigger than 5 minutes execute the cleaner task in 5 minutes periods,
                 // if not use timeout value as period
                 long period = executionOptions.getTraceStoreTimeout() > TimeUtil.CLEANUP_TASK_FIVE_MIN_PERIOD
                         ? TimeUtil.CLEANUP_TASK_FIVE_MIN_PERIOD : executionOptions.getTraceStoreTimeout();
                 payaraExecutorService.scheduleAtFixedRate(new RequestTraceStoreCleanupTask(
-                        executionOptions.getTraceStoreTimeout(), requestTraceStore),
+                        executionOptions.getTraceStoreTimeout(), requestTraceStore), 
                         0, period, TimeUnit.SECONDS);
             }
-
+            
             if (executionOptions.getAdaptiveSamplingEnabled()) {
                 sampleFilter = new AdaptiveSampleFilter(executionOptions.getSampleRate(), executionOptions.getAdaptiveSamplingTargetCount(),
                         executionOptions.getAdaptiveSamplingTimeValue(), executionOptions.getAdaptiveSamplingTimeUnit());
@@ -282,9 +282,8 @@ public class RequestTracingService implements EventListener, ConfigListener {
     }
 
     /**
-     * Configures notifiers with request tracing and starts any enabled ones. If no options are set then the log
-     * notifier is automatically turned on.
-     *
+     * Configures notifiers with request tracing and starts any enabled ones.
+     * If no options are set then the log notifier is automatically turned on.
      * @since 4.1.2.173
      */
     public void bootstrapNotifierList() {
@@ -306,20 +305,20 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
     /**
      * Retrieves the current Conversation ID
-     *
      * @return
      */
     public UUID getConversationID() {
         return requestEventStore.getTraceID();
     }
-
+    
     public UUID getStartingTraceID() {
         return requestEventStore.getTrace().getTraceSpans().getFirst().getId();
     }
 
     /**
-     * Reset the conversation ID This is especially useful for trace propagation across threads when the event tracer
-     * can receive the conversation ID propagated to it
+     * Reset the conversation ID This is especially useful for trace propagation
+     * across threads when the event tracer can receive the conversation ID
+     * propagated to it
      *
      * @param newID
      */
@@ -329,7 +328,6 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
     /**
      * Returns true if a trace has started and not yet completed
-     *
      * @return
      */
     public boolean isTraceInProgress() {
@@ -338,7 +336,6 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
     /**
      * Starts a new request trace
-     *
      * @return a unique identifier for the request trace
      */
     public RequestTraceSpan startTrace(String traceName) {
@@ -382,7 +379,6 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
     /**
      * Adds a new event to the request trace currently in progress
-     *
      * @param requestEvent
      */
     public void traceSpan(RequestTraceSpan requestEvent) {
@@ -417,7 +413,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
     }
 
     /**
-     *
+     * 
      */
     public void endTrace() {
         if (!isRequestTracingEnabled() || !isTraceInProgress()) {
@@ -437,15 +433,15 @@ public class RequestTracingService implements EventListener, ConfigListener {
                 }
             }
             RequestTrace requestTrace = requestEventStore.getTrace();
-
+            
             Runnable addTask = () -> {
                 RequestTrace removedTrace = requestTraceStore.addTrace(requestTrace);
-
+                
                 // Store the trace in the historic trace store if it's enabled, avoiding recalculation
                 if (executionOptions.isHistoricTraceStoreEnabled()) {
                     historicRequestTraceStore.addTrace(requestTrace, removedTrace);
                 }
-
+                
                 if (removedTrace != null) {
                     if (hazelcast.isEnabled()) {
                         eventBus.publish(EVENT_BUS_LISTENER_NAME, new ClusterMessage(
@@ -455,7 +451,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
                     }
                 }
             };
-
+            
             payaraExecutorService.submit(addTask);
 
             for (NotifierExecutionOptions notifierExecutionOptions : executionOptions.getNotifierExecutionOptionsList().values()) {
@@ -474,10 +470,10 @@ public class RequestTracingService implements EventListener, ConfigListener {
         if (!isRequestTracingEnabled() || !isTraceInProgress()) {
             return;
         }
-
+        
         requestEventStore.getTrace().addSpanLog(spanLog);
     }
-
+    
     /**
      *
      * @return @since 4.1.1.164
@@ -532,10 +528,9 @@ public class RequestTracingService implements EventListener, ConfigListener {
         }
         return null;
     }
-
+    
     /**
      * Returns the RequestTraceStore used for storing historical traces
-     *
      * @return
      */
     public RequestTraceStoreInterface getHistoricRequestTraceStore() {
@@ -544,7 +539,6 @@ public class RequestTracingService implements EventListener, ConfigListener {
 
     /**
      * Returns the RequestTraceStore used for storing traces
-     *
      * @return
      */
     public RequestTraceStoreInterface getRequestTraceStore() {

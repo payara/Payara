@@ -80,7 +80,7 @@ public class SetFaultToleranceConfigurationCommand implements AdminCommand {
     @Inject
     private Target targetUtil;
     
-    @Param(optional = true, alias = "managedexecutorservicename")
+    @Param(optional = true, alias = "managedexecutoeservicename")
     private String managedExecutorServiceName;
     
     @Param(optional = true, alias = "managedscheduledexecutorservicename")

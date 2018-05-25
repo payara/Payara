@@ -170,7 +170,7 @@
         <repository>
            <id>payara-patched-externals</id>
 	   <name>Payara Patched Externals</name>
-	   <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
+	   <url>https://raw.github.com/Pandrex247/Payara_PatchedProjects/PAYARA-2547-Create-concrete-yasson-snapshot</url>
 	   <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url>-->
            	<releases>
            		<enabled>true</enabled>

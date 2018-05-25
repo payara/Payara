@@ -6,12 +6,11 @@
         <artifactId>payara-appserver-modules</artifactId>
         <version>5.182-SNAPSHOT</version>
     </parent>
+    
     <groupId>fish.payara.payara-appserver-modules</groupId>
     <artifactId>jaxrs-client-tracing</artifactId>
     <packaging>glassfish-jar</packaging>    
-
-
-
+    
     <name>Payara JAX-RS Client Tracing</name>
     
     <dependencies>
@@ -36,4 +35,5 @@
             <version>${project.version}</version>
         </dependency>
     </dependencies>
+    
 </project>
