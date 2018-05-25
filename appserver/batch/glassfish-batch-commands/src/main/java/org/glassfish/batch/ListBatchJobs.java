@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.batch;
 
@@ -115,10 +115,16 @@ public class ListBatchJobs
             extraProps.put("simpleMode", false);
             List<Map<String, Object>> jobExecutions = new ArrayList<>();
             extraProps.put("listBatchJobs", jobExecutions);
-            for (JobExecution je : findJobExecutions()) {
+            
+            Map<String, Integer> jobInstanceCount = null;
+            if (Arrays.asList(getOutputHeaders()).contains(INSTANCE_COUNT)) {
+                jobInstanceCount = getJobInstanceCount();
+            }
+            
+            for (JobExecution jobExecution : findJobExecutions()) {
                 try {
-                    if (glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) je).getTagName()))
-                        jobExecutions.add(handleJob(je, columnFormatter));
+                    if (glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) jobExecution).getTagName()))
+                       jobExecutions.add(handleJob(jobExecution, columnFormatter, jobInstanceCount));
                 } catch (Exception ex) {
                     logger.log(Level.WARNING, "Exception while getting jobExecution details: " + ex);
                     logger.log(Level.FINE, "Exception while getting jobExecution details ", ex);
@@ -143,32 +149,41 @@ public class ListBatchJobs
 
     private boolean isSimpleMode() {
 
-        for (String h : getOutputHeaders()) {
-            if (!JOB_NAME.equals(h) && !INSTANCE_COUNT.equals(h)) {
+        for (String outputHeader : getOutputHeaders()) {
+            if (!JOB_NAME.equals(outputHeader) && !INSTANCE_COUNT.equals(outputHeader)) {
                 return false;
             }
         }
         return getOutputHeaders().length == 2;
     }
 
-    private Map<String, Integer> findSimpleJobInfo(ColumnFormatter columnFormatter)
-        throws JobSecurityException, NoSuchJobException {
+    private Map<String, Integer> findSimpleJobInfo(ColumnFormatter columnFormatter) {
 
-        Map<String, Integer> jobToInstanceCountMap = new HashMap<>();
+        Map<String, Integer> jobToInstanceCountMap = getJobInstanceCount();
+
+        for (Map.Entry<String, Integer> e : jobToInstanceCountMap.entrySet()) {
+            columnFormatter.addRow(new Object[]{e.getKey(), e.getValue()});
+        }
+        return jobToInstanceCountMap;
+    }
+
+    private Map<String, Integer> getJobInstanceCount()
+            throws JobSecurityException, NoSuchJobException {
+
+        Map<String, Integer> jobInstanceCount = new HashMap<>();
         List<JobExecution> jobExecutions = findJobExecutions();
-        for (JobExecution je : jobExecutions) {
-            if (glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) je).getTagName())) {
-                String jobName = je.getJobName();
+         String jobname;
+        for (JobExecution jobExecution : jobExecutions) {
+            if (glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) jobExecution).getTagName())) {
+                jobname = jobExecution.getJobName();
                 int count = 0;
-                if (jobToInstanceCountMap.containsKey(jobName)) {
-                    count = jobToInstanceCountMap.get(jobName);
+                if (jobInstanceCount.containsKey(jobname)) {
+                    count = jobInstanceCount.get(jobname);
                 }
-                jobToInstanceCountMap.put(jobName, count+1);
+                jobInstanceCount.put(jobname, count + 1);
             }
         }
-        for (Map.Entry<String, Integer> e : jobToInstanceCountMap.entrySet())
-            columnFormatter.addRow(new Object[] {e.getKey(), e.getValue()});
-        return jobToInstanceCountMap;
+        return jobInstanceCount;
     }
 
     private List<JobExecution> findJobExecutions()
@@ -200,7 +215,7 @@ public class ListBatchJobs
         return jobExecutions;
     }
 
-    private Map<String, Object> handleJob(JobExecution je, ColumnFormatter columnFormatter)
+    private Map<String, Object> handleJob(JobExecution jobExexution, ColumnFormatter columnFormatter, Map<String, Integer>  instanceCount)
         throws  JobSecurityException, NoSuchJobException, NoSuchJobExecutionException {
         Map<String, Object> jobInfo = new HashMap<>();
 
@@ -210,11 +225,11 @@ public class ListBatchJobs
             Object data = null;
             switch (getOutputHeaders()[index]) {
                 case JOB_NAME:
-                    data = "" + je.getJobName();
+                    data = "" + jobExexution.getJobName();
                     break;
                 case APP_NAME:
                     try {
-                        String appName = "" + ((TaggedJobExecution) je).getTagName();
+                        String appName = "" + ((TaggedJobExecution) jobExexution).getTagName();
                         int semi = appName.indexOf(':');
                         data = appName.substring(semi+1);
                     } catch (Exception ex) {
@@ -223,32 +238,32 @@ public class ListBatchJobs
                     }
                     break;
                 case INSTANCE_COUNT:
-                    data = jobOperator.getJobInstanceCount(je.getJobName());
+                    data = instanceCount != null ? instanceCount.get(jobExexution.getJobName()) : "";
                     break;
                 case INSTANCE_ID:
-                    data = jobOperator.getJobInstance(je.getExecutionId()).getInstanceId();
+                    data = jobOperator.getJobInstance(jobExexution.getExecutionId()).getInstanceId();
                     break;
                 case EXECUTION_ID:
-                    data = je.getExecutionId();
+                    data = jobExexution.getExecutionId();
                     break;
                 case BATCH_STATUS:
-                    data = je.getBatchStatus() != null ? je.getBatchStatus() : "";
+                    data = jobExexution.getBatchStatus() != null ? jobExexution.getBatchStatus() : "";
                     break;
                 case EXIT_STATUS:
-                    data = je.getExitStatus() != null ? je.getExitStatus() : "";
+                    data = jobExexution.getExitStatus() != null ? jobExexution.getExitStatus() : "";
                     break;
                 case START_TIME:
-                    if (je.getStartTime() != null) {
-                        data = je.getStartTime().getTime();
-                        cfData[index] = je.getStartTime().toString();
+                    if (jobExexution.getStartTime() != null) {
+                        data = jobExexution.getStartTime().getTime();
+                        cfData[index] = jobExexution.getStartTime().toString();
                     } else {
                         data = "";
                     }
                     break;
                 case END_TIME:
-                    if (je.getEndTime() != null) {
-                        data = je.getEndTime().getTime();
-                        cfData[index] = je.getEndTime().toString();
+                    if (jobExexution.getEndTime() != null) {
+                        data = jobExexution.getEndTime().getTime();
+                        cfData[index] = jobExexution.getEndTime().toString();
                     } else {
                         data = "";
                     }
