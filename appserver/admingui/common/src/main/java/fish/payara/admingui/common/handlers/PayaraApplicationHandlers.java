@@ -60,6 +60,12 @@ import static org.glassfish.admingui.common.util.RestUtil.get;
  * @author Susan Rai
  */
 public class PayaraApplicationHandlers {
+    
+    private static final String CLUSTER = "/clusters/cluster/";
+    private static final String SERVER = "/servers/server/";
+    private static final String DEPLOYMENT_GROUP = "/deployment-groups/deployment-group/";
+    private static final String APPLICATION_REF = "application-ref";
+    private static final String RESOURCE_REF = "resource-ref";
 
     @Handler(id = "py.getApplicationTargetList",
             input = {
@@ -69,30 +75,33 @@ public class PayaraApplicationHandlers {
     public static void getTargetListInfo(HandlerContext handlerCtx) {
         String applicationName = (String) handlerCtx.getInputValue("appName");
         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
+        
         List<String> clusters = TargetUtil.getClusters();
         List<String> standalone = TargetUtil.getStandaloneInstances();
         List<String> deploymentGroup = TargetUtil.getDeploymentGroups();
+        
         standalone.add("server");
-        List<String> targetList = DeployUtil.getApplicationTarget(applicationName, "application-ref");
+        List<String> targetList = DeployUtil.getApplicationTarget(applicationName, APPLICATION_REF);
         List<HashMap> result = new ArrayList<>();
+        
         Map<String, Object> attributes = null;
         String endpoint = "";
-
+        
         List<String> instancesInDeploymentGroup = getInstancesInDeploymentGroup(targetList);
 
         for (String oneTarget : targetList) {
             Boolean addToResult = false;
             HashMap<String, Object> oneRow = new HashMap<>();
             if (clusters.contains(oneTarget)) {
-                endpoint = prefix + "/clusters/cluster/" + oneTarget + "/application-ref/" + applicationName;
+                endpoint = prefix + CLUSTER + oneTarget + APPLICATION_REF + applicationName;
                 attributes = RestUtil.getAttributesMap(endpoint);
                 addToResult = true;
             } else if (standalone.contains(oneTarget) && !instancesInDeploymentGroup.contains(oneTarget)) {
-                endpoint = prefix + "/servers/server/" + oneTarget + "/application-ref/" + applicationName;
+                endpoint = prefix + SERVER + oneTarget + APPLICATION_REF + applicationName;
                 attributes = RestUtil.getAttributesMap(endpoint);
                 addToResult = true;
             } else if (deploymentGroup.contains(oneTarget)) {
-                endpoint = prefix + "/deployment-groups/deployment-group/" + oneTarget + "/application-ref/" + applicationName;
+                endpoint = prefix + DEPLOYMENT_GROUP + oneTarget + APPLICATION_REF + applicationName;
                 attributes = RestUtil.getAttributesMap(endpoint);
                 addToResult = true;
             }
@@ -138,14 +147,14 @@ public class PayaraApplicationHandlers {
         String endpoint;
 
         for (String targetName : targetList) {
-            endpoint = prefix + "/clusters/cluster/" + targetName + "/resource-ref/" + resourceName;
+            endpoint = prefix + CLUSTER + targetName + RESOURCE_REF + resourceName;
             boolean existsInCluster = checkIfEndPointExist(endpoint);
 
             if (!existsInCluster) {
-                endpoint = prefix + "/deployment-groups/deployment-group/" + targetName + "/resource-ref/" + resourceName;
+                endpoint = prefix + DEPLOYMENT_GROUP + targetName + RESOURCE_REF + resourceName;
                 boolean existsInDeploymentGroup = checkIfEndPointExist(endpoint);
                 if (!existsInDeploymentGroup) {
-                    endpoint = prefix + "/servers/server/" + targetName + "/resource-ref/" + resourceName;
+                    endpoint = prefix + SERVER + targetName + RESOURCE_REF + resourceName;
                     boolean existsInServer = checkIfEndPointExist(endpoint);
                     if (existsInServer) {
                         selectedTargetList.add(targetName);
@@ -173,10 +182,7 @@ public class PayaraApplicationHandlers {
             result = response.isSuccess();
 
         } catch (Exception exception) {
-            GuiUtil.getLogger().info("CheckIfEndPointExist Failed");
-            if (GuiUtil.getLogger().isLoggable(Level.FINE)) {
-                exception.printStackTrace();
-            }
+            GuiUtil.getLogger().info("CheckIfEndPointExist Failed" + exception);
         } finally {
             if (response != null) {
                 response.close();
@@ -196,7 +202,7 @@ public class PayaraApplicationHandlers {
         String instanceName = (String) handlerCtx.getInputValue("instanceName");
         String resourceName = (String) handlerCtx.getInputValue("resourceName");
         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
-        String endpoint = prefix + "/servers/server/" + instanceName + "/resource-ref";
+        String endpoint = prefix + SERVER + instanceName + RESOURCE_REF;
 
         boolean isPresent = false;
         Map responseMap = RestUtil.restRequest(endpoint, null, "GET", handlerCtx, false, true);
