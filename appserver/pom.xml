@@ -182,9 +182,6 @@
          <microprofile-metrics.version>1.1</microprofile-metrics.version>
          <microprofile-rest-client.version>1.0.1</microprofile-rest-client.version>
         
-        <!-- JSON-B -->
-        <json.bind-api.version>1.0</json.bind-api.version>
-        <yasson.version>1.0.2-SNAPSHOT-07-05-2018.payara-p1</yasson.version>
     </properties>
 
     <modules>
@@ -252,21 +249,6 @@
                             <implVersion>1.5.0</implVersion>
                             <apiPackage>javax.mail</apiPackage>
                             <implNamespace>com.sun.mail</implNamespace>
-                        </spec>
-                        
-                        <!-- JSONB-B -->
-                        <spec>
-                            <artifact>
-                                <groupId>javax.json.bind</groupId>
-                                <artifactId>javax.json.bind-api</artifactId>
-                                <version>${json.bind-api.version}</version>
-                            </artifact>
-                            <nonFinal>false</nonFinal>
-                            <jarType>api</jarType>
-                            <specVersion>${json.bind-api.version}</specVersion>
-                            <specImplVersion>${yasson.version}</specImplVersion>
-                            <apiPackage>javax.json.bind</apiPackage>
-                            <implNamespace>org.eclipse</implNamespace>
                         </spec>
                         
                         <spec>
@@ -1138,18 +1120,6 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
-            </dependency>
-            
-            <!-- JSON-B -->
-            <dependency>
-                <groupId>javax.json.bind</groupId>
-                <artifactId>javax.json.bind-api</artifactId>
-                <version>${json.bind-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse</groupId>
-                <artifactId>yasson</artifactId>
-                <version>${yasson.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

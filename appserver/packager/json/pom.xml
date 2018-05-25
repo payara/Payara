@@ -131,17 +131,6 @@
             <artifactId>jsonp-jaxrs</artifactId>
             <optional>true</optional>
         </dependency>
-        
-        <dependency>
-            <groupId>javax.json.bind</groupId>
-            <artifactId>javax.json.bind-api</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse</groupId>
-            <artifactId>yasson</artifactId>
-            <optional>true</optional>
-        </dependency>
     </dependencies>
 </project>
 
