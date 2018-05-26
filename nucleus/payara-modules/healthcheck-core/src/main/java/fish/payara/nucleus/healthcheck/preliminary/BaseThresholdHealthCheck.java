@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,7 @@
  */
 package fish.payara.nucleus.healthcheck.preliminary;
 
-import fish.payara.nucleus.healthcheck.HealthCheckResultStatus;
+import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.HealthCheckWithThresholdExecutionOptions;
 import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
 import org.jvnet.hk2.annotations.Contract;
@@ -56,7 +56,7 @@ public abstract class BaseThresholdHealthCheck<O extends HealthCheckWithThreshol
     /**
      * Creates an options instance from the properties
      * @param checker
-     * @return 
+     * @return
      */
     public HealthCheckWithThresholdExecutionOptions constructThresholdOptions(ThresholdDiagnosticsChecker checker) {
         return new HealthCheckWithThresholdExecutionOptions(
@@ -69,9 +69,9 @@ public abstract class BaseThresholdHealthCheck<O extends HealthCheckWithThreshol
     }
 
     /**
-     * 
+     *
      * @param percentage
-     * @return 
+     * @return
      */
     protected HealthCheckResultStatus decideOnStatusWithRatio(Double percentage) {
         if (percentage > options.getThresholdCritical()) {

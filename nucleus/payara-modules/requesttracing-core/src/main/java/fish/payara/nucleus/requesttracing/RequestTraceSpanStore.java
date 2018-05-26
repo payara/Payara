@@ -63,18 +63,18 @@ public class RequestTraceSpanStore {
         @Override
         protected RequestTrace initialValue() {
             return new RequestTrace();
-        }      
+        }
     };
 
     /**
      * Adds a new event to the request trace
-     * @param payaraSpan 
+     * @param payaraSpan
      */
-    void storeEvent(RequestTraceSpan payaraSpan) {       
+    void storeEvent(RequestTraceSpan payaraSpan) {
         RequestTrace currentTrace = spanStore.get();
         currentTrace.addEvent(payaraSpan);
     }
-    
+
     void endTrace() {
         RequestTrace currentTrace = spanStore.get();
         currentTrace.endTrace();
@@ -102,11 +102,11 @@ public class RequestTraceSpanStore {
     String getTraceAsString() {
         return spanStore.get().toString();
     }
-    
+
     // test methods
     /**
      * Returns the full trace
-     * @return 
+     * @return
      * @since 4.1.2.173
      */
     public RequestTrace getTrace() {
@@ -115,13 +115,13 @@ public class RequestTraceSpanStore {
 
     /**
      * Gets the unique identifier for the request trace
-     * @return 
+     * @return
      */
     UUID getTraceID() {
         RequestTrace trace = spanStore.get();
         return trace.getTraceId();
     }
-    
+
     void setTraceId(UUID newID) {
         RequestTrace trace = spanStore.get();
         trace.setTraceId(newID);
@@ -129,7 +129,7 @@ public class RequestTraceSpanStore {
 
     /**
      * Returns true if a request trace has been started and has not been completed
-     * @return 
+     * @return
      */
     boolean isTraceInProgress() {
         return (spanStore.get().isStarted() && !spanStore.get().isCompleted());
