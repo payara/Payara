@@ -65,10 +65,10 @@ class JvmOptions {
     private final static Pattern envP = Pattern.compile("([^\\$]*)\\$\\{ENV=([^\\}]*)\\}([^\\$]*)");
     private static final int MAX_SUBSTITUTION_DEPTH = 100;
     
-    Map<String, String> sysProps = new HashMap<String, String>();
-    Map<String, String> xxProps = new HashMap<String, String>();
-    Map<String, String> xProps = new HashMap<String, String>();
-    Map<String, String> plainProps = new HashMap<String, String>();
+    Map<String, String> sysProps = new HashMap<>();
+    Map<String, String> xxProps = new HashMap<>();
+    Map<String, String> xProps = new HashMap<>();
+    Map<String, String> plainProps = new HashMap<>();
     int osgiPort = -1;
     
     JvmOptions(List<String> options) throws GFLauncherException {
