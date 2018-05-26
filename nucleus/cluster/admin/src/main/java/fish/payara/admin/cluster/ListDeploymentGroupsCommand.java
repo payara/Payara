@@ -87,10 +87,10 @@ public class ListDeploymentGroupsCommand implements AdminCommand {
         if (listOfDeploymentGroup.isEmpty()) {
             report.appendMessage("No Deployment Group has been created");
         } else {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("List of Deployment Groups" + ":\n");
             Properties extrasProps = new Properties();
-            ArrayList<String> deploymentGroupNames = new ArrayList<String>();
+            ArrayList<String> deploymentGroupNames = new ArrayList<>();
             for (DeploymentGroup deploymentGroup : listOfDeploymentGroup) {
                 sb.append("\t" + deploymentGroup.getName() + "\n");
                 deploymentGroupNames.add(deploymentGroup.getName());

@@ -46,6 +46,8 @@ import com.sun.enterprise.config.serverbeans.Server;
 import fish.payara.enterprise.config.serverbeans.DGServerRef;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroups;
+import java.util.Arrays;
+import java.util.List;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -63,7 +65,6 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 
 /**
@@ -88,75 +89,77 @@ public class RemoveInstanceFromDeploymentGroupCommand implements AdminCommand {
     String instanceName;
 
     @Param(name = "deploymentGroup")
-    String deploymentGroup;
-   
+    String deploymentGroupName;
+
     @Inject
     private Domain domain;
-        
+
     @Inject
     ServerEnvironment env;
-    
+
     @Inject
     CommandRunner commandRunner;
-    
 
     @Override
     public void execute(AdminCommandContext context) {
-
-        Server server = domain.getServerNamed(instanceName);
         ActionReport report = context.getActionReport();
-        if (server == null) {
+
+        DeploymentGroup deploymentGroup = domain.getDeploymentGroupNamed(deploymentGroupName);
+        if (deploymentGroup == null) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage("Instance " + instanceName + " does not exist");
+            report.setMessage("Deployment Group " + deploymentGroupName + " does not exist");
             return;
         }
 
-        DeploymentGroup dg = domain.getDeploymentGroupNamed(deploymentGroup);
-        if (dg == null) {
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage("Deployment Group " + deploymentGroup + " does not exist");
-            return;
-        }
-        
-        DGServerRef ref = dg.getDGServerRefByRef(instanceName);
-        if (ref == null) {
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage("Deployment Group " + deploymentGroup + " does not contain server " + instanceName);
-            return;            
-        }
+        List<String> instances = Arrays.asList(instanceName.split(","));
 
-        // OK set up the reference
-        try {
-            ConfigSupport.apply((DeploymentGroup dg1) -> {
-                dg1.getDGServerRef().remove(ref);
-                return null;
-            }, dg);
+        for (String instance : instances) {
+            Server server = domain.getServerNamed(instance);
 
-        } catch (TransactionFailure e) {
-            report.setMessage("Failed to remove instance from the deployment group");
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setFailureCause(e);
-        }
-        
-        // now run the command to remove application ref to the instance
-        for (ApplicationRef applicationRef : dg.getApplicationRef()) {
-            CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("delete-application-ref", report, context.getSubject());
-            ParameterMap parameters = new ParameterMap();
-            parameters.add("target", instanceName);
-            parameters.add("name", applicationRef.getRef());
-            inv.parameters(parameters).execute();
-        }
+            if (server == null) {
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage("Instance " + instance + " does not exist");
+                return;
+            }
 
-        // now run the command to remove resource ref to the instance
-        for (ResourceRef resourceRef : dg.getResourceRef()) {
-            CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("delete-resource-ref", report, context.getSubject());
-            ParameterMap parameters = new ParameterMap();
-            parameters.add("target", instanceName);
-            parameters.add("reference_name", resourceRef.getRef());
-            inv.parameters(parameters).execute();
-        }
+            DGServerRef deploymentGroupServerRef = deploymentGroup.getDGServerRefByRef(instance);
+            if (deploymentGroupServerRef == null) {
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage("Deployment Group " + deploymentGroupName + " does not contain server " + instance);
+                return;
+            }
 
-        
+            // OK set up the reference
+            try {
+                ConfigSupport.apply((DeploymentGroup dg1) -> {
+                    dg1.getDGServerRef().remove(deploymentGroupServerRef);
+                    return null;
+                }, deploymentGroup);
+
+            } catch (TransactionFailure e) {
+                report.setMessage("Failed to remove instance from the deployment group");
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setFailureCause(e);
+            }
+
+            // now run the command to remove application deploymentGroupServerRef to the instance
+            for (ApplicationRef applicationRef : deploymentGroup.getApplicationRef()) {
+                CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("delete-application-ref", report, context.getSubject());
+                ParameterMap parameters = new ParameterMap();
+                parameters.add("target", instance);
+                parameters.add("name", applicationRef.getRef());
+                inv.parameters(parameters).execute();
+            }
+
+            // now run the command to remove resource deploymentGroupServerRef to the instance
+            for (ResourceRef resourceRef : deploymentGroup.getResourceRef()) {
+                CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("delete-resource-ref", report, context.getSubject());
+                ParameterMap parameters = new ParameterMap();
+                parameters.add("target", instance);
+                parameters.add("reference_name", resourceRef.getRef());
+                inv.parameters(parameters).execute();
+            }
+
+        }
     }
-
 }
