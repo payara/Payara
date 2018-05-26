@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,34 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.healthcheck;
+package fish.payara.notification.healthcheck;
+
+import fish.payara.notification.NotificationData;
+
+import java.util.List;
 
 /**
- * Enum for the status level of a health check
- * @author steve
- * @since 4.1.1.161
+ * @author mertcaliskan
  */
-public enum HealthCheckResultStatus {
+public class HealthCheckNotificationData extends NotificationData {
 
-    CHECK_ERROR(1),
-    CRITICAL(2),
-    WARNING(3),
-    GOOD(4),
-    FINE(5);
+    private List<HealthCheckResultEntry> entries;
 
-    private final int level;
-
-    HealthCheckResultStatus(int level) {
-        this.level = level;
+    public HealthCheckNotificationData(List<HealthCheckResultEntry> entries) {
+        this.entries = entries;
     }
 
-    /**
-     * Gets the status level;
-     * 1=CHECK_ERROR, 2=CRITICAL,
-     * 3=WARNING, 4=GOOD, 5=FINE
-     * @return an integer from 1 to 5 inclusive
-     */
-    public int getLevel() {
-        return level;
+    public List<HealthCheckResultEntry> getEntries() {
+        return entries;
     }
 }

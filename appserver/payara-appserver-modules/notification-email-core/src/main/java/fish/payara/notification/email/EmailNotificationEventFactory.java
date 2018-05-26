@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,15 +40,12 @@
 package fish.payara.notification.email;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.domain.NotificationEventFactory;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.PostConstruct;
-import java.text.MessageFormat;
-import java.util.logging.Level;
 
 /**
  * @author mertcaliskan
@@ -62,22 +59,8 @@ public class EmailNotificationEventFactory extends NotificationEventFactory<Emai
         registerEventFactory(NotifierType.EMAIL, this);
     }
 
-    public EmailNotificationEvent buildNotificationEvent(String subject, String message) {
-        EmailNotificationEvent event = initializeEvent(new EmailNotificationEvent());
-        event.setSubject(subject);
-        event.setMessage(message);
-
-        return event;
-    }
-
     @Override
-    public EmailNotificationEvent buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
-        EmailNotificationEvent event = initializeEvent(new EmailNotificationEvent());
-        event.setSubject(subject);
-        if (parameters != null && parameters.length > 0) {
-            message = MessageFormat.format(message, parameters);
-        }
-        event.setMessage(message);
-        return event;
+    protected EmailNotificationEvent createEventInstance() {
+        return new EmailNotificationEvent();
     }
 }
