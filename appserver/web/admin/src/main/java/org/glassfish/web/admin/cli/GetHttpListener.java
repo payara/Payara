@@ -44,7 +44,6 @@ import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.text.MessageFormat;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Logger;
 import javax.inject.Inject;
