@@ -39,8 +39,6 @@
  */
 package fish.payara.micro.cdi.extension;
 
-import com.sun.enterprise.deployment.JndiNameEnvironment;
-import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.Utility;
 import fish.payara.micro.cdi.Outbound;
 import fish.payara.micro.cdi.Inbound;
@@ -71,8 +69,6 @@ import javax.naming.NamingException;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.internal.api.JavaEEContextUtil.Context;
-import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 
 /**
  *
@@ -99,8 +95,6 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     @PostConstruct
     void postConstruct() {
         ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
-        ExtendedDeploymentContext dc = Globals.getDefaultHabitat().getService(Deployment.class).getCurrentDeploymentContext();
-        ctxUtil.setInstanceComponentId(DOLUtils.getComponentEnvId((JndiNameEnvironment)DOLUtils.getCurrentBundleForContext(dc)));
         try {
             InitialContext ctx = new InitialContext();
             managedExecutorService = (ManagedExecutorService) ctx.lookup("java:comp/DefaultManagedExecutorService");
