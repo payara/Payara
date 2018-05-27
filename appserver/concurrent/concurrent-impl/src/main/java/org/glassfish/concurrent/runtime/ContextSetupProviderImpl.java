@@ -37,11 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.Utility;
@@ -70,6 +74,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     private transient InvocationManager invocationManager;
     private transient Deployment deployment;
+    private transient ComponentEnvManager compEnvMgr;
     private transient Applications applications;
     // transactionManager should be null for ContextService since it uses TransactionSetupProviderImpl
     private transient JavaEETransactionManager transactionManager;
@@ -89,11 +94,13 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     public ContextSetupProviderImpl(InvocationManager invocationManager,
             Deployment deployment,
+            ComponentEnvManager compEnvMgr,
             Applications applications,
             JavaEETransactionManager transactionManager,
             CONTEXT_TYPE... contextTypes) {
         this.invocationManager = invocationManager;
         this.deployment = deployment;
+        this.compEnvMgr = compEnvMgr;
         this.applications = applications;
         this.transactionManager = transactionManager;
 
@@ -166,6 +173,26 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (handle.getInvocation() != null) {
             appName = handle.getInvocation().getAppName();
         }
+        if(appName == null && handle.getInvocation().getJNDIEnvironment() != null) {
+            appName = DOLUtils.getApplicationFromEnv((JndiNameEnvironment)handle.getInvocation().getJNDIEnvironment()).getName();
+        }
+        ClassLoader backupClassLoader = null;
+        if (appName == null) {
+            // try to get environment from component ID
+            if(handle.getInvocation().getComponentId() != null && compEnvMgr != null) {
+                JndiNameEnvironment currJndiEnv = compEnvMgr.getJndiNameEnvironment(handle.getInvocation().getComponentId());
+                if(currJndiEnv != null) {
+                    com.sun.enterprise.deployment.Application appInfo = DOLUtils.getApplicationFromEnv(currJndiEnv);
+                    if(appInfo != null) {
+                        appName = appInfo.getName();
+                        // cache JNDI environment
+                        handle.getInvocation().setJNDIEnvironment(currJndiEnv);
+                        backupClassLoader = appInfo.getClassLoader();
+                    }
+                }
+            }
+        }
+
         // Check whether the application component submitting the task is still running. Throw IllegalStateException if not.
         if (!isApplicationEnabled(appName)) {
             throw new IllegalStateException("Module " + appName + " is disabled");
@@ -175,6 +202,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         SecurityContext resetSecurityContext = null;
         if (handle.getContextClassLoader() != null) {
             resetClassLoader = Utility.setContextClassLoader(handle.getContextClassLoader());
+        }
+        else if(backupClassLoader != null) {
+            resetClassLoader = Utility.setContextClassLoader(backupClassLoader);
         }
         if (handle.getSecurityContext() != null) {
             resetSecurityContext = SecurityContext.getCurrent();
@@ -322,6 +352,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         // re-initialize these fields
         invocationManager = concurrentRuntime.getInvocationManager();
         deployment = concurrentRuntime.getDeployment();
+        compEnvMgr = concurrentRuntime.getCompEnvMgr();
         applications = concurrentRuntime.getApplications();
         if (!nullTransactionManager) {
             transactionManager = concurrentRuntime.getTransactionManager();
