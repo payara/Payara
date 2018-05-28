@@ -233,7 +233,7 @@ public class Span extends RequestTraceSpan implements io.opentracing.Span {
      * @return The timestamp in Milliseconds
      */
     private long convertTimestampMicrosToTimestampMillis(long timestampMicroseconds) {
-        return TimeUnit.MICROSECONDS.convert(timestampMicroseconds, TimeUnit.MILLISECONDS);
+        return TimeUnit.MILLISECONDS.convert(timestampMicroseconds, TimeUnit.MICROSECONDS);
     }
 
     /**

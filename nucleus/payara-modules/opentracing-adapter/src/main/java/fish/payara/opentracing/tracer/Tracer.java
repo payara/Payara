@@ -171,11 +171,11 @@ public class Tracer extends ActiveSpanSource implements io.opentracing.Tracer {
                 }
             }
 
-            // If we haven't set a start time manually, set it to now
-            if (microsecondsStartTime == 0) {
+            // If we've specified a start time, set it, otherwise set it to now
+            if (microsecondsStartTime != 0) {
                 span.setStartTime(microsecondsStartTime);
             } else {
-                span.setStartTime(TimeUnit.MILLISECONDS.convert(System.currentTimeMillis(), TimeUnit.MICROSECONDS));
+                span.setStartTime(TimeUnit.MICROSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
             }
 
             return span;
