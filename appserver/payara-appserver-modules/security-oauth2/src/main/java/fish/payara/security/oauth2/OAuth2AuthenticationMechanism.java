@@ -269,7 +269,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
         String result = value;
         Optional<String> configResult = provider.getOptionalValue(mpConfigKey, String.class);
         if (configResult.isPresent()) {
-            result = configResult.get();
+            return configResult.get();
         }
         result = (String) TranslatedConfigView.getTranslatedValue(result);
         if (isELExpression(value)){
