@@ -64,14 +64,14 @@ public class PayaraApplicationHandlers {
     private static final String CLUSTER = "/clusters/cluster/";
     private static final String SERVER = "/servers/server/";
     private static final String DEPLOYMENT_GROUP = "/deployment-groups/deployment-group/";
-    private static final String APPLICATION_REF = "application-ref";
-    private static final String RESOURCE_REF = "resource-ref";
+    private static final String APPLICATION_REF = "/application-ref/";
+    private static final String RESOURCE_REF = "/resource-ref/";
 
     @Handler(id = "py.getApplicationTargetList",
             input = {
                 @HandlerInput(name = "appName", type = String.class, required = true)},
             output = {
-                @HandlerOutput(name = "result", type = java.util.List.class)})
+                @HandlerOutput(name = "result", type = List.class)})
     public static void getTargetListInfo(HandlerContext handlerCtx) {
         String applicationName = (String) handlerCtx.getInputValue("appName");
         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
@@ -136,26 +136,26 @@ public class PayaraApplicationHandlers {
                 @HandlerInput(name = "targetList", type = List.class, required = true),
                 @HandlerInput(name = "resourceName", type = String.class, required = true)},
             output = {
-                @HandlerOutput(name = "slectedTarget", type = List.class)
+                @HandlerOutput(name = "selectedTarget", type = List.class)
             })
     public static void getAllSelectedTarget(HandlerContext handlerCtx) {
         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
 
         List<String> targetList = (List) handlerCtx.getInputValue("targetList");
-        String resourceName = (String) handlerCtx.getInputValue("resName");
+        String resourceName = (String) handlerCtx.getInputValue("resourceName");
         List<String> selectedTargetList = new ArrayList<>();
         String endpoint;
 
         for (String targetName : targetList) {
             endpoint = prefix + CLUSTER + targetName + RESOURCE_REF + resourceName;
-            boolean existsInCluster = checkIfEndPointExist(endpoint);
+            boolean existsInCluster = isEndpointValid(endpoint);
 
             if (!existsInCluster) {
                 endpoint = prefix + DEPLOYMENT_GROUP + targetName + RESOURCE_REF + resourceName;
-                boolean existsInDeploymentGroup = checkIfEndPointExist(endpoint);
+                boolean existsInDeploymentGroup = isEndpointValid(endpoint);
                 if (!existsInDeploymentGroup) {
                     endpoint = prefix + SERVER + targetName + RESOURCE_REF + resourceName;
-                    boolean existsInServer = checkIfEndPointExist(endpoint);
+                    boolean existsInServer = isEndpointValid(endpoint);
                     if (existsInServer) {
                         selectedTargetList.add(targetName);
                     }
@@ -169,11 +169,11 @@ public class PayaraApplicationHandlers {
                 selectedTargetList.add(targetName);
             }
         }
-        
-        handlerCtx.setOutputValue("slectedTarget", selectedTargetList);
+
+        handlerCtx.setOutputValue("selectedTarget", selectedTargetList);
     }
 
-    private static boolean checkIfEndPointExist(String endpoint) {
+    private static boolean isEndpointValid(String endpoint) {
         boolean result = false;
         RestResponse response = null;
 
@@ -182,7 +182,7 @@ public class PayaraApplicationHandlers {
             result = response.isSuccess();
 
         } catch (Exception exception) {
-            GuiUtil.getLogger().info("CheckIfEndPointExist Failed" + exception);
+            GuiUtil.getLogger().info("Invalid endpoint" + exception);
         } finally {
             if (response != null) {
                 response.close();
@@ -198,7 +198,7 @@ public class PayaraApplicationHandlers {
                 @HandlerInput(name = "resourceName", type = String.class, required = true)},
             output = {
                 @HandlerOutput(name = "isPresent", type = Boolean.class)})
-    public static void checkIfResourceIsInInstance(HandlerContext handlerCtx) {
+    public static void isResourceInInstance(HandlerContext handlerCtx) {
         String instanceName = (String) handlerCtx.getInputValue("instanceName");
         String resourceName = (String) handlerCtx.getInputValue("resourceName");
         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
@@ -222,5 +222,39 @@ public class PayaraApplicationHandlers {
         
         handlerCtx.setOutputValue("isPresent", isPresent);
     }
+    
+    
+    @Handler(id = "py.isInstanceInDeploymentGroupWithResource",
+            input = {
+                @HandlerInput(name = "selectedTarget", type = List.class, required = true),
+                @HandlerInput(name = "target", type = String.class, required = true),
+                @HandlerInput(name = "resourceName", type = String.class, required = true)},
+            output = {
+                @HandlerOutput(name = "isPresent", type = Boolean.class)})
+    public static void isInstanceInDeploymentGroupWithResource(HandlerContext handlerCtx) {
+        List<String> selectedTargetList = (List) handlerCtx.getInputValue("selectedTarget");
+        String target = (String) handlerCtx.getInputValue("target");
+        String prefix = (String) GuiUtil.getSessionValue("REST_URL");
+        String resourceName = (String) handlerCtx.getInputValue("resourceName");
+        String endpoint;
+        boolean isPresent = false;
 
+        for (String selectedTarget : selectedTargetList) {
+            if (TargetUtil.isDeploymentGroup(selectedTarget)) {
+                List<String> instancesInDeploymentGroup = TargetUtil.getDGInstances(selectedTarget);
+
+                for (String instance : instancesInDeploymentGroup) {
+                    if (instance.equals(target)) {
+                        endpoint = prefix + DEPLOYMENT_GROUP + selectedTarget + RESOURCE_REF + resourceName;
+                        if (isEndpointValid(endpoint)) {
+                            isPresent = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        handlerCtx.setOutputValue("isPresent", isPresent);
+    }
 }
