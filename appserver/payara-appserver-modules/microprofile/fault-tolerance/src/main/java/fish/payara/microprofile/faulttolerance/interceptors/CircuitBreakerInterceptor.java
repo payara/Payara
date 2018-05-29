@@ -43,7 +43,6 @@ import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPol
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -200,8 +199,6 @@ public class CircuitBreakerInterceptor implements Serializable {
         switch (circuitBreakerState.getCircuitState()) {
             case OPEN:
                 logger.log(Level.FINER, "CircuitBreaker is Open, throwing exception");
-                RequestEvent requestEvent = new RequestEvent("FaultTolerance-CircuitBreakerOpen");
-                faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, invocationContext);
                 
                 // If open, immediately throw an error
                 throw new CircuitBreakerOpenException("CircuitBreaker for method " 

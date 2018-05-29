@@ -181,6 +181,7 @@
          <microprofile-healthcheck.version>1.0</microprofile-healthcheck.version>
          <microprofile-metrics.version>1.1</microprofile-metrics.version>
          <microprofile-rest-client.version>1.0.1</microprofile-rest-client.version>
+        
     </properties>
 
     <modules>
@@ -249,6 +250,7 @@
                             <apiPackage>javax.mail</apiPackage>
                             <implNamespace>com.sun.mail</implNamespace>
                         </spec>
+                        
                         <spec>
                             <artifact>
                                 <groupId>org.glassfish</groupId>

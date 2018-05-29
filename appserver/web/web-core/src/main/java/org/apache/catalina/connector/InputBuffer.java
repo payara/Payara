@@ -72,7 +72,6 @@ import javax.servlet.ReadListener;
 import javax.servlet.http.WebConnection;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.Context;
 import org.apache.catalina.LogFacade;
@@ -471,20 +470,18 @@ public class InputBuffer extends Reader
                             ContainerEvent.BEFORE_READ_LISTENER_ON_DATA_AVAILABLE, readListener);
                         // if it's a Tyrus websocket conn.
                         if (isWebSocketRequest()) {
-                            requestTracing.startTrace();
+                            requestTracing.startTrace("processWebsocketRequest");
                             stuckThreadsStore.registerThread(Thread.currentThread().getId());
                         }
                         readListener.onDataAvailable();
-                        if (isWebSocketRequest()) {
-                            RequestEvent requestEvent = new RequestEvent("WebSocketRequest");
-                            requestTracing.traceRequestEvent(requestEvent);
-                            requestTracing.endTrace();
-                            stuckThreadsStore.deregisterThread(Thread.currentThread().getId());
-                        }
                     } catch(Throwable t) {
                         disable = true;
                         readListener.onError(t);
                     } finally {
+                        if (isWebSocketRequest()) {
+                            requestTracing.endTrace();
+                            stuckThreadsStore.deregisterThread(Thread.currentThread().getId());
+                        }
                         context.fireContainerEvent(
                             ContainerEvent.AFTER_READ_LISTENER_ON_DATA_AVAILABLE, readListener);
                     }
