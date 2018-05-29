@@ -166,7 +166,7 @@ public class SetNetworkListenerConfiguration implements AdminCommand, EventListe
 
     @Override
     public void execute(AdminCommandContext context) {
-        ActionReport actionReport = context.getActionReport();
+        final ActionReport actionReport = context.getActionReport();
 
         Config newConfig = targetUtil.getConfig(target);
         if (newConfig != null) {
@@ -260,7 +260,7 @@ public class SetNetworkListenerConfiguration implements AdminCommand, EventListe
         List<UnprocessedChangeEvent> processed = new ArrayList<>();
         for (UnprocessedChangeEvents unchangedEvents: ucl.getUnprocessedChangeEvents()){
             for (UnprocessedChangeEvent unprocessedEvent: unchangedEvents.getUnprocessed()){
-                PropertyChangeEvent event = unprocessedEvent.getEvent();
+                final PropertyChangeEvent event = unprocessedEvent.getEvent();
                 if (event.getSource().getClass().equals(this.getClass()) && event.getPropertyName().equals("port")){
                     SetNetworkListenerConfiguration oldConfig =  (SetNetworkListenerConfiguration) event.getSource();
                      NetworkListeners listeners = oldConfig.confign.getNetworkListeners();
