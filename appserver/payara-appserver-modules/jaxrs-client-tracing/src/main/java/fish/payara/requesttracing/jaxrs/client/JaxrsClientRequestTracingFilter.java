@@ -39,6 +39,7 @@
  */
 package fish.payara.requesttracing.jaxrs.client;
 
+import fish.payara.notification.requesttracing.EventType;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
@@ -59,6 +60,8 @@ import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.client.ClientResponseContext;
 import javax.ws.rs.client.ClientResponseFilter;
+import javax.ws.rs.container.ResourceInfo;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response.Status.Family;
 import javax.ws.rs.core.Response.StatusType;
@@ -77,6 +80,8 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
     private RequestTracingService requestTracing;
     private OpenTracingService openTracing;
 
+    private static final ThreadLocal<Boolean> traceStartedHere = new ThreadLocal<>();  
+    
     /**
      * Initialises the service variables.
      */
@@ -97,34 +102,49 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
     public void filter(ClientRequestContext requestContext) throws IOException {
         // ***** Request Tracing Service Instrumentation *****
         // If request tracing is enabled, and there's a trace actually in progress, add the propagation headers
-        if (requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()) {
-            // Check that we aren't overwriting a header
-            if (!requestContext.getHeaders().containsKey(PropagationHeaders.PROPAGATED_TRACE_ID)) {
-                requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_TRACE_ID,
-                        requestTracing.getConversationID());
-            }
+        if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+            if (requestTracing.isTraceInProgress()) {
+                // Check that we aren't overwriting a header
+                if (!requestContext.getHeaders().containsKey(PropagationHeaders.PROPAGATED_TRACE_ID)) {
+                    requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_TRACE_ID,
+                            requestTracing.getConversationID());
+                }
 
-            // Check that we aren't overwriting a header
-            if (!requestContext.getHeaders().containsKey(PropagationHeaders.PROPAGATED_PARENT_ID)) {
-                requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_PARENT_ID,
-                        requestTracing.getStartingTraceID());
-            }
+                // Check that we aren't overwriting a header
+                if (!requestContext.getHeaders().containsKey(PropagationHeaders.PROPAGATED_PARENT_ID)) {
+                    requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_PARENT_ID,
+                            requestTracing.getStartingTraceID());
+                }
 
-            // Check that we aren't overwriting a relationship type
-            if (!requestContext.getHeaders().containsKey(PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE)) {
-                if (requestContext.getMethod().equals("POST")) {
-                    requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE,
-                            RequestTraceSpan.SpanContextRelationshipType.FollowsFrom);
-                } else {
-                    requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE,
-                            RequestTraceSpan.SpanContextRelationshipType.ChildOf);
+                // Check that we aren't overwriting a relationship type
+                if (!requestContext.getHeaders().containsKey(PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE)) {
+                    if (requestContext.getMethod().equals("POST")) {
+                        requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE,
+                                RequestTraceSpan.SpanContextRelationshipType.FollowsFrom);
+                    } else {
+                        requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE,
+                                RequestTraceSpan.SpanContextRelationshipType.ChildOf);
+                    }
                 }
             }
+            
 
             // ***** OpenTracing Instrumentation *****
+            InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(
+                    InvocationManager.class);
+            
+            // If there isn't a request trace in progress, this should mean that we're on a concurrent thread
+            // This is required because Jersey 2.25.1 doesn't use a Managed Executor
+            if (!requestTracing.isTraceInProgress()) {
+                createAndStartTrace(invocationManager);
+            } else {
+                traceStartedHere.set(Boolean.FALSE);
+            }
+            
             // Get or create the tracer instance for this application
-            Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
-                    Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
+            Tracer tracer = openTracing.getTracer(
+                    openTracing.getApplicationName(invocationManager), 
+                    traceStartedHere.get());
 
             // Build a span with the required MicroProfile Opentracing tags
             SpanBuilder spanBuilder = tracer.buildSpan(requestContext.getMethod())
@@ -162,8 +182,9 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
         // If request tracing is enabled, and there's a trace actually in progress, add info about method
         if (requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()) {
             // Get the active span from the application's tracer instance
-            try (ActiveSpan activeSpan = openTracing.getTracer(openTracing.getApplicationName(
-                    serviceLocator.getService(InvocationManager.class)))
+            try (ActiveSpan activeSpan = openTracing.getTracer(
+                    openTracing.getApplicationName(serviceLocator.getService(InvocationManager.class)), 
+                    traceStartedHere.get())
                     .activeSpan()) {
                 // Get the response status and add it to the active span
                 StatusType statusInfo = responseContext.getStatusInfo();
@@ -176,7 +197,50 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
                     activeSpan.log(Collections.singletonMap("error.object", statusInfo.getFamily()));
                 }
             }
+            
+            // If we started a trace on this thread because it's asynchronous, end it.
+            if (traceStartedHere.get() != null && traceStartedHere.get()) {
+                requestTracing.endTrace();
+                traceStartedHere.set(Boolean.FALSE);
+            }
         }
+    }
+    
+    /**
+     * Helper method that creates and starts a trace in the Request Tracing Service to wrap around the OpenTracing
+     * Span.
+     * 
+     * @param invocationManager The Invocation Manager Service
+     */
+    private void createAndStartTrace(InvocationManager invocationManager) {
+        RequestTraceSpan span = new RequestTraceSpan(EventType.TRACE_START, "executeAsynchronousJaxrsRequest");
+
+        String appName = invocationManager.getCurrentInvocation().getAppName();
+        String componentId = invocationManager.getCurrentInvocation().getComponentId();
+        String moduleName = invocationManager.getCurrentInvocation().getModuleName();
+        String instanceName = invocationManager.getCurrentInvocation().getInstanceName();
+
+        if (appName != null && !appName.equals("")) {
+            span.addSpanTag("App Name", appName);
+        }
+
+        if (componentId != null && !componentId.equals("")) {
+            span.addSpanTag("Component ID", componentId);
+        }
+
+        if (moduleName != null && !moduleName.equals("")) {
+            span.addSpanTag("Module Name", moduleName);
+        }
+
+        if (instanceName != null && !instanceName.equals("")) {
+            span.addSpanTag("Instance Name", instanceName);
+        }
+
+        span.addSpanTag("Thread Name", Thread.currentThread().getName());
+        
+        requestTracing.startTrace(span);
+        
+        traceStartedHere.set(Boolean.TRUE);
     }
 
     /**
