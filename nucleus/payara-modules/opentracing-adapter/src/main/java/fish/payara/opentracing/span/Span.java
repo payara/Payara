@@ -222,7 +222,6 @@ public class Span extends RequestTraceSpan implements io.opentracing.Span {
      */
     public void setStartTime(long startTimeMicros) {
         // Convert the timestamp to that required by the Request Tracing Service and pass through
-        super.setTimestamp(TimeUnit.NANOSECONDS.convert(startTimeMicros, TimeUnit.MICROSECONDS));
         super.setTimeOccured(convertTimestampMicrosToTimestampMillis(startTimeMicros));
     }
 
