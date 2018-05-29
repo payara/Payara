@@ -259,7 +259,7 @@
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.1</jax-rs-api.impl.version>
-        <jersey.version>2.27.payara-p3</jersey.version>
+        <jersey.version>2.27.payara-p4</jersey.version>
 
         <!-- Bean Validation -->
         <javax.validation.version>2.0.0.Final</javax.validation.version>

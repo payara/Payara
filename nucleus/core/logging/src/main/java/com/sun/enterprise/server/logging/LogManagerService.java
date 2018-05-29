@@ -185,6 +185,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private static final String PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.maxHistoryFiles";
     private static final String PAYARA_NOTIFICATION_LOG_COMPRESS_ON_ROTATION_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation";
     
+    private static final String PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG = "Payara Notification Service isn't using a separate Log File";
     /**
      * @deprecated for backwards compatibility pre-5.182
      */
@@ -657,7 +658,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                             }
                                             payaraNotificationLogFileDetail = val;
                                         } else {
-                                            LOGGER.log(Level.INFO, "Payara Notification Service isn't using a separate Log File ");
+                                            LOGGER.log(Level.INFO, PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG);
                                         }
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOGTOFILE_PROPERTY)) {
@@ -675,7 +676,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                             }
                                             payaraNotificationlogToFileDetail = val;
                                         } else {
-                                            LOGGER.log(Level.INFO, "Payara Notification Service isn't using a separate Log File ");
+                                            LOGGER.log(Level.INFO, PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG);
                                         }
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY)) {
@@ -692,7 +693,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                             }
                                             payaraNotificationLogRotationOnTimeLimitInMinutesDetail = val;
                                         } else {
-                                            LOGGER.log(Level.INFO, "Payara Notification Service isn't using a separate Log File ");
+                                            LOGGER.log(Level.INFO, PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG);
                                         }
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY)) {
@@ -709,7 +710,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                             }
                                             payaraNotificationLogRotationLimitInBytesDetail = val;
                                         } else {
-                                            LOGGER.log(Level.INFO, "Payara Notification Service isn't using a separate Log File ");
+                                            LOGGER.log(Level.INFO, PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG);
                                         }
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY)) {
@@ -727,7 +728,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                             }
                                             payaraNotificationLogmaxHistoryFilesDetail = val;
                                         } else {
-                                            LOGGER.log(Level.INFO, "Payara Notification Service isn't using a separate Log File ");
+                                            LOGGER.log(Level.INFO, PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG);
                                         }
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_COMPRESS_ON_ROTATION_PROPERTY)) {
@@ -745,7 +746,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                             }
                                             payaraNotificationLogCompressOnRotationDetail = val;
                                         } else {
-                                            LOGGER.log(Level.INFO, "Payara Notification Service isn't using a separate Log File ");
+                                            LOGGER.log(Level.INFO, PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG);
                                         }
                                     }
                                 }

@@ -52,7 +52,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.FieldPosition;
 import java.text.ParseException;
@@ -182,7 +181,6 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     private Thread pump;
 
     boolean dayBasedFileRotation = false;
-    //boolean compressLogs = false;
 
     private String RECORD_BEGIN_MARKER = "[#|";
     private String RECORD_END_MARKER = "|#]";
@@ -419,12 +417,12 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         dayBasedFileRotation = true;
         rotationTimeLimitValue = 0L;
 
-        int MILLISECONDS_IN_DAY = 1000 * 60 * 60 * 24;
+        int millisecondsInDay = 1000 * 60 * 60 * 24;
         Date date = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yy");
 
         long systemTime = System.currentTimeMillis();
-        String nextDate = dateFormat.format(date.getTime() + MILLISECONDS_IN_DAY);
+        String nextDate = dateFormat.format(date.getTime() + millisecondsInDay);
         Date nextDay = null;
 
         try {
@@ -482,13 +480,12 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         }
 }
     
-    private void rotationOnFileSizeLimit(String propertyValue){
-        if (rotationLimitAttrValue == null)
-          // Also honor the size based rotation if configured.
-        rotationLimitAttrValue = DEFAULT_ROTATION_LIMIT_BYTES;
-        try {          
+    private void rotationOnFileSizeLimit(String propertyValue) {
+        try {
             if (propertyValue != null) {
                 rotationLimitAttrValue = Integer.parseInt(propertyValue);
+            } else {
+                rotationLimitAttrValue = DEFAULT_ROTATION_LIMIT_BYTES;
             }
         } catch (NumberFormatException e) {
             logRecord = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);

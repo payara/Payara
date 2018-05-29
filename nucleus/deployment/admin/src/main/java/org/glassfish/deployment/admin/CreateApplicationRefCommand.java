@@ -225,14 +225,14 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
         Iterator it = matchedVersions.iterator();
         while (it.hasNext()) {
             String appName = (String) it.next();
-            Application app = applications.getApplication(appName);
+            Application applicationInfo = applications.getApplication(appName);
             List<DeploymentGroup> deploymentGroups = domain.getDeploymentGroupsForInstance(target);
             boolean isAppOnDeploymentGroupInstance = false;
 
-            if (deploymentGroups != null && deploymentGroups.size() > 0) {
-                List<Application> applications = domain.getApplicationsInTarget(target);
+            if (deploymentGroups != null && deploymentGroups.isEmpty()) {
+                List<Application> applicationsInTarget = domain.getApplicationsInTarget(target);
                 List<String> listOfApplications = new ArrayList<>();
-                for (Application application : applications) {
+                for (Application application : applicationsInTarget) {
                     listOfApplications.add(application.getName());
                 }
                 if (listOfApplications.contains(appName)) {
@@ -260,7 +260,7 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
                 } else {
 
                     Transaction t = new Transaction();
-                    if (app.isLifecycleModule()) {
+                    if (applicationInfo.isLifecycleModule()) {
                         handleLifecycleModule(context, t);
                         return;
                     }
@@ -272,7 +272,7 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
                     Map<String, Properties> modulePropsMap = null;
                     ApplicationConfigInfo savedAppConfig = null;
                     try {
-                        commandParams = app.getDeployParameters(null);
+                        commandParams = applicationInfo.getDeployParameters(null);
                         commandParams.origin = Origin.create_application_ref;
                         commandParams.command = Command.create_application_ref;
                         commandParams.target = target;
@@ -281,13 +281,13 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
                         if (lbenabled != null) {
                             commandParams.lbenabled = lbenabled;
                         }
-                        commandParams.type = app.archiveType();
+                        commandParams.type = applicationInfo.archiveType();
 
-                        contextProps = app.getDeployProperties();
-                        modulePropsMap = app.getModulePropertiesMap();
-                        savedAppConfig = new ApplicationConfigInfo(app);
+                        contextProps = applicationInfo.getDeployProperties();
+                        modulePropsMap = applicationInfo.getModulePropertiesMap();
+                        savedAppConfig = new ApplicationConfigInfo(applicationInfo);
 
-                        URI uri = new URI(app.getLocation());
+                        URI uri = new URI(applicationInfo.getLocation());
                         file = new File(uri);
 
                         if (!file.exists()) {
@@ -314,7 +314,7 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
 
                         // relativize the location so it could be set properly in
                         // domain.xml
-                        String location = DeploymentUtils.relativizeWithinDomainIfPossible(new URI(app.getLocation()));
+                        String location = DeploymentUtils.relativizeWithinDomainIfPossible(new URI(applicationInfo.getLocation()));
                         appProps.setProperty(ServerTags.LOCATION, location);
 
                         // relativize the URI properties so they could store in the
@@ -344,7 +344,7 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
                         }
 
                         if (domain.isCurrentInstanceMatchingTarget(target, appName, server.getName(), null)) {
-                            deployment.deploy(deployment.getSniffersFromApp(app), deploymentContext);
+                            deployment.deploy(deployment.getSniffersFromApp(applicationInfo), deploymentContext);
                         } else {
                             // send the APPLICATION_PREPARED event for DAS
                             events.send(new Event<DeploymentContext>(Deployment.APPLICATION_PREPARED, deploymentContext), false);
@@ -464,7 +464,7 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
                 paramMap.add(DeploymentProperties.VIRTUAL_SERVERS, 
                     virtualservers);
             }
-            // pass the app props so we have the information to persist in the
+            // pass the applicationInfo props so we have the information to persist in the
             // domain.xml
             Properties appProps = app.getDeployProperties();
             paramMap.set(DeploymentProperties.APP_PROPS, DeploymentUtils.propertiesValue(appProps, ':'));

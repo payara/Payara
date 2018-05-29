@@ -46,6 +46,7 @@ import com.sun.enterprise.config.serverbeans.Server;
 import fish.payara.enterprise.config.serverbeans.DGServerRef;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroups;
+import java.util.Arrays;
 import java.util.List;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
@@ -65,7 +66,6 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 
 /**
@@ -90,71 +90,77 @@ public class AddInstanceToDeploymentGroupCommand implements AdminCommand {
     String instanceName;
 
     @Param(name = "deploymentGroup")
-    String deploymentGroup;
-        
+    String deploymentGroupName;
+
     @Inject
     private Domain domain;
-    
+
     @Inject
     ServerEnvironment env;
-    
+
     @Inject
     CommandRunner commandRunner;
 
     @Override
     public void execute(AdminCommandContext context) {
 
-        Server server = domain.getServerNamed(instanceName);
         ActionReport report = context.getActionReport();
-        if (server == null && env.isDas()) {
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage("Instance " + instanceName + " does not exist");
-            return;
-        }
 
-        DeploymentGroup dg = domain.getDeploymentGroupNamed(deploymentGroup);
-        if (dg == null && env.isDas()) {
+        DeploymentGroup deploymentGroup = domain.getDeploymentGroupNamed(deploymentGroupName);
+        if (deploymentGroup == null && env.isDas()) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("Deployment Group " + deploymentGroup + " does not exist");
             return;
         }
 
-        // OK set up the reference
-        try {
-            ConfigSupport.apply((DeploymentGroup dg1) -> {
-                DGServerRef ref = dg1.createChild(DGServerRef.class);
-                ref.setRef(instanceName);
-                dg1.getDGServerRef().add(ref);
-                return ref;
-            }, dg);
+        List<String> instances = Arrays.asList(instanceName.split(","));
 
-        } catch (TransactionFailure e) {
-            report.setMessage("Failed to add instance to deployment group");
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setFailureCause(e);
-        }
-        
-        // now run the command to add application ref to the instance
-        for (ApplicationRef applicationRef : dg.getApplicationRef()) {
-            CommandInvocation inv = commandRunner.getCommandInvocation("create-application-ref", report, context.getSubject());
-            ParameterMap parameters = new ParameterMap();
-            parameters.add("target", instanceName);
-            parameters.add("name", applicationRef.getRef());
-            parameters.add("virtualservers", applicationRef.getVirtualServers());
-            parameters.add("enabled", applicationRef.getEnabled());
-            parameters.add("lbenabled", applicationRef.getLbEnabled());
-            inv.parameters(parameters).execute();
-        }
-        
-        // for all resource refs add resource ref to instance
-        for (ResourceRef resourceRef : dg.getResourceRef()) {
-            CommandInvocation inv = commandRunner.getCommandInvocation("create-resource-ref", report, context.getSubject());
-            ParameterMap parameters = new ParameterMap();
-            parameters.add("target", instanceName);
-            parameters.add("reference_name", resourceRef.getRef());
-            parameters.add("enabled", resourceRef.getEnabled());
-            inv.parameters(parameters).execute();
-            
+        for (String instance : instances) {
+            Server server = domain.getServerNamed(instance);
+
+            if (server == null && env.isDas()) {
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage("Instance " + instance + " does not exist");
+                return;
+            }
+
+            // OK set up the reference
+            try {
+                ConfigSupport.apply((DeploymentGroup dg1) -> {
+                    DGServerRef deploymentGroupServerRef = dg1.createChild(DGServerRef.class);
+                    deploymentGroupServerRef.setRef(instance);
+                    dg1.getDGServerRef().add(deploymentGroupServerRef);
+                    return deploymentGroupServerRef;
+                }, deploymentGroup);
+
+            } catch (TransactionFailure e) {
+                report.setMessage("Failed to add instance to deployment group");
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setFailureCause(e);
+            }
+
+            // now run the command to add application ref to the instance
+            for (ApplicationRef applicationRef : deploymentGroup.getApplicationRef()) {
+                CommandInvocation inv = commandRunner.getCommandInvocation("create-application-ref", report, context.getSubject());
+                ParameterMap parameters = new ParameterMap();
+                parameters.add("target", instance);
+                parameters.add("name", applicationRef.getRef());
+                parameters.add("virtualservers", applicationRef.getVirtualServers());
+                parameters.add("enabled", applicationRef.getEnabled());
+                parameters.add("lbenabled", applicationRef.getLbEnabled());
+                inv.parameters(parameters).execute();
+            }
+
+            // for all resource refs add resource ref to instance
+            for (ResourceRef resourceRef : deploymentGroup.getResourceRef()) {
+                CommandInvocation inv = commandRunner.getCommandInvocation("create-resource-ref", report, context.getSubject());
+                ParameterMap parameters = new ParameterMap();
+                parameters.add("target", instance);
+                parameters.add("reference_name", resourceRef.getRef());
+                parameters.add("enabled", resourceRef.getEnabled());
+                inv.parameters(parameters).execute();
+
+            }
         }
     }
 
