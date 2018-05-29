@@ -589,7 +589,7 @@ public class KernelLoggerInfo {
     public static final String badAddress = LOGMSG_PREFIX + "-00086";
 
     @LogMessageInfo(
-            message = "Grizzly Framework {0} started in: {1}ms - bound to [{2}]",
+            message = "Grizzly {0} started in: {1}ms - bound to {2}",
             level = "INFO")
     public static final String grizzlyStarted = LOGMSG_PREFIX + "-00087";
     
@@ -649,9 +649,14 @@ public class KernelLoggerInfo {
     public static final String checkpointAutoResumeDone = LOGMSG_PREFIX + "-00096";
 
     @LogMessageInfo(
-            message = "Grizzly Framework {0} could not start - unable to bind to [{1}]",
+            message = "Network Listener `{0}` could not start - unable to bind to [{1}]",
             level = "INFO")
-    public static final String grizzlyUnableToBind = LOGMSG_PREFIX + "-00097";
+    public static final String listenerUnableToBind = LOGMSG_PREFIX + "-00097";
+
+    @LogMessageInfo(
+            message = "Network Listener {0} started in: {1}ms - bound to [{2}]",
+            level = "INFO")
+    public static final String listenerStarted = LOGMSG_PREFIX + "-00101";
     
     @LogMessageInfo(
             message = "Propagated trace ID \"{0}\" is not a valid UUID - starting a new trace instead",

@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 -->
 
 <!-- grizzly/networkListeners.jsf -->
@@ -113,6 +114,11 @@
         setPageSessionAttribute(key="rest-api" value="true");
 
         gf.getNetworkListeners(configName="#{pageSession.configName}", result="#{requestScope.listOfRows}");
+
+        foreach (var="listener" list="#{requestScope.listOfRows}") {
+            py.resolveDynamicPort(listenerName="#{listener.name}" result="#{listener.port}");
+        }
+
         createMap(result="#{pageSession.valueMap}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18n_web.msg.JS.confirmDeleteNL}");
