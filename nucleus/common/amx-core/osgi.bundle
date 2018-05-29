@@ -37,8 +37,12 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright [2018] Payara Foundation and/or affiliates
 
 -exportcontents: \
+                fish.payara.admin.amx; \
+                fish.payara.admin.amx.cli; \
+                fish.payara.admin.amx.config; \
 		org.glassfish.admin.amx.util; \
 		org.glassfish.admin.amx.util.jmx; \
 		org.glassfish.admin.amx.util.jmx.stringifier; \

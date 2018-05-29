@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 package fish.payara.microprofile.healthcheck.servlet;
 
 import fish.payara.microprofile.healthcheck.HealthCheckService;
+import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -70,16 +71,21 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
         if (ctx.getContextPath().isEmpty()) {
             // Check if there is already a servlet for healthcheck
             Map<String, ? extends ServletRegistration> registrations = ctx.getServletRegistrations();
+            MetricsHealthCheckConfiguration configuration = Globals.getDefaultHabitat().getService(MetricsHealthCheckConfiguration.class);
+            
+            if (!Boolean.parseBoolean(configuration.getEnabled())){
+                return; //MP Healthcheck disabled
+            }
+            
             for (ServletRegistration reg : registrations.values()) {
-                if (reg.getClass().equals(HealthCheckServlet.class)) {
+                if (reg.getClass().equals(HealthCheckServlet.class) || reg.getMappings().contains("/" + configuration.getEndpoint())) {
                     return;
                 }
             }
             
             // Register servlet
-            ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-healthcheck-servlet", 
-                    HealthCheckServlet.class);
-            reg.addMapping("/health");
+            ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-healthcheck-servlet", HealthCheckServlet.class);
+            reg.addMapping("/" + configuration.getEndpoint());
         }
         
         // Get the BeanManager

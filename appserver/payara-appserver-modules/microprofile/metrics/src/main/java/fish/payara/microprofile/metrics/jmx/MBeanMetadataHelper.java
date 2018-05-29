@@ -42,6 +42,7 @@ package fish.payara.microprofile.metrics.jmx;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.management.ObjectName;
@@ -116,7 +117,11 @@ public class MBeanMetadataHelper {
                 try {
                     mBeanExpression = new MBeanExpression(metadata.getMBean().replace(SPECIFIER, "*"));
                     String dynamicKey = mBeanExpression.findDynamicKey();
-                    for (ObjectName objName : mBeanExpression.queryNames(null)) {
+                    Set<ObjectName> mBeanObjects = mBeanExpression.queryNames(null);
+                    if (mBeanObjects.isEmpty()){
+                        LOGGER.log(Level.SEVERE, "{0} is invalid", metadata.getMBean());
+                    }
+                    for (ObjectName objName : mBeanObjects) {
                         String dynamicValue = objName.getKeyPropertyList().get(dynamicKey);
                         resolvedMetadataList.add(new MBeanMetadata(
                                 objName.getCanonicalName() + "/" + mBeanExpression.getAttributeName(),

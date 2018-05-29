@@ -60,13 +60,13 @@ import org.jvnet.hk2.config.types.PropertyBag;
  */
 @Configured
 public interface NetworkListener extends ConfigBeanProxy, PropertyBag {
+
     boolean ENABLED = true;
     boolean JK_ENABLED = false;
     String DEFAULT_ADDRESS = "0.0.0.0";
     String DEFAULT_CONFIGURATION_FILE = "${com.sun.aas.instanceRoot}/config/glassfish-jk.properties";
     String TYPE_PATTERN = "(standard|proxy)";
     String DEFAULT_TYPE = "standard";
-    
 
     /**
      * IP address to listen on
@@ -123,6 +123,12 @@ public interface NetworkListener extends ConfigBeanProxy, PropertyBag {
     String getPort();
 
     void setPort(String value);
+    
+    @Attribute(required = false, dataType = String.class)
+    @Pattern(regexp = "^[0-9]{1,5},[0-9]{1,5}$", message = "PortRange must be in the form: 'port,port'.")
+    String getPortRange();
+
+    void setPortRange(String value);
 
     /**
      * Reference to a protocol
