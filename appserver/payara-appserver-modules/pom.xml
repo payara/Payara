@@ -73,8 +73,8 @@
         <module>cdi-auth-roles</module>
         <module>opentracing-cdi</module>
         <module>jaxrs-client-tracing</module>
+        <module>yubikey-authentication</module>
     </modules>
-
     <profiles>
         <profile>
             <id>jdk8</id>
@@ -88,3 +88,4 @@
         </profile>
     </profiles>
 </project>
+

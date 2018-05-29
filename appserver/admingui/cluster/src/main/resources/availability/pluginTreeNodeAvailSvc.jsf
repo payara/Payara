@@ -38,6 +38,8 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    # Portions Copyright [2018] [Payara Foundation and/or its affiliates]]
+
 -->
 
 <sun:treeNode
@@ -45,14 +47,9 @@ id="availabilityService"
 text="$resource{i18ncs.tree.availsvc}"
 url="/cluster/availability/availabilityService.jsf?configName=${configName}"
 imageURL="/resource/cluster/images/availabilityservice.gif"
-rendered="$pageSession{availShowIt}"
 >
 <!beforeCreate
     setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
-    setPageSessionAttribute(key="availShowIt" value="$boolean{false}");
-    if ("!(server-config=${configName})") {
-        setPageSessionAttribute(key="availShowIt" value="$boolean{true}");
-    }
 />
 </sun:treeNode>
 

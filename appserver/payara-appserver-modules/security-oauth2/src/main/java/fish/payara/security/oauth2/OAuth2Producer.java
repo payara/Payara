@@ -49,7 +49,7 @@ import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
 
-import fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition;
+import fish.payara.security.annotations.OAuth2AuthenticationDefinition;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.UUID;

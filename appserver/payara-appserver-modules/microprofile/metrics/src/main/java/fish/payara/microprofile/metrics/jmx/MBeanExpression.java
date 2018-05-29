@@ -105,7 +105,7 @@ public class MBeanExpression {
 
     public String findDynamicKey() {
         for (Map.Entry<String, String> entry : objectName.getKeyPropertyList().entrySet()) {
-            if (entry.getValue().equals("*")) {
+            if (entry.getValue().contains("*")) {
                 return entry.getKey();
             }
         }

@@ -8,6 +8,7 @@ appserver/packager/pkg_conf.py
 target/
 *~
 *.iml
+*nbactions.xml
 .vscode/
 .idea
 gfbuild.log
