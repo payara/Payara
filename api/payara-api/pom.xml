@@ -52,6 +52,11 @@
     <name>Payara-API</name>
     <description>Artefact that exposes public API of Payara Application Server</description>
 
+    <properties>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+    </properties>
+
     <developers>
         <developer>
             <id>smillidge</id>
@@ -78,16 +83,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
                 <configuration>
-                    <source>${java.compiler.source.version}</source>
-                    <target>${java.compiler.target.version}</target>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.0.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -101,7 +104,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.4</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -115,6 +117,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
+                <version>2.4.0</version>
                 <executions>
                     <execution>
                         <id>bundle-manifest</id>
@@ -125,8 +128,6 @@
                         <configuration>
                             <instructions>
                                 <Import-Package>
-                                    fish.payara.nucleus.notification.domain,
-                                    fish.payara.nucleus.notification.service,
                                     fish.payara.cdi.jsr107.implementation,
                                     javax.inject,
                                     javax.enterprise.util,
@@ -139,15 +140,16 @@
                                     fish.payara.cdi.jsr107.impl,
                                     fish.payara.cluster,
                                     fish.payara.micro.cdi,
-                                    fish.payara.nucleus.requesttracing.api,
                                     fish.payara.notification.eventbus,
-                                    fish.payara.nucleus.notification.domain,
-                                    fish.payara.nucleus.notification.service,
                                     fish.payara.notification.healthcheck,
                                     fish.payara.notification.requesttracing,
+                                    fish.payara.nucleus.requesttracing.api,
                                     fish.payara.security.oauth2.annotation,
                                     fish.payara.security.oauth2.api
                                 </Export-Package>
+                                <_exportcontents>
+                                    fish.payara.notification
+                                </_exportcontents>
                             </instructions>
                         </configuration>
                     </execution>
@@ -186,7 +188,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <configuration>  
+                        <configuration>
                             <excludes>
                                 <exclude>fish/payara/security/oauth2/annotation/OAuth2AuthenticationDefinition.java</exclude>
                                 <exclude>fish/payara/security/oauth2/api/OAuthIdentityStore.java</exclude>
@@ -198,6 +200,7 @@
                     <plugin>
                         <groupId>org.apache.felix</groupId>
                         <artifactId>maven-bundle-plugin</artifactId>
+                        <version>2.4.0</version>
                         <executions>
                             <execution>
                                 <id>bundle-manifest</id>
@@ -208,8 +211,6 @@
                                 <configuration>
                                     <instructions>
                                         <Import-Package>
-                                            fish.payara.nucleus.notification.domain,
-                                            fish.payara.nucleus.notification.service,
                                             fish.payara.cdi.jsr107.implementation,
                                             javax.inject,
                                             javax.enterprise.util,
@@ -222,11 +223,12 @@
                                             fish.payara.micro.cdi,
                                             fish.payara.nucleus.requesttracing.api,
                                             fish.payara.notification.eventbus,
-                                            fish.payara.nucleus.notification.domain,
-                                            fish.payara.nucleus.notification.service,
                                             fish.payara.notification.healthcheck,
-                                            fish.payara.notification.requesttracing,
+                                            fish.payara.notification.requesttracing
                                         </Export-Package>
+                                        <_exportcontents>
+                                            fish.payara.notification
+                                        </_exportcontents>
                                     </instructions>
                                 </configuration>
                             </execution>
@@ -254,6 +256,7 @@
                     <plugin>
                         <groupId>org.apache.felix</groupId>
                         <artifactId>maven-bundle-plugin</artifactId>
+                        <version>2.4.0</version>
                         <executions>
                             <execution>
                                 <id>bundle-manifest</id>
@@ -264,8 +267,6 @@
                                 <configuration>
                                     <instructions>
                                         <Import-Package>
-                                            fish.payara.nucleus.notification.domain,
-                                            fish.payara.nucleus.notification.service,
                                             fish.payara.cdi.jsr107.implementation,
                                             javax.inject,
                                             javax.enterprise.util,
@@ -280,13 +281,14 @@
                                             fish.payara.micro.cdi,
                                             fish.payara.nucleus.requesttracing.api,
                                             fish.payara.notification.eventbus,
-                                            fish.payara.nucleus.notification.domain,
-                                            fish.payara.nucleus.notification.service,
                                             fish.payara.notification.healthcheck,
                                             fish.payara.notification.requesttracing,
                                             fish.payara.security.oauth2.annotation,
                                             fish.payara.security.oauth2.api
                                         </Export-Package>
+                                        <_exportcontents>
+                                            fish.payara.notification
+                                        </_exportcontents>
                                     </instructions>
                                 </configuration>
                             </execution>

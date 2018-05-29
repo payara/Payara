@@ -37,15 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.Utility;
+import fish.payara.notification.requesttracing.EventType;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.concurrent.LogFacade;
@@ -62,7 +67,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
 import org.glassfish.internal.api.Globals;
 
@@ -70,15 +74,18 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     private transient InvocationManager invocationManager;
     private transient Deployment deployment;
+    private transient ComponentEnvManager compEnvMgr;
     private transient Applications applications;
     // transactionManager should be null for ContextService since it uses TransactionSetupProviderImpl
     private transient JavaEETransactionManager transactionManager;
 
-    private static final Logger logger  = LogFacade.getLogger();
+    private static final Logger logger = LogFacade.getLogger();
 
     static final long serialVersionUID = -1095988075917755802L;
 
-    static enum CONTEXT_TYPE {CLASSLOADING, SECURITY, NAMING, WORKAREA}
+    static enum CONTEXT_TYPE {
+        CLASSLOADING, SECURITY, NAMING, WORKAREA
+    }
 
     private boolean classloading, security, naming, workArea;
 
@@ -86,15 +93,17 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     private StuckThreadsStore stuckThreads;
 
     public ContextSetupProviderImpl(InvocationManager invocationManager,
-                                    Deployment deployment,
-                                    Applications applications,
-                                    JavaEETransactionManager transactionManager,
-                                    CONTEXT_TYPE... contextTypes) {
+            Deployment deployment,
+            ComponentEnvManager compEnvMgr,
+            Applications applications,
+            JavaEETransactionManager transactionManager,
+            CONTEXT_TYPE... contextTypes) {
         this.invocationManager = invocationManager;
         this.deployment = deployment;
+        this.compEnvMgr = compEnvMgr;
         this.applications = applications;
         this.transactionManager = transactionManager;
-        
+
         try {
             this.requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
         } catch (NullPointerException ex) {
@@ -107,9 +116,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             logger.log(Level.INFO, "Error retrieving Stuck Threads Sore Healthcheck service "
                     + "during initialisation of Concurrent Context - NullPointerException");
         }
-        
-        for (CONTEXT_TYPE contextType: contextTypes) {
-            switch(contextType) {
+
+        for (CONTEXT_TYPE contextType : contextTypes) {
+            switch (contextType) {
                 case CLASSLOADING:
                     classloading = true;
                     break;
@@ -154,7 +163,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     @Override
     public ContextHandle setup(ContextHandle contextHandle) throws IllegalStateException {
-        if (! (contextHandle instanceof InvocationContext)) {
+        if (!(contextHandle instanceof InvocationContext)) {
             logger.log(Level.SEVERE, LogFacade.UNKNOWN_CONTEXT_HANDLE);
             return null;
         }
@@ -164,6 +173,26 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (handle.getInvocation() != null) {
             appName = handle.getInvocation().getAppName();
         }
+        if(appName == null && handle.getInvocation().getJNDIEnvironment() != null) {
+            appName = DOLUtils.getApplicationFromEnv((JndiNameEnvironment)handle.getInvocation().getJNDIEnvironment()).getName();
+        }
+        ClassLoader backupClassLoader = null;
+        if (appName == null) {
+            // try to get environment from component ID
+            if(handle.getInvocation().getComponentId() != null && compEnvMgr != null) {
+                JndiNameEnvironment currJndiEnv = compEnvMgr.getJndiNameEnvironment(handle.getInvocation().getComponentId());
+                if(currJndiEnv != null) {
+                    com.sun.enterprise.deployment.Application appInfo = DOLUtils.getApplicationFromEnv(currJndiEnv);
+                    if(appInfo != null) {
+                        appName = appInfo.getName();
+                        // cache JNDI environment
+                        handle.getInvocation().setJNDIEnvironment(currJndiEnv);
+                        backupClassLoader = appInfo.getClassLoader();
+                    }
+                }
+            }
+        }
+
         // Check whether the application component submitting the task is still running. Throw IllegalStateException if not.
         if (!isApplicationEnabled(appName)) {
             throw new IllegalStateException("Module " + appName + " is disabled");
@@ -173,6 +202,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         SecurityContext resetSecurityContext = null;
         if (handle.getContextClassLoader() != null) {
             resetClassLoader = Utility.setContextClassLoader(handle.getContextClassLoader());
+        }
+        else if(backupClassLoader != null) {
+            resetClassLoader = Utility.setContextClassLoader(backupClassLoader);
         }
         if (handle.getSecurityContext() != null) {
             resetSecurityContext = SecurityContext.getCurrent();
@@ -188,38 +220,37 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (transactionManager != null) {
             transactionManager.clearThreadTx();
         }
-        
+
         if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
-            RequestEvent requestEvent = constructConcurrentContextEvent(invocation);
-            requestTracing.traceRequestEvent(requestEvent);
+            RequestTraceSpan span = constructConcurrentContextSpan(invocation);
+            requestTracing.startTrace(span);
         }
-        
-        if (stuckThreads != null){
+
+        if (stuckThreads != null) {
             stuckThreads.registerThread(Thread.currentThread().getId());
         }
-        
+
         return new InvocationContext(invocation, resetClassLoader, resetSecurityContext, handle.isUseTransactionOfExecutionThread());
     }
 
-    private RequestEvent constructConcurrentContextEvent(ComponentInvocation invocation) {
-        requestTracing.startTrace();
-        RequestEvent requestEvent = new RequestEvent("ConcurrentContextTrace");
-        
-        requestEvent.addProperty("App Name", invocation.getAppName());
-        requestEvent.addProperty("Component ID", invocation.getComponentId());
-        requestEvent.addProperty("Module Name", invocation.getModuleName());
+    private RequestTraceSpan constructConcurrentContextSpan(ComponentInvocation invocation) {
+        RequestTraceSpan span = new RequestTraceSpan(EventType.TRACE_START, "executeConcurrentContext");
+
+        span.addSpanTag("App Name", invocation.getAppName());
+        span.addSpanTag("Component ID", invocation.getComponentId());
+        span.addSpanTag("Module Name", invocation.getModuleName());
         Object instance = invocation.getInstance();
         if (instance != null) {
-            requestEvent.addProperty("Class Name", instance.getClass().getName());
+            span.addSpanTag("Class Name", instance.getClass().getName());
         }
-        requestEvent.addProperty("Thread Name", Thread.currentThread().getName());
-        
-        return requestEvent;
+        span.addSpanTag("Thread Name", Thread.currentThread().getName());
+
+        return span;
     }
-    
+
     @Override
     public void reset(ContextHandle contextHandle) {
-        if (! (contextHandle instanceof InvocationContext)) {
+        if (!(contextHandle instanceof InvocationContext)) {
             logger.log(Level.SEVERE, LogFacade.UNKNOWN_CONTEXT_HANDLE);
             return;
         }
@@ -231,7 +262,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             SecurityContext.setCurrent(handle.getSecurityContext());
         }
         if (handle.getInvocation() != null && !handle.isUseTransactionOfExecutionThread()) {
-            invocationManager.postInvoke(((InvocationContext)contextHandle).getInvocation());
+            invocationManager.postInvoke(((InvocationContext) contextHandle).getInvocation());
         }
         if (transactionManager != null) {
             // clean up after user if a transaction is still active
@@ -249,24 +280,24 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                     Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, ex.toString());
                 }
             }
-          transactionManager.clearThreadTx();
+            transactionManager.clearThreadTx();
         }
-        
+
         if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
             requestTracing.endTrace();
         }
-        if (stuckThreads != null){
+        if (stuckThreads != null) {
             stuckThreads.deregisterThread(Thread.currentThread().getId());
         }
     }
-    
+
     private boolean isApplicationEnabled(String appId) {
         boolean result = false;
         if (appId != null) {
             Application app = applications.getApplication(appId);
             if (app != null) {
                 result = deployment.isAppEnabled(app);
-            } else { 
+            } else {
                 // if app is null then it is likely that appId is still deploying
                 // and its enabled status has not been written to the domain.xml yet
                 // this can happen for example with a Startup EJB submitting something
@@ -321,6 +352,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         // re-initialize these fields
         invocationManager = concurrentRuntime.getInvocationManager();
         deployment = concurrentRuntime.getDeployment();
+        compEnvMgr = concurrentRuntime.getCompEnvMgr();
         applications = concurrentRuntime.getApplications();
         if (!nullTransactionManager) {
             transactionManager = concurrentRuntime.getTransactionManager();
@@ -328,6 +360,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     }
 
     private static class PairKey {
+
         private Object instance = null;
         private Thread thread = null;
         int hCode = 0;
@@ -356,7 +389,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
             boolean eq = false;
             if (obj != null && obj instanceof PairKey) {
-                PairKey p = (PairKey)obj;
+                PairKey p = (PairKey) obj;
                 if (instance != null) {
                     eq = (instance.equals(p.instance));
                 } else {
@@ -375,4 +408,3 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         }
     }
 }
-
