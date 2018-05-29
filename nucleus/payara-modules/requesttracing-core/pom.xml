@@ -68,7 +68,9 @@
                                     fish.payara.nucleus.requesttracing,
                                     fish.payara.nucleus.requesttracing.domain,
                                     fish.payara.nucleus.requesttracing.domain.execoptions,
-                                    fish.payara.nucleus.requesttracing.configuration
+                                    fish.payara.nucleus.requesttracing.configuration,
+                                    fish.payara.nucleus.requesttracing.store,
+                                    fish.payara.nucleus.requesttracing.events
                                 </Export-Package>
                             </instructions>
                         </configuration>

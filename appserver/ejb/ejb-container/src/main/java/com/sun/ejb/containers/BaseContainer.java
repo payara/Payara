@@ -94,8 +94,8 @@ import com.sun.enterprise.util.Utility;
 import fish.payara.cluster.DistributedLockType;
 import static fish.payara.cluster.DistributedLockType.INHERIT;
 import static fish.payara.cluster.DistributedLockType.LOCK_NONE;
+import fish.payara.notification.requesttracing.RequestTraceSpanLog;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
@@ -4215,8 +4215,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 callFlowInfo.getComponentName(),
                 method_sig);
         if (requestTracing.isRequestTracingEnabled()) {
-            RequestEvent requestEvent = constructEjbMethodRequestEvent(callFlowInfo, true);
-            requestTracing.traceRequestEvent(requestEvent);
+            RequestTraceSpanLog spanLog = constructEjbMethodSpanLog(callFlowInfo, true);
+            requestTracing.addSpanLog(spanLog);
         }
         //callFlowAgent.ejbMethodStart(callFlowInfo);
     }
@@ -4230,26 +4230,26 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 method_sig);
         //callFlowAgent.ejbMethodEnd(callFlowInfo);
         if (requestTracing.isRequestTracingEnabled()) {
-            RequestEvent requestEvent = constructEjbMethodRequestEvent(callFlowInfo, false);
-            requestTracing.traceRequestEvent(requestEvent);
-        }    
+            RequestTraceSpanLog spanLog = constructEjbMethodSpanLog(callFlowInfo, false);
+            requestTracing.addSpanLog(spanLog);
+        }
     }
 
-    private RequestEvent constructEjbMethodRequestEvent(CallFlowInfo info, boolean callEnter) {
-        String eventName="EJBMethod-ENTER";
+    private RequestTraceSpanLog constructEjbMethodSpanLog(CallFlowInfo info, boolean callEnter) {
+        String eventName="enterEjbMethodEvent";
         if (!callEnter) {
-            eventName="EJBMethod-EXIT";
+            eventName="exitEjbMethodEvent";
         }
-        RequestEvent re = new RequestEvent(eventName);
-        re.addProperty("ApplicationName", info.getApplicationName());
-        re.addProperty("ComponentName", info.getComponentName());
-        re.addProperty("ComponentType",info.getComponentType().toString());
-        re.addProperty("ModuleName",info.getModuleName());
-        re.addProperty("EJBClass", this.ejbClass.getCanonicalName());
-        re.addProperty("EJBMethod", info.getMethod().getName());
-        re.addProperty("CallerPrincipal", info.getCallerPrincipal());
-        re.addProperty("TX-ID", info.getTransactionId());
-        return re;
+        RequestTraceSpanLog spanLog = new RequestTraceSpanLog(eventName);
+        spanLog.addLogEntry("ApplicationName", info.getApplicationName());
+        spanLog.addLogEntry("ComponentName", info.getComponentName());
+        spanLog.addLogEntry("ComponentType",info.getComponentType().toString());
+        spanLog.addLogEntry("ModuleName",info.getModuleName());
+        spanLog.addLogEntry("EJBClass", this.ejbClass.getCanonicalName());
+        spanLog.addLogEntry("EJBMethod", info.getMethod().getName());
+        spanLog.addLogEntry("CallerPrincipal", info.getCallerPrincipal());
+        spanLog.addLogEntry("TX-ID", info.getTransactionId());
+        return spanLog;
     }
 
     protected Object invokeTargetBeanMethod(Method beanClassMethod, EjbInvocation inv, Object target,
