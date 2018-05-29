@@ -42,7 +42,7 @@ package fish.payara.notification.requesttracing;
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.util.ArrayList;;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,21 +57,28 @@ import java.util.UUID;
 public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSpan> {
     
     private final SpanContext spanContext;
-    private final Instant startTime;
+    private Instant startTime;
     private Instant endTime;
     private long spanDuration;
-    private final EventType eventType;
-    private Map<String, String> spanTags;
-    private List<RequestTraceSpanLog> spanLogs;
+    private EventType eventType;
+    private final Map<String, String> spanTags;
+    private final List<RequestTraceSpanLog> spanLogs;
     private String eventName;
     private final List<SpanReference> spanReferences;
+
+    protected RequestTraceSpan() {
+        this.spanContext = new SpanContext();
+        this.spanTags = new HashMap<>();
+        this.spanLogs = new ArrayList<>();
+        this.spanReferences = new ArrayList<>();
+    }
 
     public RequestTraceSpan(String eventName) {
         this(EventType.REQUEST_EVENT, eventName);
     }
 
     public RequestTraceSpan(EventType eventType, String eventName) {
-        this.spanContext = new SpanContext();;
+        this.spanContext = new SpanContext();
         this.startTime = Instant.now();
         this.eventType = eventType;
         this.eventName = eventName;
@@ -109,17 +116,20 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         return spanContext;
     }
     
-    public Instant getStartInstant(){
+    public Instant getStartInstant() {
         return startTime;
     }
-    
+
+    public void setStartInstant(Instant startTime) {
+        this.startTime = startTime;
+    }
+
     /**
      * Gets the time in milliseconds since the epoch (midnight, January 1st 1970)
      * when the the request event occurred.
-     * 
      * @return the time the trace occurred
      */
-    public long getTimeOccured(){
+    public long getTimeOccured() {
         return startTime.toEpochMilli();
     }
 
@@ -146,17 +156,17 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
     public String getEventName() {
         return eventName;
     }
-    
+
+    public void setEventName(String eventName) {
+        this.eventName = eventName;
+    }
+
     /**
      * Adds more information about a span
      * @param name
      * @param value 
      */
     public void addSpanTag(String name, String value) {
-        if (spanTags == null) {
-            spanTags = new HashMap<>();
-        }
-        
         if (value != null) {
             // Escape any quotes
             spanTags.put(name, value.replaceAll("\"", "\\\\\""));
@@ -184,10 +194,13 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
     public void setTraceEndTime(Instant endTime) {
         this.endTime = endTime;
     }
-    
+
+    public void setEventType(EventType spanType) {
+        this.eventType = spanType;
+    }
+
     @Override
     public String toString() {
-        
         StringBuilder result = new StringBuilder("\n{");
         result.append("\"operationName\":\"").append(eventName).append("\",")
                 .append("\"spanContext\":{")
@@ -260,6 +273,7 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
     }
     
     public class SpanContext implements Serializable {
+
         private final UUID spanId;
         private UUID traceId;
         private final Map<String, String> baggageItems;
@@ -297,18 +311,20 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         public void addBaggageItem(String name, String value) {
             if (value != null) {
                 // Escape any quotes
-                spanTags.put(name, value.replaceAll("\"", "\\\""));
+                addSpanTag(name, value.replaceAll("\"", "\\\""));
             } else {
-                spanTags.put(name, value);
+                addSpanTag(name, value);
             }
         }
         
         public Map<String, String> getBaggageItems() {
             return baggageItems;
         }
+
     }
     
     public class SpanReference implements Serializable {
+
         private final SpanContext referenceSpanContext;
         private final SpanContextRelationshipType relationshipType;
         
@@ -324,10 +340,12 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         public SpanContextRelationshipType getSpanContextRelationshipType() {
             return relationshipType;
         }
+        
     }
     
     public enum SpanContextRelationshipType {
         ChildOf,
         FollowsFrom;
     }
+    
 }

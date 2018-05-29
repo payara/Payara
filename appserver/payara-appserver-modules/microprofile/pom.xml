@@ -57,5 +57,6 @@ holder.
         <module>healthcheck</module>
         <module>jwt-auth</module>
         <module>metrics</module>
+        <module>opentracing</module>
     </modules>
 </project>

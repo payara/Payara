@@ -71,6 +71,7 @@
         <module>trilead-ssh2</module>
         <module>j-interop</module>
 	<module>antlr</module>
+        <module>opentracing-repackaged</module>
     </modules>
     <build>
         <plugins>
