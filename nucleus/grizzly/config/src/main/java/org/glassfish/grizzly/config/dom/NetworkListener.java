@@ -170,6 +170,7 @@ public interface NetworkListener extends ConfigBeanProxy, PropertyBag {
     Transport findTransport();
 
     @DuckTyped
+    @Override
     NetworkListeners getParent();
 
     class Duck {

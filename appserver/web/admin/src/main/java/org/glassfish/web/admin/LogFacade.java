@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates] 
  */
 
 package org.glassfish.web.admin;
@@ -295,14 +297,29 @@ public class LogFacade {
             message = "Monitoring Registry does not exist. Possible causes are 1) Monitoring is not turned on or at a lower level 2) The corresponding container (web, ejb, etc.) is not loaded yet",
             level = "INFO")
     public static final String MRDR_NULL = prefix + "00046";
-    
+
     @LogMessageInfo(
-        message = "No config with the name `{0}` was found.",
-        level = "WARNING")
+            message = "No config with the name `{0}` was found.",
+            level = "WARNING")
     public static final String UNKNOWN_CONFIG = prefix + "00047";
 
     @LogMessageInfo(
-        message = "No network listener with the name `{0}` was found for target `{1}`.",
-        level = "WARNING")
+            message = "No network listener with the name `{0}` was found for target `{1}`.",
+            level = "WARNING")
     public static final String UNKNOWN_NETWORK_LISTENER = prefix + "00048";
+
+    @LogMessageInfo(
+            message = "No protocol with the name `{0}` was found for target `{1}`.",
+            level = "WARNING")
+    public static final String UNKNOWN_PROTOCOL = prefix + "00049";
+    
+    @LogMessageInfo(
+            message="{0} is out of range. It must be between 0 and 65535",
+            level = "INFO")
+    public static final String PORT_OUT_OF_RANGE = prefix + "00050";
+    
+    @LogMessageInfo(
+            message="UnprocessedChangeEvent: {0} port changed from {1} to {2}",
+            level = "INFO")
+    public static final String ADMIN_PORT_CHANGED = prefix + "00051";
 }
