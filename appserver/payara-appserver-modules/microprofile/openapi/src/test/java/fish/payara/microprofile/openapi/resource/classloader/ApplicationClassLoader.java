@@ -69,6 +69,10 @@ public class ApplicationClassLoader extends ClassLoader {
         }
     }
 
+    public Set<Class<?>> getApplicationClasses() {
+        return appClasses;
+    }
+
     public ApplicationClassLoader(Application app) {
         this(app, null);
     }

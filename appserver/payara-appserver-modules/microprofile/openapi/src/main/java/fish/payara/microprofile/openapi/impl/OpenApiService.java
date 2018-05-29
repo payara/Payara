@@ -39,10 +39,14 @@
  */
 package fish.payara.microprofile.openapi.impl;
 
+import static java.util.stream.Collectors.toSet;
+
 import java.beans.PropertyChangeEvent;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.Enumeration;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Logger;
 
@@ -50,6 +54,7 @@ import javax.inject.Inject;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.api.PostConstruct;
@@ -143,7 +148,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
                 // Map the application info to a new openapi document, and store it in the list
                 Map<ApplicationInfo, OpenAPI> map = Collections.singletonMap(appInfo,
-                        createOpenApiDocument(appInfo.getAppClassLoader(), getContextRoot(appInfo), appConfig));
+                        createOpenApiDocument(appInfo, appConfig));
                 models.add(map);
 
                 LOGGER.info("OpenAPI document created.");
@@ -160,20 +165,6 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     }
 
     /**
-     * @return boolean if the app is a valid target for an OpenAPI document.
-     */
-    private boolean isValidApp(ApplicationInfo appInfo) {
-        return appInfo.getMetaData(WebBundleDescriptorImpl.class) != null;
-    }
-
-    /**
-     * @return boolean the context root of the application.
-     */
-    private String getContextRoot(ApplicationInfo appInfo) {
-        return appInfo.getMetaData(WebBundleDescriptorImpl.class).getContextRoot();
-    }
-
-    /**
      * Gets the document for the most recently deployed application.
      */
     public OpenAPI getDocument() {
@@ -186,11 +177,16 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
         return lastDocument;
     }
 
-    private OpenAPI createOpenApiDocument(ClassLoader appClassLoader, String contextRoot, OpenApiConfiguration config) {
+    private OpenAPI createOpenApiDocument(ApplicationInfo appInfo, OpenApiConfiguration config) {
         OpenAPI document = new OpenAPIImpl();
+
+        String contextRoot = getContextRoot(appInfo);
+        ReadableArchive archive = appInfo.getSource();
+        Set<Class<?>> classes = getClassesFromArchive(archive, appInfo.getAppClassLoader());
+
         document = new ModelReaderProcessor().process(document, config);
-        document = new FileProcessor(appClassLoader).process(document, config);
-        document = new ApplicationProcessor(appClassLoader).process(document, config);
+        document = new FileProcessor(appInfo.getAppClassLoader()).process(document, config);
+        document = new ApplicationProcessor(classes).process(document, config);
         document = new BaseProcessor(contextRoot).process(document, config);
         document = new FilterProcessor().process(document, config);
         return document;
@@ -201,6 +197,52 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
      */
     public static OpenApiService getInstance() {
         return Globals.getStaticBaseServiceLocator().getService(OpenApiService.class);
+    }
+
+    /**
+     * @param appInfo the application descriptor.
+     * @return boolean if the app is a valid target for an OpenAPI document.
+     */
+    private static boolean isValidApp(ApplicationInfo appInfo) {
+        return appInfo.getMetaData(WebBundleDescriptorImpl.class) != null;
+    }
+
+    /**
+     * @param appInfo the application descriptor.
+     * @return boolean the context root of the application.
+     */
+    private static String getContextRoot(ApplicationInfo appInfo) {
+        return appInfo.getMetaData(WebBundleDescriptorImpl.class).getContextRoot();
+    }
+
+    /**
+     * @param archive the archive to read from.
+     * @param appClassLoader the classloader to use to load the classes.
+     * @return a list of all loadable classes in the archive.
+     */
+    private static Set<Class<?>> getClassesFromArchive(ReadableArchive archive, ClassLoader appClassLoader) {
+        return Collections.list((Enumeration<String>) archive.entries()).stream()
+                // Only use the classes
+                .filter(x -> x.endsWith(".class"))
+                // Remove the WEB-INF/classes and return the proper class name format
+                .map(x -> x.replaceAll("WEB-INF/classes/", "").replace("/", ".").replace(".class", ""))
+                // Attempt to load the classes
+                .map(x -> {
+                    Class<?> loadedClass = null;
+                    // Attempt to load the class, ignoring any errors
+					try {
+						loadedClass = appClassLoader.loadClass(x);
+					} catch (Throwable t) {
+                    }
+					try {
+						loadedClass = Class.forName(x);
+					} catch (Throwable t) {
+                    }
+                    return loadedClass;
+                })
+                // Don't return null classes
+                .filter(x -> x != null)
+                .collect(toSet());
     }
 
 }

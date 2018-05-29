@@ -42,22 +42,17 @@ package fish.payara.microprofile.openapi.impl.processor;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.WARNING;
 
-import java.io.File;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -146,8 +141,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     /**
      * @param appClassLoader the class loader for the application.
      */
-    public ApplicationProcessor(ClassLoader appClassLoader) {
-        this.classes = getClassesFromLoader(appClassLoader);
+    public ApplicationProcessor(Set<Class<?>> appClasses) {
+        this.classes = appClasses;
     }
 
     @Override
@@ -738,69 +733,6 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     // PRIVATE METHODS
-
-    /**
-     * Gets the set of classes contained within a {@link ClassLoader}. The set
-     * returned will not be null, but could be empty.
-     * 
-     * @param classLoader the classloader to get the classes from.
-     * @return the set of classes managed by the classloader.
-     */
-    @SuppressWarnings("unchecked")
-    private Set<Class<?>> getClassesFromLoader(ClassLoader classLoader) {
-        Set<Class<?>> loaderClasses = new HashSet<>();
-        try {
-            Field classesField = ClassLoader.class.getDeclaredField("classes");
-            classesField.setAccessible(true);
-            loaderClasses = new HashSet<>((Vector<Class<?>>) classesField.get(classLoader));
-        } catch (Exception ex) {
-            LOGGER.log(WARNING, "Unable to get classes from classloader.", ex);
-        }
-
-        loaderClasses.removeIf(clazz -> clazz.getName().contains("$Proxy$"));
-
-        // If no classes were found, the classloader could be deploying from a directory.
-        // If so, scan the directory structure for expected classes.
-        if (loaderClasses.isEmpty()) {
-            LOGGER.fine("Unable to find loaded classes in classloader, searching in classpath for files.");
-            try {
-                // Get the classpath url.
-                // If the classpath is currently WEB-INF/lib, resolve WEB-INF/classes instead
-                URL classpath = classLoader.getResource("../classes");
-
-                if (classpath != null) {
-
-                    List<File> expand = new LinkedList<>();
-                    expand.add(new File(classpath.toURI()));
-
-                    while (!expand.isEmpty()) {
-                        List<File> subFiles = new LinkedList<>();
-                        for (File file : expand) {
-                            if (file.isDirectory()) {
-                                subFiles.addAll(Arrays.asList(file.listFiles()));
-                            } else if (file.getPath().endsWith(".class")) {
-                                String className = file.getPath().replaceAll(".+WEB-INF/classes/", "").replace("/", ".").replace(".class", "");
-                                LOGGER.finer("Attempting to add class: " + className);
-                                try {
-									loaderClasses.add(Class.forName(className));
-								} catch (ClassNotFoundException ex) {
-                                    LOGGER.finer("Unable to add class: " + className);
-								}
-                            }
-                        }
-                        expand.clear();
-                        expand.addAll(subFiles);
-                    }
-                } else {
-                    LOGGER.log(WARNING, "Unrecognised classpath.");
-                }
-			} catch (URISyntaxException ex) {
-                LOGGER.log(WARNING, "Unable to get classes from classpath.", ex);
-			}
-        }
-
-        return loaderClasses;
-    }
 
     /**
      * Generates a map listing the location each resource class is mapped to.

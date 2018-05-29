@@ -54,10 +54,10 @@ public class ApplicationProcessedDocument extends OpenAPIImpl {
         // Apply base processor
         new BaseProcessor("/testlocation_123").process(this, null);
 
-        ClassLoader appClassLoader = new ApplicationClassLoader(new TestApplication(), singleton(TestComponent.class));
+        ApplicationClassLoader appClassLoader = new ApplicationClassLoader(new TestApplication(), singleton(TestComponent.class));
 
         // Apply application processor
-        new ApplicationProcessor(appClassLoader).process(this, null);
+        new ApplicationProcessor(appClassLoader.getApplicationClasses()).process(this, null);
     }
 
 }
