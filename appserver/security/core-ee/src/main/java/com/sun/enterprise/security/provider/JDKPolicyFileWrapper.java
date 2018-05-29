@@ -558,7 +558,7 @@ public class JDKPolicyFileWrapper extends Policy {
         return doesImplies;
     }
 
-    private void logImpliesFailure(Permission permission, String contextId, ProtectionDomain domain) {
+    private void logImpliesFailure(final Permission permission, final String contextId, final ProtectionDomain domain) {
         if (!(permission instanceof WebResourcePermission) && !(permission instanceof MBeanPermission)
                 && !(permission instanceof WebRoleRefPermission) && !(permission instanceof EJBRoleRefPermission)) {
 
@@ -602,7 +602,7 @@ public class JDKPolicyFileWrapper extends Policy {
         return isDefaultContextChanged;
     }
 
-    private static long getTimeStamp(String propertyName, String urlName) {
+    private static long getTimeStamp(final String propertyName, final String urlName) {
         return doPrivileged(new PrivilegedAction<Long>() {
             @Override
             public Long run() {
