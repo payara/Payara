@@ -381,6 +381,13 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        <!-- Yubikey Authentication -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>yubikey-authentication</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
         <!-- roles api -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>

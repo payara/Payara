@@ -72,8 +72,8 @@
         <module>payara-rest-endpoints</module>
         <module>rest-monitoring</module>
         <module>cdi-auth-roles</module>
+        <module>yubikey-authentication</module>
     </modules>
-
     <profiles>
         <profile>
             <id>jdk8</id>
@@ -87,3 +87,4 @@
         </profile>
     </profiles>
 </project>
+

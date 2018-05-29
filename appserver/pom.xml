@@ -222,6 +222,8 @@
          <accessors-smart.version>1.2.payara-p1</accessors-smart.version>
          <json-smart.version>2.3</json-smart.version>
          <jcip-annotations.version>1.0-1</jcip-annotations.version>
+         <!-- Yubico client validation version property -->
+         <yubico-validation-client2.version>3.0.2.payara-p1</yubico-validation-client2.version>
 
     </properties>
 
@@ -687,12 +689,12 @@
                 <artifactId>javax.security.enterprise-api</artifactId>
                 <version>${javax.security.enterprise-api.version}</version>
             </dependency>
-             <dependency>
+            <dependency>
                 <groupId>org.glassfish.soteria</groupId>
                 <artifactId>javax.security.enterprise</artifactId>
                 <version>${javax.security.enterprise.version}</version>
             </dependency>
-
+            
             <!-- JACC -->
             <dependency>
                 <groupId>javax.security.jacc</groupId>
