@@ -63,6 +63,7 @@ import fish.payara.monitoring.rest.app.handler.MBeanAttributeReadHandler;
 import fish.payara.monitoring.rest.app.handler.MBeanAttributesReadHandler;
 import fish.payara.monitoring.rest.app.handler.MBeanReadHandler;
 import fish.payara.monitoring.rest.app.handler.ReadHandler;
+import java.util.ArrayList;
 
 /**
  * @author Krassimir Valev
@@ -89,12 +90,22 @@ public class MBeanBulkReadResource {
             JsonStructure struct = reader.read();
             switch (struct.getValueType()) {
                 case ARRAY:
-                    List<JsonObject> objects = struct.asJsonArray().stream()
-                            .map(value -> handleRequest(value.asJsonObject()))
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
-                            .collect(Collectors.toList());
-
+//                    List<JsonObject> objects = struct.asJsonArray().stream()
+//                            .map(value -> handleRequest(value.asJsonObject()))
+//                            .filter(Optional::isPresent)
+//                            .map(Optional::get)
+//                            .collect(Collectors.toList());
+                    
+                    //List<JsonObject> objects1 = struct.asJsonArray().
+                    List<JsonObject> objects = new ArrayList<>();
+                
+                    for (JsonValue jsonValue : struct.asJsonArray()){
+                      JsonObject response = handleRequest(jsonValue.asJsonObject());
+                        if (response != null){
+                            objects.add(response);
+                        }
+                    }
+                    
                     JsonArrayBuilder builder = Json.createArrayBuilder();
                     for (JsonObject jsonObject : objects) {
                         builder.add(jsonObject);
@@ -102,24 +113,26 @@ public class MBeanBulkReadResource {
 
                     return builder.build().toString();
                 case OBJECT:
-                    return handleRequest(struct.asJsonObject()).orElse(JsonValue.EMPTY_JSON_OBJECT).toString();
+                    //return handleRequest(struct.asJsonObject()).orElse(JsonValue.EMPTY_JSON_OBJECT).toString();
+                    return handleRequest(struct.asJsonObject()).toString() != null ? handleRequest(struct.asJsonObject()).toString() : JsonValue.EMPTY_JSON_OBJECT.toString(); 
+
                 default:
                     return "invalid JSON structure";
             }
         }
     }
 
-    private Optional<JsonObject> handleRequest(final JsonObject jsonObject) {
+    private JsonObject handleRequest(final JsonObject jsonObject) {
         // ignore non-read requests
         String type = jsonObject.getString("type", "");
         if (!"read".equalsIgnoreCase(type)) {
-            return Optional.empty();
+            return null;
         }
 
         String mbean = jsonObject.getString("mbean", "");
         JsonValue attributes = jsonObject.getOrDefault("attribute", JsonValue.NULL);
         ReadHandler handler = getReadHandler(mbean, attributes);
-        return Optional.of(handler.getResource());
+        return handler.getResource();
     }
 
     private ReadHandler getReadHandler(final String mbean, final JsonValue attributes) {
