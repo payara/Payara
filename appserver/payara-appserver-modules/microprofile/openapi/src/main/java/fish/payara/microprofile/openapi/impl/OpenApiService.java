@@ -171,10 +171,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
         if (models.isEmpty()) {
             return null;
         }
-        OpenAPI lastDocument = null;
-        for (Map<ApplicationInfo, OpenAPI> model : models)
-            lastDocument = (OpenAPI) model.values().toArray()[0];
-        return lastDocument;
+        return (OpenAPI) models.getLast().values().toArray()[0];
     }
 
     private OpenAPI createOpenApiDocument(ApplicationInfo appInfo, OpenApiConfiguration config) {

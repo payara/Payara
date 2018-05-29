@@ -113,6 +113,10 @@ public class OpenApiWalker implements ApiWalker {
             if (class1.equals(class2)) {
                 return 0;
             }
+            // Subclasses first
+            if (class1.isAssignableFrom(class2)) {
+                return -1;
+            }
             // Non contextual objects at the start
             if (!class1.isAnnotationPresent(ApplicationPath.class) && !class1.isAnnotationPresent(Path.class)) {
                 return -1;

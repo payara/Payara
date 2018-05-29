@@ -176,10 +176,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         operation.setOperationId(element.getName());
 
         // Add the default request
-        insertDefaultRequestBody(context.getApi(), operation, element);
+        insertDefaultRequestBody(context, operation, element);
 
         // Add the default response
-        insertDefaultResponse(context.getApi(), operation, element);
+        insertDefaultResponse(context, operation, element);
     }
 
     @Override
@@ -197,10 +197,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         operation.setOperationId(element.getName());
 
         // Add the default request
-        insertDefaultRequestBody(context.getApi(), operation, element);
+        insertDefaultRequestBody(context, operation, element);
 
         // Add the default response
-        insertDefaultResponse(context.getApi(), operation, element);
+        insertDefaultResponse(context, operation, element);
     }
 
     @Override
@@ -218,10 +218,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         operation.setOperationId(element.getName());
 
         // Add the default request
-        insertDefaultRequestBody(context.getApi(), operation, element);
+        insertDefaultRequestBody(context, operation, element);
 
         // Add the default response
-        insertDefaultResponse(context.getApi(), operation, element);
+        insertDefaultResponse(context, operation, element);
     }
 
     @Override
@@ -239,10 +239,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         operation.setOperationId(element.getName());
 
         // Add the default request
-        insertDefaultRequestBody(context.getApi(), operation, element);
+        insertDefaultRequestBody(context, operation, element);
 
         // Add the default response
-        insertDefaultResponse(context.getApi(), operation, element);
+        insertDefaultResponse(context, operation, element);
     }
 
     @Override
@@ -260,10 +260,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         operation.setOperationId(element.getName());
 
         // Add the default request
-        insertDefaultRequestBody(context.getApi(), operation, element);
+        insertDefaultRequestBody(context, operation, element);
 
         // Add the default response
-        insertDefaultResponse(context.getApi(), operation, element);
+        insertDefaultResponse(context, operation, element);
     }
 
     @Override
@@ -281,10 +281,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         operation.setOperationId(element.getName());
 
         // Add the default request
-        insertDefaultRequestBody(context.getApi(), operation, element);
+        insertDefaultRequestBody(context, operation, element);
 
         // Add the default response
-        insertDefaultResponse(context.getApi(), operation, element);
+        insertDefaultResponse(context, operation, element);
     }
 
     @Override
@@ -302,10 +302,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         operation.setOperationId(element.getName());
 
         // Add the default request
-        insertDefaultRequestBody(context.getApi(), operation, element);
+        insertDefaultRequestBody(context, operation, element);
 
         // Add the default response
-        insertDefaultResponse(context.getApi(), operation, element);
+        insertDefaultResponse(context, operation, element);
     }
 
     @Override
@@ -394,7 +394,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // Set the request body type accordingly.
-        context.getWorkingOperation().getRequestBody().getContent().get(javax.ws.rs.core.MediaType.WILDCARD).getSchema().setType(formSchemaType);
+        context.getWorkingOperation().getRequestBody().getContent().get(javax.ws.rs.core.MediaType.WILDCARD).getSchema()
+                .setType(formSchemaType);
     }
 
     @Override
@@ -427,15 +428,52 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (element instanceof Class) {
 
             // Get the schema object name
-            String schemaName = schema.name();
+            String schemaName = (schema == null) ? null : schema.name();
             if (schemaName == null || schemaName.isEmpty()) {
                 schemaName = Class.class.cast(element).getSimpleName();
             }
 
-            // Add the new schema
+            // Add a new schema
             org.eclipse.microprofile.openapi.models.media.Schema newSchema = new SchemaImpl();
             context.getApi().getComponents().addSchema(schemaName, newSchema);
-            SchemaImpl.merge(schema, newSchema, true, context.getApi().getComponents().getSchemas());
+
+            // If there is an annotation
+            if (schema != null) {
+                SchemaImpl.merge(schema, newSchema, true, context.getApi().getComponents().getSchemas());
+            } else {
+                newSchema.setType(SchemaType.OBJECT);
+                Map<String, org.eclipse.microprofile.openapi.models.media.Schema> fields = new LinkedHashMap<>();
+                for (Field field : Class.class.cast(element).getDeclaredFields()) {
+                    if (!Modifier.isTransient(field.getModifiers())) {
+                        fields.put(field.getName(), createSchema(context, field.getType()));
+                    }
+                }
+                newSchema.setProperties(fields);
+            }
+
+            // If there is an extending class, add the data
+            if (Class.class.cast(element).getSuperclass() != null) {
+                Class<?> superClass = Class.class.cast(element).getSuperclass();
+
+                // If the super class is legitimate
+                if (!superClass.equals(Object.class)) {
+
+                    // Get the parent schema annotation
+                    Schema parentSchema = superClass.getDeclaredAnnotation(Schema.class);
+
+                    // Create a schema for the parent
+                    visitSchema(parentSchema, superClass, context);
+
+                    // Get the superclass schema name
+                    String parentSchemaName = (parentSchema == null) ? null : parentSchema.name();
+                    if (parentSchemaName == null || parentSchemaName.isEmpty()) {
+                        parentSchemaName = Class.class.cast(superClass).getSimpleName();
+                    }
+
+                    // Link the schemas
+                    newSchema.addAllOf(new SchemaImpl().ref(parentSchemaName));
+                }
+            }
         }
         if (element instanceof Field) {
 
@@ -478,7 +516,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                     context.getWorkingOperation().setRequestBody(new RequestBodyImpl());
                 }
                 // Insert the schema to the request body media type
-                MediaType mediaType = context.getWorkingOperation().getRequestBody().getContent().get(javax.ws.rs.core.MediaType.WILDCARD);
+                MediaType mediaType = context.getWorkingOperation().getRequestBody().getContent()
+                        .get(javax.ws.rs.core.MediaType.WILDCARD);
                 SchemaImpl.merge(schema, mediaType.getSchema(), true, context.getApi().getComponents().getSchemas());
                 if (schema.ref() != null && !schema.ref().isEmpty()) {
                     mediaType.setSchema(new SchemaImpl().ref(schema.ref()));
@@ -772,7 +811,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         return resourceMapping;
     }
 
-    private org.eclipse.microprofile.openapi.models.parameters.RequestBody insertDefaultRequestBody(OpenAPI api,
+    private org.eclipse.microprofile.openapi.models.parameters.RequestBody insertDefaultRequestBody(ApiContext context,
             org.eclipse.microprofile.openapi.models.Operation operation, Method method) {
         org.eclipse.microprofile.openapi.models.parameters.RequestBody requestBody = new RequestBodyImpl();
 
@@ -789,7 +828,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // Create the default request body with a wildcard mediatype
-        MediaType mediaType = new MediaTypeImpl().schema(createSchema(api, bodyType));
+        MediaType mediaType = new MediaTypeImpl().schema(createSchema(context, bodyType));
         requestBody.getContent().addMediaType(javax.ws.rs.core.MediaType.WILDCARD, mediaType);
 
         operation.setRequestBody(requestBody);
@@ -798,19 +837,20 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     /**
      * Creates a new {@link APIResponse} to model the default response of a
-     * {@link Method}, and inserts it into the {@link APIResponses}.
+     * {@link Method}, and inserts it into the {@link Operation} responses.
      * 
-     * @param responses the {@link APIResponses} to add the default response to.
+     * @param context   the API context.
+     * @param operation the {@link Operation} to add the default response to.
      * @param method    the {@link Method} to model the default response on.
      * @return the newly created {@link APIResponse}.
      */
-    private org.eclipse.microprofile.openapi.models.responses.APIResponse insertDefaultResponse(OpenAPI api,
+    private org.eclipse.microprofile.openapi.models.responses.APIResponse insertDefaultResponse(ApiContext context,
             org.eclipse.microprofile.openapi.models.Operation operation, Method method) {
         org.eclipse.microprofile.openapi.models.responses.APIResponse defaultResponse = new APIResponseImpl();
         defaultResponse.setDescription("Default Response.");
 
         // Create the default response with a wildcard mediatype
-        MediaType mediaType = new MediaTypeImpl().schema(createSchema(api, method.getReturnType()));
+        MediaType mediaType = new MediaTypeImpl().schema(createSchema(context, method.getReturnType()));
         defaultResponse.getContent().addMediaType(javax.ws.rs.core.MediaType.WILDCARD, mediaType);
 
         // Add the default response
@@ -820,7 +860,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     /**
-     * @return the {@link javax.ws.rs.core.MediaType} with the given name. Defaults to <code>WILDCARD</code>.
+     * @return the {@link javax.ws.rs.core.MediaType} with the given name. Defaults
+     *         to <code>WILDCARD</code>.
      */
     private String getContentType(String name) {
         String contentType = javax.ws.rs.core.MediaType.WILDCARD;
@@ -835,7 +876,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         return contentType;
     }
 
-    private org.eclipse.microprofile.openapi.models.media.Schema createSchema(OpenAPI api, Class<?> type) {
+    private org.eclipse.microprofile.openapi.models.media.Schema createSchema(ApiContext context, Class<?> type) {
         org.eclipse.microprofile.openapi.models.media.Schema schema = new SchemaImpl();
         SchemaType schemaType = ModelUtils.getSchemaType(type);
         schema.setType(schemaType);
@@ -851,12 +892,14 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             }
         }
 
+        // If the schema is an object, insert the reference
         if (schemaType == SchemaType.OBJECT) {
-            if (insertObjectReference(api, schema, type)) {
+            if (insertObjectReference(context, schema, type)) {
                 schema.setType(null);
                 schema.setItems(null);
             }
         }
+
         return schema;
     }
 
@@ -864,12 +907,12 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
      * Replace the object in the referee with a reference, and create the reference
      * in the API.
      * 
-     * @param api            the OpenAPI object.
+     * @param context        the API context.
      * @param referee        the object containing the reference.
      * @param referenceClass the class of the object being referenced.
      * @return if the reference has been created.
      */
-    private boolean insertObjectReference(OpenAPI api, Reference<?> referee, Class<?> referenceClass) {
+    private boolean insertObjectReference(ApiContext context, Reference<?> referee, Class<?> referenceClass) {
 
         // If the object is a java core class
         if (referenceClass == null || referenceClass.getName().startsWith("java.") || referenceClass.isPrimitive()) {
@@ -881,25 +924,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return false;
         }
 
-        // Get the schemas
-        Map<String, org.eclipse.microprofile.openapi.models.media.Schema> schemas = api.getComponents().getSchemas();
-
         // Set the reference name
         referee.setRef(referenceClass.getSimpleName());
 
-        if (!schemas.containsKey(referenceClass.getSimpleName())) {
-            // If the schema type doesn't already exist, create it
-            org.eclipse.microprofile.openapi.models.media.Schema schema = new SchemaImpl();
-            schemas.put(referenceClass.getSimpleName(), schema);
-            schema.setType(SchemaType.OBJECT);
-            Map<String, org.eclipse.microprofile.openapi.models.media.Schema> fields = new LinkedHashMap<>();
-            for (Field field : referenceClass.getDeclaredFields()) {
-                if (!Modifier.isTransient(field.getModifiers())) {
-                    fields.put(field.getName(), createSchema(api, field.getType()));
-                }
-            }
-            schema.setProperties(fields);
-        }
+        // Create the schema
+        visitSchema(referenceClass.getDeclaredAnnotation(Schema.class), referenceClass, context);
 
         return true;
     }
