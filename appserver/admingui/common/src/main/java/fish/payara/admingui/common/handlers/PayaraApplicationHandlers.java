@@ -81,7 +81,7 @@ public class PayaraApplicationHandlers {
         List<String> deploymentGroup = TargetUtil.getDeploymentGroups();
         
         standalone.add("server");
-        List<String> targetList = DeployUtil.getApplicationTarget(applicationName, APPLICATION_REF);
+        List<String> targetList = DeployUtil.getApplicationTarget(applicationName, "application-ref");
         List<HashMap> result = new ArrayList<>();
         
         Map<String, Object> attributes = null;
