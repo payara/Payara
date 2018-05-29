@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates] -->
 
 <!--
   External repackaging modules.
@@ -68,7 +68,7 @@
     <modules>
         <module>ant</module>
         <module>javadb</module>    
-	    <module>jmsra</module>
+        <module>jmsra</module>
         <module>jaxr_ra</module>
         <module>jcip</module>
         <module>libpam4j</module>

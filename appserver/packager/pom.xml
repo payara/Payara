@@ -181,6 +181,7 @@
         <module>payara-rest-endpoints</module>
         <module>rest-monitoring</module>
         <module>cdi-auth-roles</module>
+        <module>yubikey-authentication</module>
     </modules>
 
     <profiles>
