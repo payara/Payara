@@ -233,9 +233,10 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
     }
 
     /**
-     * Gets the Instant when the span was started See {@link java.time.Instant#now()} for how this time is generated.
+     * Gets the timestamp when the span was started. Generated using System.nanoTime(), making this only comparable
+     * against other nanoTime timestamps.
      *
-     * @return The Instant for when this span was started.
+     * @return The timestamp for when this span was started in nanoseconds.
      */
     public long getStartTime() {
         return startTime;
