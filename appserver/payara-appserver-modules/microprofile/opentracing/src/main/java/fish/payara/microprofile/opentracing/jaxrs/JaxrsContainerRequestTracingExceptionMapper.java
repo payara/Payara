@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.opentracing.jaxrs;
 
+import javax.ws.rs.NotSupportedException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
@@ -49,9 +50,14 @@ import javax.ws.rs.ext.ExceptionMapper;
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 public class JaxrsContainerRequestTracingExceptionMapper implements ExceptionMapper<Throwable> {
-
+    
     @Override
     public Response toResponse(Throwable exception) {
+        // There must be a better way of doing this...
+        if (exception instanceof NotSupportedException) {
+            return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).build();
+        }
+        
         // Send an error response with the caught exception attached
         return Response.serverError().entity(exception).build();
     }
