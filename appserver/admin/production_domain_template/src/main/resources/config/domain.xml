@@ -203,6 +203,11 @@
         <jvm-options>-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER=org.glassfish.grizzly.memory.HeapMemoryManager</jvm-options>
         <jvm-options>-Dorg.glassfish.grizzly.nio.DefaultSelectorHandler.force-selector-spin-detection=true</jvm-options>
       </java-config>
+      <availability-service>
+          <web-container-availability/>
+          <ejb-container-availability sfsb-store-pool-name="jdbc/hastore"/>
+          <jms-availability/>
+      </availability-service>
       <network-config>
         <protocols>
           <protocol name="http-listener-1">

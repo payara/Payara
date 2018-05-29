@@ -95,7 +95,7 @@
    <config name="server-config">
       <http-service>
         <access-log/>
-        <virtual-server id="server" network-listeners="http-listener-1,http-listener-2"/>
+        <virtual-server id="server" network-listeners="http-listener,https-listener"/>
         <virtual-server id="__asadmin" network-listeners="admin-listener"/>
       </http-service>
       <iiop-service>

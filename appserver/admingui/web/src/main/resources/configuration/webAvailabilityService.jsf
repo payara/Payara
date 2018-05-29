@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 -->
 <!initPage
     setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
@@ -103,6 +104,9 @@
                 </sun:property>
                 <sun:property id="SingleSignOnProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.availability.singleSignOn}" helpText="$resource{i18n_web.availability.singleSignOnHelp}">
                     <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['ssoFailoverEnabled']}" selectedValue="true" />
+                </sun:property>
+                <sun:property id="DisableJreplicaProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.availability.disableJreplica}" helpText="$resource{i18n_web.availability.disableJreplicaHelp}">
+                    <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['disableJreplica']}" selectedValue="false" />
                 </sun:property>
                 "<br /><br />
             </sun:propertySheetSection>
