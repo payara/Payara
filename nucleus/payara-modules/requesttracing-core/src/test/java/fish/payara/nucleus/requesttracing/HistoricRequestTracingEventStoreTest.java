@@ -36,33 +36,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.requesttracing;
-
-import fish.payara.nucleus.hazelcast.HazelcastCore;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import java.util.Arrays;
-
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.matchers.JUnitMatchers.hasItem;
-import static org.mockito.Mockito.when;
+//package fish.payara.nucleus.requesttracing;
+//
+//import fish.payara.nucleus.hazelcast.HazelcastCore;
+//import org.junit.Before;
+//import org.junit.Test;
+//import org.junit.runner.RunWith;
+//import org.mockito.InjectMocks;
+//import org.mockito.Mock;
+//import org.mockito.runners.MockitoJUnitRunner;
+//
+//import java.util.Arrays;
+//
+//import static org.hamcrest.core.Is.is;
+//import static org.hamcrest.core.IsNot.not;
+//import static org.junit.Assert.assertNotNull;
+//import static org.junit.Assert.assertThat;
+//import static org.junit.matchers.JUnitMatchers.hasItem;
+//import static org.mockito.Mockito.when;
 
 /**
  * @author mertcaliskan
  */
 //@RunWith(MockitoJUnitRunner.class)
-public class HistoricRequestTracingEventStoreTest {
+//public class HistoricRequestTracingEventStoreTest {
 
     //@Mock
-    HazelcastCore hzCore;
+//    HazelcastCore hzCore;
 
 //    @InjectMocks
 //    RequestTraceStore store = new RequestTraceStore();
@@ -98,4 +98,4 @@ public class HistoricRequestTracingEventStoreTest {
 //        assertThat(Arrays.asList(store.getTraces()), not(hasItem(new HistoricRequestTracingEvent(System.currentTimeMillis(), 100, "quick execution 1"))));
 //        assertThat(Arrays.asList(store.getTraces()), hasItem(new HistoricRequestTracingEvent(System.currentTimeMillis(), 101, "quick execution 2")));
 //    }
-}
+//}
