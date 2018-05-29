@@ -226,7 +226,7 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
     /**
      * Returns a list of all the events that make up the trace.
      *
-     * @return
+     * @return A list containing all of the Spans that constitute this trace.
      */
     public LinkedList<RequestTraceSpan> getTraceSpans() {
         return trace;
@@ -235,7 +235,7 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
     /**
      * Gets the Instant when the span was started See {@link java.time.Instant#now()} for how this time is generated.
      *
-     * @return
+     * @return The Instant for when this span was started.
      */
     public long getStartTime() {
         return startTime;
