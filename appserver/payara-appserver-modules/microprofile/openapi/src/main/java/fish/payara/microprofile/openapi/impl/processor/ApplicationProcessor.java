@@ -944,6 +944,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return false;
         }
 
+        // If the object is a Java EE object type
+        if (referenceClass.getName().startsWith("javax.")) {
+            return false;
+        }
+
         // Get the schemas
         Map<String, org.eclipse.microprofile.openapi.models.media.Schema> schemas = api.getComponents().getSchemas();
 
