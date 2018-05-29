@@ -757,6 +757,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             LOGGER.log(WARNING, "Unable to get classes from classloader.", ex);
         }
 
+        loaderClasses.removeIf(clazz -> clazz.getName().contains("$Proxy$"));
+
         // If no classes were found, the classloader could be deploying from a directory.
         // If so, scan the directory structure for expected classes.
         if (loaderClasses.isEmpty()) {
@@ -937,8 +939,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
      */
     private boolean insertObjectReference(OpenAPI api, Reference<?> referee, Class<?> referenceClass) {
 
-        // If the object is java.lang.Object, exit
-        if (referenceClass.equals(Object.class)) {
+        // If the object is a java core class
+        if (referenceClass == null || referenceClass.getName().startsWith("java.") || referenceClass.isPrimitive()) {
             return false;
         }
 
