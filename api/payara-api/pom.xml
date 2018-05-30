@@ -117,6 +117,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
+                <version>2.4.0</version>
                 <executions>
                     <execution>
                         <id>bundle-manifest</id>
@@ -127,8 +128,6 @@
                         <configuration>
                             <instructions>
                                 <Import-Package>
-                                    fish.payara.nucleus.notification.domain,
-                                    fish.payara.nucleus.notification.service,
                                     fish.payara.cdi.jsr107.implementation,
                                     javax.inject,
                                     javax.enterprise.util,
@@ -141,15 +140,16 @@
                                     fish.payara.cdi.jsr107.impl,
                                     fish.payara.cluster,
                                     fish.payara.micro.cdi,
-                                    fish.payara.nucleus.requesttracing.api,
                                     fish.payara.notification.eventbus,
-                                    fish.payara.nucleus.notification.domain,
-                                    fish.payara.nucleus.notification.service,
                                     fish.payara.notification.healthcheck,
                                     fish.payara.notification.requesttracing,
+                                    fish.payara.nucleus.requesttracing.api,
                                     fish.payara.security.annotations,
                                     fish.payara.security.oauth2.api
                                 </Export-Package>
+                                <_exportcontents>
+                                    fish.payara.notification
+                                </_exportcontents>
                             </instructions>
                         </configuration>
                     </execution>
@@ -195,9 +195,9 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <configuration>  
+                        <configuration>
                             <excludes>
-                                <exclude>fish/payara/security/oauth2/annotation/OAuth2AuthenticationDefinition.java</exclude>
+                                <exclude>fish/payara/security/annotation/OAuth2AuthenticationDefinition.java</exclude>
                                 <exclude>fish/payara/security/oauth2/api/OAuthIdentityStore.java</exclude>
                                 <exclude>fish/payara/security/oauth2/api/OAuth2State.java</exclude>
                                 <exclude>fish/payara/security/oauth2/api/OAuth2AccessToken.java</exclude>
@@ -207,6 +207,7 @@
                     <plugin>
                         <groupId>org.apache.felix</groupId>
                         <artifactId>maven-bundle-plugin</artifactId>
+                        <version>2.4.0</version>
                         <executions>
                             <execution>
                                 <id>bundle-manifest</id>
@@ -217,8 +218,6 @@
                                 <configuration>
                                     <instructions>
                                         <Import-Package>
-                                            fish.payara.nucleus.notification.domain,
-                                            fish.payara.nucleus.notification.service,
                                             fish.payara.cdi.jsr107.implementation,
                                             javax.inject,
                                             javax.enterprise.util,
@@ -231,11 +230,12 @@
                                             fish.payara.micro.cdi,
                                             fish.payara.nucleus.requesttracing.api,
                                             fish.payara.notification.eventbus,
-                                            fish.payara.nucleus.notification.domain,
-                                            fish.payara.nucleus.notification.service,
                                             fish.payara.notification.healthcheck,
-                                            fish.payara.notification.requesttracing,
+                                            fish.payara.notification.requesttracing
                                         </Export-Package>
+                                        <_exportcontents>
+                                            fish.payara.notification
+                                        </_exportcontents>
                                     </instructions>
                                 </configuration>
                             </execution>
@@ -263,6 +263,7 @@
                     <plugin>
                         <groupId>org.apache.felix</groupId>
                         <artifactId>maven-bundle-plugin</artifactId>
+                        <version>2.4.0</version>
                         <executions>
                             <execution>
                                 <id>bundle-manifest</id>
@@ -273,8 +274,6 @@
                                 <configuration>
                                     <instructions>
                                         <Import-Package>
-                                            fish.payara.nucleus.notification.domain,
-                                            fish.payara.nucleus.notification.service,
                                             fish.payara.cdi.jsr107.implementation,
                                             javax.inject,
                                             javax.enterprise.util,
@@ -289,13 +288,14 @@
                                             fish.payara.micro.cdi,
                                             fish.payara.nucleus.requesttracing.api,
                                             fish.payara.notification.eventbus,
-                                            fish.payara.nucleus.notification.domain,
-                                            fish.payara.nucleus.notification.service,
                                             fish.payara.notification.healthcheck,
                                             fish.payara.notification.requesttracing,
-                                            fish.payara.security.oauth2.annotation,
+                                            fish.payara.security.annotations,
                                             fish.payara.security.oauth2.api
                                         </Export-Package>
+                                        <_exportcontents>
+                                            fish.payara.notification
+                                        </_exportcontents>
                                     </instructions>
                                 </configuration>
                             </execution>
