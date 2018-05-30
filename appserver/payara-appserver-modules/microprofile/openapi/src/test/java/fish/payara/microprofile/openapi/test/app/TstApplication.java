@@ -49,7 +49,7 @@ import fish.payara.microprofile.openapi.test.app.application.ResponseTest;
 import fish.payara.microprofile.openapi.test.app.application.RootPathTest;
 
 @ApplicationPath("/test")
-public class TestApplication extends Application {
+public class TstApplication extends Application {
 
     @Override
     public Set<Class<?>> getClasses() {

@@ -52,8 +52,8 @@ public class ApplicationClassLoader extends ClassLoader {
 
     private Set<Class<?>> appClasses;
 
-    public ApplicationClassLoader(Application app, Set<Class<?>> extraClasses) {
-        super();
+    public ApplicationClassLoader(Application app, Set<Class<?>> extraClasses, ClassLoader parent) {
+        super(parent);
         appClasses = new HashSet<>();
         appClasses.add(app.getClass());
         appClasses.addAll(app.getClasses());
@@ -71,10 +71,6 @@ public class ApplicationClassLoader extends ClassLoader {
 
     public Set<Class<?>> getApplicationClasses() {
         return appClasses;
-    }
-
-    public ApplicationClassLoader(Application app) {
-        this(app, null);
     }
 
     private Class<?> getClass(String name) throws ClassNotFoundException {

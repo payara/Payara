@@ -56,6 +56,7 @@ import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventListener.Event;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;

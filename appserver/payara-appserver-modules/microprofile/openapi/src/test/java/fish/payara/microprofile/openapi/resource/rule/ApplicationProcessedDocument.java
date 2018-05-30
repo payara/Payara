@@ -45,7 +45,7 @@ import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
 import fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor;
 import fish.payara.microprofile.openapi.impl.processor.BaseProcessor;
 import fish.payara.microprofile.openapi.resource.classloader.ApplicationClassLoader;
-import fish.payara.microprofile.openapi.test.app.TestApplication;
+import fish.payara.microprofile.openapi.test.app.TstApplication;
 import fish.payara.microprofile.openapi.test.app.data.TestComponent;
 
 public class ApplicationProcessedDocument extends OpenAPIImpl {
@@ -54,7 +54,8 @@ public class ApplicationProcessedDocument extends OpenAPIImpl {
         // Apply base processor
         new BaseProcessor("/testlocation_123").process(this, null);
 
-        ApplicationClassLoader appClassLoader = new ApplicationClassLoader(new TestApplication(), singleton(TestComponent.class));
+        ApplicationClassLoader appClassLoader = new ApplicationClassLoader(new TstApplication(),
+                singleton(TestComponent.class), getClass().getClassLoader());
 
         // Apply application processor
         new ApplicationProcessor(appClassLoader.getApplicationClasses()).process(this, null);

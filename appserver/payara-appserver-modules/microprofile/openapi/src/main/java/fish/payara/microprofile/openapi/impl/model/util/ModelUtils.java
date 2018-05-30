@@ -63,7 +63,6 @@ import javax.ws.rs.HEAD;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.MatrixParam;
 import javax.ws.rs.OPTIONS;
-import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
@@ -147,9 +146,6 @@ public final class ModelUtils {
         }
         if (method.isAnnotationPresent(OPTIONS.class)) {
             return HttpMethod.OPTIONS;
-        }
-        if (method.isAnnotationPresent(PATCH.class)) {
-            return HttpMethod.PATCH;
         }
         return null;
     }
