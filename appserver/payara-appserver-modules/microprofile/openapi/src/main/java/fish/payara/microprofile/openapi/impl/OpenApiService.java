@@ -56,7 +56,6 @@ import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventListener.Event;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
@@ -114,8 +113,8 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     /**
      * Listen for OpenAPI config changes.
      */
-	@Override
-	public UnprocessedChangeEvents changed(PropertyChangeEvent[] event) {
+    @Override
+    public UnprocessedChangeEvents changed(PropertyChangeEvent[] event) {
         return ConfigSupport.sortAndDispatch(event, new Changed() {
             @Override
             public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> tClass, T t) {
@@ -131,7 +130,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
                 return null;
             }
         }, LOGGER);
-	}
+    }
 
     /**
      * Listen for application deployment events.
@@ -214,7 +213,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     }
 
     /**
-     * @param archive the archive to read from.
+     * @param archive        the archive to read from.
      * @param appClassLoader the classloader to use to load the classes.
      * @return a list of all loadable classes in the archive.
      */
@@ -228,19 +227,18 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
                 .map(x -> {
                     Class<?> loadedClass = null;
                     // Attempt to load the class, ignoring any errors
-					try {
-						loadedClass = appClassLoader.loadClass(x);
-					} catch (Throwable t) {
+                    try {
+                        loadedClass = appClassLoader.loadClass(x);
+                    } catch (Throwable t) {
                     }
-					try {
-						loadedClass = Class.forName(x);
-					} catch (Throwable t) {
+                    try {
+                        loadedClass = Class.forName(x);
+                    } catch (Throwable t) {
                     }
                     return loadedClass;
                 })
                 // Don't return null classes
-                .filter(x -> x != null)
-                .collect(toSet());
+                .filter(x -> x != null).collect(toSet());
     }
 
 }
