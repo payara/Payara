@@ -108,6 +108,9 @@ public final class ModelUtils {
         if (path == null) {
             return null;
         }
+        // Add leading slash
+        path = "/" + path;
+        
         // Remove multiple slashes
         path = path.replaceAll("/+", "/");
 
