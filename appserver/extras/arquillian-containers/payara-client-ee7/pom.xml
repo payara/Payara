@@ -48,7 +48,7 @@
     <name>Payara EE 7 client libs</name>
     
     <properties>
-        <jersey.version>2.25.1.payara-p2</jersey.version>
+        <jersey.version>2.25.1.payara-p3</jersey.version>
     </properties>
 
     <dependencies>
