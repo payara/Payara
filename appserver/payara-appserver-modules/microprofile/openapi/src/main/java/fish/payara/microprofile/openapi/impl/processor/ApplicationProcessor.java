@@ -288,27 +288,6 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
-    public void visitPATCH(PATCH patch, Method element, ApiContext context) {
-        if (context.getPath() == null) {
-            return;
-        }
-
-        // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getOrDefault(context.getPath(), new PathItemImpl());
-        context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
-
-        org.eclipse.microprofile.openapi.models.Operation operation = new OperationImpl();
-        pathItem.setPATCH(operation);
-        operation.setOperationId(element.getName());
-
-        // Add the default request
-        insertDefaultRequestBody(context, operation, element);
-
-        // Add the default response
-        insertDefaultResponse(context, operation, element);
-    }
-
-    @Override
     public void visitProduces(Produces produces, AnnotatedElement element, ApiContext context) {
         if (element instanceof Method) {
             for (org.eclipse.microprofile.openapi.models.responses.APIResponse response : context.getWorkingOperation()

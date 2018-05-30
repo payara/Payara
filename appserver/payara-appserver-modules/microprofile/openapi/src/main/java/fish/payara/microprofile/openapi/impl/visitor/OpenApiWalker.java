@@ -61,7 +61,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.OPTIONS;
-import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -144,7 +143,6 @@ public class OpenApiWalker implements ApiWalker {
         processAnnotations(DELETE.class, visitor::visitDELETE);
         processAnnotations(HEAD.class, visitor::visitHEAD);
         processAnnotations(OPTIONS.class, visitor::visitOPTIONS);
-        processAnnotations(PATCH.class, visitor::visitPATCH);
 
         // JAX-RS parameters
         processAnnotations(QueryParam.class, visitor::visitQueryParam);
@@ -266,8 +264,7 @@ public class OpenApiWalker implements ApiWalker {
             // If the method is a valid resource
             if (method.isAnnotationPresent(GET.class) || method.isAnnotationPresent(POST.class)
                     || method.isAnnotationPresent(PUT.class) || method.isAnnotationPresent(DELETE.class)
-                    || method.isAnnotationPresent(HEAD.class) || method.isAnnotationPresent(OPTIONS.class)
-                    || method.isAnnotationPresent(PATCH.class)) {
+                    || method.isAnnotationPresent(HEAD.class) || method.isAnnotationPresent(OPTIONS.class)) {
                 if (method.isAnnotationPresent(Path.class)) {
                     path = getResourcePath(method.getDeclaringClass()) + "/"
                             + method.getDeclaredAnnotation(Path.class).value();

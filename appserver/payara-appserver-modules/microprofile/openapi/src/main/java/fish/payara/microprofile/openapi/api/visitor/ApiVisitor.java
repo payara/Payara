@@ -51,7 +51,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.OPTIONS;
-import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
@@ -101,8 +100,6 @@ public interface ApiVisitor {
     void visitHEAD(HEAD head, Method element, ApiContext context);
 
     void visitOPTIONS(OPTIONS options, Method element, ApiContext context);
-
-    void visitPATCH(PATCH patch, Method element, ApiContext context);
 
     void visitProduces(Produces produces, AnnotatedElement element, ApiContext context);
 
