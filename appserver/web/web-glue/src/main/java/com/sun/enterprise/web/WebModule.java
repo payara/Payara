@@ -45,7 +45,6 @@ import static com.sun.enterprise.security.ee.SecurityUtil.getContextID;
 import static com.sun.enterprise.web.Constants.DEPLOYMENT_CONTEXT_ATTRIBUTE;
 import static com.sun.enterprise.web.Constants.ENABLE_HA_ATTRIBUTE;
 import static com.sun.enterprise.web.Constants.IS_DISTRIBUTABLE_ATTRIBUTE;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.text.MessageFormat.format;
 import static java.util.logging.Level.WARNING;
 import static org.glassfish.web.LogFacade.UNABLE_TO_RESTORE_SESSIONS_DURING_REDEPLOY;
@@ -66,7 +65,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.EventListener;
@@ -169,6 +167,8 @@ import com.sun.enterprise.deployment.web.ServletFilterMapping;
 import com.sun.enterprise.deployment.web.UserDataConstraint;
 import com.sun.enterprise.deployment.web.WebResourceCollection;
 import com.sun.enterprise.security.integration.RealmInitializer;
+import com.sun.enterprise.universal.GFBase64Decoder;
+import com.sun.enterprise.universal.GFBase64Encoder;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.web.deploy.LoginConfigDecorator;
 import com.sun.enterprise.web.pwc.PwcWebModule;
@@ -193,8 +193,8 @@ public class WebModule extends PwcWebModule implements Context {
     private static final String ALTERNATE_FROM = "from=";
     private static final String ALTERNATE_DOCBASE = "dir=";
 
-    private static final Base64.Encoder encoder = Base64.getMimeEncoder();
-    private static final Base64.Decoder decoder = Base64.getMimeDecoder();
+    private static final GFBase64Encoder encoder = new GFBase64Encoder();
+    private static final GFBase64Decoder decoder = new GFBase64Decoder();
 
     private static final String WS_SERVLET_CONTEXT_LISTENER =
         "com.sun.xml.ws.transport.http.servlet.WSServletContextListener";
@@ -1676,7 +1676,8 @@ public class WebModule extends PwcWebModule implements Context {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
             manager.writeSessions(baos, false);
-            props.setProperty(getObjectName(), new String(encoder.encode(baos.toByteArray()), UTF_8));
+            props.setProperty(getObjectName(),
+                    encoder.encode(baos.toByteArray()));
         } catch (Exception ex) {
             logger.log(WARNING, format(rb.getString(UNABLE_TO_SAVE_SESSIONS_DURING_REDEPLOY), getName()), ex);
         }
@@ -1702,7 +1703,9 @@ public class WebModule extends PwcWebModule implements Context {
         String sessions = deploymentProperties.getProperty(getObjectName());
         if (sessions != null) {
             try {
-                manager.readSessions(new ByteArrayInputStream(decoder.decode(sessions)));
+                ByteArrayInputStream bais = new ByteArrayInputStream(
+                        decoder.decodeBuffer(sessions));
+                    manager.readSessions(bais);
             } catch (Exception ex) {
                 logger.log(WARNING, format(rb.getString(UNABLE_TO_RESTORE_SESSIONS_DURING_REDEPLOY), getName()), ex);
             }
