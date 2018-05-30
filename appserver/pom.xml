@@ -181,7 +181,7 @@
          <microprofile-healthcheck.version>1.0</microprofile-healthcheck.version>
          <microprofile-metrics.version>1.1</microprofile-metrics.version>
          <microprofile-rest-client.version>1.0.1</microprofile-rest-client.version>
-        
+         <microprofile-openapi.version>1.0</microprofile-openapi.version>
     </properties>
 
     <modules>
@@ -1157,6 +1157,16 @@
             <modules>
                 <module>javaee-api</module>
             </modules>
-        </profile>   
+        </profile>
+        
+        <profile>
+            <id>jdk7</id>
+            <activation>
+                <jdk>1.7</jdk>
+            </activation>
+            <properties>
+                <eclipselink.version>2.6.4.payara-p2</eclipselink.version>
+            </properties>
+        </profile>
     </profiles>
 </project>

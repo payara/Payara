@@ -43,10 +43,9 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition;
-import fish.payara.security.oauth2.api.OAuth2State;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.inject.Typed;
@@ -68,6 +67,14 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import fish.payara.security.annotations.OAuth2AuthenticationDefinition;
+import fish.payara.security.oauth2.api.OAuth2State;
+import javax.el.ELProcessor;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.CDI;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.glassfish.config.support.TranslatedConfigView;
 
 /**
@@ -82,6 +89,8 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
     
     private static final Logger logger = Logger.getLogger("OAuth2Mechanism");
     
+    private final ELProcessor elProcessor;
+
     private String authEndpoint;
     private String tokenEndpoint;
     private String clientID;
@@ -95,10 +104,10 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
     
     @Inject
     private OAuth2StateHolder tokenHolder;
-    
+
     @Inject
     private IdentityStoreHandler identityStoreHandler;
-
+    
     /**
      * Creates an OAuth2AuthenticationMechanism.
      * <p>
@@ -106,7 +115,9 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
      * called before any requests are validated.
      */
     public OAuth2AuthenticationMechanism() {
-        //no-op constuctor
+        elProcessor = new ELProcessor();
+        BeanManager beanManager = CDI.current().getBeanManager();
+        elProcessor.getELManager().addELResolver(beanManager.getELResolver());
     }
 
     /**
@@ -115,6 +126,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
      * @param definition
      */
     public OAuth2AuthenticationMechanism(OAuth2AuthenticationDefinition definition) {
+        this();
         setDefinition(definition);
         
     }
@@ -125,30 +137,32 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
      * @param definition
      * @return
      */
-    public OAuth2AuthenticationMechanism setDefinition(OAuth2AuthenticationDefinition definition) {;
-        authEndpoint = (String) TranslatedConfigView.getTranslatedValue(definition.authEndpoint());
-        tokenEndpoint = (String) TranslatedConfigView.getTranslatedValue(definition.tokenEndpoint());
-        clientID = (String) TranslatedConfigView.getTranslatedValue(definition.clientId());
-        clientSecret = ((String) TranslatedConfigView.getTranslatedValue(definition.clientSecret())).toCharArray();
-        redirectURI = (String) TranslatedConfigView.getTranslatedValue(definition.redirectURI());
-        scopes = (String) TranslatedConfigView.getTranslatedValue(definition.scope());
+    public OAuth2AuthenticationMechanism setDefinition(OAuth2AuthenticationDefinition definition) {
+        Config provider = ConfigProvider.getConfig();
+        authEndpoint = getConfiguredValue(definition.authEndpoint(), provider, OAuth2AuthenticationDefinition.OAUTH2_MP_AUTH_ENDPOINT);
+        tokenEndpoint = getConfiguredValue(definition.tokenEndpoint(), provider, OAuth2AuthenticationDefinition.OAUTH2_MP_TOKEN_ENDPOINT);
+        clientID = getConfiguredValue(definition.clientId(), provider, OAuth2AuthenticationDefinition.OAUTH2_MP_CLIENT_ID);
+        clientSecret = getConfiguredValue(definition.clientSecret(), provider, OAuth2AuthenticationDefinition.OAUTH2_MP_CLIENT_SECRET).toCharArray();
+        redirectURI = getConfiguredValue(definition.redirectURI(), provider, OAuth2AuthenticationDefinition.OAUTH2_MP_REDIRECT_URI);
+        scopes = getConfiguredValue(definition.scope(), provider, OAuth2AuthenticationDefinition.OAUTH2_MP_SCOPE);
+        
         String[] params = definition.extraParameters();
         extraParameters = new String[params.length];
         for (int i = 0; i < params.length; i++) {
-            extraParameters[i] = (String) TranslatedConfigView.getTranslatedValue(params[i]);
+            extraParameters[i] = getConfiguredValue(params[i], provider, params[i]);
         }
         return this;
     }
     
     @Override
     public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext httpMessageContext)
-            throws AuthenticationException {        
-        
+            throws AuthenticationException {
+
         if (httpMessageContext.isProtected() && request.getUserPrincipal() == null) {
             //Needs to login and has not already done so
-            return redirectForAuth(httpMessageContext);            
+            return redirectForAuth(httpMessageContext);
         }
-        
+
         String recievedState = request.getParameter("state");
         if (request.getRequestURL().toString().equals(redirectURI) && recievedState != null) {
             //In the process of logging in
@@ -247,7 +261,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
      * @return
      */
     private AuthenticationStatus redirectForAuth(HttpMessageContext context) {
-        logger.log(Level.FINE, "Redirecting for authentication to {0}", authEndpoint);
+        logger.log(Level.FINEST, "Redirecting for authentication to {0}", authEndpoint);
         StringBuilder authTokenRequest = new StringBuilder(authEndpoint);
         authTokenRequest.append("?client_id=").append(clientID);
         authTokenRequest.append("&state=").append(state.getState());
@@ -264,5 +278,30 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
         
         return context.redirect(authTokenRequest.toString());
     }
+
     
+    private String getConfiguredValue(String value, Config provider, String mpConfigKey){
+        String result = value;
+        Optional<String> configResult = provider.getOptionalValue(mpConfigKey, String.class);
+        if (configResult.isPresent()) {
+            return configResult.get();
+        }
+        result = (String) TranslatedConfigView.getTranslatedValue(result);
+        if (isELExpression(value)){
+            result = (String) elProcessor.getValue(toRawExpression(result), String.class);
+        }
+        
+        return result;
+    }
+    
+    private static boolean isELExpression(String expression) {
+        return !expression.isEmpty() && isDeferredExpression(expression);
+    }
+    
+    private static boolean isDeferredExpression(String expression) {
+        return expression.startsWith("#{") && expression.endsWith("}");
+    }
+    private static String toRawExpression(String expression) {
+        return expression.substring(2, expression.length() - 1);
+    }
 }
