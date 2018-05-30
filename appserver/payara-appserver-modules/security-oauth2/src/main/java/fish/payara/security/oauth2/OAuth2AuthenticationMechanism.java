@@ -43,8 +43,6 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition;
-import fish.payara.security.oauth2.api.OAuth2State;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Optional;
