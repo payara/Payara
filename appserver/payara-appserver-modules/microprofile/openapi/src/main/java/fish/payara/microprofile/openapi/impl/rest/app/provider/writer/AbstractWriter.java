@@ -71,4 +71,9 @@ public abstract class AbstractWriter implements MessageBodyWriter<OpenAPI> {
         entityStream.write(mapper.writeValueAsBytes(t));
     }
 
+    @Override
+    public long getSize(OpenAPI t, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+        return -1;
+    }
+
 }

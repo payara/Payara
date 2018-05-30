@@ -136,7 +136,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
      * Listen for application deployment events.
      */
     @Override
-    public void event(Event<?> event) {
+    public void event(Event event) {
         if (event.is(Deployment.APPLICATION_STARTED)) {
             // Get the application information
             ApplicationInfo appInfo = (ApplicationInfo) event.hook();
