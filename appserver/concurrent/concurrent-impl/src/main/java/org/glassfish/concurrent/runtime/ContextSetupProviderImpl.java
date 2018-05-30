@@ -170,24 +170,24 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         InvocationContext handle = (InvocationContext) contextHandle;
         String appName = null;
 
+        ClassLoader backupClassLoader = null;
         if (handle.getInvocation() != null) {
             appName = handle.getInvocation().getAppName();
-        }
-        if(appName == null && handle.getInvocation().getJNDIEnvironment() != null) {
-            appName = DOLUtils.getApplicationFromEnv((JndiNameEnvironment)handle.getInvocation().getJNDIEnvironment()).getName();
-        }
-        ClassLoader backupClassLoader = null;
-        if (appName == null) {
-            // try to get environment from component ID
-            if(handle.getInvocation().getComponentId() != null && compEnvMgr != null) {
-                JndiNameEnvironment currJndiEnv = compEnvMgr.getJndiNameEnvironment(handle.getInvocation().getComponentId());
-                if(currJndiEnv != null) {
-                    com.sun.enterprise.deployment.Application appInfo = DOLUtils.getApplicationFromEnv(currJndiEnv);
-                    if(appInfo != null) {
-                        appName = appInfo.getName();
-                        // cache JNDI environment
-                        handle.getInvocation().setJNDIEnvironment(currJndiEnv);
-                        backupClassLoader = appInfo.getClassLoader();
+            if (appName == null && handle.getInvocation().getJNDIEnvironment() != null) {
+                appName = DOLUtils.getApplicationFromEnv((JndiNameEnvironment) handle.getInvocation().getJNDIEnvironment()).getName();
+            }
+            if (appName == null) {
+                // try to get environment from component ID
+                if (handle.getInvocation().getComponentId() != null && compEnvMgr != null) {
+                    JndiNameEnvironment currJndiEnv = compEnvMgr.getJndiNameEnvironment(handle.getInvocation().getComponentId());
+                    if (currJndiEnv != null) {
+                        com.sun.enterprise.deployment.Application appInfo = DOLUtils.getApplicationFromEnv(currJndiEnv);
+                        if (appInfo != null) {
+                            appName = appInfo.getName();
+                            // cache JNDI environment
+                            handle.getInvocation().setJNDIEnvironment(currJndiEnv);
+                            backupClassLoader = appInfo.getClassLoader();
+                        }
                     }
                 }
             }
