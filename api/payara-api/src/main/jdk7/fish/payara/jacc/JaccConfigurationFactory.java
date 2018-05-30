@@ -70,7 +70,7 @@ import javax.servlet.ServletContextListener;
  * 
  *  &#64;Override
  *  public void contextInitialized(ServletContextEvent sce) {
- *      JaccConfigurationFactory.getJaccConfigurationFactory()
+ *      JaccConfigurationFactoryJDK7.getJaccConfigurationFactory()
  *                              .registerContextProvider(
  *                                      getAppContextId(sce.getServletContext()),
  *                                      new TestPolicyConfigurationFactory(), 
@@ -89,34 +89,6 @@ import javax.servlet.ServletContextListener;
  *
  */
 public interface JaccConfigurationFactory {
-
-    /**
-     * This static method tries to obtain the global JaccConfigurationFactory, which means
-     * looking up the global PolicyConfigurationFactory and testing to see if its a 
-     * JaccConfigurationFactory.
-     * 
-     * @return the JaccConfigurationFactory
-     * @throws IllegalStateException if the underlying PolicyConfigurationFactory could not be obtained
-     * or the PolicyConfigurationFactory is not a JaccConfigurationFactory
-     */
-    static JaccConfigurationFactory getJaccConfigurationFactory() {
-        
-        PolicyConfigurationFactory policyConfigurationFactory;
-        try {
-            policyConfigurationFactory = PolicyConfigurationFactory.getPolicyConfigurationFactory();
-        } catch (ClassNotFoundException | PolicyContextException e) {
-            throw new IllegalStateException(e);
-        }
-        
-        if (!(policyConfigurationFactory instanceof JaccConfigurationFactory)) {
-            throw new IllegalStateException(
-                "PolicyConfigurationFactory " + policyConfigurationFactory.getClass().getName() +
-                " is not an instance of " + JaccConfigurationFactory.class.getName()
-            );
-        }
-        
-        return (JaccConfigurationFactory) policyConfigurationFactory;
-    }
     
     /**
      * @see PolicyConfigurationFactory#getPolicyConfiguration(String, boolean)
