@@ -197,7 +197,7 @@
                         <artifactId>maven-compiler-plugin</artifactId>
                         <configuration>
                             <excludes>
-                                <exclude>fish/payara/security/oauth2/annotation/OAuth2AuthenticationDefinition.java</exclude>
+                                <exclude>fish/payara/security/annotation/OAuth2AuthenticationDefinition.java</exclude>
                                 <exclude>fish/payara/security/oauth2/api/OAuthIdentityStore.java</exclude>
                                 <exclude>fish/payara/security/oauth2/api/OAuth2State.java</exclude>
                                 <exclude>fish/payara/security/oauth2/api/OAuth2AccessToken.java</exclude>
