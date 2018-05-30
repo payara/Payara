@@ -209,7 +209,11 @@ public final class AMXJ2EEStartupService implements org.glassfish.hk2.api.PostCo
     }
 
     private J2EEDomain getJ2EEDomainProxy() {
-        return ProxyFactory.getInstance(mMBeanServer).getProxy(getJ2EEDomain(), J2EEDomain.class);
+        try {
+            return ProxyFactory.getInstance(mMBeanServer).getProxy(getJ2EEDomain(), J2EEDomain.class);
+        } catch (NullPointerException e){
+            return null;
+        }
     }
 
     @Override
