@@ -259,7 +259,7 @@
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.1</jax-rs-api.impl.version>
-        <jersey.version>2.27.payara-p3</jersey.version>
+        <jersey.version>2.27.payara-p4</jersey.version>
 
         <!-- Bean Validation -->
         <javax.validation.version>2.0.0.Final</javax.validation.version>
@@ -311,6 +311,8 @@
         <jsonp.version>1.1</jsonp.version>
 
         <mimepull.version>1.9.7</mimepull.version>
+        
+        <opentracing.version>0.30.0</opentracing.version>
 
         <!-- Java Business Integration (JBI) is a specification for an approach to implementing a service-oriented architecture (SOA).  -->
         <jbi.version>1.0</jbi.version>
@@ -350,6 +352,9 @@
         <findbugs.version>2.5.2</findbugs.version>
         <findbugs.glassfish.logging.validLoggerPrefixes>javax.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
         <jacoco.plugin.version>0.8.0</jacoco.plugin.version>
+
+        <!-- MicroProfile API Versions -->
+        <microprofile-opentracing.version>1.0.payara-p1</microprofile-opentracing.version>
     </properties>
 
     <modules>

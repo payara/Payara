@@ -147,7 +147,7 @@
                                     fish.payara.notification.eventbus,
                                     fish.payara.notification.healthcheck,
                                     fish.payara.notification.requesttracing,
-                                    fish.payara.security.oauth2.annotation,
+                                    fish.payara.security.annotations,
                                     fish.payara.security.oauth2.api
                                 </Export-Package>
                             </instructions>
@@ -174,6 +174,13 @@
             <artifactId>javaee-api</artifactId>
             <scope>provided</scope>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-api</artifactId>
+            <version>${opentracing.version}</version>
+            <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

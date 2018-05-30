@@ -182,6 +182,7 @@
 	<module>rest-monitoring</module>
 	<module>payara-executor-service</module>
         <module>cdi-auth-roles</module>
+        <module>yubikey-authentication</module>
     </modules>
 
     <profiles>

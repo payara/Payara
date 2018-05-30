@@ -54,7 +54,6 @@
         <module>payara-jsr107</module>
         <module>hazelcast-ejb-timer</module>
         <module>hazelcast-eclipselink-coordination</module>
-        <module>requesttracing-api</module>
         <module>jmx-monitoring-service</module>
         <module>payara-micro-service</module>
         <module>payara-micro-cdi</module>
@@ -72,8 +71,10 @@
         <module>payara-rest-endpoints</module>
         <module>rest-monitoring</module>
         <module>cdi-auth-roles</module>
+        <module>opentracing-cdi</module>
+        <module>jaxrs-client-tracing</module>
+        <module>yubikey-authentication</module>
     </modules>
-
     <profiles>
         <profile>
             <id>jdk8</id>
@@ -87,3 +88,4 @@
         </profile>
     </profiles>
 </project>
+

@@ -88,7 +88,6 @@
             </activation>
             <modules>
                 <module>arquillian-containers</module>
-                <module>payara-micro</module>
                 <module>embedded</module>
             </modules>
         </profile>

@@ -58,5 +58,6 @@ holder.
         <module>jwt-auth</module>
         <module>metrics</module>
         <module>openapi</module>
+        <module>opentracing</module>
     </modules>
 </project>
