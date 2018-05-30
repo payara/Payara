@@ -1157,6 +1157,16 @@
             <modules>
                 <module>javaee-api</module>
             </modules>
-        </profile>   
+        </profile>
+        
+        <profile>
+            <id>jdk7</id>
+            <activation>
+                <jdk>1.7</jdk>
+            </activation>
+            <properties>
+                <eclipselink.version>2.6.4.payara-p2</eclipselink.version>
+            </properties>
+        </profile>
     </profiles>
 </project>
