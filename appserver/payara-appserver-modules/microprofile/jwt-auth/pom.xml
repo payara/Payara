@@ -58,24 +58,16 @@ holder.
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>3.3.0</version><!--$NO-MVN-MAN-VER$-->
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <instructions>
+                        <Specification-Version>${microprofile-jwt-auth.version}</Specification-Version>
+                        <Implementation-Version>${project.version}</Implementation-Version>
+                    </instructions>
                 </configuration>
             </plugin>
-             <plugin>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>maven-bundle-plugin</artifactId>
-                    <version>3.3.0</version><!--$NO-MVN-MAN-VER$-->
-                    <configuration>
-                        <instructions>
-                            <Specification-Version>${microprofile-jwt-auth.version}</Specification-Version>
-                            <Implementation-Version>${project.version}</Implementation-Version>
-                        </instructions>
-                    </configuration>
-                </plugin>
         </plugins>
     </build>
 
