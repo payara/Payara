@@ -73,7 +73,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
-import org.glassfish.grizzly.config.GrizzlyListener;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.impl.FutureImpl;
 import org.glassfish.grizzly.impl.SafeFutureImpl;
@@ -201,31 +200,7 @@ public class DynamicConfigListener implements ConfigListener {
                         }   break;
                     case CHANGE:
                         // If the listener is the admin listener
-                        if (isAdminListener && false) {
-                            final boolean dynamic = isAdminDynamic(changedProperties);
-                            // If configuration is dynamic then make the change
-                            if (dynamic) {
-                                GrizzlyProxy proxy = (GrizzlyProxy) grizzlyService.lookupNetworkProxy(listener);
-                                if (proxy != null) {
-                                    GrizzlyListener netListener = proxy.getUnderlyingListener();
-                                    netListener.processDynamicConfigurationChange(
-                                            grizzlyService.getHabitat(), changedProperties);
-                                    return null;
-                                }
-                            }
-                            // Otherwise return the unprocessed event, describing the changed values.
-                            if (!isRedundantChange(changedProperties)) {
-                                StringBuilder eventsMessage = new StringBuilder();
-                                /* Add list of changed events to an events message.
-                                *  Usually only one message is sent to this method at a time, so the for loop should only run once,
-                                *  but it's there just in case.
-                                */
-                                for (PropertyChangeEvent event : changedProperties) {
-                                    eventsMessage.append("\"").append(event.getPropertyName()).append("\" changed from \"").
-                                            append(event.getOldValue()).append("\" to \"").append(event.getNewValue()).append("\".\n");
-                                }
-                                return new NotProcessed(listener.getThreadPool() + " attribute " + eventsMessage.toString());
-                            }
+                        if (isAdminListener) {
                             return null;
                         }   
 
