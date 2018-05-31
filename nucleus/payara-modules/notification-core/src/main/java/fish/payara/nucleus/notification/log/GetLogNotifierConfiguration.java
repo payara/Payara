@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -82,7 +82,7 @@ public class GetLogNotifierConfiguration extends BaseGetNotifierConfiguration<Lo
 
     @Override
     protected Map<String, Object> getNotifierConfiguration(LogNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(2);
+        Map<String, Object> map = new HashMap<>(3);
 
         if (configuration != null) {
             map.put("enabled", configuration.getEnabled());
