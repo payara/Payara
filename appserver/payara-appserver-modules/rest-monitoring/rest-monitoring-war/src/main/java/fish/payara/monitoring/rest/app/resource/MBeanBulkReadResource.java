@@ -39,20 +39,9 @@
  */
 package fish.payara.monitoring.rest.app.resource;
 
-import java.io.StringReader;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonString;
-import javax.json.JsonStructure;
-import javax.json.JsonValue;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -63,7 +52,12 @@ import fish.payara.monitoring.rest.app.handler.MBeanAttributeReadHandler;
 import fish.payara.monitoring.rest.app.handler.MBeanAttributesReadHandler;
 import fish.payara.monitoring.rest.app.handler.MBeanReadHandler;
 import fish.payara.monitoring.rest.app.handler.ReadHandler;
+import fish.payara.monitoring.rest.app.handler.ResourceHandler;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.*;
 
 /**
  * @author Krassimir Valev
@@ -76,79 +70,106 @@ public class MBeanBulkReadResource {
     private MBeanServerDelegate mDelegate;
 
     /**
-     * Returns the {@link String} form of the {@link JSONObject} resource from the ResourceHandler.
+     * Returns the {@link String} form of the {@link JSONObject} resource from
+     * the ResourceHandler.
      *
-     * @param content
-     *            The JSON request payload, describing the beans and attributes to read.
-     * @return The {@link String} representation of the MBeanRead/MBeanAttributeRead {@link JSONObject}.
+     * @param content The JSON request payload, describing the beans and
+     * attributes to read.
+     * @return The {@link String} representation of the
+     * MBeanRead/MBeanAttributeRead {@link JSONObject}.
      */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public String getReadResource(final String content) {
-        try (JsonReader reader = Json.createReader(new StringReader(content))) {
-            // the payload can be either a single request or a bulk one (array)
-            JsonStructure struct = reader.read();
-            switch (struct.getValueType()) {
-                case ARRAY:
-//                    List<JsonObject> objects = struct.asJsonArray().stream()
-//                            .map(value -> handleRequest(value.asJsonObject()))
-//                            .filter(Optional::isPresent)
-//                            .map(Optional::get)
-//                            .collect(Collectors.toList());
-                    
-                    //List<JsonObject> objects1 = struct.asJsonArray().
-                    List<JsonObject> objects = new ArrayList<>();
-                
-                    for (JsonValue jsonValue : struct.asJsonArray()){
-                      JsonObject response = handleRequest(jsonValue.asJsonObject());
-                        if (response != null){
-                            objects.add(response);
-                        }
-                    }
-                    
-                    JsonArrayBuilder builder = Json.createArrayBuilder();
-                    for (JsonObject jsonObject : objects) {
-                        builder.add(jsonObject);
-                    }
+    public String getReadResource(final String content) throws JSONException {
 
-                    return builder.build().toString();
-                case OBJECT:
-                    //return handleRequest(struct.asJsonObject()).orElse(JsonValue.EMPTY_JSON_OBJECT).toString();
-                    return handleRequest(struct.asJsonObject()).toString() != null ? handleRequest(struct.asJsonObject()).toString() : JsonValue.EMPTY_JSON_OBJECT.toString(); 
+        if (content != null && !content.trim().isEmpty() && isJsonValid(content)) {
+            Object jsonTokener = new JSONTokener(content).nextValue();
 
-                default:
-                    return "invalid JSON structure";
+            if (jsonTokener instanceof JSONObject) {
+                JSONObject jsonObject = new JSONObject(content);
+
+                try {
+                    JSONObject request = handleRequest(jsonObject);
+                    if (request != null) {
+                        return request.toString();
+                    } else {
+                        return "{}";
+                    }
+                } catch (NullPointerException ex) {
+                     Logger.getLogger(ResourceHandler.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else if (jsonTokener instanceof JSONArray) {
+                List<JSONObject> objects = new ArrayList<>();
+                JSONArray jsonArray = new JSONArray(content);
+
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    System.out.println(jsonArray.getJSONObject(i));
+                    JSONObject jsonObject = handleRequest(jsonArray.getJSONObject(i));
+
+                    if (jsonObject != null) {
+                        objects.add(jsonObject);
+                    }
+                }
+
+                JSONArray resource = new JSONArray();
+
+                for (JSONObject jsonObject : objects) {
+                    resource.put(jsonObject);
+                }
+
+                return resource.toString();
             }
         }
+
+        return "invalid JSON";
     }
 
-    private JsonObject handleRequest(final JsonObject jsonObject) {
+    private JSONObject handleRequest(final JSONObject jsonObject) throws JSONException {
         // ignore non-read requests
-        String type = jsonObject.getString("type", "");
+        String type = jsonObject.optString("type");
         if (!"read".equalsIgnoreCase(type)) {
             return null;
         }
 
-        String mbean = jsonObject.getString("mbean", "");
-        JsonValue attributes = jsonObject.getOrDefault("attribute", JsonValue.NULL);
+        String mbean = jsonObject.optString("mbean");
+        String attributes = jsonObject.optString("attribute");
         ReadHandler handler = getReadHandler(mbean, attributes);
         return handler.getResource();
     }
 
-    private ReadHandler getReadHandler(final String mbean, final JsonValue attributes) {
+    private ReadHandler getReadHandler(final String mbean, final String attributes) throws JSONException {
         // attributes can be null, a string or a list of strings
-        switch (attributes.getValueType()) {
-            case ARRAY:
-                String[] attributeNames = attributes.asJsonArray().stream()
-                        .map(v -> ((JsonString) v).getString())
-                        .toArray(String[]::new);
-                return new MBeanAttributesReadHandler(mDelegate, mbean, attributeNames);
-            case STRING:
-                String attribute = ((JsonString) attributes).getString();
-                return new MBeanAttributeReadHandler(mDelegate, mbean, attribute);
-            default:
-                return new MBeanReadHandler(mDelegate, mbean);
+        if (attributes != null && !attributes.trim().isEmpty()) {
+            Object jsonTokener = new JSONTokener(attributes).nextValue();
+            if (jsonTokener instanceof JSONArray) {
+                List<String> attributeNames = new ArrayList<>();
+
+                JSONArray jsonArray = new JSONArray(attributes);
+
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    attributeNames.add(jsonArray.get(i).toString());
+                }
+                return new MBeanAttributesReadHandler(mDelegate, mbean, attributeNames.toArray(new String[0]));
+
+            } else if (jsonTokener instanceof String) {
+                return new MBeanAttributeReadHandler(mDelegate, mbean, attributes);
+            }
         }
+
+        return new MBeanReadHandler(mDelegate, mbean);
+    }
+
+    private boolean isJsonValid(String jsonString) {
+        try {
+            new JSONObject(jsonString);
+        } catch (JSONException jsonObjectException) {
+            try {
+                new JSONArray(jsonString);
+            } catch (JSONException jsonArrayException) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

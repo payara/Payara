@@ -39,27 +39,25 @@
  */
 package fish.payara.monitoring.rest.app.handler;
 
-import java.util.Arrays;
-
 import javax.inject.Singleton;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.InstanceNotFoundException;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
-import javax.ws.rs.core.Response;
 
 import fish.payara.monitoring.rest.app.MBeanServerDelegate;
 import fish.payara.monitoring.rest.app.RestMonitoringAppResponseToken;
 import fish.payara.monitoring.rest.app.processor.ProcessorFactory;
 import fish.payara.monitoring.rest.app.processor.TypeProcessor;
+import java.util.Arrays;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.ws.rs.core.Response;
 
 /**
  * @author Krassimir Valev
@@ -88,37 +86,39 @@ public class MBeanAttributesReadHandler extends ReadHandler {
     }
 
     @Override
-    public JsonObject getRequestObject() {
-        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+    public JSONObject getRequestObject() {
+        JSONObject requestObject = new JSONObject();
         try {
-            objectBuilder.add(RestMonitoringAppResponseToken.getMbeanNameKey(), mbeanname);
-            objectBuilder.add(RestMonitoringAppResponseToken.getAttributeNameKey(),
-                    Json.createArrayBuilder(Arrays.asList(attributenames)));
-            objectBuilder.add(RestMonitoringAppResponseToken.getRequestTypeKey(), requesttype);
-        } catch (JsonException ex) {
-            super.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
+            requestObject.put(RestMonitoringAppResponseToken.getMbeanNameKey(), mbeanname);
+            requestObject.put(RestMonitoringAppResponseToken.getMbeanNameKey(), mbeanname);
+            requestObject.put(RestMonitoringAppResponseToken.getAttributeNameKey(),
+                    new JSONArray(Arrays.asList(attributenames)));
+            requestObject.put(RestMonitoringAppResponseToken.getRequestTypeKey(), requesttype);
+
+        } catch (JSONException ex) {
+            Logger.getLogger(MBeanAttributesReadHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return objectBuilder.build();
+        return requestObject;
     }
 
     @Override
-    public JsonValue getValueObject() throws JsonException {
+    public Object getValueObject() throws JSONException {
         try {
             AttributeList attributes = delegate.getMBeanAttributes(mbeanname, attributenames);
 
             // the javax.management.Attribute type does not inherit from OpenType<T>, so the existing
             // ProcessorFactory and TypeProcessor infrastructure cannot be used
-            JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+            JSONArray jsonArray = new JSONArray();
 
             for (Attribute attribute : attributes.asList()) {
                 TypeProcessor<?> processor = ProcessorFactory.getTypeProcessor(attribute.getValue());
 
-                JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-                objectBuilder.add(attribute.getName(), processor.processObject(attribute.getValue()));
-                arrayBuilder.add(objectBuilder);
+                JSONObject valueObject = new JSONObject();
+                valueObject.put(attribute.getName(), processor.processObject(attribute.getValue()));
+                jsonArray.put(valueObject);
             }
 
-            return arrayBuilder.build();
+            return jsonArray;
         } catch (InstanceNotFoundException | ReflectionException | MalformedObjectNameException ex) {
             super.setStatus(Response.Status.NOT_FOUND);
             return getTraceObject(ex);
