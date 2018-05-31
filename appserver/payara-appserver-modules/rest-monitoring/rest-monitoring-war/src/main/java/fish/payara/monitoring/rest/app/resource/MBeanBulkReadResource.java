@@ -96,7 +96,7 @@ public class MBeanBulkReadResource {
                         return "{}";
                     }
                 } catch (NullPointerException ex) {
-                     Logger.getLogger(ResourceHandler.class.getName()).log(Level.SEVERE, null, ex);
+                     Logger.getLogger(ResourceHandler.class.getName()).log(Level.CONFIG, "NullPointerException when getting Read resources", ex);
                 }
             } else if (jsonTokener instanceof JSONArray) {
                 List<JSONObject> objects = new ArrayList<>();
