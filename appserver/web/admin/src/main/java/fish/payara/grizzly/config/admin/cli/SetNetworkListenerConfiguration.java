@@ -100,7 +100,8 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 })
 public class SetNetworkListenerConfiguration implements AdminCommand, EventListener {
 
-    private Logger LOGGER = LogFacade.getLogger();
+    private static final Logger LOGGER = LogFacade.getLogger();
+    private static final String ADMIN_LISTENER = "admin-listener";
     private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     //Parameters
@@ -159,7 +160,7 @@ public class SetNetworkListenerConfiguration implements AdminCommand, EventListe
     }
     @Override
     public void event(EventListener.Event event) {
-            if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
+            if (event.is(EventTypes.SERVER_SHUTDOWN)) {
                 shutdownChange();
             }
     }
@@ -211,7 +212,7 @@ public class SetNetworkListenerConfiguration implements AdminCommand, EventListe
                 }, listener);
             
             String oldPort = listener.getPort();
-            if (port != null){
+            if (port != null && ADMIN_LISTENER.equals(listenerName)){
                 
                 UnprocessedChangeEvent unprocessed = new UnprocessedChangeEvent(
                         new PropertyChangeEvent(this, "port", oldPort, port), listener.getName() + " port changed from " + oldPort + " to " + port);
