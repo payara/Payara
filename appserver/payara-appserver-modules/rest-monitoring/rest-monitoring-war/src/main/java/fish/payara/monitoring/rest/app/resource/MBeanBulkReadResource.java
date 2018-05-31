@@ -103,9 +103,7 @@ public class MBeanBulkReadResource {
                 JSONArray jsonArray = new JSONArray(content);
 
                 for (int i = 0; i < jsonArray.length(); i++) {
-                    System.out.println(jsonArray.getJSONObject(i));
                     JSONObject jsonObject = handleRequest(jsonArray.getJSONObject(i));
-
                     if (jsonObject != null) {
                         objects.add(jsonObject);
                     }
