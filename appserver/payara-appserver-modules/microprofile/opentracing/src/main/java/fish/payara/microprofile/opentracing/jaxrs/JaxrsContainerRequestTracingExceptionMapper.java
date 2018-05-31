@@ -39,8 +39,9 @@
  */
 package fish.payara.microprofile.opentracing.jaxrs;
 
-import javax.ws.rs.NotSupportedException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.StatusType;
 import javax.ws.rs.ext.ExceptionMapper;
 
 /**
@@ -52,14 +53,20 @@ import javax.ws.rs.ext.ExceptionMapper;
 public class JaxrsContainerRequestTracingExceptionMapper implements ExceptionMapper<Throwable> {
 
     @Override
-    public Response toResponse(Throwable exception) {
-        // There must be a better way of doing this...
-        if (exception instanceof NotSupportedException) {
-            return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).build();
-        }
+    public Response toResponse(Throwable exception) {      
+        StatusType status = Response.Status.INTERNAL_SERVER_ERROR;
         
-        // Send an error response with the caught exception attached
-        return Response.serverError().entity(exception).build();
+        // Get the status if available
+        if (exception instanceof WebApplicationException) {
+            status = ((WebApplicationException) exception).getResponse().getStatusInfo();
+        }    
+        
+        // If the status is a server error, attach it as an entity, otherwise just return a response
+        if (status.getFamily() == Response.Status.Family.SERVER_ERROR) {
+            return Response.status(status).entity(exception).build();
+        } else {
+            return Response.status(status).build();
+        }
     }
 
 }
