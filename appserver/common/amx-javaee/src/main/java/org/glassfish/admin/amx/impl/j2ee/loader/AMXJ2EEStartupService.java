@@ -248,7 +248,7 @@ public final class AMXJ2EEStartupService implements org.glassfish.hk2.api.PostCo
                 ImplUtil.unregisterAMXMBeans(j2eeDomain);
             }
         } catch (NullPointerException e){
-            logger.log(LEVEL.FINEST, "NullPointerException when stopping AMX, AMX may not have benn started", e);
+            logger.log(LEVEL.FINEST, "NullPointerException when stopping AMX, AMX may not have been started", e);
         }
     }
 }
