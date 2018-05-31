@@ -130,9 +130,14 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType;
+import org.glassfish.internal.deployment.Deployment;
 
 @Service
 public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationContainer>
@@ -198,6 +203,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
     @Inject
     ArchiveFactory archiveFactory;
+
+    @Inject
+    private Deployment deployment;
 
     private Map<Application, WeldBootstrap> appToBootstrap =
             new HashMap<Application, WeldBootstrap>();
@@ -275,6 +283,10 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     }
 
                 });
+
+                BundleDescriptor bd = DOLUtils.getCurrentBundleForContext(deployment.getCurrentDeploymentContext());
+                ComponentInvocation inv = new ComponentInvocation(DOLUtils.getComponentEnvId((JndiNameEnvironment) bd), ComponentInvocationType.SERVLET_INVOCATION, appInfo, fAppName, fAppName);
+                inv.setJNDIEnvironment(bd);
                 try {
                     bootstrap.startExtensions(deploymentImpl.getExtensions());
                     bootstrap.startContainer(deploymentImpl.getAppName() + ".bda", Environments.SERVLET, deploymentImpl/*, new ConcurrentHashMapBeanStore()*/);
@@ -282,6 +294,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     fireProcessInjectionTargetEvents(bootstrap, deploymentImpl);
                     bootstrap.deployBeans();
                     bootstrap.validateBeans();
+                    invocationManager.preInvoke(inv);
                     bootstrap.endInitialization();
                 } catch (Throwable t) {
                     try {
@@ -294,6 +307,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     de.initCause(t);
                     throw(de);
                 } finally {
+                    invocationManager.postInvoke(inv);
                     invocationManager.popAppEnvironment();
 
                     //The TCL is originally the EAR classloader

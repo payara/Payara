@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,34 +37,47 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.healthcheck;
+package fish.payara.microprofile.openapi.impl.model.security;
 
-/**
- * Enum for the status level of a health check
- * @author steve
- * @since 4.1.1.161
- */
-public enum HealthCheckResultStatus {
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 
-    CHECK_ERROR(1),
-    CRITICAL(2),
-    WARNING(3),
-    GOOD(4),
-    FINE(5);
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
 
-    private final int level;
+import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
 
-    HealthCheckResultStatus(int level) {
-        this.level = level;
+public class SecurityRequirementImpl extends LinkedHashMap<String, List<String>> implements SecurityRequirement {
+
+    private static final long serialVersionUID = -677783376083861245L;
+
+    @Override
+    public SecurityRequirement addScheme(String name, String item) {
+        this.put(name, Arrays.asList(item));
+        return this;
     }
 
-    /**
-     * Gets the status level;
-     * 1=CHECK_ERROR, 2=CRITICAL,
-     * 3=WARNING, 4=GOOD, 5=FINE
-     * @return an integer from 1 to 5 inclusive
-     */
-    public int getLevel() {
-        return level;
+    @Override
+    public SecurityRequirement addScheme(String name, List<String> item) {
+        this.put(name, item);
+        return this;
     }
+
+    @Override
+    public SecurityRequirement addScheme(String name) {
+        this.put(name, new ArrayList<>());
+        return this;
+    }
+
+    public static void merge(org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement from,
+            SecurityRequirement to) {
+        if (isAnnotationNull(from)) {
+            return;
+        }
+        if (from.name() != null && !from.name().isEmpty()) {
+            to.addScheme(from.name(), Arrays.asList(from.scopes()));
+        }
+    }
+
 }

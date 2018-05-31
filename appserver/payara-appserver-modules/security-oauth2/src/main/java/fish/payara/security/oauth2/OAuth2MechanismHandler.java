@@ -44,7 +44,7 @@ import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
-import fish.payara.security.oauth2.annotation.OAuth2AuthenticationDefinition;
+import fish.payara.security.annotations.OAuth2AuthenticationDefinition;
 import fish.payara.security.oauth2.api.OAuth2State;
 import fish.payara.security.oauth2.api.OAuthIdentityStore;
 import java.lang.annotation.Annotation;
