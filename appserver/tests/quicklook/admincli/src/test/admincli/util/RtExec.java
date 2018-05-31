@@ -52,14 +52,15 @@ import java.io.*;
  * @author Administrator
  */
 public class RtExec {
-    private static boolean result=false;
+    
+    private static boolean result = false;
     private static Process proc;
     private static Runtime rt = Runtime.getRuntime();
     private static int exitVal = 101;
 
-    public static boolean execute(String cmd) throws IOException {
+    public static boolean execute(String test, String cmd) throws IOException {
         try {
-            System.out.println("RtExec.execute: " + cmd);
+            System.out.println(test + " RtExec.execute: " + cmd);
             proc = rt.exec(cmd);
 
             StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), "ERROR");
@@ -71,8 +72,9 @@ public class RtExec {
 
             // Checking exit satus
             exitVal = proc.waitFor();
-//            System.out.println("ExitValue: " + exitVal);
-            if (exitVal == 0){
+            // System.out.println("ExitValue: " + exitVal);
+            
+            if (exitVal == 0) {
                 result = true;
             } else {
                 result = false;
@@ -82,6 +84,7 @@ public class RtExec {
         } catch (Throwable t) {
             t.printStackTrace();
         }
+        
         return result;
     }
 }

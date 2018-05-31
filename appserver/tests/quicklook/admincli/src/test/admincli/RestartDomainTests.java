@@ -49,49 +49,52 @@ import java.util.*;
 
 public class RestartDomainTests {
 
-    private BufferedReader in = null;
-    private String outPutFile=null, expectedOutPut=null, testErr=null;
-    String host=System.getProperty("http.host");
-    String port=System.getProperty("http.port");
+    private BufferedReader in;
+    private String outPutFile, expectedOutPut, testErr;
+    private String host = System.getProperty("http.host");
+    private String port = System.getProperty("http.port");
 
     @Test
     public void restartDomainTest() throws Exception {
-	outPutFile = "admincli-restart.output";
-	expectedOutPut = "Command restart-domain executed successfully.";
-	testErr = "Restart domain failed.";
-	parseTestResults(outPutFile, expectedOutPut, testErr);    
+        outPutFile = "admincli-restart.output";
+        expectedOutPut = "Command restart-domain executed successfully.";
+        testErr = "Restart domain failed.";
+
+        parseTestResults(outPutFile, expectedOutPut, testErr);
     }
 
     public void parseTestResults(String outPutFile, String expectedOutPut, String testErr) throws Exception {
-       boolean result=false;
-       File dir1 = new File (".");
-       String fileName = dir1.getCanonicalPath()+"/"+outPutFile;
-       this.expectedOutPut = expectedOutPut;
-       this.testErr = testErr;
-       //System.out.println("Parsing output file: "+fileName );
-       try {
-           in = new BufferedReader(new FileReader(fileName));
-       } catch (FileNotFoundException e) {
-           System.out.println("Could not open file " + fileName + " for reading ");
-       }
+        boolean result = false;
+        File dir1 = new File(".");
+        String fileName = dir1.getCanonicalPath() + "/" + outPutFile;
 
-       if(in != null) {
-           String line;
-           String testLine = null;
-           try {
-              while (( line = in.readLine() )  != null ) {
-                //System.out.println("The line read is: " + line);
-                if(line.indexOf(expectedOutPut)!=-1){
-                  result=true;
-                  testLine = line;
-                  //System.out.println(testLine); 
-		} 
-	      }
-              Assert.assertEquals(result, true, testErr);
-           }catch(Exception e){
-              e.printStackTrace();
-              throw new Exception(e);
-         }
-       }
+        this.expectedOutPut = expectedOutPut;
+        this.testErr = testErr;
+
+        System.out.println("Parsing output file: " + fileName);
+        try {
+            in = new BufferedReader(new FileReader(fileName));
+        } catch (FileNotFoundException e) {
+            System.out.println("Could not open file " + fileName + " for reading ");
+        }
+
+        if (in != null) {
+            String line;
+            String testLine = null;
+            try {
+                while ((line = in.readLine()) != null) {
+                    System.out.println("The line read is: " + line);
+                    if (line.indexOf(expectedOutPut) != -1) {
+                        result = true;
+                        testLine = line;
+                        System.out.println(testLine);
+                    }
+                }
+                Assert.assertEquals(result, true, testErr);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new Exception(e);
+            }
+        }
     }
 }

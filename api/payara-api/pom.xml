@@ -38,24 +38,19 @@
   holder.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
         <version>4.1.2.182-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>fish.payara.api</groupId>
     <artifactId>payara-api</artifactId>
+    
     <name>Payara-API</name>
     <description>Artefact that exposes public API of Payara Application Server</description>
-
-    <properties>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
-    </properties>
 
     <developers>
         <developer>
@@ -80,14 +75,7 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                </configuration>
-            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -132,13 +120,13 @@
                                     javax.inject,
                                     javax.enterprise.util,
                                     javax.security.enterprise.credential,
-                                    javax.security.enterprise.identitystore,
-                                    javax.security.jacc
+                                    javax.security.enterprise.identitystore
                                 </Import-Package>
                                 <Export-Package>
                                     fish.payara.cdi.auth.roles,
                                     fish.payara.cdi.jsr107.impl,
                                     fish.payara.cluster,
+                                    fish.payara.jacc,
                                     fish.payara.micro.cdi,
                                     fish.payara.notification.eventbus,
                                     fish.payara.notification.healthcheck,
@@ -183,7 +171,7 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-        
+
     <profiles>
         <profile>
             <id>jdk7</id>
@@ -193,9 +181,30 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.0.0</version>
+                        <executions>
+                            <execution>
+                                <id>generate-sources</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>add-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>${project.basedir}/src/main/jdk7</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
                         <configuration>
+                            <source>1.7</source>
+                            <target>1.7</target>
                             <excludes>
                                 <exclude>fish/payara/security/annotation/OAuth2AuthenticationDefinition.java</exclude>
                                 <exclude>fish/payara/security/oauth2/api/OAuthIdentityStore.java</exclude>
@@ -227,6 +236,7 @@
                                             fish.payara.cdi.auth.roles,
                                             fish.payara.cdi.jsr107.impl,
                                             fish.payara.cluster,
+                                            fish.payara.jacc,
                                             fish.payara.micro.cdi,
                                             fish.payara.nucleus.requesttracing.api,
                                             fish.payara.notification.eventbus,
@@ -244,7 +254,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
         <profile>
             <id>jdk8</id>
             <activation>
@@ -260,6 +270,33 @@
             </dependencies>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.0.0</version>
+                        <executions>
+                            <execution>
+                                <id>generate-sources</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>add-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>${project.basedir}/src/main/jdk8</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.felix</groupId>
                         <artifactId>maven-bundle-plugin</artifactId>
@@ -285,6 +322,7 @@
                                             fish.payara.cdi.auth.roles,
                                             fish.payara.cdi.jsr107.impl,
                                             fish.payara.cluster,
+                                            fish.payara.jacc,
                                             fish.payara.micro.cdi,
                                             fish.payara.nucleus.requesttracing.api,
                                             fish.payara.notification.eventbus,
@@ -304,5 +342,5 @@
                 </plugins>
             </build>
         </profile>
-    </profiles> 
+    </profiles>
 </project>

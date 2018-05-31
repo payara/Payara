@@ -40,7 +40,6 @@
 
 package test.jpa.jpavalidation;
 
-
 import org.testng.annotations.Configuration;
 import org.testng.annotations.ExpectedExceptions;
 import org.testng.annotations.Test;
@@ -53,39 +52,38 @@ import java.util.*;
 
 public class JpaValidationTestNG {
 
-    private String strContextRoot="/jpavalidation";
+    private String strContextRoot = "/jpavalidation";
 
     static String result = "";
-    String host=System.getProperty("http.host");
-    String port=System.getProperty("http.port");
+    String host = System.getProperty("http.host");
+    String port = System.getProperty("http.port");
 
-    @Test(groups = { "init" })           
-    public void initialize() throws Exception{
-        boolean result=false;       
+    @Test(groups = { "init" })
+    public void initialize() throws Exception {
+        boolean result = false;
 
-        try{
+        try {
+            result = test("initialize");
+            Assert.assertEquals(result, true, "Unexpected Results");
 
-          result = test("initialize");
-	  Assert.assertEquals(result, true, "Unexpected Results");
+        } catch (Exception e) {
 
-        }catch(Exception e){
-
-	  e.printStackTrace();
-	  throw new Exception(e);
+            e.printStackTrace();
+            throw new Exception(e);
 
         }
     }
 
     @Test(dependsOnGroups = { "init.*" })
-    public void validatePersist() throws Exception{
-        boolean result=false;        
+    public void validatePersist() throws Exception {
+        boolean result = false;
 
-        try{
+        try {
 
-            result = test("validatePersist");               
-  	    Assert.assertEquals(result, true,"Unexpected Results");
+            result = test("validatePersist");
+            Assert.assertEquals(result, true, "Unexpected Results");
 
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             throw new Exception(e);
         }
@@ -93,15 +91,15 @@ public class JpaValidationTestNG {
     }
 
     @Test(dependsOnMethods = { "validatePersist" })
-    public void validateUpdate() throws Exception{
-        boolean result=false;        
+    public void validateUpdate() throws Exception {
+        boolean result = false;
 
-        try{
+        try {
 
-            result = test("validateUpdate");               
-  	    Assert.assertEquals(result, true,"Unexpected Results");
+            result = test("validateUpdate");
+            Assert.assertEquals(result, true, "Unexpected Results");
 
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             throw new Exception(e);
         }
@@ -109,15 +107,15 @@ public class JpaValidationTestNG {
     }
 
     @Test(dependsOnMethods = { "validateUpdate" })
-    public void validateRemove() throws Exception{
-        boolean result=false;        
+    public void validateRemove() throws Exception {
+        boolean result = false;
 
-        try{
+        try {
 
-            result = test("validateRemove");               
-  	    Assert.assertEquals(result, true,"Unexpected Results");
+            result = test("validateRemove");
+            Assert.assertEquals(result, true, "Unexpected Results");
 
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             throw new Exception(e);
         }
@@ -125,15 +123,15 @@ public class JpaValidationTestNG {
     }
 
     @Test(dependsOnMethods = { "validateRemove" })
-    public void verify() throws Exception{
-        boolean result=false;        
+    public void verify() throws Exception {
+        boolean result = false;
 
-        try{
+        try {
 
-            result = test("verify");               
-  	    Assert.assertEquals(result, true,"Unexpected Results");
+            result = test("verify");
+            Assert.assertEquals(result, true, "Unexpected Results");
 
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             throw new Exception(e);
         }
@@ -142,29 +140,29 @@ public class JpaValidationTestNG {
 
     private boolean test(String c) throws Exception {
         String EXPECTED_RESPONSE = c + ":pass";
-        boolean result=false;
-        String url = "http://" + host + ":" + port + strContextRoot + 
-                     "/test?tc=" + c;
-        // System.out.println("url="+url);
+        boolean result = false;
+        
+        String url = "http://" + host + ":" + port + strContextRoot + "/test?tc=" + c;
+        System.out.println("url=" + url);
 
-        HttpURLConnection conn = (HttpURLConnection)
-            (new URL(url)).openConnection();
+        HttpURLConnection conn = (HttpURLConnection) (new URL(url)).openConnection();
         int code = conn.getResponseCode();
         if (code != 200) {
             System.err.println("Unexpected return code: " + code);
-	} else {
+        } else {
             InputStream is = conn.getInputStream();
             BufferedReader input = new BufferedReader(new InputStreamReader(is));
-	    String line = null;
-	    while ((line = input.readLine()) != null) {
-	      if (line.contains(EXPECTED_RESPONSE)) {
-                result = true;
-		break;
-	      }
-	    }
-	    
-        }    
-	return result;
+            String line = null;
+            while ((line = input.readLine()) != null) {
+                if (line.contains(EXPECTED_RESPONSE)) {
+                    result = true;
+                    break;
+                }
+            }
+
+        }
+        
+        return result;
     }
 
     public static void echo(String msg) {

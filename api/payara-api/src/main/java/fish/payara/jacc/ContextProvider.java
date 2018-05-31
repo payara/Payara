@@ -1,23 +1,23 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,41 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package fish.payara.jacc;
 
-package test.admincli.util;
+import java.security.Policy;
 
-
-import java.io.*;
+import javax.security.jacc.PolicyConfigurationFactory;
 
 /**
- *
- * @author Administrator
+ * This interface is used to bundle the two elements that make up a full JACC Provider
+ * (authorization module), the {@link PolicyConfigurationFactory} and the {@link Policy}.
+ * 
+ * @author Arjan Tijms
  */
-public class StreamGobbler extends Thread {
+public interface ContextProvider {
     
-    private final InputStream is;
-    private final String type;
-    private final StringBuffer stringBuffer = new StringBuffer();
-
-    public StreamGobbler(InputStream is, String type) {
-        this.is = is;
-        this.type = type;
-    }
-
-    public void run() {
-        try {
-            InputStreamReader isr = new InputStreamReader(is);
-            BufferedReader br = new BufferedReader(isr);
-            String line = null;
-            while ((line = br.readLine()) != null) {
-                stringBuffer.append(type + ">" + line + "\n");
-            }
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
-    }
-
-    public String getOutput() {
-        return stringBuffer.toString();
-    }
+    /**
+     * Returns the PolicyConfigurationFactory element of the JACC Provider
+     * @return the PolicyConfigurationFactory
+     */
+    PolicyConfigurationFactory getPolicyConfigurationFactory(); 
+    
+    /**
+     * Returns the Policy element of the JACC Provider
+     * @return the Policy
+     */
+    Policy getPolicy();
 }
