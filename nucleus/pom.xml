@@ -655,43 +655,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <configuration>
-                    <reportPlugins>
-                        <plugin>
-                            <groupId>org.codehaus.mojo</groupId>
-                            <artifactId>findbugs-maven-plugin</artifactId>
-                            <version>${findbugs.version}</version>
-                            <configuration>
-                                <skip>${findbugs.skip}</skip>
-                                <threshold>${findbugs.threshold}</threshold>
-                                <excludeFilterFile>
-                                    exclude-common.xml,${findbugs.exclude}
-                                </excludeFilterFile>
-                            </configuration>
-                            <!--
-                            <dependencies>
-                                <dependency>
-                                    <groupId>org.glassfish.main</groupId>
-                                    <artifactId>findbugs</artifactId>
-                                    <version>${project.version}</version>
-                                </dependency>
-                            </dependencies>
-                            -->
-                        </plugin>
-                    </reportPlugins>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.glassfish.build</groupId>
-                <artifactId>command-security-maven-plugin</artifactId>
-                <version>${command-security-plugin.version}</version>
-                <configuration>
-                    <isFailureFatal>${command.security.maven.plugin.isFailureFatal}</isFailureFatal>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
                     <detectOfflineLinks>false</detectOfflineLinks>
@@ -1338,4 +1301,30 @@
             <optional>true</optional>
         </dependency>
     </dependencies>
+    
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <configuration>
+                    <reportPlugins>
+                        <plugin>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>findbugs-maven-plugin</artifactId>
+                            <version>${findbugs.version}</version>
+                            <configuration>
+                                <skip>${findbugs.skip}</skip>
+                                <threshold>${findbugs.threshold}</threshold>
+                                <excludeFilterFile>
+                                    exclude-common.xml,${findbugs.exclude}
+                                </excludeFilterFile>
+                            </configuration>
+                        </plugin>
+                    </reportPlugins>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
+    
 </project>
