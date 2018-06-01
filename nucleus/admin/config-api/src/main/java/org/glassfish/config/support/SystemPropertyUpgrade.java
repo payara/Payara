@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
@@ -91,11 +92,12 @@ public class SystemPropertyUpgrade implements ConfigurationUpgrade, PostConstruc
     ConfigurationUpgrade precondition = null;
 
     private String PREFIX = "2";
-    private int DEFAULT_ADMIN_PORT = 4848;
+    private static final int DEFAULT_ADMIN_PORT = 4848;
     private static final String DAS_CONFIG = "server-config";
     private static final String DEFAULT_CONFIG = "default-config";
     private static final String DAS = "server";
     
+    @Override
     public void postConstruct() {
         upgradeConfigElements();
         upgradeServerElements();
@@ -126,6 +128,7 @@ public class SystemPropertyUpgrade implements ConfigurationUpgrade, PostConstruc
 
                         ConfigSupport.apply(new SingleConfigCode<SystemPropertyBag>() {
 
+                            @Override
                             public Object run(SystemPropertyBag config) throws PropertyVetoException, TransactionFailure {
 
                                 createSystemProperty(config, ADMIN, adminPort);
@@ -139,8 +142,7 @@ public class SystemPropertyUpgrade implements ConfigurationUpgrade, PostConstruc
 
                 }
             } catch (Exception e) {
-                Logger.getAnonymousLogger().log(Level.SEVERE,
-                        Strings.get("SystemPropertyUpgrade.Failure", c), e);
+                Logger.getAnonymousLogger().log(Level.SEVERE, Strings.get("SystemPropertyUpgrade.Failure", c), e);
                 throw new RuntimeException(e);
             }
         }
@@ -204,6 +206,7 @@ public class SystemPropertyUpgrade implements ConfigurationUpgrade, PostConstruc
 
                         ConfigSupport.apply(new SingleConfigCode<SystemPropertyBag>() {
 
+                            @Override
                             public Object run(SystemPropertyBag config) throws PropertyVetoException, TransactionFailure {
 
                                 createSystemProperty(config, ADMIN, adminPort);

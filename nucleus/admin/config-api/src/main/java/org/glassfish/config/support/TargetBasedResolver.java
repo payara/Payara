@@ -55,6 +55,8 @@ import org.jvnet.hk2.config.Dom;
 
 import javax.inject.Inject;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -84,7 +86,7 @@ public class TargetBasedResolver implements CrudResolver {
             }
             return type.cast(proxy);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            Logger.getLogger("org.glassfish.config.support").log(Level.SEVERE, null, e);
         }
         return null;
     }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
@@ -58,22 +59,26 @@ abstract class XMLStreamReaderFilter extends StreamReaderDelegate {
     XMLStreamReaderFilter() {
     }
 
+    @Override
     public int next() throws XMLStreamException {
         while(true) {
             int r = super.next();
-            if(r != START_ELEMENT || !filterOut())
+            if(r != START_ELEMENT || !filterOut()){
                 return r;
+            }
             skipTree();
         }
     }
 
+    @Override
     public int nextTag() throws XMLStreamException {
         while(true) {
             // Fix for issue 9127
             // The following call to super.nextTag() is replaced with thisNextTag() 
             int r = thisNextTag();
-            if(r != START_ELEMENT || !filterOut())
+            if(r != START_ELEMENT || !filterOut()){
                 return r;
+            }
             skipTree();
         }
     }
@@ -105,7 +110,7 @@ abstract class XMLStreamReaderFilter extends StreamReaderDelegate {
 
     }
 
-    final static String getEventTypeString(int eventType) {
+    static final String getEventTypeString(int eventType) {
         switch (eventType) {
             case XMLEvent.START_ELEMENT:
                 return "START_ELEMENT";
@@ -131,8 +136,10 @@ abstract class XMLStreamReaderFilter extends StreamReaderDelegate {
                 return "CDATA";
             case XMLEvent.SPACE:
                 return "SPACE";
+            default:
+                return "UNKNOWN_EVENT_TYPE, " + String.valueOf(eventType);
         }
-        return "UNKNOWN_EVENT_TYPE, " + String.valueOf(eventType);
+        
     }
 
     /**

@@ -37,20 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.ServerRef;
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.enterprise.util.EarlyLogger;
 import com.sun.enterprise.util.StringUtils;
-import java.io.*;
 import java.net.*;
-import java.util.*;
-import java.util.logging.Level;
 import javax.xml.stream.XMLInputFactory;
-import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import org.glassfish.config.support.DomainXmlPreParser.DomainXmlPreParserException;
@@ -92,24 +85,25 @@ class InstanceReaderFilter extends ServerReaderFilter {
                 return true; // famous last words:  "this can never happen" ;-)
 
             // possibly filter out from these 3 kinds of elements
-            if (elementName.equals(SERVER))
+            if (elementName.equals(SERVER)){
                 return handleServer(reader);
-
-            if (elementName.equals(CONFIG))
+            }
+            
+            if (elementName.equals(CONFIG)){
                 return handleConfig(reader);
-
-            if (elementName.equals(CLUSTER))
+            }
+            
+            if (elementName.equals(CLUSTER)){
                 return handleCluster(reader);
-
+            }
+            
             // keep everything else
             return false;
-        }
-        catch (Exception e) {
+            
+        } catch (Exception e) {
             // I don't trust the XML parser code in the JDK -- it likes to throw
             // unchecked exceptions!!
-            throw new XMLStreamException(
-                    Strings.get("InstanceReaderFilter.UnknownException",
-                    e.toString()), e);
+            throw new XMLStreamException(Strings.get("InstanceReaderFilter.UnknownException", e.toString()), e);
         }
     }
 
@@ -125,10 +119,7 @@ class InstanceReaderFilter extends ServerReaderFilter {
     private boolean handleServer(XMLStreamReader r) {
         String name = r.getAttributeValue(null, NAME);
 
-        if (StringUtils.ok(name) && dxpp.getServerNames().contains(name))
-            return false;
-
-        return true;
+        return !(StringUtils.ok(name) && dxpp.getServerNames().contains(name));
     }
 
     /**
@@ -137,10 +128,7 @@ class InstanceReaderFilter extends ServerReaderFilter {
     private boolean handleConfig(XMLStreamReader reader) {
         String name = reader.getAttributeValue(null, NAME);
 
-        if (dxpp.getConfigName().equals(name))
-            return false;
-
-        return true;
+        return !dxpp.getConfigName().equals(name);
     }
 
     /**
@@ -153,10 +141,7 @@ class InstanceReaderFilter extends ServerReaderFilter {
         String name = reader.getAttributeValue(null, NAME);
         String myCluster = dxpp.getClusterName();
 
-        if (StringUtils.ok(myCluster) && myCluster.equals(name))
-            return false;
-
-        return true;
+        return !(StringUtils.ok(myCluster) && myCluster.equals(name));
     }
 
     private final DomainXmlPreParser dxpp;
