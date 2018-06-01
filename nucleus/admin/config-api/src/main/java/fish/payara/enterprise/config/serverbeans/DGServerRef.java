@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,6 @@ package fish.payara.enterprise.config.serverbeans;
 
 import com.sun.enterprise.config.serverbeans.Ref;
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.ServerRef;
 import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
 import java.beans.PropertyVetoException;
 import javax.validation.Payload;
@@ -53,7 +52,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 /**
- *
+ * Reference for a deployment group
  * @author Steve Millidge (Payara Foundation)
  */
 @Configured
@@ -64,8 +63,7 @@ public interface DGServerRef extends ConfigBeanProxy, Ref, Payload  {
      *
      * A reference to the name of a server defined elsewhere
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Override
     @Attribute(key=true)
@@ -77,8 +75,8 @@ public interface DGServerRef extends ConfigBeanProxy, Ref, Payload  {
     /**
      * Sets the value of the ref property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     @Override
     public void setRef(String value) throws PropertyVetoException;
