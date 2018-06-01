@@ -101,7 +101,6 @@ import fish.payara.nucleus.microprofile.config.converters.LocalTimeConverter;
 import fish.payara.nucleus.microprofile.config.converters.LongConverter;
 import fish.payara.nucleus.microprofile.config.converters.OffsetDateTimeConverter;
 import fish.payara.nucleus.microprofile.config.converters.OffsetTimeConverter;
-import fish.payara.nucleus.microprofile.config.converters.StringArrayConverter;
 import fish.payara.nucleus.microprofile.config.converters.StringConverter;
 import fish.payara.nucleus.microprofile.config.converters.URLConverter;
 import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
@@ -409,7 +408,6 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         result.put(ChronoUnit.class, new ChronoUnitConverter());
         result.put(Class.class, new ClassConverter());
         result.put(String.class, new StringConverter());
-        result.put(String[].class, new StringArrayConverter());
         return result;
 
     }
