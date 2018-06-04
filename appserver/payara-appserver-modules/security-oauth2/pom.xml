@@ -147,7 +147,7 @@
                                 <Import-Package>
                                     com.fasterxml.jackson.core,
                                     com.fasterxml.jackson.databind,
-                                    fish.payara.security.oauth2.annotation,
+                                    fish.payara.security.annotations,
                                     fish.payara.security.oauth2.api,
                                     javax.inject,
                                     javax.enterprise.context,
