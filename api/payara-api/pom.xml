@@ -134,6 +134,7 @@
                                     javax.enterprise.util,
                                     javax.security.enterprise.credential,
                                     javax.security.enterprise.identitystore,
+                                    javax.security.enterprise.authentication.mechanism.http,
                                     javax.security.jacc
                                 </Import-Package>
                                 <Export-Package>
