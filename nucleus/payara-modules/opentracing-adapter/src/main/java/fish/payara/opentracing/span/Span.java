@@ -56,7 +56,7 @@ import org.glassfish.internal.api.Globals;
  */
 public class Span extends RequestTraceSpan implements io.opentracing.Span {
     
-    private RequestTracingService requestTracing;
+    private transient RequestTracingService requestTracing;
     private final String applicationName;
     
     @PostConstruct
