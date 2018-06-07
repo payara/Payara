@@ -1052,7 +1052,7 @@ public final class PEAccessLogValve
     }
     
     /**
-     * Cleanup the history logC file based on value set by <code>maxHistoryFiles</code>
+     * Cleanup the history log file based on value set by <code>maxHistoryFiles</code>
      * <p/>
      * If it is not been specified without any value, then a default value of 10
      * will be use.
