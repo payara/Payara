@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 package fish.payara.nucleus.healthcheck.preliminary;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.*;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
@@ -119,7 +120,7 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
      * Converts a string representing a timeunit to the value
      * i.e. {@code "MILLISECONDS"} to {@link TimeUnit#MILLISECONDS}
      * @param unit
-     * @return 
+     * @return
      */
     protected TimeUnit asTimeUnit(String unit) {
         return TimeUnit.valueOf(unit);
@@ -158,7 +159,7 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
      * <p>
      * Unit can be Gb, Mb, Kb or bytes.
      * @param value
-     * @return 
+     * @return
      */
     protected String prettyPrintBytes(long value) {
         String result;
@@ -182,7 +183,7 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
     /**
      * Returns a string of tab-separated stack trace elements
      * @param elements
-     * @return 
+     * @return
      */
     protected String prettyPrintStackTrace(StackTraceElement[] elements) {
         StringBuilder sb = new StringBuilder();
@@ -194,7 +195,7 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
 
     /**
      * Returns a human-friendly description of the healthcheck
-     * @return 
+     * @return
      * @since 4.1.2.173
      */
     public String resolveDescription() {
@@ -203,7 +204,7 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
 
     /**
      * The key for a human-friendly description of the healthcheck
-     * @return 
+     * @return
      */
     protected abstract String getDescription();
 
@@ -222,30 +223,29 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
     /**
      * Sends a notification to all notifier enabled with the healthcheck service.
      * <p>
-     * The subject of the notification will be: 
-     * "Health Check notification with severity level: ${level}
+     * @param checkResult information collected by the regarding health check service
      * @param level Level of the message to send
-     * @param message A simple message to send
-     * @param parameters An array of extra information to send
+     * @param name Name of the checker executed
      */
-    public void sendNotification(Level level, String message, Object[] parameters) {
+    public void sendNotification(String name, HealthCheckResult checkResult, Level level) {
+        String message = "{0}:{1}";
         String subject = "Health Check notification with severity level: " + level.getName();
 
         if (healthCheckService.getNotifierExecutionOptionsList() != null) {
-
             for (int i = 0; i < healthCheckService.getNotifierExecutionOptionsList().size(); i++) {
                 NotifierExecutionOptions notifierExecutionOptions = healthCheckService.getNotifierExecutionOptionsList().get(i);
 
                 if (notifierExecutionOptions.isEnabled()) {
                     NotificationEventFactory notificationEventFactory = eventFactoryStore.get(notifierExecutionOptions.getNotifierType());
-                    NotificationEvent notificationEvent = notificationEventFactory.buildNotificationEvent(level, subject, message, parameters);
+                    NotificationEvent notificationEvent = notificationEventFactory.buildNotificationEvent(name, checkResult.getEntries(), level);
                     notificationService.notify(EventSource.HEALTHCHECK, notificationEvent);
                 }
             }
         }
 
         if (healthCheckService.isHistoricalTraceEnabled()) {
-            healthCheckEventStore.addTrace(new Date().getTime(), level, subject, message, parameters);
+            healthCheckEventStore.addTrace(new Date().getTime(), level, subject, message,
+                    new Object[]{name, checkResult.getEntries().toString()});
         }
     }
 }

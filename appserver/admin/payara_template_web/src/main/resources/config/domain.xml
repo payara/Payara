@@ -129,6 +129,7 @@
       </notification-service-configuration>
        <batch-runtime-configuration data-source-lookup-name="jdbc/__default"></batch-runtime-configuration>
        <monitoring-service-configuration></monitoring-service-configuration>
+       <microprofile-metrics-configuration></microprofile-metrics-configuration>
        <diagnostic-service />
       <security-service activate-default-principal-to-role-mapping="true">
         <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
@@ -215,6 +216,7 @@
         <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
         <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
         <jvm-options>-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER=org.glassfish.grizzly.memory.HeapMemoryManager</jvm-options>
+        <jvm-options>-Dorg.glassfish.grizzly.nio.DefaultSelectorHandler.force-selector-spin-detection=true</jvm-options>
       </java-config>
       <network-config>
         <protocols>
@@ -359,6 +361,7 @@
         <log-notifier-configuration enabled="true"></log-notifier-configuration>
       </notification-service-configuration>
       <monitoring-service-configuration></monitoring-service-configuration>
+      <microprofile-metrics-configuration></microprofile-metrics-configuration>
          <diagnostic-service />
       <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
         <jvm-options>-server</jvm-options>
@@ -383,6 +386,7 @@
         <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
         <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
         <jvm-options>-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER=org.glassfish.grizzly.memory.HeapMemoryManager</jvm-options>        
+        <jvm-options>-Dorg.glassfish.grizzly.nio.DefaultSelectorHandler.force-selector-spin-detection=true</jvm-options>
       </java-config>
          <availability-service>
              <web-container-availability/>

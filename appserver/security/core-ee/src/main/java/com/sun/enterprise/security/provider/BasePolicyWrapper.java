@@ -50,21 +50,37 @@
 
 package com.sun.enterprise.security.provider;
 
-//import sun.security.provider.PolicyFile;
-import sun.security.util.PropertyExpander;
-import java.security.*;
-import javax.security.jacc.*;
-import javax.management.MBeanPermission;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.CodeSource;
+import java.security.Permission;
+import java.security.PermissionCollection;
+import java.security.Permissions;
+import java.security.Policy;
+import java.security.PrivilegedAction;
+import java.security.ProtectionDomain;
+import java.security.Security;
 import java.util.Enumeration;
-import java.util.logging.*; 
-import com.sun.logging.LogDomains;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.management.MBeanPermission;
+import javax.security.jacc.EJBRoleRefPermission;
+import javax.security.jacc.PolicyContext;
+import javax.security.jacc.PolicyContextException;
+import javax.security.jacc.WebResourcePermission;
+import javax.security.jacc.WebRoleRefPermission;
+
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.logging.LogDomains;
+
+//import sun.security.provider.PolicyFile;
+import sun.security.util.PropertyExpander;
 
 /**
- * This class is a wrapper around the default jdk policy file 
+ * This class is a wrapper around the default jdk policy file
  * implementation. BasePolicyWrapper is installed as the JRE policy object
  * It multiples policy decisions to the context specific instance of
  * sun.security.provider.PolicyFile.
@@ -72,20 +88,20 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  * this class is not a "delegating Policy provider" as defined by JACC, and
  * as such it SHOULD not be configured using the JACC system property
  * javax.security.jacc.policy.provider.
- * @author Harpreet Singh (harpreet.singh@sun.com)  
+ * @author Harpreet Singh (harpreet.singh@sun.com)
  * @author Jean-Francois Arcand
  * @author Ron Monzillo
  *
  */
 public class BasePolicyWrapper extends java.security.Policy {
 
-    private static final String FACTORY_NAME = 
+    private static final String FACTORY_NAME =
 	"javax.security.jacc.PolicyConfigurationFactory.provider";
-    private static final String myFactoryName = 
+    private static final String myFactoryName =
             "com.sun.enterprise.security.provider.PolicyConfigurationFactoryImpl";
     // this is the jdk policy file instance
     private java.security.Policy policy = null;
-   
+
     private static Logger logger = Logger.getLogger(LogDomains.SECURITY_LOGGER);
     private static LocalStringManagerImpl localStrings =
     new LocalStringManagerImpl(BasePolicyWrapper.class);
@@ -98,7 +114,7 @@ public class BasePolicyWrapper extends java.security.Policy {
     }
 
     private static final String REUSE = "java.security.Policy.supportsReuse";
-    
+
     /**
      * Name of the system property to enable detecting and avoiding reentrancy.
      * This property can be set using <jvm-options> in domain.xml.  If not set
@@ -109,20 +125,20 @@ public class BasePolicyWrapper extends java.security.Policy {
      * and use a list of context ids as its value, so that this feature may be
      * enabled for selected contexts.
      */
-    private static final String IGNORE_REENTRANCY_PROP_NAME = 
+    private static final String IGNORE_REENTRANCY_PROP_NAME =
             "com.sun.enterprise.security.provider.PolicyWrapper.ignoreReentrancy";
-    
+
     /**
      * Flag to indicate if detecting and avoiding reentrancy is enabled.
      * If SecurityManager is turned off, reentrancy is less likely to occur and
      * this feature is always off; else if the system property IGNORE_REENTRANCY_PROP_NAME
      * is not set, or set to false in domain.xml, this feature is on;
-     * 
+     *
      */
     private static final boolean avoidReentrancy =
             (!Boolean.getBoolean(IGNORE_REENTRANCY_PROP_NAME)) &&
             (System.getSecurityManager() != null);
-    
+
     /**
      * ThreadLocal object to keep track of the reentrancy status of each thread.
      * It contains a byte[] object whose single element is either 0 (initial
@@ -134,6 +150,7 @@ public class BasePolicyWrapper extends java.security.Policy {
     static {
         if(avoidReentrancy) {
             reentrancyStatus = new ThreadLocal() {
+                @Override
                 protected synchronized Object initialValue() {
                     return new byte[]{0};
                 }
@@ -141,7 +158,7 @@ public class BasePolicyWrapper extends java.security.Policy {
         }
     }
 
-    
+
     /** Creates a new instance of BasePolicyWrapper */
     public BasePolicyWrapper() {
         // the jdk policy file implementation
@@ -150,12 +167,12 @@ public class BasePolicyWrapper extends java.security.Policy {
 	// call the following routine to compute the actual refreshTime
 	defaultContextChanged();
     }
-    
+
     /** gets the underlying PolicyFile implementation
      * can be overridden by Subclass
      */
     protected java.security.Policy getNewPolicy() {
-	return (java.security.Policy) new sun.security.provider.PolicyFile();
+	return new sun.security.provider.PolicyFile();
     }
 
     /**
@@ -174,6 +191,7 @@ public class BasePolicyWrapper extends java.security.Policy {
      * Permission types.
      *
      */
+    @Override
     public PermissionCollection getPermissions(CodeSource codesource) {
 	String contextId = PolicyContext.getContextID();
 	PolicyConfigurationImpl pci = getPolicyConfigForContext(contextId);
@@ -205,6 +223,7 @@ public class BasePolicyWrapper extends java.security.Policy {
      * @see java.security.SecureClassLoader
      * @since 1.4
      */
+    @Override
     public PermissionCollection getPermissions(ProtectionDomain domain) {
 	String contextId = PolicyContext.getContextID();
 	PolicyConfigurationImpl pci = getPolicyConfigForContext(contextId);
@@ -218,7 +237,7 @@ public class BasePolicyWrapper extends java.security.Policy {
 	}
         return perms;
     }
-    
+
     /**
      * Evaluates the global policy for the permissions granted to
      * the ProtectionDomain and tests whether the permission is
@@ -233,6 +252,7 @@ public class BasePolicyWrapper extends java.security.Policy {
      * @see java.security.ProtectionDomain
      * @since 1.4
      */
+    @Override
     public boolean implies(ProtectionDomain domain, Permission permission) {
         if(avoidReentrancy) {
             byte[] alreadyCalled = (byte[]) reentrancyStatus.get();
@@ -250,20 +270,21 @@ public class BasePolicyWrapper extends java.security.Policy {
             return doImplies(domain, permission);
         }
     }
-    
-    
+
+
     /**
      * Refreshes/reloads the policy configuration. The behavior of this method
      * depends on the implementation. For example, calling <code>refresh</code>
      * on a file-based policy will cause the file to be re-read.
      *
      */
+    @Override
     public void refresh() {
 	if (logger.isLoggable(Level.FINE)){
 	    logger.fine("JACC Policy Provider: Refreshing Policy files!");
 	}
 
-	// always refreshes default policy context, but refresh 
+	// always refreshes default policy context, but refresh
 	// of application context depends on PolicyConfigurationImpl
 	// this could result in an inconsistency since default context is
 	// included in application contexts.
@@ -280,7 +301,7 @@ public class BasePolicyWrapper extends java.security.Policy {
         PolicyConfigurationImpl pciArray[] = null;
         PolicyConfigurationFactoryImpl pcf = getPolicyFactory();
         if (pcf != null) {
-            pciArray = pcf.getPolicyConfigurationImpls();
+            pciArray = pcf.getPolicyConfigurationImpls().toArray(new PolicyConfigurationImpl[0]);
         }
         if (pciArray != null) {
 
@@ -300,7 +321,7 @@ public class BasePolicyWrapper extends java.security.Policy {
         } catch (PolicyContextException pe) {
             throw new IllegalStateException(pe.toString());
         }
-        
+
     }
 
     private  PolicyConfigurationImpl getPolicyConfigForContext(String contextId) {
@@ -345,7 +366,7 @@ public class BasePolicyWrapper extends java.security.Policy {
 	Permissions excluded = getExcludedPolicy(pci);
 	if (excluded != null &&  excluded.elements().hasMoreElements()) {
 	    result = null;
-	    Enumeration e = perms.elements(); 
+	    Enumeration e = perms.elements();
 	    while (e.hasMoreElements()) {
 		Permission granted = (Permission) e.nextElement();
 		if (!grantedIsExcluded(granted,excluded)) {
@@ -384,22 +405,22 @@ public class BasePolicyWrapper extends java.security.Policy {
 	}
 	return isExcluded;
     }
-    
+
     private boolean doImplies(ProtectionDomain domain, Permission permission) {
 	String contextId = PolicyContext.getContextID();
 	PolicyConfigurationImpl pci = getPolicyConfigForContext(contextId);
 	Policy appPolicy = getPolicy(pci);
-        
+
 	boolean result = appPolicy.implies(domain,permission);
-        
-        //log failures but skip failures that occurred prior to redirecting to 
+
+        //log failures but skip failures that occurred prior to redirecting to
         //login pages, and javax.management.MBeanPermission
 	if (!result) {
             if(!(permission instanceof WebResourcePermission) &&
                 !(permission instanceof MBeanPermission) &&
                 !(permission instanceof WebRoleRefPermission) &&
                 !(permission instanceof EJBRoleRefPermission)) {
-                
+
                 final String contextId2 = contextId;
                 final Permission permission2 = permission;
                 final ProtectionDomain domain2 = domain;
@@ -409,6 +430,7 @@ public class BasePolicyWrapper extends java.security.Policy {
                     logger.log(Level.FINE, "JACC Policy Provider, failed Permission Check at :", ex);
                 }
                 AccessController.doPrivileged(new PrivilegedAction() {
+                    @Override
                     public Object run() {
                         logger.info("JACC Policy Provider: Failed Permission Check, context(" + contextId2 + ")- permission(" + permission2 + ")");
                         if (logger.isLoggable(Level.FINE)) {
@@ -431,7 +453,7 @@ public class BasePolicyWrapper extends java.security.Policy {
 			contextId+")- result was("+result+") permission ("
 			+permission+")");
 	}
-       
+
         return result;
     }
 
@@ -442,7 +464,7 @@ public class BasePolicyWrapper extends java.security.Policy {
      *
      * Note:
      * For backward compatibility with JAAS 1.0 it loads
-     * both java.auth.policy and java.policy. However it 
+     * both java.auth.policy and java.policy. However it
      * is recommended that java.auth.policy be not used
      * and the java.policy contain all grant entries including
      * that contain principal-based entries.
@@ -458,7 +480,7 @@ public class BasePolicyWrapper extends java.security.Policy {
      * <li>
      *   Loop through the <code>java.security.Security</code> properties,
      *   <i>policy.url.1</i>, <i>policy.url.2</i>, ...,
-     *   <i>policy.url.X</i>" and 
+     *   <i>policy.url.X</i>" and
      *   <i>auth.policy.url.1</i>, <i>auth.policy.url.2</i>, ...,
      *   <i>auth.policy.url.X</i>".  These properties are set
      *   in the Java security properties file, which is located in the file named
@@ -466,9 +488,9 @@ public class BasePolicyWrapper extends java.security.Policy {
      *   refers to the directory where the JDK was installed.
      *   Each property value specifies a <code>URL</code> pointing to a
      *   policy file to be loaded.  Read in and load each policy.
-     *   
+     *
      *   <i>auth.policy.url</i> is supported only for backward compatibility.
-     *   
+     *
      * <li>
      *   The <code>java.lang.System</code> property <i>java.security.policy</i>
      *   may also be set to a <code>URL</code> pointing to another policy file
@@ -480,14 +502,14 @@ public class BasePolicyWrapper extends java.security.Policy {
      *
      * <li>
      *   The <code>java.lang.System</code> property
-     *   <i>java.security.auth.policy</i> may also be set to a 
+     *   <i>java.security.auth.policy</i> may also be set to a
      *   <code>URL</code> pointing to another policy file
      *   (which is the case when a user uses the -D switch at runtime).
      *   If this property is defined, and its use is allowed by the
      *   security property file (the Security property,
      *   <i>policy.allowSystemProperty</i> is set to <i>true</i>),
      *   also load that policy.
-     * 
+     *
      *   <i>java.security.auth.policy</i> is supported only for backward
      *   compatibility.
      *
@@ -506,27 +528,27 @@ public class BasePolicyWrapper extends java.security.Policy {
      * Name of the system property that effects whether or not application
      * policy objects are forced to refresh whenever the default context
      * policy object is refreshed. Normally app policy objects only refresh
-     * when their app sepcifc policy files have changes. Since app policy 
+     * when their app sepcifc policy files have changes. Since app policy
      * objects alos include the rules of the default context; so they should
-     * be refreshed whenever the default context files are changed, but the 
+     * be refreshed whenever the default context files are changed, but the
      * algorithm by which a policy module finds its policy files is complex;
      * and dependent on configuration; so this force switch is provided to
-     * ensure refresh of the app contexts (when the performace cost of doing 
+     * ensure refresh of the app contexts (when the performace cost of doing
      * so is acceptable). When this switch is not set, it may be necessary
      * to restart the appserver to force changes in the various policy files to
      * be in effect for specific applications.
      */
-    private static final String FORCE_APP_REFRESH_PROP_NAME = 
+    private static final String FORCE_APP_REFRESH_PROP_NAME =
         "com.sun.enterprise.security.provider.PolicyWrapper.force_app_refresh";
 
     /**
      * Flag to indicate if application specific policy objects are forced
-     * to refresh (independent of whether or not their app specific policy 
+     * to refresh (independent of whether or not their app specific policy
      * files have changed).
      */
     private static final boolean forceAppRefresh =
             Boolean.getBoolean(FORCE_APP_REFRESH_PROP_NAME);
-    
+
     private long refreshTime;
 
     synchronized boolean defaultContextChanged() {
@@ -542,10 +564,11 @@ public class BasePolicyWrapper extends java.security.Policy {
 	return rvalue;
     }
 
-    private static long 
+    private static long
     getTimeStamp(final String propname, final String urlname) {
 	Long l = (Long) AccessController.doPrivileged(new PrivilegedAction() {
-	    public Long run() {
+	    @Override
+        public Long run() {
 		long sum = 0L;
 		boolean allowSystemProperties = "true".equalsIgnoreCase
 		    (Security.getProperty("policy.allowSystemProperty"));
@@ -576,7 +599,7 @@ public class BasePolicyWrapper extends java.security.Policy {
 				if (logger.isLoggable(Level.FINE)) {
 				    logMsg(Level.FINE,"pc.file_refreshed",
 					 new Object[]{path},null);
-				}			
+				}
 			    } else {
 				if (logger.isLoggable(Level.FINE)) {
 				    logMsg(Level.FINE,"pc.file_not_refreshed",
@@ -584,7 +607,7 @@ public class BasePolicyWrapper extends java.security.Policy {
 				}
 			    }
 			} catch (Exception e) {
-			    // ignore. 
+			    // ignore.
 			}
 			if (overrideAll) {
 			    return Long.valueOf(sum);
@@ -619,7 +642,7 @@ public class BasePolicyWrapper extends java.security.Policy {
 				if (logger.isLoggable(Level.FINE)) {
 				    logMsg(Level.FINE,"pc.file_refreshed",
 					   new Object[]{path},null);
-				}			
+				}
 			    } else {
 				if (logger.isLoggable(Level.FINE)) {
 				    logMsg(Level.FINE,"pc.file_not_refreshed",
@@ -642,8 +665,8 @@ public class BasePolicyWrapper extends java.security.Policy {
 	});
 	return l.longValue();
     }
-    
-    // obtains PolicyConfigurationFactory 
+
+    // obtains PolicyConfigurationFactory
     private PolicyConfigurationFactoryImpl getPolicyFactory() {
        return PolicyConfigurationFactoryImpl.getInstance();
     }

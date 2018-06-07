@@ -1,20 +1,45 @@
 /*
-DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-Copyright (c) 2016 Payara Foundation. All rights reserved.
-The contents of this file are subject to the terms of the Common Development
-and Distribution License("CDDL") (collectively, the "License").  You
-may not use this file except in compliance with the License.  You can
-obtain a copy of the License at
-https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-or packager/legal/LICENSE.txt.  See the License for the specific
-language governing permissions and limitations under the License.
-When distributing the software, include this License Header Notice in each
-file and include the License file at packager/legal/LICENSE.txt.
-*/
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
 package fish.payara.enterprise.server.logging;
 
 import com.sun.common.util.logging.GFLogRecord;
-import com.sun.enterprise.server.logging.AnsiColorFormatter;
 import com.sun.enterprise.server.logging.ExcludeFieldsSupport;
 import com.sun.enterprise.server.logging.FormatterDelegate;
 import com.sun.enterprise.server.logging.LogEvent;
@@ -67,7 +92,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     private static boolean RECORD_NUMBER_IN_KEY_VALUE = false;
 
     private FormatterDelegate _delegate = null;
-
+    
     // Static Initialiser Block
     static {
         String logSource = System.getProperty(
@@ -77,8 +102,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             LOG_SOURCE_IN_KEY_VALUE = true;
         }
 
-        String recordCount = System.getProperty(
-                "com.sun.aas.logging.keyvalue.recordnumber");
+        String recordCount = System.getProperty("com.sun.aas.logging.keyvalue.recordnumber");
         if ((recordCount != null) 
                 && (recordCount.equals("true"))) {
             RECORD_NUMBER_IN_KEY_VALUE = true;
@@ -89,25 +113,25 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     private String recordDateFormat;
 
     // Event separator
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    private static final String LINE_SEPARATOR = System.lineSeparator();
 
     // String values for field keys
-    private static final String TIMESTAMP_KEY = "_Timestamp";
-    private static final String LOG_LEVEL_KEY = "_Level";
-    private static final String PRODUCT_ID_KEY = "_Version";
-    private static final String LOGGER_NAME_KEY = "_LoggerName";
+    private String TIMESTAMP_KEY = "Timestamp";
+    private String LOG_LEVEL_KEY = "Level";
+    private String PRODUCT_ID_KEY = "Version";
+    private String LOGGER_NAME_KEY = "LoggerName";
     // String values for exception keys
-    private static final String EXCEPTION_KEY = "_Exception";
-    private static final String STACK_TRACE_KEY = "_StackTrace";
+    private String EXCEPTION_KEY = "Exception";
+    private String STACK_TRACE_KEY = "StackTrace";
     // String values for thread excludable keys
-    private static final String THREAD_ID_KEY = "_ThreadID";
-    private static final String THREAD_NAME_KEY = "_ThreadName";
-    private static final String USER_ID_KEY = "_UserId";
-    private static final String ECID_KEY = "_ECId";
-    private static final String LEVEL_VALUE_KEY = "_LevelValue";
-    private static final String TIME_MILLIS_KEY = "_TimeMillis";
-    private static final String MESSAGE_ID_KEY = "_MessageID";
-    private static final String LOG_MESSAGE_KEY = "_LogMessage";
+    private String THREAD_ID_KEY = "ThreadID";
+    private String THREAD_NAME_KEY = "ThreadName";
+    private String USER_ID_KEY = "UserId";
+    private String ECID_KEY = "ECId";
+    private String LEVEL_VALUE_KEY = "LevelValue";
+    private String TIME_MILLIS_KEY = "TimeMillis";
+    private String MESSAGE_ID_KEY = "MessageID";
+    private String LOG_MESSAGE_KEY = "LogMessage";
 
     private static final String RFC3339_DATE_FORMAT = 
             "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
@@ -115,11 +139,37 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     private final ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
     private LogEventBroadcaster logEventBroadcasterDelegate;
     private String productId = "";
+    
+    /**
+     * For backwards compatibility with log format for pre-182
+     * @deprecated
+     */
+    @Deprecated
+    private static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE="fish.payara.deprecated.jsonlogformatter.underscoreprefix";
 
     public JSONLogFormatter() {
         super();
         loggerResourceBundleTable = new HashMap();
         logManager = LogManager.getLogManager();
+        
+        String underscorePrefix = logManager.getProperty(PAYARA_JSONLOGFORMATTER_UNDERSCORE);
+        if ((underscorePrefix)!= null && Boolean.valueOf(underscorePrefix)) {
+            TIMESTAMP_KEY = "_" + TIMESTAMP_KEY;
+            LOG_LEVEL_KEY = "_" + LOG_LEVEL_KEY;
+            PRODUCT_ID_KEY = "_" + PRODUCT_ID_KEY;
+            LOGGER_NAME_KEY = "_" + LOGGER_NAME_KEY;
+            EXCEPTION_KEY = "_" + EXCEPTION_KEY;
+            STACK_TRACE_KEY = "_" + STACK_TRACE_KEY;
+            // String values for thread excludable keys
+            THREAD_ID_KEY = "_" + THREAD_ID_KEY;
+            THREAD_NAME_KEY = "_" + THREAD_NAME_KEY;
+            USER_ID_KEY = "_" + USER_ID_KEY;
+            ECID_KEY = "_" + ECID_KEY;
+            LEVEL_VALUE_KEY = "_" + LEVEL_VALUE_KEY;
+            TIME_MILLIS_KEY = "_" + TIME_MILLIS_KEY;
+            MESSAGE_ID_KEY = "_" + MESSAGE_ID_KEY;
+            LOG_MESSAGE_KEY = "_" + LOG_MESSAGE_KEY;
+        }
     }
 
     public JSONLogFormatter(FormatterDelegate delegate) {

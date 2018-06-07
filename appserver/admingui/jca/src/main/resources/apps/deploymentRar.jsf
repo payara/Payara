@@ -38,6 +38,8 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 -->
 
 <!-- deploymentRar.jsf -->
@@ -48,7 +50,7 @@
         setAttribute(key="fieldMap" value="rar");
         createMap(result="#{pageSession.rar}")
         mapPut(map="#{pageSession.deployMap}", key="rar", value="#{pageSession.rar}");
-        mapPut(map="#{pageSession.rar}", key="convertToFalseList", value={"enabled", "verify" ,"force","PROPERTY-implicitCdiEnabled", "PROPERTY-preserveAppScopedResources"} );
+        mapPut(map="#{pageSession.rar}", key="convertToFalseList", value={"enabled", "verify" ,"force","PROPERTY-implicitCdiEnabled", "PROPERTY-preserveAppScopedResources", "forceName"} );
         mapPut(map="#{pageSession.rar}", key="PROPERTY-implicitCdiEnabled", value="true");
 
      />
@@ -57,7 +59,7 @@
     />
     <sun:propertySheetSection id="psection" >
 
-<sun:property id="nameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.ApplicationName}" visible="#{true}">
+<sun:property id="nameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.ApplicationName}" helpText="$resource{i18n.deploy.ApplicationNameHelp}" visible="#{true}">
     <sun:textField id="appName" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.deploy.ApplicationName']}" text="#{pageSession.rar['name']}" styleClass="required" required="#{true}"
         onChange="javascript: admingui.deploy.setAppName('#{appNameId}', this.value, window, '#{sessionScope.appTypeString}')">
         <!afterCreate
@@ -65,6 +67,11 @@
         />
     </sun:textField>
 </sun:property>
+        
+<sun:property id="forceName" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.forceApplicationName}" helpText="$resource{i18n.deploy.forceApplicationNameHelp}">
+    <sun:checkbox id="forceName"  label=" " selected="#{pageSession.rar['forceName']}" selectedValue="true" />
+</sun:property>
+        
 <sun:property id="enableProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.status}"  helpText="$resource{i18n.deploy.statusHelp}">
 	<sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.rar['enabled']}" selectedValue="true" >
         <!beforeCreate

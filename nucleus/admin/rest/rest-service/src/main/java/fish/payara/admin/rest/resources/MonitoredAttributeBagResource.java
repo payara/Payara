@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -251,7 +251,9 @@ public class MonitoredAttributeBagResource extends AbstractResource {
         } finally {
             TranslatedConfigView.doSubstitution.set(true);
         }
-        entity = parent.nodeElements("monitored-attributes");
+        synchronized (parent) {
+            entity = parent.nodeElements("monitored-attributes");
+        }
     }
 
     private boolean attributesAreEqual(Map<String, String> attribute1, Map<String, String> attribute2) {
@@ -270,7 +272,9 @@ public class MonitoredAttributeBagResource extends AbstractResource {
         this.parent = parent;
         this.tagName = tagName;
         if (parent != null) {
-            entity = parent.nodeElements("monitored-attributes");
+            synchronized (parent) {
+                entity = parent.nodeElements("monitored-attributes");
+            }
         }
     }
 }

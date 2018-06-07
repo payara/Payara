@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.launcher;
 
 import java.util.*;
@@ -49,20 +51,54 @@ import com.sun.enterprise.util.StringUtils;
 import static com.sun.enterprise.util.StringUtils.ok;
 
 /**
- *
+ * Class for getting the JVM options that are supplied in the domain.xml
+ * <p>
+ * This is used when launching Payara Server before any services are started.
  * @author bnevins
  */
 class JvmOptions {
 
+    /**
+     * Pattern for recognising environment variables which are in the style of ${ENV=foo}
+     * @see org.glassfish.config.support.TranslatedConfigView
+     */
+    private final static Pattern envP = Pattern.compile("([^\\$]*)\\$\\{ENV=([^\\}]*)\\}([^\\$]*)");
+    private static final int MAX_SUBSTITUTION_DEPTH = 100;
+    
+    Map<String, String> sysProps = new HashMap<>();
+    Map<String, String> xxProps = new HashMap<>();
+    Map<String, String> xProps = new HashMap<>();
+    Map<String, String> plainProps = new HashMap<>();
+    int osgiPort = -1;
+    
     JvmOptions(List<String> options) throws GFLauncherException {
         // We get them from domain.xml as a list of Strings
         // -Dx=y   -Dxx  -XXfoo -XXgoo=zzz -client  -server
         // Issue 4434 -- we might get a jvm-option like this:
         // <jvm-options>"-xxxxxx"</jvm-options> notice the literal double-quotes
-
+        
         for (String s : options) {
             s = StringUtils.removeEnclosingQuotes(s);
+            /* Perform Environment variable substitution
+             * Copied from TranslatedConfigView as TranslatedConfigView requires
+             * HK2 to have started
+             */
+            int i = 0;            
+            Matcher m2 = envP.matcher(s);
 
+            while (m2.find() && i < MAX_SUBSTITUTION_DEPTH) {
+                String matchValue = m2.group(2).trim();
+                String newValue = System.getenv(matchValue);
+                if (newValue != null) {
+                   s = m2.replaceFirst(Matcher.quoteReplacement(m2.group(1) + newValue + m2.group(3)));
+                    m2.reset(s);
+                } 
+                i++;     
+            }
+            if (!s.startsWith("-")){
+                s = "-" + s;
+            }
+            
             if (s.startsWith("-D")) {
                 addSysProp(s);
             }
@@ -289,11 +325,6 @@ class JvmOptions {
             // already handled -- it is already set to -1
         }
     }
-    Map<String, String> sysProps = new HashMap<String, String>();
-    Map<String, String> xxProps = new HashMap<String, String>();
-    Map<String, String> xProps = new HashMap<String, String>();
-    Map<String, String> plainProps = new HashMap<String, String>();
-    int osgiPort = -1;
 
     private static class NameValue {
 

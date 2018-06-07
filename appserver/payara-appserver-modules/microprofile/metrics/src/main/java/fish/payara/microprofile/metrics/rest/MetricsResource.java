@@ -68,7 +68,7 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import org.glassfish.internal.api.Globals;
 
 public class MetricsResource extends HttpServlet {
-
+    
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>OPTIONS</code>
      * methods.
@@ -82,14 +82,15 @@ public class MetricsResource extends HttpServlet {
             throws ServletException, IOException {
         
         MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
-        if (!metricsService.isMetricEnabled()) {
+        if (!metricsService.isMetricsEnabled()) {
             response.sendError(SC_FORBIDDEN, "MP Metrics is disabled");
             return;
         }
-        if(!request.isSecure() && !metricsService.isInsucreMetricEnabled()){
+        if(!request.isSecure() && metricsService.isMetricsSecure()){
             response.sendError(SC_FORBIDDEN, "MP Metrics security is enabled");
             return;
         }
+        metricsService.reregisterMetadataConfig();
         MetricsRequest metricsRequest = new MetricsRequest(request);
         try {
             if (metricsRequest.isRegistryRequested()
@@ -139,26 +140,28 @@ public class MetricsResource extends HttpServlet {
             accept = TEXT_PLAIN;
         }
 
-        if (GET.equals(method)) {
-            if (accept.contains(APPLICATION_JSON)) {
-                outputWriter = new JsonMetricWriter(writer);
-            } else if (accept.contains(TEXT_PLAIN)) {
-                outputWriter = new PrometheusWriter(writer);
-            } else {
-                outputWriter = new PrometheusWriter(writer);
-            }
-        } else if (OPTIONS.equals(method)) {
-            if (accept.contains(APPLICATION_JSON)) {
-                outputWriter = new JsonMetadataWriter(writer);
-            } else {
+        switch (method) {
+            case GET:
+                if (accept.contains(APPLICATION_JSON)) {
+                    outputWriter = new JsonMetricWriter(writer);
+                } else if (accept.contains(TEXT_PLAIN)) {
+                    outputWriter = new PrometheusWriter(writer);
+                } else {
+                    outputWriter = new PrometheusWriter(writer);
+                }   break;
+            case OPTIONS:
+                if (accept.contains(APPLICATION_JSON)) {
+                    outputWriter = new JsonMetadataWriter(writer);
+                } else {
+                    response.sendError(
+                            SC_NOT_ACCEPTABLE,
+                            String.format("[%s] not acceptable", accept));
+                }   break;
+            default:
                 response.sendError(
-                        SC_NOT_ACCEPTABLE,
-                        String.format("[%s] not acceptable", accept));
-            }
-        } else {
-            response.sendError(
-                    SC_METHOD_NOT_ALLOWED,
-                    String.format("HTTP method [%s] not allowed", method));
+                        SC_METHOD_NOT_ALLOWED,
+                        String.format("HTTP method [%s] not allowed", method));
+                break;
         }
         return outputWriter;
     }

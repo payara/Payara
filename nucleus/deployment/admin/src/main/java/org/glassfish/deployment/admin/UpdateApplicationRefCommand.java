@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,17 +39,19 @@
  */
 package org.glassfish.deployment.admin;
 
+import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
-import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -71,7 +73,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name = "update-application-ref")
 @I18n("update.application.ref.command")
 @PerLookup
-@ExecuteOn(value = {RuntimeType.DAS})
+@ExecuteOn(value = {RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
 @RestEndpoints({
     @RestEndpoint(configBean = Cluster.class, opType = RestEndpoint.OpType.POST,
@@ -81,7 +83,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 })
 public class UpdateApplicationRefCommand implements AdminCommand {
 
-    final private static LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(UpdateApplicationRefCommand.class);
+    private final static LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(UpdateApplicationRefCommand.class);
 
     @Param(primary = true)
     private String name;

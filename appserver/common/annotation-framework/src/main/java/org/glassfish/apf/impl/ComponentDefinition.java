@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.apf.impl;
 
@@ -53,7 +54,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -76,14 +76,17 @@ public class ComponentDefinition implements ComponentInfo {
         initializeMethods();
     }
 
+    @Override
     public Field[] getFields() {
         return fields.toArray(new Field[fields.size()]);
     }
 
+    @Override
     public Method[] getMethods() {
         return methodMap.values().toArray(new Method[methodMap.size()]);
     }
 
+    @Override
     public Constructor[] getConstructors() {
         return constructors.toArray(new Constructor[constructors.size()]);
     }
@@ -151,6 +154,7 @@ public class ComponentDefinition implements ComponentInfo {
             classPackage = m.getDeclaringClass().getPackage();
         }
 
+        @Override
         public int hashCode() { 
 
             return hashCode;
@@ -158,9 +162,10 @@ public class ComponentDefinition implements ComponentInfo {
 
         /**
          * This equals method is defined in terms of inheritance overriding.
-         * We depends on java compiler to rule out irrelvant cases here.
+         * We depends on java compiler to rule out irrelevant cases here.
          * @return true for overriding and false otherwise
          */
+        @Override
         public boolean equals(Object o) {
             if (!(o instanceof MethodKey)) {
                 return false;

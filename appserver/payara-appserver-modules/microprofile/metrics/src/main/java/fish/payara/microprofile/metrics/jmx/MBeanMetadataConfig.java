@@ -70,6 +70,13 @@ public class MBeanMetadataConfig {
     public void setBaseMetadata(List<MBeanMetadata> baseMetadata) {
         this.baseMetadata = baseMetadata;
     }
+    
+    public void addBaseMetadata(List<MBeanMetadata> baseMetadata) {
+        if (this.baseMetadata == null) {
+            this.baseMetadata = new ArrayList<>();
+        }
+        this.baseMetadata.addAll(baseMetadata);
+    }
 
     public List<MBeanMetadata> getVendorMetadata() {
         if (vendorMetadata == null) {
@@ -80,6 +87,13 @@ public class MBeanMetadataConfig {
 
     public void setVendorMetadata(List<MBeanMetadata> vendorMetadata) {
         this.vendorMetadata = vendorMetadata;
+    }
+    
+        public void addVendorMetadata(List<MBeanMetadata> vendorMetadata) {
+        if (this.vendorMetadata == null) {
+            this.vendorMetadata = new ArrayList<>();
+        }
+        this.vendorMetadata.addAll(vendorMetadata);
     }
     
 }

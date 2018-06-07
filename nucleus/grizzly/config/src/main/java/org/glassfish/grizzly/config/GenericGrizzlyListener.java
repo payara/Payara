@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.grizzly.config;
 
 import java.beans.PropertyChangeEvent;
@@ -57,9 +57,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.grizzly.Connection;
 
 import org.glassfish.grizzly.Grizzly;
 import org.glassfish.grizzly.IOStrategy;
+import org.glassfish.grizzly.PortRange;
 import org.glassfish.grizzly.SocketBinder;
 import org.glassfish.grizzly.config.dom.Http;
 import org.glassfish.grizzly.config.dom.Http2;
@@ -87,7 +89,7 @@ import org.glassfish.grizzly.http.LZMAContentEncoding;
 import org.glassfish.grizzly.http.server.AddOn;
 import org.glassfish.grizzly.http.server.BackendConfiguration;
 import org.glassfish.grizzly.http.server.CompressionEncodingFilter;
-import org.glassfish.grizzly.http.server.CompressionLevel;
+import org.glassfish.grizzly.http.CompressionConfig.CompressionMode;
 import org.glassfish.grizzly.http.server.FileCacheFilter;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServerFilter;
@@ -107,6 +109,9 @@ import org.glassfish.grizzly.portunif.PUFilter;
 import org.glassfish.grizzly.portunif.PUProtocol;
 import org.glassfish.grizzly.portunif.ProtocolFinder;
 import org.glassfish.grizzly.portunif.finders.SSLProtocolFinder;
+import org.glassfish.grizzly.sni.SNIConfig;
+import org.glassfish.grizzly.sni.SNIFilter;
+import org.glassfish.grizzly.sni.SNIServerConfigResolver;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.grizzly.ssl.SSLBaseFilter;
 import org.glassfish.grizzly.strategies.WorkerThreadIOStrategy;
@@ -134,6 +139,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     protected volatile String name;
     protected volatile InetAddress address;
     protected volatile int port;
+    protected volatile PortRange portRange;
+
     protected NIOTransport transport;
     protected FilterChain rootFilterChain;
     private volatile ExecutorService workerExecutorService;
@@ -180,9 +187,26 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     }
 
     @Override
+    public PortRange getPortRange() {
+        return portRange;
+    }
+
+    protected void setPortRange(PortRange portRange) {
+        this.portRange = portRange;
+    }
+
+    @Override
     public void start() throws IOException {
         startDelayedExecutor();
-        ((SocketBinder) transport).bind(new InetSocketAddress(address, port));
+        if (portRange != null && transport instanceof TCPNIOTransport) {
+            Connection<?> connection = ((SocketBinder) transport)
+                    .bind(address.getHostAddress(), portRange, false,
+                            TCPNIOTransport.class.cast(transport).getServerConnectionBackLog());
+            // Set the dynamic port value equal to the result of the autobind
+            port = InetSocketAddress.class.cast(connection.getLocalAddress()).getPort();
+        } else {
+            ((SocketBinder) transport).bind(new InetSocketAddress(address, port));
+        }
         transport.start();
     }
 
@@ -295,6 +319,9 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         setName(networkListener.getName());
         setAddress(InetAddress.getByName(networkListener.getAddress()));
         setPort(Integer.parseInt(networkListener.getPort()));
+        if (networkListener.getPortRange() != null) {
+            setPortRange(PortRange.valueOf(networkListener.getPortRange()));
+        }
 
         final FilterChainBuilder filterChainBuilder = FilterChainBuilder.stateless();
         
@@ -525,14 +552,32 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                                        final Ssl ssl,
                                        final FilterChainBuilder filterChainBuilder) {
         final SSLEngineConfigurator serverConfig = new SSLConfigurator(habitat, ssl);
-//        final SSLEngineConfigurator clientConfig = new SSLConfigurator(habitat, ssl);
-//        clientConfig.setClientMode(true);
-        final SSLBaseFilter sslFilter = new SSLBaseFilter(serverConfig,
-         //                                             clientConfig,
-                                                      isRenegotiateOnClientAuthWant(ssl));
-        sslFilter.setHandshakeTimeout(
-                Long.parseLong(ssl.getHandshakeTimeoutMillis()), TimeUnit.MILLISECONDS);
-
+        
+        Filter sslFilter = null; 
+        if (Boolean.valueOf(ssl.getSniEnabled())) {
+            SNIFilter sniFilter = new SNIFilter(serverConfig, null, isRenegotiateOnClientAuthWant(ssl));
+            sniFilter.setHandshakeTimeout(Long.parseLong(ssl.getHandshakeTimeoutMillis()), TimeUnit.MILLISECONDS);
+            sniFilter.setServerSSLConfigResolver(new SNIServerConfigResolver() {
+                @Override
+                public SNIConfig resolve(Connection cnctn, String hostname) {
+                   if (hostname == null) {
+                        return SNIConfig.newServerConfig(serverConfig);
+                   } else {
+                       SSLConfigurator newConfigurator = new SSLConfigurator(habitat, ssl);
+                       newConfigurator.setSNICertAlias(hostname);
+                       return SNIConfig.newServerConfig(newConfigurator);                       
+                   }
+                }
+            });
+            sslFilter = sniFilter;
+        } else {
+            sslFilter = new SSLBaseFilter(serverConfig,
+            //                                             clientConfig,
+                                          isRenegotiateOnClientAuthWant(ssl));
+            ((SSLBaseFilter)sslFilter).setHandshakeTimeout(
+                Long.parseLong(ssl.getHandshakeTimeoutMillis()), TimeUnit.MILLISECONDS);            
+        }
+        
         filterChainBuilder.add(sslFilter);
         return sslFilter;
     }
@@ -1074,17 +1119,17 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     protected Set<ContentEncoding> configureCompressionEncodings(Http http) {
         final String mode = http.getCompression();
         int compressionMinSize = Integer.parseInt(http.getCompressionMinSizeBytes());
-        CompressionLevel compressionLevel;
+        CompressionMode compressionMode;
         try {
-            compressionLevel = CompressionLevel.getCompressionLevel(mode);
+            compressionMode = CompressionMode.fromString(mode);
         } catch (IllegalArgumentException e) {
             try {
                 // Try to parse compression as an int, which would give the
                 // minimum compression size
-                compressionLevel = CompressionLevel.ON;
+                compressionMode = CompressionMode.ON;
                 compressionMinSize = Integer.parseInt(mode);
             } catch (Exception ignore) {
-                compressionLevel = CompressionLevel.OFF;
+                compressionMode = CompressionMode.OFF;
             }
         }
         final String compressableMimeTypesString = http.getCompressableMimeType();
@@ -1100,17 +1145,17 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         final ContentEncoding gzipContentEncoding = new GZipContentEncoding(
             GZipContentEncoding.DEFAULT_IN_BUFFER_SIZE,
             GZipContentEncoding.DEFAULT_OUT_BUFFER_SIZE,
-            new CompressionEncodingFilter(compressionLevel, compressionMinSize,
+            new CompressionEncodingFilter(compressionMode, compressionMinSize,
                 compressableMimeTypes,
                 noCompressionUserAgents,
                 GZipContentEncoding.getGzipAliases(),
-                compressionLevel != CompressionLevel.OFF
+                compressionMode != CompressionMode.OFF
             ));
-        final ContentEncoding lzmaEncoding = new LZMAContentEncoding(new CompressionEncodingFilter(compressionLevel, compressionMinSize,
+        final ContentEncoding lzmaEncoding = new LZMAContentEncoding(new CompressionEncodingFilter(compressionMode, compressionMinSize,
                 compressableMimeTypes,
                 noCompressionUserAgents,
                 LZMAContentEncoding.getLzmaAliases(),
-                compressionLevel != CompressionLevel.OFF
+                compressionMode != CompressionMode.OFF
         ));
         final Set<ContentEncoding> set = new HashSet<ContentEncoding>(2);
         set.add(gzipContentEncoding);

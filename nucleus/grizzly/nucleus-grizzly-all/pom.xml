@@ -138,8 +138,11 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-npn-api</artifactId>
-            <version>1.2</version>
+            <artifactId>grizzly-http-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.grizzly</groupId>
+            <artifactId>tls-sni</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.grizzly</groupId>

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin;
 
@@ -88,9 +89,13 @@ public class V2DottedNameSupport {
 
             }
 
-            for (Dom child : parent.nodeElements(childName)) {
+            List<Dom> childNodes;
+            synchronized (parent) {
+                childNodes = parent.nodeElements(childName);
+            }
+            for (Dom child : childNodes) {
 
-                StringBuffer newPrefix = new StringBuffer();
+                StringBuilder newPrefix = new StringBuilder();
                 if (prefix==null) {
                     newPrefix.append(childName);
                 } else {
@@ -121,7 +126,7 @@ public class V2DottedNameSupport {
     }
 
     public Map<String, String> getNodeAttributes(Dom node, String prefix) {
-        Map<String, String> result = new  HashMap<String, String>();
+        Map<String, String> result = new  HashMap<>();
         for (String attrName : node.model.getAttributeNames()) {
             String value = (String) node.model.findIgnoreCase(attrName).get(node, String.class);
             if (value!=null) {
@@ -129,7 +134,10 @@ public class V2DottedNameSupport {
             }
         }
         for (String leafName : node.model.getLeafElementNames()) {
-            List values = node.leafElements(leafName);
+            List values;
+            synchronized (node) {
+                values = node.leafElements(leafName);
+            }
             Iterator i = values.iterator();
             StringBuffer value = new StringBuffer();
             while (i.hasNext()) {

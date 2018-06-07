@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package fish.payara.jdbc.stats;
 
@@ -108,18 +108,12 @@ public class FrequentSQLTraceCache extends SQLTraceCache {
      *
      * @return string representation of the list of sql queries sorted
      */
-    public String getTopQueries() {
+    public List<SQLTrace> getTopQueries() {
         purgeEntries();
         
         List<SQLTrace> sqlTraceList = new ArrayList(cache.values());
         Collections.sort(sqlTraceList, SQLTrace.SQLTraceFrequencyComparator);
         
-        StringBuilder sb = new StringBuilder();
-        for (SQLTrace sqlTrace : sqlTraceList) {
-            sb.append(LINE_BREAK);
-            sb.append(sqlTrace.getQueryName());
-            sb.append(" executions: ").append(sqlTrace.getNumExecutions());
-        }
-        return sb.toString();
+        return sqlTraceList;
     }
 }

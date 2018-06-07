@@ -67,8 +67,9 @@ public interface JavaEEContextUtil {
 
     /**
      * set context class loader by internal state of this instance
+     * @return context so class loader can be reset
      */
-    void setApplicationClassLoader();
+    Context setApplicationClassLoader();
 
     /**
      * Sets the state of this instance from current invocation context
@@ -92,6 +93,17 @@ public interface JavaEEContextUtil {
      * @return component ID for the current invocation (not this instance), not null
      */
     String getInvocationComponentId();
+
+    /**
+     * @return component ID for the current instance, or null
+     */
+    String getInstanceComponentId();
+
+    /**
+     * Set a valid component invocation that's empty,
+     * i.e. doesn't belong to any module
+     */
+    void setEmptyInvocation();
 
     interface Context extends Closeable {};
     interface Closeable extends AutoCloseable {

@@ -58,6 +58,7 @@
     limitations under the License.
 
 -->
+<!-- Portions copyright [2018] Payara Foundation and/or affiliates -->
 
 <mbeans-descriptors>
 
@@ -70,7 +71,7 @@
     
     <attribute name="allowLinking"
                description="Allow symlinking to outside the webapp root directory, if the webapp is an exploded directory"
-               is="true"
+               is="false"
                type="boolean"/>
       
     <attribute name="cacheMaxSize"

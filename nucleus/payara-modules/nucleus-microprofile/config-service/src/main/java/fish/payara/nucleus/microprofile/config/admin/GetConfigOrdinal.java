@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,7 +74,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetConfigOrdinal implements AdminCommand {
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets,password", defaultValue = "domain")
     String source;
 
     @Param(optional = true, defaultValue = "server") // if no target is specified it will be the DAS
@@ -91,35 +91,39 @@ public class GetConfigOrdinal implements AdminCommand {
             Integer result = -1;
             switch (source) {
                 case "domain": {
-                    result = serviceConfig.getDomainOrdinality();
+                    result = Integer.parseInt(serviceConfig.getDomainOrdinality());
                     break;
                 }
                 case "config": {
-                    result = serviceConfig.getConfigOrdinality();
+                    result = Integer.parseInt(serviceConfig.getConfigOrdinality());
                     break;
                 }
                 case "server": {
-                    result = serviceConfig.getServerOrdinality();
+                    result = Integer.parseInt(serviceConfig.getServerOrdinality());
                     break;
                 }
                 case "application": {
-                    result = serviceConfig.getApplicationOrdinality();
+                    result = Integer.parseInt(serviceConfig.getApplicationOrdinality());
                     break;
                 }
                 case "module": {
-                    result = serviceConfig.getModuleOrdinality();
+                    result = Integer.parseInt(serviceConfig.getModuleOrdinality());
                     break;
                 }
                 case "cluster": {
-                    result = serviceConfig.getClusterOrdinality();
+                    result = Integer.parseInt(serviceConfig.getClusterOrdinality());
                     break;
                 }
                 case "jndi": {
-                    result = serviceConfig.getJNDIOrdinality();
+                    result = Integer.parseInt(serviceConfig.getJNDIOrdinality());
                     break;
                 }
                 case "secrets": {
-                    result = serviceConfig.getSecretDirOrdinality();
+                    result = Integer.parseInt(serviceConfig.getSecretDirOrdinality());
+                    break;
+                }
+                case "password" : {
+                    result = Integer.parseInt(serviceConfig.getPasswordOrdinality());
                     break;
                 }
 

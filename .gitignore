@@ -5,6 +5,8 @@ appserver/packager/pkg_conf.py
 .classpath
 .project
 .settings/
+.factorypath
+.vscode/
 target/
 *~
 *.iml
@@ -13,3 +15,5 @@ gfbuild.log
 /nucleus/payara-modules/requesttracing-core/nbproject/
 nb-configuration.xml
 /nucleus/payara-modules/nucleus-microprofile/config-service/nbproject/
+appserver/extras/arquillian-containers/payara-common/dependency-reduced-pom.xml
+/appserver/tests/quicklook/cluster/clustersetup/nbproject/

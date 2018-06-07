@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.grizzly.config.dom;
 
@@ -135,7 +136,10 @@ public interface ThreadPool extends ConfigBeanProxy, PropertyBag {
         static public List<NetworkListener> findNetworkListeners(ThreadPool threadpool) {
             NetworkConfig config = threadpool.getParent().getParent(NetworkConfig.class);
             if (!Dom.unwrap(config).getProxyType().equals(NetworkConfig.class)) {
-                config = Dom.unwrap(config).element("network-config").createProxy();
+                Dom unwrappedConfig = Dom.unwrap(config);
+                synchronized (unwrappedConfig) {
+                    config = unwrappedConfig.element("network-config").createProxy();
+                }
             }
             List<NetworkListener> listeners = config.getNetworkListeners().getNetworkListener();
             List<NetworkListener> refs = new ArrayList<NetworkListener>();

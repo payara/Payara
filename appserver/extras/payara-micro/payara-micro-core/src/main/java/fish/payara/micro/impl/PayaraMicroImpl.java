@@ -46,7 +46,6 @@ import fish.payara.micro.cmd.options.RuntimeOptions;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.BindException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -170,6 +169,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private String postDeployFileName;
     private RuntimeDirectory runtimeDir = null;
     private String secretsDir;
+    private String sslCert;
+    private boolean sniEnabled = false;
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -423,16 +424,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
     /**
-     * The configured port for HTTPS requests
-     *
-     * @return The HTTPS port
-     */
-    @Override
-    public int getSslPort() {
-        return sslPort;
-    }
-
-    /**
      * The UberJar to create
      *
      * @return
@@ -440,6 +431,16 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public File getUberJar() {
         return uberJar;
+    }
+    
+    /**
+     * The configured port for HTTPS requests
+     *
+     * @return The HTTPS port
+     */
+    @Override
+    public int getSslPort() {
+        return sslPort;
     }
 
     /**
@@ -458,7 +459,29 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         this.sslPort = sslPort;
         return this;
     }
+    
+    @Override
+    public PayaraMicroImpl setSniEnabled(boolean value) {
+        sniEnabled = value;
+        return this;
+    }
 
+    /**
+     * Set the certificate alias in the keystore to use for the server cert
+     * @param alias name of the certificate in the keystore
+     * @return 
+     */
+    @Override
+    public PayaraMicroImpl setSslCert(String alias) {
+        sslCert = alias;
+        return this;
+    }
+    
+    @Override
+    public String getSslCert() {
+        return sslCert;
+    }
+    
     /**
      * Gets the logical name for this PayaraMicro Server within the server
      * cluster
@@ -1085,6 +1108,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         sslPort = Integer.parseInt(value);
                         break;
                     }
+                    case sslcert: {
+                        sslCert = value;
+                        break;
+                    }
                     case version: {
                         printVersion();
                         System.exit(1);
@@ -1306,6 +1333,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case secretsdir:
                         secretsDir = value;
                         break;
+                    case enablesni:
+                        sniEnabled = true;
+                        break;
                     default:
                         break;
                 }
@@ -1315,7 +1345,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
     /**
-     * Process the user system properties in precendence
+     * Process the user system properties in precedence
      * 1st loads the properties from the uber jar location
      * then loads each command line system properties file which will override
      * uber jar properties
@@ -1532,11 +1562,21 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             }
 
             System.setProperty("java.util.logging.config.file", runtimeDir.getLoggingProperties().getAbsolutePath());
-            try {
-                LogManager.getLogManager().readConfiguration();
-            } catch (SecurityException | IOException ex) {
+            try (InputStream is = new FileInputStream(runtimeDir.getLoggingProperties())){
+                LogManager.getLogManager().readConfiguration(is);
+                
+                // go through all root handlers and set formatters based on properties
+                Logger rootLogger = LogManager.getLogManager().getLogger("");
+                for (Handler handler : rootLogger.getHandlers()) {
+                    String formatter = LogManager.getLogManager().getProperty(handler.getClass().getCanonicalName()+".formatter");
+                    if (formatter != null) {
+                        handler.setFormatter((Formatter) Class.forName(formatter).newInstance());
+                    }
+                }
+                
+            } catch (SecurityException | IOException | ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                 LOGGER.log(Level.SEVERE, "Unable to reset the log manager", ex);
-            }
+            } 
         } else {  // system property was not set on the command line using the command option or via -D
             // we are likely using our default properties file so see if we need to rewrite it
             if (logToFile) {
@@ -1567,8 +1607,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 }
             }
             System.setProperty("java.util.logging.config.file", runtimeDir.getLoggingProperties().getAbsolutePath());
-            try {
-                LogManager.getLogManager().readConfiguration();
+            try (InputStream is = new FileInputStream(runtimeDir.getLoggingProperties())){
+                LogManager.getLogManager().readConfiguration(is);
 
                 // reset the formatters on the two handlers
                 //Logger rootLogger = Logger.getLogger("");
@@ -1637,12 +1677,11 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
 
         if (this.minHttpThreads != Integer.MIN_VALUE) {
-            preBootCommands.add(new BootCommand("set", "configs.config.server-config..thread-pools.thread-pool.http-thread-pool.min-thread-pool-size=" + minHttpThreads));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.thread-pools.thread-pool.http-thread-pool.min-thread-pool-size=" + minHttpThreads));
         }
     }
 
     private void configurePorts() throws GlassFishException {
-        PortBinder portBinder = new PortBinder();
         // build the glassfish properties
 
         if (httpPort != Integer.MIN_VALUE) {
@@ -1650,62 +1689,41 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 // Log warnings if overriding other options
                 logPortPrecedenceWarnings(false);
 
-                // Search for an available port from the specified port
-                try {
-                    int port = portBinder.findAvailablePort(httpPort, autoBindRange);
-                    preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.port=" + port));
-                    preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.enabled=true"));
-                } catch (BindException ex) {
-                    LOGGER.log(Level.SEVERE, "No available port found in range: "
-                            + httpPort + " - "
-                            + (httpPort + autoBindRange), ex);
-
-                    throw new GlassFishException("Could not bind HTTP port");
-                }
+                // Configure the port range from the specified port
+                int minPort = httpPort;
+                int maxPort = minPort + autoBindRange;
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.port-range=" + Integer.toString(minPort) + "," + Integer.toString(maxPort)));
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.enabled=true"));
             } else {
                 // Log warnings if overriding other options
                 logPortPrecedenceWarnings(false);
                 preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.port=" + httpPort));
-
             }
         } else if (autoBindHttp == true) {
             // Log warnings if overriding other options
             logPortPrecedenceWarnings(false);
 
-            // Search for an available port from the default HTTP port
-            try {
-                int port = portBinder.findAvailablePort(defaultHttpPort, autoBindRange);
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.port=" + port));
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.enabled=true"));
-            } catch (BindException ex) {
-                LOGGER.log(Level.SEVERE, "No available port found in range: "
-                        + defaultHttpPort + " - "
-                        + (defaultHttpPort + autoBindRange), ex);
-
-                throw new GlassFishException("Could not bind HTTP port");
-            }
+            // Configure the port range from the default HTTP port
+            int minPort = defaultHttpPort;
+            int maxPort = minPort + autoBindRange;
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.port-range=" + Integer.toString(minPort) + "," + Integer.toString(maxPort)));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.enabled=true"));
         }
         if (sslPort != Integer.MIN_VALUE) {
             if (autoBindSsl == true) {
                 // Log warnings if overriding other options
                 logPortPrecedenceWarnings(true);
 
-                // Search for an available port from the specified port
-                try {
-                    int port = portBinder.findAvailablePort(sslPort, autoBindRange);
-                    preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.port=" + port));
-                    preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.enabled=true"));
-                } catch (BindException ex) {
-                    LOGGER.log(Level.SEVERE, "No available port found in range: "
-                            + sslPort + " - " + (sslPort + autoBindRange), ex);
-
-                    throw new GlassFishException("Could not bind SSL port");
-                }
+                // Configure the port range from the specified port
+                int minPort = sslPort;
+                int maxPort = minPort + autoBindRange;
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.port-range=" + Integer.toString(minPort) + "," + Integer.toString(maxPort)));
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.enabled=true"));
             } else {
                 // Log warnings if overriding other options
                 logPortPrecedenceWarnings(true);
 
-                // Set the port as normal
+                // Configure the port range from the default port
                 preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.port=" + sslPort));
                 preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.enabled=true"));
             }
@@ -1713,17 +1731,18 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             // Log warnings if overriding other options
             logPortPrecedenceWarnings(true);
 
-            // Search for an available port from the default HTTPS port
-            try {
-                int port = portBinder.findAvailablePort(defaultHttpsPort, autoBindRange);
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.port=" + port));
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.enabled=true"));
-            } catch (BindException ex) {
-                LOGGER.log(Level.SEVERE, "No available port found in range: "
-                        + defaultHttpsPort + " - " + (defaultHttpsPort + autoBindRange), ex);
-
-                throw new GlassFishException("Could not bind SSL port");
-            }
+            // Configure the port range from the default HTTPS port
+            int minPort = defaultHttpsPort;
+            int maxPort = minPort + autoBindRange;
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.port-range=" + Integer.toString(minPort) + "," + Integer.toString(maxPort)));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.enabled=true"));
+        }
+        
+        if (sslCert != null) {
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.protocols.protocol.https-listener.ssl.cert-nickname=" + sslCert));            
+        }
+        if (sniEnabled) {
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.protocols.protocol.https-listener.ssl.sni-enabled=true"));
         }
     }
 
@@ -1971,6 +1990,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         enableHealthCheck = getBooleanProperty("payaramicro.enableHealthCheck");
         httpPort = getIntegerProperty("payaramicro.port", Integer.MIN_VALUE);
         sslPort = getIntegerProperty("payaramicro.sslPort", Integer.MIN_VALUE);
+        sslCert = getProperty("payaramicro.sslCert");
+        sniEnabled = getBooleanProperty("payaramicro.sniEnabled");
         hzMulticastGroup = getProperty("payaramicro.mcAddress");
         hzPort = getIntegerProperty("payaramicro.mcPort", Integer.MIN_VALUE);
         hostAware = getBooleanProperty("payaramicro.hostAware");
@@ -2113,6 +2134,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         if (secretsDir != null) {
             props.setProperty("payaramicro.secretsDir", secretsDir);
         }
+        
+        if (sslCert != null) {
+            props.setProperty("payaramicro.sslCert", sslCert);
+        }
 
         props.setProperty("payaramicro.autoBindHttp", Boolean.toString(autoBindHttp));
         props.setProperty("payaramicro.autoBindSsl", Boolean.toString(autoBindSsl));
@@ -2127,6 +2152,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         props.setProperty("payaramicro.noCluster", Boolean.toString(noCluster));
         props.setProperty("payaramicro.hostAware", Boolean.toString(hostAware));
         props.setProperty("payaramicro.disablePhoneHome", Boolean.toString(disablePhoneHome));
+        props.setProperty("payaramicro.sniEnabled", Boolean.toString(sniEnabled));
 
         if (userLogFile != null) {
             props.setProperty("payaramicro.userLogFile", userLogFile);
@@ -2402,7 +2428,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
     @Override
-    public void addLibrary(File lib) {
+    public PayaraMicroImpl addLibrary(File lib) {
         OpenURLClassLoader loader = (OpenURLClassLoader) this.getClass().getClassLoader();
         if (lib.exists() && lib.canRead() && lib.getName().endsWith(".jar")) {
             try {
@@ -2414,6 +2440,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         } else {
             LOGGER.log(Level.SEVERE, "Unable to read jar " + lib.getName());
         }
+        return this;
     }
 
     private void configureSecrets() {

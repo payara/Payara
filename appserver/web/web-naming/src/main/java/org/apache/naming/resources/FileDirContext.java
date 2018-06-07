@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.apache.naming.resources;
 
@@ -897,7 +898,7 @@ public class FileDirContext extends BaseDirContext {
             // Check that this file belongs to our root path
             String canPath = null;
             try {
-                canPath = file.getCanonicalPath();
+                canPath = file.toPath().toRealPath().toString();
             } catch (IOException e) {
             }
             if (canPath == null) {

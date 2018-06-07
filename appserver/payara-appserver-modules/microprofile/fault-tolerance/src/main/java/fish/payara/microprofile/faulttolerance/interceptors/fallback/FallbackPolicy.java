@@ -42,7 +42,7 @@ package fish.payara.microprofile.faulttolerance.interceptors.fallback;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import static fish.payara.microprofile.faulttolerance.FaultToleranceService.FALLBACK_HANDLER_METHOD_NAME;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,76 +57,83 @@ import org.glassfish.internal.api.Globals;
 
 /**
  * Class that executes the fallback policy defined by the @Fallback annotation.
+ *
  * @author Andrew Pielage
  */
 public class FallbackPolicy {
-    
+
     private static final Logger logger = Logger.getLogger(FallbackPolicy.class.getName());
-    
+
     private final Class<? extends FallbackHandler> fallbackClass;
     private final String fallbackMethod;
-    
-    public FallbackPolicy(Fallback fallback, Config config, InvocationContext invocationContext) 
-            throws ClassNotFoundException {     
+
+    public FallbackPolicy(Fallback fallback, Config config, InvocationContext invocationContext)
+            throws ClassNotFoundException {
         fallbackClass = (Class<? extends FallbackHandler>) Thread.currentThread().getContextClassLoader().loadClass(
-                (String) FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class, "value", 
+                (String) FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class, "value",
                         invocationContext, String.class)
-                .orElse(fallback.value().getName()));
-        
-        fallbackMethod = (String) FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class, 
+                        .orElse(fallback.value().getName()));
+
+        fallbackMethod = (String) FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class,
                 "fallbackMethod", invocationContext, String.class)
                 .orElse(fallback.fallbackMethod());
     }
-    
+
     /**
      * Performs the fallback operation defined by the @Fallback annotation.
+     *
      * @param invocationContext The failing invocation context
      * @return The result of the executed fallback method
      * @throws Exception If the fallback method itself fails.
      */
     public Object fallback(InvocationContext invocationContext) throws Exception {
         Object fallbackInvocationContext = null;
-        
-        FaultToleranceService faultToleranceService = 
-                Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
+
+        FaultToleranceService faultToleranceService
+                = Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
-                .getService(InvocationManager.class);      
-        RequestEvent requestEvent = new RequestEvent("FaultTolerance-Fallback");
-        faultToleranceService.traceFaultToleranceEvent(requestEvent, invocationManager, invocationContext);    
-        
-        if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
-            logger.log(Level.FINE, "Using fallback method: {0}", fallbackMethod);
-            
-            fallbackInvocationContext = invocationContext.getMethod().getDeclaringClass()
-                    .getDeclaredMethod(fallbackMethod, invocationContext.getMethod().getParameterTypes())
-                    .invoke(invocationContext.getTarget(), invocationContext.getParameters());
-        } else {
-            logger.log(Level.FINE, "Using fallback class: {0}", fallbackClass.getName());
-            
-            ExecutionContext executionContext = new FaultToleranceExecutionContext(invocationContext.getMethod(), 
-                    invocationContext.getParameters());
-            
-            fallbackInvocationContext = fallbackClass
-                    .getDeclaredMethod(FALLBACK_HANDLER_METHOD_NAME, ExecutionContext.class)
-                    .invoke(CDI.current().select(fallbackClass).get(), executionContext);
+                .getService(InvocationManager.class);
+        faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("executeFallbackMethod"),
+                invocationManager, invocationContext);
+
+        try {
+            if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
+                logger.log(Level.FINE, "Using fallback method: {0}", fallbackMethod);
+
+                fallbackInvocationContext = invocationContext.getMethod().getDeclaringClass()
+                        .getDeclaredMethod(fallbackMethod, invocationContext.getMethod().getParameterTypes())
+                        .invoke(invocationContext.getTarget(), invocationContext.getParameters());
+            } else {
+                logger.log(Level.FINE, "Using fallback class: {0}", fallbackClass.getName());
+
+                ExecutionContext executionContext = new FaultToleranceExecutionContext(invocationContext.getMethod(),
+                        invocationContext.getParameters());
+
+                fallbackInvocationContext = fallbackClass
+                        .getDeclaredMethod(FALLBACK_HANDLER_METHOD_NAME, ExecutionContext.class)
+                        .invoke(CDI.current().select(fallbackClass).get(), executionContext);
+            }
+        } finally {
+            faultToleranceService.endFaultToleranceSpan();
         }
-        
+
         return fallbackInvocationContext;
     }
-    
+
     /**
-     * Default implementation class for the Fault Tolerance ExecutionContext interface
+     * Default implementation class for the Fault Tolerance ExecutionContext
+     * interface
      */
     private class FaultToleranceExecutionContext implements ExecutionContext {
 
         private final Method method;
         private final Object[] parameters;
-        
+
         public FaultToleranceExecutionContext(Method method, Object[] parameters) {
             this.method = method;
             this.parameters = parameters;
         }
-        
+
         @Override
         public Method getMethod() {
             return method;

@@ -37,7 +37,8 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-
+    
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 -->
 
 <!-- deploymentAppclient.jsf -->
@@ -48,7 +49,7 @@
         setAttribute(key="fieldMap" value="appClient");
         createMap(result="#{pageSession.appClient}")
         mapPut(map="#{pageSession.deployMap}", key="appClient", value="#{pageSession.appClient}");
-        mapPut(map="#{pageSession.appClient}", key="convertToFalseList", value={ "verify", "force" , "PROPERTY-implicitCdiEnabled", "PROPERTY-$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}"} );
+        mapPut(map="#{pageSession.appClient}", key="convertToFalseList", value={ "verify", "force" , "PROPERTY-implicitCdiEnabled", "PROPERTY-$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}", "forceName"} );
         mapPut(map="#{pageSession.appClient}", key="PROPERTY-$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}" , value="true" );
         mapPut(map="#{pageSession.appClient}", key="PROPERTY-implicitCdiEnabled", value="true");
      />
@@ -57,13 +58,17 @@
     />
     <sun:propertySheetSection id="psection" >
 
-<sun:property id="nameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.ApplicationName}" visible="#{true}">
+<sun:property id="nameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.ApplicationName}" helpText="$resource{i18n.deploy.ApplicationNameHelp}" visible="#{true}">
     <sun:textField id="appName" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.deploy.ApplicationName']}" text="#{pageSession.appClient['name']}" styleClass="required" required="#{true}"
         onChange="javascript: admingui.deploy.setAppName('#{appNameId}', this.value, window, '#{sessionScope.appTypeString}')">
         <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{appNameId});
         />
     </sun:textField>
+</sun:property>
+        
+<sun:property id="forceName" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.forceApplicationName}" helpText="$resource{i18n.deploy.forceApplicationNameHelp}">
+    <sun:checkbox id="forceName"  label=" " selected="#{pageSession.appClient['forceName']}" selectedValue="true" />
 </sun:property>
 
 <sun:property id="implicitCdi" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.implicitCdi}" helpText="$resource{i18n.deploy.implicitCdiHelp}">

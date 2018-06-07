@@ -394,7 +394,7 @@ public class GuiUtil {
         return ResourceBundleManager.getInstance().getBundle(resourceName, locale);
     }
 
-    /*
+    /**
      * returns the strings from org.glassfish.admingui.core.Strings
      * if no such key exists, return the key itself.
      */

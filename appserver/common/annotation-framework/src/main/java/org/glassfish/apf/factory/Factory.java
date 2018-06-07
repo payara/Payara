@@ -48,9 +48,6 @@ import java.io.InputStreamReader;
 import java.io.InputStream;
 import java.io.IOException;
 
-import org.glassfish.apf.Scanner;
-import org.glassfish.apf.AnnotationProcessor;
-import org.glassfish.apf.AnnotationHandler;
 import org.glassfish.apf.impl.AnnotationProcessorImpl;
 import org.glassfish.apf.impl.AnnotationUtils;
 /**

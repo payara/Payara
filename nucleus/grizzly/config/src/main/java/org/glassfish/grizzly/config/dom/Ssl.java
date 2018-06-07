@@ -270,6 +270,14 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     String getSSLInactivityTimeout();
 
     void setSSLInactivityTimeout(int handshakeTimeout);
+    
+    /**
+     * 
+     * @return whether SNI support is enabled defaults to false 
+     */
+    @Attribute(defaultValue = "false", dataType=Boolean.class)
+    String getSniEnabled();
+    void setSniEnabled(String value);
 
 
     /**

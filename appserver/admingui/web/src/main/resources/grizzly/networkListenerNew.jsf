@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 -->
 
 <!-- grizzly/networkListenerNew.jsf -->
@@ -127,6 +128,7 @@
                     mapPut(map="#{pageSession.networkListenerMap}", key="name", value="#{pageSession.valueMap['name']}");
                     mapPut(map="#{pageSession.networkListenerMap}", key="address", value="#{pageSession.valueMap['address']}");
                     mapPut(map="#{pageSession.networkListenerMap}", key="port", value="#{pageSession.valueMap['port']}");
+                    mapPut(map="#{pageSession.networkListenerMap}", key="portRange", value="#{pageSession.valueMap['portRange']}");
                     mapPut(map="#{pageSession.networkListenerMap}", key="transport", value="#{pageSession.valueMap['transport']}");
                     mapPut(map="#{pageSession.networkListenerMap}", key="threadpool", value="#{pageSession.valueMap['threadpool']}");
                     mapPut(map="#{pageSession.networkListenerMap}", key="enabled", value="#{pageSession.valueMap['enabled']}");

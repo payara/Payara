@@ -37,14 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.config.support;
 
 import java.io.*;
 import java.net.*;
 import java.nio.charset.Charset;
-import java.util.*;
-import java.util.logging.*;
 import javax.xml.stream.*;
 
 /**
@@ -59,7 +58,7 @@ abstract class ServerReaderFilter extends XMLStreamReaderFilter {
             domainXml = theDomainXml;
             xif = theXif;
             stream = domainXml.openStream();
-            setParent(xif.createXMLStreamReader(stream, Charset.defaultCharset().toString()));
+            setParent(xif.createXMLStreamReader(stream, System.getProperty("fish.payara.configFileEncoding", Charset.defaultCharset().toString())));
         }
         catch(IOException e) {
             throw new XMLStreamException(e);

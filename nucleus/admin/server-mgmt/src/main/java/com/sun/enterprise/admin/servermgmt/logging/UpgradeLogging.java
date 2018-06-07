@@ -114,19 +114,29 @@ public class UpgradeLogging implements ConfigurationUpgrade, PostConstruct {
 
             Map<String, String> logLevels = mll.getAllLogLevels();
             String file = logService.getFile();
+            String payaraNotificationFile = logService.getPayaraNotificationFile();
             String instanceRoot = System.getProperty("com.sun.aas.instanceRoot");
             if (file.contains(instanceRoot)) {
                 file = file.replace(instanceRoot, "${com.sun.aas.instanceRoot}");
             }
+            
+            if (payaraNotificationFile.contains(instanceRoot)) {
+                payaraNotificationFile = payaraNotificationFile.replace(instanceRoot, "${com.sun.aas.instanceRoot}");
+            }
+            
             logLevels.put("file", file);
+            logLevels.put("payara-notification-file", payaraNotificationFile);
             logLevels.put("use-system-logging", logService.getUseSystemLogging());
             //this can have multiple values so need to add
             logLevels.put("log-handler", logService.getLogHandler());
             logLevels.put("log-filter", logService.getLogFilter());
             logLevels.put("log-to-file", logService.getLogToFile());
+            logLevels.put("payara-notification-log-to-file", logService.getPayaraNotificationLogToFile());
             logLevels.put("log-to-console", logService.getLogToConsole());
             logLevels.put("log-rotation-limit-in-bytes", logService.getLogRotationLimitInBytes());
+            logLevels.put("payara-notification-log-rotation-limit-in-bytes", logService.getPayaraNotificationLogRotationLimitInBytes());
             logLevels.put("log-rotation-timelimit-in-minutes", logService.getLogRotationTimelimitInMinutes());
+            logLevels.put("payara-notification-log-rotation-timelimit-in-minutes", logService.getPayaraNotificationLogRotationTimelimitInMinutes());
             logLevels.put("alarms", logService.getAlarms());
             logLevels.put("retain-error-statistics-for-hours", logService.getRetainErrorStatisticsForHours());
             final Map<String, String> m = new HashMap<String, String>(logLevels);

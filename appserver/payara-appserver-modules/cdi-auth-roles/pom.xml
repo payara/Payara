@@ -40,18 +40,20 @@
     holder.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"> <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
         <version>4.1.2.182-SNAPSHOT</version>
     </parent>
+    
     <groupId>fish.payara.appserver</groupId>
     <artifactId>cdi-auth-roles</artifactId>
+    
     <packaging>glassfish-jar</packaging>
     <name>CDI Auth: Roles</name>
     <description>CDI Auth: Roles</description>
+    
     <build>
         <plugins>
             <plugin>
@@ -93,7 +95,6 @@
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
             <version>7.0</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>javax.security.enterprise</groupId>

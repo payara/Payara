@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,7 @@ import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.StreamSerializer;
 import java.io.IOException;
+import org.glassfish.internal.api.JavaEEContextUtil.Context;
 
 /**
  *
@@ -69,8 +70,9 @@ public class PayaraHazelcastSerializer implements StreamSerializer<Object> {
     public Object read(ObjectDataInput in) throws IOException {
         String componentId = (String)delegate.read(in);
         ctxUtil.setInstanceComponentId(componentId);
-        ctxUtil.setApplicationClassLoader();
-        return delegate.read(in);
+        try (Context ctx = ctxUtil.setApplicationClassLoader()) {
+            return delegate.read(in);
+        }
     }
 
     @Override

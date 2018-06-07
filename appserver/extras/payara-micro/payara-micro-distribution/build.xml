@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2017] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2018] [Payara Foundation] -->
 
 <project name="payara-micro" default="new.create" basedir=".">
     <property name="rootdir" value="target"/>
@@ -198,6 +198,7 @@
         <copy todir="${domaindir}">
             <fileset dir="${tempdir}/config">
                 <include name="*.jks"/>
+                <include name="keyfile"/>
             </fileset>
         </copy>       
     </target>

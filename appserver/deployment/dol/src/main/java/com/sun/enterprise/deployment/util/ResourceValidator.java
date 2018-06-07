@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.util;
 
@@ -66,6 +66,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.JavaEEContextUtil;
+import org.glassfish.internal.api.JavaEEContextUtil.Context;
 import org.glassfish.internal.api.PostStartupRunLevel;
 
 /**
@@ -101,15 +103,14 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
 
     private String target;
 
-    private DeploymentContext dc;
-
-    private Application application;
-
     @Inject
     private Events events;
 
     @Inject
     private Domain domain;
+    
+    @Inject
+    private JavaEEContextUtil contextUtil;
 
     private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ResourceValidator.class);
 
@@ -124,9 +125,9 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
     @Override
     public void event(Event event) {
         if (event.is(Deployment.AFTER_APPLICATION_CLASSLOADER_CREATION)) {
-            dc = (DeploymentContext) event.hook();
-            application = dc.getModuleMetaData(Application.class);
-            DeployCommandParameters commandParams = dc.getCommandParameters(DeployCommandParameters.class);
+            DeploymentContext deploymentContext = (DeploymentContext) event.hook();
+            Application application = deploymentContext.getModuleMetaData(Application.class);
+            DeployCommandParameters commandParams = deploymentContext.getCommandParameters(DeployCommandParameters.class);
             target = commandParams.target;
             if (System.getProperty("deployment.resource.validation", "true").equals("false")) {
                 deplLogger.log(Level.INFO, SKIP_RESOURCE_VALIDATION);
@@ -136,20 +137,25 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
                 return;
             }
             AppResources appResources = new AppResources();
-            //Puts all resouces found in the application via annotation or xml into appResources
-            parseResources(appResources);
-            validateResources(appResources);
+            // Puts all resources found in the application via annotation or xml into appResources
+            parseResources(deploymentContext, application, appResources);
+
+            // Ensure we have a valid component invocation before triggering lookups
+            contextUtil.setEmptyInvocation();
+            try (Context ctx = contextUtil.pushContext()) {
+                validateResources(deploymentContext, application, appResources);
+            }
         }
     }
 
     /**
      * Store all the resources before starting the validation.
      */
-    private void parseResources(AppResources appResources) {
-        parseResources(application, appResources);
+    private void parseResources(DeploymentContext deploymentContext, Application application, AppResources appResources) {
+        parseResourcesBd(application, appResources);
         for (BundleDescriptor bd : application.getBundleDescriptors()) {
             if (bd instanceof WebBundleDescriptor || bd instanceof ApplicationClientDescriptor) {
-                parseResources(bd, appResources);
+                parseResourcesBd(bd, appResources);
             }
             if (bd instanceof EjbBundleDescriptor) {
                 // Resources from Java files in the ejb.jar which are neither an EJB nor a managed bean are stored here.
@@ -164,12 +170,12 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             }
         }
 
-        parseManagedBeans(appResources);
+        parseManagedBeans(application, appResources);
 
         // Parse AppScoped resources
         String appName = DOLUtils.getApplicationName(application);
         Map<String, List<String>> resourcesList
-                = (Map<String, List<String>>) dc.getTransientAppMetadata().get(ResourceConstants.APP_SCOPED_RESOURCES_JNDI_NAMES);
+                = (Map<String, List<String>>) deploymentContext.getTransientAppMetadata().get(ResourceConstants.APP_SCOPED_RESOURCES_JNDI_NAMES);
         appResources.storeAppScopedResources(resourcesList, appName);
     }
 
@@ -331,7 +337,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
         return returnValue;
     }
 
-    private void parseManagedBeans(AppResources appResources) {
+    private void parseManagedBeans(Application application, AppResources appResources) {
         for (BundleDescriptor bd : application.getBundleDescriptors()) {
             for (ManagedBeanDescriptor managedBean : bd.getManagedBeans()) {
                 appResources.storeInNamespace(managedBean.getGlobalJndiName(), (JndiNameEnvironment) bd);
@@ -339,7 +345,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
         }
     }
 
-    private void parseResources(BundleDescriptor bd, AppResources appResources) {
+    private void parseResourcesBd(BundleDescriptor bd, AppResources appResources) {
         if (!(bd instanceof JndiNameEnvironment)) {
             return;
         }
@@ -483,7 +489,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
      * Logic from EjbNamingReferenceManagerImpl.java - Here EJB references get
      * resolved
      */
-    private void parseResources(EjbReferenceDescriptor ejbRef, JndiNameEnvironment env, AppResources appResources) {
+    private void parseResources(Application application, EjbReferenceDescriptor ejbRef, JndiNameEnvironment env, AppResources appResources) {
         String name = getLogicalJNDIName(ejbRef.getName(), env);
         // we only need to worry about those references which are not linked yet
         if (ejbRef.getEjbDescriptor() != null) {
@@ -674,7 +680,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
      *
      * @return the converted name with java:global JNDI prefix.
      */
-    private String convertModuleOrAppJNDIName(String jndiName, JndiNameEnvironment env) {
+    private String convertModuleOrAppJNDIName(Application application, String jndiName, JndiNameEnvironment env) {
         BundleDescriptor bd = null;
         if (env instanceof EjbDescriptor) {
             bd = ((EjbDescriptor) env).getEjbBundleDescriptor();
@@ -725,34 +731,34 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
     /**
      * Start of validation logic.
      */
-    private void validateResources(AppResources appResources) {
+    private void validateResources(DeploymentContext deploymentContext, Application application, AppResources appResources) {
         for (AppResource resource : appResources.myResources) {
             if (!resource.validate) {
                 continue;
             }
             if (resource.getType().equals("CFD") || resource.getType().equals("AODD")) {
-                validateRAName(resource);
+                validateRAName(application, resource);
             } else {
-                validateJNDIRefs(resource, appResources.myNamespace);
+                validateJNDIRefs(deploymentContext, application, resource, appResources.myNamespace);
             }
         }
         // Validate the ra-names of app scoped resources
         // RA-name and the type of this resource are stored
         List<Map.Entry<String, String>> raNames = 
-                (List<Map.Entry<String, String>>) dc.getTransientAppMetadata().get(ResourceConstants.APP_SCOPED_RESOURCES_RA_NAMES);
+                (List<Map.Entry<String, String>>) deploymentContext.getTransientAppMetadata().get(ResourceConstants.APP_SCOPED_RESOURCES_RA_NAMES);
         if (raNames == null) {
             return;
         }
         for (Map.Entry<String, String> entry : raNames) {
-            validateRAName(entry.getKey(), entry.getValue());
+            validateRAName(application, entry.getKey(), entry.getValue());
         }
     }
 
     /**
      * Validate the resource adapter names of @CFD, @AODD.
      */
-    private void validateRAName(AppResource resource) {
-        validateRAName(resource.getJndiName(), resource.getType());
+    private void validateRAName(Application application, AppResource resource) {
+        validateRAName(application, resource.getJndiName(), resource.getType());
     }
 
     /**
@@ -764,7 +770,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
      *
      * In case of null ra name, we fail the deployment.
      */
-    private void validateRAName(String raname, String type) {
+    private void validateRAName(Application application, String raname, String type) {
         // No ra-name specified
         if (raname == null || raname.length() == 0) {
             deplLogger.log(Level.SEVERE, RESOURCE_REF_INVALID_RA,
@@ -785,14 +791,14 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
                     || raname.equals("__cp_jdbc_ra") || raname.equals("__xa_jdbc_ra") || raname.equals("__dm_jdbc_ra")) {
                 return;
             }
-            if (isEmbedded(raname)) {
+            if (isEmbedded(application, raname)) {
                 return;
             }
         } // Embedded RA
         // In case the app name does not match, we fail the deployment
         else if (raname.substring(0, poundIndex).equals(application.getAppName())) {
             raname = raname.substring(poundIndex + 1);
-            if (isEmbedded(raname)) {
+            if (isEmbedded(application, raname)) {
                 return;
             }
         }
@@ -804,7 +810,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
                 raname, type));
     }
 
-    private boolean isEmbedded(String raname) {
+    private boolean isEmbedded(Application application, String raname) {
         String ranameWithRAR = raname + ".rar";
         // check for rar named this
         for (BundleDescriptor bd : application.getBundleDescriptors(ConnectorDescriptor.class)) {
@@ -823,9 +829,9 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
      *
      * In case a null jndi name is passed, we fail the deployment.
      *
-     * @param resource to be validated.
+     * @param resource the resource to be validated.
      */
-    private void validateJNDIRefs(AppResource resource, JNDINamespace namespace) {
+    private void validateJNDIRefs(DeploymentContext deploymentContext, Application application, AppResource resource, JNDINamespace namespace) {
         // In case lookup is not present, check if another resource with the same name exists
         if (!resource.hasLookup() && !namespace.find(resource.getName(), resource.getEnv())) {
             deplLogger.log(Level.SEVERE, RESOURCE_REF_JNDI_LOOKUP_FAILED,
@@ -841,12 +847,28 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
         if (isResourceInDomainXML(jndiName) || isDefaultResource(jndiName)) {
             return;
         }
+       
 
         // Managed Bean & EJB portable JNDI names
         if (jndiName.startsWith(ResourceConstants.JAVA_MODULE_SCOPE_PREFIX) || jndiName.startsWith(ResourceConstants.JAVA_APP_SCOPE_PREFIX)) {
-            String newName = convertModuleOrAppJNDIName(jndiName, resource.getEnv());
+            // first look with the name
+            if (namespace.find(jndiName, env)) {
+                return;
+            }
+            
+            String newName = convertModuleOrAppJNDIName(application, jndiName, resource.getEnv());
             if (namespace.find(newName, env)) {
                 return;
+            } else {
+                // try actual lookup
+                try {
+                    InitialContext ctx = new InitialContext();
+                    ctx.lookup(newName);
+                    return;
+                } catch(NamingException ne) {
+                    
+                }
+                
             }
         }
 
@@ -864,7 +886,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
         }
 
         try {
-            if (loadOnCurrentInstance()) {
+            if (loadOnCurrentInstance(deploymentContext)) {
                 InitialContext ctx = new InitialContext();
                 ctx.lookup(jndiName);
             }
@@ -927,13 +949,13 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
     /**
      * Copy from ApplicationLifeCycle.java
      */
-    private boolean loadOnCurrentInstance() {
-        final DeployCommandParameters commandParams = dc.getCommandParameters(DeployCommandParameters.class);
-        final Properties appProps = dc.getAppProps();
+    private boolean loadOnCurrentInstance(DeploymentContext deploymentContext) {
+        final DeployCommandParameters commandParams = deploymentContext.getCommandParameters(DeployCommandParameters.class);
+        final Properties appProps = deploymentContext.getAppProps();
         if (commandParams.enabled) {
             // if the current instance match with the target
             if (domain.isCurrentInstanceMatchingTarget(commandParams.target, commandParams.name(), server.getName(),
-                    dc.getTransientAppMetaData(DeploymentProperties.PREVIOUS_TARGETS, List.class))) {
+                    deploymentContext.getTransientAppMetaData(DeploymentProperties.PREVIOUS_TARGETS, List.class))) {
                 return true;
             }
             if (server.isDas()) {

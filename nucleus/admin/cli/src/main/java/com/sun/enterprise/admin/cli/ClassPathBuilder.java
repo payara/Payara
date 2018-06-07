@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
@@ -52,14 +53,18 @@ import java.util.Iterator;
  * @author Kohsuke Kawaguchi
  */
 public class ClassPathBuilder implements Iterable<File> {
+    
     private final List<File> elements = new ArrayList<File>();
 
+    @Override
     public Iterator<File> iterator() {
         return elements.iterator();
     }
 
     /**
      * Adds a single jar file or a class file directory.
+     * @param f
+     * @return 
      */
     public ClassPathBuilder add(File f) {
         elements.add(f);
@@ -69,26 +74,34 @@ public class ClassPathBuilder implements Iterable<File> {
     /**
      * Allows one to write {@code add(f,"lib","a.jar")} instead of
      * <tt>add(new File(new File(f,"lib"),"a.jar")</tt>
+     * @param f
+     * @param pathFragments
+     * @return 
      */
     public ClassPathBuilder add(File f, String... pathFragments) {
-        for (String p : pathFragments)
+        for (String p : pathFragments) 
             f = new File(f,p);
         return add(f);
     }
 
     /**
      * Adds all the files in the given directory that match the given filter.
+     * @param dir
+     * @param filter
+     * @return 
      */
     public ClassPathBuilder addAll(File dir, FileFilter filter) {
         File[] files = dir.listFiles(filter);
-        if(files!=null)
+        if(files!=null){
             addAll(files);
+        }
         return this;
     }
 
     public ClassPathBuilder addAll(File... files) {
-        for (File f : files)
+        for (File f : files){
             add(f);
+        }
         return this;
     }
 
@@ -96,6 +109,7 @@ public class ClassPathBuilder implements Iterable<File> {
      * Formats the path in a single-argument format suitable
      * after the "-cp" JVM option.
      */
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
         for (File f : elements) {

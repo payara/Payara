@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.config.support;
 
@@ -110,7 +111,10 @@ public class TargetBasedResolver implements CrudResolver {
             }
             ConfigModel.Property property = parentDom.model.getElement(elementName);
             if (property.isCollection()) {
-                Collection<Dom> collection = parentDom.nodeElements(elementName);
+                Collection<Dom> collection;
+                synchronized (parentDom) {
+                    collection = parentDom.nodeElements(elementName);
+                }
                 if (collection==null) {
                     return null;
                 }

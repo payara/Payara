@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or affiliates]
 
 package org.glassfish.apf.impl;
 
@@ -77,14 +77,13 @@ import java.util.logging.Level;
  */
 public class AnnotationProcessorImpl implements AnnotationProcessor {
     
-    AnnotationProcessorImpl delegate;
-    Map<String, List<AnnotationHandler>> handlers =
-            new HashMap<String, List<AnnotationHandler>>();
+    private AnnotationProcessorImpl delegate;
+    private Map<String, List<AnnotationHandler>> handlers = new HashMap<String, List<AnnotationHandler>>();
     
-    int errorCount;
-    Logger logger;
-    Stack<StackElement> annotatedElements = new Stack<StackElement>();
-    Set<Package> visitedPackages = new HashSet<Package>();
+    private int errorCount;
+    private Logger logger;
+    private Stack<StackElement> annotatedElements = new Stack<StackElement>();
+    private Set<Package> visitedPackages = new HashSet<Package>();
     
     /** Creates a new instance of AnnotationProcessorImpl */
     public AnnotationProcessorImpl() {
@@ -112,10 +111,8 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
     public void log(Level level, AnnotationInfo locator, String localizedMessage){
         if (logger!=null && logger.isLoggable(level)){
             if (locator!=null){
-                logger.log(level, AnnotationUtils.getLocalString(
-                    "enterprise.deployment.annotation.error",
-                    "{2}\n symbol: {0}\n location: {1}",
-                    new Object[] { locator.getAnnotation().annotationType().getName(), locator.getAnnotatedElement(), localizedMessage}));
+                logger.log(level, AnnotationUtils.getLocalString("enterprise.deployment.annotation.error", "{2}\n symbol: {0}\n location: {1}",
+                     locator.getAnnotation().annotationType().getName(), locator.getAnnotatedElement(), localizedMessage));
             } else{
                 logger.log(level, localizedMessage);
             }
@@ -187,12 +184,8 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
             info = scanner.getComponentInfo(c);
         } catch (NoClassDefFoundError err) {
             // issue 456: allow verifier to report this issue
-            AnnotationProcessorException ape = 
-                    new AnnotationProcessorException(
-                            AnnotationUtils.getLocalString(
-                                    "enterprise.deployment.annotation.classnotfounderror",
-                                    "Class [ {0} ] not found. Error while loading [ {1} ]",
-                                    new Object[]{err.getMessage(), c}));
+            AnnotationProcessorException ape = new AnnotationProcessorException(AnnotationUtils.getLocalString(
+                    "enterprise.deployment.annotation.classnotfounderror", "Class [ {0} ] not found. Error while loading [ {1} ]", err.getMessage(), c));
             ctx.getErrorHandler().error(ape);
             // let's continue to the next class instead of aborting the whole 
             // annotation processing
@@ -320,7 +313,7 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
         
         Annotation annotation = element.getAnnotation();
         if (AnnotationUtils.shouldLog("annotation")) {
-            logger.finer("Annotation : " + annotation.annotationType().getName() + " delegate = " + delegate);
+            logger.log(Level.FINER, "Annotation : {0} delegate = {1}", new Object[]{annotation.annotationType().getName(), delegate});
         }
         result.addResult(annotation.annotationType(), ResultType.UNPROCESSED);
         
@@ -371,16 +364,14 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
                     } 
                     
                     if (++errorCount>100){
-                        throw new AnnotationProcessorException(
-                                AnnotationUtils.getLocalString(
-                                    "enterprise.deployment.annotation.toomanyerror",
-                                    "Too many errors, annotation processing abandoned."));
+                        throw new AnnotationProcessorException(AnnotationUtils.getLocalString("enterprise.deployment.annotation.toomanyerror", 
+                                "Too many errors, annotation processing abandoned."));
                     }
                     
-                    processingResult =
-                        HandlerProcessingResultImpl.getDefaultResult(
-                        annotation.annotationType(), ResultType.FAILED);
+                    processingResult = HandlerProcessingResultImpl.getDefaultResult(annotation.annotationType(), ResultType.FAILED);
+                    
                 } catch(Throwable e){
+                    
                     AnnotationProcessorException ape = new AnnotationProcessorException(e.getMessage(), element);
                     ape.initCause(e);
                     throw ape;
@@ -391,9 +382,7 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
             if (delegate!=null) {
                 delegate.process(ctx, element, result);
             } else {           
-                ctx.getErrorHandler().fine(
-                        new AnnotationProcessorException("No handler defined for " 
-                            + annotation.annotationType()));
+                ctx.getErrorHandler().fine(new AnnotationProcessorException("No handler defined for " + annotation.annotationType()));
             }
         }
     }
@@ -407,8 +396,7 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
         Map<Class<? extends Annotation>, ResultType> annotationResults = 
                 result.processedAnnotations();
         for (Map.Entry<Class<? extends Annotation>, ResultType> element : annotationResults.entrySet()) {
-            logger.finer("Annotation " + element.getKey() + " : " +
-                    element.getValue());
+            logger.log(Level.FINER, "Annotation {0} : {1}", new Object[]{element.getKey(), element.getValue()});
         }
     }
     
@@ -494,7 +482,7 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
     private void logEnd(AnnotatedElementHandler handler, ElementType type, AnnotatedElement c) throws AnnotationProcessorException {
         
         if (AnnotationUtils.shouldLog("types")) {
-            AnnotationUtils.getLogger().finer(type + " END : " + c);
+            AnnotationUtils.getLogger().log(Level.FINER, "{0} END : {1}", new Object[]{type, c});
         }
         
         // pop it from our annotated element stack

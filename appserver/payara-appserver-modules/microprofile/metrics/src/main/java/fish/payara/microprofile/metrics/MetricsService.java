@@ -39,30 +39,27 @@
  */
 package fish.payara.microprofile.metrics;
 
-import static fish.payara.microprofile.metrics.Constants.INSECURE_METRIC_PROPERTY;
-import static fish.payara.microprofile.metrics.Constants.METRIC_ENABLED_PROPERTY;
+import static java.util.Collections.singletonMap;
+
+import fish.payara.microprofile.metrics.admin.MetricsServiceConfiguration;
 import fish.payara.microprofile.metrics.cdi.MetricsHelper;
 import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadataConfig;
-import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.registerMetadata;
+import fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import static java.util.Collections.singletonMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.xml.bind.JAXB;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricRegistry;
@@ -73,6 +70,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -83,26 +81,35 @@ import org.jvnet.hk2.annotations.Service;
 @RunLevel(StartupRunLevel.VAL)
 public class MetricsService implements EventListener {
 
-    private static final Logger LOGGER = Logger.getLogger(MetricsService.class.getName());
-
     @Inject
     Events events;
 
     @Inject
     private ServerEnvironment serverEnv;
-
-    private final Map<String, Boolean> enabledMap;
     
+    @Inject
+    ServiceLocator serviceLocator;
+    
+    @Inject
+    private MBeanMetadataHelper helper;
+    
+    private MetricsServiceConfiguration metricsServiceConfiguration;
+    
+    private Boolean metricsEnabled;
+    
+    private Boolean metricsSecure;
+
     private final Map<String, MetricRegistry> REGISTRIES = new ConcurrentHashMap<>();//stores registries of base, vendor, app1, app2, ... app(n) etc
 
     public MetricsService() {
-        enabledMap = new ConcurrentHashMap<>();
+        
     }
 
     @PostConstruct
     public void init() {
         events.register(this);
-        initMetadataConfig(JAXB.unmarshal(getConfigStream(), MBeanMetadataConfig.class));
+        metricsServiceConfiguration = serviceLocator.getService(MetricsServiceConfiguration.class);
+        initMetadataConfig(getConfig(), false);
     }
 
     @Override
@@ -117,110 +124,72 @@ public class MetricsService implements EventListener {
     }
 
      /**
-     * metrics.xml contains the base & vendor metrics metadata.
+     * Initialise metrics from the
+     * metrics.xml containing the base & vendor metrics metadata.
      *
      * @param metadataConfig
      */
-    private void initMetadataConfig(MBeanMetadataConfig metadataConfig) {
+    private void initMetadataConfig(MBeanMetadataConfig metadataConfig, boolean isRetry) {
         Map<String, String> globalTags = MetricsHelper.getGlobalTagsMap();
-        registerMetadata(
+        helper.registerMetadata(
                 getOrAddRegistry(BASE.getName()),
                 metadataConfig.getBaseMetadata(),
-                globalTags);
-        registerMetadata(
+                globalTags, isRetry);
+        helper.registerMetadata(
                 getOrAddRegistry(VENDOR.getName()),
                 metadataConfig.getVendorMetadata(),
-                globalTags);
+                globalTags, isRetry);
     }
     
-    private InputStream getConfigStream() {
-        InputStream configStream = null;
+    /**
+     * Rereads the domain.xml and registers MBeans if they have been started after
+     * the metrics service.
+     */
+    public void reregisterMetadataConfig(){
+        initMetadataConfig(getConfig(), true);
+    }
+    
+    private MBeanMetadataConfig getConfig() {
+        
+        InputStream defaultConfig = MetricsHelper.class.getResourceAsStream("/metrics.xml");
+        MBeanMetadataConfig config = JAXB.unmarshal(defaultConfig, MBeanMetadataConfig.class);
+        
+        
         File metricsResource = new File(serverEnv.getConfigDirPath(), "metrics.xml");
         if (metricsResource.exists()) {
             try {
-                configStream = new FileInputStream(metricsResource);
+                InputStream userMetrics = new FileInputStream(metricsResource);
+                MBeanMetadataConfig extraConfig = JAXB.unmarshal(userMetrics, MBeanMetadataConfig.class);
+                config.addBaseMetadata(extraConfig.getBaseMetadata());
+                config.addVendorMetadata(extraConfig.getVendorMetadata());
+                
             } catch (FileNotFoundException ex) {
                 //ignore
             }
         }
-        if (configStream == null) {
-            configStream = MetricsHelper.class.getResourceAsStream("/metrics.xml");
-        }
-        return configStream;
+        return config;
     }
 
-    public Boolean isMetricEnabled() {
-        return isMetricEnabled(getApplicationName());
+    public Boolean isMetricsEnabled() {
+        if (metricsEnabled == null) {
+            metricsEnabled = Boolean.valueOf(metricsServiceConfiguration.getEnabled());
+        }
+        return metricsEnabled;
+    }
+
+    public void resetMetricsEnabledProperty() {
+        metricsEnabled = null;
+    }
+
+    public Boolean isMetricsSecure() {
+        if (metricsSecure == null) {
+            metricsSecure = Boolean.valueOf(metricsServiceConfiguration.getSecure());
+        }
+        return metricsSecure;
     }
     
-    public Boolean isMetricEnabled(String applicationName) {
-        Config config = null;
-        try {
-            config = ConfigProvider.getConfig();
-        } catch (IllegalArgumentException ex) {
-            LOGGER.log(Level.INFO, "No config could be found", ex);
-        }
-        return isMetricEnabled(applicationName, config);
-    }
-
-    /**
-     * Checks whether metric is enabled for a given application
-     *
-     * @param applicationName The application to check if metric is enabled for.
-     * @param config The application config to check for any override values
-     * @return true if metric is enabled for the given application name
-     */
-    public Boolean isMetricEnabled(String applicationName, Config config) {
-        if (applicationName == null) {
-            if (config != null) {
-                return config.getOptionalValue(METRIC_ENABLED_PROPERTY, Boolean.class).orElse(Boolean.TRUE);
-            } else {
-                return Boolean.TRUE;
-            }
-        }
-        if (enabledMap.containsKey(applicationName)) {
-            return enabledMap.get(applicationName);
-        } else {
-            setMetricEnabled(applicationName, config);
-            return enabledMap.get(applicationName);
-        }
-    }
-    
-    public boolean isInsucreMetricEnabled() {
-        Config config = null;
-        try {
-            config = ConfigProvider.getConfig();
-        } catch (IllegalArgumentException ex) {
-            LOGGER.log(Level.INFO, "No config could be found", ex);
-        }
-        
-        if (config != null) {
-            return config.getOptionalValue(INSECURE_METRIC_PROPERTY, Boolean.class).orElse(Boolean.TRUE);
-        } else {
-            return Boolean.TRUE;
-        }
-    }
-
-    /**
-     * Helper method that sets the enabled status for a given application.
-     *
-     * @param applicationName The name of the application to register
-     * @param config The config to check for override values
-     */
-    private synchronized void setMetricEnabled(String applicationName, Config config) {
-        // Double lock as multiple methods can get inside the calling if at the same time
-        LOGGER.log(Level.FINER, "Checking double lock to see if something else has added the application");
-        if (!enabledMap.containsKey(applicationName)) {
-            if (config != null) {
-                // Set the enabled value to the override value from the config, or true if it isn't configured
-                enabledMap.put(applicationName,
-                        config.getOptionalValue(METRIC_ENABLED_PROPERTY, Boolean.class).orElse(Boolean.TRUE));
-            } else {
-                LOGGER.log(Level.FINE, "No config found, so enabling metric for application: {0}",
-                        applicationName);
-                enabledMap.put(applicationName, Boolean.TRUE);
-            }
-        }
+    public void resetMetricsSecureProperty() {
+        metricsSecure = null;
     }
 
     public Map<String, Metric> getMetricsAsMap(String registryName) throws NoSuchRegistryException {
@@ -237,7 +206,7 @@ public class MetricsService implements EventListener {
         MetricRegistry registry = getRegistry(registryName);
         Map<String, Metric> metricMap = registry.getMetrics();
         if (metricMap.containsKey(metricName)) {
-            return singletonMap(metricName, metricMap.get(metricName));
+            return Collections.singletonMap(metricName, metricMap.get(metricName));
         } else {
             throw new NoSuchMetricException(metricName);
         }
@@ -247,7 +216,7 @@ public class MetricsService implements EventListener {
         MetricRegistry registry = getRegistry(registryName);
         Map<String, Metadata> metricMetadataMap = registry.getMetadata();
         if (metricMetadataMap.containsKey(metricName)) {
-            return singletonMap(metricName, metricMetadataMap.get(metricName));
+            return Collections.singletonMap(metricName, metricMetadataMap.get(metricName));
         } else {
             throw new NoSuchMetricException(metricName);
         }
@@ -314,7 +283,6 @@ public class MetricsService implements EventListener {
      * @param applicationName The name of the application to remove
      */
     private void registerApplication(String applicationName) {
-        enabledMap.put(applicationName, isMetricEnabled(applicationName));
         getOrAddRegistry(applicationName);
     }
 
@@ -324,7 +292,6 @@ public class MetricsService implements EventListener {
      * @param applicationName The name of the application to remove
      */
     private void deregisterApplication(String applicationName) {
-        enabledMap.remove(applicationName);
         removeRegistry(applicationName);
     }
 

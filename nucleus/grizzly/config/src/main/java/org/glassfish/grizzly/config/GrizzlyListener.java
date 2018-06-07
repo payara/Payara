@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2018] [Payara Foundation and/or its affiliates]
  */
 
 package org.glassfish.grizzly.config;
@@ -44,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.net.InetAddress;
 
+import org.glassfish.grizzly.PortRange;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.hk2.api.ServiceLocator;
 
@@ -59,7 +62,6 @@ import org.glassfish.hk2.api.ServiceLocator;
  * @author Jeanfrancois Arcand
  * @author Justin Lee
  */
-@SuppressWarnings("UnusedDeclaration")
 public interface GrizzlyListener {
     
     void start() throws IOException;
@@ -73,6 +75,8 @@ public interface GrizzlyListener {
     InetAddress getAddress();
 
     int getPort();
+
+    PortRange getPortRange();
 
     /*
      * Configures the given grizzlyListener.

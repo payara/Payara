@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.grizzly.config;
 
 import java.io.IOException;
@@ -79,6 +79,7 @@ public class SSLConfigurator extends SSLEngineConfigurator {
      */
     private final Ssl ssl;
     protected final Provider<SSLImplementation> sslImplementation;
+    private String sniCertAlias;
 
     @SuppressWarnings("unchecked")
     public SSLConfigurator(final ServiceLocator habitat, final Ssl ssl) {
@@ -119,6 +120,13 @@ public class SSLConfigurator extends SSLEngineConfigurator {
      */
     public SSLImplementation getSslImplementation() {
         return sslImplementation.get();
+    }
+    
+    /**
+     * Set the cert override
+     */
+    public void setSNICertAlias(String alias) {
+        sniCertAlias = alias;
     }
     
     /**
@@ -246,7 +254,11 @@ public class SSLConfigurator extends SSLEngineConfigurator {
             setAttribute(serverSF, "truststorePass", ssl != null ? getTrustStorePassword(ssl) : null,
                     "javax.net.ssl.trustStorePassword", "changeit");
             // cert nick name
-            serverSF.setAttribute("keyAlias", ssl != null ? ssl.getCertNickname() : null);
+            String certAlias = ssl != null ? ssl.getCertNickname() : null;
+            if (sniCertAlias != null) {
+                certAlias = sniCertAlias;
+            }
+            serverSF.setAttribute("keyAlias", certAlias);
             serverSF.init();
             newSslContext = serverSF.getSSLContext();
             CipherInfo.updateCiphers(newSslContext);
