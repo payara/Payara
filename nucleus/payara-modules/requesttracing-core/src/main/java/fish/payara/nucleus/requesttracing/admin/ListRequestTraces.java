@@ -157,4 +157,3 @@ public class ListRequestTraces implements AdminCommand {
         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 }
->>>>>>> blue-merge:nucleus/payara-modules/requesttracing-core/src/main/java/fish/payara/nucleus/requesttracing/admin/ListRequestTraces.java
