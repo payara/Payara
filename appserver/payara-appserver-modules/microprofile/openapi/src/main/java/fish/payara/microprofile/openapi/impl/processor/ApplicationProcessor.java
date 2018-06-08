@@ -924,6 +924,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return false;
         }
 
+        // Check the class exists in the application
+        if (!classes.contains(referenceClass)) {
+            return false;
+        }
+
         // Set the reference name
         referee.setRef(referenceClass.getSimpleName());
 
