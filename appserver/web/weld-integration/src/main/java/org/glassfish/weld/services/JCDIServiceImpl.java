@@ -433,9 +433,7 @@ public class JCDIServiceImpl implements JCDIService {
         } else {
             AnnotatedType<T> annotatedType = beanManager.createAnnotatedType(interceptorClass);
             BeanAttributes<T> attributes = beanManager.createBeanAttributes(annotatedType);
-            EnhancedAnnotatedType<T> enhancedAnnotatedType = beanManager.getServices()
-                    .get(ClassTransformer.class)
-                    .getEnhancedAnnotatedType(interceptorClass, beanManager.getId());
+            EnhancedAnnotatedType<T> enhancedAnnotatedType = beanManager.createEnhancedAnnotatedType(interceptorClass);
             interceptorBean = InterceptorImpl.of(attributes, enhancedAnnotatedType, beanManager);
         }
         Object instance = beanManager.getReference(interceptorBean, interceptorClass, creationalContext);
