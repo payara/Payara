@@ -989,7 +989,7 @@ public final class PEAccessLogValve
      * If undefined or value is less than 0, all history log are preserved.
      */
     private void cleanUpHistoryLogFiles() {
-        if (maxHistoryFiles == 0 || maxHistoryFiles < 0) {
+        if (maxHistoryFiles <= 0) {
             return;
         }
 
