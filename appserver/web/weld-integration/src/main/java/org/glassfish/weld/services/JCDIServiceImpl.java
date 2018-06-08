@@ -84,6 +84,10 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jboss.weld.annotated.enhanced.EnhancedAnnotatedType;
+import org.jboss.weld.manager.BeanManagerImpl;
+import org.jboss.weld.manager.api.WeldInjectionTargetFactory;
+import org.jboss.weld.resources.ClassTransformer;
 
 @Service
 @Rank(10)
@@ -392,7 +396,7 @@ public class JCDIServiceImpl implements JCDIService {
         BeanDeploymentArchive bda = getBDAForBeanClass(topLevelBundleDesc, ejb.getEjbClassName());
 
         WeldBootstrap bootstrap = weldDeployer.getBootstrapForApp(ejb.getEjbBundleDescriptor().getApplication());
-        WeldManager beanManager = bootstrap.getManager(bda);
+        BeanManagerImpl beanManager = bootstrap.getManager(bda);
 
         org.jboss.weld.ejb.spi.EjbDescriptor<T> ejbDesc = beanManager.getEjbDescriptor( ejb.getName());
 
@@ -420,30 +424,22 @@ public class JCDIServiceImpl implements JCDIService {
 
         // Check to see if the interceptor was defined as a Bean.
         // This can happen when using @Interceptors to define the interceptors.
-        Set<Bean<?>> availableBeans = beanManager.getBeans( interceptorClass);
-        if ( availableBeans != null && !availableBeans.isEmpty()) {
+        Set<Bean<?>> availableBeans = beanManager.getBeans(interceptorClass);
+        Bean<?> interceptorBean;
+        if (availableBeans != null && !availableBeans.isEmpty()) {
             // using the ejb's creationalContext so we don't have to do any cleanup.
             // the cleanup will be handled by weld when it clean's up the ejb.
-            Bean<?> interceptorBean = beanManager.resolve( availableBeans );
-            Object instance = beanManager.getReference(interceptorBean, interceptorClass, creationalContext );
-            return ( T ) instance;
+            interceptorBean = beanManager.resolve(availableBeans);
+        } else {
+            AnnotatedType<T> annotatedType = beanManager.createAnnotatedType(interceptorClass);
+            BeanAttributes<T> attributes = beanManager.createBeanAttributes(annotatedType);
+            EnhancedAnnotatedType<T> enhancedAnnotatedType = beanManager.getServices()
+                    .get(ClassTransformer.class)
+                    .getEnhancedAnnotatedType(interceptorClass, beanManager.getId());
+            interceptorBean = InterceptorImpl.of(attributes, enhancedAnnotatedType, beanManager);
         }
-
-        // There are other interceptors like SessionBeanInterceptor that are
-        // defined via code and they are not beans.
-        // Cannot use the ejb's creationalContext.
-        creationalContext = beanManager.createCreationalContext(null);
-
-        AnnotatedType<T> annotatedType = beanManager.createAnnotatedType(interceptorClass);
-        InjectionTarget<T> it =
-                beanManager.getInjectionTargetFactory(annotatedType).createInterceptorInjectionTarget();
-        T interceptorInstance = it.produce(creationalContext);
-        it.inject(interceptorInstance, creationalContext);
-
-        // make sure the interceptor's cdi objects get cleaned up when the ejb is cleaned up.
-        ejbContext.addDependentContext( new JCDIInjectionContextImpl<>( it, creationalContext, interceptorInstance ) );
-
-        return interceptorInstance;
+        Object instance = beanManager.getReference(interceptorBean, interceptorClass, creationalContext);
+        return (T) instance;
     }
 
     @Override
