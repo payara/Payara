@@ -1002,14 +1002,14 @@ public final class PEAccessLogValve
             }
 
             File[] allFilesInDirectory = fileDirectory.listFiles();
-            ArrayList<String> candidateListOfLogFiles = new ArrayList<>();
+            ArrayList<File> candidateListOfLogFiles = new ArrayList<>();
 
             if (allFilesInDirectory != null && allFilesInDirectory.length > 0) {
                 for (int i = 0; i < allFilesInDirectory.length; i++) {
                     if (!logFileName.equals(allFilesInDirectory[i].getName())
                             && allFilesInDirectory[i].isFile()
                             && allFilesInDirectory[i].getName().startsWith(prefix)) {
-                        candidateListOfLogFiles.add(allFilesInDirectory[i].getAbsolutePath());
+                        candidateListOfLogFiles.add(allFilesInDirectory[i]);
                     }
                 }
             }
@@ -1018,19 +1018,16 @@ public final class PEAccessLogValve
                 return;
             }
 
-            Object[] pathes = candidateListOfLogFiles.toArray();
-            Arrays.sort(pathes);
-            try {
-                for (int i = 0; i < pathes.length - maxHistoryFiles; i++) {
-                    File logFile = new File((String) pathes[i]);
-                    boolean delFile = logFile.delete();
-                    if (!delFile) {
-                        throw new IOException("Could not delete Access log file: "
-                                + logFile.getAbsolutePath());
-                    }
+            Comparator<File> byFilePathName = (File file1, File file2)
+                    -> file1.getAbsolutePath().compareTo(file2.getAbsolutePath());
+            candidateListOfLogFiles.sort(byFilePathName);
+
+            for (int i = 0; i < candidateListOfLogFiles.size() - maxHistoryFiles; i++) {
+                File file = candidateListOfLogFiles.get(i);
+                if (!file.delete()) {
+                    _logger.log(Level.INFO, "Could not delete Access log file:"
+                            + file.getAbsolutePath());
                 }
-            } catch (Exception ex) {
-               _logger.log(Level.INFO, "ERROR: COULD NOT DELETE LOG FILE." , ex);   
             }
         }
     }
