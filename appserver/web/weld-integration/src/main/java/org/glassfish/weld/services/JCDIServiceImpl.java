@@ -86,8 +86,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jboss.weld.annotated.enhanced.EnhancedAnnotatedType;
 import org.jboss.weld.manager.BeanManagerImpl;
-import org.jboss.weld.manager.api.WeldInjectionTargetFactory;
-import org.jboss.weld.resources.ClassTransformer;
 
 @Service
 @Rank(10)
