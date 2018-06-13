@@ -41,6 +41,7 @@
 
 package org.glassfish.weld;
 
+import com.sun.enterprise.admin.util.JarFileUtils;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -761,29 +762,9 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     protected BeansXml parseBeansXML(ReadableArchive archive, String beansXMLPath) throws IOException {
         URL url = getBeansXMLFileURL(archive, beansXMLPath);
         BeansXml result =  weldBootstrap.parse(url);
-        try {
-            // Ensure JarFile is closed
-            Class clazz = Class.forName("sun.net.www.protocol.jar.JarFileFactory", true, URL.class.getClassLoader());
-            Field fields[] = clazz.getDeclaredFields();
-            for (Field field : fields) {
-                if ("fileCache".equals(field.getName())) {
-                    field.setAccessible(true);
-                    Map<String, JarFile> files = (Map<String, JarFile>) field.get(null);
-                    if (!files.isEmpty()) {
-                        for (JarFile file : files.values()) {
-                            if (file != null) {
-                                file.close();
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (ClassNotFoundException | IllegalAccessException | SecurityException | IllegalArgumentException | IOException | ConcurrentModificationException ex) {
-            logger.log(Level.SEVERE, null, ex);
-        }
+        JarFileUtils.closeCachedJarFiles();
         return result;
     }
-
 
     private void addBeansXMLURL(ReadableArchive archive, String beansXMLPath) throws IOException {
         URL beansXmlUrl = getBeansXMLFileURL(archive, beansXMLPath);
