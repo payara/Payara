@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 -->
-<!-- Portions Copyright [2016] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2018] [Payara Foundation] -->
 
 <!-- configuration/accessLog.jsf -->
 
@@ -121,6 +121,10 @@
 
         <sun:property id="MaxHistoryFiles"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.MaxHistoryFiles}" helpText="$resource{i18n_web.access.MaxHistoryFilesHelp}">
             <sun:textField id="MaxHistoryFiles" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.access.MaxHistoryFiles']}" text="#{pageSession.valueMap2['maxHistoryFiles']}" />
+        </sun:property>
+        
+        <sun:property id="MaximumFileSize"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.MaxFileSize}" helpText="$resource{i18n_web.access.MaxFileSizeHelp}">
+            <sun:textField id="MaximumFileSize" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.access.MaximumFileSize']}" text="#{pageSession.valueMap2['maximumFileSize']}" />
         </sun:property>
 
         <sun:property id="accessLogBufferSize"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.accessLogBufferSize}" helpText="$resource{i18n_web.access.accessLogBufferSizeHelp}">
