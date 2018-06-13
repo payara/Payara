@@ -65,46 +65,45 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
 
     /**
      * Boot method via java -jar
-     * @param args
-     * @throws Exception 
+     * @param args command line arguments
+     * @throws Exception an error
      */
     public static void main(String args[]) throws Exception {
         PayaraMicroLauncher launcher = new PayaraMicroLauncher();
         // set system property for our jar file
         ProtectionDomain protectionDomain = PayaraMicroLauncher.class.getProtectionDomain();
         CodeSource codeSource = protectionDomain.getCodeSource();
-        URI location = (codeSource == null ? null : codeSource.getLocation().toURI());
-        System.setProperty(MICRO_JAR_PROPERTY, location.toString());
+        if (codeSource != null) {
+            URI location = codeSource.getLocation().toURI();
+            System.setProperty(MICRO_JAR_PROPERTY, location.toString());
+        }
         mainBoot = true;
         launcher.launch(args);
     }
-    
+
     /**
      * Boot method via Micro.getInstance()
-     * @return
-     * @throws InstantiationException
-     * @throws IllegalAccessException
-     * @throws ClassNotFoundException
-     * @throws Exception 
+     * @return PayaraMicroBoot instance
+     * @throws Exception error
      */
-    public static PayaraMicroBoot getBootClass() throws InstantiationException, IllegalAccessException, ClassNotFoundException, Exception {
-        
+    public static PayaraMicroBoot getBootClass()
+            throws Exception {
         if (bootInstance == null) {
-            
             if (mainBoot) {
                 Class<?> mainClass = Thread.currentThread().getContextClassLoader()
                                         .loadClass("fish.payara.micro.impl.PayaraMicroImpl");
                 Method instanceMethod = mainClass.getDeclaredMethod("getInstance");
-                bootInstance = (PayaraMicroBoot) instanceMethod.invoke(null);                
+                bootInstance = (PayaraMicroBoot) instanceMethod.invoke(null);
             } else {
                 PayaraMicroLauncher launcher = new PayaraMicroLauncher();
 
                 // set system property for our jar file
                 ProtectionDomain protectionDomain = PayaraMicroLauncher.class.getProtectionDomain();
                 CodeSource codeSource = protectionDomain.getCodeSource();
-                URI location = (codeSource == null ? null : codeSource.getLocation().toURI());
-                System.setProperty(MICRO_JAR_PROPERTY, location.toString());
-
+                if (codeSource != null) {
+                    URI location = codeSource.getLocation().toURI();
+                    System.setProperty(MICRO_JAR_PROPERTY, location.toString());
+                }
                 ClassLoader loader = launcher.createClassLoader(launcher.getClassPathArchives());
                 fish.payara.micro.boot.loader.jar.JarFile.registerUrlProtocolHandler();
                 Thread.currentThread().setContextClassLoader(loader);
@@ -114,7 +113,7 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
                 bootInstance = (PayaraMicroBoot) instanceMethod.invoke(null);
             }
         }
-	return bootInstance; 
+	    return bootInstance;
     }
 
     @Override
@@ -129,7 +128,7 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
     }
 
     @Override
-    protected void postProcessClassPathArchives(List<Archive> archives) throws Exception {
+    protected void postProcessClassPathArchives(List<Archive> archives) {
         archives.add(0, getArchive());
     }
 
