@@ -65,16 +65,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -770,24 +761,26 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     protected BeansXml parseBeansXML(ReadableArchive archive, String beansXMLPath) throws IOException {
         URL url = getBeansXMLFileURL(archive, beansXMLPath);
         BeansXml result =  weldBootstrap.parse(url);
-                try {
+        try {
             // Ensure JarFile is closed
             Class clazz = Class.forName("sun.net.www.protocol.jar.JarFileFactory", true, URL.class.getClassLoader());
             Field fields[] = clazz.getDeclaredFields();
             for (Field field : fields) {
                 if ("fileCache".equals(field.getName())) {
                     field.setAccessible(true);
-                    HashMap<String,JarFile> files = (HashMap<String,JarFile>) field.get(null);
-                    Set<JarFile> jars = new HashSet<>();
-                    jars.addAll(files.values());
-                    for (JarFile file : jars) {
-                        file.close();
+                    Map<String, JarFile> files = (Map<String, JarFile>) field.get(null);
+                    if (!files.isEmpty()) {
+                        for (JarFile file : files.values()) {
+                            if (file != null) {
+                                file.close();
+                            }
+                        }
                     }
-                } 
+                }
             }
-        } catch (ClassNotFoundException | IllegalAccessException | SecurityException | IllegalArgumentException | IOException ex) {
+        } catch (ClassNotFoundException | IllegalAccessException | SecurityException | IllegalArgumentException | IOException | ConcurrentModificationException ex) {
             logger.log(Level.SEVERE, null, ex);
-        }   
+        }
         return result;
     }
 
