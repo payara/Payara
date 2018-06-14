@@ -199,6 +199,12 @@
             <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange']}"  selectedValue="true" />
         </sun:property>
 
+        <sun:property id="PayaraNotificationLogfileFormat"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileLogFormat}" helpText="$resource{i18nc.log.FilePayaraNotificationLogFormatHelp}">
+            <sun:dropDown id="logfileFormat" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.formatter']}"
+                          labels={ "ULF","ODL","JSON"}
+                          values={"com.sun.enterprise.server.logging.UniformLogFormatter", "com.sun.enterprise.server.logging.ODLLogFormatter", "fish.payara.enterprise.server.logging.JSONLogFormatter"} />
+        </sun:property>
+        
         <sun:property id="PayaraNotificationFileRotationLimitProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileRotationLimit}" helpText="$resource{i18nc.log.FileRotationLimitHelp}">
             <sun:textField id="FileRotationLimit" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.FileRotationLimit']}" text="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationLimitInBytes']}" />
             <sun:staticText id="byte" style="padding: 8pt" text="$resource{i18n.common.Bytes}"/>

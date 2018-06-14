@@ -151,6 +151,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     String payaraNotificationLogRotationLimitInBytesDetail = "";
     String payaraNotificationLogmaxHistoryFilesDetail = "";
     String payaraNotificationLogCompressOnRotationDetail = "";
+    String payaraNotificationLogFormatterDetail = "";
     
     String payaraJsonUnderscorePrefix = "";
 
@@ -184,7 +185,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private static final String PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationLimitInBytes";
     private static final String PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.maxHistoryFiles";
     private static final String PAYARA_NOTIFICATION_LOG_COMPRESS_ON_ROTATION_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation";
-    
+    private static final String PAYARA_NOTIFICATION_LOG_FORMATTER_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.formatter";
+     
     private static final String PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG = "Payara Notification Service isn't using a separate Log File";
     /**
      * @deprecated for backwards compatibility pre-5.182
@@ -482,7 +484,18 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                             // only get the GFFileHandler
                                             if (handler.getClass().equals(GFFileHandler.class)) {
                                                 gfFileHandler = (GFFileHandler) handler;
-                                                gfFileHandler.setGffileHandlerFormatter(gffileHandlerFormatterDetail);
+                                                gfFileHandler.setFileHandlerFormatter(gffileHandlerFormatterDetail);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                } else if (a.equals(PAYARA_NOTIFICATION_LOG_FORMATTER_PROPERTY)) {
+                                    if (!val.equals(payaraNotificationLogFormatterDetail)) {
+                                        payaraNotificationLogFormatterDetail = val;
+                                        for (Handler handler : logMgr.getLogger(payaraNotificationLogger).getHandlers()) {
+                                            if (handler.getClass().equals(PayaraNotificationFileHandler.class)) {
+                                                pyFileHandler = (PayaraNotificationFileHandler) handler;
+                                                pyFileHandler.setFileHandlerFormatter(payaraNotificationLogFormatterDetail);
                                                 break;
                                             }
                                         }
@@ -902,6 +915,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         payaraNotificationLogRotationLimitInBytesDetail = props.get(PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY);
         payaraNotificationLogmaxHistoryFilesDetail = props.get(PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY);
         payaraNotificationLogCompressOnRotationDetail = props.get(PAYARA_NOTIFICATION_LOG_COMPRESS_ON_ROTATION_PROPERTY);
+        payaraNotificationLogFormatterDetail = props.get(PAYARA_NOTIFICATION_LOG_FORMATTER_PROPERTY);
 
         payaraJsonUnderscorePrefix = props.get(PAYARA_JSONLOGFORMATTER_UNDERSCORE);
     }
