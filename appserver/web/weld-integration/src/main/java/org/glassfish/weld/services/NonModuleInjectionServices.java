@@ -52,6 +52,7 @@ import org.jboss.weld.injection.spi.InjectionContext;
 import org.jboss.weld.injection.spi.InjectionServices;
 
 import javax.enterprise.inject.spi.*;
+import java.util.logging.Logger;
 
 /**
  * The InjectionServices for a non-module bda (library or rar).  A non-module bda has no associated bundle so we
@@ -81,7 +82,7 @@ public class NonModuleInjectionServices implements InjectionServices {
 
             if( componentEnv == null ) {
                 //throw new IllegalStateException("No valid EE environment for injection of " + targetClass);
-                System.err.println("No valid EE environment for injection of " + targetClass);
+                Logger.getLogger(this.getClass().getCanonicalName()).info("No valid EE environment for injection of " + targetClass);
                 injectionContext.proceed();
                 return;
             }

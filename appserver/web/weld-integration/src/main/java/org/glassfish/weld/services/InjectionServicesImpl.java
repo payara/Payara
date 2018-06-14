@@ -53,6 +53,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.InjectionException;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
+import java.util.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -131,7 +132,7 @@ public class InjectionServicesImpl implements InjectionServices {
             } else {
               if( componentEnv == null ) {
                 //throw new IllegalStateException("No valid EE environment for injection of " + targetClassName);
-                System.err.println("No valid EE environment for injection of " + targetClassName);
+                Logger.getLogger(this.getClass().getCanonicalName()).info("No valid EE environment for injection of " + targetClassName);
                 injectionContext.proceed();
                 return;
               }
