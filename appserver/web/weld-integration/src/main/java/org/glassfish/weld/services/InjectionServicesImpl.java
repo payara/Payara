@@ -68,6 +68,8 @@ import javax.xml.ws.WebServiceRef;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
 
 /**
  * Class to provide actual injection of an annotation and related services
@@ -112,7 +114,13 @@ public class InjectionServicesImpl implements InjectionServices {
             EjbContainerServices containerServices = serviceLocator.getService(EjbContainerServices.class);
 
             JndiNameEnvironment componentEnv = compEnvManager.getCurrentJndiNameEnvironment();
-
+            if(componentEnv == null) {
+                InvocationManager invMgr = serviceLocator.getService(InvocationManager.class);
+                if (invMgr.getCurrentInvocation() != null) {
+                    componentEnv = (JndiNameEnvironment)invMgr.<ComponentInvocation>getCurrentInvocation().getJNDIEnvironment();
+                }
+            }
+            
             ManagedBeanDescriptor mbDesc = null;
 
             JndiNameEnvironment injectionEnv = (JndiNameEnvironment) bundleContext;
