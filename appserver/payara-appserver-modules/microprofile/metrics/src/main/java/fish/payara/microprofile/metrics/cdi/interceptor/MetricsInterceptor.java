@@ -87,9 +87,9 @@ public class MetricsInterceptor {
     private MetricsResolver resolver;
 
     private Bean<?> bean;
-    
+
     @Inject
-    private MetricsInterceptor(MetricRegistry registry, MetricsResolver resolver, @Intercepted Bean<?> bean) {
+    public MetricsInterceptor(MetricRegistry registry, MetricsResolver resolver, @Intercepted Bean<?> bean) {
         this.registry = registry;
         this.resolver = resolver;
         this.bean = bean;
