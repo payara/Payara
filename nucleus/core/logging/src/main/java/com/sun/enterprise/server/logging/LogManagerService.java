@@ -491,13 +491,18 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_FORMATTER_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogFormatterDetail)) {
-                                        payaraNotificationLogFormatterDetail = val;
-                                        for (Handler handler : logMgr.getLogger(payaraNotificationLogger).getHandlers()) {
-                                            if (handler.getClass().equals(PayaraNotificationFileHandler.class)) {
-                                                pyFileHandler = (PayaraNotificationFileHandler) handler;
-                                                pyFileHandler.setFileHandlerFormatter(payaraNotificationLogFormatterDetail);
-                                                break;
+                                        Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
+                                        if (payaraNotificationLogFileHandlers.length > 0) {
+                                            payaraNotificationLogFormatterDetail = val;
+                                            for (Handler handler : payaraNotificationLogFileHandlers) {
+                                                if (handler.getClass().equals(PayaraNotificationFileHandler.class)) {
+                                                    pyFileHandler = (PayaraNotificationFileHandler) handler;
+                                                    pyFileHandler.setFileHandlerFormatter(payaraNotificationLogFormatterDetail);
+                                                    break;
+                                                }
                                             }
+                                        } else {
+                                            LOGGER.log(Level.INFO, PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG);
                                         }
                                     }
                                 } else if (a.equals(ROTATIONTIMELIMITINMINUTES_PROPERTY)) {
@@ -659,105 +664,96 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_FILE_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogFileDetail)) {
-                                        Logger logger = Logger.getLogger(payaraNotificationLogger);
-                                        Handler[] existingHandlers = logger.getHandlers();
-                                        if (existingHandlers.length > 0) {
-                                            for (Handler handler : existingHandlers) {
+                                        Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
+                                        if (payaraNotificationLogFileHandlers.length > 0) {
+                                            payaraNotificationLogFileDetail = val;
+                                            for (Handler handler : payaraNotificationLogFileHandlers) {
                                                 if (handler.getClass().equals(PayaraNotificationFileHandler.class)) {
                                                     pyFileHandler = (PayaraNotificationFileHandler) handler;
                                                     pyFileHandler.setLogFile(payaraNotificationLogFileDetail);
                                                     break;
                                                 }
                                             }
-                                            payaraNotificationLogFileDetail = val;
                                         } else {
                                             LOGGER.log(Level.INFO, PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG);
                                         }
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOGTOFILE_PROPERTY)) {
                                     if (!val.equals(payaraNotificationlogToFileDetail)) {
-                                        Logger logger = Logger.getLogger(payaraNotificationLogger);
-                                        Handler[] existingHandlers = logger.getHandlers();
-
-                                        if (existingHandlers.length > 0) {
-                                            for (Handler handler : existingHandlers) {
+                                        Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
+                                        if (payaraNotificationLogFileHandlers.length > 0) {
+                                            payaraNotificationlogToFileDetail = val;
+                                            for (Handler handler : payaraNotificationLogFileHandlers) {
                                                 if (handler.getClass().equals(PayaraNotificationFileHandler.class)) {
                                                     pyFileHandler = (PayaraNotificationFileHandler) handler;
                                                     pyFileHandler.setLogToFile(Boolean.parseBoolean(val));
                                                     break;
                                                 }
                                             }
-                                            payaraNotificationlogToFileDetail = val;
                                         } else {
                                             LOGGER.log(Level.INFO, PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG);
                                         }
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogRotationOnTimeLimitInMinutesDetail)) {
-                                        Logger logger = Logger.getLogger(payaraNotificationLogger);
-                                        Handler[] existingHandlers = logger.getHandlers();
-                                        if (existingHandlers.length > 0) {
-                                            for (Handler handler : existingHandlers) {
+                                        Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
+                                        if (payaraNotificationLogFileHandlers.length > 0) {
+                                            payaraNotificationLogRotationOnTimeLimitInMinutesDetail = val;
+                                            for (Handler handler : payaraNotificationLogFileHandlers) {
                                                 if (handler.getClass().equals(PayaraNotificationFileHandler.class)) {
                                                     pyFileHandler = (PayaraNotificationFileHandler) handler;
                                                     pyFileHandler.setRotationTimeLimitValue(Long.parseLong(val));
                                                     break;
                                                 }
                                             }
-                                            payaraNotificationLogRotationOnTimeLimitInMinutesDetail = val;
                                         } else {
                                             LOGGER.log(Level.INFO, PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG);
                                         }
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_ROTATIONLIMITINBYTES_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogRotationLimitInBytesDetail)) {
-                                        Logger logger = Logger.getLogger(payaraNotificationLogger);
-                                        Handler[] existingHandlers = logger.getHandlers();
-                                        if (existingHandlers.length > 0) {
-                                            for (Handler handler : existingHandlers) {
+                                        Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
+                                        if (payaraNotificationLogFileHandlers.length > 0) {
+                                            payaraNotificationLogRotationLimitInBytesDetail = val;
+                                            for (Handler handler : payaraNotificationLogFileHandlers) {
                                                 if (handler.getClass().equals(PayaraNotificationFileHandler.class)) {
                                                     pyFileHandler = (PayaraNotificationFileHandler) handler;
                                                     pyFileHandler.setRotationLimitAttrValue(Integer.valueOf(val));
                                                     break;
                                                 }
-                                            }
-                                            payaraNotificationLogRotationLimitInBytesDetail = val;
+                                            }                                           
                                         } else {
                                             LOGGER.log(Level.INFO, PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG);
                                         }
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogmaxHistoryFilesDetail)) {
-                                        Logger logger = Logger.getLogger(payaraNotificationLogger);
-                                        Handler[] existingHandlers = logger.getHandlers();
-
-                                        if (existingHandlers.length > 0) {
-                                            for (Handler handler : existingHandlers) {
+                                        Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
+                                        if (payaraNotificationLogFileHandlers.length > 0) {
+                                             payaraNotificationLogmaxHistoryFilesDetail = val;
+                                            for (Handler handler : payaraNotificationLogFileHandlers) {
                                                 if (handler.getClass().equals(PayaraNotificationFileHandler.class)) {
                                                     pyFileHandler = (PayaraNotificationFileHandler) handler;
                                                     pyFileHandler.setMaxHistoryFiles(Integer.parseInt(val));
                                                     break;
                                                 }
-                                            }
-                                            payaraNotificationLogmaxHistoryFilesDetail = val;
+                                            }                                           
                                         } else {
                                             LOGGER.log(Level.INFO, PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG);
                                         }
                                     }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_COMPRESS_ON_ROTATION_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogCompressOnRotationDetail)) {
-                                        Logger logger = Logger.getLogger(payaraNotificationLogger);
-                                        Handler[] existingHandlers = logger.getHandlers();
-
-                                        if (existingHandlers.length > 0) {
-                                            for (Handler handler : existingHandlers) {
+                                        Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
+                                        if (payaraNotificationLogFileHandlers.length > 0) {
+                                            payaraNotificationLogCompressOnRotationDetail = val;
+                                            for (Handler handler : payaraNotificationLogFileHandlers) {
                                                 if (handler.getClass().equals(PayaraNotificationFileHandler.class)) {
                                                     pyFileHandler = (PayaraNotificationFileHandler) handler;
                                                     pyFileHandler.setCompressionOnRotation(Boolean.parseBoolean(val));
                                                     break;
                                                 }
-                                            }
-                                            payaraNotificationLogCompressOnRotationDetail = val;
+                                            }                                          
                                         } else {
                                             LOGGER.log(Level.INFO, PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG);
                                         }
@@ -993,7 +989,6 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             }
         }
     }
-
 
     @Override
     public void preDestroy() {
