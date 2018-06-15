@@ -611,7 +611,7 @@ public class PayaraRestApiHandlers {
                 RestUtil.restRequest(restEndpoint, null, "post", handlerCtx, quiet, throwException);
             }
             if (forHealthCheck) {
-                String restEndpoint = endpoint +  "/bootstrap-healthcheck";
+                String restEndpoint = endpoint +  "/reboot-healthcheck";
                 RestUtil.restRequest(restEndpoint, null, "post", handlerCtx, quiet, throwException);
             }
             if (forMonitoring){
