@@ -40,6 +40,7 @@
 // Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package org.glassfish.deployment.admin;
 
+import com.sun.enterprise.admin.util.JarFileUtils;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -115,11 +116,11 @@ import org.glassfish.deployment.versioning.VersioningException;
 @RestEndpoints({
         @RestEndpoint(configBean = Applications.class, opType = RestEndpoint.OpType.DELETE, path = "undeploy", description = "Undeploy an application")
 })
-public class UndeployCommand extends UndeployCommandParameters implements AdminCommand, DeploymentTargetResolver, 
+public class UndeployCommand extends UndeployCommandParameters implements AdminCommand, DeploymentTargetResolver,
     AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(UndeployCommand.class);
-   
+
     @Inject
     Deployment deployment;
 
@@ -149,7 +150,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
 
     @Inject
     Events events;
-    
+
     private ActionReport report;
     private Logger logger;
     private List<String> matchedVersions;
@@ -166,7 +167,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
 
         deployment.validateSpecifiedTarget(target);
 
-        // we need to set the default target for non-paas case first 
+        // we need to set the default target for non-paas case first
         // so the versioned code could execute as expected
         if (target == null) {
             target = deployment.getDefaultTarget(_classicstyle);
@@ -189,13 +190,13 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
         // retrieve matched version(s) if exist
         matchedVersions = null;
         try {
-            matchedVersions = versioningService.getMatchedVersions(name, 
+            matchedVersions = versioningService.getMatchedVersions(name,
                 target);
         } catch (VersioningException e) {
             if (env.isDas()) {
                 report.failure(logger, e.getMessage());
             } else {
-                // we should let undeployment go through 
+                // we should let undeployment go through
                 // on instance side for partial deployment case
                 logger.fine(e.getMessage());
             }
@@ -209,18 +210,18 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                 report.setMessage(localStrings.getLocalString("ref.not.referenced.target","Application {0} is not referenced by target {1}", name, target));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             } else {
-                // we should let undeployment go through 
+                // we should let undeployment go through
                 // on instance side for partial deployment case
                 logger.fine(localStrings.getLocalString("ref.not.referenced.target","Application {0} is not referenced by target {1}", name, target));
             }
             return false;
         }
-        
+
         for (String appName : matchedVersions) {
             if (target == null) {
                 target = deployment.getDefaultTarget(appName, origin, _classicstyle);
             }
-            
+
             Application application = apps.getModule(Application.class, appName);
 
             if (application==null) {
@@ -232,7 +233,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
         return true;
     }
 
-    
+
     @Override
     public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
         return DeploymentCommandUtils.getAccessChecksForExistingApp(
@@ -240,8 +241,6 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
     }
 
     public void execute(AdminCommandContext context) {
-        
-        
 
         // for each matched version
         Iterator it = matchedVersions.iterator();
@@ -251,7 +250,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
             if (target == null) {
                 target = deployment.getDefaultTarget(appName, origin, _classicstyle);
             }
-            
+
             ApplicationInfo info = deployment.get(appName);
 
             Application application = apps.getModule(Application.class, appName);
@@ -309,7 +308,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                 } catch(TransactionFailure e) {
                     logger.warning("Module " + appName + " not found in configuration");
                 }
-                // also remove application from runtime registry 
+                // also remove application from runtime registry
                 if (info != null) {
                     appRegistry.remove(appName);
                 }
@@ -320,7 +319,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
             if (!source.exists()) {
                 logger.log(Level.WARNING, "Cannot find application bits at " +
                     sourceFile.getPath() + ". Please restart server to ensure server is in a consistent state before redeploy the application.");
-                // remove the application from the domain.xml so at least 
+                // remove the application from the domain.xml so at least
                 // server is in a consistent state after restart
                 try {
                     deployment.unregisterAppFromDomainXML(appName, target);
@@ -352,7 +351,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
             final DeployCommandSupplementalInfo suppInfo = new DeployCommandSupplementalInfo();
             suppInfo.setDeploymentContext(deploymentContext);
             report.setResultType(DeployCommandSupplementalInfo.class, suppInfo);
-            
+
             final Properties appProps = deploymentContext.getAppProps();
             appProps.putAll(application.getDeployProperties());
 
@@ -391,19 +390,19 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                     return;
                     }
 
-                    if (DeploymentUtils.isDomainTarget(target)) { 
+                    if (DeploymentUtils.isDomainTarget(target)) {
                         List<String> targets = domain.getAllReferencedTargetsForApplication(appName);
                         // replicate command to all referenced targets
                         parameters.remove("isUndeploy");
                         notifier.ensureBeforeReported(ExtendedDeploymentContext.Phase.REPLICATION);
-                        ClusterOperationUtil.replicateCommand("undeploy", FailurePolicy.Error, FailurePolicy.Warn, 
+                        ClusterOperationUtil.replicateCommand("undeploy", FailurePolicy.Error, FailurePolicy.Warn,
                                 FailurePolicy.Ignore, targets, context, parameters, habitat);
                     }
                 } catch (Exception e) {
                     report.failure(logger, e.getMessage());
                     return;
                 }
-            }   
+            }
 
             /*
              * Extract the generated artifacts from the application's properties
@@ -412,13 +411,13 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
              */
             final Artifacts generatedArtifacts = DeploymentUtils.generatedArtifacts(application);
             generatedArtifacts.record(deploymentContext);
-            
+
             if (info!=null) {
                 deployment.undeploy(appName, deploymentContext);
             }
 
             // check if it's directory deployment
-            boolean isDirectoryDeployed = 
+            boolean isDirectoryDeployed =
                 Boolean.valueOf(application.getDirectoryDeployed());
 
             // we should try to unregister the application for both success
@@ -434,34 +433,15 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
 
                 //remove context from generated
                 deploymentContext.clean();
-                
-                
-                // Ensure All cached JarFiles are closed after undeployment to 
+
+
+                // Ensure All cached JarFiles are closed after undeployment to
                 // free file descriptors
-                try {
-                    
-                    Class clazz = Class.forName("sun.net.www.protocol.jar.JarFileFactory", true, URL.class.getClassLoader());
-                    Field fields[] = clazz.getDeclaredFields();
-                    for (Field field : fields) {
-                        if ("fileCache".equals(field.getName())) {
-                            field.setAccessible(true);
-                            HashMap<String,JarFile> files = (HashMap<String,JarFile>) field.get(null);
-                            Set<JarFile> jars = new HashSet<>();
-                            jars.addAll(files.values());
-                            for (JarFile file : jars) {
-                                file.close();
-                            }
-                        } 
-                    }
-                } catch (ClassNotFoundException | IllegalAccessException | SecurityException | IllegalArgumentException ex) {
-                    logger.log(Level.SEVERE, null, ex);
-                }   catch (IOException ex) {            
-                    logger.log(Level.SEVERE, null, ex);
-                }
-                           
+                JarFileUtils.closeCachedJarFiles();
+
                 // perform full GC after cleaning to ensure full clean up
                 System.gc();
-                    
+
                 //if directory deployment then do not remove the directory
                 if ( (! keepreposdir) && !isDirectoryDeployed && source.exists()) {
                     /*
