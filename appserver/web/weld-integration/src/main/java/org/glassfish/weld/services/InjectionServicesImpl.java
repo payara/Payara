@@ -53,6 +53,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.InjectionException;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
+import java.util.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -67,6 +68,8 @@ import javax.xml.ws.WebServiceRef;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
 
 /**
  * Class to provide actual injection of an annotation and related services
@@ -111,7 +114,13 @@ public class InjectionServicesImpl implements InjectionServices {
             EjbContainerServices containerServices = serviceLocator.getService(EjbContainerServices.class);
 
             JndiNameEnvironment componentEnv = compEnvManager.getCurrentJndiNameEnvironment();
-
+            if(componentEnv == null) {
+                InvocationManager invMgr = serviceLocator.getService(InvocationManager.class);
+                if (invMgr.getCurrentInvocation() != null) {
+                    componentEnv = (JndiNameEnvironment)invMgr.<ComponentInvocation>getCurrentInvocation().getJNDIEnvironment();
+                }
+            }
+            
             ManagedBeanDescriptor mbDesc = null;
 
             JndiNameEnvironment injectionEnv = (JndiNameEnvironment) bundleContext;
@@ -131,7 +140,7 @@ public class InjectionServicesImpl implements InjectionServices {
             } else {
               if( componentEnv == null ) {
                 //throw new IllegalStateException("No valid EE environment for injection of " + targetClassName);
-                System.err.println("No valid EE environment for injection of " + targetClassName);
+                Logger.getLogger(this.getClass().getCanonicalName()).info("No valid EE environment for injection of " + targetClassName);
                 injectionContext.proceed();
                 return;
               }
