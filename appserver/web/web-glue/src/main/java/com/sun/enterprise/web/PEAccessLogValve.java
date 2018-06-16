@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation]
 
 package com.sun.enterprise.web;
 
@@ -696,7 +696,7 @@ public final class PEAccessLogValve
         }
 
     }
-    
+
 
 
     /*
@@ -1030,6 +1030,12 @@ public final class PEAccessLogValve
             fos = new FileOutputStream(logFile, true);
             fileChannel = fos.getChannel();
 
+            if (maxHistoryFiles > 0) {
+                synchronized (lock) {
+                    cleanUpHistoryLogFiles();
+                }
+            }
+
         } catch (IOException ioe) {
             try {
                 if ( fileChannel != null ) {
@@ -1043,6 +1049,63 @@ public final class PEAccessLogValve
             throw ioe;
         } 
 
+    }
+    
+    /**
+     * Cleanup the history logC file based on value set by <code>maxHistoryFiles</code>
+     * <p/>
+     * If it is not been specified without any value, then a default value of 10
+     * will be use.
+     * Else, if it is defined with value of 0, no history log file will be kept,
+     * and the current log file will be reset after each rotation.
+     * If undefined or value is less than 0, all history log are preserved. 
+     */
+    private void cleanUpHistoryLogFiles() {
+        if (maxHistoryFiles == 0 || maxHistoryFiles < 0) {
+            return;
+
+        }
+        
+        synchronized (lock) {
+            File fileDirectory = logFile.getParentFile();
+            String logFileName = logFile.getName();
+
+            if (fileDirectory == null) {
+                return;
+            }
+
+            File[] allFilesInDirectory = fileDirectory.listFiles();
+            ArrayList<String> candidateListOfLogFiles = new ArrayList<>();
+
+            if (allFilesInDirectory != null && allFilesInDirectory.length > 0) {
+                for (int i = 0; i < allFilesInDirectory.length; i++) {
+                    if (!logFileName.equals(allFilesInDirectory[i].getName())
+                            && allFilesInDirectory[i].isFile()
+                            && allFilesInDirectory[i].getName().startsWith(prefix)) {
+                        candidateListOfLogFiles.add(allFilesInDirectory[i].getAbsolutePath());
+                    }
+                }
+            }
+
+            if (candidateListOfLogFiles.size() <= maxHistoryFiles) {
+                return;
+            }
+
+            Object[] pathes = candidateListOfLogFiles.toArray();
+            Arrays.sort(pathes);
+            try {
+                for (int i = 0; i < pathes.length - maxHistoryFiles; i++) {
+                    File logFile = new File((String) pathes[i]);
+                    boolean delFile = logFile.delete();
+                    if (!delFile) {
+                        throw new IOException("Could not delete Access log file: "
+                                + logFile.getAbsolutePath());
+                    }
+                }
+            } catch (Exception ex) {
+               _logger.log(Level.INFO, "ERROR: COULD NOT DELETE LOG FILE." , ex);   
+            }
+        }
     }
 
 
