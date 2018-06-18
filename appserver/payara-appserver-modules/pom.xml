@@ -70,7 +70,6 @@
         <module>payara-rest-endpoints</module>
         <module>rest-monitoring</module>
         <module>cdi-auth-roles</module>
-        <module>yubikey-authentication</module>
         <module>opentracing-cdi</module>
         <module>jaxrs-client-tracing</module>
     </modules>
@@ -84,6 +83,7 @@
             <modules>
                 <module>microprofile</module>
                 <module>security-oauth2</module>
+                <module>yubikey-authentication</module>
             </modules>
         </profile>
     </profiles>

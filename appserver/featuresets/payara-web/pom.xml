@@ -261,13 +261,6 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        <!-- Yubikey Authentication -->
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>yubikey-authentication</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
     </dependencies>
     
     <profiles>
@@ -281,6 +274,13 @@
                 <dependency>
                     <groupId>org.glassfish.main.packager</groupId>
                     <artifactId>microprofile-package</artifactId>
+                    <version>${project.version}</version>
+                    <type>zip</type>
+                </dependency>
+                <!-- Yubikey Authentication -->
+                <dependency>
+                    <groupId>org.glassfish.main.packager</groupId>
+                    <artifactId>yubikey-authentication</artifactId>
                     <version>${project.version}</version>
                     <type>zip</type>
                 </dependency>

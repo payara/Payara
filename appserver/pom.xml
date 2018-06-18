@@ -174,6 +174,8 @@
         <json.version>1.0</json.version>
         <ddl.version>RELEASE65</ddl.version>
         <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
+        <!-- Yubico client validation version property -->
+        <yubico-validation-client2.version>3.0.2.payara-p1</yubico-validation-client2.version>
 
          <!-- Microprofile version properties -->
          <microprofile-fault-tolerance.version>1.0</microprofile-fault-tolerance.version>
@@ -182,10 +184,6 @@
          <microprofile-metrics.version>1.1</microprofile-metrics.version>
          <microprofile-rest-client.version>1.0.1</microprofile-rest-client.version>
          <microprofile-openapi.version>1.0</microprofile-openapi.version>
-
-         <!-- Yubico client validation version property -->
-         <yubico-validation-client2.version>3.0.2.payara-p1</yubico-validation-client2.version>
-
     </properties>
 
     <modules>
@@ -589,23 +587,6 @@
                 <artifactId>javax.enterprise.deploy-api</artifactId>
                 <version>${javax.enterprise.deploy-api.version}</version>
             </dependency>
-<<<<<<< HEAD
-=======
-
-            <!-- Java EE Security API -->
-            <dependency>
-                <groupId>javax.security.enterprise</groupId>
-                <artifactId>javax.security.enterprise-api</artifactId>
-                <version>${javax.security.enterprise-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.soteria</groupId>
-                <artifactId>javax.security.enterprise</artifactId>
-                <version>${javax.security.enterprise.version}</version>
-            </dependency>
-            
-            <!-- JACC -->
->>>>>>> 26d8426b49... Merge pull request #2702 from MarkWareham/Yubikey
             <dependency>
                 <groupId>javax.security.jacc</groupId>
                 <artifactId>javax.security.jacc-api</artifactId>

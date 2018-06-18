@@ -181,7 +181,6 @@
         <module>payara-rest-endpoints</module>
         <module>rest-monitoring</module>
         <module>cdi-auth-roles</module>
-        <module>yubikey-authentication</module>
     </modules>
 
     <profiles>
@@ -192,6 +191,7 @@
             </activation>
             <modules>
                 <module>microprofile-package</module>
+                <module>yubikey-authentication</module>
             </modules>
         </profile>
     </profiles>
