@@ -62,6 +62,7 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.text.FieldPosition;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -114,6 +115,17 @@ public final class PEAccessLogValve
      */
     private final static int MIN_BUFFER_SIZE = 5120;
 
+    /**
+     * The minimum size a log file rotation limit can have.
+     */
+    private final static int DEFAULT_FILE_SIZE_ROTATION_LIMIT = 0;
+
+    private static final String LOG_ROTATION_TIME_FORMAT
+            = "'T'HH-mm-ss";
+
+    private static final SimpleDateFormat logRotationTimeFormatter
+            = new SimpleDateFormat(LOG_ROTATION_TIME_FORMAT);
+    
     // ----------------------------------------------------- Instance Variables
     /**
      * The directory in which log files are created.
@@ -198,6 +210,11 @@ public final class PEAccessLogValve
      * The interval between rotating the logs
      */
     private int rotationInterval;
+    
+    /**
+     * Maximum size a log file can be before rotating
+     */
+    private int maximumLogFileSize;
 
     /**
      * The background writerThread.
@@ -584,31 +601,9 @@ public final class PEAccessLogValve
      */
     public void log() throws IOException {
 
-        if (rotatable){
-
-            long systime = System.currentTimeMillis();
-            long rotationIntervalLong = rotationInterval*1000L;
-            if (systime-lastAccessLogCreationTime > rotationIntervalLong) {
-                synchronized (this) {
-                    systime = System.currentTimeMillis();
-                    if (systime-lastAccessLogCreationTime >
-                        rotationIntervalLong) {
-
-                        // Rotate only if the formatted datestamps are
-                        // different
-                        String lastDateStamp = dateFormatter.get().format(
-                                new Date(lastAccessLogCreationTime));
-                        String newDateStamp = dateFormatter.get().format(
-                                new Date(systime));
-
-                        lastAccessLogCreationTime = systime;
-
-                        if (!lastDateStamp.equals(newDateStamp)) {
-                            close();
-                            open(newDateStamp, false);
-                        }
-                    }
-                }
+        if (rotatable) {
+            synchronized (lock) {
+                rotateOnDateChange();
             }
         }
 
@@ -632,6 +627,12 @@ public final class PEAccessLogValve
             }
         }
 
+        if (rotatable && maximumLogFileSize > 0
+                && logFile.length() >= maximumLogFileSize) {
+            synchronized (lock) {
+                rotate();
+            }
+        }
     }
 
     /*
@@ -863,6 +864,12 @@ public final class PEAccessLogValve
 
         // log to console
         accessLogToConsole = Boolean.parseBoolean(accessLogConfig.getLogToConsoleEnabled());
+      
+        if (accessLogConfig != null) {
+            maximumLogFileSize = Integer.parseInt(accessLogConfig.getMaximumFileSize());
+        } else {
+            maximumLogFileSize = DEFAULT_FILE_SIZE_ROTATION_LIMIT;
+        }     
     }
 
     // -------------------------------------------------------- Private Methods
@@ -1032,6 +1039,97 @@ public final class PEAccessLogValve
         }
     }
 
+    /**
+     * Rotates the old log file and creates a new log file on date change.
+     */
+    private void rotateOnDateChange(){
+        long systime = System.currentTimeMillis();
+        long rotationIntervalLong = rotationInterval * 1000L;
+        if (systime - lastAccessLogCreationTime > rotationIntervalLong) {
+            synchronized (this) {
+                systime = System.currentTimeMillis();
+                if (systime - lastAccessLogCreationTime
+                        > rotationIntervalLong) {
+
+                    // Rotate only if the formatted datestamps are
+                    // different
+                    String lastDateStamp = dateFormatter.get().format(
+                            new Date(lastAccessLogCreationTime));
+                    String newDateStamp = dateFormatter.get().format(
+                            new Date(systime));
+
+                    lastAccessLogCreationTime = systime;
+
+                    if (!lastDateStamp.equals(newDateStamp)) {
+                        try {
+                            close();
+                            open(newDateStamp, false);
+                        } catch (IOException ex) {
+                            _logger.log(Level.SEVERE, "Could not rotate the Access log file on date chnage", ex);
+                        }
+                    }
+                }
+            }
+        }
+    }
+   
+    /**
+     * Rotates the old log file and creates a new log file.
+     */
+    private void rotate() {
+        if (rotatable) {
+            synchronized (lock) {
+                try {
+                    if (!logFile.exists()) {
+                        File creatingDeletedLogFile = new File(logFile.getAbsolutePath());
+                        if (creatingDeletedLogFile.createNewFile()) {
+                            logFile = creatingDeletedLogFile;
+                        }
+                    } else {
+                        File oldLogFile = logFile;
+                        StringBuffer renamedLogFile = new StringBuffer(
+                                logFile.getAbsolutePath().replace(".txt", ""));
+                        logRotationTimeFormatter.format(new Date(), renamedLogFile, new FieldPosition(0));
+                        File rotatedFile = new File(renamedLogFile
+                                .toString() + ".txt");
+
+                        boolean isRenameSuccessful = oldLogFile.renameTo(rotatedFile);
+
+                        if (!isRenameSuccessful) {
+                            /**
+                             * If we don't succeed with file rename which most
+                             * likely can happen on Windows because of multiple
+                             * file handles opened. We go through Plan B to copy
+                             * bytes explicitly to a renamed file.
+                             */
+                            FileUtils.copy(logFile, rotatedFile);
+                            File newServerLogFile = logFile;
+                            /**
+                             * We do this to make sure that log file contents
+                             * are flushed out to start from a clean file again
+                             * after the rename.
+                             */
+                            FileOutputStream fileOutputStream = new FileOutputStream(newServerLogFile);
+                            fileOutputStream.close();
+                        }
+
+                        FileOutputStream oldFileOutputStream = new FileOutputStream(oldLogFile);
+                        oldFileOutputStream.close();
+
+                        logFileOutputStream = new FileOutputStream(logFile, true);
+                        fileChannel = logFileOutputStream.getChannel();
+
+                        if (maxHistoryFiles > 0) {
+                            cleanUpHistoryLogFiles();
+                        }
+                    }
+                } catch (IOException ex) {
+                    _logger.log(Level.SEVERE, "Could not rotate the Access log file", ex);
+                }
+            }
+        }
+    }
+    
     // ------------------------------------------------------ Lifecycle Methods
     /**
      * Add a lifecycle event listener to this component.
