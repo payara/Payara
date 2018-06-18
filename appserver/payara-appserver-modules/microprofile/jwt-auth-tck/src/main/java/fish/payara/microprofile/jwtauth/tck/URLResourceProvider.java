@@ -39,6 +39,16 @@
  */
 package fish.payara.microprofile.jwtauth.tck;
 
+import java.util.List;
+import org.glassfish.api.I18n;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.Create;
+import org.glassfish.config.support.Delete;
+import org.glassfish.config.support.TypeAndNameResolver;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.DuckTyped;
+import org.jvnet.hk2.config.Element;
 import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.net.URL;

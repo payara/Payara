@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.config.serverbeans.CopyConfig;
 import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.AnnotationUtil;
 
@@ -51,7 +51,6 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
 import org.glassfish.common.util.admin.GenericCommandModel;
 import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
 
 import javax.inject.Inject;
@@ -117,8 +116,7 @@ public class GenericDeleteCommand extends GenericCrudCommand implements AdminCom
                     "GenericCreateCommand.command_model_exception",
                     "Exception while creating the command model for the generic command {0} : {1}",
                     commandName, e.getMessage());
-            LogHelper.log(logger, Level.SEVERE, ConfigApiLoggerInfo.GENERIC_CREATE_CMD_FAILED, e, 
-                    new Object[] {commandName});
+            LogHelper.log(logger, Level.SEVERE, ConfigApiLoggerInfo.GENERIC_CREATE_CMD_FAILED, e, new Object[] {commandName});
             throw new RuntimeException(msg, e);
         }
         
@@ -157,8 +155,7 @@ public class GenericDeleteCommand extends GenericCrudCommand implements AdminCom
             String msg = localStrings.getLocalString(GenericDeleteCommand.class,
                     "TypeAndNameResolver.target_object_not_found",
                     "Cannot find a {0} with a name {1}", targetType.getSimpleName(), name);
-            logger.log(Level.SEVERE, ConfigApiLoggerInfo.TARGET_OBJ_NOT_FOUND, 
-                    new Object[] {resolver.getClass().toString(), parentType, targetType});
+            logger.log(Level.SEVERE, ConfigApiLoggerInfo.TARGET_OBJ_NOT_FOUND, new Object[] {resolver.getClass().toString(), parentType, targetType});
             result.failure(logger, msg);
             return;
         }

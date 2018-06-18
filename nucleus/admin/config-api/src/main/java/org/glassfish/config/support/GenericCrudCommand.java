@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
@@ -143,18 +144,16 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
     	return findInMe.get(0);
     }
 
+    @Override
     public void postConstruct() {
         commandName = myself.getName();
         
         String parentTypeName = getOne(GenerateServiceFromMethod.PARENT_CONFIGURED, myself.getMetadata());
-        if (logger.isLoggable(level)) {
-            logger.log(level,"Generic method parent targeted type is " + parentTypeName);
-        }
+        logger.log(level, "Generic method parent targeted type is {0}", parentTypeName);
 
         try {
             parentType = loadClass(parentTypeName);
-        }
-        catch(ClassNotFoundException e) {
+        } catch(ClassNotFoundException e) {
             String msg = localStrings.getLocalString(GenericCrudCommand.class,
                     "GenericCrudCommand.configbean_not_found",
                     "The Config Bean {0} cannot be loaded by the generic command implementation : {1}",
@@ -166,21 +165,8 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
         // find now the accessor method.
         String methodName = getOne(GenerateServiceFromMethod.METHOD_NAME, myself.getMetadata());
         targetMethod=null;
-        methodlookup:
-        for (Method m : parentType.getMethods()) {
-            if (m.getName().equals(methodName)) {
-                // Make sure that this method is annotated with an annotation 
-                // that is annotated with InhabitantAnnotation (such as @Create). 
-                // This makes sure that we have found the method we are looking for
-                // in case there is a like-named method that is not annotated.
-                for (Annotation a : m.getAnnotations()) {
-                    if (a.annotationType().getAnnotation(GenerateServiceFromMethod.class) != null) {
-                        targetMethod=m;
-                        break methodlookup;
-                    }
-                }
-            }
-        }
+        
+        targetMethod = getMethodFromAnnotation(methodName);
 
         if (targetMethod==null) {
             String msg = localStrings.getLocalString(GenericCrudCommand.class,
@@ -194,8 +180,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
         String targetTypeName = getOne(GenerateServiceFromMethod.METHOD_ACTUAL, myself.getMetadata());
         try {
             targetType = loadClass(targetTypeName);
-        }
-        catch(ClassNotFoundException e) {
+        } catch(ClassNotFoundException e) {
             String msg = localStrings.getLocalString(GenericCrudCommand.class,
                     "GenericCrudCommand.configbean_not_found",
                     "The Config Bean {0} cannot be loaded by the generic command implementation : {1}",
@@ -245,30 +230,20 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                     "GenericCrudCommand.invalid_type",
                                     "Invalid annotated type {0} passed to InjectionResolver:getValue()",
                                     annotated.getClass().toString());
-                            logger.log(Level.SEVERE, ConfigApiLoggerInfo.INVALID_ANNO_TYPE, 
-                                    annotated.getClass().toString());
+                            logger.log(Level.SEVERE, ConfigApiLoggerInfo.INVALID_ANNO_TYPE, annotated.getClass().toString());
                             throw new MultiException(new IllegalArgumentException(msg));
                         }
-                    } catch (IllegalAccessException e) {
+                    } catch (IllegalAccessException | InvocationTargetException e) {
                         String msg = localStrings.getLocalString(GenericCrudCommand.class,
                                 "GenericCrudCommand.invocation_failure",
                                 "Failure {0} while getting List<?> values from component",
                                 e.getMessage());
                         logger.log(Level.SEVERE,ConfigApiLoggerInfo.INVOKE_FAILURE);
                         throw new MultiException(new IllegalStateException(msg, e));
-                    } catch (InvocationTargetException e) {
-                        String msg = localStrings.getLocalString(GenericCrudCommand.class,
-                                "GenericCrudCommand.invocation_failure",
-                                "Failure {0} while getting List<?> values from component",
-                                e.getMessage());
-                        logger.log(Level.SEVERE, ConfigApiLoggerInfo.INVOKE_FAILURE);
-                        throw new MultiException(new IllegalStateException(msg, e));
                     }
                     Object value = delegate.getValue(component, annotated, genericType, type);
                     if (value==null) {
-                        if (logger.isLoggable(level)) {
-                            logger.log(level, "Value of " + annotated.toString() + " is null");
-                        }
+                        logger.log(level, "Value of {0} is null", annotated.toString());
                         return null;
                     }
                     Type genericReturnType=null;
@@ -284,7 +259,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
 
                     final Class<? extends ConfigBeanProxy> itemType = Types.erasure(Types.getTypeArgument(genericReturnType, 0));
                     if (logger.isLoggable(level)) {
-                        logger.log(level, "Found that List<?> really is a List<" + itemType.toString() + ">");
+                        logger.log(level, "Found that List<?> really is a List<{0}>", itemType.toString());
                     }
                     if (itemType==null) {
                             String msg = localStrings.getLocalString(GenericCrudCommand.class,
@@ -306,7 +281,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                     Properties props = convertStringToProperties(value.toString(), ':');
                     if (logger.isLoggable(level)) {
                         for (Map.Entry<Object, Object> entry : props.entrySet()) {
-                            logger.log(level, "Subtype " + itemType + " key:" + entry.getKey() + " value:" + entry.getValue());
+                            logger.log(level, "Subtype {0} key:{1} value:{2}", new Object[]{itemType, entry.getKey(), entry.getValue()});
                         }
                     }
                     final BeanInfo beanInfo;
@@ -431,14 +406,17 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                 String token = stoken.nextTokenKeepEscapes();
                 final ParamTokenizer nameTok = new ParamTokenizer(token, '=');
                 String name = null, value = null;
-                if (nameTok.hasMoreTokens())
+                if (nameTok.hasMoreTokens()){
                     name = nameTok.nextToken();
-                if (nameTok.hasMoreTokens())
+                }
+                if (nameTok.hasMoreTokens()){
                     value = nameTok.nextToken();
-                if (nameTok.hasMoreTokens() || name == null || value == null)
+                }
+                if (nameTok.hasMoreTokens() || name == null || value == null){
                     throw new IllegalArgumentException("TODO : i18n : Invalid property syntax." + propsString);
                         //strings.getLocalString("InvalidPropertySyntax",
                         //    "Invalid property syntax.", propsString));
+                }
                 int index = value.indexOf(']');
                
                 String unbracedValue =index > 0 ? value.substring(0,index) : value;
@@ -471,8 +449,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                     return childCM.getTagName();
                 }
                 // check the inheritance hierarchy
-                List<ConfigModel> subChildrenModels = document.getAllModelsImplementing(
-                        childCM.classLoaderHolder.loadClass(childTypeName));
+                List<ConfigModel> subChildrenModels = document.getAllModelsImplementing(childCM.classLoaderHolder.loadClass(childTypeName));
                 if (subChildrenModels!=null) {
                     for (ConfigModel subChildModel : subChildrenModels) {
                         if (subChildModel.targetTypeName.equals(child.getName())) {
@@ -486,7 +463,26 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
         return null;
     }
     
+    private Method getMethodFromAnnotation(String methodName){
+        methodlookup:
+        for (Method method : parentType.getMethods()) {
+            if (method.getName().equals(methodName)) {
+                // Make sure that this method is annotated with an annotation 
+                // that is annotated with InhabitantAnnotation (such as @Create). 
+                // This makes sure that we have found the method we are looking for
+                // in case there is a like-named method that is not annotated.
+                for (Annotation annotation : method.getAnnotations()) {
+                    if (annotation.annotationType().getAnnotation(GenerateServiceFromMethod.class) != null) {
+                        return method;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
     /** Decorator class if particular command
+     * @return 
      */
     public abstract Class getDecoratorClass();
  

@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.config.modularity.parser;
 
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.modularity.RankedConfigBeanProxy;
 import com.sun.enterprise.config.modularity.annotation.HasNoDefaultConfiguration;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
-import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 
 import org.glassfish.api.admin.ServerEnvironment;
@@ -62,7 +63,6 @@ import javax.inject.Inject;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * Containing shared functionalists between different derived classes like ConfigSnippetLoader and so on.
@@ -136,10 +136,8 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
 
 
     protected <U extends ConfigBeanProxy> void addConfigBeanFor(Class<U> extensionType) {
-        if (!RankedConfigBeanProxy.class.isAssignableFrom(extensionType)) {
-            if (getExtension(extensionType, extensionOwner) != null) {
+        if (!RankedConfigBeanProxy.class.isAssignableFrom(extensionType) && (getExtension(extensionType, extensionOwner) != null)) {
                 return;
-            }
         }
         StartupContext context = serviceLocator.getService(StartupContext.class);
         List<ConfigBeanDefaultValue> configBeanDefaultValueList =
