@@ -63,7 +63,7 @@ abstract class XMLStreamReaderFilter extends StreamReaderDelegate {
     public int next() throws XMLStreamException {
         while(true) {
             int r = super.next();
-            if(r != START_ELEMENT || !filterOut()) {
+            if (r != START_ELEMENT || !filterOut()) {
                 return r;
             }
             skipTree();
@@ -76,7 +76,7 @@ abstract class XMLStreamReaderFilter extends StreamReaderDelegate {
             // Fix for issue 9127
             // The following call to super.nextTag() is replaced with thisNextTag() 
             int r = thisNextTag();
-            if(r != START_ELEMENT || !filterOut()) {
+            if (r != START_ELEMENT || !filterOut()) {
                 return r;
             }
             skipTree();
