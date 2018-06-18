@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.util;
 
@@ -56,7 +57,7 @@ import static com.sun.enterprise.config.util.PortConstants.*;
  */
 public class PortBaseHelper {
     
-    final private static LocalStringsImpl strings = new LocalStringsImpl(PortBaseHelper.class);
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(PortBaseHelper.class);
 
     public PortBaseHelper(Server instance, String portbase, boolean checkports, Logger logger) {
         portBase = portbase;
@@ -125,7 +126,7 @@ public class PortBaseHelper {
             return Integer.parseInt(port);
         } catch (Exception e) {
             throw new TransactionFailure(
-                    strings.get("InvalidPortNumber", port));
+                    STRINGS.get("InvalidPortNumber", port));
         }
     }
 
@@ -133,10 +134,7 @@ public class PortBaseHelper {
      * Check if portbase option is specified.
      */
     private boolean usePortBase() throws TransactionFailure {
-        if (portBase != null) {
-            return true;
-        }
-        return false;
+        return portBase != null;
     }
 
     private void setOptionsWithPortBase(final int portbase)
@@ -196,11 +194,11 @@ public class PortBaseHelper {
             throws TransactionFailure {
         if (portNum <= 0 || portNum > PORT_MAX_VAL) {
             throw new TransactionFailure(
-                strings.get("InvalidPortBaseRange", portNum, portName));
+                STRINGS.get("InvalidPortBaseRange", portNum, portName));
         }
         if (checkPorts && !NetUtils.isPortFree(portNum)) {
             throw new TransactionFailure(
-                strings.get("PortBasePortInUse", portNum, portName));
+                STRINGS.get("PortBasePortInUse", portNum, portName));
         }
         _logger.log(Level.FINER,ConfigApiLoggerInfo.portBaseHelperPort, portNum);
     }

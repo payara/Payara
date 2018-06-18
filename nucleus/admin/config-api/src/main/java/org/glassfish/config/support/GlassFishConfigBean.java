@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
@@ -64,6 +65,7 @@ public final class GlassFishConfigBean extends ConfigBean {
 
     /**
      * Returns the translated view of a configuration object
+     * @param <T>
      * @param s the config-api interface implementation
      * @return the new interface implementation providing the raw view
      */
@@ -71,6 +73,7 @@ public final class GlassFishConfigBean extends ConfigBean {
 
         Transformer rawTransformer = new Transformer() {
             @SuppressWarnings("unchecked")
+            @Override
             public <T  extends ConfigBeanProxy> T transform(T source) {
                     final ConfigView handler = (ConfigView) Proxy.getInvocationHandler(source);
                     return (T) handler.getMasterView().getProxy(handler.getMasterView().getProxyType());
@@ -101,6 +104,8 @@ public final class GlassFishConfigBean extends ConfigBean {
     /**
      * Returns a copy of itself
      *
+     * @param <T>
+     * @param parent
      * @return a copy of itself.
      */
     @Override
@@ -112,12 +117,12 @@ public final class GlassFishConfigBean extends ConfigBean {
     @Override
     public void initializationCompleted() {
         super.initializationCompleted();
-        //System.out.println( "GlassFishConfigBean.initializationCompleted() for " + getProxyType().getName() );
         for (ConfigBeanListener listener : getServiceLocator().<ConfigBeanListener>getAllServices(ConfigBeanListener.class)) {
             listener.onEntered(this);
         }
     }
     
+     @Override
     public String toString() {
         //final Set<String> attrNames = getAttributeNames();
         return "GlassFishConfigBean." + getProxyType().getName();
