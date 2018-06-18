@@ -76,7 +76,9 @@ public class NewRelicNotificationConfigurer extends BaseNotificationConfigurer<N
         if (this.enabled != null) {
             configuration.enabled(this.enabled);
         }
-
+        if(this.noisy != null) {
+            configuration.noisy(this.noisy);
+        }
         if (!Strings.isNullOrEmpty(key)) {
             configuration.setKey(key);
         }

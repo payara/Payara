@@ -657,13 +657,13 @@ public class KernelLoggerInfo {
             message = "Network Listener {0} started in: {1}ms - bound to [{2}]",
             level = "INFO")
     public static final String listenerStarted = LOGMSG_PREFIX + "-00101";
-    
+
     @LogMessageInfo(
             message = "Propagated trace ID \"{0}\" is not a valid UUID - starting a new trace instead",
             cause="The trace ID extracted from the request header is not a valid UUID",
             level = "WARNING")
     public static final String invalidPropagatedTraceId = LOGMSG_PREFIX + "-00099";
-    
+
     @LogMessageInfo(
             message = "Propagated parent ID \"{0}\" is not a valid UUID - starting a new trace instead",
             cause="The parent ID extracted from the request header is either null or not a valid UUID",
