@@ -61,7 +61,7 @@ abstract class XMLStreamReaderFilter extends StreamReaderDelegate {
 
     @Override
     public int next() throws XMLStreamException {
-        while(true) {
+        while (true) {
             int r = super.next();
             if (r != START_ELEMENT || !filterOut()) {
                 return r;
@@ -72,7 +72,7 @@ abstract class XMLStreamReaderFilter extends StreamReaderDelegate {
 
     @Override
     public int nextTag() throws XMLStreamException {
-        while(true) {
+        while (true) {
             // Fix for issue 9127
             // The following call to super.nextTag() is replaced with thisNextTag() 
             int r = thisNextTag();
@@ -89,7 +89,7 @@ abstract class XMLStreamReaderFilter extends StreamReaderDelegate {
     // START_ELEMENT this method also includes DTD eventType in the skip-list 
     private int thisNextTag() throws XMLStreamException {
         int eventType = super.next();
-        while((eventType == XMLStreamConstants.CHARACTERS && isWhiteSpace()) // skip whitespace
+        while ((eventType == XMLStreamConstants.CHARACTERS && isWhiteSpace()) // skip whitespace
                 || (eventType == XMLStreamConstants.CDATA && isWhiteSpace())
                 // skip whitespace
                 || eventType == XMLStreamConstants.SPACE
@@ -99,7 +99,7 @@ abstract class XMLStreamReaderFilter extends StreamReaderDelegate {
             eventType = super.next();
         }
 
-        if(eventType != XMLStreamConstants.START_ELEMENT && eventType != XMLStreamConstants.END_ELEMENT) {
+        if (eventType != XMLStreamConstants.START_ELEMENT && eventType != XMLStreamConstants.END_ELEMENT) {
             throw new XMLStreamException(
                     "found: " + getEventTypeString(eventType)
                     + ", expected " + getEventTypeString(XMLStreamConstants.START_ELEMENT)
@@ -149,15 +149,15 @@ abstract class XMLStreamReaderFilter extends StreamReaderDelegate {
     private void skipTree() throws XMLStreamException {
         int depth = 1;
 
-        while(depth > 0) {
+        while (depth > 0) {
             // nextTag may cause problems.  We are just throwing it all away so
             // next() is fine...
             int r = super.next();
 
-            if(r == START_ELEMENT) {
+            if (r == START_ELEMENT) {
                 depth++;
             }
-            else if(r == END_ELEMENT) {
+            else if (r == END_ELEMENT) {
                 depth--;
             }
             // else ignore everything else...
