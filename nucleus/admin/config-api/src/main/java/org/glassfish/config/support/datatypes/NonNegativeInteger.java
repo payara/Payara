@@ -37,11 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support.datatypes;
 
@@ -50,7 +46,7 @@ import org.jvnet.hk2.config.DataType;
 import org.jvnet.hk2.config.ValidationException;
 
 /** Represents an integer from 0 to Integer.MAX_VALUE. 
- *  It's modeled as a functional class.
+ *  It's modelled as a functional class.
  * @author &#2325;&#2375;&#2342;&#2366;&#2352 (km@dev.java.net)
  */
 @Service
@@ -60,6 +56,7 @@ public class NonNegativeInteger implements DataType {
      * @param value
      * @throws org.jvnet.hk2.config.ValidationException
      */
+    @Override
     public void validate(String value) throws ValidationException {
         if (value == null)
             throw new ValidationException("null value is not of type NonNegativeInteger");
@@ -75,10 +72,9 @@ public class NonNegativeInteger implements DataType {
             throw new ValidationException(e);
         }
     }
+    
     /*package*/
     static boolean isTokenized(String value) {
-        if (value != null && value.startsWith("${") && value.endsWith("}"))
-            return true;
-        return false;
+        return value != null && value.startsWith("${") && value.endsWith("}");
     }
 }

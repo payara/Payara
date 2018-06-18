@@ -44,8 +44,6 @@ import java.beans.PropertyVetoException;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.types.Property;
-import org.jvnet.hk2.config.types.PropertyBag;
 import org.jvnet.hk2.config.DuckTyped;
 
 import java.util.Properties;

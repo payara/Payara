@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.modularity.command;
 
@@ -95,12 +96,12 @@ import java.util.logging.Logger;
 @Service(name = "get-active-module-config")
 @PerLookup
 @I18n("get.active.config")
-public final class GetActiveConfigCommand extends AbstractConfigModularityCommand implements AdminCommand, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
+public final class GetActiveConfigCommand extends AbstractConfigModularityCommand 
+        implements AdminCommand, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
 
-    private final Logger LOG = getLogger();
+    private static final Logger LOG = getLogger();
     
-    final private static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(GetActiveConfigCommand.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GetActiveConfigCommand.class);
 
     private ActionReport report;
 
@@ -299,7 +300,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
         report = context.getActionReport();
-        if (serviceName == null && isAll == false) {
+        if (serviceName == null && !isAll) {
             report.setMessage(localStrings.getLocalString("get.active.config.service.name.required",
                     "You need to specify a service name to get it's active configuration."));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -318,7 +319,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
             }
         }
 
-        if (isAll == true && serviceName != null) {
+        if (isAll && serviceName != null) {
             report.setMessage(localStrings.getLocalString("get.active.config.target.service.and.all.exclusive",
                     "Specifying a service name and using --all=true can not be used together."));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
