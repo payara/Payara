@@ -190,6 +190,9 @@ public class SetNetworkListenerConfiguration implements AdminCommand, EventListe
                         if (address != null){
                             listenerProxy.setAddress(address);
                         }
+                        if (port != null && !ADMIN_LISTENER.equals(listenerName)){
+                            listenerProxy.setPort(port.toString());
+                        }
                         if (portRange != null){
                             listenerProxy.setPortRange(portRange);
                         }
