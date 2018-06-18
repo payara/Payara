@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.security.cli;
 
@@ -82,7 +83,7 @@ import javax.inject.Inject;
 @Service(name="create-password-alias")
 @PerLookup
 @I18n("create.password.alias")
-@ExecuteOn(RuntimeType.ALL)
+@ExecuteOn(RuntimeType.DAS)
 @TargetType({CommandTarget.DAS,CommandTarget.DOMAIN})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
