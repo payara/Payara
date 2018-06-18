@@ -78,6 +78,32 @@
                         </goals>
                         <configuration>
                             <instructions>
+                                <Import-Package>
+                                    com.yubico.client.v2.exceptions,
+                                    com.yubico.client.v2,
+                                    fish.payara.notification.requesttracing,
+                                    fish.payara.nucleus.requesttracing,
+                                    fish.payara.security.annotations,
+                                    fish.payara.security.identitystores,
+                                    javax.annotation,
+                                    javax.enterprise.context,
+                                    javax.enterprise.context.spi,
+                                    javax.enterprise.event,
+                                    javax.enterprise.inject,
+                                    javax.enterprise.inject.spi,
+                                    javax.enterprise.util,
+                                    javax.inject,
+                                    javax.security.enterprise.authentication.mechanism.http,
+                                    javax.security.enterprise,
+                                    javax.security.enterprise.credential,
+                                    javax.security.enterprise.identitystore,
+                                    javax.servlet.http,
+                                    org.eclipse.microprofile.config,
+                                    org.glassfish.config.support,
+                                    org.glassfish.internal.api,
+                                    org.glassfish.soteria.cdi,
+                                    org.glassfish.soteria.mechanisms
+                                </Import-Package>
                                 <Export-Package>
                                     fish.payara.security.annotations,
                                     fish.payara.security.authentication.twoIdentityStore,
