@@ -64,5 +64,5 @@ final class Strings {
         return STRINGS.get(indexString, objects);
     }
 
-    private  static final LocalStringsImpl STRINGS = new LocalStringsImpl(Strings.class);
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(Strings.class);
 }
