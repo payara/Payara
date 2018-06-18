@@ -37,12 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016] [Payara Foundation]
+//Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 package com.sun.ejb.codegen;
 
 import org.glassfish.hk2.external.org.objectweb.asm.*;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.ReflectPermission;
 import java.security.AccessController;
@@ -97,7 +98,7 @@ public class AsmSerializableBeanGenerator
              Type.getType(Serializable.class).getInternalName()
         };
 
-        tv.visit(V1_1, ACC_PUBLIC,
+        tv.visit(V1_8, ACC_PUBLIC,
                 subclassInternalName, null,
                 Type.getType(baseClass).getInternalName(), interfaces);
 
@@ -109,12 +110,12 @@ public class AsmSerializableBeanGenerator
 	Constructor[] ctors = baseClass.getConstructors();
 	Constructor ctorWithParams = null;
 	for(Constructor ctor : ctors) {
-	    if(ctor.getParameterTypes().length == 0) {
+            if (ctor.getParameterTypes().length == 0) {
                 ctorWithParams = null;    //exists the no-arg ctor, use it
                 break;
             } else if(ctorWithParams == null) {
-		ctorWithParams = ctor;
-	    }
+                ctorWithParams = ctor;
+            }
 	}
 
 	int numArgsToPass = 1; // default is 1 to just handle 'this'
@@ -136,6 +137,18 @@ public class AsmSerializableBeanGenerator
 			   paramTypeString);
 	ctorv.visitInsn(RETURN);
 	ctorv.visitMaxs(numArgsToPass, numArgsToPass);
+
+        if (ctorWithParams != null) {
+            for (Annotation annotation : ctorWithParams.getAnnotations()) {
+                ctorv.visitAnnotation(Type.getDescriptor(annotation.annotationType()), true);
+            }
+
+            for (int i = 0; i < ctorWithParams.getParameterTypes().length; i++) {
+                for (Annotation parameterAnnotation : ctorWithParams.getParameterAnnotations()[i]) {
+                    ctorv.visitParameterAnnotation(i, Type.getDescriptor(parameterAnnotation.annotationType()), true);
+                }
+            }
+        }
 
         MethodVisitor cv = cw.visitMethod(ACC_PRIVATE, "writeObject", "(Ljava/io/ObjectOutputStream;)V", null, new String[] { "java/io/IOException" });
         cv.visitVarInsn(ALOAD, 0);
