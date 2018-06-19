@@ -207,10 +207,8 @@
                             <source>1.7</source>
                             <target>1.7</target>
                             <excludes>
-                                <exclude>fish/payara/security/annotation/OAuth2AuthenticationDefinition.java</exclude>
-                                <exclude>fish/payara/security/oauth2/api/OAuthIdentityStore.java</exclude>
-                                <exclude>fish/payara/security/oauth2/api/OAuth2State.java</exclude>
-                                <exclude>fish/payara/security/oauth2/api/OAuth2AccessToken.java</exclude>
+                                <exclude>fish/payara/security/annotations/*.java</exclude>
+                                <exclude>fish/payara/security/oauth2/api/*.java</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
