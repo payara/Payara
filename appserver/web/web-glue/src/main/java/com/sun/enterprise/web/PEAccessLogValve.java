@@ -1018,8 +1018,12 @@ public final class PEAccessLogValve
                 return;
             }
 
-            Comparator<File> byFilePathName = (File file1, File file2)
-                    -> file1.getAbsolutePath().compareTo(file2.getAbsolutePath());
+            Comparator<File> byFilePathName = new Comparator<File>() {
+                @Override
+                public int compare(File file1, File file2){
+                      return file1.getAbsolutePath().compareTo(file2.getAbsolutePath());
+                }
+            };
             candidateListOfLogFiles.sort(byFilePathName);
 
             for (int i = 0; i < candidateListOfLogFiles.size() - maxHistoryFiles; i++) {
