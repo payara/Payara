@@ -1024,7 +1024,7 @@ public final class PEAccessLogValve
                       return file1.getAbsolutePath().compareTo(file2.getAbsolutePath());
                 }
             };
-            candidateListOfLogFiles.sort(byFilePathName);
+            Collections.sort(candidateListOfLogFiles, byFilePathName);
 
             for (int i = 0; i < candidateListOfLogFiles.size() - maxHistoryFiles; i++) {
                 File file = candidateListOfLogFiles.get(i);
