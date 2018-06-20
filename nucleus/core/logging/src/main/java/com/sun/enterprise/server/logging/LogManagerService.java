@@ -339,8 +339,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         String formatterClassName = null;
         try {
             Map<String, String> props = getLoggingProperties();
-            setConsoleHandlerLogFormat(formatterClassName, props, logMgr);
             formatterClassName = props.get(CONSOLEHANDLER_FORMATTER_PROPERTY);
+            setConsoleHandlerLogFormat(formatterClassName, props, logMgr);
 
             //setting default attributes value for all properties
             setDefaultLoggingProperties(props);
