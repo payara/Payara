@@ -98,7 +98,7 @@ public class AsmSerializableBeanGenerator
              Type.getType(Serializable.class).getInternalName()
         };
 
-        tv.visit(V1_8, ACC_PUBLIC,
+        tv.visit(V1_7, ACC_PUBLIC,
                 subclassInternalName, null,
                 Type.getType(baseClass).getInternalName(), interfaces);
 
