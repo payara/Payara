@@ -664,11 +664,6 @@ public abstract class PersistentManagerBase
      */
     public Session createSession() {
 
-        if ((maxActiveSessions >= 0) &&
-                (sessions.size() >= maxActiveSessions))
-            throw new IllegalStateException
-                (rb.getString(LogFacade.CREATE_SESSION_EXCEPTION));
-
         return (super.createSession());
 
     }
@@ -692,11 +687,6 @@ public abstract class PersistentManagerBase
      * requested id already exists
      */
     public Session createSession(String sessionId) {
-
-        if ((maxActiveSessions >= 0) &&
-                (sessions.size() >= maxActiveSessions))
-            throw new IllegalStateException
-                (rb.getString(LogFacade.CREATE_SESSION_EXCEPTION));
 
         return (super.createSession(sessionId));
     }
@@ -1345,7 +1335,7 @@ public abstract class PersistentManagerBase
         Session sessions[] = findSessions();
 
         // FIXME: Smarter algorithm (LRU)
-        if (getMaxActiveSessions() >= sessions.length)
+        if (getMaxActiveSessions() > sessions.length)
             return;
 
         if(log.isLoggable(Level.FINE)) {
