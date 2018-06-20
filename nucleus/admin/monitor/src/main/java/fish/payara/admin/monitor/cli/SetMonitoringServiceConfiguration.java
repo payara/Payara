@@ -9,6 +9,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.admin.amx.config.AMXConfiguration;
 import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,59 +51,75 @@ import org.jvnet.hk2.config.TransactionFailure;
             description = "Set monitoring Service Configuration")
 })
 public class SetMonitoringServiceConfiguration implements AdminCommand {
-    
+
     @Param(name = "enabled", optional = true)
     private Boolean enabled;
-    
+
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
-    
+
     @Param(name = "mbeansenabled", optional = true, alias = "mbeansEnabled")
     private Boolean mbeansEnabled;
-    
+
+    @Param(name = "amxenabled", optional = true, alias = "amxEnabled")
+    private Boolean amxEnabled;
+
     @Inject
     protected Target targetUtil;
-    
+
     @Inject
     ServiceLocator serviceLocator;
-    
+
     @Inject
     protected Logger logger;
-    
+
     private MonitoringService monitoringService;
-    
+
+    private Config config;
+
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
-        
-        Config config = targetUtil.getConfig(target);
+
+        config = targetUtil.getConfig(target);
         if (config != null) {
             monitoringService = config.getMonitoringService();
         } else {
             actionReport.setMessage("Cound not find target: " + target);
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
-        
+
         try {
-            ConfigSupport.apply(new SingleConfigCode<MonitoringService>() {               
+            ConfigSupport.apply(new SingleConfigCode<MonitoringService>() {
                 @Override
                 public Object run(final MonitoringService monitoringServiceProxy) throws PropertyVetoException, TransactionFailure {
                     if (enabled != null) {
                         monitoringServiceProxy.setMonitoringEnabled(String.valueOf(enabled));
                     }
-                    
+
                     if (mbeansEnabled != null) {
                         monitoringServiceProxy.setMbeanEnabled(String.valueOf(mbeansEnabled));
                     }
+
+                    if (amxEnabled != null) {
+                        AMXConfiguration amxConfiguration = config.getExtensionByType(AMXConfiguration.class);
+                        ConfigSupport.apply(new SingleConfigCode<AMXConfiguration>() {
+                            @Override
+                            public Object run(final AMXConfiguration amxConfigurationProxy) throws PropertyVetoException, TransactionFailure {
+                                amxConfigurationProxy.setEnabled((String.valueOf(amxEnabled)));
+                                return amxConfigurationProxy;
+                            }
+                        }, amxConfiguration);
+                    }
+
                     actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                     return monitoringServiceProxy;
                 }
             }, monitoringService);
         } catch (TransactionFailure ex) {
-            logger.log(Level.WARNING, "Falied to excute the command", ex);
+            logger.log(Level.WARNING, "Falied to excute the command " + "set-monitoring-service-configuration: " + ex.getCause().getMessage());
             actionReport.setMessage(ex.getCause().getMessage());
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
-        
     }
 }
