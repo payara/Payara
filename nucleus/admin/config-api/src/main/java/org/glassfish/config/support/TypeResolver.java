@@ -66,7 +66,7 @@ public class TypeResolver implements CrudResolver {
     @Inject
     Domain domain;
 
-    final protected static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(TypeResolver.class);
+    protected static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(TypeResolver.class);
 
     @Override
     public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, final Class<T> type) {

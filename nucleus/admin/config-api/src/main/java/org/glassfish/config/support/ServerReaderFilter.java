@@ -48,37 +48,35 @@ import javax.xml.stream.*;
 
 /**
  * Instances and DAS' are quite different
+ *
  * @author Byron Nevins
  */
 abstract class ServerReaderFilter extends XMLStreamReaderFilter {
-    ServerReaderFilter(URL theDomainXml,
-            XMLInputFactory theXif) throws XMLStreamException {
 
+    ServerReaderFilter(URL theDomainXml, XMLInputFactory theXif) throws XMLStreamException {
         try {
             domainXml = theDomainXml;
             xif = theXif;
             stream = domainXml.openStream();
             setParent(xif.createXMLStreamReader(stream, System.getProperty("fish.payara.configFileEncoding", Charset.defaultCharset().toString())));
-        }
-        catch(IOException e) {
+        } catch (IOException e) {
             throw new XMLStreamException(e);
         }
     }
 
     @Override
-    final public void close() throws XMLStreamException {
+    public final void close() throws XMLStreamException {
         try {
             super.close();
             stream.close();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new XMLStreamException(e);
         }
     }
 
     /**
-     * Report on whether parsing was a success or not.  If there is a missing config
-     * for a server just return a String message.
+     * Report on whether parsing was a success or not. If there is a missing config for a server just return a String message.
+     *
      * @return a String error message if there was an error else return null for all-ok
      */
     abstract String configWasFound();

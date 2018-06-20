@@ -41,7 +41,6 @@ package fish.payara.enterprise.config.serverbeans;
 
 import java.util.List;
 import org.glassfish.api.I18n;
-import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.Create;
 import org.glassfish.config.support.Delete;

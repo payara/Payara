@@ -63,6 +63,8 @@ public class LoggingPropertyNames {
     public static final String payaraNotificationFile  = PYFileHandler + "file";
 
     public static final String logFormatter = GFFileHandler + "formatter";
+    
+    public static final String payaraNotificationLogFormatter = PYFileHandler + "formatter";
 
     public static final String logHandler = "handlers";
 

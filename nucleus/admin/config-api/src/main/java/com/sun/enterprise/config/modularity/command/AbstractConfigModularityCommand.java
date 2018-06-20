@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.modularity.command;
 
@@ -67,14 +68,14 @@ public class AbstractConfigModularityCommand {
     private ConfigModularityUtils configModularityUtils;
     @Inject
     ServiceLocator locator;
-    protected final static String LINE_SEPARATOR = System.getProperty("line.separator");
+    protected static final String LINE_SEPARATOR = System.lineSeparator();
 
     protected String replaceExpressionsWithValues(String location) {
         StringTokenizer tokenizer = new StringTokenizer(location, "/", false);
         while (tokenizer.hasMoreElements()) {
             String level = tokenizer.nextToken();
             if (level.contains("[$")) {
-                String expr = location.substring(location.indexOf("$"), location.indexOf("]"));
+                String expr = location.substring(location.indexOf('$'), location.indexOf(']'));
                 String value = configModularityUtils.resolveExpression(expr);
                 location = location.replace(expr, value);
             }

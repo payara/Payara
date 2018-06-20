@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
@@ -60,21 +61,21 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *
  * The deleted type is determine by the annotated method which must
  * follow one of the two following patterns :
- *      List<X> getXs();
+ *      {@code List&lt;X&gt; getXs();}
  * or
- *      void setX(X x);
+ *      {@code void setX(X x);}
  *
  * X is the type of instance that will be deleted, the name of the
  * method is actually immaterial. So for example, the following
  * <pre><code>
- * @Delete
- * public List<Foo> getAllMyFoos();
- * @Delete
+ * &#64Delete
+ * public List&lt;Foo&gt; getAllMyFoos();
+ * &#64Delete
  * public void setMySuperFoo(Foo foo);
- * @Delete
- * public List<Foo> getFoos();
- * @Delete
- * public List<Foo> getFoo();
+ * &#64Delete
+ * public List&lt;Foo&gt; getFoos();
+ * &#64Delete
+ * public List&lt;Foo&gt; getFoo();
  * </code></pre>
  *
  * will all be valid annotated methods.

@@ -38,7 +38,8 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.config.support;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
@@ -48,7 +49,6 @@ import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigurationCleanup;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
@@ -99,18 +99,23 @@ public abstract class DomainXml implements Populator {
     @Inject
     ConfigurationAccess configAccess;
 
-    final static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(DomainXml.class);
+    static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DomainXml.class);
+    private static final LocalStringsImpl strings = new LocalStringsImpl(DomainXml.class);
 
     @Override
     public void run(ConfigParser parser) throws ConfigPopulatorException {
         LogRecord lr = new LogRecord(Level.FINE, startupClass + this.getClass().getName());
         lr.setLoggerName(getClass().getName());
         EarlyLogHandler.earlyMessages.add(lr);
-
-        ClassLoader parentClassLoader = (registry == null) ?
-                getClass().getClassLoader() : registry.getParentClassLoader();
-        if (parentClassLoader == null) parentClassLoader = getClass().getClassLoader();
+        ClassLoader parentClassLoader;
+        if (registry == null){
+            parentClassLoader = registry.getParentClassLoader();
+        } else {
+            parentClassLoader = getClass().getClassLoader();
+        }
+        if (parentClassLoader == null) {
+            parentClassLoader = getClass().getClassLoader();
+        }
 
         ServiceLocatorUtilities.addOneConstant(habitat, parentClassLoader, null, ClassLoader.class);
 
@@ -150,21 +155,18 @@ public abstract class DomainXml implements Populator {
 
         Server server = habitat.getService(Server.class, env.getInstanceName());
         if (server == null) {
-            LogRecord lr = new LogRecord(Level.SEVERE,
-                    badEnv);
+            LogRecord lr = new LogRecord(Level.SEVERE, badEnv);
             lr.setLoggerName(getClass().getName());
             EarlyLogHandler.earlyMessages.add(lr);
             return;
         }
-        ServiceLocatorUtilities.addOneConstant(habitat, server,
-                ServerEnvironment.DEFAULT_INSTANCE_NAME, Server.class);
+        ServiceLocatorUtilities.addOneConstant(habitat, server, ServerEnvironment.DEFAULT_INSTANCE_NAME, Server.class);
 
         server.getConfig().addIndex(habitat, ServerEnvironment.DEFAULT_INSTANCE_NAME);
 
         Cluster c = server.getCluster();
         if (c != null) {
-            ServiceLocatorUtilities.addOneConstant(habitat, c,
-                    ServerEnvironment.DEFAULT_INSTANCE_NAME, Cluster.class);
+            ServiceLocatorUtilities.addOneConstant(habitat, c, ServerEnvironment.DEFAULT_INSTANCE_NAME, Cluster.class);
         }
     }
 
@@ -198,8 +200,7 @@ public abstract class DomainXml implements Populator {
             return domainXml.toURI().toURL();
         } else {
 
-            LogRecord lr = new LogRecord(Level.SEVERE, domainXml.getAbsolutePath() + noBackupFile
-            );
+            LogRecord lr = new LogRecord(Level.SEVERE, domainXml.getAbsolutePath() + noBackupFile);
             lr.setLoggerName(getClass().getName());
             EarlyLogHandler.earlyMessages.add(lr);
 
@@ -208,19 +209,19 @@ public abstract class DomainXml implements Populator {
                 return domainXml.toURI().toURL();
             }
 
-            lr = new LogRecord(Level.SEVERE,
-                    noBackupFile);
+            lr = new LogRecord(Level.SEVERE, noBackupFile);
             lr.setLoggerName(getClass().getName());
             EarlyLogHandler.earlyMessages.add(lr);
 
         }
-        throw new IOException(localStrings.getLocalString("NoUsableConfigFile",
-                "No usable configuration file at {0}",
-                env.getConfigDirPath()));
+        throw new IOException(localStrings.getLocalString("NoUsableConfigFile", "No usable configuration file at {0}", env.getConfigDirPath()));
     }
 
     /**
      * Parses <tt>domain.xml</tt>
+     * @param parser
+     * @param domainXml
+     * @param serverName
      */
     protected void parseDomainXml(ConfigParser parser, final URL domainXml, final String serverName) {
         long startNano = System.nanoTime();
@@ -241,14 +242,22 @@ public abstract class DomainXml implements Populator {
                 }
             });
 
-            if (env.getRuntimeType() == RuntimeType.DAS || env.getRuntimeType() == RuntimeType.EMBEDDED || 
-                    env.getRuntimeType() == RuntimeType.MICRO)
-                xsr = new DasReaderFilter(domainXml, xif);
-            else if (env.getRuntimeType() == RuntimeType.INSTANCE)
-                xsr = new InstanceReaderFilter(env.getInstanceName(), domainXml, xif);
-            else
-                throw new RuntimeException("Internal Error: Unknown server type: "
-                        + env.getRuntimeType());
+            if (null == env.getRuntimeType()) { 
+                throw new RuntimeException("Internal Error: Unknown server type: " + env.getRuntimeType());
+            } else {
+                switch (env.getRuntimeType()) {
+                    case DAS:
+                    case EMBEDDED:
+                    case MICRO:
+                        xsr = new DasReaderFilter(domainXml, xif);
+                        break;
+                    case INSTANCE:
+                        xsr = new InstanceReaderFilter(env.getInstanceName(), domainXml, xif);
+                        break;
+                    default:
+                        throw new RuntimeException("Internal Error: Unknown server type: " + env.getRuntimeType());
+                }
+            }
 
             Lock lock = null;
             try {
@@ -273,10 +282,11 @@ public abstract class DomainXml implements Populator {
                 EarlyLogHandler.earlyMessages.add(lr);
             }
         } catch (Exception e) {
-            if (e instanceof RuntimeException)
+            if (e instanceof RuntimeException){
                 throw (RuntimeException) e;
-            else
+            } else {
                 throw new RuntimeException("Fatal Error.  Unable to parse " + domainXml, e);
+            }
         }
         Long l = System.nanoTime() - startNano;
         LogRecord lr = new LogRecord(Level.FINE, totalTimeToParseDomain + l.toString());
@@ -286,6 +296,5 @@ public abstract class DomainXml implements Populator {
     }
 
     protected abstract DomDocument getDomDocument();
-
-    private final static LocalStringsImpl strings = new LocalStringsImpl(DomainXml.class);
+    
 }

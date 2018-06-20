@@ -63,7 +63,7 @@ public class TypeAndNameResolver implements CrudResolver {
     @Inject
     ServiceLocator habitat;
 
-    final protected static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GenericCrudCommand.class);
+    protected static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GenericCrudCommand.class);
 
     @SuppressWarnings("unchecked")
     @Override
