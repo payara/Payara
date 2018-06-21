@@ -661,6 +661,14 @@
                     <skip>${javadoc.skip}</skip>
                 </configuration>
             </plugin>
+	    <plugin>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>command-security-maven-plugin</artifactId>
+                <version>${command-security-plugin.version}</version>
+                <configuration>
+                    <isFailureFatal>${command.security.maven.plugin.isFailureFatal}</isFailureFatal>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

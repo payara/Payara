@@ -138,7 +138,7 @@
                         </configuration>
                         <executions>
                             <execution>
-                                <phase>site</phase>
+                                <phase>pre-site</phase>
                                 <id>attach-sources</id>
                                 <goals>
                                     <goal>jar-no-fork</goal>
@@ -192,7 +192,7 @@
                                     <goal>aggregate</goal>
                                     <goal>aggregate-jar</goal>
                                 </goals>
-                                <phase>site</phase>
+                                <phase>pre-site</phase>
                                 <configuration>
                                     <!-- Specific configuration for the aggregate report -->
                                     <finalName>payara-4.1.2.183-SNAPSHOT</finalName>
