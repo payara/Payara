@@ -8,7 +8,7 @@ package fish.payara.jmx.monitoring.admin;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.admin.amx.config.AMXConfiguration;
-import fish.payara.jmx.monitoring.MonitoringService;
+import fish.payara.jmx.monitoring.JMXMonitoringService;
 import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
 import java.beans.PropertyVetoException;
@@ -65,7 +65,7 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
     protected Target targetUtil;
 
     @Inject
-    MonitoringService monitoringService;
+    JMXMonitoringService monitoringService;
 
     @Param(name = "enabled", optional = true)
     private Boolean enabled;
@@ -106,7 +106,7 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
         final ActionReport actionReport = context.getActionReport();
         Config config = targetUtil.getConfig(target);
 
-        final MonitoringService service = serviceLocator.getService(MonitoringService.class);
+        final JMXMonitoringService service = serviceLocator.getService(JMXMonitoringService.class);
         if (service == null) {
             actionReport.appendMessage("Could not find a monitoring service.");
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);

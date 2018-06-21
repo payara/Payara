@@ -32,7 +32,7 @@ public class MonitoringJobTest {
     private static final String COMMITTEDHEAP_SUBATTRIBUTE_KEY = "committed" + HEAP_ATTRIBUTE_NAME;
 
     /**
-     * Tests the MonitoringJob is able to get a basic attribute correctly.
+     * Tests the JMXMonitoringJob is able to get a basic attribute correctly.
      */
     @Test
     public void basicAttributeShouldReturnKeyValueString() {
@@ -48,10 +48,10 @@ public class MonitoringJobTest {
 
         List<String> testAttributes = new ArrayList<>();
         testAttributes.add(THREAD_ATTRIBUTE_NAME);
-        MonitoringJob job;
+        JMXMonitoringJob job;
 
         try {
-            job = new MonitoringJob(testMBean, testAttributes);
+            job = new JMXMonitoringJob(testMBean, testAttributes);
         } catch (MalformedObjectNameException ex) {
             Assert.fail("While trying to create MonitoringJob with ObjectName " + 
                     testMBean.getCanonicalName() + " encountered " + ex.getMessage());
@@ -73,7 +73,7 @@ public class MonitoringJobTest {
     }
 
     /**
-     * Tests the MonitoringJob is able to get a composite attribute correctly.
+     * Tests the JMXMonitoringJob is able to get a composite attribute correctly.
      */
     @Test
     public void compositeAttributeShouldReturnSeriesKeyValueString() {
@@ -90,10 +90,10 @@ public class MonitoringJobTest {
 
         List<String> testAttributes = new ArrayList<>();
         testAttributes.add(HEAP_ATTRIBUTE_NAME);
-        MonitoringJob job;
+        JMXMonitoringJob job;
 
         try {
-            job = new MonitoringJob(testMBean, testAttributes);
+            job = new JMXMonitoringJob(testMBean, testAttributes);
         } catch (MalformedObjectNameException ex) {
             Assert.fail("While trying to create MonitoringJob with ObjectName " + 
                     testMBean.getCanonicalName() + " encountered " + ex.getMessage());
@@ -146,7 +146,7 @@ public class MonitoringJobTest {
     }
 
     /**
-     * Tests the MonitoringJob is able to get a sub-attribute of a composite attribute correctly.
+     * Tests the JMXMonitoringJob is able to get a sub-attribute of a composite attribute correctly.
      */
     @Test
     public void compositeAttributeSubAttributeShouldReturnKeyValueString() {
@@ -162,10 +162,10 @@ public class MonitoringJobTest {
 
         List<String> testAttributes = new ArrayList<>();
         testAttributes.add(HEAP_SUBATTRIBUTE_NAME);
-        MonitoringJob job;
+        JMXMonitoringJob job;
 
         try {
-            job = new MonitoringJob(testMBean, testAttributes);
+            job = new JMXMonitoringJob(testMBean, testAttributes);
         } catch (MalformedObjectNameException ex) {
             Assert.fail("While trying to create MonitoringJob with ObjectName " + 
                     testMBean.getCanonicalName() + " encountered " + ex.getMessage());
@@ -189,7 +189,7 @@ public class MonitoringJobTest {
     }
    
     /**
-     * Tests the MonitoringJob is able to have attributes added to it.
+     * Tests the JMXMonitoringJob is able to have attributes added to it.
      */
     @Test
     public void shouldAddAttributeToJob() {
@@ -204,10 +204,10 @@ public class MonitoringJobTest {
         }
 
         List<String> testAttributes = new ArrayList<>();
-        MonitoringJob job;
+        JMXMonitoringJob job;
 
         try {
-            job = new MonitoringJob(testMBean, testAttributes);
+            job = new JMXMonitoringJob(testMBean, testAttributes);
         } catch (MalformedObjectNameException ex) {
             Assert.fail("While trying to create MonitoringJob with ObjectName " + 
                     testMBean.getCanonicalName() + " encountered " + ex.getMessage());
@@ -222,7 +222,7 @@ public class MonitoringJobTest {
     }
 
     /**
-     * Tests the MonitoringJob does not add duplicate attributes to it.
+     * Tests the JMXMonitoringJob does not add duplicate attributes to it.
      */
     @Test
     public void shouldNotAddExistingAttributeToJob() {
@@ -237,10 +237,10 @@ public class MonitoringJobTest {
         }
 
         List<String> testAttributes = new ArrayList<>();
-        MonitoringJob job;
+        JMXMonitoringJob job;
 
         try {
-            job = new MonitoringJob(testMBean, testAttributes);
+            job = new JMXMonitoringJob(testMBean, testAttributes);
         } catch (MalformedObjectNameException ex) {
             Assert.fail("While trying to create MonitoringJob with ObjectName " + 
                     testMBean.getCanonicalName() + " encountered " + ex.getMessage());

@@ -14,7 +14,7 @@
 package fish.payara.jmx.monitoring.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import fish.payara.jmx.monitoring.MonitoringService;
+import fish.payara.jmx.monitoring.JMXMonitoringService;
 import java.util.Properties;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
@@ -51,7 +51,7 @@ import org.jvnet.hk2.annotations.Service;
 public class EnableJMXMonitoringServiceOnInstance implements AdminCommand {
 
     @Inject 
-    MonitoringService monitoringService;
+    JMXMonitoringService monitoringService;
 
     @Param(name = "enabled", optional = false)
     private Boolean enabled;

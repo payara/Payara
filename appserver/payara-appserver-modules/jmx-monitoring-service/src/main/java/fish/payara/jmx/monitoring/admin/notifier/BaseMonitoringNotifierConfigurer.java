@@ -40,7 +40,7 @@ package fish.payara.jmx.monitoring.admin.notifier;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import fish.payara.jmx.monitoring.MonitoringService;
+import fish.payara.jmx.monitoring.JMXMonitoringService;
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
 import fish.payara.nucleus.notification.configuration.Notifier;
 import org.glassfish.api.ActionReport;
@@ -77,7 +77,7 @@ public abstract class BaseMonitoringNotifierConfigurer<C extends Notifier> imple
     protected Logger logger;
 
     @Inject
-    protected MonitoringService service;
+    protected JMXMonitoringService service;
 
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     protected Boolean dynamic;

@@ -41,7 +41,7 @@ package fish.payara.jmx.monitoring.admin;
 
 
 import com.sun.enterprise.util.SystemPropertyConstants;
-import fish.payara.jmx.monitoring.MonitoringService;
+import fish.payara.jmx.monitoring.JMXMonitoringService;
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -80,7 +80,7 @@ public class MonitoringBootstrapper implements AdminCommand {
     ServerEnvironment server;
 
     @Inject
-    MonitoringService service;
+    JMXMonitoringService service;
 
     @Inject
     protected Target targetUtil;

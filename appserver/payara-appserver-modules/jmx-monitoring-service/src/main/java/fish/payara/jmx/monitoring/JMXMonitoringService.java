@@ -83,16 +83,17 @@ import fish.payara.admin.amx.config.AMXConfiguration;
 import java.beans.PropertyVetoException;
 
 /**
- * Service which monitors a set of MBeans and their attributes while logging the data as a series of key-value pairs.
+ * Service which monitors a set of MBeans and their attributes while logging the
+ * data as a series of key-value pairs.
  *
  * @since 4.1.1.163
  * @author savage
  */
 @Service(name = "payara-monitoring")
 @RunLevel(StartupRunLevel.VAL)
-public class MonitoringService implements EventListener {
-    
-    private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(MonitoringService.class);
+public class JMXMonitoringService implements EventListener {
+
+    private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(JMXMonitoringService.class);
 
     private final String PREFIX = "payara-monitoring-service(";
 
@@ -103,29 +104,29 @@ public class MonitoringService implements EventListener {
 
     @Inject
     ServiceLocator habitat;
-    
+
     @Inject
     private Events events;
-    
+
     @Inject
     private NotifierExecutionOptionsFactoryStore executionOptionsFactoryStore;
-    
+
     @Inject
     private NotificationEventFactoryStore eventStore;
-    
+
     @Inject
     private NotificationService notificationService;
 
     private final AtomicInteger threadNumber = new AtomicInteger(1);
 
     private ScheduledExecutorService executor;
-    private MonitoringFormatter formatter;
+    private JMXMonitoringFormatter formatter;
     private boolean enabled;
     private int amxBootDelay = 10;
     private long monitoringDelay = amxBootDelay + 15;
 
     private List<NotifierExecutionOptions> notifierExecutionOptionsList;
-    
+
     @PostConstruct
     public void postConstruct() throws NamingException {
         events.register(this);
@@ -133,7 +134,7 @@ public class MonitoringService implements EventListener {
 
     @Override
     public void event(Event event) {
-        if (event.is(EventTypes.SERVER_SHUTDOWN) ) {
+        if (event.is(EventTypes.SERVER_SHUTDOWN)) {
             shutdownMonitoringService();
         } else if (event.is(EventTypes.SERVER_READY)) {
             if (configuration != null && Boolean.valueOf(configuration.getEnabled())) {
@@ -144,16 +145,15 @@ public class MonitoringService implements EventListener {
     }
 
     /**
-     * Bootstraps the monitoring service.
-     *  Creates a thread pool for the ScheduledExecutorService.
-     *  Schedules the AMXBoot class to execute if AMX is enabled.
-     *  Schedules the MonitoringFormatter to execute at a specified fixed rate 
-     * if enabled in the configuration.
+     * Bootstraps the monitoring service. Creates a thread pool for the
+     * ScheduledExecutorService. Schedules the AMXBoot class to execute if AMX
+     * is enabled. Schedules the JMXMonitoringFormatter to execute at a
+     * specified fixed rate if enabled in the configuration.
      */
     public void bootstrapMonitoringService() {
         if (configuration != null && configuration.getEnabled().equalsIgnoreCase("true")) {
             shutdownMonitoringService();//To make sure that there aren't multiple monitoring services running
-            
+
             executor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
                 @Override
                 public Thread newThread(Runnable r) {
@@ -164,9 +164,9 @@ public class MonitoringService implements EventListener {
 
             final MBeanServer server = getPlatformMBeanServer();
 
-            formatter = new MonitoringFormatter(server, buildJobs(), this, eventStore, notificationService);
+            formatter = new JMXMonitoringFormatter(server, buildJobs(), this, eventStore, notificationService);
 
-            Logger.getLogger(MonitoringService.class.getName()).log(Level.INFO, "Monitoring Service will startup");
+            Logger.getLogger(JMXMonitoringService.class.getName()).log(Level.INFO, "Monitoring Service will startup");
 
             if (Boolean.valueOf(configuration.getAmx())) {
                 AMXConfiguration amxConfig = habitat.getService(AMXConfiguration.class);
@@ -174,21 +174,22 @@ public class MonitoringService implements EventListener {
                     amxConfig.setEnabled(String.valueOf(configuration.getAmx()));
                     configuration.setAmx(null);
                 } catch (PropertyVetoException ex) {
-                    Logger.getLogger(MonitoringService.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(JMXMonitoringService.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
 
             executor.scheduleAtFixedRate(formatter, monitoringDelay * 1000,
                     TimeUnit.MILLISECONDS.convert(Long.valueOf(configuration.getLogFrequency()),
-                    TimeUnit.valueOf(configuration.getLogFrequencyUnit())),
+                            TimeUnit.valueOf(configuration.getLogFrequencyUnit())),
                     TimeUnit.MILLISECONDS);
-            
+
             bootstrapNotifierList();
         }
     }
-    
+
     /**
      * Starts notifiers that are enabled with the monitoring service
+     *
      * @since 4.1.2.174
      */
     public void bootstrapNotifierList() {
@@ -207,11 +208,13 @@ public class MonitoringService implements EventListener {
             notifierExecutionOptionsList.add(logNotifierExecutionOptions);
         }
     }
-    
+
     /**
-     * Returns the configuration of all the notifiers configured with the monitoring service
+     * Returns the configuration of all the notifiers configured with the
+     * monitoring service
+     *
      * @since 4.1.2.174
-     * @return 
+     * @return
      */
     public List<NotifierExecutionOptions> getNotifierExecutionOptionsList() {
         return notifierExecutionOptionsList;
@@ -222,19 +225,20 @@ public class MonitoringService implements EventListener {
      */
     private void shutdownMonitoringService() {
         if (executor != null) {
-            Logger.getLogger(MonitoringService.class.getName()).log(Level.INFO, "Monitoring Service will shutdown");
+            Logger.getLogger(JMXMonitoringService.class.getName()).log(Level.INFO, "Monitoring Service will shutdown");
             executor.shutdownNow();
         }
     }
 
     /**
      * Sets the service to be enabled/disabled.
+     *
      * @param enabled If true will reboot the monitoring service
      */
     public void setEnabled(Boolean enabled) {
         amxBootDelay = 0;
         monitoringDelay = amxBootDelay + 5;
-        
+
         if (enabled) {
             this.enabled = enabled;
             bootstrapMonitoringService();
@@ -249,13 +253,13 @@ public class MonitoringService implements EventListener {
      *
      * @return List of built jobs.
      */
-    private List<MonitoringJob> buildJobs() {
-        List<MonitoringJob> jobs = new LinkedList<>();
+    private List<JMXMonitoringJob> buildJobs() {
+        List<JMXMonitoringJob> jobs = new LinkedList<>();
 
         for (MonitoredAttribute mbean : configuration.getMonitoredAttributes()) {
             boolean exists = false;
 
-            for (MonitoringJob job : jobs) {
+            for (JMXMonitoringJob job : jobs) {
                 if (job.getMBean().getCanonicalKeyPropertyListString()
                         .equals(mbean.getObjectName())) {
                     job.addAttribute(mbean.getAttributeName());
@@ -271,15 +275,15 @@ public class MonitoringService implements EventListener {
                     name = new ObjectName(mbean.getObjectName());
                     list = new LinkedList<>();
                     list.add(mbean.getAttributeName());
-                    jobs.add(new MonitoringJob(name, list));
+                    jobs.add(new JMXMonitoringJob(name, list));
                 } catch (MalformedObjectNameException ex) {
-                    Logger.getLogger(MonitoringService.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(JMXMonitoringService.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
         return jobs;
     }
-  
+
     public LocalStringManagerImpl getLocalStringManager() {
         return strings;
     }

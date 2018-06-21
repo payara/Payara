@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,44 +51,48 @@ import java.util.logging.Logger;
 import javax.management.MBeanServer;
 
 /**
- * The runnable class which gathers monitoring info from a list of MonitoringJob objects and builds a log string from it.
+ * The runnable class which gathers JMX monitoring info from a list of
+ JMXMonitoringJob objects and builds a log string from it.
  *
  * @since 4.1.1.163
  * @author savage
  */
-public class MonitoringFormatter implements Runnable {
+public class JMXMonitoringFormatter implements Runnable {
 
-    private static final Logger LOGGER = Logger.getLogger(MonitoringFormatter.class.getCanonicalName());
     private final String LOGMESSAGE_PREFIX = "PAYARA-MONITORING: ";
 
     private final MBeanServer mBeanServer;
-    private final List<MonitoringJob> jobs;
-    private final MonitoringService monitoringService;
+    private final List<JMXMonitoringJob> JmxMonitoringJobs;
+    private final JMXMonitoringService monitoringService;
     private final NotificationEventFactoryStore eventFactoryStore;
     private final NotificationService notificationService;
 
     /**
-     * Constructor for the MonitoringFormatter class.
+     * Constructor for the JMXMonitoringFormatter class.
      *
      * @param mBeanServer The MBeanServer to monitor.
-     * @param jobs List of monitoring jobs to perform.
+     * @param jobs List of monitoring JmxMonitoringJobs to perform.
      * @param monitoringService the monitoring service
-     * @param store the store that holds the various event factories that are needed to build notification events
-     * @param notificationService the notification service containing all the notifiers
+     * @param store the store that holds the various event factories that are
+     * needed to build notification events
+     * @param notificationService the notification service containing all the
+     * notifiers
      */
     //This is done this way and not through injection as the result is a hk2 circular dependency error as this class
-    //is also used in MonitoringService and each cannot be injected into the other
-    public MonitoringFormatter(MBeanServer mBeanServer, List<MonitoringJob> jobs, MonitoringService monitoringService, NotificationEventFactoryStore store,
+    //is also used in JMXMonitoringService and each cannot be injected into the other
+    public JMXMonitoringFormatter(MBeanServer mBeanServer, List<JMXMonitoringJob> jobs, JMXMonitoringService monitoringService, NotificationEventFactoryStore store,
             NotificationService notificationService) {
         this.mBeanServer = mBeanServer;
-        this.jobs = jobs;
+        this.JmxMonitoringJobs = jobs;
         this.monitoringService = monitoringService;
         this.eventFactoryStore = store;
         this.notificationService = notificationService;
     }
 
     /**
-     * Class runnable method. Calls getMonitoringInfo on all MonitoringJobs passing the MBeanServer. Uses the results to build a String for the log message.
+     * Class runnable method. Calls getJMXMonitoringInfo on all JMXMonitoringJobs
+     * passing the MBeanServer. Uses the results to build a String for the log
+     * message.
      */
     @Override
     public void run() {
@@ -96,21 +100,23 @@ public class MonitoringFormatter implements Runnable {
 
         monitoringString.append(LOGMESSAGE_PREFIX);
 
-        for (MonitoringJob job : jobs) {
+        for (JMXMonitoringJob job : JmxMonitoringJobs) {
             monitoringString.append(job.getMonitoringInfo(mBeanServer));
         }
 
-        sendNotification(Level.INFO, monitoringString.toString(), jobs.toArray());
+        sendNotification(Level.INFO, monitoringString.toString(), JmxMonitoringJobs.toArray());
     }
 
     /**
-     * Sends a notification to all notifiers enabled with the monitoring service
+     * Sends a notification to all notifiers enabled with the JMX monitoring service
      * <p>
-     * The subject of the notification will be {@code PAYARA-MONITORING:}
+     * The subject of the notification will be {@code MBean Attributes:}
+     *
      * @since 4.1.2.174
      * @param level Log level to notification at
      * @param message The message to send
-     * @param parameters An array of the objects that the notification is about i.e. the Mbeans being monitored
+     * @param parameters An array of the objects that the notification is about
+     * i.e. the Mbeans being monitored
      */
     private void sendNotification(Level level, String message, Object[] parameters) {
 
