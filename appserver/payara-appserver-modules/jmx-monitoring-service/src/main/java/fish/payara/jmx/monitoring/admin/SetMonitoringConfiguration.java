@@ -52,7 +52,8 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * @deprecated Since 5.183. Use set-jmx-monitoring-configuration command instead.
+ * @deprecated Since 5.183. 
+ * Use set-jmx-monitoring-configuration command instead.
  *
  * @author savage
  */
