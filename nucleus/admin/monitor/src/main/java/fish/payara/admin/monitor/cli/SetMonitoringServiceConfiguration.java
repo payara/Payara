@@ -35,7 +35,8 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 /**
- *
+ * Asadmin command to set the Monitoring Service configuration.
+ * 
  * @author Susan Rai
  */
 @Service(name = "set-monitoring-service-configuration")
