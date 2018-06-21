@@ -52,14 +52,15 @@ import javax.management.MBeanServer;
 
 /**
  * The runnable class which gathers JMX monitoring info from a list of
- JMXMonitoringJob objects and builds a log string from it.
+ * JMXMonitoringJob objects and builds a log string from it.
  *
  * @since 4.1.1.163
  * @author savage
  */
 public class JMXMonitoringFormatter implements Runnable {
 
-    private final String LOGMESSAGE_PREFIX = "PAYARA-MONITORING: ";
+    private final String LOGMESSAGE_PREFIX = "JMX-MONITORING:";
+    private final String NOTIFICATION_SUBJECT = "MBean Attributes: ";
 
     private final MBeanServer mBeanServer;
     private final List<JMXMonitoringJob> JmxMonitoringJobs;
@@ -80,7 +81,8 @@ public class JMXMonitoringFormatter implements Runnable {
      */
     //This is done this way and not through injection as the result is a hk2 circular dependency error as this class
     //is also used in JMXMonitoringService and each cannot be injected into the other
-    public JMXMonitoringFormatter(MBeanServer mBeanServer, List<JMXMonitoringJob> jobs, JMXMonitoringService monitoringService, NotificationEventFactoryStore store,
+    public JMXMonitoringFormatter(MBeanServer mBeanServer, List<JMXMonitoringJob> jobs,
+            JMXMonitoringService monitoringService, NotificationEventFactoryStore store,
             NotificationService notificationService) {
         this.mBeanServer = mBeanServer;
         this.JmxMonitoringJobs = jobs;
@@ -90,15 +92,15 @@ public class JMXMonitoringFormatter implements Runnable {
     }
 
     /**
-     * Class runnable method. Calls getJMXMonitoringInfo on all JMXMonitoringJobs
-     * passing the MBeanServer. Uses the results to build a String for the log
-     * message.
+     * Class runnable method. Calls getJMXMonitoringInfo on all
+     * JMXMonitoringJobs passing the MBeanServer. Uses the results to build a
+     * String for the log message.
      */
     @Override
     public void run() {
         StringBuilder monitoringString = new StringBuilder();
 
-        monitoringString.append(LOGMESSAGE_PREFIX);
+        monitoringString.append(NOTIFICATION_SUBJECT);
 
         for (JMXMonitoringJob job : JmxMonitoringJobs) {
             monitoringString.append(job.getMonitoringInfo(mBeanServer));
@@ -108,7 +110,8 @@ public class JMXMonitoringFormatter implements Runnable {
     }
 
     /**
-     * Sends a notification to all notifiers enabled with the JMX monitoring service
+     * Sends a notification to all notifiers enabled with the JMX monitoring
+     * service
      * <p>
      * The subject of the notification will be {@code MBean Attributes:}
      *
@@ -123,8 +126,11 @@ public class JMXMonitoringFormatter implements Runnable {
         if (monitoringService.getNotifierExecutionOptionsList() != null) {
             for (NotifierExecutionOptions options : monitoringService.getNotifierExecutionOptionsList()) {
                 if (options.isEnabled()) {
-                    NotificationEventFactory notificationEventFactory = eventFactoryStore.get(options.getNotifierType());
-                    NotificationEvent event = notificationEventFactory.buildNotificationEvent(level, LOGMESSAGE_PREFIX, message, parameters);
+                    NotificationEventFactory notificationEventFactory
+                            = eventFactoryStore.get(options.getNotifierType());
+                    NotificationEvent event = notificationEventFactory.
+                            buildNotificationEvent(level, LOGMESSAGE_PREFIX,
+                                    message, parameters);
                     notificationService.notify(EventSource.MONITORING, event);
                 }
             }
