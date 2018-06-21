@@ -95,7 +95,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                      mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                      mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                      prepareSuccessfulMsg();
-                     gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-monitoring-configuration" 
+                     gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-jmx-monitoring-configuration" 
                      attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
 
                      if (#{pageSession.hasPropertyTable}) {

@@ -36,19 +36,19 @@ import org.jvnet.hk2.annotations.Service;
  *
  * @author savage
  */
-@Service(name = "__enable-monitoring-service-on-das")
+@Service(name = "__enable-jmx-monitoring-service-on-instance")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-@I18n("__enable-monitoring-service-on-das")
-@ExecuteOn(RuntimeType.DAS)
+@I18n("__enable.jmx.monitoring.service.on.instance")
+@ExecuteOn(RuntimeType.INSTANCE)
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.GET,
-            path = "__enable-monitoring-service-on-das",
-            description = "Enables the JMX Monitoring Service on the DAS")
+            path = "__enable-jmx-monitoring-service-on-instance",
+            description = "Enables the JMX Monitoring Service on Instance")
 })
-public class EnableMonitoringServiceOnDas implements AdminCommand {
+public class EnableJMXMonitoringServiceOnInstance implements AdminCommand {
 
     @Inject 
     MonitoringService monitoringService;
@@ -61,7 +61,7 @@ public class EnableMonitoringServiceOnDas implements AdminCommand {
 
     @Override
     public void execute(AdminCommandContext context) {
-        
+
         final ActionReport actionReport = context.getActionReport();
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
@@ -74,5 +74,5 @@ public class EnableMonitoringServiceOnDas implements AdminCommand {
                 "Monitoring Service Status is set to {0} on {1}.",
                 enabled, target));
     }
-    
+
 }
