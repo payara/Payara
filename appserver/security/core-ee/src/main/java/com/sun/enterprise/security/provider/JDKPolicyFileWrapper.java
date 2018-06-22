@@ -429,10 +429,9 @@ public class JDKPolicyFileWrapper extends Policy {
     }
 
     private ContextProvider getContextProvider(String contextId, JaccConfigurationFactory configurationFactory) {
-        if (configurationFactory != null) {
+        if (configurationFactory != null && contextId != null) {
             return configurationFactory.getContextProviderByPolicyContextId(contextId);
         }
-
         return null;
     }
 
