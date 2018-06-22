@@ -70,7 +70,7 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 /**
- * Asadmin command to set Monitoring Module Level.
+ * Asadmin command to set Module Monitoring Level.
  *
  * @author Susan Rai
  */
@@ -85,7 +85,7 @@ import org.jvnet.hk2.config.TransactionFailure;
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
             path = "set-monitoring-level",
-            description = "Set Monitoring Module level")
+            description = "Set Module Monitoring level")
 })
 public class SetMonitoringLevel implements AdminCommand {
 
@@ -118,11 +118,6 @@ public class SetMonitoringLevel implements AdminCommand {
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
 
-        String[] validModuleNames = {"jvm", "connector-service", "connector-connection-pool", "jdbc-connection-pool",
-            "web-services-container", "ejb-container", "thread-pool", "http-service", "security", "jms-service", "jersey",
-            "transaction-service", "jpa", "orb", "deployment", "cloud", "cloud-elasticity", "cloud-orchestrator",
-            "cloud-tenant-manager", "cloud-virt-assembly-service", "web-container"};
-
         if (moduleName != null && moduleMonitoringLevel != null) {
             List<String> moduleNameList = Arrays.asList(moduleName.split(","));
             List<String> moduleLevelList = Arrays.asList(moduleMonitoringLevel.split(","));
@@ -130,7 +125,7 @@ public class SetMonitoringLevel implements AdminCommand {
             if (moduleNameList.size() == moduleLevelList.size()) {
                 for (int i = 0; i < moduleLevelList.size(); i++) {
                     boolean isValidMoudle = false;
-                    List<String> validModuleList = new ArrayList<>(Arrays.asList(validModuleNames));
+                    List<String> validModuleList = new ArrayList<>(Arrays.asList(Constants.validModuleNames));
                     String moduleName = moduleNameList.get(i).trim().toLowerCase();
                     for (String module : validModuleList) {
                         if (module.trim().equals(moduleName)) {

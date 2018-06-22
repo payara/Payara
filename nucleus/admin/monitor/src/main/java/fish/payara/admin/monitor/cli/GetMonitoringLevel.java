@@ -44,8 +44,10 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import fish.payara.admin.amx.config.AMXConfiguration;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.inject.Inject;
@@ -66,23 +68,24 @@ import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * Asadmin command to list Monitoring Service Configuration
+ * Asadmin command to list Module Monitoring level
  *
  * @author Susan Rai
  */
-@Service(name = "get-monitoring-service-configuration")
+@Service(name = "get-monitoring-level")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-@I18n("get.monitoring.service.configuration")
+@I18n("get.monitoring.level")
 @ExecuteOn(value = {RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER,
+    CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.GET,
-            path = "get-monitoring-service-configuration",
-            description = "List Monitoring Service Configuration")
+            path = "get-monitoring-level",
+            description = "List Monitoring Service Level")
 })
-public class GetMonitoringServiceConfiguration implements AdminCommand {
+public class GetMonitoringLevel implements AdminCommand {
 
     @Inject
     private Target targetUtil;
@@ -90,32 +93,64 @@ public class GetMonitoringServiceConfiguration implements AdminCommand {
     @Param(name = "target", defaultValue = SystemPropertyConstants.DAS_SERVER_NAME, optional = true)
     private String target;
 
+    @Param(name = "module", optional = true)
+    private String moduleName;
+
     @Override
     public void execute(AdminCommandContext context) {
-
         Config config = targetUtil.getConfig(target);
         if (config == null) {
             context.getActionReport().setMessage("No such config named: " + target);
             context.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-        MonitoringService monitoringService = config.getMonitoringService();
-        AMXConfiguration amxConfiguration = config.getExtensionByType(AMXConfiguration.class);
 
+        MonitoringService monitoringService = config.getMonitoringService();
         final ActionReport actionReport = context.getActionReport();
-        final String headers[] = {"Enabled", "AMX Enabled", "MBeans Enabled"};
+        final String headers[] = {"Module", "Monitoring Level"};
 
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        columnFormatter.addRow(new Object[]{monitoringService.getMonitoringEnabled(), amxConfiguration.getEnabled(), monitoringService.getMbeanEnabled()});
-        actionReport.appendMessage(columnFormatter.toString());
-
         Map<String, Object> extraPropertiesMap = new HashMap<>();
-        extraPropertiesMap.put("enabled", monitoringService.getMonitoringEnabled());
-        extraPropertiesMap.put("amxEnabled", amxConfiguration.getEnabled());
-        extraPropertiesMap.put("mbeansEnabled", monitoringService.getMbeanEnabled());
+
+        List<String> validModuleList = new ArrayList<>(Arrays.asList(Constants.validModuleNames));
+
+        // If no modulename is passed my the command, display all the module and
+        // their monitoring levels
+        if (moduleName == null) {
+            for (String validModule : validModuleList) {
+                columnFormatter.addRow(new Object[]{validModule,
+                    monitoringService.getMonitoringLevel(validModule)});
+                extraPropertiesMap.put(validModule,
+                        monitoringService.getMonitoringLevel(validModule));
+            }
+        }
+
+        if (moduleName != null) {
+            List<String> moduleNameList = Arrays.asList(moduleName.split(","));
+            for (String module : moduleNameList) {
+                boolean isValidMoudle = false;
+                String selectedModule = module.trim().toLowerCase();
+                for (String validModule : validModuleList) {
+                    if (validModule.trim().equals(selectedModule)) {
+                        columnFormatter.addRow(new Object[]{selectedModule,
+                            monitoringService.getMonitoringLevel(selectedModule)});
+                        extraPropertiesMap.put(selectedModule,
+                                monitoringService.getMonitoringLevel(selectedModule));
+                        isValidMoudle = true;
+                        break;
+                    }
+                }
+
+                if (!isValidMoudle) {
+                    actionReport.setMessage(selectedModule + " isn't a valid Module name");
+                    actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    return;
+                }
+            }
+        }
 
         Properties extraProperties = new Properties();
-        extraProperties.put("getMonitoringServiceConfiguration", extraPropertiesMap);
+        extraProperties.put("getMonitoringLevel", extraPropertiesMap);
 
         actionReport.setExtraProperties(extraProperties);
         actionReport.setMessage(columnFormatter.toString());
