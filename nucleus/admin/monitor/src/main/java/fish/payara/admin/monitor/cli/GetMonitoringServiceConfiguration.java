@@ -103,7 +103,7 @@ public class GetMonitoringServiceConfiguration implements AdminCommand {
 
         final ActionReport actionReport = context.getActionReport();
         StringBuilder builder = new StringBuilder();
-        final String headers[] = {"Enabled", "AMX Enabled", "Monitoring MBeans Enabled"};
+        final String headers[] = {"Enabled", "AMX Enabled", "MBeans Enabled"};
 
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
         columnFormatter.addRow(new Object[]{monitoringService.getMonitoringEnabled(), amxConfiguration.getEnabled(), monitoringService.getMbeanEnabled()});

@@ -49,7 +49,7 @@ import org.jvnet.hk2.config.TransactionFailure;
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
             path = "set-monitoring-service-configuration",
-            description = "Set monitoring Service Configuration")
+            description = "Set Monitoring Service Configuration")
 })
 public class SetMonitoringServiceConfiguration implements AdminCommand {
 
@@ -72,7 +72,7 @@ public class SetMonitoringServiceConfiguration implements AdminCommand {
     ServiceLocator serviceLocator;
 
     @Inject
-    protected Logger logger;
+    private Logger logger;
 
     private MonitoringService monitoringService;
 
@@ -118,7 +118,7 @@ public class SetMonitoringServiceConfiguration implements AdminCommand {
                 }
             }, monitoringService);
         } catch (TransactionFailure ex) {
-            logger.log(Level.WARNING, "Falied to excute the command " + "set-monitoring-service-configuration: " + ex.getCause().getMessage());
+            logger.log(Level.WARNING, "Falied to execute the command " + "set-monitoring-service-configuration: " + ex.getCause().getMessage());
             actionReport.setMessage(ex.getCause().getMessage());
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
