@@ -37,32 +37,38 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm;
+
+import static com.sun.enterprise.security.SecurityLoggerInfo.noRealmsError;
+import static com.sun.enterprise.security.SecurityLoggerInfo.realmConfigDisabledError;
+import static com.sun.enterprise.security.SecurityLoggerInfo.securityExceptionError;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.WARNING;
+
+import java.util.List;
+import java.util.Properties;
+import java.util.logging.Logger;
+
+import org.jvnet.hk2.config.types.Property;
 
 import com.sun.enterprise.config.serverbeans.AuthRealm;
 import com.sun.enterprise.security.SecurityLoggerInfo;
 
-import org.jvnet.hk2.config.types.Property;
-import java.util.List;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
- * RealmConfig usable by standalone : Admin CLI for creating Realms
- * It has a subset of functionality defined in com.sun.enterprise.security.RealmConfig
+ * RealmConfig usable by standalone : Admin CLI for creating Realms It has a subset of functionality defined in
+ * com.sun.enterprise.security.RealmConfig
  */
 public class RealmConfig {
 
-    private static Logger logger =
-            SecurityLoggerInfo.getLogger();
+    private static Logger logger = SecurityLoggerInfo.getLogger();
 
     public static void createRealms(String defaultRealm, List<AuthRealm> realms) {
         createRealms(defaultRealm, realms, null);
     }
+
     public static void createRealms(String defaultRealm, List<AuthRealm> realms, String configName) {
-        assert(realms != null);
+        assert (realms != null);
 
         String goodRealm = null; // need at least one good realm
 
@@ -74,14 +80,13 @@ public class RealmConfig {
 
             try {
                 List<Property> realmProps = aRealm.getProperty();
-                /*V3 Commented ElementProperty[] realmProps =
-                    aRealm.getElementProperty();*/
                 Properties props = new Properties();
                 for (Property realmProp : realmProps) {
                     props.setProperty(realmProp.getName(), realmProp.getValue());
                 }
+                
                 Realm.instantiate(realmName, realmClass, props, configName);
-                if (logger.isLoggable(Level.FINE)) {
+                if (logger.isLoggable(FINE)) {
                     logger.fine("Configured realm: " + realmName);
                 }
 
@@ -89,18 +94,17 @@ public class RealmConfig {
                     goodRealm = realmName;
                 }
             } catch (Exception e) {
-                logger.log(Level.WARNING,
-                           SecurityLoggerInfo.realmConfigDisabledError, realmName);
-                logger.log(Level.WARNING, SecurityLoggerInfo.securityExceptionError, e);
+                logger.log(WARNING, realmConfigDisabledError, realmName);
+                logger.log(WARNING, securityExceptionError, e);
             }
         }
 
-        // done loading all realms, check that there is at least one
+        // Done loading all realms, check that there is at least one
         // in place and that default is installed, or change default
         // to the first one loaded (arbitrarily).
 
         if (goodRealm == null) {
-            logger.severe(SecurityLoggerInfo.noRealmsError);
+            logger.severe(noRealmsError);
 
         } else {
             try {
@@ -109,7 +113,7 @@ public class RealmConfig {
                 defaultRealm = goodRealm;
             }
             Realm.setDefaultRealm(defaultRealm);
-            if (logger.isLoggable(Level.FINE)) {
+            if (logger.isLoggable(FINE)) {
                 logger.fine("Default realm is set to: " + defaultRealm);
             }
         }

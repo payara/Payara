@@ -37,23 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.login;
 
 import java.security.Principal;
 
 public class DistinguishedPrincipalCredential {
-    private Principal prin = null;
+    
+    private Principal principal;
 
-    public DistinguishedPrincipalCredential(Principal prin) {
-        this.prin = prin;
+    public DistinguishedPrincipalCredential(Principal principal) {
+        this.principal = principal;
     }
 
     public Principal getPrincipal() {
-        return prin;
+        return principal;
     }
 
     public String toString() {
-        return "DistingushedPrincipal: " + prin;
+        return "DistingushedPrincipal: " + principal;
     }
 }

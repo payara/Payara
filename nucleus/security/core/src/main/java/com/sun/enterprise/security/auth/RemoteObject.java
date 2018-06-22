@@ -37,28 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth;
 
-import com.sun.enterprise.util.*;
+import static javax.rmi.PortableRemoteObject.toStub;
+
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+
 import javax.rmi.PortableRemoteObject;
 import javax.rmi.CORBA.Tie;
+
 import org.omg.CORBA.ORB;
 
 /**
  * Just a Base class to make exporting remote objects a bit easier...
+ * 
  * @author Harish Prabandham
  */
 
 public class RemoteObject {
+    
     private ORB orb;
 
     protected RemoteObject() {
-	//TODO:V3 commented, uncomment later orb = ORBManager.getORB();
+        // TODO:V3 commented, uncomment later orb = ORBManager.getORB();
     }
 
-    protected void exportObject(java.rmi.Remote remote)
-    throws java.rmi.RemoteException {
+    protected void exportObject(Remote remote) throws RemoteException {
         // create servant and tie
         PortableRemoteObject.exportObject(remote);
         Tie servantsTie = javax.rmi.CORBA.Util.getTie(remote);
@@ -69,13 +75,7 @@ public class RemoteObject {
         servantsTie.orb(orb);
     }
 
-    java.rmi.Remote getStub(java.rmi.Remote remote)
-    throws java.rmi.RemoteException {
-	return PortableRemoteObject.toStub(remote);
+    Remote getStub(Remote remote) throws RemoteException {
+        return toStub(remote);
     }
 }
-
-
-
-
-

@@ -37,33 +37,38 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.digest.api;
 
 import java.security.spec.AlgorithmParameterSpec;
 
 /**
- * Interface to Digest algorithm parameters 
+ * Interface to Digest algorithm parameters
+ * 
  * @author K.Venugopal@sun.com
  */
 public interface DigestAlgorithmParameter extends AlgorithmParameterSpec {
+    
     /**
      * @returns the delimiter to be used while performing digest calculation, null otherwise.
      *
      */
-     public byte[] getDelimiter(); 
-     /**
-      * 
-      * @returns the parameter value. 
-      */
-     public byte[] getValue() ;
-     /**
-      * @returns the digest algorithm to be used.eg: MD5,MD5-sess etc..
-      *  
-      */
-     public String getAlgorithm();    
-     /**
-      * @returns the name of the parameter, null if no name is present.
-      */
-     public String getName();
+    byte[] getDelimiter();
+
+    /**
+     * 
+     * @returns the parameter value.
+     */
+    byte[] getValue();
+
+    /**
+     * @returns the digest algorithm to be used.eg: MD5,MD5-sess etc..
+     * 
+     */
+    String getAlgorithm();
+
+    /**
+     * @returns the name of the parameter, null if no name is present.
+     */
+    String getName();
 }

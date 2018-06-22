@@ -37,34 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm;
 
-
 /**
- * Exception thrown when a Realm is found to be corrupted for some reason.
- * This usually reflects some sort of problem with data structures such
- * as those holding information about users, groups, or ACLs.
+ * Exception thrown when a Realm is found to be corrupted for some reason. This usually reflects some sort of problem
+ * with data structures such as those holding information about users, groups, or ACLs.
  *
  * @author Harish Prabandham
  */
-public class BadRealmException extends Exception
-{
+public class BadRealmException extends Exception {
     /**
      * Constructs the exception, with descriptive information.
      *
      * @param info describes the problem with the realm
      */
-    public BadRealmException (String info) { super (info); }
-    
+    public BadRealmException(String info) {
+        super(info);
+    }
+
     public BadRealmException() {
         super();
     }
-    
+
     public BadRealmException(Throwable cause) {
         super(cause);
     }
-    
+
     public BadRealmException(String info, Throwable cause) {
         super(info, cause);
     }

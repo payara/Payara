@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.security.common;
 
 import com.sun.enterprise.security.store.PasswordAdapter;
@@ -48,8 +48,7 @@ import java.security.cert.CertificateException;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * A contract to pass the Glassfish master password between the admin module and
- * the security module.
+ * A contract to pass the Glassfish master password between the admin module and the security module.
  *
  * @author Sudarsan Sridhar
  */

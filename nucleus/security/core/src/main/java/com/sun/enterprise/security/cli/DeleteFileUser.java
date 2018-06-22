@@ -37,42 +37,46 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.cli;
 
-
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.ActionReport;
-import org.jvnet.hk2.annotations.Service;
+import java.beans.PropertyVetoException;
+import java.io.File;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.glassfish.hk2.api.PerLookup;
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.config.serverbeans.AuthRealm;
-import com.sun.enterprise.config.serverbeans.Configs;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.security.auth.realm.file.FileRealm;
-import com.sun.enterprise.security.auth.realm.BadRealmException;
-import com.sun.enterprise.security.auth.realm.NoSuchUserException;
-import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.security.auth.realm.RealmsManager;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import java.beans.PropertyVetoException;
-import java.io.File;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandSecurity;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RestParam;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
+
+import com.sun.enterprise.config.serverbeans.AuthRealm;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.SecurityService;
+import com.sun.enterprise.security.auth.realm.BadRealmException;
+import com.sun.enterprise.security.auth.realm.RealmsManager;
+import com.sun.enterprise.security.auth.realm.file.FileRealm;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
 
 /**
  * Delete File User Command
@@ -83,37 +87,29 @@ import org.jvnet.hk2.config.types.Property;
  *
  * @author Nandini Ektare
  */
-
-@Service(name="delete-file-user")
+@Service(name = "delete-file-user")
 @PerLookup
 @I18n("delete.file.user")
-@ExecuteOn({RuntimeType.ALL})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
+@ExecuteOn({ RuntimeType.ALL })
+@TargetType({ CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG })
 @RestEndpoints({
-    @RestEndpoint(configBean=AuthRealm.class,
-        opType=RestEndpoint.OpType.DELETE, 
-        path="delete-user", 
-        description="Delete",
-        params={
-            @RestParam(name="authrealmname", value="$parent")
-        })
-})
-public class DeleteFileUser implements /*UndoableCommand*/ AdminCommand, AdminCommandSecurity.Preauthorization {
-    
-    final private static LocalStringManagerImpl localStrings = 
-        new LocalStringManagerImpl(DeleteFileUser.class);    
+        @RestEndpoint(configBean = AuthRealm.class, opType = RestEndpoint.OpType.DELETE, path = "delete-user", description = "Delete", params = {
+                @RestParam(name = "authrealmname", value = "$parent") }) })
+public class DeleteFileUser implements /* UndoableCommand */ AdminCommand, AdminCommandSecurity.Preauthorization {
 
-    @Param(name="authrealmname", optional=true)
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteFileUser.class);
+
+    @Param(name = "authrealmname", optional = true)
     private String authRealmName;
-    
-    @Param(name = "target", optional = true, defaultValue =
-    SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
+
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     private String target;
 
-    @Param(name="username", primary=true)
+    @Param(name = "username", primary = true)
     private String userName;
 
-    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Config config;
 
     @Inject
@@ -123,7 +119,7 @@ public class DeleteFileUser implements /*UndoableCommand*/ AdminCommand, AdminCo
 
     @AccessRequired.To("update")
     private AuthRealm fileAuthRealm;
-    
+
     private SecurityService securityService;
 
     @Override
@@ -136,11 +132,10 @@ public class DeleteFileUser implements /*UndoableCommand*/ AdminCommand, AdminCo
         fileAuthRealm = CLIUtil.findRealm(securityService, authRealmName);
         if (fileAuthRealm == null) {
             final ActionReport report = context.getActionReport();
-            report.setMessage(localStrings.getLocalString(
-                "delete.file.user.filerealmnotfound",
-                "File realm {0} does not exist", authRealmName));
+            report.setMessage(
+                    localStrings.getLocalString("delete.file.user.filerealmnotfound", "File realm {0} does not exist", authRealmName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return false;                                            
+            return false;
         }
         /*
          * The realm might have been defaulted, so capture the actual name.
@@ -148,33 +143,26 @@ public class DeleteFileUser implements /*UndoableCommand*/ AdminCommand, AdminCo
         authRealmName = fileAuthRealm.getName();
         return true;
     }
-    
-    
 
     /**
-     * Executes the command with the command parameters passed as Properties
-     * where the keys are the paramter names and the values the parameter values
+     * Executes the command with the command parameters passed as Properties where the keys are the paramter names and the
+     * values the parameter values
      *
      * @param context information
      */
     public void execute(AdminCommandContext context) {
-        
+
         final ActionReport report = context.getActionReport();
 
         // Get FileRealm class name, match it with what is expected.
         String fileRealmClassName = fileAuthRealm.getClassname();
-        
+
         // Report error if provided impl is not the one expected
-        if (fileRealmClassName != null && 
-            !fileRealmClassName.equals(
-                "com.sun.enterprise.security.auth.realm.file.FileRealm")) {
-            report.setMessage(
-                localStrings.getLocalString(
-                    "delete.file.user.realmnotsupported",
-                    "Configured file realm {0} is not supported.", 
-                    fileRealmClassName));
+        if (fileRealmClassName != null && !fileRealmClassName.equals("com.sun.enterprise.security.auth.realm.file.FileRealm")) {
+            report.setMessage(localStrings.getLocalString("delete.file.user.realmnotsupported",
+                    "Configured file realm {0} is not supported.", fileRealmClassName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;                
+            return;
         }
 
         // ensure we have the file associated with the authrealm
@@ -185,57 +173,42 @@ public class DeleteFileUser implements /*UndoableCommand*/ AdminCommand, AdminCo
         }
         final String kFile = keyFile;
         if (keyFile == null) {
-            report.setMessage(
-                localStrings.getLocalString("delete.file.user.keyfilenotfound",
-                "There is no physical file associated with this file realm {0} ", 
-                authRealmName));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;                                            
-        }
-        boolean exists = (new File(kFile)).exists();
-        if (!exists) {
-            report.setMessage(
-                localStrings.getLocalString("file.realm.keyfilenonexistent",
-                "The specified physical file {0} associated with the file realm {1} does not exist.",
-                new Object[]{kFile, authRealmName}));
+            report.setMessage(localStrings.getLocalString("delete.file.user.keyfilenotfound",
+                    "There is no physical file associated with this file realm {0} ", authRealmName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-        
-         //even though delete-file-user is not an update to the security-service
-         //do we need to make it transactional by referncing the securityservice
-         //hypothetically ?.
+        boolean exists = (new File(kFile)).exists();
+        if (!exists) {
+            report.setMessage(localStrings.getLocalString("file.realm.keyfilenonexistent",
+                    "The specified physical file {0} associated with the file realm {1} does not exist.",
+                    new Object[] { kFile, authRealmName }));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
+
+        // even though delete-file-user is not an update to the security-service
+        // do we need to make it transactional by referncing the securityservice
+        // hypothetically ?.
         try {
             ConfigSupport.apply(new SingleConfigCode<SecurityService>() {
-                public Object run(SecurityService param)
-                        throws PropertyVetoException, TransactionFailure {
+                public Object run(SecurityService param) throws PropertyVetoException, TransactionFailure {
                     try {
                         realmsManager.createRealms(config);
-                        final FileRealm fr = (FileRealm) realmsManager.getFromLoadedRealms(config.getName(),authRealmName);
+                        final FileRealm fr = (FileRealm) realmsManager.getFromLoadedRealms(config.getName(), authRealmName);
                         fr.removeUser(userName);
                         fr.persist();
-                        CreateFileUser.refreshRealm(config.getName(),authRealmName);
+                        CreateFileUser.refreshRealm(config.getName(), authRealmName);
                         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                    } catch (NoSuchUserException e) {
-                        report.setMessage(
-                                localStrings.getLocalString("delete.file.user.usernotfound",
-                                "There is no such existing user {0} in the file realm {1}.",
-                                userName, authRealmName) + "  " + e.getLocalizedMessage());
-                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                        report.setFailureCause(e);
                     } catch (BadRealmException e) {
-                        report.setMessage(
-                                localStrings.getLocalString(
-                                "delete.file.user.realmcorrupted",
+                        report.setMessage(localStrings.getLocalString("delete.file.user.realmcorrupted",
                                 "Configured file realm {0} is corrupted.", authRealmName) + "  " + e.getLocalizedMessage());
                         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                         report.setFailureCause(e);
-                   } catch (Exception e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
-                        report.setMessage(
-                                localStrings.getLocalString("delete.file.user.userdeletefailed",
-                                "Removing User {0} from file realm {1} failed",
-                                userName, authRealmName) + "  " + e.getLocalizedMessage());
+                        report.setMessage(localStrings.getLocalString("delete.file.user.userdeletefailed",
+                                "Removing User {0} from file realm {1} failed", userName, authRealmName) + "  " + e.getLocalizedMessage());
                         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                         report.setFailureCause(e);
                     }
@@ -243,27 +216,10 @@ public class DeleteFileUser implements /*UndoableCommand*/ AdminCommand, AdminCo
                 }
             }, securityService);
         } catch (Exception e) {
-            report.setMessage(
-                    localStrings.getLocalString("delete.file.user.userdeletefailed",
-                    "Removing User {0} from file realm {1} failed",
-                    userName, authRealmName) + "  " + e.getLocalizedMessage());
+            report.setMessage(localStrings.getLocalString("delete.file.user.userdeletefailed",
+                    "Removing User {0} from file realm {1} failed", userName, authRealmName) + "  " + e.getLocalizedMessage());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
         }
     }
-//    @Override
-//    public ActionReport prepare(ParameterMap parameters) {
-//        //TODO: is there a way to check if in a Cluster some
-//        //instances are down
-////        com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-////        if (cluster!=null) {
-////            List<Server> servers = cluster.getInstances();
-////        }
-//        final ActionReport report = new ActionReport();
-//    }
-//
-//    @Override
-//    public void undo(ParameterMap parameters) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
 }
