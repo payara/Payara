@@ -468,6 +468,16 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
                 setLoggingProperty(Constants.PY_HANDLER_COMPRESS_ON_ROTATION, Constants.PY_HANDLER_COMPRESS_ON_ROTATION_DEFAULT_VALUE, targetConfigName);
             }
         }
+
+        if (!loggingProperties.containsKey(Constants.PY_HANDLER_LOG_FORMATTER)) {
+            loggingProperties.put(Constants.PY_HANDLER_LOG_FORMATTER, Constants.PY_HANDLER_LOG_FORMATTER_DEFAULT_VALUE);
+            if (targetConfigName == null || targetConfigName.isEmpty()) {
+                setLoggingProperty(Constants.PY_HANDLER_LOG_FORMATTER, Constants.PY_HANDLER_LOG_FORMATTER_DEFAULT_VALUE);
+            } else {
+                setLoggingProperty(Constants.PY_HANDLER_LOG_FORMATTER, Constants.PY_HANDLER_LOG_FORMATTER_DEFAULT_VALUE, targetConfigName);
+            }
+        }
+           
         return loggingProperties;
     }
     
