@@ -65,14 +65,23 @@ import fish.payara.microprofile.metrics.cdi.interceptor.TimedInterceptor;
 import fish.payara.microprofile.metrics.cdi.producer.MetricProducer;
 import fish.payara.microprofile.metrics.cdi.producer.MetricRegistryProducer;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.AfterDeploymentValidation;
+import javax.enterprise.inject.spi.AnnotatedCallable;
 import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import javax.enterprise.inject.spi.AnnotatedParameter;
@@ -89,6 +98,7 @@ import javax.enterprise.inject.spi.Producer;
 import javax.enterprise.inject.spi.WithAnnotations;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.enterprise.util.Nonbinding;
+import javax.interceptor.Interceptor;
 import javax.interceptor.InterceptorBinding;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
@@ -99,7 +109,7 @@ import org.eclipse.microprofile.metrics.annotation.Metered;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.glassfish.internal.api.Globals;
 
-public class MetricCDIExtension implements Extension {
+public class MetricCDIExtension<E extends Member & AnnotatedElement> implements Extension {
 
     private static final AnnotationLiteral<Nonbinding> NON_BINDING = new AnnotationLiteral<Nonbinding>() {
     };
@@ -107,7 +117,13 @@ public class MetricCDIExtension implements Extension {
     };
     private static final AnnotationLiteral<MetricsAnnotationBinding> METRICS_ANNOTATION_BINDING = new AnnotationLiteral<MetricsAnnotationBinding>() {
     };
-    private final Map<Producer<?>, AnnotatedMember<?>> metrics = new HashMap<>();
+    private final Map<Producer<?>, AnnotatedMember<?>> producerMetrics = new HashMap<>();
+
+    private final Map<String, E> annotatedElements = new HashMap<>();
+
+    private final Map<String, Metadata> metadataMap = new HashMap<>();
+
+    private final List<String> validationMessages = new ArrayList<>();
 
     private void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager manager) {
         bbd.addQualifier(org.eclipse.microprofile.metrics.annotation.Metric.class);
@@ -131,6 +147,68 @@ public class MetricCDIExtension implements Extension {
         pat.setAnnotatedType(new AnnotatedTypeDecorator<>(pat.getAnnotatedType(), METRICS_ANNOTATION_BINDING));
     }
 
+    private <T> void validateMetrics(@Observes @WithAnnotations({Counted.class, Gauge.class, Metered.class, Timed.class}) ProcessAnnotatedType<T> processAnnotatedType) {
+        AnnotatedType<?> annotatedType = processAnnotatedType.getAnnotatedType();
+        List<AnnotatedCallable<?>> annotatedCallables = new ArrayList<>(annotatedType.getConstructors());
+        annotatedCallables.addAll(annotatedType.getMethods());
+
+        for (AnnotatedCallable<?> annotatedElement : annotatedCallables) {
+            MetricsResolver resolver = new MetricsResolver();
+            Class<?> bean = annotatedType.getJavaClass();
+            E element = (E) annotatedElement.getJavaMember();
+            if(bean.isAnnotationPresent(Interceptor.class)) {
+                continue;
+            }
+
+            Consumer<MetricsResolver.Of> validate = metrics -> {
+                Metadata metadata = metrics.metadata();
+                E existingElement = annotatedElements.putIfAbsent(metrics.metricName(), element);
+                Metadata existingMetadata = metadataMap.putIfAbsent(metrics.metricName(), metadata);
+                if (null != existingElement && null != existingMetadata 
+                        && metadata.getTypeRaw() != existingMetadata.getTypeRaw()) {
+                    String errorMessage;
+                    if (element instanceof Constructor) {
+                        errorMessage = String.format("Duplicate metric name[%s] found on elements [%s#%s] and [%s#%s]",
+                                metrics.metricName(),
+                                existingElement, existingMetadata.getType(),
+                                element, metadata.getType()
+                        );
+                    } else {
+                        errorMessage = String.format("Duplicate metric name[%s] found on elements [%s.%s#%s] and [%s.%s#%s]",
+                                metrics.metricName(),
+                                existingElement.getDeclaringClass().getName(), existingElement.getName(), existingMetadata.getType(),
+                                element.getDeclaringClass().getName(), element.getName(), metadata.getType()
+                        );
+                    }
+                    validationMessages.add(errorMessage);
+                }
+            };
+
+            MetricsResolver.Of counted = resolver.counted(bean, element);
+            if (counted.isPresent()) {
+                validate.accept(counted);
+            }
+
+            MetricsResolver.Of<Metered> metered = resolver.metered(bean, element);
+            if (metered.isPresent()) {
+                validate.accept(metered);
+            }
+
+            MetricsResolver.Of<Timed> timed = resolver.timed(bean, element);
+            if (timed.isPresent()) {
+                validate.accept(timed);
+            }
+
+            if (element instanceof Method
+                    && element.isAnnotationPresent(org.eclipse.microprofile.metrics.annotation.Gauge.class)) {
+                MetricsResolver.Of<Gauge> gauge = resolver.gauge(bean, (Method) element);
+                if (gauge.isPresent()) {
+                    validate.accept(gauge);
+                }
+            }
+        }
+    }
+
     private <T extends Metric> void filterMetricsProducer(@Observes ProcessProducer<?, T> pp) {
         Type type = pp.getAnnotatedMember().getDeclaringType().getBaseType();
         if (!type.equals(MetricProducer.class)) {
@@ -138,7 +216,7 @@ public class MetricCDIExtension implements Extension {
                     = pp.getAnnotatedMember().getAnnotation(org.eclipse.microprofile.metrics.annotation.Metric.class);
 
             if (m != null) {
-                metrics.put(pp.getProducer(), pp.getAnnotatedMember());
+                producerMetrics.put(pp.getProducer(), pp.getAnnotatedMember());
             }
         }
     }
@@ -160,21 +238,27 @@ public class MetricCDIExtension implements Extension {
         }
     }
 
+    private void validationError(@Observes AfterBeanDiscovery afterBeanDiscovery){
+        validationMessages.forEach(message -> afterBeanDiscovery.addDefinitionError(new IllegalStateException(message)));
+        annotatedElements.clear();
+        metadataMap.clear();
+        validationMessages.clear();
+    }
+    
     private void registerCustomMetrics(@Observes AfterDeploymentValidation adv, BeanManager manager) {
         MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
         MetricRegistry registry = metricsService.getOrAddRegistry(metricsService.getApplicationName());
         MetricsHelper helper = getReference(manager, MetricsHelper.class);
-        for (Map.Entry<Producer<?>, AnnotatedMember<?>> entry : metrics.entrySet()) {
+        for (Map.Entry<Producer<?>, AnnotatedMember<?>> entry : producerMetrics.entrySet()) {
             AnnotatedMember<?> annotatedMember = entry.getValue();
             Producer<?> prod = entry.getKey();
             if (hasInjectionPoints(annotatedMember)) {
                 continue;
             }
             Metadata metadata = helper.metadataOf(annotatedMember);
-            registry.register(metadata.getName(),
-                    (Metric) prod.produce(manager.createCreationalContext(null)), metadata);
+            registry.register(metadata, (Metric) prod.produce(manager.createCreationalContext(null)));
         }
-        metrics.clear();
+        producerMetrics.clear();
     }
 
     private <T extends Annotation> void addInterceptorBinding(Class<T> annotation, BeanManager manager, BeforeBeanDiscovery bbd) {
