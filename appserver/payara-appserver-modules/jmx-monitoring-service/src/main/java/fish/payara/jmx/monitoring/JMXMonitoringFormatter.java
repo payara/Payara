@@ -47,7 +47,6 @@ import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.management.MBeanServer;
 
 /**
@@ -135,7 +134,5 @@ public class JMXMonitoringFormatter implements Runnable {
                 }
             }
         }
-
     }
-
 }

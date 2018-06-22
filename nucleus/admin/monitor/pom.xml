@@ -138,8 +138,7 @@
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>amx-core</artifactId>
-            <version>5.183-SNAPSHOT</version>
-            <type>jar</type>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>
