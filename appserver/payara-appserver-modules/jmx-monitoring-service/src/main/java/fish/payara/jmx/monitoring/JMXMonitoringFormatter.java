@@ -71,7 +71,7 @@ public class JMXMonitoringFormatter implements Runnable {
      * Constructor for the JMXMonitoringFormatter class.
      *
      * @param mBeanServer The MBeanServer to monitor.
-     * @param jobs List of monitoring JmxMonitoringJobs to perform.
+     * @param jobs List of monitoring jobs to perform.
      * @param monitoringService the monitoring service
      * @param store the store that holds the various event factories that are
      * needed to build notification events
