@@ -64,6 +64,7 @@ public class HipchatNotifierExecutionOptionsFactory extends NotifierExecutionOpt
     public NotifierExecutionOptions build(HipchatNotifier notifier) {
         HipchatNotifierExecutionOptions executionOptions = new HipchatNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
+        executionOptions.setNoisy(Boolean.parseBoolean(notifier.getNoisy()));
         return executionOptions;
     }
 }
