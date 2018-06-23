@@ -191,6 +191,7 @@
             </activation>
             <modules>
                 <module>microprofile-package</module>
+                <module>yubikey-authentication</module>
             </modules>
         </profile>
     </profiles>

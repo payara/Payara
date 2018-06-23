@@ -374,6 +374,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+
     </dependencies>
 
     <profiles>
@@ -383,6 +384,13 @@
                 <jdk>1.8</jdk>
             </activation>
             <dependencies>
+                <!-- Yubikey Authentication -->
+                <dependency>
+                    <groupId>org.glassfish.main.packager</groupId>
+                    <artifactId>yubikey-authentication</artifactId>
+                    <version>${project.version}</version>
+                    <type>zip</type>
+                </dependency>
                 <!-- Microprofile -->
                 <dependency>
                     <groupId>org.glassfish.main.packager</groupId>
