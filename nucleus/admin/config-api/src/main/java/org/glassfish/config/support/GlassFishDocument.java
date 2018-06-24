@@ -76,6 +76,7 @@ public class GlassFishDocument extends DomDocument<GlassFishConfigBean> {
         final DomDocument doc = this;
         
         habitat.<Transactions>getService(Transactions.class).addTransactionsListener(new TransactionListener() {
+            @Override
             public void transactionCommited(List<PropertyChangeEvent> changes) {
                 if (!isGlassFishDocumentChanged(changes)) {
                     return;
@@ -110,6 +111,7 @@ public class GlassFishDocument extends DomDocument<GlassFishConfigBean> {
                 return false;
             }
 
+            @Override
             public void unprocessedTransactedEvents(List<UnprocessedChangeEvents> changes) {
 
             }

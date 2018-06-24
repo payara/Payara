@@ -74,12 +74,13 @@ public class GetCDIEventbusNotifierConfiguration extends BaseGetNotifierConfigur
 
     @Override
     protected String listConfiguration(CDIEventbusNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "LoopBack"};
+        String headers[] = {"Enabled", "Noisy","LoopBack"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[2];
+        Object values[] = new Object[3];
 
         values[0] = configuration.getEnabled();
-        values[1] = configuration.getLoopBack();
+        values[1] = configuration.getNoisy();
+        values[2] = configuration.getLoopBack();
 
         columnFormatter.addRow(values);
         return columnFormatter.toString();
@@ -87,11 +88,14 @@ public class GetCDIEventbusNotifierConfiguration extends BaseGetNotifierConfigur
 
     @Override
     protected Map<String, Object> getNotifierConfiguration(CDIEventbusNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(3);
+        Map<String, Object> map = new HashMap<>(4);
         
         if (configuration != null) {
             map.put("enabled", configuration.getEnabled());
+            map.put("noisy", configuration.getNoisy());
             map.put("loopBack", configuration.getLoopBack());
+        } else {
+            map.put("noisy", Boolean.TRUE.toString());
         }
         map.put("hazelcastEnabled", hazelcast.isEnabled());
 

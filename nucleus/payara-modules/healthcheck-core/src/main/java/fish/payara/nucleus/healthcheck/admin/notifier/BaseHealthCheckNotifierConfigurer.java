@@ -48,15 +48,20 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
+import javax.security.auth.Subject;
+
 import java.beans.PropertyVetoException;
 import java.lang.reflect.ParameterizedType;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,11 +94,24 @@ public abstract class BaseHealthCheckNotifierConfigurer<C extends Notifier> impl
 
     private Class<C> notifierClass;
 
+    @Param(name = "noisy", optional = true)
+    protected Boolean noisy;
+
+    @Inject
+    protected ServiceLocator serviceLocator;
+
+    private ActionReport actionReport;
+
+    private Subject subject;
+
+    private CommandRunner.CommandInvocation inv;
+
     protected abstract void applyValues(C c) throws PropertyVetoException;
 
     @Override
     public void execute(AdminCommandContext context) {
-        final ActionReport actionReport = context.getActionReport();
+        actionReport = context.getActionReport();
+        subject = context.getSubject();
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
             extraProperties = new Properties();
@@ -146,12 +164,29 @@ public abstract class BaseHealthCheckNotifierConfigurer<C extends Notifier> impl
         }
         catch(TransactionFailure ex){
             logger.log(Level.WARNING, "Exception during command ", ex);
-            actionReport.setMessage(ex.getCause().getMessage());
+            actionReport.setMessage(ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
     }
 
     protected void configureDynamically() {
         healthCheckService.reboot();
+    }
+
+    @SuppressWarnings("rawtypes")
+    protected boolean getNotifierNoisy(String commandName) {
+        boolean ret = true;
+        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
+        ActionReport subReport = actionReport.addSubActionsReport();
+        inv = runner.getCommandInvocation(commandName, subReport, subject);
+        inv.execute();
+        if (subReport.hasSuccesses()) {
+            Properties properties = subReport.getExtraProperties();
+            if (properties != null) {
+                Map notifierConfigurationMap = (Map) properties.get("notifierConfiguration");
+                ret = "true".equalsIgnoreCase("" + notifierConfigurationMap.get("noisy"));
+            }
+        }
+        return ret;
     }
 }

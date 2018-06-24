@@ -77,7 +77,9 @@ public class CDIEventbusNotificationConfigurer extends BaseNotificationConfigure
         if(this.enabled != null) {
             configuration.enabled(this.enabled);
         }
-
+        if(this.noisy != null) {
+            configuration.noisy(this.noisy);
+        }
         if(this.loopBack != null) {
             configuration.loopBack(this.loopBack);
         }

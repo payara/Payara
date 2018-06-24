@@ -40,13 +40,8 @@
 
 package com.sun.enterprise.config.util;
 
-import java.io.File;
-import java.util.List;
 import java.util.Properties;
-import com.sun.enterprise.config.serverbeans.*;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.CommandParameters;
-import org.jvnet.hk2.config.types.Property;
 
 /**
  * Parameters for the remote instance register instance command, which includes

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
@@ -48,7 +49,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -337,10 +337,10 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
         if (outputOpts == null) {
             return true;
         }
-        for (int i = 0; i < outputOpts.length; i++) {
+        for (String outputOpt : outputOpts) {
             boolean found = false;
-            for (ColumnInfo ci : cols) { 
-                if (!ci.isExcluded() && ci.heading.equalsIgnoreCase(outputOpts[i])) {
+            for (ColumnInfo ci : cols) {
+                if (!ci.isExcluded() && ci.heading.equalsIgnoreCase(outputOpt)) {
                     found = true;
                     break;
                 }
@@ -384,13 +384,7 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
             if (duckGetter != null) {
                 try {
                     return (String)duckGetter.invoke(null, bean);
-                } catch (IllegalAccessException ex) {
-                    LogHelper.log(ConfigApiLoggerInfo.getLogger(), Level.SEVERE, 
-                            ConfigApiLoggerInfo.ERR_INVOKE_GETTER, ex, duckGetter.getName());
-                } catch (IllegalArgumentException ex) {
-                    LogHelper.log(ConfigApiLoggerInfo.getLogger(), Level.SEVERE, 
-                            ConfigApiLoggerInfo.ERR_INVOKE_GETTER, ex, duckGetter.getName());
-                } catch (InvocationTargetException ex) {
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                     LogHelper.log(ConfigApiLoggerInfo.getLogger(), Level.SEVERE, 
                             ConfigApiLoggerInfo.ERR_INVOKE_GETTER, ex, duckGetter.getName());
                 }

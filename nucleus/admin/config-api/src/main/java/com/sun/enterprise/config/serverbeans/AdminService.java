@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -52,16 +53,10 @@ import org.jvnet.hk2.config.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-/* @XmlType(name = "", propOrder = {
-    "jmxConnector",
-    "dasConfig",
-    "property"
-}) */
 /**
  * Admin Service exists in every instance. It is the configuration for either
  * a normal server, DAS or PE instance
  */
-
 @Configured
 public interface AdminService extends ConfigBeanProxy, PropertyBag {
 
@@ -85,8 +80,8 @@ public interface AdminService extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the type property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setType(String value) throws PropertyVetoException;
 
@@ -103,17 +98,18 @@ public interface AdminService extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the systemJmxConnectorName property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setSystemJmxConnectorName(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the jmxConnector property.
+     * <p>
      * The jmx-connector element defines the configuration of a JSR 160
      * compliant remote JMX Connector.
-     * Objects of the following type(s) are allowed in the list
-     * {@link JmxConnector }
+     * Objects of the following type(s) are allowed in the list {@link JmxConnector }
+     * @return 
      */
     @Element("jmx-connector")
     List<JmxConnector> getJmxConnector();
@@ -121,8 +117,7 @@ public interface AdminService extends ConfigBeanProxy, PropertyBag {
     /**
      * Gets the value of the dasConfig property.
      *
-     * @return possible object is
-     *         {@link DasConfig }
+     * @return possible object is {@link DasConfig }
      */
     @Element("das-config")
     @NotNull
@@ -131,8 +126,8 @@ public interface AdminService extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the dasConfig property.
      *
-     * @param value allowed object is
-     *              {@link DasConfig }
+     * @param value allowed object is {@link DasConfig }
+     * @throws PropertyVetoException
      */
     void setDasConfig(DasConfig value) throws PropertyVetoException;
     
@@ -142,6 +137,7 @@ public interface AdminService extends ConfigBeanProxy, PropertyBag {
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 
 

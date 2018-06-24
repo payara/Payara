@@ -192,7 +192,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         }
 
         // Check whether the application component submitting the task is still running. Throw IllegalStateException if not.
-        if (!isApplicationEnabled(appName)) {
+        if (appName != null && !isApplicationEnabled(appName)) { // appName == null in case of the server context
             throw new IllegalStateException("Module " + appName + " is disabled");
         }
 

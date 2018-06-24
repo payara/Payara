@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.modularity.customization;
 
@@ -44,8 +45,8 @@ package com.sun.enterprise.config.modularity.customization;
  * @author Masoud Kalali
  */
 public class FileTypeDetails implements TokenTypeDetails {
-    private FileExistCondition mustExist;
-    public static enum FileExistCondition {MUST_EXIST, MUST_NOT_EXIST, NO_OP}
+    private final FileExistCondition mustExist;
+    public enum FileExistCondition {MUST_EXIST, MUST_NOT_EXIST, NO_OP}
 
     public FileTypeDetails(FileExistCondition mustExist) {
         this.mustExist = mustExist;

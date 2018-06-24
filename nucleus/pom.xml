@@ -249,7 +249,7 @@
 
         <!-- Servlet -->
         <servlet-api.version>4.0.0</servlet-api.version>
-        <grizzly.version>2.4.3.payara-p2</grizzly.version>
+        <grizzly.version>2.4.3.payara-p3</grizzly.version>
         <!-- Requires JDK8u161 or above-->
         <grizzly.npn.version>1.8</grizzly.npn.version>
         
@@ -259,7 +259,7 @@
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.1</jax-rs-api.impl.version>
-        <jersey.version>2.27.payara-p5</jersey.version>
+        <jersey.version>2.27.payara-p6</jersey.version>
 
         <!-- Bean Validation -->
         <javax.validation.version>2.0.0.Final</javax.validation.version>
@@ -324,7 +324,7 @@
         <l10n.version>3.1-b41</l10n.version>
         <asm.version>6.0</asm.version>
         <ha-api.version>3.1.9</ha-api.version>
-        <hazelcast.version>3.9.3</hazelcast.version>
+        <hazelcast.version>3.10.2</hazelcast.version>
         <smack.version>4.1.9</smack.version>
         <jxmpp.version>0.4.2</jxmpp.version>
         <xpp3.version>1.1.4c_7</xpp3.version>
@@ -889,38 +889,6 @@ Parent is ${project.parent}</echo>
                     </dependency>
                 </dependencies>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <configuration>
-                    <reportPlugins>
-                        <plugin>
-                            <groupId>org.codehaus.mojo</groupId>
-                            <artifactId>findbugs-maven-plugin</artifactId>
-                            <version>${findbugs.version}</version>
-                            <configuration>
-                                <skip>${findbugs.skip}</skip>
-                                <threshold>${findbugs.threshold}</threshold>
-                                <excludeFilterFile>
-                                    exclude-common.xml,${findbugs.exclude}
-                                </excludeFilterFile>
-                            </configuration>
-                            <!--
-                            <dependencies>
-                                <dependency>
-                                    <groupId>org.glassfish.main</groupId>
-                                    <artifactId>findbugs</artifactId>
-                                    <version>${project.version}</version>
-                                </dependency>
-                            </dependencies>
-                            -->
-                        </plugin>
-                    </reportPlugins>
-                </configuration>
-            </plugin>
-
-
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -1615,4 +1583,30 @@ Parent is ${project.parent}</echo>
             <optional>true</optional>
         </dependency>
     </dependencies>
+    
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <configuration>
+                    <reportPlugins>
+                        <plugin>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>findbugs-maven-plugin</artifactId>
+                            <version>${findbugs.version}</version>
+                            <configuration>
+                                <skip>${findbugs.skip}</skip>
+                                <threshold>${findbugs.threshold}</threshold>
+                                <excludeFilterFile>
+                                    exclude-common.xml,${findbugs.exclude}
+                                </excludeFilterFile>
+                            </configuration>
+                        </plugin>
+                    </reportPlugins>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
+    
 </project>

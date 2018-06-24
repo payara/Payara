@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -93,7 +93,7 @@ public class PrometheusExporter {
     private static final String SPACE = " ";
     private static final String COMMA = ",";
     private static final String UNDERSCORE = "_";
-    
+
     private static final String TYPE_TITLE = "# TYPE ";
     private static final String HELP_TITLE = "# HELP ";
 
@@ -110,35 +110,35 @@ public class PrometheusExporter {
     private static final String ONE_MIN_RATE = "_one_min_rate_";
     private static final String FIVE_MIN_RATE = "_five_min_rate_";
     private static final String FIFTEEN_MIN_RATE = "_fifteen_min_rate_";
-    
+
     private static final String APPENDED_SECONDS = "_seconds";
     private static final String APPENDED_BYTES = "_bytes";
     private static final String APPENDED_PERCENT = "_percent";
 
     //Conversion factors
-    private static final double NANOSECOND_CONVERSION = 1 / 1_000_000_000;
-    private static final double MICROSECOND_CONVERSION = 1 / 1_000_000;
-    private static final double MILLISECOND_CONVERSION = 1 / 1_000;
-    private static final double SECOND_CONVERSION = 1;
-    private static final double MINUTE_CONVERSION = 60;
-    private static final double HOUR_CONVERSION = 60 * 60;
-    private static final double DAY_CONVERSION = 60 * 60 * 24;
-    private static final double BIT_CONVERSION = 1/8;
-    private static final double KILOBIT_CONVERSION = 1_000 / 8;
-    private static final double MEGABIT_CONVERSION = 1_000_000 / 8;
-    private static final double GIGABIT_CONVERSION = 1_000_000_000 / 8;
-    private static final double KIBIBIT_CONVERSION = 128;
-    private static final double MEBIBIT_CONVERSION = 128 * 1024;
-    private static final double GIBIBIT_CONVERSION = 128 * 1024 * 1024;
-    private static final double BYTE_CONVERSION = 1;
-    private static final double KILOBYTE_CONVERSION = 1024;
-    private static final double MEGABYTE_CONVERSION = 1024 * 1024;
-    private static final double GIGABYTE_CONVERSION = 1024 * 1024 * 1024;
-    
+    private static final double NANOSECOND_CONVERSION = 1d / 1_000_000_000d;
+    private static final double MICROSECOND_CONVERSION = 1d / 1_000_000d;
+    private static final double MILLISECOND_CONVERSION = 1d / 1_000d;
+    private static final double SECOND_CONVERSION = 1d;
+    private static final double MINUTE_CONVERSION = 60d;
+    private static final double HOUR_CONVERSION = 60d * 60d;
+    private static final double DAY_CONVERSION = 60d * 60d * 24d;
+    private static final double BIT_CONVERSION = 1d / 8d;
+    private static final double KILOBIT_CONVERSION = 1_000d / 8d;
+    private static final double MEGABIT_CONVERSION = 1_000_000d / 8d;
+    private static final double GIGABIT_CONVERSION = 1_000_000_000d / 8d;
+    private static final double KIBIBIT_CONVERSION = 128d;
+    private static final double MEBIBIT_CONVERSION = 128d * 1024d;
+    private static final double GIBIBIT_CONVERSION = 128d * 1024d * 1024d;
+    private static final double BYTE_CONVERSION = 1d;
+    private static final double KILOBYTE_CONVERSION = 1024d;
+    private static final double MEGABYTE_CONVERSION = 1024d * 1024d;
+    private static final double GIGABYTE_CONVERSION = 1024d * 1024d * 1024d;
+
     private static final Logger LOGGER = Logger.getLogger(PrometheusExporter.class.getName());
-    
+
     private final StringBuilder builder;
-    
+
     public PrometheusExporter(StringBuilder builder){
         this.builder = builder;
     }
@@ -415,7 +415,7 @@ public class PrometheusExporter {
                 case BYTES:
                 case KILOBYTES:
                 case MEGABYTES:
-                case GIGABYTES:         
+                case GIGABYTES:
                     appendUnit = APPENDED_BYTES;
                     break;
                 default:

@@ -73,5 +73,10 @@ public class CDIEventbusHealthCheckNotifierConfigurer extends BaseHealthCheckNot
         if(this.enabled != null) {
             notifier.enabled(enabled);
         }
+        if (this.noisy != null) {
+            notifier.noisy(noisy);
+        } else {
+            notifier.noisy(getNotifierNoisy("get-cdieventbus-notifier-configuration"));
+        }
     }
 }

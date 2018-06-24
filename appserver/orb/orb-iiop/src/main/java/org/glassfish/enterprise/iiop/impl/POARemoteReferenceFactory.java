@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.enterprise.iiop.impl;
 
@@ -68,7 +69,6 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 // import com.sun.ejb.base.sfsb.util.EJBServerConfigLookup;
 
 import com.sun.corba.ee.spi.extension.ServantCachingPolicy;
-import com.sun.corba.ee.spi.extension.ZeroPortPolicy;
 import com.sun.corba.ee.spi.extension.CopyObjectPolicy;
 import com.sun.corba.ee.spi.extension.RequestPartitioningPolicy;
 import com.sun.corba.ee.spi.threadpool.ThreadPoolManager;
@@ -81,6 +81,7 @@ import com.sun.corba.ee.spi.oa.rfm.ReferenceFactoryManager ;
 
 import com.sun.corba.ee.spi.misc.ORBConstants;
 import com.sun.corba.ee.org.omg.CORBA.SUNVMCID;
+import com.sun.corba.ee.spi.extension.ZeroPortPolicy;
 import com.sun.corba.ee.spi.ior.IOR;
 import com.sun.corba.ee.spi.ior.ObjectKey;
 import com.sun.corba.ee.spi.ior.TaggedProfile;
@@ -339,7 +340,9 @@ public final class POARemoteReferenceFactory extends org.omg.CORBA.LocalObject
                         ".createReferenceFactory: {0} {1}: adding ZeroPortPolicy",
                         new Object[]{poaId, repoid});
 	        }
-	        policies.add(ZeroPortPolicy.getPolicy());
+                if (!GlassFishORBManager.disableSSLCheck()) {
+                    policies.add(ZeroPortPolicy.getPolicy());
+                }
 	    }
 
 
