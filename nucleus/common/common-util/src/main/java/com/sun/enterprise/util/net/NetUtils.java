@@ -555,12 +555,11 @@ public class NetUtils {
             if (hostName == null) {
                 hostName = getHostName();
             }
-            Socket socket = new Socket(hostName, portNumber);
-            OutputStream os = socket.getOutputStream();
-            InputStream is = socket.getInputStream();
-            os.close();
-            is.close();
-            socket.close();
+            try (Socket socket = new Socket(hostName, portNumber);
+                OutputStream os = socket.getOutputStream();
+                InputStream is = socket.getInputStream()) {
+                // stream retrieval does not throw exception; resources will be closed
+            }
         }
         catch (Exception e) {
             // Nobody is listening on this port
@@ -710,52 +709,47 @@ public class NetUtils {
      */
     public static boolean isSecurePort(String hostname, int port) throws IOException, ConnectException, SocketTimeoutException {
         // Open the socket w/ a 4 second timeout
-        Socket socket = new Socket();
-        socket.connect(new InetSocketAddress(hostname, port), 4000);
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(hostname, port), 4000);
 
-        // Send an https query (w/ trailing http query)
-        java.io.OutputStream ostream = socket.getOutputStream();
-        ostream.write(TEST_QUERY);
+            // Send an https query (w/ trailing http query)
+            java.io.OutputStream outputStream = socket.getOutputStream();
+            outputStream.write(TEST_QUERY);
 
-        // Get the result
-        java.io.InputStream istream = socket.getInputStream();
-        int count = 0;
-        while (count < 20) {
-            // Wait up to 4 seconds
-            try {
-                if (istream.available() > 0) {
-                    break;
+            // Get the result
+            InputStream inputStream = socket.getInputStream();
+            int count = 0;
+            while (count < 20) {
+                // Wait up to 4 seconds
+                try {
+                    if (inputStream.available() > 0) {
+                        break;
+                    }
+                    Thread.sleep(200);
                 }
-                Thread.sleep(200);
+                catch (InterruptedException ex) {
+                }
+                count++;
             }
-            catch (InterruptedException ex) {
+            byte[] input = new byte[inputStream.available()];
+            int read = inputStream.read(input);
+
+            // Determine protocol from result
+            // Can't read https response w/ OpenSSL (or equiv), so use as
+            // default & try to detect an http response.
+            String response = new String(input).toLowerCase(Locale.ENGLISH);
+            boolean isSecure = true;
+            if (read <= 0 || response.length() == 0) {
+                isSecure = false;
+            } else if (response.startsWith("http/1.")) {
+                isSecure = false;
+            } else if (response.contains("<html")) {
+                isSecure = false;
+            } else if (response.contains("connection: ")) {
+                isSecure = false;
             }
-            count++;
+            return isSecure;
         }
-        byte[] input = new byte[istream.available()];
-        int read = istream.read(input);
-
-        // Close the socket
-        socket.close();
-
-        // Determine protocol from result
-        // Can't read https response w/ OpenSSL (or equiv), so use as
-        // default & try to detect an http response.
-        String response = new String(input).toLowerCase(Locale.ENGLISH);
-        boolean isSecure = true;
-        if (read <= 0 || response.length() == 0) {
-            isSecure = false;
-        }
-        else if (response.startsWith("http/1.")) {
-            isSecure = false;
-        }
-        else if (response.indexOf("<html") != -1) {
-            isSecure = false;
-        }
-        else if (response.indexOf("connection: ") != -1) {
-            isSecure = false;
-        }
-        return isSecure;
     }
 
     /**
