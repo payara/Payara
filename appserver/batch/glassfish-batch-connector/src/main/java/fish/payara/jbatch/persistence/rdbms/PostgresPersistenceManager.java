@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2014, 2016 Payara Foundation. All rights reserved.
- 
+ * Copyright (c) 2014, 2016 - 2018 Payara Foundation. All rights reserved.
+
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
@@ -8,7 +8,7 @@
  * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
- 
+
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at packager/legal/LICENSE.txt.
  */
@@ -66,18 +66,17 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 		if(schema.equals("") || schema.length() == 0){
 			schema = setDefaultSchema();
 		}
-	
+
 	    result.put(Q_SET_SCHEMA, "set search_path to " + schema);
-	
+
 		return result;
 	}
-	
+
     @Override
     protected void setSchemaOnConnection(Connection connection) throws SQLException {
-            PreparedStatement ps = null;
-            ps = connection.prepareStatement(queryStrings.get(Q_SET_SCHEMA));
-            ps.executeUpdate();
-            ps.close();
+		try(PreparedStatement ps = connection.prepareStatement(queryStrings.get(Q_SET_SCHEMA))) {
+			ps.executeUpdate();
+		}
     }
 
 
@@ -91,7 +90,7 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
 
 		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
-		
+
 		try {
 			Context ctx = new InitialContext();
 			dataSource = (DataSource) ctx.lookup(jndiName);
@@ -144,7 +143,7 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 
 	/**
 	 * Check if the schema is valid. If not use the default schema
-	 * 
+	 *
 	 * @return
 	 * @throws SQLException
 	 */
@@ -184,7 +183,7 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 
 	/**
 	 * Check the JBatch Tables exist in the relevant schema
-	 * 
+	 *
 	 * @throws SQLException
 	 */
 	private void checkPostgresTables() throws SQLException {
@@ -217,7 +216,7 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 
 	/**
 	 * Create Postgres tables if they do not exist
-	 * 
+	 *
 	 * @param tableName
 	 * @param createTableStatement
 	 * @throws SQLException
@@ -228,32 +227,32 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 				new Object[] { tableName, createTableStatement });
 
 		Connection conn = null;
-		Statement stmt = null;
 		ResultSet rs = null;
 		PreparedStatement ps = null;
 
 		try {
 			conn = getConnection();
-			stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-					ResultSet.CONCUR_READ_ONLY);
-			String query = "select lower(table_schema),lower(table_name) FROM information_schema.tables where lower(table_schema)= "
-					+ "\'"
-					+ schema
-					+ "\'"
-					+ " and lower(table_name)= "
-					+ "\'"
-					+ tableName.toLowerCase() + "\'";
-			rs = stmt.executeQuery(query);
+			try (Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+					ResultSet.CONCUR_READ_ONLY)) {
+				String query = "select lower(table_schema),lower(table_name) FROM information_schema.tables where lower(table_schema)= "
+						+ "\'"
+						+ schema
+						+ "\'"
+						+ " and lower(table_name)= "
+						+ "\'"
+						+ tableName.toLowerCase() + "\'";
+				rs = stmt.executeQuery(query);
 
-			int rowcount = getTableRowCount(rs);
+				int rowcount = getTableRowCount(rs);
 
-			// Create table if it does not exist
-			if (rowcount == 0) {
-				if (!rs.next()) {
-					logger.log(Level.INFO, tableName
-							+ " table does not exists. Trying to create it.");
-					ps = conn.prepareStatement(createTableStatement);
-					ps.executeUpdate();
+				// Create table if it does not exist
+				if (rowcount == 0) {
+					if (!rs.next()) {
+						logger.log(Level.INFO, tableName
+								+ " table does not exists. Trying to create it.");
+						ps = conn.prepareStatement(createTableStatement);
+						ps.executeUpdate();
+					}
 				}
 			}
 		} catch (SQLException e) {
@@ -362,7 +361,7 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.ibm.jbatch.container.services.IPersistenceManagerService#
 	 * createJobInstance(java.lang.String, java.lang.String, java.lang.String,
 	 * java.util.Properties)
@@ -500,20 +499,20 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 
 		return stepExecution;
 	}
-        
+
         @Override
         public void markJobStarted(long key, Timestamp startTS) {
-            
+
                 logger.entering(CLASSNAME, "markJobStarted",
                                     new Object[] {key, startTS});
-                
+
                 final int retryMax = Integer.getInteger(P_MJS_RETRY_MAX, MJS_RETRY_MAX_DEFAULT);
                 final int retryDelay = Integer.getInteger(P_MJS_RETRY_DELAY, MJS_RETRY_DELAY_DEFAULT);
-                
-                logger.log(Level.FINER,P_MJS_RETRY_MAX + 
-                             " = {0}" + ", " + P_MJS_RETRY_DELAY + " = {1} ms", 
+
+                logger.log(Level.FINER,P_MJS_RETRY_MAX +
+                             " = {0}" + ", " + P_MJS_RETRY_DELAY + " = {1} ms",
                             new Object[]{retryMax, retryDelay});
-            
+
 		Connection conn = null;
 		PreparedStatement statement = null;
 
@@ -526,20 +525,20 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 			statement.setTimestamp(2, startTS);
 			statement.setTimestamp(3, startTS);
 			statement.setLong(4, key);
-                        
+
                         // Postgres use of Multi Version Concurrency (MVCC) means that
                         // blocking does not occur (particularly a problem in
                         // createStepExecution()).
-                        // The below will check that the row has been commited by the 
-                        // initiating thread by retrying the update until at least 1 row 
+                        // The below will check that the row has been commited by the
+                        // initiating thread by retrying the update until at least 1 row
                         // is updated.
-                                            
-                        int retryCount = 0; 
+
+                        int retryCount = 0;
                         while ( (statement.executeUpdate() < 1) && (retryCount++ <= retryMax) ) {
                                 sleep(retryDelay);
-                        }                       
+                        }
                         logger.log(Level.FINER, "Marking job as started required {0} retries", retryCount);
-                        
+
                         if (retryCount >= retryMax) {
                             logger.log(Level.WARNING, "Failed to mark job as started after {0} attempts", retryCount);
                         }
@@ -551,7 +550,7 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 		}
                 logger.exiting(CLASSNAME, "markJobStarted");
         }
-        
+
         private static void sleep(int duration){
 
                 try {
