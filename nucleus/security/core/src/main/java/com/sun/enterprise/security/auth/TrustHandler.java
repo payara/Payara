@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth;
 
 import java.security.Principal;
@@ -46,27 +46,27 @@ import java.util.Properties;
 
 /**
  *
- * Enables developers to provide custom implementation to enable sip containers
- * to determine if a network entity can be trusted.
+ * Enables developers to provide custom implementation to enable sip containers to determine if a network entity can be
+ * trusted.
  */
 public interface TrustHandler {
 
-    
-    public void initialize(Properties props);
+    void initialize(Properties props);
+
     /**
      * determines if the container can trust the network entity from which we received the message with P-Asserted-Identity
      * header. This method also validates if the identity that was used to secure(eg: SSL) the message is trusted.
      *
      * @param pAssertedValues P-Asserted-Identity header values
-     * @param messageDirection "Incoming" if this method is invoked for a incoming request, "Outgoing" if the message is being sent out.
-     * @param asserterAddress ipaddress/hostname of the network entity from which we received the SIP message
-     * with P-Asserted-Identity header. Inorder to accept/use the values in P-Asserted-Identity
-     * header the network entity should be a trusted.
-     * @param securityid is the asserting security identity, if a secure connection is used then this
-     * would be the java.security.cert.X509Certificate, else null.
+     * @param messageDirection "Incoming" if this method is invoked for a incoming request, "Outgoing" if the message is
+     * being sent out.
+     * @param asserterAddress ipaddress/hostname of the network entity from which we received the SIP message with
+     * P-Asserted-Identity header. Inorder to accept/use the values in P-Asserted-Identity header the network entity should
+     * be a trusted.
+     * @param securityid is the asserting security identity, if a secure connection is used then this would be the
+     * java.security.cert.X509Certificate, else null.
      * @return true if we trust the networtid and the securityid.
      */
-    public boolean isTrusted(String asserterAddress, String messageDirection,X509Certificate securityid, Principal[] pAssertedValues);
+    boolean isTrusted(String asserterAddress, String messageDirection, X509Certificate securityid, Principal[] pAssertedValues);
 
-   
 }

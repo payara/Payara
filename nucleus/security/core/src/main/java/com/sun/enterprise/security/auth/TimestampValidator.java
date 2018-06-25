@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth;
 
 import java.util.Date;
@@ -45,16 +45,18 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * validate Timestamp received in messages.
+ * 
  * @author k.venugopal@sun.com
  */
 public interface TimestampValidator {
 
     /**
      * validate given time against current time.
-     * @param created  created time
-     * @param maxClockSkew   maximum difference allowed between the system clocks of the sender and recipient.
+     * 
+     * @param created created time
+     * @param maxClockSkew maximum difference allowed between the system clocks of the sender and recipient.
      * @param freshnessLimit maximum duration of time after which the Timestamp becomes stale
      * @throws java.util.concurrent.TimeoutException
      */
-    void validate(Date created,long maxClockSkew,long freshnessLimit)throws TimeoutException;
+    void validate(Date created, long maxClockSkew, long freshnessLimit) throws TimeoutException;
 }

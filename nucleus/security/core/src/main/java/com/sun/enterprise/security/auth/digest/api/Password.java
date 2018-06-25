@@ -37,24 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.digest.api;
 
 /**
- * represents plain text password and pre hashed(username+realmname+password) password.
+ * Represents plain text password and pre hashed (username + realmname + password) password.
+ * 
  * @author K.Venuopal@sun.com
  */
 public interface Password {
-    public static final int PLAIN_TEXT= 0;
-    public static final int HASHED = 1;
+
+    int PLAIN_TEXT = 0;
+    int HASHED = 1;
+
     /**
      * returns PLAIN_TEXT or HASHED.
+     * 
      * @returns int
      */
-    public int getType();
+    int getType();
+
     /**
      * returns password.
-     * @returns byte[] 
+     * 
+     * @returns byte[]
      */
-    public byte[] getValue();
+    byte[] getValue();
 }

@@ -37,52 +37,54 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth;
-
-import java.rmi.*;
-
 
 /**
  * This method provides an implementation a Privilege
+ * 
  * @author Harish Prabandham
  */
 
 public class PrivilegeImpl implements Privilege {
-    private String name;
     
+    private static final long serialVersionUID = -6058397997319018370L;
+    
+    private String name;
+
     /**
      * Creates a new Privilege object..
      *
      */
     public PrivilegeImpl(String name) {
-	this.name = name;
+        this.name = name;
     }
 
     /**
      * Returns the hashCode ..
      */
     public int hashCode() {
-	return name.hashCode();
+        return name.hashCode();
     }
 
     /**
      * Returns the name of the name of the Privilege.
+     * 
      * @return The name of the name of the Privilege.
      */
     public String getName() {
-	return name;
+        return name;
     }
 
     /**
      * Compares equality...
      */
     public boolean equals(Object obj) {
-	if(obj instanceof Privilege) {
-	    Privilege priv = (Privilege) obj;
-	    return getName().equals(priv.getName());
-	} else {
-	    return false;
-	}
+        if (obj instanceof Privilege) {
+            Privilege priv = (Privilege) obj;
+            return getName().equals(priv.getName());
+        }
+        
+        return false;
     }
 }

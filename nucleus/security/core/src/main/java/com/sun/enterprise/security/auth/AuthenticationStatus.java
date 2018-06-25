@@ -37,49 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth;
 
 /**
  * This interface stores the status of the authentication.
+ * 
  * @author Harish Prabandham
  */
 
 public interface AuthenticationStatus extends java.io.Serializable {
-    public static final int AUTH_SUCCESS = 0; // Authentication Successful
-    public static final int AUTH_FAILURE = 1; // Authentication Failed
-    public static final int AUTH_CONTINUE = 2; // Continue the Authentication
-    public static final int AUTH_EXPIRED = 3; // Credentials have expired.
+    
+    int AUTH_SUCCESS = 0; // Authentication Successful
+    int AUTH_FAILURE = 1; // Authentication Failed
+    int AUTH_CONTINUE = 2; // Continue the Authentication
+    int AUTH_EXPIRED = 3; // Credentials have expired.
 
     /**
      * This method returns the status of the authentication
+     * 
      * @return An integer value indicating the status of the authentication
      */
-    public int  getStatus();
-    
+    int getStatus();
+
     /**
-     * This is the value returned by the Authenticator when the status
-     * is AUTH_CONTINUE. This data should give an indication to the 
-     * client on what else it should send to the server to complete the
-     * authentication.
+     * This is the value returned by the Authenticator when the status is AUTH_CONTINUE. This data should give an indication
+     * to the client on what else it should send to the server to complete the authentication.
      * 
-     * @return An array of bytes indicating the additional information
-     * needed to complete the authentication.
+     * @return An array of bytes indicating the additional information needed to complete the authentication.
      */
-    public byte[] getContinuationData();
-    
+    byte[] getContinuationData();
+
     /**
-     * This is the value returned by the Authenticator when the status
-     * is AUTH_CONTINUE. This data should give an indication to the 
-     * client on specific authentication it needs to adopt to continue
-     * on with the authentication.
+     * This is the value returned by the Authenticator when the status is AUTH_CONTINUE. This data should give an indication
+     * to the client on specific authentication it needs to adopt to continue on with the authentication.
      * 
-     * @return An array of bytes indicating the authentication specific
-     * information needed to complete the authentication.
+     * @return An array of bytes indicating the authentication specific information needed to complete the authentication.
      */
-    public byte[] getAuthSpecificData();
+    byte[] getAuthSpecificData();
 }
-
-
-
-

@@ -37,18 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.digest.api;
 
 import java.security.spec.AlgorithmParameterSpec;
 
 /**
- * Interface representing  nested DigestAlgorithm parameter values
+ * Interface representing nested DigestAlgorithm parameter values
+ * 
  * @author K.Venugopal@sun.com
  */
-public interface NestedDigestAlgoParam extends DigestAlgorithmParameter{
+public interface NestedDigestAlgoParam extends DigestAlgorithmParameter {
     /**
-     * @returns array of parameter values. 
+     * @returns array of parameter values.
      */
-    public AlgorithmParameterSpec[] getNestedParams();
+    AlgorithmParameterSpec[] getNestedParams();
 }

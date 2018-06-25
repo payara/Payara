@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2017] Payara Foundation and/or affiliates
-
+//Portions Copyright [2017-2018] Payara Foundation and/or affiliates
 package com.sun.enterprise.admin.servermgmt.cli;
 
 import com.sun.enterprise.admin.cli.CLIConstants;
@@ -62,7 +61,7 @@ import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.process.ProcessStreamDrainer;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
-import org.glassfish.security.common.FileRealmHelper;
+import org.glassfish.security.common.FileRealmStorageManager;
 
 /**
  * The start-domain command.
@@ -341,29 +340,34 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
      * NOTE: this depends on launcher.setup having already been called.
      */
     private void doAdminPasswordCheck() throws CommandException {
-        String arfile = launcher.getAdminRealmKeyFile();
-        if (arfile != null) {
+        String adminKeyFile = launcher.getAdminRealmKeyFile();
+        if (adminKeyFile != null) {
             try {
-                FileRealmHelper ar = new FileRealmHelper(arfile);
-                if (!ar.hasAuthenticatableUser()) {
+                FileRealmStorageManager fileStorageManager = new FileRealmStorageManager(adminKeyFile);
+                if (!fileStorageManager.hasAuthenticatableUser()) {
+                    
                     // Prompt for the password for the first user and set it
-                    Set<String> names = ar.getUserNames();
+                    Set<String> names = fileStorageManager.getUserNames();
                     if (names == null || names.isEmpty()) {
                         throw new CommandException("no admin users");
                     }
-                    String auser = names.iterator().next();
-                    ParamModelData npwo = new ParamModelData(newpwName, String.class, false, null);
-                    npwo.prompt = strings.get("new.adminpw", auser);
-                    npwo.promptAgain = strings.get("new.adminpw.again", auser);
-                    npwo.param._password = true;
+                    
+                    String adminUsername = names.iterator().next();
+                    ParamModelData paramModelData = new ParamModelData(newpwName, String.class, false, null);
+                    paramModelData.prompt = strings.get("new.adminpw", adminUsername);
+                    paramModelData.promptAgain = strings.get("new.adminpw.again", adminUsername);
+                    paramModelData.param._password = true;
+                    
                     logger.info(strings.get("new.adminpw.prompt"));
-                    char[] npwArr = super.getPassword(npwo, null, true);
-                    String npw = npwArr != null ? new String(npwArr) : null;
-                    if (npw == null) {
+                    
+                    char[] password = super.getPassword(paramModelData, null, true);
+                    String passwordCopy = password != null ? new String(password) : null;
+                    if (passwordCopy == null) {
                         throw new CommandException(strings.get("no.console"));
                     }
-                    ar.updateUser(auser, auser, npw.toCharArray(), null);
-                    ar.persist();
+                    
+                    fileStorageManager.updateUser(adminUsername, adminUsername, passwordCopy.toCharArray(), null);
+                    fileStorageManager.persist();
                 }
             } catch (IOException ioe) {
                 throw new CommandException(ioe);
