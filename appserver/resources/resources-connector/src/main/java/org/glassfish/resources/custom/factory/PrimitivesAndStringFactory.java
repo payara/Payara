@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.resources.custom.factory;
 
@@ -59,7 +60,9 @@ public class PrimitivesAndStringFactory implements Serializable, ObjectFactory {
         Enumeration<RefAddr> refAddrs = ref.getAll();
         String type = null;
         String value = null;
+        boolean hasAnyProperties = false;
         while(refAddrs.hasMoreElements()){
+            hasAnyProperties = true;
             RefAddr addr = refAddrs.nextElement();
             String propName = addr.getType();
 
@@ -68,6 +71,10 @@ public class PrimitivesAndStringFactory implements Serializable, ObjectFactory {
             if(propName.equalsIgnoreCase("value")){
                 value = (String)addr.getContent();
             }
+        }
+        // if there are no properties at all, back-up obtain the type of the custom resource
+        if (!hasAnyProperties && type == null) {
+            type = ref.getClassName();
         }
 
         if(type != null && value != null){
