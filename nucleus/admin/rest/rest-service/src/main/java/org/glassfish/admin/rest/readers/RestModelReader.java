@@ -91,10 +91,9 @@ public class RestModelReader<T extends RestModel> implements MessageBodyReader<T
     @Override
     public T readFrom(Class<T> type, Type type1, Annotation[] antns, MediaType mt,
         MultivaluedMap<String, String> mm, InputStream entityStream) throws WebApplicationException, IOException {
-        try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(entityStream));
-            JsonParser parser = Json.createParser(in);
 
+        try (JsonParser parser =
+                 Json.createParser(new BufferedReader(new InputStreamReader(entityStream)))) {
             final Locale locale = CompositeUtil.instance().getLocale(mm);
             JsonObject o;
             if (parser.hasNext()){
@@ -111,7 +110,7 @@ public class RestModelReader<T extends RestModel> implements MessageBodyReader<T
                         .build();
                 throw new WebApplicationException(response);
             }
-            return (T) model;
+            return model;
         } catch (JsonException ex) {
             throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR)
                     .entity(ex.getLocalizedMessage()).build());
