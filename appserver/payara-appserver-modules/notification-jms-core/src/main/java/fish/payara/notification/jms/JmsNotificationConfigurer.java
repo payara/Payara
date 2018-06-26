@@ -93,7 +93,9 @@ public class JmsNotificationConfigurer extends BaseNotificationConfigurer<JmsNot
         if(this.enabled != null) {
             configuration.enabled(this.enabled);
         }
-
+        if(this.noisy != null) {
+            configuration.noisy(this.noisy);
+        }
         if(!Strings.isNullOrEmpty(contextFactoryClass )) {
             configuration.setContextFactoryClass(contextFactoryClass);
         }

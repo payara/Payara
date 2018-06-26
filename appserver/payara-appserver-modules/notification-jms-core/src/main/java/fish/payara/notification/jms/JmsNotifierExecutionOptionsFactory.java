@@ -64,6 +64,7 @@ public class JmsNotifierExecutionOptionsFactory extends NotifierExecutionOptions
     public NotifierExecutionOptions build(JmsNotifier notifier) {
         JmsNotifierExecutionOptions executionOptions = new JmsNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
+        executionOptions.setNoisy(Boolean.parseBoolean(notifier.getNoisy()));
         return executionOptions;
     }
 }

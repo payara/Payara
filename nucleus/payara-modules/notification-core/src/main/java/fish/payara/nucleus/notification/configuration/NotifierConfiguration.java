@@ -57,4 +57,9 @@ public interface NotifierConfiguration extends ConfigBeanProxy, ConfigExtension 
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getEnabled();
     void enabled(Boolean value) throws PropertyVetoException;
+    
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    String getNoisy();
+    void noisy(Boolean value) throws PropertyVetoException;
+
 }

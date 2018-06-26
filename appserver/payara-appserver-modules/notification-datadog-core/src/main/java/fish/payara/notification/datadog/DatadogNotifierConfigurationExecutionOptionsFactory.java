@@ -64,6 +64,7 @@ public class DatadogNotifierConfigurationExecutionOptionsFactory
     public DatadogNotifierConfigurationExecutionOptions build(DatadogNotifierConfiguration notifierConfiguration) {
         DatadogNotifierConfigurationExecutionOptions executionOptions = new DatadogNotifierConfigurationExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
+        executionOptions.setNoisy(Boolean.parseBoolean(notifierConfiguration.getNoisy()));
         executionOptions.setKey(notifierConfiguration.getKey());
 
         return executionOptions;

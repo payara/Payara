@@ -266,8 +266,14 @@ public class MetricRegistryImpl extends MetricRegistry {
             }
 
             metadataMap.put(name, metadataClone(newMetadata));
+        } else if (existingMetadata.getTypeRaw() != newMetadata.getTypeRaw()) {
+            if (!existingMetadata.getTypeRaw().equals(newMetadata.getTypeRaw())) {
+                throw new IllegalArgumentException(String.format(
+                        "Metric ['%s'] type['%s'] does not match with existing type['%s']",
+                        name, newMetadata.getType(), existingMetadata.getType()
+                ));
+            }
         }
-
         return metric;
     }
 

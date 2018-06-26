@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth;
 
 import java.security.Principal;
@@ -45,15 +45,16 @@ import java.util.Properties;
 
 /**
  *
- *  Enables formatting of principal retrieved from message eg: P-Asserted-Identity  values.
- * eg: "Cullen Jennings" <sip:fluffy@cisco.com> value can be mapped/formatted to
- *      "CullenJ".
+ * Enables formatting of principal retrieved from message eg: P-Asserted-Identity values. eg: "Cullen Jennings"
+ * <sip:fluffy@cisco.com> value can be mapped/formatted to "CullenJ".
+ * 
  * @author k.venugopal@sun.com
  */
 
 public interface PrincipalMapper {
 
-    public void initialize(Properties props);
+    void initialize(Properties props);
+
     /**
      *
      * converts values in to a format understood by the container/container backend eg: database, ldap etc.
@@ -61,5 +62,5 @@ public interface PrincipalMapper {
      * @param assrtId P-Asserted-Identity values.
      * @return P-Asserted-Identity values in a format understood by the container.
      */
-    public Principal[] mapIdentity(Principal[] assrtId);
+    Principal[] mapIdentity(Principal[] assrtId);
 }

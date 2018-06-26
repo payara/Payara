@@ -40,25 +40,21 @@
 
 package com.sun.enterprise.security.auth.realm;
 
-
 /**
- * Exception thrown when an operation is requested to remove a group that has 
- * a list of users.
+ * Exception thrown when an operation is requested to remove a group that has a list of users.
  *
  * @author Harpreet Singh
  */
-public class GroupNotEmptyException extends Exception
-{
+public class GroupNotEmptyException extends Exception {
+    
+    private static final long serialVersionUID = 873043596300984484L;
+
     /**
      * Constructs the exception, with descriptive information.
      *
      * @param info describes the user which does not exist
      */
-    public GroupNotEmptyException (String info) { super (info); }
+    public GroupNotEmptyException(String info) {
+        super(info);
+    }
 }
-
-
-
-
-
-

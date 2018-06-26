@@ -37,28 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm;
 
-
 /**
- * Exception thrown when an operation is requested on a user which
- * does not exist.
+ * Exception thrown when an operation is requested on a user which does not exist.
  *
  * @author Harish Prabandham
  */
-public class NoSuchUserException extends Exception
-{
+public class NoSuchUserException extends Exception {
+   
+    private static final long serialVersionUID = -4061500111336089813L;
+
     /**
      * Constructs the exception, with descriptive information.
      *
      * @param info describes the user which does not exist
      */
-    public NoSuchUserException (String info) { super (info); }
+    public NoSuchUserException(String info) {
+        super(info);
+    }
 }
-
-
-
-
-
-
