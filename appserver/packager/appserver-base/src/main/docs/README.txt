@@ -9,7 +9,7 @@ Here are a few short steps to get you started...
 Payara Server currently supports the following Java Virtual Machines:
 
 * Oracle JDK8 (u162+)
-* Oracle JDK8 (u162+)
+* Azul Zulu JDK8 (u162+)
 * OpenJDK JDK8 (u162+)
 
 For IBM J9 support, please download Payara Blue from http://www.payara.fish/downloads
