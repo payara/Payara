@@ -66,7 +66,6 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.types.Property;
 
 /**
  * Asadmin command to list Module Monitoring level
@@ -118,12 +117,11 @@ public class GetMonitoringLevel implements AdminCommand {
         // If no modulename is passed by the command, display all the module and
         // their monitoring levels
         if (moduleName == null) {
-            monitoringService.getProperty();
-            for (Property validModule :   monitoringService.getProperty()) {
+            for (String validModule : validModuleList) {
                 columnFormatter.addRow(new Object[]{validModule,
-                    monitoringService.getMonitoringLevel(validModule.getName())});
-                extraPropertiesMap.put(validModule.getName(),
-                        monitoringService.getMonitoringLevel(validModule.getName()));
+                    monitoringService.getMonitoringLevel(validModule)});
+                extraPropertiesMap.put(validModule,
+                        monitoringService.getMonitoringLevel(validModule));
             }
         }
 
