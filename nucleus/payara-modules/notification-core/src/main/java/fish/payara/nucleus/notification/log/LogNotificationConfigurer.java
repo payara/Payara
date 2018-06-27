@@ -81,6 +81,9 @@ public class LogNotificationConfigurer extends BaseNotificationConfigurer<LogNot
         if(this.enabled != null) {
             configuration.enabled(this.enabled);
         }
+        if(this.noisy != null) {
+            configuration.noisy(this.noisy);
+        }
         if (this.useSeparateLogFile != null) {
             configuration.useSeparateLogFile(Boolean.parseBoolean(this.useSeparateLogFile));
         }

@@ -79,7 +79,9 @@ public class SlackNotificationConfigurer extends BaseNotificationConfigurer<Slac
         if(this.enabled != null) {
             configuration.enabled(this.enabled);
         }
-
+        if(this.noisy != null) {
+            configuration.noisy(this.noisy);
+        }
         if(!Strings.isNullOrEmpty(token1)) {
             configuration.setToken1(token1);
         }

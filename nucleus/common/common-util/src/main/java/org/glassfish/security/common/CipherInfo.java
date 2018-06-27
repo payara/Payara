@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.security.common;
 
 import java.util.HashMap;
@@ -45,11 +45,13 @@ import java.util.Map;
 import javax.net.ssl.SSLServerSocketFactory;
 
 /**
- * This class represents the information associated to ciphers.
- * It also maintains a HashMap from configName to CipherInfo.
+ * This class represents the information associated to ciphers. It also maintains a HashMap from configName to
+ * CipherInfo.
+ * 
  * @author Shing Wai Chan
  */
 public class CipherInfo {
+    
     private static final short SSL2 = 0x1;
     private static final short SSL3 = 0x2;
     private static final short TLS = 0x4;
@@ -77,40 +79,36 @@ public class CipherInfo {
     private String cipherName;
     private short protocolVersion;
 
-
     static {
         int len = OLD_CIPHER_MAPPING.length;
-        for(int i=0; i<len; i++) {
+        for (int i = 0; i < len; i++) {
             String nonStdName = OLD_CIPHER_MAPPING[i][0];
-            String stdName    = OLD_CIPHER_MAPPING[i][1];
-            ciphers.put(nonStdName, 
-                new CipherInfo(nonStdName, stdName, (short)(SSL3|TLS)) );
+            String stdName = OLD_CIPHER_MAPPING[i][1];
+            ciphers.put(nonStdName, new CipherInfo(nonStdName, stdName, (short) (SSL3 | TLS)));
         }
 
-        SSLServerSocketFactory factory = 
-                (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
+        SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
         String[] supportedCiphers = factory.getDefaultCipherSuites();
         len = supportedCiphers.length;
-        for(int i=0; i<len; i++) {
+        for (int i = 0; i < len; i++) {
             String s = supportedCiphers[i];
-            ciphers.put(s, new CipherInfo(s, s, (short)(SSL3|TLS)) );
+            ciphers.put(s, new CipherInfo(s, s, (short) (SSL3 | TLS)));
         }
     }
 
     /**
-     * @param configName  name used in domain.xml, sun-acc.xml
-     * @param cipherName  name that may depends on backend
+     * @param configName name used in domain.xml, sun-acc.xml
+     * @param cipherName name that may depends on backend
      * @param protocolVersion
      */
-    private CipherInfo(String configName, String cipherName, 
-            short protocolVersion) {
+    private CipherInfo(String configName, String cipherName, short protocolVersion) {
         this.configName = configName;
         this.cipherName = cipherName;
         this.protocolVersion = protocolVersion;
     }
 
     public static CipherInfo getCipherInfo(String configName) {
-        return (CipherInfo)ciphers.get(configName);
+        return (CipherInfo) ciphers.get(configName);
     }
 
     public String getConfigName() {
@@ -123,13 +121,13 @@ public class CipherInfo {
 
     public boolean isSSL2() {
         return (protocolVersion & SSL2) == SSL2;
-    } 
+    }
 
     public boolean isSSL3() {
         return (protocolVersion & SSL3) == SSL3;
-    } 
+    }
 
     public boolean isTLS() {
         return (protocolVersion & TLS) == TLS;
-    } 
+    }
 }

@@ -37,36 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm;
 
-import java.security.Principal;
-import com.sun.enterprise.security.auth.*;
-
 /**
- * This interface is used by the Authentication Service to have the 
- * Principal authenticated by the realm. A realm provides an 
- * implementation of this interface.
+ * This interface is used by the Authentication Service to have the Principal authenticated by the realm. A realm
+ * provides an implementation of this interface.
+ * 
  * @author Harish Prabandham
  * @author Harpreet Singh
  */
 public interface AuthenticationHandler {
     /**
-     * Returns the Realm that this Authentication Handler is authenticating
-     * in.
+     * Returns the Realm that this Authentication Handler is authenticating in.
+     * 
      * @return The Realm object in which this handler is authenticating in.
      */
     public Realm getRealm();
 
     /**
-     * This method authenticates the given principal using the specified 
-     * authentication data and the Principal's Credentials. The result of
-     * the authentication is returned back.
+     * This method authenticates the given principal using the specified authentication data and the Principal's
+     * Credentials. The result of the authentication is returned back.
+     * 
      * @param The principal (user) being authenticated.
      * @param The data needed for authentication.
-     * @return boolean denoting true for success and false for failure
-     * authentication.
+     * @return boolean denoting true for success and false for failure authentication.
      */
-    public boolean doAuthentication(String principalName,
-				    byte[] authData);
+    public boolean doAuthentication(String principalName, byte[] authData);
 }

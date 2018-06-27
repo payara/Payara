@@ -37,47 +37,48 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.security.common;
 
 /**
- * In EJBs, ACL checking is done using the Roles. Roles are an abstraction
- * of an application specific Logical Principals. These Principals do not
- * have any properties of Principals within a Security Domain (or Realm).
- * They merely serve as abstraction to application specific entities.
+ * In EJBs, ACL checking is done using the Roles. Roles are an abstraction of an application specific Logical
+ * Principals. These Principals do not have any properties of Principals within a Security Domain (or Realm). They
+ * merely serve as abstraction to application specific entities.
+ * 
  * @author Harish Prabandham
  */
 public class Role extends PrincipalImpl {
 
+    private static final long serialVersionUID = -7801565721107580516L;
+    
     private String description;
 
     /** Creates a new Role with a given name */
     public Role(String name) {
-	super(name);
+        super(name);
     }
-
 
     public boolean equals(Object other) {
-	boolean ret = false;
-	if(other instanceof Role) {
-	    ret =  getName().equals(((Role)other).getName());
-	}
+        boolean ret = false;
+        if (other instanceof Role) {
+            ret = getName().equals(((Role) other).getName());
+        }
 
-	return ret;
+        return ret;
     }
+
     public int hashCode() {
-	return getName().hashCode();
+        return getName().hashCode();
     }
 
     public String getDescription() {
-	if (this.description == null) {
-	    this.description = "";
-	}
-	return this.description;
+        if (this.description == null) {
+            this.description = "";
+        }
+        return this.description;
     }
 
     public void setDescription(String description) {
-	this.description = description;
+        this.description = description;
     }
 }
-

@@ -39,28 +39,41 @@
  * 
  * Portions Copyright [2018] [Payara Foundation and/or its affiliates]
  */
-
 package com.sun.enterprise.admin.servermgmt;
 
 import static com.sun.enterprise.admin.servermgmt.SLogger.BAD_DELETE_TEMP_CERT_FILE;
 import static com.sun.enterprise.admin.servermgmt.SLogger.UNHANDLED_EXCEPTION;
 import static com.sun.enterprise.admin.servermgmt.SLogger.getLogger;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.security.Key;
+import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -68,6 +81,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.sun.enterprise.admin.servermgmt.pe.PEFileLayout;
 import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
@@ -79,22 +94,6 @@ import com.sun.enterprise.util.ProcessExecutor;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.net.NetUtils;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.security.Key;
-import java.security.KeyFactory;
-import java.security.PrivateKey;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateFactory;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author kebbs
@@ -104,13 +103,11 @@ public class KeystoreManager {
     private static final String KEYTOOL_CMD;
     private static final String KEYTOOL_EXE_NAME = OS.isWindows() ? "keytool.exe" : "keytool";
     private static String CERTIFICATE_DN_PREFIX = "CN=";
-    private static String CERTIFICATE_DN_SUFFIX =
-            ",OU=Payara,O=Payara Foundation,L=Great Malvern,ST=Worcestershire,C=UK";
+    private static String CERTIFICATE_DN_SUFFIX = ",OU=Payara,O=Payara Foundation,L=Great Malvern,ST=Worcestershire,C=UK";
     public static final String CERTIFICATE_ALIAS = "s1as";
     public static final String INSTANCE_SECURE_ADMIN_ALIAS = "glassfish-instance";
     public static final String DEFAULT_MASTER_PASSWORD = "changeit";
-    private static final String SKID_EXTENSION_SYSTEM_PROPERTY =
-            "-J-Dsun.security.internal.keytool.skid";
+    private static final String SKID_EXTENSION_SYSTEM_PROPERTY = "-J-Dsun.security.internal.keytool.skid";
     private static final String INSTANCE_CN_SUFFIX = "-instance";
 
     static {
@@ -123,7 +120,7 @@ public class KeystoreManager {
         if (k.canExecute())
             nonFinalKeyTool = SmartFile.sanitize(k.getPath());
         else {
-            // can't find it in a JDK.  Maybe it is in the PATH?
+            // can't find it in a JDK. Maybe it is in the PATH?
             k = ProcessUtils.getExe(KEYTOOL_EXE_NAME);
 
             if (k != null && k.canExecute())
@@ -146,8 +143,8 @@ public class KeystoreManager {
             addKeytoolCommand();
         }
 
-        //We must override this message so that the stdout appears in the exec exception.
-        //Keytool seems to output errors to stdout.
+        // We must override this message so that the stdout appears in the exec exception.
+        // Keytool seems to output errors to stdout.
         @Override
         protected String getExceptionMessage() {
             return getLatestOutput(mOutFile) + " " + getFileBuffer(mErrFile);
@@ -166,19 +163,18 @@ public class KeystoreManager {
             try {
                 super.execute();
                 if (getProcessExitValue() != 0) {
-                    throw new RepositoryException(_strMgr.getString(keystoreErrorMsg, keystoreName)
-                            + getLastExecutionError() + " " + getLastExecutionOutput());
+                    throw new RepositoryException(
+                            _strMgr.getString(keystoreErrorMsg, keystoreName) + getLastExecutionError() + " " + getLastExecutionOutput());
                 }
-            }
-            catch (ExecException ex) {
-                throw new RepositoryException(_strMgr.getString(keystoreErrorMsg,
-                        keystoreName) + getLastExecutionError() + " " + getLastExecutionOutput(), ex);
+            } catch (ExecException ex) {
+                throw new RepositoryException(
+                        _strMgr.getString(keystoreErrorMsg, keystoreName) + getLastExecutionError() + " " + getLastExecutionOutput(), ex);
             }
         }
     }
+
     protected PEFileLayout _fileLayout = null;
-    private static final StringManager _strMgr =
-            StringManager.getManager(KeystoreManager.class);
+    private static final StringManager _strMgr = StringManager.getManager(KeystoreManager.class);
 
     /**
      * Creates a new instance of RepositoryManager
@@ -191,39 +187,37 @@ public class KeystoreManager {
         if (cn == null) {
             try {
                 cn = NetUtils.getCanonicalHostName();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 cn = "localhost";
             }
         }
+        
         /*
-         * Use the suffix, if provided, in creating the DN (by augmenting
-         * the CN).
+         * Use the suffix, if provided, in creating the DN (by augmenting the CN).
          */
-        String x509DistinguishedName = CERTIFICATE_DN_PREFIX + cn
-                + (CNSuffix != null ? CNSuffix : "") + CERTIFICATE_DN_SUFFIX;
-        return x509DistinguishedName;  //must be of form "CN=..., OU=..."
+        String x509DistinguishedName = CERTIFICATE_DN_PREFIX + cn + (CNSuffix != null ? CNSuffix : "") + CERTIFICATE_DN_SUFFIX;
+        
+        return x509DistinguishedName; // must be of form "CN=..., OU=..."
     }
 
     protected PEFileLayout getFileLayout(RepositoryConfig config) {
         if (_fileLayout == null) {
             _fileLayout = new PEFileLayout(config);
         }
+        
         return _fileLayout;
     }
 
     /**
-     * Create the default SSL key store using keytool to generate a self signed
-     * certificate.
+     * Create the default SSL key store using keytool to generate a self signed certificate.
      *
      * @param config
      * @param masterPassword
      * @throws RepositoryException
      */
-    protected void createKeyStore(File keystore,
-            RepositoryConfig config, String masterPassword) throws RepositoryException {
-        //Generate a new self signed certificate with s1as as the alias
-        //Create the default self signed cert
+    protected void createKeyStore(File keystore, RepositoryConfig config, String masterPassword) throws RepositoryException {
+        // Generate a new self signed certificate with s1as as the alias
+        // Create the default self signed cert
         final String dasCertDN = getDASCertDN(config);
         System.out.println(_strMgr.getString("CertificateDN", dasCertDN));
         addSelfSignedCertToKeyStore(keystore, CERTIFICATE_ALIAS, masterPassword, dasCertDN);
@@ -234,93 +228,51 @@ public class KeystoreManager {
         addSelfSignedCertToKeyStore(keystore, INSTANCE_SECURE_ADMIN_ALIAS, masterPassword, instanceCertDN);
     }
 
-    private void addSelfSignedCertToKeyStore(final File keystore,
-            final String alias,
-            final String masterPassword,
-            final String dn) throws RepositoryException {
-        final String[] keytoolCmd = {
-            "-genkey",
-            "-keyalg", "RSA",
-            "-keystore", keystore.getAbsolutePath(),
-            "-alias", alias,
-            "-dname", dn,
-            "-validity", "3650",
-            "-keypass", masterPassword,
-            "-storepass", masterPassword,
-            SKID_EXTENSION_SYSTEM_PROPERTY
-        };
+    private void addSelfSignedCertToKeyStore(final File keystore, final String alias, final String masterPassword, final String dn)
+            throws RepositoryException {
+        final String[] keytoolCmd = { "-genkey", "-keyalg", "RSA", "-keystore", keystore.getAbsolutePath(), "-alias", alias, "-dname", dn,
+                "-validity", "3650", "-keypass", masterPassword, "-storepass", masterPassword, SKID_EXTENSION_SYSTEM_PROPERTY };
 
         KeytoolExecutor p = new KeytoolExecutor(keytoolCmd, 60);
         p.execute("keystoreNotCreated", keystore);
     }
     /*
-     protected void addToAsadminTrustStore(
-     RepositoryConfig config, File certFile) throws RepositoryException
-     {
-     boolean newTruststore = false;
-     final PEFileLayout layout = getFileLayout(config);
-     //import the newly created certificate into the asadmin truststore
-     final File asadminTruststore = AsadminTruststore.getAsadminTruststore();
-
-     if (!asadminTruststore.exists()) {
-     newTruststore = true;
-     }
-
-     //The keystore alias name is the repository name. We want to avoid alias
-     //name conflicts since multiple domains are likely to live on the same
-     //machine.
-     String aliasName = layout.getRepositoryDir().getAbsolutePath();
-
-     //first delete the alias in case it already exists. This can happen for
-     //example if a domain is created, deleted, and re-created again.
-     String[] keytoolCmd = new String[] {
-     "-delete",
-     "-keystore", asadminTruststore.getAbsolutePath(),
-     "-alias", aliasName,
-     };
-
-     final String[] input = {AsadminTruststore.getAsadminTruststorePassword(),
-     AsadminTruststore.getAsadminTruststorePassword()}; // twice in case we are creating
-     KeytoolExecutor p = new KeytoolExecutor(keytoolCmd, 30, input);
-     try {
-     p.execute("trustStoreNotCreated", asadminTruststore);
-     } catch (RepositoryException ex) {
-     //ignore all exceptions. The alias most likely does not exist.
-     }
-
-     keytoolCmd = new String[] {
-     "-import",
-     "-noprompt",
-     "-keystore", asadminTruststore.getAbsolutePath(),
-     "-alias", aliasName, //alias is the domain name
-     "-file", certFile.getAbsolutePath(),
-     };
-
-     p = new KeytoolExecutor(keytoolCmd, 30, input);
-     p.execute("trustStoreNotCreated", asadminTruststore);
-
-     //If this is a newly created truststore, lock it down.
-     if (newTruststore) {
-     try {
-     chmod("600", asadminTruststore);
-     } catch (IOException ex) {
-     throw new RepositoryException(_strMgr.getString(
-     "trustStoreNotCreated", asadminTruststore), ex);
-     }
-     }
-     }
+     * protected void addToAsadminTrustStore( RepositoryConfig config, File certFile) throws RepositoryException { boolean
+     * newTruststore = false; final PEFileLayout layout = getFileLayout(config); //import the newly created certificate into
+     * the asadmin truststore final File asadminTruststore = AsadminTruststore.getAsadminTruststore();
+     * 
+     * if (!asadminTruststore.exists()) { newTruststore = true; }
+     * 
+     * //The keystore alias name is the repository name. We want to avoid alias //name conflicts since multiple domains are
+     * likely to live on the same //machine. String aliasName = layout.getRepositoryDir().getAbsolutePath();
+     * 
+     * //first delete the alias in case it already exists. This can happen for //example if a domain is created, deleted,
+     * and re-created again. String[] keytoolCmd = new String[] { "-delete", "-keystore",
+     * asadminTruststore.getAbsolutePath(), "-alias", aliasName, };
+     * 
+     * final String[] input = {AsadminTruststore.getAsadminTruststorePassword(),
+     * AsadminTruststore.getAsadminTruststorePassword()}; // twice in case we are creating KeytoolExecutor p = new
+     * KeytoolExecutor(keytoolCmd, 30, input); try { p.execute("trustStoreNotCreated", asadminTruststore); } catch
+     * (RepositoryException ex) { //ignore all exceptions. The alias most likely does not exist. }
+     * 
+     * keytoolCmd = new String[] { "-import", "-noprompt", "-keystore", asadminTruststore.getAbsolutePath(), "-alias",
+     * aliasName, //alias is the domain name "-file", certFile.getAbsolutePath(), };
+     * 
+     * p = new KeytoolExecutor(keytoolCmd, 30, input); p.execute("trustStoreNotCreated", asadminTruststore);
+     * 
+     * //If this is a newly created truststore, lock it down. if (newTruststore) { try { chmod("600", asadminTruststore); }
+     * catch (IOException ex) { throw new RepositoryException(_strMgr.getString( "trustStoreNotCreated", asadminTruststore),
+     * ex); } } }
      */
 
     /**
      * Copy certain certificates from the keystore into the truststore.
-    */
-    protected void copyCertificates(File keyStore, File trustStore, DomainConfig config, String masterPassword)
-       throws DomainException 
-    {
+     */
+    protected void copyCertificates(File keyStore, File trustStore, DomainConfig config, String masterPassword) throws DomainException {
         try {
             copyCert(keyStore, trustStore, CERTIFICATE_ALIAS, masterPassword);
             copyCert(keyStore, trustStore, INSTANCE_SECURE_ADMIN_ALIAS, masterPassword);
-        } catch(RepositoryException re) {
+        } catch (RepositoryException re) {
             String msg = _strMgr.getString("SomeProblemWithKeytool", re.getMessage());
             throw new DomainException(msg);
         }
@@ -332,8 +284,7 @@ public class KeystoreManager {
      * @param trustStore the trust store to copy the certificates to.
      * @param masterPassword the password to the trust store.
      */
-    protected void copyCertificatesFromJdk(File trustStore, String masterPassword)
-            throws RepositoryException {
+    protected void copyCertificatesFromJdk(File trustStore, String masterPassword) throws RepositoryException {
         // Gets the location of the JDK trust store.
         String javaHome = System.getProperty("java.home").concat("/").replaceAll("//", "/");
         String jreHome = (javaHome.contains("jre")) ? javaHome : javaHome + "jre/";
@@ -343,8 +294,7 @@ public class KeystoreManager {
         // Load the java trust store
         KeyStore javaTrustStore;
         KeyStore destTrustStore;
-        try (FileInputStream javaIn = new FileInputStream(javaTrustStoreFile);
-                FileInputStream destIn = new FileInputStream(trustStore)) {
+        try (FileInputStream javaIn = new FileInputStream(javaTrustStoreFile); FileInputStream destIn = new FileInputStream(trustStore)) {
 
             javaTrustStore = KeyStore.getInstance(KeyStore.getDefaultType());
             javaTrustStore.load(javaIn, "changeit".toCharArray());
@@ -385,8 +335,7 @@ public class KeystoreManager {
         }
     }
 
-    protected Map<String, Certificate> getValidCertificateAliases(KeyStore keyStore, String keyStorePassword)
-            throws RepositoryException {
+    protected Map<String, Certificate> getValidCertificateAliases(KeyStore keyStore, String keyStorePassword) throws RepositoryException {
 
         Map<String, Certificate> validCerts = new HashMap<>();
 
@@ -418,48 +367,39 @@ public class KeystoreManager {
      * @param alias the name of the certificate to copy.
      * @param masterPassword the password for the trust stores.
      */
-    private void copyCert(final File keyStore, final File trustStore,
-            final String alias, final String masterPassword) throws RepositoryException {
+    private void copyCert(final File keyStore, final File trustStore, final String alias, final String masterPassword)
+            throws RepositoryException {
 
         File certFile = null;
-        String[] input = {masterPassword};
+        String[] input = { masterPassword };
         String[] keytoolCmd = null;
         KeytoolExecutor p = null;
 
         try {
             // export the newly created certificate from the first keystore
             certFile = new File(keyStore.getParentFile(), alias + ".cer");
-            keytoolCmd = new String[]{
-                "-export",
-                "-keystore", keyStore.getAbsolutePath(),
-                "-alias", alias,
-                "-file", certFile.getAbsolutePath(),};
+            keytoolCmd = new String[] { "-export", "-keystore", keyStore.getAbsolutePath(), "-alias", alias, "-file",
+                    certFile.getAbsolutePath(), };
 
             p = new KeytoolExecutor(keytoolCmd, 30, input);
             p.execute("trustStoreNotCreated", trustStore);
 
             // import the newly created certificate into the truststore
-            keytoolCmd = new String[]{
-                "-import",
-                "-noprompt",
-                "-keystore", trustStore.getAbsolutePath(),
-                "-alias", alias,
-                "-file", certFile.getAbsolutePath(),};
+            keytoolCmd = new String[] { "-import", "-noprompt", "-keystore", trustStore.getAbsolutePath(), "-alias", alias, "-file",
+                    certFile.getAbsolutePath(), };
 
             p = new KeytoolExecutor(keytoolCmd, 30, input);
             p.execute("trustStoreNotCreated", trustStore);
 
-            //import the newly created certificate into the asadmin truststore
+            // import the newly created certificate into the asadmin truststore
             /* commented out till asadmintruststore can be added back */
-            //addToAsadminTrustStore(config, certFile);
+            // addToAsadminTrustStore(config, certFile);
 
-        }
-        finally {
+        } finally {
             if (certFile != null) {
                 final boolean isCertFileDeleted = certFile.delete();
                 if (!isCertFileDeleted) {
-                    getLogger().log(Level.WARNING, BAD_DELETE_TEMP_CERT_FILE,
-                            certFile.getAbsolutePath());
+                    getLogger().log(Level.WARNING, BAD_DELETE_TEMP_CERT_FILE, certFile.getAbsolutePath());
                 }
             }
         }
@@ -473,257 +413,265 @@ public class KeystoreManager {
      * @param keystore the keystore whose password is to be changed.
      * @throws RepositoryException
      */
-    protected void changeKeystorePassword(String oldPassword, String newPassword,
-            File keystore) throws RepositoryException {
+    protected void changeKeystorePassword(String oldPassword, String newPassword, File keystore) throws RepositoryException {
         if (!oldPassword.equals(newPassword)) {
-            //change truststore password from the default
-            String[] keytoolCmd = {
-                "-storepasswd",
-                "-keystore", keystore.getAbsolutePath(),};
+            // change truststore password from the default
+            String[] keytoolCmd = { "-storepasswd", "-keystore", keystore.getAbsolutePath(), };
 
-            KeytoolExecutor p = new KeytoolExecutor(keytoolCmd, 30,
-                    new String[]{oldPassword, newPassword, newPassword});
+            KeytoolExecutor p = new KeytoolExecutor(keytoolCmd, 30, new String[] { oldPassword, newPassword, newPassword });
             p.execute("keyStorePasswordNotChanged", keystore);
         }
     }
 
-	/**
-	 * Throws an IllegalArgumentException if the password's complexity does not meet requirements
-	 * @param pw
-	 * @param msgId
-	 */
-	protected void enforcePasswordComplexity(char[] pw, String msgId) {
-		if (pw == null || pw.length < 6) {
-			throw new IllegalArgumentException(_strMgr.getString(msgId));
-		}
-	}
-
-	/**
-	 * Loads a (JKS or PKCS#12) keystore. This method does not use the keytool, but instead the JAVA API
-	 * @param source the path of the file to be opened and loaded into the keystore
-	 * @param storeType the type of the keystore to be read
-	 * @param pw the keystore password
-	 * @return the keystore, if load was successful
-	 * @throws KeyStoreException
-	 */
-	public KeyStore openKeyStore(File source, String storeType, char[] pw) throws KeyStoreException {
-		KeyStore keyStore = KeyStore.getInstance(storeType);
-		try (InputStream keyStoreStream = new FileInputStream(source)) {
-			keyStore.load(keyStoreStream, pw);
-		} catch (Exception ex) {
-			throw new KeyStoreException(ex);
-		}
-		return keyStore;
-	}
-
-	/**
-	 * Saves the (modified) keystore. This method does not use the keytool, but instead the JAVA API
-	 * @param keyStore the keystore to be written
-	 * @param dest path of the file the keystore is to be written to
-	 * @param pw keystore password
-	 * @throws KeyStoreException
-	 */
-	public void saveKeyStore(KeyStore keyStore, File dest, char[] pw) throws KeyStoreException {
-		enforcePasswordComplexity(pw, "invalidPassword");
-		try (OutputStream outStream = new FileOutputStream(dest)) {
-			keyStore.store(outStream, pw);
-			outStream.flush();
-		} catch (Exception ex) {
-			throw new KeyStoreException(ex);
-		}
-	}
-
-	/**
-	 * Adds/updates a keypair to a keystore. This method does not use the keytool, but instead the JAVA API
-	 * @param keyStore the keystore. Must not be null.
-	 * @param storeType the type of the keystore (JKS or PKCS#12)
-	 * @param storePw the keystore password. Since glassfish requires that keystore and key passwords are identical, this is also used
-	 *	as password for the private key
-	 * @param privKey the private key to be added to the store
-	 * @param certChain chain of certificates
-	 * @param alias the alis of the key to be used inside the keystore
-	 * @throws java.security.KeyStoreException in case of problems
-	 */
-	public void addKeyPair(File keyStore, String storeType, char[] storePw,
-			PrivateKey privKey, Certificate[] certChain, String alias) throws KeyStoreException {
-		enforcePasswordComplexity(storePw, "invalidPassword");
-		KeyStore ks = openKeyStore(keyStore, storeType, storePw);
-
-		// glassfish requires that keystore and key passwords are identical
-		ks.setKeyEntry(alias, privKey, storePw, certChain);
-		saveKeyStore(ks, keyStore, storePw);
-	}
-
-	/**
-	 * Adds/updates a keypair to a keystore. This method does not use the keytool, but instead the JAVA API
-	 * <p><b>NOTE:</b> Glassfish expects the keystore and key passwords to be identical. For this reason prefer using
-	 * {@link #addKeyPair(java.io.File, java.lang.String, char[], java.security.PrivateKey, java.security.cert.Certificate[], java.lang.String) }
-	 * instead</p>
-	 * @param keyStore the keystore. Must not be null.
-	 * @param storeType the type of the keystore (JKS or PKCS#12).
-	 * @param storePw the keystore password
-	 * @param privKey the private key to be added to the store
-	 * @param keyPw the private key's password.
-	 * @param certChain chain of certificates
-	 * @param alias the alis of the key to be used inside the keystore
-	 * @throws java.security.KeyStoreException in case of problems
-	 */
-	public void addKeyPair(File keyStore, String storeType, char[] storePw,
-			PrivateKey privKey, char[] keyPw, Certificate[] certChain, String alias) throws KeyStoreException {
-		enforcePasswordComplexity(keyPw, "invalidPassword");
-		KeyStore ks = openKeyStore(keyStore, storeType, storePw);
-		ks.setKeyEntry(alias, privKey, keyPw, certChain);
-		saveKeyStore(ks, keyStore, storePw);
-	}
-
-	/**
-	 * Changes the keystore's password and all contained keys'.
-	 * This is done to ensure the convention used by glassfish: same pw for the keystore and all keys inside.
-	 * <p>This method DOES NOT use the keytool, but manipulates the given file directly from JAVA.</p>
-	 * @param srcKeyStore the destination keystore - may be null for an in-memory keystore
-	 * @param storeType the type of the keystore (JKS or PKCS#12)
-	 * @param oldPw the old password
-	 * @param newPw thenew password
-	 * @throws java.security.KeyStoreException in case of problems
-	 */
-	public void changeKeyStorePassword(File keyStore, String storeType, char[] oldPw, char[] newPw) throws KeyStoreException {
-		changeKeyStorePassword(keyStore, storeType, oldPw, newPw, true);
-	}
-
-	/**
-	 * Changes the keystore's password and all contained keys'.
-	 * <p><b>NOTE:</b> Glassfish expects the keystore and key passwords to be identical. For this reason prefer using
-	 * {@link #changeKeyStorePassword(java.io.File, java.lang.String, char[], char[]) } instead</p>
-	 * <p>This method DOES NOT use the keytool, but manipulates the given file directly from JAVA.</p>
-	 * @param srcKeyStore the destination keystore - may be null for an in-memory keystore
-	 * @param storeType the type of the keystore (JKS or PKCS#12)
-	 * @param oldPw the old password
-	 * @param newPw the new password
-	 * @param changeKeyPasswords if true, all the keys contained in the keystore will have their passwords set
-	 * to newStorePw as well
-	 * @throws java.security.KeyStoreException in case of problems
-	 */
-	public void changeKeyStorePassword(File keyStore, String storeType, char[] oldPw,
-			char[] newPw, boolean changeKeyPasswords) throws KeyStoreException {
-		enforcePasswordComplexity(newPw, "invalidPassword");
-		KeyStore ks = openKeyStore(keyStore, storeType, oldPw);
-
-		if (changeKeyPasswords) {
-			Enumeration<String> aliases = ks.aliases();
-			// change all private key's passwords
-			try {
-				while (aliases.hasMoreElements()) {
-					String alias = aliases.nextElement();
-					Key k = ks.getKey(alias, oldPw);
-					if (k != null) {
-						Certificate[] certChain = ks.getCertificateChain(alias);
-						ks.setKeyEntry(alias, k, newPw, certChain);
-					}
-				}
-			} catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException ex) {
-				throw new KeyStoreException(ex);
-			}
-		}
-		saveKeyStore(ks, keyStore, newPw);
-	}
-
-	/**
-	 * Changes a private key's password. This method DOES NOT use the keytool, but manipulates the given file directly from JAVA.
-	 * In addition, this method changes just the password of the key, not the keystore.
-	 * <p><b>NOTE:</b> Glassfish expects the keystore and key passwords to be identical. For this reason prefer using
-	 * {@link #changeKeyStorePassword(java.io.File, java.lang.String, char[], char[]) } instead</p>
-	 *
-	 * @param keyStore the path of the keystore where the key with alias is to be modified
-	 * @param storeType - either "JKS" or "PKCS12"
-	 * @param storePw - must not be null
-	 * @param alias the alias of the key to be changed
-	 * @param oldKeyPw the old password
-	 * @param newKeyPw the new password
-	 * @throws KeyStoreException  in case of problems
-	 */
-	public void changeKeyPassword(File keyStore, String storeType, char[] storePw, String alias, char[] oldKeyPw, char[] newKeyPw)
-			throws KeyStoreException {
-		enforcePasswordComplexity(newKeyPw, "invalidPassword");
-		try {
-			KeyStore ks = openKeyStore(keyStore, storeType, storePw);
-			Key privKey = ks.getKey(alias, storePw);
-			Certificate[] certs = ks.getCertificateChain(alias);
-			ks.setKeyEntry(alias, privKey, newKeyPw, certs);
-			saveKeyStore(ks, keyStore, storePw);
-		} catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException ex) {
-			throw new KeyStoreException(ex);
-		}
-	}
-
-	/**
-	 * Reads an unencrypted, PKCS#8 formattted and base64 encoded RSA private key from the given File
-	 * @param keyFile the file containing the private key
-	 * @return the RSA private key
-	 * @throws IOException
-	 * @throws InvalidKeySpecException
-	 * @throws NoSuchAlgorithmException 
-	 */
-	public PrivateKey readPlainPKCS8PrivateKey(File keyFile)
-			throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
-		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-		return keyFactory.generatePrivate(
-				new PKCS8EncodedKeySpec(extractPrivateKeyBytes(
-						Files.lines(keyFile.toPath()))));
-	}
-
-	/**
-	 * Reads an unencrypted, PKCS#8 formattted and base64 encoded private key from the given
-	 * InputStream using the specified algo
-	 * @param is the input stream containing the private key
-	 * @param algo the algorithm used for the private key
-	 * @return the RSA private key
-	 * @throws IOException
-	 * @throws InvalidKeySpecException
-	 * @throws NoSuchAlgorithmException 
-	 */
-	public PrivateKey readPlainPKCS8PrivateKey(InputStream is, String algo)
-			throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
-		KeyFactory keyFactory = KeyFactory.getInstance(algo);
-		return keyFactory.generatePrivate(
-				new PKCS8EncodedKeySpec(extractPrivateKeyBytes(
-						new BufferedReader(new InputStreamReader(is)).lines())));
-	}
-
-	/**
-	 * Ignores the header and footer and extracts the private key bytes from a PKCS#8 format
-	 * BASe64 encoded file
-	 * @param privateKeyLines
-	 * @return the decoded binary content
-	 */
-	byte[] extractPrivateKeyBytes(Stream<String> privateKeyLines) {
-		String base64KeyData = privateKeyLines.filter((line) -> line.charAt(0) != '-')
-				.collect(Collectors.joining());
-		return Base64.getDecoder().decode(base64KeyData);
-	}
-
-	/**
-	 * Reads X509 certificate(s) from the provided files
-	 *
-	 * @param pemFile path to the PEM (or .cer) file containing the X.509 certificate
-	 * @return certificate chain loaded from the file, if successful
-	 * @throws KeyStoreException in case of problems
-	 */
-	public Collection<? extends Certificate> readPemCertificateChain ( File pemFile ) throws KeyStoreException {
-		try (InputStream is = new FileInputStream(pemFile)) {
-			return CertificateFactory.getInstance("X.509").generateCertificates(is);
-		} catch (Exception ex) {
-			throw new KeyStoreException(ex);
-		}
-	}
+    /**
+     * Throws an IllegalArgumentException if the password's complexity does not meet requirements
+     * 
+     * @param pw
+     * @param msgId
+     */
+    protected void enforcePasswordComplexity(char[] pw, String msgId) {
+        if (pw == null || pw.length < 6) {
+            throw new IllegalArgumentException(_strMgr.getString(msgId));
+        }
+    }
 
     /**
-     * Changes the key password for the default cert whose alias is s1as. The
-     * assumption here is that the keystore password is not the same as the key
-     * password. This is due to the fact that the keystore password should first
-     * be changed followed next by the key password. The end result is that the
-     * keystore and s1as key both have the same passwords. This function will
-     * tolerate deletion of the s1as alias, but it will not tolerate changing
-     * the s1as key from something other than the database password.
+     * Loads a (JKS or PKCS#12) keystore. This method does not use the keytool, but instead the JAVA API
+     * 
+     * @param source the path of the file to be opened and loaded into the keystore
+     * @param storeType the type of the keystore to be read
+     * @param pw the keystore password
+     * @return the keystore, if load was successful
+     * @throws KeyStoreException
+     */
+    public KeyStore openKeyStore(File source, String storeType, char[] pw) throws KeyStoreException {
+        KeyStore keyStore = KeyStore.getInstance(storeType);
+        try (InputStream keyStoreStream = new FileInputStream(source)) {
+            keyStore.load(keyStoreStream, pw);
+        } catch (Exception ex) {
+            throw new KeyStoreException(ex);
+        }
+        return keyStore;
+    }
+
+    /**
+     * Saves the (modified) keystore. This method does not use the keytool, but instead the JAVA API
+     * 
+     * @param keyStore the keystore to be written
+     * @param dest path of the file the keystore is to be written to
+     * @param pw keystore password
+     * @throws KeyStoreException
+     */
+    public void saveKeyStore(KeyStore keyStore, File dest, char[] pw) throws KeyStoreException {
+        enforcePasswordComplexity(pw, "invalidPassword");
+        try (OutputStream outStream = new FileOutputStream(dest)) {
+            keyStore.store(outStream, pw);
+            outStream.flush();
+        } catch (Exception ex) {
+            throw new KeyStoreException(ex);
+        }
+    }
+
+    /**
+     * Adds/updates a keypair to a keystore. This method does not use the keytool, but instead the JAVA API
+     * 
+     * @param keyStore the keystore. Must not be null.
+     * @param storeType the type of the keystore (JKS or PKCS#12)
+     * @param storePw the keystore password. Since glassfish requires that keystore and key passwords are identical, this is
+     * also used as password for the private key
+     * @param privKey the private key to be added to the store
+     * @param certChain chain of certificates
+     * @param alias the alis of the key to be used inside the keystore
+     * @throws java.security.KeyStoreException in case of problems
+     */
+    public void addKeyPair(File keyStore, String storeType, char[] storePw, PrivateKey privKey, Certificate[] certChain, String alias)
+            throws KeyStoreException {
+        enforcePasswordComplexity(storePw, "invalidPassword");
+        KeyStore ks = openKeyStore(keyStore, storeType, storePw);
+
+        // glassfish requires that keystore and key passwords are identical
+        ks.setKeyEntry(alias, privKey, storePw, certChain);
+        saveKeyStore(ks, keyStore, storePw);
+    }
+
+    /**
+     * Adds/updates a keypair to a keystore. This method does not use the keytool, but instead the JAVA API
+     * <p>
+     * <b>NOTE:</b> Glassfish expects the keystore and key passwords to be identical. For this reason prefer using
+     * {@link #addKeyPair(java.io.File, java.lang.String, char[], java.security.PrivateKey, java.security.cert.Certificate[], java.lang.String) }
+     * instead
+     * </p>
+     * 
+     * @param keyStore the keystore. Must not be null.
+     * @param storeType the type of the keystore (JKS or PKCS#12).
+     * @param storePw the keystore password
+     * @param privKey the private key to be added to the store
+     * @param keyPw the private key's password.
+     * @param certChain chain of certificates
+     * @param alias the alis of the key to be used inside the keystore
+     * @throws java.security.KeyStoreException in case of problems
+     */
+    public void addKeyPair(File keyStore, String storeType, char[] storePw, PrivateKey privKey, char[] keyPw, Certificate[] certChain,
+            String alias) throws KeyStoreException {
+        enforcePasswordComplexity(keyPw, "invalidPassword");
+        KeyStore ks = openKeyStore(keyStore, storeType, storePw);
+        ks.setKeyEntry(alias, privKey, keyPw, certChain);
+        saveKeyStore(ks, keyStore, storePw);
+    }
+
+    /**
+     * Changes the keystore's password and all contained keys'. This is done to ensure the convention used by glassfish:
+     * same pw for the keystore and all keys inside.
+     * <p>
+     * This method DOES NOT use the keytool, but manipulates the given file directly from JAVA.
+     * </p>
+     * 
+     * @param srcKeyStore the destination keystore - may be null for an in-memory keystore
+     * @param storeType the type of the keystore (JKS or PKCS#12)
+     * @param oldPw the old password
+     * @param newPw thenew password
+     * @throws java.security.KeyStoreException in case of problems
+     */
+    public void changeKeyStorePassword(File keyStore, String storeType, char[] oldPw, char[] newPw) throws KeyStoreException {
+        changeKeyStorePassword(keyStore, storeType, oldPw, newPw, true);
+    }
+
+    /**
+     * Changes the keystore's password and all contained keys'.
+     * <p>
+     * <b>NOTE:</b> Glassfish expects the keystore and key passwords to be identical. For this reason prefer using
+     * {@link #changeKeyStorePassword(java.io.File, java.lang.String, char[], char[]) } instead
+     * </p>
+     * <p>
+     * This method DOES NOT use the keytool, but manipulates the given file directly from JAVA.
+     * </p>
+     * 
+     * @param srcKeyStore the destination keystore - may be null for an in-memory keystore
+     * @param storeType the type of the keystore (JKS or PKCS#12)
+     * @param oldPw the old password
+     * @param newPw the new password
+     * @param changeKeyPasswords if true, all the keys contained in the keystore will have their passwords set to newStorePw
+     * as well
+     * @throws java.security.KeyStoreException in case of problems
+     */
+    public void changeKeyStorePassword(File keyStore, String storeType, char[] oldPw, char[] newPw, boolean changeKeyPasswords)
+            throws KeyStoreException {
+        enforcePasswordComplexity(newPw, "invalidPassword");
+        KeyStore ks = openKeyStore(keyStore, storeType, oldPw);
+
+        if (changeKeyPasswords) {
+            Enumeration<String> aliases = ks.aliases();
+            // change all private key's passwords
+            try {
+                while (aliases.hasMoreElements()) {
+                    String alias = aliases.nextElement();
+                    Key k = ks.getKey(alias, oldPw);
+                    if (k != null) {
+                        Certificate[] certChain = ks.getCertificateChain(alias);
+                        ks.setKeyEntry(alias, k, newPw, certChain);
+                    }
+                }
+            } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException ex) {
+                throw new KeyStoreException(ex);
+            }
+        }
+        saveKeyStore(ks, keyStore, newPw);
+    }
+
+    /**
+     * Changes a private key's password. This method DOES NOT use the keytool, but manipulates the given file directly from
+     * JAVA. In addition, this method changes just the password of the key, not the keystore.
+     * <p>
+     * <b>NOTE:</b> Glassfish expects the keystore and key passwords to be identical. For this reason prefer using
+     * {@link #changeKeyStorePassword(java.io.File, java.lang.String, char[], char[]) } instead
+     * </p>
+     *
+     * @param keyStore the path of the keystore where the key with alias is to be modified
+     * @param storeType - either "JKS" or "PKCS12"
+     * @param storePw - must not be null
+     * @param alias the alias of the key to be changed
+     * @param oldKeyPw the old password
+     * @param newKeyPw the new password
+     * @throws KeyStoreException in case of problems
+     */
+    public void changeKeyPassword(File keyStore, String storeType, char[] storePw, String alias, char[] oldKeyPw, char[] newKeyPw)
+            throws KeyStoreException {
+        enforcePasswordComplexity(newKeyPw, "invalidPassword");
+        try {
+            KeyStore ks = openKeyStore(keyStore, storeType, storePw);
+            Key privKey = ks.getKey(alias, storePw);
+            Certificate[] certs = ks.getCertificateChain(alias);
+            ks.setKeyEntry(alias, privKey, newKeyPw, certs);
+            saveKeyStore(ks, keyStore, storePw);
+        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException ex) {
+            throw new KeyStoreException(ex);
+        }
+    }
+
+    /**
+     * Reads an unencrypted, PKCS#8 formattted and base64 encoded RSA private key from the given File
+     * 
+     * @param keyFile the file containing the private key
+     * @return the RSA private key
+     * @throws IOException
+     * @throws InvalidKeySpecException
+     * @throws NoSuchAlgorithmException
+     */
+    public PrivateKey readPlainPKCS8PrivateKey(File keyFile) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePrivate(new PKCS8EncodedKeySpec(extractPrivateKeyBytes(Files.lines(keyFile.toPath()))));
+    }
+
+    /**
+     * Reads an unencrypted, PKCS#8 formattted and base64 encoded private key from the given InputStream using the specified
+     * algo
+     * 
+     * @param is the input stream containing the private key
+     * @param algo the algorithm used for the private key
+     * @return the RSA private key
+     * @throws IOException
+     * @throws InvalidKeySpecException
+     * @throws NoSuchAlgorithmException
+     */
+    public PrivateKey readPlainPKCS8PrivateKey(InputStream is, String algo)
+            throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+        KeyFactory keyFactory = KeyFactory.getInstance(algo);
+        return keyFactory
+                .generatePrivate(new PKCS8EncodedKeySpec(extractPrivateKeyBytes(new BufferedReader(new InputStreamReader(is)).lines())));
+    }
+
+    /**
+     * Ignores the header and footer and extracts the private key bytes from a PKCS#8 format BASe64 encoded file
+     * 
+     * @param privateKeyLines
+     * @return the decoded binary content
+     */
+    byte[] extractPrivateKeyBytes(Stream<String> privateKeyLines) {
+        String base64KeyData = privateKeyLines.filter((line) -> line.charAt(0) != '-').collect(Collectors.joining());
+        return Base64.getDecoder().decode(base64KeyData);
+    }
+
+    /**
+     * Reads X509 certificate(s) from the provided files
+     *
+     * @param pemFile path to the PEM (or .cer) file containing the X.509 certificate
+     * @return certificate chain loaded from the file, if successful
+     * @throws KeyStoreException in case of problems
+     */
+    public Collection<? extends Certificate> readPemCertificateChain(File pemFile) throws KeyStoreException {
+        try (InputStream is = new FileInputStream(pemFile)) {
+            return CertificateFactory.getInstance("X.509").generateCertificates(is);
+        } catch (Exception ex) {
+            throw new KeyStoreException(ex);
+        }
+    }
+
+    /**
+     * Changes the key password for the default cert whose alias is s1as. The assumption here is that the keystore password
+     * is not the same as the key password. This is due to the fact that the keystore password should first be changed
+     * followed next by the key password. The end result is that the keystore and s1as key both have the same passwords.
+     * This function will tolerate deletion of the s1as alias, but it will not tolerate changing the s1as key from something
+     * other than the database password.
      *
      * @param config
      * @param storePassword the keystore password
@@ -731,20 +679,19 @@ public class KeystoreManager {
      * @param newKeyPassword the new password for the s1as alias
      * @throws RepositoryException
      */
-    protected void changeS1ASAliasPassword(RepositoryConfig config,
-            String storePassword, String oldKeyPassword, String newKeyPassword)
+    protected void changeS1ASAliasPassword(RepositoryConfig config, String storePassword, String oldKeyPassword, String newKeyPassword)
             throws RepositoryException {
         if (!storePassword.equals(oldKeyPassword) && !oldKeyPassword.equals(newKeyPassword)) {
             final PEFileLayout layout = getFileLayout(config);
             final File keystore = layout.getKeyStore();
-            //First see if the alias exists. The user could have deleted it. Any failure in the
-            //command indicates that the alias does not exist, so we return without error.
+            // First see if the alias exists. The user could have deleted it. Any failure in the
+            // command indicates that the alias does not exist, so we return without error.
             String keyStoreType = System.getProperty("javax.net.ssl.keyStoreType");
             if (keyStoreType == null) {
                 keyStoreType = KeyStore.getDefaultType();
             }
 
-            //add code to change all the aliases that exist rather then change s1as only
+            // add code to change all the aliases that exist rather then change s1as only
             List<String> aliases = new ArrayList<String>();
             FileInputStream is = null;
             try {
@@ -755,42 +702,30 @@ public class KeystoreManager {
                 while (all.hasMoreElements()) {
                     aliases.add(all.nextElement());
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 aliases.add(CERTIFICATE_ALIAS);
-            }
-            finally {
+            } finally {
                 if (is != null) {
                     try {
                         is.close();
-                    }
-                    catch (IOException ex) {
+                    } catch (IOException ex) {
                         getLogger().log(Level.SEVERE, UNHANDLED_EXCEPTION, ex);
                     }
                 }
             }
 
-            String[] keytoolCmd = {
-                "-list",
-                "-keystore", keystore.getAbsolutePath(),
-                "-alias", CERTIFICATE_ALIAS,};
-            KeytoolExecutor p = new KeytoolExecutor(keytoolCmd, 30,
-                    new String[]{storePassword});
+            String[] keytoolCmd = { "-list", "-keystore", keystore.getAbsolutePath(), "-alias", CERTIFICATE_ALIAS, };
+            KeytoolExecutor p = new KeytoolExecutor(keytoolCmd, 30, new String[] { storePassword });
             try {
                 p.execute("s1asKeyPasswordNotChanged", keystore);
-            }
-            catch (RepositoryException ex) {
+            } catch (RepositoryException ex) {
                 return;
             }
 
-            //change truststore password from the default
+            // change truststore password from the default
             for (String alias : aliases) {
-                keytoolCmd = new String[]{
-                    "-keypasswd",
-                    "-keystore", keystore.getAbsolutePath(),
-                    "-alias", alias,};
-                p = new KeytoolExecutor(keytoolCmd, 30,
-                        new String[]{storePassword, oldKeyPassword, newKeyPassword, newKeyPassword});
+                keytoolCmd = new String[] { "-keypasswd", "-keystore", keystore.getAbsolutePath(), "-alias", alias, };
+                p = new KeytoolExecutor(keytoolCmd, 30, new String[] { storePassword, oldKeyPassword, newKeyPassword, newKeyPassword });
                 p.execute("s1asKeyPasswordNotChanged", keystore);
             }
 
@@ -798,51 +733,49 @@ public class KeystoreManager {
     }
 
     /**
-     * Changes the password of the keystore, truststore and the key password of
-     * the s1as alias. It is expected that the key / truststores may not exist.
-     * This is due to the fact that the user may have deleted them and wishes to
-     * set up their own key/truststore
+     * Changes the password of the keystore, truststore and the key password of the s1as alias. It is expected that the key
+     * / truststores may not exist. This is due to the fact that the user may have deleted them and wishes to set up their
+     * own key/truststore
      *
      * @param config
      * @param storePassword
      * @param oldKeyPassword
      * @param newKeyPassword
      */
-    protected void changeSSLCertificateDatabasePassword(RepositoryConfig config,
-            String oldPassword, String newPassword) throws RepositoryException {
+    protected void changeSSLCertificateDatabasePassword(RepositoryConfig config, String oldPassword, String newPassword)
+            throws RepositoryException {
         final PEFileLayout layout = getFileLayout(config);
         File keystore = layout.getKeyStore();
         File truststore = layout.getTrustStore();
 
         if (keystore.exists()) {
-            //Change the password on the keystore
+            // Change the password on the keystore
             changeKeystorePassword(oldPassword, newPassword, keystore);
-            //Change the s1as alias password in the keystore...The assumption
-            //here is that the keystore password is not the same as the key password. This is
-            //due to the fact that the keystore password should first be changed followed next
-            //by the key password. The end result is that the keystore and s1as key both have
-            //the same passwords. This function will tolerate deletion of the s1as alias, but
-            //it will not tolerate changing the s1as key from something other than the
-            //database password.
+            // Change the s1as alias password in the keystore...The assumption
+            // here is that the keystore password is not the same as the key password. This is
+            // due to the fact that the keystore password should first be changed followed next
+            // by the key password. The end result is that the keystore and s1as key both have
+            // the same passwords. This function will tolerate deletion of the s1as alias, but
+            // it will not tolerate changing the s1as key from something other than the
+            // database password.
             try {
                 changeS1ASAliasPassword(config, newPassword, oldPassword, newPassword);
-            }
-            catch (Exception ex) {
-                //For now we eat all exceptions and dump to the log if the password
-                //alias could not be changed.
+            } catch (Exception ex) {
+                // For now we eat all exceptions and dump to the log if the password
+                // alias could not be changed.
                 getLogger().log(Level.SEVERE, UNHANDLED_EXCEPTION, ex);
             }
         }
 
         if (truststore.exists()) {
-            //Change the password on the truststore
+            // Change the password on the truststore
             changeKeystorePassword(oldPassword, newPassword, truststore);
         }
     }
 
     protected void chmod(String args, File file) throws IOException {
         if (OS.isUNIX()) {
-            //args and file should never be null.
+            // args and file should never be null.
             if (args == null || file == null)
                 throw new IOException(_strMgr.getString("nullArg"));
             if (!file.exists())
@@ -873,8 +806,7 @@ public class KeystoreManager {
         String value = getCNFromOption(option);
         if (value == null || value.length() == 0) {
             return null;
-        }
-        else {
+        } else {
             return value;
         }
     }
@@ -884,12 +816,11 @@ public class KeystoreManager {
      *
      * @param option
      * @param name String representing name of the keytooloption
-     * @param ignoreNameCase flag indicating if the comparison should be case
-     * insensitive
+     * @param ignoreNameCase flag indicating if the comparison should be case insensitive
      * @return
      */
     private static String getValueFromOptionForName(String option, String name, boolean ignoreNameCase) {
-        //option is not null at this point
+        // option is not null at this point
         Pattern p = Pattern.compile(":");
         String[] pairs = p.split(option);
         for (String pair : pairs) {
