@@ -84,10 +84,13 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
     /**
      * Boot method via Micro.getInstance()
      * @return PayaraMicroBoot instance
-     * @throws Exception error
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws ClassNotFoundException
+     * @throws Exception
      */
     public static PayaraMicroBoot getBootClass()
-            throws Exception {
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException, Exception {
         if (bootInstance == null) {
             if (mainBoot) {
                 Class<?> mainClass = Thread.currentThread().getContextClassLoader()
