@@ -66,9 +66,9 @@
                     <execution>
                         <phase>package</phase>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <copy file="target/ejb30-hello-mdb-ear.ear" todir="/tmp"/>
-                            </tasks>
+                            </target>
                         </configuration>
                         <goals>
                             <goal>run</goal>
