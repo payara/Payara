@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,39 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.jmx.monitoring.admin;
-
-import com.sun.enterprise.config.serverbeans.Domain;
-import org.glassfish.api.I18n;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.config.support.TargetType;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
+package fish.payara.admin.monitor.cli;
 
 /**
- * @deprecated Since 5.183. 
- * Use set-jmx-monitoring-configuration command instead.
  *
- * @author savage
+ * @author Susan Rai
  */
-@Service(name = "set-monitoring-configuration")
-@PerLookup
-@CommandLock(CommandLock.LockType.NONE)
-@I18n("set.monitoring.configuration")
-@ExecuteOn(RuntimeType.DAS)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
-@RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.POST,
-            path = "set-monitoring-configuration",
-            description = "Sets the Monitoring Service Configuration to that specified")
-})
-@Deprecated
-public class SetMonitoringConfiguration extends SetJMXMonitoringConfiguration {
-    
+public final class Constants {
+
+    public final static String[] validModuleNames = {
+        "cloud",
+        "cloud-elasticity",
+        "cloud-orchestrator",
+        "cloud-tenant-manager",
+        "cloud-virt-assembly-service",
+        "connector-connection-pool",
+        "connector-service",
+        "deployment",
+        "ejb-container",
+        "http-service",
+        "jdbc-connection-pool",
+        "jersey",
+        "jms-service",
+        "jpa",
+        "jvm",
+        "orb",
+        "security",
+        "thread-pool",
+        "transaction-service",
+        "web-container",
+        "web-services-container"
+    };
 }

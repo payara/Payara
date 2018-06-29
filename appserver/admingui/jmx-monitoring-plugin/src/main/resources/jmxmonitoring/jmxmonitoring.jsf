@@ -54,7 +54,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
          setPageSessionAttribute(key="JMXMONITORING_CONFIG_URL", 
                 value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/monitoring-service-configuration"); 
 
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-monitoring-configuration?target=#{pageSession.configName}"  
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-jmx-monitoring-configuration?target=#{pageSession.configName}"  
                 method="GET" result="#{requestScope.resp}"); 
                 
         gf.restRequest(endpoint="#{pageSession.JMXMONITORING_CONFIG_URL}/monitored-attribute.json" method="GET" result="#{requestScope.propTable}")
@@ -95,7 +95,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                      mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                      mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                      prepareSuccessfulMsg();
-                     gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-monitoring-configuration" 
+                     gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-jmx-monitoring-configuration" 
                      attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
 
                      if (#{pageSession.hasPropertyTable}) {
