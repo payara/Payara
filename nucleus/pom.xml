@@ -792,7 +792,7 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <echo>
 Building ${project.artifactId} (final name ${project.build.finalName})
 Running from ${basedir}
@@ -807,7 +807,7 @@ Parent is ${project.parent}</echo>
                                         <present present="srconly" targetdir="${project.build.outputDirectory}/META-INF"/>
                                     </fileset>
                                 </copy>
-                            </tasks>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>

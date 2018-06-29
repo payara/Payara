@@ -87,12 +87,12 @@
                  <goal>run</goal>
                </goals>
                <configuration>
-                 <tasks>
+                 <target>
                     <copy file="init.hr-service.sql"
                          tofile="/tmp/init.hr-service.sql"/>
                     <copy file="init.salary-service.sql"
                          tofile="/tmp/init.salary-service.sql"/>
-                 </tasks>
+                 </target>
                </configuration>
              </execution>
            </executions>
