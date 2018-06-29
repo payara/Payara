@@ -93,12 +93,11 @@ public class RestModelListReader implements MessageBodyReader<List<RestModel>> {
     public List<RestModel> readFrom(Class<List<RestModel>> type, Type genericType,
         Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders,
         InputStream entityStream) throws IOException, WebApplicationException {
-        try {
+
+        try (JsonParser parser =
+                 Json.createParser(new BufferedReader(new InputStreamReader(entityStream)))) {
             Locale locale = CompositeUtil.instance().getLocale(httpHeaders);
-            List<RestModel> list = new ArrayList<RestModel>();
-            BufferedReader in = new BufferedReader(new InputStreamReader(entityStream));
-            
-            JsonParser parser = Json.createParser(in);
+            List<RestModel> list = new ArrayList<>();
             JsonArray array;
             if (parser.hasNext()){
                 parser.next();
@@ -106,7 +105,7 @@ public class RestModelListReader implements MessageBodyReader<List<RestModel>> {
             } else {
                 array = JsonValue.EMPTY_JSON_ARRAY;
             }
-            
+
             Class<?> modelType = null;
             if (genericType instanceof ParameterizedType) {
                 final ParameterizedType pt = (ParameterizedType) genericType;

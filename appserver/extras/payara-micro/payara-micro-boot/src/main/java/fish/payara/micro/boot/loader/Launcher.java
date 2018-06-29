@@ -20,6 +20,7 @@ package fish.payara.micro.boot.loader;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
@@ -44,30 +45,35 @@ public abstract class Launcher {
 	 * @throws Exception if the application fails to launch
 	 */
 	protected void launch(String[] args) throws Exception {
-            boolean explode = true;
-            String unpackDir = null;
-            for (int i = 0; i < args.length; i++) {
-                if ("--nested".equals(args[i].toLowerCase())) {
-                    explode = false;
-                } else if ("--unpackdir".equals(args[i].toLowerCase()) || "--rootdir".equals(args[i].toLowerCase())) {
-                    if (args.length >= (i+1)) {
-                        unpackDir = args[i+1];
-                    }
-                }
-            }
-            
-            ClassLoader classLoader;
-            if (!explode) {
-                classLoader = createClassLoader(getClassPathArchives());
-                fish.payara.micro.boot.loader.jar.JarFile.registerUrlProtocolHandler();
-            } else {
-                    if (unpackDir != null) {
-                        classLoader = new ExplodedURLClassloader(new File(unpackDir));
-                    } else {
-                        classLoader = new ExplodedURLClassloader();
-                    }
-            }
-            launch(args, getMainClass(), classLoader);
+		boolean explode = true;
+		String unpackDir = null;
+		for (int i = 0; i < args.length; i++) {
+			if ("--nested".equals(args[i].toLowerCase())) {
+				explode = false;
+			} else if ("--unpackdir".equals(args[i].toLowerCase()) || "--rootdir".equals(args[i].toLowerCase())) {
+				if (args.length >= (i+1)) {
+					unpackDir = args[i+1];
+				}
+			}
+		}
+		try (URLClassLoader classLoader = createUrlClassloader(explode, unpackDir)) {
+			launch(args, getMainClass(), classLoader);
+		}
+	}
+
+	private URLClassLoader createUrlClassloader(boolean explode, String unpackDir) throws Exception {
+		URLClassLoader classLoader;
+		if (!explode) {
+			classLoader = createClassLoader(getClassPathArchives());
+			fish.payara.micro.boot.loader.jar.JarFile.registerUrlProtocolHandler();
+		} else {
+			if (unpackDir != null) {
+				classLoader = new ExplodedURLClassloader(new File(unpackDir));
+			} else {
+				classLoader = new ExplodedURLClassloader();
+			}
+		}
+		return classLoader;
 	}
 
 	/**
@@ -76,8 +82,8 @@ public abstract class Launcher {
 	 * @return the classloader
 	 * @throws Exception if the classloader cannot be created
 	 */
-	protected ClassLoader createClassLoader(List<Archive> archives) throws Exception {
-		List<URL> urls = new ArrayList<URL>(archives.size());
+	protected URLClassLoader createClassLoader(List<Archive> archives) throws Exception {
+		List<URL> urls = new ArrayList<>(archives.size());
 		for (Archive archive : archives) {
 			urls.add(archive.getUrl());
 		}
@@ -88,9 +94,8 @@ public abstract class Launcher {
 	 * Create a classloader for the specified URLs.
 	 * @param urls the URLs
 	 * @return the classloader
-	 * @throws Exception if the classloader cannot be created
 	 */
-	protected ClassLoader createClassLoader(URL[] urls) throws Exception {
+	private URLClassLoader createClassLoader(URL[] urls) {
 		return new LaunchedURLClassLoader(urls, getClass().getClassLoader());
 	}
 
@@ -101,21 +106,19 @@ public abstract class Launcher {
 	 * @param classLoader the classloader
 	 * @throws Exception if the launch fails
 	 */
-	protected void launch(String[] args, String mainClass, ClassLoader classLoader)
+	private void launch(String[] args, String mainClass, ClassLoader classLoader)
 			throws Exception {
 		Thread.currentThread().setContextClassLoader(classLoader);
-		createMainMethodRunner(mainClass, args, classLoader).run();
+		createMainMethodRunner(mainClass, args).run();
 	}
 
 	/**
 	 * Create the {@code MainMethodRunner} used to launch the application.
 	 * @param mainClass the main class
 	 * @param args the incoming arguments
-	 * @param classLoader the classloader
 	 * @return the main method runner
 	 */
-	protected MainMethodRunner createMainMethodRunner(String mainClass, String[] args,
-			ClassLoader classLoader) {
+	private MainMethodRunner createMainMethodRunner(String mainClass, String[] args) {
 		return new MainMethodRunner(mainClass, args);
 	}
 

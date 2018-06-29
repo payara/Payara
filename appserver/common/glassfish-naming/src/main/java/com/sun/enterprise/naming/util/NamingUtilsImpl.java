@@ -58,7 +58,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.logging.Level;
 
 import static com.sun.enterprise.naming.util.LogFacade.logger;
-import static org.glassfish.common.util.ObjectInputOutputStreamFactoryFactory.getFactory;;
+import static org.glassfish.common.util.ObjectInputOutputStreamFactoryFactory.getFactory;
 
 /**
  * This is a utils class for refactoring the following method.
@@ -107,38 +107,36 @@ public class NamingUtilsImpl implements NamingUtils {
         NamingObjectFactory delegate, boolean cacheResult) {
         return new DelegatingNamingObjectFactory(name, delegate, cacheResult);
     }
-    
+
     @Override
     public Object makeCopyOfObject(Object obj) {
         if ( !(obj instanceof Context) && (obj instanceof Serializable) ) {
             if(logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, "** makeCopyOfObject:: " + obj);
             }
-            
             try {
                 // first serialize the object
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                ObjectOutputStream oos = getFactory().createObjectOutputStream(bos);
-                oos.writeObject(obj);
-                oos.flush();
-                byte[] data = bos.toByteArray();
-                oos.close();
-                bos.close();
-
-                // now deserialize it
-                ByteArrayInputStream bis = new ByteArrayInputStream(data);
-                final ObjectInputStream ois = getFactory().createObjectInputStream(bis);
-                obj = AccessController.doPrivileged(new PrivilegedExceptionAction() {
-                    @Override
-                    public Object run() throws IOException, ClassNotFoundException {
-                        return ois.readObject();
-                    }
-                });
+                byte[] data;
+                try (final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    final ObjectOutputStream oos = getFactory().createObjectOutputStream(bos)) {
+                    oos.writeObject(obj);
+                    oos.flush();
+                    data = bos.toByteArray();
+                }
+                try (final ByteArrayInputStream bis = new ByteArrayInputStream(data);
+                    final ObjectInputStream ois = getFactory().createObjectInputStream(bis)) {
+                    // now deserialize it
+                    obj = AccessController.doPrivileged(new PrivilegedExceptionAction() {
+                        @Override
+                        public Object run() throws IOException, ClassNotFoundException {
+                            return ois.readObject();
+                        }
+                    });
+                }
                 return obj;
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, EXCEPTION_COPY_MUTABLE, ex);
-                RuntimeException re = new RuntimeException("Cant copy Serializable object:", ex);
-                throw re;
+                throw new RuntimeException("Cant copy Serializable object:", ex);
             }
         } else {
             // XXX no copy ?
