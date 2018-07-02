@@ -280,25 +280,27 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
 		@Override
 		public void run() {
-            OpenAPI openapi = new OpenAPIImpl();
+            if (!future.isDone()) {
+                OpenAPI openapi = new OpenAPIImpl();
 
-            String contextRoot = getContextRoot(mapping.getAppInfo());
-            ReadableArchive archive = mapping.getAppInfo().getSource();
-            Set<Class<?>> classes = getClassesFromArchive(archive, mapping.getAppInfo().getAppClassLoader());
+                String contextRoot = getContextRoot(mapping.getAppInfo());
+                ReadableArchive archive = mapping.getAppInfo().getSource();
+                Set<Class<?>> classes = getClassesFromArchive(archive, mapping.getAppInfo().getAppClassLoader());
 
-            try {
-                openapi = new ModelReaderProcessor().process(openapi, mapping.getAppConfig());
-                openapi = new FileProcessor(mapping.getAppInfo().getAppClassLoader()).process(openapi, mapping.getAppConfig());
-                openapi = new ApplicationProcessor(classes).process(openapi, mapping.getAppConfig());
-                openapi = new BaseProcessor(contextRoot).process(openapi, mapping.getAppConfig());
-                openapi = new FilterProcessor().process(openapi, mapping.getAppConfig());
-            } catch (Throwable t) {
-                future.completeExceptionally(t);
-                return;
+                try {
+                    openapi = new ModelReaderProcessor().process(openapi, mapping.getAppConfig());
+                    openapi = new FileProcessor(mapping.getAppInfo().getAppClassLoader()).process(openapi, mapping.getAppConfig());
+                    openapi = new ApplicationProcessor(classes).process(openapi, mapping.getAppConfig());
+                    openapi = new BaseProcessor(contextRoot).process(openapi, mapping.getAppConfig());
+                    openapi = new FilterProcessor().process(openapi, mapping.getAppConfig());
+                } catch (Throwable t) {
+                    future.completeExceptionally(t);
+                    return;
+                }
+
+                LOGGER.info("OpenAPI document created.");
+                future.complete(openapi);
             }
-
-            LOGGER.info("OpenAPI document created.");
-            future.complete(openapi);
 		}
 
     }
