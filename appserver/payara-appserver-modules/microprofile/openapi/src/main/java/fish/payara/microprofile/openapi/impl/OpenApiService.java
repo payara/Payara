@@ -278,8 +278,8 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
             this.future = future;
         }
 
-		@Override
-		public void run() {
+        @Override
+        public void run() {
             if (!future.isDone()) {
                 OpenAPI openapi = new OpenAPIImpl();
 
@@ -301,7 +301,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
                 LOGGER.info("OpenAPI document created.");
                 future.complete(openapi);
             }
-		}
+        }
 
     }
 
