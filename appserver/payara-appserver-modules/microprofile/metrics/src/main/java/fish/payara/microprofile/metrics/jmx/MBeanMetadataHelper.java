@@ -168,27 +168,27 @@ public class MBeanMetadataHelper {
         boolean valid = true;
         
         if (metadata.getName() == null) {
-            LOGGER.log(Level.SEVERE, "'name' property not defined in '{0}' mbean metadata", metadata.getMBean());
+            LOGGER.log(Level.WARNING, "'name' property not defined in {0} mbean metadata", metadata.getMBean());
             valid = false;
         }
         if (metadata.getMBean() == null) {
-            LOGGER.log(Level.SEVERE, "'mbean' property not defined in '{0}' metadata", metadata.getName());
+            LOGGER.log(Level.WARNING, "'mbean' property not defined in {0} metadata", metadata.getName());
             valid = false;
         }
         if (metadata.getDisplayName() == null) {
-            LOGGER.log(Level.SEVERE, "'displayName' property not defined in '{0}' metadata", metadata.getName());
+            LOGGER.log(Level.WARNING, "'displayName' property not defined in {0} metadata", metadata.getName());
             valid = false;
         }
         if (metadata.getDescription() == null) {
-            LOGGER.log(Level.SEVERE, "'description' property not defined in '{0}' metadata", metadata.getName());
+            LOGGER.log(Level.WARNING, "'description' property not defined in {0} metadata", metadata.getName());
             valid = false;
         }
         if (metadata.getType() == null) {
-            LOGGER.log(Level.SEVERE, "'type' property not defined in '{0}' metadata", metadata.getName());
+            LOGGER.log(Level.WARNING, "'type' property not defined in {0} metadata", metadata.getName());
             valid = false;
         }
         if (metadata.getUnit() == null) {
-            LOGGER.log(Level.SEVERE, "'unit' property not defined for '{0}' metadata", metadata.getName());
+            LOGGER.log(Level.WARNING, "'unit' property not defined for {0} metadata", metadata.getName());
             valid = false;
         }
         
