@@ -149,7 +149,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
             ApplicationInfo appInfo = (ApplicationInfo) event.hook();
 
             // Create all the relevant resources
-            if (isEnabled() && isValidApp(appInfo)) {
+            if (isValidApp(appInfo)) {
                 // Store the application mapping in the list
                 mappings.add(new OpenApiMapping(appInfo));
             }
@@ -171,7 +171,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
      * @throws InterruptedException if creating the document was interrupted.
      */
     public OpenAPI getDocument() throws InterruptedException, ExecutionException, TimeoutException {
-        if (mappings.isEmpty()) {
+        if (mappings.isEmpty() || !isEnabled()) {
             return null;
         }
         return (OpenAPI) mappings.peekLast().getDocument();
