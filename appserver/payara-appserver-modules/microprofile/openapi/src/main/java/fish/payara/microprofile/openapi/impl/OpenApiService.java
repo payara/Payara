@@ -45,9 +45,12 @@ import java.beans.PropertyChangeEvent;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.Enumeration;
-import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -80,6 +83,7 @@ import fish.payara.microprofile.openapi.impl.processor.BaseProcessor;
 import fish.payara.microprofile.openapi.impl.processor.FileProcessor;
 import fish.payara.microprofile.openapi.impl.processor.FilterProcessor;
 import fish.payara.microprofile.openapi.impl.processor.ModelReaderProcessor;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 
 @Service(name = "microprofile-openapi-service")
 @RunLevel(StartupRunLevel.VAL)
@@ -87,7 +91,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
     private static final Logger LOGGER = Logger.getLogger(OpenApiService.class.getName());
 
-    private Deque<Map<ApplicationInfo, OpenAPI>> models;
+    private Deque<OpenApiMapping> mappings;
 
     @Inject
     private Events events;
@@ -95,9 +99,12 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     @Inject
     private OpenApiServiceConfiguration config;
 
+    @Inject
+    private PayaraExecutorService executor;
+
     @Override
     public void postConstruct() {
-        models = new ConcurrentLinkedDeque<>();
+        mappings = new ConcurrentLinkedDeque<>();
         events.register(this);
     }
 
@@ -113,8 +120,8 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     /**
      * Listen for OpenAPI config changes.
      */
-	@Override
-	public UnprocessedChangeEvents changed(PropertyChangeEvent[] event) {
+    @Override
+    public UnprocessedChangeEvents changed(PropertyChangeEvent[] event) {
         return ConfigSupport.sortAndDispatch(event, new Changed() {
             @Override
             public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> tClass, T t) {
@@ -130,7 +137,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
                 return null;
             }
         }, LOGGER);
-	}
+    }
 
     /**
      * Listen for application deployment events.
@@ -143,21 +150,14 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
             // Create all the relevant resources
             if (isEnabled() && isValidApp(appInfo)) {
-                // Create the OpenAPI config
-                OpenApiConfiguration appConfig = new OpenApiConfiguration(appInfo.getAppClassLoader());
-
-                // Map the application info to a new openapi document, and store it in the list
-                Map<ApplicationInfo, OpenAPI> map = Collections.singletonMap(appInfo,
-                        createOpenApiDocument(appInfo, appConfig));
-                models.add(map);
-
-                LOGGER.info("OpenAPI document created.");
+                // Store the application mapping in the list
+                mappings.add(new OpenApiMapping(appInfo));
             }
         } else if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo appInfo = (ApplicationInfo) event.hook();
-            for (Map<ApplicationInfo, OpenAPI> map : models) {
-                if (map.keySet().toArray()[0].equals(appInfo)) {
-                    models.remove(map);
+            for (OpenApiMapping mapping : mappings) {
+                if (mapping.getAppInfo().equals(appInfo)) {
+                    mappings.remove(mapping);
                     break;
                 }
             }
@@ -165,32 +165,20 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     }
 
     /**
-     * Gets the document for the most recently deployed application.
+     * @return the document for the most recently deployed application. Creates one if it hasn't already been created.
+     * @throws TimeoutException if creating the document timed out.
+     * @throws ExecutionException if creating the document failed.
+     * @throws InterruptedException if creating the document was interrupted.
      */
-    public OpenAPI getDocument() {
-        if (models.isEmpty()) {
+    public OpenAPI getDocument() throws InterruptedException, ExecutionException, TimeoutException {
+        if (mappings.isEmpty()) {
             return null;
         }
-        return (OpenAPI) models.getLast().values().toArray()[0];
-    }
-
-    private OpenAPI createOpenApiDocument(ApplicationInfo appInfo, OpenApiConfiguration config) {
-        OpenAPI document = new OpenAPIImpl();
-
-        String contextRoot = getContextRoot(appInfo);
-        ReadableArchive archive = appInfo.getSource();
-        Set<Class<?>> classes = getClassesFromArchive(archive, appInfo.getAppClassLoader());
-
-        document = new ModelReaderProcessor().process(document, config);
-        document = new FileProcessor(appInfo.getAppClassLoader()).process(document, config);
-        document = new ApplicationProcessor(classes).process(document, config);
-        document = new BaseProcessor(contextRoot).process(document, config);
-        document = new FilterProcessor().process(document, config);
-        return document;
+        return (OpenAPI) mappings.peekLast().getDocument();
     }
 
     /**
-     * Retrieves an instance of this service from HK2.
+     * @return an instance of this service from HK2.
      */
     public static OpenApiService getInstance() {
         return Globals.getStaticBaseServiceLocator().getService(OpenApiService.class);
@@ -213,7 +201,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     }
 
     /**
-     * @param archive the archive to read from.
+     * @param archive        the archive to read from.
      * @param appClassLoader the classloader to use to load the classes.
      * @return a list of all loadable classes in the archive.
      */
@@ -227,13 +215,13 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
                 .map(x -> {
                     Class<?> loadedClass = null;
                     // Attempt to load the class, ignoring any errors
-					try {
-						loadedClass = appClassLoader.loadClass(x);
-					} catch (Throwable t) {
+                    try {
+                        loadedClass = appClassLoader.loadClass(x);
+                    } catch (Throwable t) {
                     }
-					try {
-						loadedClass = Class.forName(x);
-					} catch (Throwable t) {
+                    try {
+                        loadedClass = Class.forName(x);
+                    } catch (Throwable t) {
                     }
                     // If the class can be loaded, check that everything in the class also can
                     if (loadedClass != null) {
@@ -249,6 +237,70 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
                 // Don't return null classes
                 .filter(x -> x != null)
                 .collect(toSet());
+    }
+
+    private class OpenApiMapping {
+
+        private final ApplicationInfo appInfo;
+        private final OpenApiConfiguration appConfig;
+        private final CompletableFuture<OpenAPI> document;
+
+        private OpenApiMapping(ApplicationInfo appInfo) {
+            this.appInfo = appInfo;
+            this.appConfig = new OpenApiConfiguration(appInfo.getAppClassLoader());
+            this.document = new CompletableFuture<>();
+        }
+
+        private ApplicationInfo getAppInfo() {
+            return appInfo;
+        }
+
+        private OpenApiConfiguration getAppConfig() {
+            return appConfig;
+        }
+
+        private synchronized OpenAPI getDocument() throws InterruptedException, ExecutionException, TimeoutException {
+            if (!document.isDone()) {
+                executor.submit(new OpenApiBuilder(this, document));
+            }
+            return document.get(10, TimeUnit.SECONDS);
+        }
+
+    }
+
+    private class OpenApiBuilder implements Runnable {
+
+        private final OpenApiMapping mapping;
+        private final CompletableFuture<OpenAPI> future;
+
+        private OpenApiBuilder(OpenApiMapping mapping, CompletableFuture<OpenAPI> future) {
+            this.mapping = mapping;
+            this.future = future;
+        }
+
+		@Override
+		public void run() {
+            OpenAPI openapi = new OpenAPIImpl();
+
+            String contextRoot = getContextRoot(mapping.getAppInfo());
+            ReadableArchive archive = mapping.getAppInfo().getSource();
+            Set<Class<?>> classes = getClassesFromArchive(archive, mapping.getAppInfo().getAppClassLoader());
+
+            try {
+                openapi = new ModelReaderProcessor().process(openapi, mapping.getAppConfig());
+                openapi = new FileProcessor(mapping.getAppInfo().getAppClassLoader()).process(openapi, mapping.getAppConfig());
+                openapi = new ApplicationProcessor(classes).process(openapi, mapping.getAppConfig());
+                openapi = new BaseProcessor(contextRoot).process(openapi, mapping.getAppConfig());
+                openapi = new FilterProcessor().process(openapi, mapping.getAppConfig());
+            } catch (Throwable t) {
+                future.completeExceptionally(t);
+                return;
+            }
+
+            LOGGER.info("OpenAPI document created.");
+            future.complete(openapi);
+		}
+
     }
 
 }
