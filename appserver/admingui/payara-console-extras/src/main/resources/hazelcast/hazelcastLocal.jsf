@@ -74,6 +74,9 @@
         <sun:property id="lite" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.lite}"  helpText="$resource{i18nhc.hazelcast.configuration.liteHelp}">
             <sun:checkbox id="lite" selected="#{pageSession.lite}" selectedValue="true" />
         </sun:property>
+        <sun:property id="publicAddressProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.publicAddress}"  helpText="$resource{i18nhc.hazelcast.configuration.publicAddressHelp}">
+            <sun:textField id="publicAddress" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['publicAddress']}" />
+        </sun:property> 
         <sun:property id="memberGroupProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.memberGroup}"  helpText="$resource{i18nhc.hazelcast.configuration.memberGroupHelp}">
             <sun:textField id="memberGroup" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['memberGroup']}" />
         </sun:property>
