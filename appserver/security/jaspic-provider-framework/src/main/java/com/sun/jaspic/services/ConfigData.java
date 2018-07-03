@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,58 +38,46 @@
  * holder.
  */
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.jmac;
+package com.sun.jaspic.services;
 
-import java.util.Map;
+import javax.security.auth.message.config.AuthConfig;
+import javax.security.auth.message.config.AuthConfigProvider;
+import javax.security.auth.message.config.ClientAuthConfig;
+import javax.security.auth.message.config.ServerAuthConfig;
 
-import javax.security.auth.message.MessageInfo;
+class ConfigData {
 
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.jvnet.hk2.annotations.Contract;
+    private AuthConfigProvider provider;
+    private AuthConfig serverConfig;
+    private AuthConfig clientConfig;
 
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
-import com.sun.enterprise.security.jauth.AuthParam;
-import com.sun.jaspic.services.RegistrationWrapperRemover;
+    ConfigData() {
+    }
 
-/**
- * A Delegate Interface for handling WebServices Specific Security and JSR 196 Providers This insulates the GF
- * Web-Bundle from any WebServices Dependencies.
- * 
- * @author kumar.jayanti
- */
-@Contract
-public interface WebServicesDelegate extends RegistrationWrapperRemover {
-    /**
-     * 
-     * @param svcRef The ServiceReferenceDescriptor
-     * @param properties The Properties Map passed to WebServices Code Via PipeCreator
-     * @return The MessageSecurityBindingDescriptor
-     */
-    public MessageSecurityBindingDescriptor getBinding(ServiceReferenceDescriptor svcRef, Map properties);
+    ConfigData(AuthConfigProvider authConfigProvider, AuthConfig authConfig) {
+        provider = authConfigProvider;
 
-    /**
-     * @return the classname of the Default JSR 196 WebServices Security Provider (A.k.a Metro Security Provider)
-     */
-    public String getDefaultWebServicesProvider();
+        if (authConfig == null) {
+            serverConfig = null;
+            clientConfig = null;
+        } else if (authConfig instanceof ServerAuthConfig) {
+            serverConfig = authConfig;
+        } else if (authConfig instanceof ClientAuthConfig) {
+            clientConfig = authConfig;
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+    
+    public AuthConfigProvider getProvider() {
+        return provider;
+    }
 
-    /**
-     * @param messageInfo The MessageInfo
-     * @return the AuthContextID computed from the argument MessageInfo
-     */
-    public String getAuthContextID(MessageInfo messageInfo);
+    public AuthConfig getServerConfig() {
+        return serverConfig;
+    }
 
-    /**
-     * @param messageInfo TheMessageInfo
-     * @return a new instance of SOAPAuthParam
-     */
-    public AuthParam newSOAPAuthParam(MessageInfo messageInfo);
-
-    /**
-     * return the SOAP Message from the invocation, to be used by JACC PolicyContextHandler
-     * 
-     * @param inv the invocation
-     * @return the SOAP Message
-     */
-    public Object getSOAPMessage(ComponentInvocation inv);
+    public AuthConfig getClientConfig() {
+        return clientConfig;
+    }
 }
