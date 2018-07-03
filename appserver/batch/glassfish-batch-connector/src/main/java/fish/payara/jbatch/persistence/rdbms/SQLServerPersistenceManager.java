@@ -1,31 +1,39 @@
 /*
- *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- *  Copyright (c) 2016 - 2018 Payara Foundation. All rights reserved.
- *
- *  The contents of this file are subject to the terms of the Common Development
- *  and Distribution License("CDDL") (collectively, the "License").  You
- *  may not use this file except in compliance with the License.  You can
- *  obtain a copy of the License at
- *  https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- *  or packager/legal/LICENSE.txt.  See the License for the specific
- *  language governing permissions and limitations under the License.
- *
- *  When distributing the software, include this License Header Notice in each
- *  file and include the License file at packager/legal/LICENSE.txt.
- *
+ *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER. 
+ * 
+ *  Copyright (c) 2016 Payara Foundation. All rights reserved. 
+ * 
+ *  The contents of this file are subject to the terms of the Common Development 
+ *  and Distribution License("CDDL") (collectively, the "License").  You 
+ *  may not use this file except in compliance with the License.  You can 
+ *  obtain a copy of the License at 
+ *  https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html 
+ *  or packager/legal/LICENSE.txt.  See the License for the specific 
+ *  language governing permissions and limitations under the License. 
+ * 
+ *  When distributing the software, include this License Header Notice in each 
+ *  file and include the License file at packager/legal/LICENSE.txt. 
+ * 
  */
 package fish.payara.jbatch.persistence.rdbms;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.spi.services.IBatchConfig;
-import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.CHECKPOINT_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.EXECUTION_INSTANCE_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.JOB_INSTANCE_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.JOB_STATUS_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.Q_SET_SCHEMA;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.STEP_EXECUTION_INSTANCE_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.STEP_STATUS_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.SQLServerJDBCConstants.SQLSERVER_CREATE_TABLE_CHECKPOINTDATA;
+import static fish.payara.jbatch.persistence.rdbms.SQLServerJDBCConstants.SQLSERVER_CREATE_TABLE_EXECUTIONINSTANCEDATA;
+import static fish.payara.jbatch.persistence.rdbms.SQLServerJDBCConstants.SQLSERVER_CREATE_TABLE_JOBINSTANCEDATA;
+import static fish.payara.jbatch.persistence.rdbms.SQLServerJDBCConstants.SQLSERVER_CREATE_TABLE_JOBSTATUS;
+import static fish.payara.jbatch.persistence.rdbms.SQLServerJDBCConstants.SQLSERVER_CREATE_TABLE_STEPINSTANCEDATA;
+import static fish.payara.jbatch.persistence.rdbms.SQLServerJDBCConstants.SQLSERVER_CREATE_TABLE_STEPSTATUS;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -33,34 +41,40 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
 
 public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager implements SQLServerJDBCConstants {
-
-	private static final String CLASSNAME = SQLServerPersistenceManager.class.getName();
+    
+    	private static final String CLASSNAME = SQLServerPersistenceManager.class.getName();
 	private static final Logger LOGGER = Logger.getLogger(CLASSNAME);
-
+	
 	// SQL Server create table strings
 	protected Map<String, String> SQLServerCreateStrings;
-	protected Map<String, String> schemaTableNames;
-
+        protected Map<String, String> schemaTableNames;
+	
 	@Override
 	public void init(IBatchConfig batchConfig) throws BatchContainerServiceException {
-		LOGGER.entering(CLASSNAME, "init", batchConfig);
+            
+                LOGGER.entering(CLASSNAME, "init", batchConfig);
 
 		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
 		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
-
+		
 		if (null == jndiName || jndiName.isEmpty()) {
 			throw new BatchContainerServiceException("JNDI name is not defined.");
 		}
-
+                
 		Context ctx;
 		try {
 			ctx = new InitialContext();
 			dataSource = (DataSource) ctx.lookup(jndiName);
 
 		} catch (NamingException e) {
-			LOGGER.log(Level.SEVERE,
+			LOGGER.log(Level.SEVERE, 
                             "Lookup failed for JNDI name: {0}. "
                           + "One cause of this could be that the batch runtime "
                           + "is incorrectly configured to EE mode when it "
@@ -77,7 +91,7 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 		} catch (SQLException e1) {
 			throw new BatchContainerServiceException(e1);
 		}
-
+		
 		SQLServerCreateStrings = setCreateSQLServerStringsMap(batchConfig);
 
 		LOGGER.log(Level.CONFIG, "JNDI name = {0}", jndiName);
@@ -93,7 +107,7 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 			throw new BatchContainerServiceException(e);
 		}
 
-		LOGGER.exiting(CLASSNAME, "init");
+                LOGGER.exiting(CLASSNAME, "init");
 	}
 
 	/**
@@ -125,7 +139,7 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 		} finally {
 			cleanupConnection(conn, rs, ps);
 		}
-
+                
                 LOGGER.exiting(CLASSNAME, "isSQLServerSchemaValid", result);
 		return result;
 	}
@@ -135,7 +149,7 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 	 * @throws SQLException
 	 */
 	private void checkSQLServerTables() throws SQLException {
-
+		
 		LOGGER.entering(CLASSNAME, "checkSQLServerTables");
 
 		createSQLServerTableIfNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
@@ -143,16 +157,16 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 
 		createSQLServerTableIfNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
 				SQLServerCreateStrings.get(SQLSERVER_CREATE_TABLE_JOBINSTANCEDATA));
-
+		
 		createSQLServerTableIfNotExists(tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
 				SQLServerCreateStrings.get(SQLSERVER_CREATE_TABLE_EXECUTIONINSTANCEDATA));
-
+		
 		createSQLServerTableIfNotExists(tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY),
 				SQLServerCreateStrings.get(SQLSERVER_CREATE_TABLE_STEPINSTANCEDATA));
-
+		
 		createSQLServerTableIfNotExists(tableNames.get(JOB_STATUS_TABLE_KEY),
 				SQLServerCreateStrings.get(SQLSERVER_CREATE_TABLE_JOBSTATUS));
-
+                
 		createSQLServerTableIfNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
 				SQLServerCreateStrings.get(SQLSERVER_CREATE_TABLE_STEPSTATUS));
 
@@ -167,26 +181,26 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 	 */
 	protected void createSQLServerTableIfNotExists(String tableName,
 			String createTableStatement) throws SQLException {
-
+            
 		LOGGER.entering(CLASSNAME, "createSQLServerTableIfNotExists",
 				new Object[] { tableName, createTableStatement });
 
 		Connection conn = null;
 		PreparedStatement ps = null;
-		ResultSet rs;
+                ResultSet rs;
 
 		try {
-			conn = getConnection();
-			ps = conn.prepareStatement(
-			  "SELECT table_schema, table_name FROM information_schema.tables "
-					+ "WHERE table_schema LIKE ? AND table_name LIKE ?",
-			  ResultSet.TYPE_SCROLL_INSENSITIVE,
-			  ResultSet.CONCUR_READ_ONLY
-			);
-			ps.setString(1, schema);
-			ps.setString(2, tableName);
+                        conn = getConnection();
+                        ps = conn.prepareStatement(
+                          "SELECT table_schema, table_name FROM information_schema.tables "
+                                + "WHERE table_schema LIKE ? AND table_name LIKE ?",
+                          ResultSet.TYPE_SCROLL_INSENSITIVE,
+                          ResultSet.CONCUR_READ_ONLY
+                        );
+                        ps.setString(1, schema);
+                        ps.setString(2, tableName);
 			rs = ps.executeQuery();
-
+                        
 			int rowcount = getTableRowCount(rs);
 
 			// Create table if it does not exist
@@ -206,34 +220,34 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 
 		LOGGER.exiting(CLASSNAME, "createSQLServerTableIfNotExists");
 	}
-
-
+        
+        
 	protected Map<String, String> getSharedSchemaTableMap(IBatchConfig batchConfig) {
 		String prefix = batchConfig.getConfigProperties().getProperty(
 				BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY, "");
 		String suffix = batchConfig.getConfigProperties().getProperty(
 				BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY, "");
                 String schema = batchConfig.getDatabaseConfigurationBean().getSchema();
-
+                
                 String schemaPrefix;
                 if(schema == null || schema.isEmpty()) {
                     schemaPrefix = "";
                 } else {
                     schemaPrefix = schema + ".";
                 }
-
+                
 		Map<String, String> result = new HashMap<String, String>(6);
-		result.put(JOB_INSTANCE_TABLE_KEY, schemaPrefix + prefix
+		result.put(JOB_INSTANCE_TABLE_KEY, schemaPrefix + prefix 
                                 + "JOBINSTANCEDATA" + suffix);
 		result.put(EXECUTION_INSTANCE_TABLE_KEY, schemaPrefix + prefix
 				+ "EXECUTIONINSTANCEDATA" + suffix);
 		result.put(STEP_EXECUTION_INSTANCE_TABLE_KEY, schemaPrefix + prefix
 				+ "STEPEXECUTIONINSTANCEDATA" + suffix);
-		result.put(JOB_STATUS_TABLE_KEY, schemaPrefix + prefix
+		result.put(JOB_STATUS_TABLE_KEY, schemaPrefix + prefix 
                                 + "JOBSTATUS" + suffix);
-		result.put(STEP_STATUS_TABLE_KEY, schemaPrefix + prefix
+		result.put(STEP_STATUS_TABLE_KEY, schemaPrefix + prefix 
                                 + "STEPSTATUS" + suffix);
-		result.put(CHECKPOINT_TABLE_KEY, schemaPrefix + prefix
+		result.put(CHECKPOINT_TABLE_KEY, schemaPrefix + prefix 
                                 + "CHECKPOINTDATA" + suffix);
 		return result;
 	}
@@ -242,29 +256,29 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
         protected void setSchemaOnConnection(Connection connection){
             // SQL Server does not support setting default schema for session
         }
-
+    
         /**
 	 * Method invoked to insert the MySql create table strings into a hashmap
          * @param  batchConfig
          * @return SQLServerCreateStrings
 	 **/
 	protected Map<String, String> setCreateSQLServerStringsMap (IBatchConfig batchConfig) {
-
+            
 		SQLServerCreateStrings = new HashMap<>();
-
+		
 		SQLServerCreateStrings.put(SQLSERVER_CREATE_TABLE_CHECKPOINTDATA, "CREATE TABLE "
                                                 + schemaTableNames.get(CHECKPOINT_TABLE_KEY)
                                                 + "("
                                                 + "id VARCHAR(512),"
                                                 + "obj VARBINARY(MAX))");
-
+		
 		SQLServerCreateStrings.put(SQLSERVER_CREATE_TABLE_JOBINSTANCEDATA,"CREATE TABLE "
 						+ schemaTableNames.get(JOB_INSTANCE_TABLE_KEY)
 						+ "("
                                                 + "jobinstanceid BIGINT NOT NULL PRIMARY KEY IDENTITY(1,1),"
                                                 + "name VARCHAR(512),"
                                                 + "apptag VARCHAR(512))");
-
+		
 		SQLServerCreateStrings.put(SQLSERVER_CREATE_TABLE_EXECUTIONINSTANCEDATA,"CREATE TABLE "
 						+ schemaTableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
 						+ "("
@@ -303,7 +317,7 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 						+ "CONSTRAINT JOBEXEC_STEPEXEC_FK FOREIGN KEY (jobexecid) REFERENCES "
 						+ schemaTableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
 						+ "(jobexecid))");
-
+		
 		SQLServerCreateStrings.put(SQLSERVER_CREATE_TABLE_JOBSTATUS,"CREATE TABLE "
 						+ schemaTableNames.get(JOB_STATUS_TABLE_KEY)
 						+ "("
@@ -323,10 +337,10 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 						+ "(stepexecid) ON DELETE CASCADE)");
 
 		return SQLServerCreateStrings;
-	}
-
+	}  
+        
         protected Map<String, String> getSQLServerSharedQueryMap(IBatchConfig batchConfig) throws SQLException {
-
+            
                 String schemaPrefix = batchConfig.getDatabaseConfigurationBean().getSchema();
                 if(schemaPrefix != null && !schemaPrefix.isEmpty()) {
                     schemaPrefix += ".";

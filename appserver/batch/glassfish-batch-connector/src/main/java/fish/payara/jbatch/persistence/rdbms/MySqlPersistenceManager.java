@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2016 - 2018 Payara Foundation. All rights reserved.
-
+ * Copyright (c) 2016 Payara Foundation. All rights reserved.
+ 
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
@@ -8,7 +8,7 @@
  * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
-
+ 
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at packager/legal/LICENSE.txt.
  */
@@ -47,10 +47,10 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 	private final static Logger logger = Logger.getLogger(CLASSNAME);
 
 	private IBatchConfig batchConfig = null;
-
+	
 	// mysql create table strings
 	protected Map<String, String> createMySQLStrings;
-
+	
 	@Override
 	public void init(IBatchConfig batchConfig)
 			throws BatchContainerServiceException {
@@ -61,7 +61,7 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
 
 		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
-
+		
 		if (jndiName == null || jndiName.equals("")) {
 			throw new BatchContainerServiceException(
 					"JNDI name is not defined.");
@@ -91,7 +91,7 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 		}
 		// put the create table strings into a hashmap
 		//createTableStrings = setCreateTableMap(batchConfig);
-
+		
 		createMySQLStrings = setCreateMySQLStringsMap(batchConfig);
 
 		logger.config("JNDI name = " + jndiName);
@@ -151,7 +151,7 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 	 * @throws SQLException
 	 */
 	private void checkMySQLTables() throws SQLException {
-
+		
 		logger.entering(CLASSNAME, "checkMySQLTables");
 
 		createMySQLTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
@@ -160,15 +160,15 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 
 		createMySQLTableNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
 				createMySQLStrings.get(MYSQL_CREATE_TABLE_JOBINSTANCEDATA));
-
+		
 		createMySQLTableNotExists(
 				tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
 				createMySQLStrings.get(MYSQL_CREATE_TABLE_EXECUTIONINSTANCEDATA));
-
+		
 		createMySQLTableNotExists(
 				tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY),
 				createMySQLStrings.get(MYSQL_CREATE_TABLE_STEPINSTANCEDATA));
-
+		
 		createMySQLTableNotExists(tableNames.get(JOB_STATUS_TABLE_KEY),
 				createMySQLStrings.get(MYSQL_CREATE_TABLE_JOBSTATUS));
 		createMySQLTableNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
@@ -189,32 +189,32 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 				new Object[] { tableName, createTableStatement });
 
 		Connection conn = null;
+		Statement stmt = null;
 		ResultSet rs = null;
 		PreparedStatement ps = null;
 
 		try {
 			conn = getConnection();
-			try (Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-					ResultSet.CONCUR_READ_ONLY)) {
-				String query = "select lower(table_schema),lower(table_name) FROM information_schema.tables where lower(table_schema)= "
-						+ "\'"
-						+ schema
-						+ "\'"
-						+ " and lower(table_name)= "
-						+ "\'"
-						+ tableName.toLowerCase() + "\'";
-				rs = stmt.executeQuery(query);
+			stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+					ResultSet.CONCUR_READ_ONLY);
+			String query = "select lower(table_schema),lower(table_name) FROM information_schema.tables where lower(table_schema)= "
+					+ "\'"
+					+ schema
+					+ "\'"
+					+ " and lower(table_name)= "
+					+ "\'"
+					+ tableName.toLowerCase() + "\'";
+			rs = stmt.executeQuery(query);
 
-				int rowcount = getTableRowCount(rs);
+			int rowcount = getTableRowCount(rs);
 
-				// Create table if it does not exist
-				if (rowcount == 0) {
-					if (!rs.next()) {
-						logger.log(Level.INFO, tableName
-								+ " table does not exists. Trying to create it.");
-						ps = conn.prepareStatement(createTableStatement);
-						ps.executeUpdate();
-					}
+			// Create table if it does not exist
+			if (rowcount == 0) {
+				if (!rs.next()) {
+					logger.log(Level.INFO, tableName
+							+ " table does not exists. Trying to create it.");
+					ps = conn.prepareStatement(createTableStatement);
+					ps.executeUpdate();
 				}
 			}
 		} catch (SQLException e) {
@@ -228,7 +228,7 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 	}
 
 
-
+	
 	@Override
     protected Map<String, String> getSharedQueryMap(IBatchConfig batchConfig) throws SQLException {
         Map<String, String> result = super.getSharedQueryMap(batchConfig);
@@ -236,35 +236,36 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
         {
         	schema = setDefaultSchema();
         }
-
+       
         result.put(Q_SET_SCHEMA, "USE " + schema);
-
+        
         return result;
     }
 
     @Override
     protected void setSchemaOnConnection(Connection connection) throws SQLException {
-		try (PreparedStatement ps = connection.prepareStatement(queryStrings.get(Q_SET_SCHEMA))) {
-			ps.executeUpdate();
-		}
+            PreparedStatement ps = null;
+            ps = connection.prepareStatement(queryStrings.get(Q_SET_SCHEMA));
+            ps.executeUpdate();
+            ps.close();
     }
-
+    
     /**
 	 * Method invoked to insert the MySql create table strings into a hashmap
 	 **/
 
 	protected Map<String, String> setCreateMySQLStringsMap (IBatchConfig batchConfig) {
 		createMySQLStrings = new HashMap<>();
-
+		
 		createMySQLStrings.put(MYSQL_CREATE_TABLE_CHECKPOINTDATA, "CREATE TABLE "
 				+ tableNames.get(CHECKPOINT_TABLE_KEY)
 				+ " (id VARCHAR(512),obj BLOB)");
-
+		
 		createMySQLStrings.put(MYSQL_CREATE_TABLE_JOBINSTANCEDATA,"CREATE TABLE "
 								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
 								+ " (jobinstanceid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,name VARCHAR(512), apptag VARCHAR(512))");
-
-
+		
+		
 		createMySQLStrings.put(MYSQL_CREATE_TABLE_EXECUTIONINSTANCEDATA,"CREATE TABLE "
 						+ tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
 						+ "("
@@ -303,8 +304,8 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 						+ "CONSTRAINT JOBEXEC_STEPEXEC_FK FOREIGN KEY (jobexecid) REFERENCES "
 						+ tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
 						+ "(jobexecid))");
-
-
+		
+		 
 
 
 		createMySQLStrings.put(MYSQL_CREATE_TABLE_JOBSTATUS,"CREATE TABLE "
@@ -327,6 +328,6 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 
 		return createMySQLStrings;
 	}
-
+    
 
 }

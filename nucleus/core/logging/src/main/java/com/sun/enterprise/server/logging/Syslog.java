@@ -103,18 +103,23 @@ public class Syslog {
      */
     public void log(int facility, int level, String msg) {
       int fl=facility | level;
+
       String what="<" + fl + ">" + msg;
+      // System.out.println("Writing to syslog:" + what);
+
       try {
         byte[] buf = what.getBytes();
         int len = buf.length;
         DatagramPacket dp = new DatagramPacket(buf,len,addr,SYSLOG_PORT);
-        try (DatagramSocket s = new DatagramSocket()) {
-            s.send(dp);
+        DatagramSocket s = new DatagramSocket();
+        s.send(dp);
+        if(!s.isClosed()) {
+            s.close();
         }
       } catch(IOException e) {
         LogFacade.LOGGING_LOGGER.log(Level.SEVERE, LogFacade.ERROR_SENDING_SYSLOG_MSG, e);
       }
     }
 
-
+    
 }
