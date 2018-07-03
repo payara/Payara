@@ -37,19 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm;
-import com.sun.enterprise.security.BaseRealm;
 
+import com.sun.enterprise.security.BaseRealm;
 
 /**
  * Parent class for iAS Realm classes.
  *
- *  This class no longer implements the methods of Realm, instead it extends
- *  from BaseRealm and now is only a place holder for migration and is a
- *  candidate for deprecation.
+ * This class no longer implements the methods of Realm, instead it extends from BaseRealm and now is only a place
+ * holder for migration and is a candidate for deprecation.
  *
  */
-public abstract class IASRealm extends BaseRealm
-{
+public abstract class IASRealm extends BaseRealm {
 }

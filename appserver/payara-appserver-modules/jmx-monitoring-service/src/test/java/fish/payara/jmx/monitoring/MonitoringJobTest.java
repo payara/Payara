@@ -1,7 +1,41 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
  */
 package fish.payara.jmx.monitoring;
 
@@ -32,7 +66,7 @@ public class MonitoringJobTest {
     private static final String COMMITTEDHEAP_SUBATTRIBUTE_KEY = "committed" + HEAP_ATTRIBUTE_NAME;
 
     /**
-     * Tests the MonitoringJob is able to get a basic attribute correctly.
+     * Tests the JMXMonitoringJob is able to get a basic attribute correctly.
      */
     @Test
     public void basicAttributeShouldReturnKeyValueString() {
@@ -48,10 +82,10 @@ public class MonitoringJobTest {
 
         List<String> testAttributes = new ArrayList<>();
         testAttributes.add(THREAD_ATTRIBUTE_NAME);
-        MonitoringJob job;
+        JMXMonitoringJob job;
 
         try {
-            job = new MonitoringJob(testMBean, testAttributes);
+            job = new JMXMonitoringJob(testMBean, testAttributes);
         } catch (MalformedObjectNameException ex) {
             Assert.fail("While trying to create MonitoringJob with ObjectName " + 
                     testMBean.getCanonicalName() + " encountered " + ex.getMessage());
@@ -73,7 +107,7 @@ public class MonitoringJobTest {
     }
 
     /**
-     * Tests the MonitoringJob is able to get a composite attribute correctly.
+     * Tests the JMXMonitoringJob is able to get a composite attribute correctly.
      */
     @Test
     public void compositeAttributeShouldReturnSeriesKeyValueString() {
@@ -90,10 +124,10 @@ public class MonitoringJobTest {
 
         List<String> testAttributes = new ArrayList<>();
         testAttributes.add(HEAP_ATTRIBUTE_NAME);
-        MonitoringJob job;
+        JMXMonitoringJob job;
 
         try {
-            job = new MonitoringJob(testMBean, testAttributes);
+            job = new JMXMonitoringJob(testMBean, testAttributes);
         } catch (MalformedObjectNameException ex) {
             Assert.fail("While trying to create MonitoringJob with ObjectName " + 
                     testMBean.getCanonicalName() + " encountered " + ex.getMessage());
@@ -146,7 +180,7 @@ public class MonitoringJobTest {
     }
 
     /**
-     * Tests the MonitoringJob is able to get a sub-attribute of a composite attribute correctly.
+     * Tests the JMXMonitoringJob is able to get a sub-attribute of a composite attribute correctly.
      */
     @Test
     public void compositeAttributeSubAttributeShouldReturnKeyValueString() {
@@ -162,10 +196,10 @@ public class MonitoringJobTest {
 
         List<String> testAttributes = new ArrayList<>();
         testAttributes.add(HEAP_SUBATTRIBUTE_NAME);
-        MonitoringJob job;
+        JMXMonitoringJob job;
 
         try {
-            job = new MonitoringJob(testMBean, testAttributes);
+            job = new JMXMonitoringJob(testMBean, testAttributes);
         } catch (MalformedObjectNameException ex) {
             Assert.fail("While trying to create MonitoringJob with ObjectName " + 
                     testMBean.getCanonicalName() + " encountered " + ex.getMessage());
@@ -189,7 +223,7 @@ public class MonitoringJobTest {
     }
    
     /**
-     * Tests the MonitoringJob is able to have attributes added to it.
+     * Tests the JMXMonitoringJob is able to have attributes added to it.
      */
     @Test
     public void shouldAddAttributeToJob() {
@@ -204,10 +238,10 @@ public class MonitoringJobTest {
         }
 
         List<String> testAttributes = new ArrayList<>();
-        MonitoringJob job;
+        JMXMonitoringJob job;
 
         try {
-            job = new MonitoringJob(testMBean, testAttributes);
+            job = new JMXMonitoringJob(testMBean, testAttributes);
         } catch (MalformedObjectNameException ex) {
             Assert.fail("While trying to create MonitoringJob with ObjectName " + 
                     testMBean.getCanonicalName() + " encountered " + ex.getMessage());
@@ -222,7 +256,7 @@ public class MonitoringJobTest {
     }
 
     /**
-     * Tests the MonitoringJob does not add duplicate attributes to it.
+     * Tests the JMXMonitoringJob does not add duplicate attributes to it.
      */
     @Test
     public void shouldNotAddExistingAttributeToJob() {
@@ -237,10 +271,10 @@ public class MonitoringJobTest {
         }
 
         List<String> testAttributes = new ArrayList<>();
-        MonitoringJob job;
+        JMXMonitoringJob job;
 
         try {
-            job = new MonitoringJob(testMBean, testAttributes);
+            job = new JMXMonitoringJob(testMBean, testAttributes);
         } catch (MalformedObjectNameException ex) {
             Assert.fail("While trying to create MonitoringJob with ObjectName " + 
                     testMBean.getCanonicalName() + " encountered " + ex.getMessage());

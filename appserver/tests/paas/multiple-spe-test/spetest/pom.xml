@@ -84,9 +84,9 @@
                     <execution>
                         <phase>post-integration-test</phase>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <delete file="${S1AS_HOME}/modules/paas.mydbplugin.jar"/>
-                            </tasks>
+                            </target>
                         </configuration>
                         <goals>
                             <goal>run</goal>

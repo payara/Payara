@@ -37,22 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm;
 
-
 /**
- * Exception thrown when an operation is invoked on a realm that does not
- * support it. 
- * e.g. Invoking getGroups (username) is not supported by a certificate realm.
+ * Exception thrown when an operation is invoked on a realm that does not support it. e.g. Invoking getGroups (username)
+ * is not supported by a certificate realm.
+ * 
  * @author Harpreet Singh
  */
-public class InvalidOperationException extends Exception
-{
+public class InvalidOperationException extends Exception {
+    
+    private static final long serialVersionUID = 1124276549235903088L;
+
     /**
      * Constructs the exception, with descriptive information.
      *
      * @param info describes the problem with the realm
      */
-    public InvalidOperationException (String info) { super (info); }
+    public InvalidOperationException(String info) {
+        super(info);
+    }
 }

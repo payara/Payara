@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.enterprise.iiop.impl;
 
 import com.sun.corba.ee.impl.javax.rmi.CORBA.StubDelegateImpl;
@@ -184,6 +185,8 @@ public final class GlassFishORBManager {
      // We need this to get the ORB monitoring set up correctly
     public static final String S1AS_ORB_ID = "S1AS-ORB";
 
+    private static final String DISABLE_SSL_CHECK = "fish.payara.orb.disable-ssl-check";
+
     // Set in constructor
     private ServiceLocator services;
     private IIOPUtils iiopUtils;
@@ -205,6 +208,7 @@ public final class GlassFishORBManager {
     private ProcessType processType;
 
     private IiopFolbGmsClient gmsClient ;
+    private static boolean disableSSLCheck;
 
     /**
      * Keep this class private to the package.  Eventually we need to
@@ -284,6 +288,10 @@ public final class GlassFishORBManager {
         return orbInitialPort;
     }
 
+    public static boolean disableSSLCheck() {
+        return disableSSLCheck;
+    }
+
     private void initProperties() {
         fineLog( "GlassFishORBManager: initProperties: processType {0}",
             processType ) ;
@@ -297,6 +305,8 @@ public final class GlassFishORBManager {
                         GlassFishORBHelper.ORB_SSL_CLIENT_REQUIRED, "true");
             }
         }
+
+        disableSSLCheck = Boolean.getBoolean(DISABLE_SSL_CHECK);
 
         if(!processType.isServer()) {
             // No access to domain.xml.  Just init properties.

@@ -64,6 +64,7 @@ public class NewRelicNotifierConfigurationExecutionOptionsFactory
     public NewRelicNotifierConfigurationExecutionOptions build(NewRelicNotifierConfiguration notifierConfiguration) {
         NewRelicNotifierConfigurationExecutionOptions executionOptions = new NewRelicNotifierConfigurationExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
+        executionOptions.setNoisy(Boolean.parseBoolean(notifierConfiguration.getNoisy()));
         executionOptions.setKey(notifierConfiguration.getKey());
         executionOptions.setAccountId(notifierConfiguration.getAccountId());
 

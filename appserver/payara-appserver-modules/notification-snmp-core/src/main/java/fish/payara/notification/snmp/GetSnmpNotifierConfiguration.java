@@ -68,16 +68,17 @@ public class GetSnmpNotifierConfiguration extends BaseGetNotifierConfiguration<S
 
     @Override
     protected String listConfiguration(SnmpNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "Community", "OID", "Version", "Host", "Port"};
+        String headers[] = {"Enabled", "Noisy", "Community", "OID", "Version", "Host", "Port"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[6];
+        Object values[] = new Object[7];
 
         values[0] = configuration.getEnabled();
-        values[1] = configuration.getCommunity();
-        values[2] = configuration.getOid();
-        values[3] = configuration.getVersion();
-        values[4] = configuration.getHost();
-        values[5] = configuration.getPort();
+        values[1] = configuration.getNoisy();
+        values[2] = configuration.getCommunity();
+        values[3] = configuration.getOid();
+        values[4] = configuration.getVersion();
+        values[5] = configuration.getHost();
+        values[6] = configuration.getPort();
 
         columnFormatter.addRow(values);
         return columnFormatter.toString();
@@ -85,15 +86,18 @@ public class GetSnmpNotifierConfiguration extends BaseGetNotifierConfiguration<S
 
     @Override
     protected Map<String, Object> getNotifierConfiguration(SnmpNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(6);
+        Map<String, Object> map = new HashMap<>(7);
 
         if (configuration != null) {
             map.put("enabled", configuration.getEnabled());
+            map.put("noisy", configuration.getNoisy());
             map.put("community", configuration.getCommunity());
             map.put("oid", configuration.getOid());
             map.put("version", configuration.getVersion());
             map.put("hostName", configuration.getHost());
             map.put("port", configuration.getPort());
+        } else {
+            map.put("noisy", Boolean.TRUE.toString());
         }
 
         return map;

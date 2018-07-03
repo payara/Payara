@@ -87,10 +87,10 @@
                  <goal>run</goal>
                </goals>
                <configuration>
-                 <tasks>
+                 <target>
                     <copy file="initsql.sql"
                          tofile="/tmp/initsql.sql"/>
-                 </tasks>
+                 </target>
                </configuration>
              </execution>
            </executions>

@@ -37,9 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.security.common;
 
+import java.io.Serializable;
 import java.security.Principal;
 
 /**
@@ -47,27 +48,29 @@ import java.security.Principal;
  *
  * @author Harish Prabandham
  */
-public class PrincipalImpl implements Principal, java.io.Serializable {
+public class PrincipalImpl implements Principal, Serializable {
 
+    private static final long serialVersionUID = 373616283817165845L;
+    
     /**
      * @serial
      */
     private String name;
 
-     /**
+    /**
      * Construct a principal from a string user name.
+     * 
      * @param user The string form of the principal name.
      */
     public PrincipalImpl(String user) {
-	this.name = user;
+        this.name = user;
     }
 
     /**
-     * This function returns true if the object passed matches 
-     * the principal represented in this implementation
+     * This function returns true if the object passed matches the principal represented in this implementation
+     * 
      * @param another the Principal to compare with.
-     * @return true if the Principal passed is the same as that 
-     * encapsulated in this object, false otherwise
+     * @return true if the Principal passed is the same as that encapsulated in this object, false otherwise
      */
     public boolean equals(Object another) {
         // XXX for bug 4889642: if groupA and userA have
@@ -75,37 +78,43 @@ public class PrincipalImpl implements Principal, java.io.Serializable {
         // BUT userA.equals(groupA) return "true"
         if (another instanceof Group) {
             return false;
-        } else if (another instanceof PrincipalImpl) {
-	    Principal p = (Principal) another;
-	    return getName().equals(p.getName());
-	} else
-	    return false;
+        }
+        
+        if (another instanceof PrincipalImpl) {
+            Principal p = (Principal) another;
+            return getName().equals(p.getName());
+        }
+        
+        return false;
     }
-    
+
     /**
      * Prints a stringified version of the principal.
+     * 
      * @return A java.lang.String object returned by the method getName()
      */
     @Override
     public String toString() {
-	return getName();
+        return getName();
     }
 
     /**
      * Returns the hashcode for this Principal object
+     * 
      * @return a hashcode for the principal.
      */
     @Override
     public int hashCode() {
-	return name.hashCode();
+        return name.hashCode();
     }
 
     /**
      * Gets the name of the Principal as a java.lang.String
+     * 
      * @return the name of the principal.
      */
     public String getName() {
-	return name;
+        return name;
     }
 
 }

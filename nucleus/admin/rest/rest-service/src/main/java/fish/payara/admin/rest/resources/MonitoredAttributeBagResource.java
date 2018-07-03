@@ -234,7 +234,7 @@ public class MonitoredAttributeBagResource extends AbstractResource {
             for (Map<String, String> attribute : attributesToAdd) {
                 Map<String, String> parameters = new HashMap<>();
                 parameters.put("addattribute", String.format("attributeName=%s objectName=%s", attribute.get("attributeName"), attribute.get("objectName")));
-                RestActionReporter reporter = ResourceUtil.runCommand("set-monitoring-configuration", parameters, getSubject());
+                RestActionReporter reporter = ResourceUtil.runCommand("set-jmx-monitoring-configuration", parameters, getSubject());
                 if (reporter.isFailure()) {
                     throw new TransactionFailure(reporter.getMessage());
                 }
@@ -243,7 +243,7 @@ public class MonitoredAttributeBagResource extends AbstractResource {
             for (Map<String, String> attribute : attributesToDelete) {
                 Map<String, String> parameters = new HashMap<>();
                 parameters.put("delattribute", String.format("attributeName=%s objectName=%s", attribute.get("attributeName"), attribute.get("objectName")));
-                RestActionReporter reporter = ResourceUtil.runCommand("set-monitoring-configuration", parameters, getSubject());
+                RestActionReporter reporter = ResourceUtil.runCommand("set-jmx-monitoring-configuration", parameters, getSubject());
                 if (reporter.isFailure()) {
                     throw new TransactionFailure(reporter.getMessage());
                 }

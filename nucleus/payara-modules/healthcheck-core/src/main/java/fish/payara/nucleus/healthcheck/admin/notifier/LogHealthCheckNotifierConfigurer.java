@@ -72,5 +72,10 @@ public class LogHealthCheckNotifierConfigurer extends BaseHealthCheckNotifierCon
         if(this.enabled != null) {
             notifier.enabled(enabled);
         }
+        if (this.noisy != null) {
+            notifier.noisy(noisy);
+        } else {
+            notifier.noisy(getNotifierNoisy("get-log-notifier-configuration"));
+        }
     }
 }

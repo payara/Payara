@@ -89,10 +89,10 @@
                     <execution>
                         <phase>pre-integration-test</phase>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <get src="${mqplugin.url}" dest="${env.S1AS_HOME}/modules/paas.mqplugin.jar"
                                      usetimestamp="true"/>
-                            </tasks>
+                            </target>
                         </configuration>
                         <goals>
                             <goal>run</goal>

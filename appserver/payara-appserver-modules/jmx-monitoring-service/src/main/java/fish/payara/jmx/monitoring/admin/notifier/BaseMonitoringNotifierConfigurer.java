@@ -1,6 +1,7 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +41,7 @@ package fish.payara.jmx.monitoring.admin.notifier;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import fish.payara.jmx.monitoring.MonitoringService;
+import fish.payara.jmx.monitoring.JMXMonitoringService;
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
 import fish.payara.nucleus.notification.configuration.Notifier;
 import org.glassfish.api.ActionReport;
@@ -77,7 +78,7 @@ public abstract class BaseMonitoringNotifierConfigurer<C extends Notifier> imple
     protected Logger logger;
 
     @Inject
-    protected MonitoringService service;
+    protected JMXMonitoringService service;
 
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     protected Boolean dynamic;
