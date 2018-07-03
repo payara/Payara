@@ -42,8 +42,10 @@ package fish.payara.micro.boot.loader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
@@ -86,20 +88,21 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
     }
 
     private void explodeJars() throws IOException {
+
         // create a runtime jar directory
         File runtimeDir = new File(explodedDir, "runtime");
         runtimeDir.mkdirs();
         if (deleteOnExit) {
             runtimeDir.deleteOnExit();
         }
-
+        
         // create a lib directory
         File libDir = new File(explodedDir,"lib");
         libDir.mkdirs();
         if (deleteOnExit) {
             libDir.deleteOnExit();
         }
-
+        
         // sets the system property used in the server.policy file for permissions
         System.setProperty("fish.payara.micro.UnpackDir", explodedDir.getAbsolutePath());
 
@@ -112,32 +115,31 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
                 String jars[] = src.getLocation().toURI().getSchemeSpecificPart().split("!");
                 File file = new File(jars[0]);
 
-                try (JarFile jar = new JarFile(file)) {
-                    Enumeration<JarEntry> entries = jar.entries();
-                    while (entries.hasMoreElements()) {
-                        JarEntry entry = entries.nextElement();
-                        String fileName = null;
-                        if (entry.getName().startsWith(JAR_DOMAIN_DIR)) {
-                            fileName = entry.getName().substring(JAR_DOMAIN_DIR.length());
-                        } else if (entry.getName().startsWith(LIB_DOMAIN_DIR)) {
-                            fileName = entry.getName().substring(LIB_DOMAIN_DIR.length());
+                JarFile jar = new JarFile(file);
+                Enumeration<JarEntry> entries = jar.entries();
+                while (entries.hasMoreElements()) {
+                    JarEntry entry = entries.nextElement();
+                    String fileName = null;
+                    if (entry.getName().startsWith(JAR_DOMAIN_DIR)) {
+                        fileName = entry.getName().substring(JAR_DOMAIN_DIR.length());
+                    } else if (entry.getName().startsWith(LIB_DOMAIN_DIR)) {
+                        fileName = entry.getName().substring(LIB_DOMAIN_DIR.length());
+                    }
+                    
+                    if (fileName != null) {
+                        File outputFile = new File(runtimeDir, fileName);
+                        if (deleteOnExit) {
+                            outputFile.deleteOnExit();
                         }
-
-                        if (fileName != null) {
-                            File outputFile = new File(runtimeDir, fileName);
-                            if (deleteOnExit) {
-                                outputFile.deleteOnExit();
-                            }
-                            super.addURL(outputFile.getAbsoluteFile().toURI().toURL());
+                        super.addURL(outputFile.getAbsoluteFile().toURI().toURL());
 
 
-                            if (entry.isDirectory()) {
-                                outputFile.mkdirs();
-                            } else {
-                                // write out the jar file
-                                try (InputStream is = jar.getInputStream(entry)) {
-                                    Files.copy(is, outputFile.toPath(),StandardCopyOption.REPLACE_EXISTING);
-                                }
+                        if (entry.isDirectory()) {
+                            outputFile.mkdirs();
+                        } else {
+                            // write out the jar file
+                            try (InputStream is = jar.getInputStream(entry)) {
+                                Files.copy(is, outputFile.toPath(),StandardCopyOption.REPLACE_EXISTING);
                             }
                         }
                     }
@@ -148,5 +150,5 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
         }
 
     }
-
+     
 }
