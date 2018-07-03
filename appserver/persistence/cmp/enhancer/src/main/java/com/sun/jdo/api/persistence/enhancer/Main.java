@@ -41,6 +41,7 @@
 package com.sun.jdo.api.persistence.enhancer;
 
 //@olsen:
+//import java.io.*;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.File;
@@ -57,24 +58,52 @@ import java.io.FileReader;
 import java.io.BufferedReader;
 
 //@olsen:
-import java.util.*;
+//import java.util.*;
+import java.util.Map;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Properties;
+import java.util.StringTokenizer;
 
+import java.util.zip.ZipFile;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import java.util.zip.ZipException;
 
 import java.net.URL;
 
 import com.sun.jdo.api.persistence.model.Model;
 
+//import com.sun.jdo.api.persistence.enhancer.util.ClassFileSource;
+//import com.sun.jdo.api.persistence.enhancer.util.ZipFileRegistry;
+//import com.sun.jdo.api.persistence.enhancer.util.ClassPath;
+//import com.sun.jdo.api.persistence.enhancer.util.FilePath;
+
 //@olsen: added support for timing statistics
 import com.sun.jdo.api.persistence.enhancer.util.Support;
+
+//import com.sun.jdo.api.persistence.enhancer.classfile.ClassFile;
 
 import com.sun.jdo.api.persistence.enhancer.meta.JDOMetaData;
 import com.sun.jdo.api.persistence.enhancer.meta.JDOMetaDataModelImpl;
 import com.sun.jdo.api.persistence.enhancer.meta.JDOMetaDataPropertyImpl;
 import com.sun.jdo.api.persistence.enhancer.meta.JDOMetaDataTimer;
 
+//import com.sun.jdo.api.persistence.enhancer.impl.ClassControl;
+//import com.sun.jdo.api.persistence.enhancer.impl.Environment;
+
+
+//import org.openidex.jarpackager.ArchiveEntry; //@yury Added the capability to create ClassFileSources out of ArchiveEntries
+
 //@olsen: disabled feature
+/*
+import com.sun.jdo.api.persistence.enhancer.impl.FieldMap;
+*/
 
 //@lars: moved functionality into ByteCodeEnhancerHelper
 //@lars: design improvements
@@ -180,7 +209,7 @@ public class Main
     //@olsen: split: method filter() -> process(), processArgs()
     public int process(String[] argv) {
         //@olsen: added inplace of disabled feature
-        List<String> cNames = new ArrayList<>();
+        ArrayList cNames = new ArrayList();
         //@olsen: split: method filter() -> process(), processArgs()
         int res = processArgs(argv, cNames);
         if (res != 0) {
@@ -216,9 +245,9 @@ public class Main
      */
     //@olsen: split: method filter() -> process(), processArgs()
     //@olsen: made private
-    private int processArgs(String[] argv,
+    protected int processArgs(String[] argv,
                             //@olsen: added inplace of disabled feature
-                            Collection<String> cNames) {
+                            Collection cNames) {
         argv = preprocess(argv);
 
 //@olsen: disabled feature
@@ -529,7 +558,7 @@ public class Main
      * of the @files, if any
      */
     private String[] preprocess(String[] args) {
-        List<String> argVec = new ArrayList<>();
+        ArrayList argVec = new ArrayList();
         for (int i=0; i<args.length; i++) {
             if (args[i].length() > 0 && args[i].charAt(0) == '@') {
                 String filename = null;
@@ -552,7 +581,8 @@ public class Main
         //@olsen: subst: Vector -> ArrayList
         //String[] newArgs = new String[argVec.size()];
         //argVec.copyInto(newArgs);
-        return argVec.toArray(new String[0]);
+        final String[] newArgs = (String[])argVec.toArray(new String[0]);
+        return newArgs;
     }
 
     /**
@@ -560,28 +590,32 @@ public class Main
      * within the file to argVec.  This currently has only a very
      * primitive notion of words (separated by white space).
      */
-    private void appendFileContents(String filename, List<String> argVec) {
-        try (BufferedReader input = new BufferedReader(new FileReader(filename))) {
-            String s;
-            while ((s = input.readLine()) != null) {
-                StringTokenizer parser = new StringTokenizer(s, " \t", false);//NOI18N
-                while (parser.hasMoreElements()) {
-                    String token = parser.nextToken();
-                    if (token.length() > 0 && token.charAt(0) == '@')
-                        printError("The included file \"" +//NOI18N
-                                  filename +
-                                  "\" contains a recursive include.  " +//NOI18N
-                                  "Recursive includes are not supported.", null);//NOI18N
-                    if (token.charAt(0) == '#') break;
-                    argVec.add(token);
+    private void appendFileContents(String filename, ArrayList argVec) {
+        try {
+            FileReader inputFile = new FileReader(filename);
+            try {
+                BufferedReader input = new BufferedReader(inputFile);
+                String s = null;
+                while ((s = input.readLine()) != null) {
+                    StringTokenizer parser = new StringTokenizer(s, " \t", false);//NOI18N
+                    while (parser.hasMoreElements()) {
+                        String token = parser.nextToken();
+                        if (token.length() > 0 && token.charAt(0) == '@')
+                            printError("The included file \"" +//NOI18N
+                                      filename +
+                                      "\" contains a recursive include.  " +//NOI18N
+                                      "Recursive includes are not supported.", null);//NOI18N
+                        if (token.charAt(0) == '#') break;
+                        argVec.add(token);
+                    }
                 }
+            }
+            catch (IOException ex) {
+                printError("IO exception reading file " + filename + ".", ex);//NOI18N
             }
         }
         catch (FileNotFoundException ex) {
             printError("file " + filename + " not found.", ex);//NOI18N
-        }
-        catch (IOException ex) {
-            printError("IO exception reading file " + filename + ".", ex);//NOI18N
         }
     }
 
@@ -590,7 +624,7 @@ public class Main
      *
      *********************************************************************/
 
-    private ByteCodeEnhancer createEnhancer (JDOMetaData jdometadata)
+    private final ByteCodeEnhancer createEnhancer (JDOMetaData jdometadata)
                                    throws EnhancerUserException,
                                           EnhancerFatalError
     {
@@ -612,25 +646,39 @@ public class Main
      *  @param  filenames  The filenames.
      *********************************************************************/
 
-    private void enhanceInputFiles (Collection<String> filenames)
+    private final void enhanceInputFiles (Collection filenames)
     {
-        for (String filename : filenames) {
-            try {
+
+        for (Iterator names = filenames.iterator(); names.hasNext ();)
+        {
+            try
+            {
+                String name = (String) names.next ();
+                int n = name.length ();
+
                 //if we have a class-files
-                if (isClassFileName(filename)) {
-                    enhanceClassFile(openFileInputStream(filename));
-                } else {
+                InputStream in = null;
+                if (isClassFileName (name))
+                {
+                    enhanceClassFile (openFileInputStream (name));
+                }
+                else
+                {
                     //if we have an archive
-                    if (isZipFileName(filename)) {
-                        enhanceZipFile(filename); //getZipFile (name));
+                    if (isZipFileName (name))
+                    {
+                        enhanceZipFile (name); //getZipFile (name));
                     }
                     //assume that it is a class name
-                    else {
-                        enhanceClassFile(openClassInputStream(filename));
+                    else
+                    {
+                        enhanceClassFile (openClassInputStream (name));
                     }
                 }
-            } catch (Throwable ex) {
-                printError(null, ex);
+            }
+            catch (Throwable ex)
+            {
+                printError (null, ex);
             }
         }
 
@@ -643,7 +691,7 @@ public class Main
      *  @param  in  The input stream of the classfile.
      *********************************************************************/
 
-    private void enhanceClassFile (InputStream in)
+    private final void enhanceClassFile (InputStream in)
     {
 
         OutputStream out = null;
@@ -674,10 +722,10 @@ public class Main
     /**********************************************************************
      *  Enhances a zipfile.
      *
-     *  @param  filename  The filename of the zipfile.
+     *  @param  name  The filename of the zipfile.
      *********************************************************************/
 
-    private void enhanceZipFile (String filename)
+    private final void enhanceZipFile (String filename)
     {
 
         ZipInputStream  in = null;
@@ -719,7 +767,7 @@ public class Main
      *  @exception  FileNotFoundException  If the file could not be found.
      *********************************************************************/
 
-    private static InputStream openFileInputStream (String filename)
+    private static final InputStream openFileInputStream (String filename)
                                      throws FileNotFoundException
     {
 
@@ -740,7 +788,7 @@ public class Main
      *  @exception  ClassNotFoundException  If the class could not be found.
      *********************************************************************/
 
-    private InputStream openClassInputStream (String classname)
+    private final InputStream openClassInputStream (String classname)
                               throws IOException,
                                      ClassNotFoundException
     {
@@ -763,7 +811,7 @@ public class Main
      *  @return  Do we have a potential classfile?
      *********************************************************************/
 
-    private static boolean isClassFileName (String filename)
+    private static final boolean isClassFileName (String filename)
     {
 
         return filename.endsWith (".class");
@@ -777,9 +825,10 @@ public class Main
      *
      *  @param  filename  The name of the file.
      *
+     *  @param  Do we have a potential zipfile?
      *********************************************************************/
 
-    private static boolean isZipFileName (String filename)
+    private static final boolean isZipFileName (String filename)
     {
 
         final int n = filename.length ();
@@ -803,12 +852,30 @@ public class Main
      *  @return  The filename.
      *********************************************************************/
 
-    private static String createClassFileName (String classname)
+    private static final String createClassFileName (String classname)
     {
 
         return classname.replace ('.', '/') + ".class";
 
     }  //Main.createClassFileName()
+
+
+    /**********************************************************************
+     *  Creates a file object that represents the output zipfile for a given
+     *  zipfile to enhance.
+     *
+     *  @param  zipfilename  The input zipfile name.
+     *
+     *  @return  The output zipfile name.
+     *********************************************************************/
+
+    private final File createZipOutputFile (String zipfilename)
+    {
+
+        return new File (this.cmdLineOpts.destinationDirectory, new File (zipfilename).getName ());
+
+    }  //Main.createZipOutputFile()
+
 
     /**********************************************************************
      *  Creates the output file for an enhaced class- or zipfile. If the
@@ -821,9 +888,12 @@ public class Main
      *  @exception  IOException  If the file could not be created.
      *********************************************************************/
 
-    private void createOutputFile (boolean  enhanced, String filename, File temp)
-       throws IOException
+    private final void createOutputFile (boolean  enhanced,
+                                         String   filename,
+                                         File     temp)
+                       throws IOException
     {
+
         //noWrite or (not enhanced and not forceWrite)
         if  (this.cmdLineOpts.noWrite  ||  ( ! enhanced  &&  ! this.cmdLineOpts.forceWrite))
         {
@@ -839,10 +909,11 @@ public class Main
         if (!renamed) {
             //@dave: empirical evidence shows that renameTo does not allow for
             // crossing filesystem boundaries.  If it fails, try "by hand".
-            try (DataInputStream dis =
+            try {
+                DataInputStream dis =
                     new DataInputStream(new FileInputStream(temp));
                 DataOutputStream dos =
-                    new DataOutputStream(new FileOutputStream(file))) {
+                    new DataOutputStream(new FileOutputStream(file));
                 int PAGESIZE = 4096; // Suggest a better size?
                 byte data[] = new byte[PAGESIZE];
                 while (dis.available() > 0) {
@@ -869,7 +940,7 @@ public class Main
      *  @param  in  The input stream.
      *********************************************************************/
 
-    private void closeInputStream (InputStream in)
+    private final void closeInputStream (InputStream in)
     {
 
         if  (in != null)
@@ -890,10 +961,10 @@ public class Main
     /**********************************************************************
      *  Closes an output stream.
      *
-     *  @param  out  The output stream.
+     *  @param  in  The output stream.
      *********************************************************************/
 
-    private void closeOutputStream (OutputStream out)
+    private final void closeOutputStream (OutputStream out)
     {
 
         if  (out != null)
@@ -919,7 +990,7 @@ public class Main
      *  @exception  IOException  If an error occured.
      *********************************************************************/
 
-    private static void createPathOfFile (File file)
+    private static final void createPathOfFile (File file)
                               throws IOException
     {
 
@@ -940,7 +1011,7 @@ public class Main
      *  @param  ex   An optional exception (can be <code>null</code>).
      *********************************************************************/
 
-    private void printError (String    msg,
+    private final void printError (String    msg,
                                    Throwable ex)
     {
 
@@ -962,7 +1033,7 @@ public class Main
      *  @param  msg  The message.
      *********************************************************************/
 
-    private void printMessage (String msg)
+    private final void printMessage (String msg)
     {
 
         this.outMessages.println (msg);
@@ -973,7 +1044,7 @@ public class Main
     /**
      * Print a usage message to System.err
      */
-    private static void usage() {
+    public static void usage() {
         //@olsen: document that main() takes a file name argument
         System.err.println("Usage: main <options> <file name>");
 //@olsen: disabled feature

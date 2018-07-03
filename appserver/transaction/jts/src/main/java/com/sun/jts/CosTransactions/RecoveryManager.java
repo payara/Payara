@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016] [Payara Foundation] 
 //----------------------------------------------------------------------------
 //
 // Module:      RecoveryManager.java
@@ -159,16 +159,16 @@ public class RecoveryManager {
     // This will start TransactionRecoveryFence service as soon as all resources are available.
     private static TransactionRecoveryFence txRecoveryFence = new TransactionRecoveryFenceSimple();
 
-
+    
     private static int recoveryResynchTimeout = 120;
-
+    
     /**
      * This is intented to be used as a lock object.
      */
     private static java.lang.Object lockObject = new java.lang.Object();
 	/*
 		Logger to log transaction messages
-	*/
+	*/  
 	    static Logger _logger = LogDomains.getLogger(RecoveryManager.class, LogDomains.TRANSACTION_LOGGER);
     /**
      * Initialises the static state of the RecoveryManager class.
@@ -189,7 +189,7 @@ public class RecoveryManager {
 
         // read the resynch timeout system property
         recoveryResynchTimeout = Integer.getInteger("fish.payara.jts.RecoveryResynchTimeout", recoveryResynchTimeout);
-
+                
         if (recoveryResynchTimeout < 0){
             _logger.log(Level.SEVERE,recoveryResynchTimeout+ " is an invalid value for fish.payara.jts.RecoveryResynchTimeout. Using default value of 120 instead." );
             recoveryResynchTimeout = 120;
@@ -388,48 +388,48 @@ public class RecoveryManager {
     }
 
     /**
-     * Read and update the transaction ID map atomically with the current
-     * thread, if and only if there is no concurrent activity for the
+     * Read and update the transaction ID map atomically with the current 
+     * thread, if and only if there is no concurrent activity for the 
      * specified transaction id.
-     *
+     * 
      * @param tid transaction id.
-     *
-     * @return true if there is no concurrent activity and the map has been
+     * 
+     * @return true if there is no concurrent activity and the map has been 
      * updated.
      */
     static boolean readAndUpdateTxMap(GlobalTID tid) {
         synchronized (transactionIds) {
             Thread thread = (Thread) transactionIds.get(tid);
             if (thread != null) { // concurrent activity
-                return false;
-            }
+                return false;            
+            } 
             // register the thread for the transaction id
-            transactionIds.put(tid, Thread.currentThread());
+            transactionIds.put(tid, Thread.currentThread());                
             return true;
-        }
+        }        
     }
 
     /**
-     * Get the value (thread) for the specified transaction id from the
+     * Get the value (thread) for the specified transaction id from the 
      * transaction ID map.
-     *
-     * @return the value for the transaction id key from the
+     * 
+     * @return the value for the transaction id key from the 
      * transaction ID map.
      */
-    static Thread getThreadFromTxMap(GlobalTID tid) {
+    static Thread getThreadFromTxMap(GlobalTID tid) {           
         return (Thread) transactionIds.get(tid);
     }
 
     /**
      * Remove the specified transaction id from the transaction ID map.
-     *
-     * @return the value for the transaction id key from the
+     * 
+     * @return the value for the transaction id key from the 
      * transaction ID map.
      */
-    static Thread removeFromTxMap(GlobalTID tid) {
+    static Thread removeFromTxMap(GlobalTID tid) {           
         return (Thread) transactionIds.remove(tid);
     }
-
+    
     /**
      * Requests that the RecoveryManager proceed with recovery.
      * <p>
@@ -599,7 +599,7 @@ public class RecoveryManager {
 								"Before invoking commit on the reconstructed coordinator"+
 								"GTID is: "+
 								((TopCoordinator)coord).superInfo.globalTID.toString());
-
+						
                    	}
 
 
@@ -632,7 +632,7 @@ public class RecoveryManager {
 										"reconstructed coordinator :"+
 										"GTID is : "+
 										((TopCoordinator)coord).superInfo.globalTID.toString());
-
+							
                     		}
                             coord.rollback(true);
                         } catch (Throwable exc) {
@@ -792,13 +792,13 @@ public class RecoveryManager {
     }
 
     /**
-     * Reduce the set of XAResource objects into a unique set such that there
+     * Reduce the set of XAResource objects into a unique set such that there 
      * is at most one XAResource object per RM.
      */
     private static Enumeration getUniqueRMSet(Enumeration xaResourceList){
-
+ 
         Vector uniqueRMList = new Vector();
-
+        
         while (xaResourceList.hasMoreElements()) {
             XAResource xaRes = (XAResource) xaResourceList.nextElement();
             int size = uniqueRMList.size();
@@ -807,19 +807,19 @@ public class RecoveryManager {
                 XAResource uniqueXaRes = (XAResource) uniqueRMList.elementAt(i);
                 try {
                     if (xaRes.isSameRM(uniqueXaRes)) {
-                        match = true;
+                        match = true; 
                         break;
                     }
                 } catch (XAException xe) {}
             }
-            if (!match) {
-                uniqueRMList.add(xaRes);
+            if (!match) { 
+                uniqueRMList.add(xaRes); 
             }
         }
-
+        
         return uniqueRMList.elements();
     }
-
+    
     /**
      * Recovers the in doubt transactions from the provided list of
      * XAResource objects. This method is never called by the recovery
@@ -992,7 +992,7 @@ public class RecoveryManager {
                     String branchQualifier =
                         new String(inDoubtXids[i].getBranchQualifier());
                     String serverName = Configuration.getServerName();
-
+                    
                     if (branchQualifier.startsWith(serverName)) {
 
                         // check if the xid is a duplicate. i.e., Xids
@@ -1002,7 +1002,7 @@ public class RecoveryManager {
                         // to make sure that at most one OTSResource object
                         // is registered with the coordinator per transaction
                         // per RM.
-
+                        
                         if (!uniqueXids.contains(inDoubtXids[i])) { // unique xid
                             if(_logger.isLoggable(Level.FINE))
                             {
@@ -1062,12 +1062,12 @@ public class RecoveryManager {
 		    	if(_logger.isLoggable(Level.FINE))
 		    	{
 					_logger.logp(Level.FINE,"RecoveryManager","proceedWithXARecovery()",
-							"Could  not recognize OTSResource: "+otsResource +
-							" with tid: " +
+							"Could  not recognize OTSResource: "+otsResource + 
+							" with tid: " + 
 							LogFormatter.convertToString(globalTID.realTID.tid)+
 							";Hence rolling this resource back...");
 		    	}
-
+		
                boolean infiniteRetry = true;
                int commitRetries = Configuration.getRetries();
                if (commitRetries >= 0)
@@ -1120,7 +1120,7 @@ public class RecoveryManager {
 	    			{
 						_logger.logp(Level.FINE,"RecoveryManager",
 								"proceedWithXARecovery()",
-								"Recognized OTSResource: " + otsResource +
+								"Recognized OTSResource: " + otsResource + 
 								" with tid: " +
 								LogFormatter.convertToString(globalTID.realTID.tid) +
 								";Hence registering this resource with coordinator...");
@@ -1211,10 +1211,10 @@ public class RecoveryManager {
                         new String(inDoubtXids[i].getBranchQualifier());
                     //String serverName = Configuration.getServerName();
                     if(_logger.isLoggable(Level.INFO)) {
-                        _logger.log(Level.INFO, "RecoveryManager.dbXARecovery inDoubtXid: " +
+                        _logger.log(Level.INFO, "RecoveryManager.dbXARecovery inDoubtXid: " + 
                                 inDoubtXids[i] + " branchQualifier: " + branchQualifier);
                     }
-
+                    
                     if (branchQualifier.startsWith(serverName)) {
 
                         // check if the xid is a duplicate. i.e., Xids
@@ -1224,7 +1224,7 @@ public class RecoveryManager {
                         // to make sure that at most one OTSResource object
                         // is registered with the coordinator per transaction
                         // per RM.
-
+                        
                         if (!uniqueXids.contains(inDoubtXids[i])) { // unique xid
                             if(_logger.isLoggable(Level.FINE))
                             {
@@ -1459,10 +1459,10 @@ public class RecoveryManager {
 
         if (resyncInProgress != null) {
             try {
-
+                
                 //
                 if (recoveryResynchTimeout == 0) {
-                    resyncInProgress.waitEvent();
+                    resyncInProgress.waitEvent();                    
                 } else {
                     resyncInProgress.waitTimeoutEvent(recoveryResynchTimeout);
                 }
@@ -1474,7 +1474,7 @@ public class RecoveryManager {
             }
         }
     }
-
+    
     /**
     *  Waits for resync to complete with timeout.
     *
@@ -1512,12 +1512,12 @@ public class RecoveryManager {
             else {
                 return Boolean.TRUE;
 	    }
-    }
+    } 
 
     public static int sizeOfInCompleteTx() {
         return inCompleteTxMap.size();
     }
-
+   
     public static void recoverIncompleteTx(XAResource[] xaresArray) {
         if ((xaresArray == null) || (xaresArray.length == 0))
             return;
@@ -1625,7 +1625,7 @@ public class RecoveryManager {
                                         }
 
                                     }
-                                    else {
+                                    else { 
                                         otsResource.rollback();
                                         if(_logger.isLoggable(Level.FINE)) {
                                             _logger.logp(Level.FINE,"RecoveryManager",
@@ -1645,19 +1645,19 @@ public class RecoveryManager {
                                                 commitRetriesLeft--;
                                             }
                                             try {
-                                                inCompleteTxMap.wait(Configuration.COMMIT_RETRY_WAIT);
+                                                Thread.sleep(Configuration.COMMIT_RETRY_WAIT);
                                             } catch( Throwable iex ) {}
                                         }
                                         else {
                                              _logger.log(Level.WARNING,"jts.exception_during_resync",
-			                            new java.lang.Object[] {exc.toString(),"OTSResource " +
+			                            new java.lang.Object[] {exc.toString(),"OTSResource " + 
                                                     ((commit.booleanValue())? "commit" : "rollback")});
                                             exceptionisThrown = false;
                                         }
                                     }
                                     else {
 		                        _logger.log(Level.WARNING,"jts.exception_during_resync",
-		                                new java.lang.Object[] {exc.toString(),"OTSResource " +
+		                                new java.lang.Object[] {exc.toString(),"OTSResource " + 
                                                     ((commit.booleanValue())? "commit" : "rollback")});
                                         exceptionisThrown = false;
                                     }
@@ -1674,10 +1674,10 @@ public class RecoveryManager {
             String logPath = LogControl.getLogPath();
             if (new File(logPath).exists()) {
                 File recoveryFile = LogControl.recoveryIdentifierFile(serverName,logPath);
-                try (RandomAccessFile raf = new RandomAccessFile(recoveryFile,"rw")) {
-                    raf.writeBytes(serverName);
-                    raf.setLength(serverName.length());
-                }
+                RandomAccessFile raf = new RandomAccessFile(recoveryFile,"rw");
+                raf.writeBytes(serverName);
+                raf.setLength(serverName.length());
+                raf.close();
             }
         } catch (Exception ex) {
             _logger.log(Level.WARNING,"jts.exception_in_recovery_file_handling",ex);
@@ -1794,7 +1794,7 @@ public class RecoveryManager {
         } else {
 				if(_logger.isLoggable(Level.FINE))
 				{
-					_logger.logp(Level.FINE,"RecoveryManager","report()",
+					_logger.logp(Level.FINE,"RecoveryManager","report()", 
 		          			"RecoveryManager.coordsByGlobalTID empty");
 				}
         }
@@ -1804,7 +1804,7 @@ public class RecoveryManager {
         if (coordsByLocalTID.size() > 0) {
 			if(_logger.isLoggable(Level.FINE))
 			{
-				_logger.logp(Level.FINE,"RecoveryManager","report()",
+				_logger.logp(Level.FINE,"RecoveryManager","report()", 
             			"RecoveryManager.coordsByLocalTID non-empty");
 			}
             Enumeration keys = coordsByLocalTID.keys();
@@ -1909,7 +1909,7 @@ class ResyncThread extends Thread  {
 
 	if(_logger.isLoggable(Level.FINE))
 	{
-		_logger.logp(Level.FINE,"ResyncThread","run()","Before invoking RecoveryManager.recover()");
+		_logger.logp(Level.FINE,"ResyncThread","run()","Before invoking RecoveryManager.recover()"); 
 	}
         try {
             if (Configuration.isDBLoggingEnabled()) {

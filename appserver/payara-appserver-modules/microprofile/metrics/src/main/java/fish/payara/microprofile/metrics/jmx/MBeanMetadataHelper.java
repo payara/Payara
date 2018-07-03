@@ -125,8 +125,8 @@ public class MBeanMetadataHelper {
                     mBeanExpression = new MBeanExpression(metadata.getMBean().replace(SPECIFIER, "*"));
                     String dynamicKey = mBeanExpression.findDynamicKey();
                     Set<ObjectName> mBeanObjects = mBeanExpression.queryNames(null);
-                    if (mBeanObjects.isEmpty()) {
-                        LOGGER.log(Level.FINE, "{0} does not correspond to any MBeans", metadata.getMBean());
+                    if (mBeanObjects.isEmpty()){
+                        LOGGER.log(Level.INFO, "{0} does not correspond to any MBeans", metadata.getMBean());
                     }
                     for (ObjectName objName : mBeanObjects) {
                         String dynamicValue = objName.getKeyPropertyList().get(dynamicKey);

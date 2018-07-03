@@ -80,12 +80,11 @@ public class ProgressStatusEventJsonProvider extends BaseProvider<ProgressStatus
     @Override
     public void writeTo(ProgressStatusEvent proxy, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
             MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
-        try (JsonGenerator out = factory.createJsonGenerator(entityStream, JsonEncoding.UTF8)) {
-            out.writeStartObject();
-            writePSEvent(proxy, out);
-            out.writeEndObject();
-            out.flush();
-        }
+        JsonGenerator out = factory.createJsonGenerator(entityStream, JsonEncoding.UTF8);
+        out.writeStartObject();
+        writePSEvent(proxy, out);
+        out.writeEndObject();
+        out.flush();
     }
 
     private void writePSEvent(ProgressStatusEvent event, JsonGenerator out) throws IOException {
@@ -118,7 +117,7 @@ public class ProgressStatusEventJsonProvider extends BaseProvider<ProgressStatus
     }
 
     private void writePSEventProgress(ProgressStatusEventProgress event, JsonGenerator out) throws IOException {
-        out.writeObjectFieldStart("progress");
+        out.writeObjectFieldStart("progres");
         out.writeNumberField("steps", event.getSteps());
         if (StringUtils.ok(event.getMessage())) {
             out.writeStringField("message", event.getMessage());

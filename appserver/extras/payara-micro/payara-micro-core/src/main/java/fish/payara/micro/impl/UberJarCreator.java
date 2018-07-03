@@ -40,8 +40,12 @@
 package fish.payara.micro.impl;
 
 import com.google.common.io.Files;
-
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.*;
@@ -62,16 +66,20 @@ import java.util.zip.CheckedInputStream;
 public class UberJarCreator {
 
     private File outputFile;
+    private String mainClassName;
     private final List<File> runtimeJars = new LinkedList<>();
     private final List<File> domainFiles = new LinkedList<>();
     private File domainDir;
     private final List<File> libs = new LinkedList<>();
+    private final List<File> classes = new LinkedList<>();
     private final List<File> deployments = new LinkedList<>();
     private final Map<String, URL> deploymentURLs = new HashMap<>();
+    private List<File> copiedFiles = new LinkedList();
 
     private File deploymentDir;
     private File copyDirectory;
     private final Properties bootProperties = new Properties();
+    private Properties loggingProperties;
     private File loggingPropertiesFile;
     private File domainXML;
     private File alternateHZConfigFile;
@@ -91,6 +99,10 @@ public class UberJarCreator {
 
     public void setOutputFile(File outputFile) {
         this.outputFile = outputFile;
+    }
+
+    public void setMainClassName(String mainClassName) {
+        this.mainClassName = mainClassName;
     }
 
     public void setLoggingPropertiesFile(File loggingPropertiesFile) {
@@ -168,56 +180,72 @@ public class UberJarCreator {
     public void buildUberJar() {
         long start = System.currentTimeMillis();
         LOGGER.info("Building Uber Jar... " + outputFile.getName());
-        try (JarOutputStream jos = new JarOutputStream(new FileOutputStream(outputFile))) {
+        String entryString;
+        try (JarOutputStream jos = new JarOutputStream(new FileOutputStream(outputFile));) {
             // get the current payara micro jar
             URL url = this.getClass().getClassLoader().getResource("MICRO-INF/payara-boot.properties");
-            if (url == null) {
-                throw new IllegalStateException("Cannot open resource MICRO-INF/payara-boot.properties.");
-            }
-            JarURLConnection urlConnection = (JarURLConnection) url.openConnection();
+            JarURLConnection urlcon = (JarURLConnection) url.openConnection();
+
             // copy all entries from the existing jar file
-            try (JarFile jFile = urlConnection.getJarFile()) {
-                Enumeration<JarEntry> entries = jFile.entries();
-                while (entries.hasMoreElements()) {
-                    JarEntry entry = entries.nextElement();
-                    if (entry.getName().contains("MICRO-INF/domain/") && domainDir != null) {
-                        // skip the entry as we will add later
-                    } else {
-                        JarEntry newEntry = new JarEntry(entry.getName());
-                        if (entry.getName().endsWith("jar") || entry.getName().endsWith("rar")) {
-                            newEntry.setMethod(entry.STORED);
-                            newEntry.setSize(entry.getSize());
-                            newEntry.setCrc(entry.getCrc());
-                            if (entry.getMethod() == JarEntry.STORED) {
-                                newEntry.setCompressedSize(entry.getCompressedSize());
-                            }
-                        }
-                        jos.putNextEntry(newEntry);
-                        try (InputStream is = getInputStreamFromEntry(entry, jFile)) {
-                            byte[] buffer = new byte[4096];
-                            int bytesRead;
-                            while ((bytesRead = is.read(buffer)) != -1) {
-                                jos.write(buffer, 0, bytesRead);
-                            }
+            JarFile jFile = urlcon.getJarFile();
+            Enumeration<JarEntry> entries = jFile.entries();
+            while (entries.hasMoreElements()) {
+                JarEntry entry = entries.nextElement();
+
+                if (entry.getName().contains("MICRO-INF/domain/") && domainDir != null) {
+                    // skip the entry as we will add later
+                } else {
+                    JarEntry newEntry = new JarEntry(entry.getName());
+                    if (entry.getName().endsWith("jar") || entry.getName().endsWith("rar")) {
+                        newEntry.setMethod(entry.STORED);
+                        newEntry.setSize(entry.getSize());
+                        newEntry.setCrc(entry.getCrc());
+                        if (entry.getMethod() == JarEntry.STORED) {
+                            newEntry.setCompressedSize(entry.getCompressedSize());
                         }
                     }
-                    jos.flush();
-                    jos.closeEntry();
+                    jos.putNextEntry(newEntry);
+                    InputStream is = jFile.getInputStream(entry);
+                    if (entry.toString().contains("MICRO-INF/domain/logging.properties") && (loggingPropertiesFile != null)) {
+                        is = new FileInputStream(loggingPropertiesFile);
+                    } else if (entry.toString().contains("MICRO-INF/post-boot-commands.txt") && (postBootCommands != null)) {
+                        is = new FileInputStream(postBootCommands);
+                    } else if (entry.toString().contains("MICRO-INF/pre-boot-commands.txt") && (preBootCommands != null)) {
+                        is = new FileInputStream(preBootCommands);
+                    } else if (entry.toString().contains("MICRO-INF/post-deploy-commands.txt") && (postDeployCommands != null)) {
+                        is = new FileInputStream(postDeployCommands);
+                    }else if (entry.toString().contains("MICRO-INF/domain/domain.xml") && (domainXML != null)) {
+                        is = new FileInputStream(domainXML);
+                    }else if (entry.toString().contains("MICRO-INF/domain/keystore.jks") && (System.getProperty("javax.net.ssl.keyStore") != null)) {
+                        is = new FileInputStream(System.getProperty("javax.net.ssl.keyStore"));
+                    }else if (entry.toString().contains("MICRO-INF/domain/cacerts.jks") && (System.getProperty("javax.net.ssl.trustStore") != null)) {
+                        is = new FileInputStream(System.getProperty("javax.net.ssl.trustStore"));
+                    }
+
+                    byte[] buffer = new byte[4096];
+                    int bytesRead = 0;
+                    while ((bytesRead = is.read(buffer)) != -1) {
+                        jos.write(buffer, 0, bytesRead);
+                    }
+                    is.close();
                 }
+                jos.flush();
+                jos.closeEntry();
             }
 
             if (!libs.isEmpty()) {
                 for (File lib : libs){
+                    JarFile f = new JarFile(lib);
                     JarEntry libEntry = new JarEntry("MICRO-INF/lib/" + lib.getName());
                     libEntry.setMethod(JarEntry.STORED);
                     libEntry.setSize(lib.length());
-                    try (CheckedInputStream check = new CheckedInputStream(new FileInputStream(lib), new CRC32());
-                        BufferedInputStream in = new BufferedInputStream(check)) {
-                        while (in.read(new byte[3000]) != -1){
-                            //read in file completely
-                        }
-                        libEntry.setCrc(check.getChecksum().getValue());
+
+                    CheckedInputStream check = new CheckedInputStream(new FileInputStream(lib), new CRC32());
+                    BufferedInputStream in = new BufferedInputStream(check);
+                    while (in.read(new byte[3000]) != -1){
+                        //read in file completly
                     }
+                    libEntry.setCrc(check.getChecksum().getValue());
                     jos.putNextEntry(libEntry);
                     Files.copy(lib, jos);
                     jos.flush();
@@ -236,19 +264,15 @@ public class UberJarCreator {
             }
 
             if (deploymentDir != null) {
-                File[] files = deploymentDir.listFiles();
-                if (files != null) {
-                    for (File deployment : files) {
-                        if (deployment.isFile()) {
-                            JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + deployment.getName());
-                            jos.putNextEntry(deploymentEntry);
-                            Files.copy(deployment, jos);
-                            jos.flush();
-                            jos.closeEntry();
-                        }
+                for (File deployment : deploymentDir.listFiles()) {
+                    if (deployment.isFile()) {
+                        JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + deployment.getName());
+                        jos.putNextEntry(deploymentEntry);
+                        Files.copy(deployment, jos);
+                        jos.flush();
+                        jos.closeEntry();
+
                     }
-                } else {
-                    LOGGER.warning("Deployment dir is empty.");
                 }
             }
 
@@ -256,6 +280,7 @@ public class UberJarCreator {
                 String basePath = copyDirectory.getCanonicalPath().replaceAll(copyDirectory + "$", "");
                 List<File> filesToCopy = fillFiles(copyDirectory);
                 for (File file : filesToCopy) {
+
                         JarEntry deploymentEntry = new JarEntry(file.getCanonicalPath().replace(basePath, ""));
                         jos.putNextEntry(deploymentEntry);
                         Files.copy(file, jos);
@@ -272,7 +297,7 @@ public class UberJarCreator {
                     JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + name);
                     jos.putNextEntry(deploymentEntry);
                     byte[] buffer = new byte[4096];
-                    int bytesRead;
+                    int bytesRead = 0;
                     while ((bytesRead = is.read(buffer)) != -1) {
                         jos.write(buffer, 0, bytesRead);
                     }
@@ -313,6 +338,7 @@ public class UberJarCreator {
                     if (domainFile.isFile()) {
                         JarEntry configEntry = new JarEntry("MICRO-INF/domain/" + domainFile.getName());
                         jos.putNextEntry(configEntry);
+
                         if (domainFile.getName().equals("domain.xml") && domainXML != null) {
                             domainFile = domainXML;
                         } else if (domainFile.getName().equals("logging.properties") && (loggingPropertiesFile != null)) {
@@ -342,13 +368,12 @@ public class UberJarCreator {
                         if (path.endsWith(".war") || path.endsWith(".jar") || path.endsWith(".rar") || path.endsWith(".ear")){
                             JarEntry appEntry = new JarEntry("MICRO-INF/deploy/" + app.getName());
                             appEntry.setSize(app.length());
-                            try (CheckedInputStream check = new CheckedInputStream(new FileInputStream(app), new CRC32());
-                                BufferedInputStream in = new BufferedInputStream(check)) {
-                                while (in.read(new byte[300]) != -1){
-                                    //read in file completely
-                                }
-                                appEntry.setCrc(check.getChecksum().getValue());
+                            CheckedInputStream check = new CheckedInputStream(new FileInputStream(app), new CRC32());
+                            BufferedInputStream in = new BufferedInputStream(check);
+                            while (in.read(new byte[300]) != -1){
+                            //read in file completly
                             }
+                            appEntry.setCrc(check.getChecksum().getValue());
                             jos.putNextEntry(appEntry);
                             Files.copy(app, jos);
                             jos.flush();
@@ -366,56 +391,22 @@ public class UberJarCreator {
     }
 
     /**
-     * Returns {@link InputStream} depending name of the entry.
-     * @param entry The entry to create stream from.
-     * @param jFile The {@link JarFile} the read the entry from.
-     * @return The input stream representing the entry.
-     * @throws IOException Problems accessing the entrys InputStream
-     */
-    private InputStream getInputStreamFromEntry(JarEntry entry, JarFile jFile) throws IOException {
-        InputStream is;
-        if (entry.toString().contains("MICRO-INF/domain/logging.properties") && (loggingPropertiesFile != null)) {
-            is = new FileInputStream(loggingPropertiesFile);
-        } else if (entry.toString().contains("MICRO-INF/post-boot-commands.txt") && (postBootCommands != null)) {
-            is = new FileInputStream(postBootCommands);
-        } else if (entry.toString().contains("MICRO-INF/pre-boot-commands.txt") && (preBootCommands != null)) {
-            is = new FileInputStream(preBootCommands);
-        } else if (entry.toString().contains("MICRO-INF/post-deploy-commands.txt") && (postDeployCommands != null)) {
-            is = new FileInputStream(postDeployCommands);
-        } else if (entry.toString().contains("MICRO-INF/domain/domain.xml") && (domainXML != null)) {
-            is = new FileInputStream(domainXML);
-        } else if (entry.toString().contains("MICRO-INF/domain/keystore.jks") && (System.getProperty("javax.net.ssl.keyStore") != null)) {
-            is = new FileInputStream(System.getProperty("javax.net.ssl.keyStore"));
-        } else if (entry.toString().contains("MICRO-INF/domain/cacerts.jks") && (System.getProperty("javax.net.ssl.trustStore") != null)) {
-            is = new FileInputStream(System.getProperty("javax.net.ssl.trustStore"));
-        } else {
-            is = jFile.getInputStream(entry);
-        }
-        return is;
-    }
-
-    /**
      * Returns a list of all files in directory and subdirectories
      * @param directory The parent directory to search within
      * @return
      */
     public static List<File> fillFiles(File directory){
         List<File> allFiles = new LinkedList<>();
-        File[] files = directory.listFiles();
-        if (files != null) {
-            for (File file : files){
-                if (file.isDirectory()){
-                    allFiles.addAll(fillFiles(file));
+        for (File file : directory.listFiles()){
+            if (file.isDirectory()){
+                allFiles.addAll(fillFiles(file));
+            } else {
+                if (file.canRead()){
+                    allFiles.add(file);
                 } else {
-                    if (file.canRead()){
-                        allFiles.add(file);
-                    } else {
-                        LOGGER.log(Level.WARNING, "Unable to read file " + file.getAbsolutePath() + ", skipping...");
-                    }
+                    LOGGER.log(Level.WARNING, "Unable to read file " + file.getAbsolutePath() + ", skipping...");
                 }
             }
-        } else {
-            LOGGER.info("Directory " + directory.getAbsolutePath() + " is empty. Nothing to do.");
         }
         return allFiles;
     }

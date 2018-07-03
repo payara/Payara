@@ -95,7 +95,7 @@ public class ProgressStatusEventJsonProprietaryReader implements ProprietaryRead
                 if ("set".equals(nm)) {
                     result = new ProgressStatusEventSet(id);
                     readToPSEventSet((ProgressStatusEventSet) result, jp);
-                } else if ("progress".equals(nm)) {
+                } else if ("progres".equals(nm)) {
                     result = new ProgressStatusEventProgress(id);
                     readToPSEventProgress((ProgressStatusEventProgress) result, jp);
                 } else if ("complete".equals(nm)) {

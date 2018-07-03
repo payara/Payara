@@ -73,10 +73,10 @@ import com.sun.jts.utils.RecoveryHooks.FailureInducer;
  */
 
 public class DelegatedRecoveryManager {
-
+    
     private static Hashtable recoveryStatetable = new Hashtable();
     private static Hashtable tmoutMgrtable = new Hashtable();
-
+    
     synchronized static DelegatedTimeoutManager getTimeoutManager(String logPath) {
         DelegatedTimeoutManager tmoutMgr = (DelegatedTimeoutManager)tmoutMgrtable.get(logPath);
         if (tmoutMgr != null)
@@ -85,59 +85,59 @@ public class DelegatedRecoveryManager {
         tmoutMgrtable.put(logPath,tmoutMgr);
         return tmoutMgr;
     }
-
+    
     static Logger _logger = LogDomains.getLogger(DelegatedRecoveryManager.class, LogDomains.TRANSACTION_LOGGER);
-
+    
     static boolean addCoordinator(GlobalTID globalTID,
     Long localTID, CoordinatorImpl coord, int timeout, String logPath) {
-
-
+        
+        
         boolean result = true;
         RecoveryStateHolder state = (RecoveryStateHolder)recoveryStatetable.get(logPath);
-
+        
         // Attempt to add the global and local indentifier to
         // Coordinator associations to the maps.
-
+        
         state.coordsByGlobalTID.put(globalTID,coord);
         state.coordsByLocalTID.put(localTID,coord);
-
+        
         // Set up the timeout for the transaction.  When active, the
         // timeout thread will periodically examine the map and abort
         // any active transactions on it that have gone beyond their
         // allocated time.
-
+        
         if (timeout != 0) {
             DelegatedTimeoutManager tmoutMgr = getTimeoutManager(logPath);
             tmoutMgr.setTimeout(localTID, DelegatedTimeoutManager.ACTIVE_TIMEOUT,
             timeout);
         }
-
+        
         return result;
     }
-
+    
     static boolean removeCoordinator(GlobalTID globalTID,
     Long localTID, boolean aborted, String logPath) {
-
+        
         boolean result = false;
         RecoveryStateHolder state = (RecoveryStateHolder)recoveryStatetable.get(logPath);
-
+        
         // Remove the global identifier to Coordinator mapping if possible.
-
+        
         CoordinatorImpl coord  = null;
         result = (state.coordsByGlobalTID.remove(globalTID) != null);
-
+        
         // Remove the InternalTid to Coordinator mapping if possible.
-
+        
         if (result) {
             coord = (CoordinatorImpl) state.coordsByLocalTID.remove(localTID);
             result = (coord != null);
         }
-
+        
         // If that succeeded, forget the CoordinatorLog object, if the
         // transaction is not a subtransaction.  The following may return
         // FALSE if there are no log records available
         // (i.e. non-recoverable OTS).
-
+        
         if (coord != null) {
             try {
                 if (coord.is_top_level_transaction()) {
@@ -147,36 +147,36 @@ public class DelegatedRecoveryManager {
                 result = false;
             }
         }
-
+        
         // Clear the timeout for the transaction, if any.
         // Perform the removal under the timer mutex.
-
+        
         DelegatedTimeoutManager tmoutMgr = getTimeoutManager(logPath);
         tmoutMgr.setTimeout(localTID, DelegatedTimeoutManager.CANCEL_TIMEOUT, 0);
-
-
-
+        
+        
+        
         // Modify any thread associations there may be for the transaction, to
         // indicate that the transaction has ended.
-
-
-
+        
+        
+        
         // COMMENT(Ram J) 09/19/2001 This below line is commented out since in
         // the J2EE controlled environment, all threads are associated and
         // dissociated in an orderly fashion, as well as there is no possibility
         // of concurrent threads active in a given transaction.
         //CurrentTransaction.endAll(globalTID, aborted);
-
+        
         // If the count of resyncing Coordinators is greater than zero,
         // this means we are still in resync.  Decrease the count.
-
+        
         if (state.resyncCoords > 0) {
-
+            
             state.resyncCoords--;
-
+            
             // If the number of resyncing Coordinators is now zero,
             // we may allow new work.
-
+            
             if (state.resyncCoords == 0) {
                 try {
                     resyncComplete(true, true, logPath);
@@ -184,21 +184,21 @@ public class DelegatedRecoveryManager {
                 }
             }
         }
-
+        
         return result;
     }
-
-
+    
+    
     static CoordinatorImpl getCoordinator(GlobalTID globalTID, String logPath) {
-
+        
         RecoveryStateHolder state = (RecoveryStateHolder)recoveryStatetable.get(logPath);
         CoordinatorImpl result = (CoordinatorImpl)
         state.coordsByGlobalTID.get(globalTID);
-
+        
         return result;
     }
-
-
+    
+    
     public static boolean delegated_recover(String logPath, XAResource[] resources) throws Exception  {
        try {
             String serverName = null;
@@ -210,12 +210,12 @@ public class DelegatedRecoveryManager {
                 }
             } else {
                 File recoveryFile = new File(logPath,LogControl.RECOVERY_STRING_FILE_NAME);
-                try (RandomAccessFile raf = new RandomAccessFile(recoveryFile,"r")) {
-                    long length = raf.length();
-                    byte b1[] = new byte[(int)length]; // length is very small
-                    raf.readFully(b1);
-                    serverName = new String(b1);
-                }
+                RandomAccessFile raf = new RandomAccessFile(recoveryFile,"r");
+                long length = raf.length();
+                byte b1[] = new byte[(int)length]; // length is very small
+                raf.readFully(b1);
+                serverName = new String(b1);
+                raf.close();
             }
             return delegated_recover(serverName,logPath,resources);
        } catch (IOException ex) {
@@ -250,8 +250,8 @@ public class DelegatedRecoveryManager {
                 throw  new org.omg.CORBA.INTERNAL(msg);
             }
         }
-
-
+        
+        
         int size = resources.length;
         Vector v = new Vector();
         for (int i=0; i<size; i++) {
@@ -260,63 +260,63 @@ public class DelegatedRecoveryManager {
         state.uniqueRMSet = getUniqueRMSet(v.elements());
         proceedWithXARecovery(logPath);
         state.recoveryInProgress.post();
-
+        
         // If resync is not needed, then perform after-resync
         // tasks immediately.
-
+        
         result = state.coordsByGlobalTID.size() > 0;
         if (!result) {
             try {
                 resyncComplete(false,keypointRequired,logPath);
             } catch(Throwable exc) {}
         }
-
+        
         if (result)
             resync(logPath);
         return true;
     }
-
+    
     static void resync(String logPath) {
-
+        
         // If there are any transactions, proceed with resync.  The map of
         // coordinators by global identifier is created during the
         // TopCoordinator reconstruct method when the coordinators are added
         // via addCoordinator. We copy the contents to another map as
         // Coordinators will remove themselves from the map during resync.
-
+        
         // Now that the Coordinators have been reconstructed, record
         // the number of transactions requiring resync,
         // and make an event trace point. We must clone the Hashtable
         // here so that the Enumeration does not get
         // changed when any subsequent transaction is created (this can happen
         // when the last Coordinator is removed).
-
+        
         RecoveryStateHolder recoveryState = (RecoveryStateHolder)recoveryStatetable.get(logPath);
-
+        
         recoveryState.resyncCoords = recoveryState.coordsByGlobalTID.size();
         Enumeration resyncList =
         ((Hashtable) recoveryState.coordsByGlobalTID.clone()).elements();
-
+        
         boolean isRoot[] = new boolean[1];
-
+        
         // Go through and resync each transaction.  The transaction lock
         // for each transaction is obtained to avoid deadlocks during recovery.
-
+        
         FailureInducer.waitInRecovery();
         while (resyncList.hasMoreElements()) {
-
+            
             TopCoordinator coord = (TopCoordinator)resyncList.nextElement();
-
+            
             try {
-
+                
                 // Before performing recovery, lock the coordinator.
-
+                
                 synchronized (coord) {
-
+                    
                     Status state = coord.recover(isRoot);
-
+                    
                     if (state == Status.StatusUnknown) {
-
+                        
                         // If the coordinator can be locked, then perform
                         // recovery on it. If the outcome is not currently
                         // known, we do nothing with the transaction,
@@ -327,15 +327,15 @@ public class DelegatedRecoveryManager {
                         // For subordinates, the Coordinator will compl-ete the
                         // transaction itself as it will have no
                         // Synchronization objects.
-
+                        
                         DelegatedTimeoutManager tmoutMgr = getTimeoutManager(logPath);
                         tmoutMgr.setTimeout(
                                 coord.getLocalTID(),
                                 DelegatedTimeoutManager.IN_DOUBT_TIMEOUT,
                                 60);
-
+                        
                     } else if (state == Status.StatusCommitted) {
-
+                        
                         // For committed or rolled back, proceed with
                         // completion of the transaction, regardless of
                         // whether it is the root or a subordinate.
@@ -348,17 +348,17 @@ public class DelegatedRecoveryManager {
                             "Before invoking commit on the reconstructed coordinator"+
                             "GTID is: "+
                             ((TopCoordinator)coord).superInfo.globalTID.toString());
-
+                            
                         }
-
-
+                        
+                        
                         try {
                             coord.commit();
                         } catch (Throwable exc) {
                             _logger.log(Level.WARNING,"jts.exception_during_resync",
                             new java.lang.Object[] {exc.toString(),"commit"});
                         }
-
+                        
                         if (isRoot[0]) {
                             try {
                                 coord.afterCompletion(state);
@@ -368,11 +368,11 @@ public class DelegatedRecoveryManager {
                                 "after_completion"});
                             }
                         }
-
+                        
                     } else {
-
+                        
                         // By default, roll the transaction back.
-
+                        
                         try {
                             if(_logger.isLoggable(Level.FINE)) {
                                 _logger.logp(Level.FINE,"DelegatedRecoveryManager","resync()",
@@ -380,14 +380,14 @@ public class DelegatedRecoveryManager {
                                 "reconstructed coordinator :"+
                                 "GTID is : "+
                                 ((TopCoordinator)coord).superInfo.globalTID.toString());
-
+                                
                             }
                             coord.rollback(true);
                         } catch (Throwable exc) {
                             _logger.log(Level.WARNING,"jts.resync_failed",
                             new java.lang.Object [] {exc.toString(),"rollback"});
                         }
-
+                        
                         if (isRoot[0]) {
                             try {
                                 coord.afterCompletion(Status.StatusRolledBack);
@@ -401,35 +401,35 @@ public class DelegatedRecoveryManager {
                 }
             } catch (Throwable exc) {}
         }
-
+        
         // Note that resyncComplete will be called by the
         // last TopCoordinator to complete resync (in removeCoordinator)
         // so we do not need to do it here.
     }
-
-
+    
+    
     private static void resyncComplete(boolean resynced,
     boolean keypointRequired, String logPath) throws LogicErrorException {
-
+        
         RecoveryStateHolder state = (RecoveryStateHolder)recoveryStatetable.get(logPath);
         // Inform JTSXA that resync is complete, and trace the fact
         // that resync has completed.
-
+        
         // COMMENT(Ram J) not needed anymore
         //JTSXA.resyncComplete();
-
+        
         // Perform a keypoint of the log if required.
-
+        
         if (keypointRequired) {
             CoordinatorLog.keypoint(logPath);
         }
-
+        
         // Post the resync in progress event semaphore.
-
+        
         state.resyncInProgress.post();
         state.resyncInProgress = null;
     }
-
+    
     /**
      * Returns a reference to the Coordinator object that corresponds to the
      * local identifier passed as a parameter.
@@ -442,16 +442,16 @@ public class DelegatedRecoveryManager {
      *
      * @see
      */
-
+    
     static CoordinatorImpl getLocalCoordinator(Long localTID, String logPath) {
-
+        
         RecoveryStateHolder state = (RecoveryStateHolder)recoveryStatetable.get(logPath);
         CoordinatorImpl result = (CoordinatorImpl)
         state.coordsByLocalTID.get(localTID);
-
+        
         return result;
     }
-
+    
     /**
      * Determines whether the local transaction identifier represents a valid
      * transaction.
@@ -464,15 +464,15 @@ public class DelegatedRecoveryManager {
      *
      * @see
      */
-
+    
     static boolean validLocalTID(Long localTID, String logPath) {
         RecoveryStateHolder state = (RecoveryStateHolder)recoveryStatetable.get(logPath);
-
+        
         boolean result = state.coordsByLocalTID.containsKey(localTID);
-
+        
         return result;
     }
-
+    
     /**
      * Informs the DelegatedRecoveryManager that the transaction service is being shut
      * down.
@@ -488,49 +488,49 @@ public class DelegatedRecoveryManager {
      * @see
      */
     static void shutdown(boolean immediate) {
-
-
+        
+        
         Enumeration keys = recoveryStatetable.keys();
         if (keys.hasMoreElements()) {
             String logPath = (String)keys.nextElement();
             RecoveryStateHolder state = (RecoveryStateHolder)recoveryStatetable.get(logPath);
             if (immediate) {
                 // If immediate, stop the resync thread if any.
-
+                
             } else {
-
+                
                 // Otherwise ensure that resync has completed.
-
+                
                 if (state.resyncInProgress != null) {
                     try {
                         state.resyncInProgress.waitEvent();
                     } catch (InterruptedException exc) {}
                 }
             }
-
+            
             // COMMENT(Ram J) not needed anymore.
             //JTSXA.shutdown(immediate);
-
+            
             // If not immediate shutdown, keypoint and close the log.
             // Only do this if the process is recoverable!
-
+            
             if (!immediate) {
                 CoordinatorLog.keypoint(logPath);
                 CoordinatorLog.finalizeAll(logPath);
             }
-
+            
             //$Continue with shutdown/quiesce.
         }
     }
-
+    
     /**
      * Reduce the set of XAResource objects into a unique set such that there
      * is at most one XAResource object per RM.
      */
     private static Enumeration getUniqueRMSet(Enumeration xaResourceList){
-
+        
         Vector uniqueRMList = new Vector();
-
+        
         while (xaResourceList.hasMoreElements()) {
             XAResource xaRes = (XAResource) xaResourceList.nextElement();
             int size = uniqueRMList.size();
@@ -548,11 +548,11 @@ public class DelegatedRecoveryManager {
                 uniqueRMList.add(xaRes);
             }
         }
-
+        
         return uniqueRMList.elements();
     }
-
-
+    
+    
     /**
      * This method is used to recontruct and register the Resource objects
      * corresponding to in-doubt transactions in the RMs. It is assumed
@@ -561,45 +561,45 @@ public class DelegatedRecoveryManager {
      * well as any other thread driving recovery of XA Resources.
      */
     private static void proceedWithXARecovery(String logPath) {
-
+        
         RecoveryStateHolder state = (RecoveryStateHolder)recoveryStatetable.get(logPath);
-
+        
         /*  This method has been newly added - Ram Jeyaraman */
-
+        
         Enumeration xaResources = state.uniqueRMSet;
-
+        
         // sanity check
         if (xaResources == null) {
             return;
         }
-
+        
         Vector otsResources = new Vector();
         // Map uniqueXids = new Hashtable();
         Set uniqueXids = new HashSet();
-
+        
         while (xaResources.hasMoreElements()) {
-
+            
             XAResource xaResource = (XAResource) xaResources.nextElement();
-
+            
             // Get the list of XIDs which represent in-doubt transactions
             // for the database.
-
+            
             Xid[] inDoubtXids = RecoveryManager.getInDoubtXids(xaResource);
             // uniqueXids.clear();
                 if (inDoubtXids == null || inDoubtXids.length == 0) {
                     continue; // go to the next resource
                 }
-
+                
                 for (int i = 0; i < inDoubtXids.length; i++) {
-
+                    
                     // check to see if the xid belongs to this server.
-
+                    
                     String branchQualifier =
                     new String(inDoubtXids[i].getBranchQualifier());
                     String serverName = Configuration.getServerName(logPath);
-
+                    
                     if (branchQualifier.startsWith(serverName)) {
-
+                        
                         // check if the xid is a duplicate. i.e., Xids
                         // which have same globalId and branchId are
                         // considered duplicates. Note that the
@@ -607,7 +607,7 @@ public class DelegatedRecoveryManager {
                         // to make sure that at most one OTSResource object
                         // is registered with the coordinator per transaction
                         // per RM.
-
+                        
                         if (!uniqueXids.contains(inDoubtXids[i])) { // unique xid
                             if(_logger.isLoggable(Level.FINE))
                             {
@@ -616,9 +616,9 @@ public class DelegatedRecoveryManager {
                                         " This xid is UNIQUE " +
                                         inDoubtXids[i]);
                             }
-
+                            
                             uniqueXids.add(inDoubtXids[i]); // add to uniqueList
-
+                            
                             // Create an OTSResource for the in-doubt
                             // transaction and add it to the list. Each
                             // OTSResource represents a RM per transaction.
@@ -646,17 +646,17 @@ public class DelegatedRecoveryManager {
                       }
                 }
             }
-
+        
         // For each OTSResource, determine whether the transaction is known,
         // and if so, register it, otherwise roll it back.
-
+        
         for (int i = 0; i < otsResources.size(); i++) {
-
+            
             OTSResource otsResource = (OTSResource) otsResources.elementAt(i);
             GlobalTID globalTID = new GlobalTID(otsResource.getGlobalTID());
             TopCoordinator coord =
             (TopCoordinator) state.coordsByGlobalTID.get(globalTID);
-
+            
             if (coord == null) {
                 // Roll the OTSResource back if the transaction is not
                 // recognised. This happens when the RM has recorded its
@@ -686,7 +686,7 @@ public class DelegatedRecoveryManager {
                                 if (!infiniteRetry) {
                                     commitRetriesLeft--;
                                 }
-
+                                
                                 try {
                                     Thread.sleep(Configuration.COMMIT_RETRY_WAIT);
                                 } catch( Throwable e ) {}
@@ -713,7 +713,7 @@ public class DelegatedRecoveryManager {
                 // be done *as is* in the removeCoordinator() method.
                 // waitForResync semaphore needs to be flagged when the
                 // recovery thread goes away.
-
+                
                 // Register the OTSResource with the Coordinator.
                 // It will be called for commit or rollback during resync.
                 if(_logger.isLoggable(Level.FINE)) {
@@ -728,8 +728,8 @@ public class DelegatedRecoveryManager {
             }
         }
     }
-
-
+    
+    
     /**
      * Returns an array of Coordinator objects currently active.
      *
@@ -740,31 +740,31 @@ public class DelegatedRecoveryManager {
      * @see
      */
     static CoordinatorImpl[] getCoordinators(String logPath) {
-
+        
         RecoveryStateHolder state = (RecoveryStateHolder)recoveryStatetable.get(logPath);
         int size = state.coordsByGlobalTID.size();
         CoordinatorImpl[] result = new CoordinatorImpl[size];
-
+        
         Enumeration coords = state.coordsByGlobalTID.elements();
-
+        
         for(int pos = 0;pos<size;){
             result[pos++] = (CoordinatorImpl) coords.nextElement();
         }
-
+        
         return result;
     }
-
-
+    
+    
     static Hashtable/*<GlobalTID,Coordinator>*/ getCoordsByGlobalTID(String logPath) {
         RecoveryStateHolder state = (RecoveryStateHolder)recoveryStatetable.get(logPath);
         return state.coordsByGlobalTID;
     }
-
-
-
+    
+    
+    
     public static void waitForRecovery(String logPath) {
         RecoveryStateHolder state = (RecoveryStateHolder)recoveryStatetable.get(logPath);
-
+        
         if (state.recoveryInProgress != null) {
             try {
                 state.recoveryInProgress.waitEvent();
@@ -776,7 +776,7 @@ public class DelegatedRecoveryManager {
             }
         }
     }
-
+    
     /**
      * Waits for resync to complete.
      *
@@ -799,35 +799,35 @@ public class DelegatedRecoveryManager {
             }
         }
     }
-
+    
 }
 
 class RecoveryStateHolder {
-
+    
     /**
      * list of XA Resources to be recovered.
      */
     Enumeration uniqueRMSet = null;
-
+    
     /**
      * This attribute indicates the number of Coordinator objects which require
      * resync.  This is set to the number of in-doubt transactions recovered
      * from the log, then decreased as transactions are resolved.
      */
     int resyncCoords = 0;
-
+    
     /**
      * This attribute is used to block new requests while there are
      * Coordinators which still require resync.
      */
     EventSemaphore resyncInProgress = new EventSemaphore();
-
+    
     /**
      * This attribute is used to block requests against RecoveryCoordinators or
      * CoordinatorResources before recovery has completed.
      */
     EventSemaphore recoveryInProgress = new EventSemaphore();
-
+    
     Hashtable coordsByGlobalTID = new Hashtable();
     Hashtable coordsByLocalTID = new Hashtable();
     //Hashtable transactionIds = new Hashtable();

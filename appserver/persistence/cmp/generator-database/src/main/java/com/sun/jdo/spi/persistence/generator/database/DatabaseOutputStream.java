@@ -57,12 +57,16 @@ import com.sun.jdo.spi.persistence.utility.logging.Logger;
 /*
  * Represents a database connection as an output stream.
  *
- * @author Jie Leng
+ * @author Jie Leng 
  */
 public class DatabaseOutputStream extends OutputStream {
      /** The logger */
     private static final Logger logger =
             LogHelperDatabaseGenerator.getLogger();
+
+    /** I18N message handler */
+    private final static ResourceBundle messages =
+            I18NHelper.loadBundle(DatabaseOutputStream.class);
 
     /** Connection to the database. */
     // XXX FIXME S/b final; make it so if we can get rid of setConnection.
@@ -118,9 +122,9 @@ public class DatabaseOutputStream extends OutputStream {
      * doesn't make sense to write a single int to a database stream.  So
      * always throws UnsupportedOperationException.
      * @throws UnsupportedOperationException
-     */
+     */ 
     public void write(int b) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException(); 
     }
 
     /**
@@ -135,9 +139,8 @@ public class DatabaseOutputStream extends OutputStream {
             return;
         }
 
-        try (PreparedStatement pstmt = conn_.prepareStatement(stmt)){
-            pstmt.execute();
-        }
+        PreparedStatement pstmt = conn_.prepareStatement(stmt);
+        pstmt.execute();
     }
 
     // XXX FIXME Is this really necessary?  Delete if possible.
