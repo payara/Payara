@@ -200,18 +200,21 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         this.portRange = portRange;
     }
 
-    @Override
-    public void start() throws IOException {
-        startDelayedExecutor();
+    private void bindTransport() throws IOException {
         if (portRange != null && transport instanceof TCPNIOTransport) {
             Connection<?> connection = ((SocketBinder) transport)
                     .bind(address.getHostAddress(), portRange, false,
                             TCPNIOTransport.class.cast(transport).getServerConnectionBackLog());
             // Set the dynamic port value equal to the result of the autobind
-            port = InetSocketAddress.class.cast(connection.getLocalAddress()).getPort();
+            this.port = InetSocketAddress.class.cast(connection.getLocalAddress()).getPort();
         } else {
             ((SocketBinder) transport).bind(new InetSocketAddress(address, port));
         }
+    }
+
+    @Override
+    public void start() throws IOException {
+        startDelayedExecutor();
         transport.start();
     }
 
@@ -333,6 +336,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         configureTransport(networkListener,
                            networkListener.findTransport(),
                            filterChainBuilder);
+        bindTransport();
 
         configureProtocol(habitat, networkListener,
                 networkListener.findProtocol(), filterChainBuilder);
