@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.launcher;
 
@@ -100,10 +101,10 @@ public class GFLauncherTest {
     public void test1() throws GFLauncherException, MiniXmlParserException {
         launcher.launch();
     }
+    
     /**
      * Let's fake-launch domain1  -- which DOES have the jvm logging args
      */
-
     @Test
     public void test2() throws GFLauncherException, MiniXmlParserException {
         info.setDomainName("domain1");
@@ -112,7 +113,7 @@ public class GFLauncherTest {
 
         assertTrue(cmdline.contains("-XX:+UnlockDiagnosticVMOptions"));
         // 0 --> java, 1 --> "-cp" 2 --> the classpath, 3 -->first arg
-        assertEquals(cmdline.get(3), "-XX:+UnlockDiagnosticVMOptions");
+        assertEquals("-XX:+UnlockDiagnosticVMOptions", cmdline.get(3));
         
         /* Too noisy, todo figure out how to get it into the test report
         System.out.println("COMMANDLINE:");
@@ -125,7 +126,6 @@ public class GFLauncherTest {
     /**
      * Let's fake-launch domain2 -- which does NOT have the jvm logging args
      */
-
     @Test
     public void test3() throws GFLauncherException, MiniXmlParserException {
         info.setDomainName("domain2");
