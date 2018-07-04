@@ -71,9 +71,9 @@ import java.util.stream.Collectors;
  */
 public abstract class GFLauncher {
     
-    private List<String> commandLine = new ArrayList<String>();
-    private List<String> jvmOptionsList = new ArrayList<String>();
-    private GFLauncherInfo info;
+    private final List<String> commandLine = new ArrayList<String>();
+    private final List<String> jvmOptionsList = new ArrayList<String>();
+    private final GFLauncherInfo info;
     private Map<String, String> asenvProps;
     private JavaConfig javaConfig;
     private JvmOptions jvmOptions;
@@ -87,7 +87,7 @@ public abstract class GFLauncher {
     private long startTime;
     private String logFilename;
     private LaunchType mode = LaunchType.normal;
-    private final static LocalStringsImpl strings = new LocalStringsImpl(GFLauncher.class);
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(GFLauncher.class);
     private boolean setupCalledByClients = false; //handle with care
     private int exitValue = -1;
     private ProcessWhacker processWhacker;
@@ -129,7 +129,7 @@ public abstract class GFLauncher {
             throw gfe;
         } catch (Throwable t) {
             // hk2 might throw a java.lang.Error
-            throw new GFLauncherException(strings.get("unknownError", t.getMessage()), t);
+            throw new GFLauncherException(STRINGS.get("unknownError", t.getMessage()), t);
         } finally {
             GFLauncherLogger.removeLogFileHandler();
         }
@@ -163,7 +163,7 @@ public abstract class GFLauncher {
             throw gfe;
         } catch (Throwable t) {
             // hk2 might throw a java.lang.Error
-            throw new GFLauncherException(strings.get("unknownError", t.getMessage()), t);
+            throw new GFLauncherException(STRINGS.get("unknownError", t.getMessage()), t);
         } finally {
             GFLauncherLogger.removeLogFileHandler();
         }
@@ -302,7 +302,7 @@ public abstract class GFLauncher {
      */
     public String getLogFilename() throws GFLauncherException {
         if (!logFilenameWasFixed)
-            throw new GFLauncherException(strings.get("internalError") + " call to getLogFilename() before it has been initialized");
+            throw new GFLauncherException(STRINGS.get("internalError") + " call to getLogFilename() before it has been initialized");
 
         return logFilename;
     }
@@ -350,6 +350,11 @@ public abstract class GFLauncher {
     //////     ALL private and package-private below   ////////////////////////
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * Internal launcher which in turn calls {@link #launchInstance()}
+     * @throws GFLauncherException 
+     */
     abstract void internalLaunch() throws GFLauncherException;
 
     private void parseDebug() {
@@ -450,8 +455,19 @@ public abstract class GFLauncher {
         return mode == LaunchType.fake;
     }
 
+    /**
+     * Returns a list of all the files to be loaded as part of the main classpath.
+     * This includes all module jars.
+     * @return
+     * @throws GFLauncherException if Payara is running in embedded mode
+     */
     abstract List<File> getMainClasspath() throws GFLauncherException;
 
+    /**
+     * Returns the class of Payara containg the {@code main()} function
+     * @return
+     * @throws GFLauncherException 
+     */
     abstract String getMainClass() throws GFLauncherException;
 
     GFLauncher(GFLauncherInfo info) {
@@ -470,6 +486,11 @@ public abstract class GFLauncher {
         return startTime;
     }
 
+    /**
+     * Launches the instance
+     * @throws GFLauncherException if there was an error with the process of starting the instance
+     * @throws MiniXmlParserException if there was an error reading the domain.xml
+     */
     void launchInstance() throws GFLauncherException, MiniXmlParserException {
         if (isFakeLaunch()) {
             return;
@@ -614,7 +635,7 @@ public abstract class GFLauncher {
             int ev = sp.exitValue();
             ProcessStreamDrainer psd1 = getProcessStreamDrainer();
             String output = psd1.getOutErrString();
-            return strings.get("server_process_died", ev, output);
+            return STRINGS.get("server_process_died", ev, output);
         }
         catch (IllegalThreadStateException e) {
             //the process is still running and we are ok
@@ -713,7 +734,7 @@ public abstract class GFLauncher {
 
         if (processWhacker == null) {
             Runtime runtime = Runtime.getRuntime();
-            final String msg = strings.get("serverStopped", info.getType());
+            final String msg = STRINGS.get("serverStopped", info.getType());
             processWhacker = new ProcessWhacker(p, msg);
             runtime.addShutdownHook(new Thread(processWhacker));
         }
@@ -896,7 +917,7 @@ public abstract class GFLauncher {
                 // the actual error is wrapped differently depending on
                 // whether the problem was with the source or target
                 Throwable cause = ioe.getCause() == null ? ioe : ioe.getCause();
-                throw new GFLauncherException(strings.get(
+                throw new GFLauncherException(STRINGS.get(
                         "COPY_SERVER_POLICY_error", cause.getMessage()));
             }
         }
@@ -919,7 +940,7 @@ public abstract class GFLauncher {
                     "osgi-cache-" + System.currentTimeMillis());
             if (osgiCacheDir.exists() && !backupOsgiCacheDir.exists()) {
                 if (!FileUtils.renameFile(osgiCacheDir, backupOsgiCacheDir)) {
-                    throw new GFLauncherException(strings.get("rename_osgi_cache_failed", osgiCacheDir, backupOsgiCacheDir));
+                    throw new GFLauncherException(STRINGS.get("rename_osgi_cache_failed", osgiCacheDir, backupOsgiCacheDir));
                 }
                 else {
                     GFLauncherLogger.fine("rename_osgi_cache_succeeded", osgiCacheDir, backupOsgiCacheDir);
@@ -966,7 +987,7 @@ public abstract class GFLauncher {
             return "javaagent:" + getCleanPath(flashlightJarFile);
         // No agent jar...
         else {
-            String msg = strings.get("no_flashlight_agent", flashlightJarFile);
+            String msg = STRINGS.get("no_flashlight_agent", flashlightJarFile);
             GFLauncherLogger.warning(GFLauncherLogger.NO_FLASHLIGHT_AGENT, flashlightJarFile);
             throw new GFLauncherException(msg);
         }
@@ -1057,7 +1078,7 @@ public abstract class GFLauncher {
                 sname = info.getInstanceName();
             }
             
-            System.out.println(strings.get("ssh", sname));
+            System.out.println(STRINGS.get("ssh", sname));
             try {
                 System.in.close();
             }

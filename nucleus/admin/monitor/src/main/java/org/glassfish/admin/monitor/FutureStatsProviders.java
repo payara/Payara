@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor;
 
@@ -50,6 +51,9 @@ import org.glassfish.external.probe.provider.StatsProviderInfo;
  * @author bnevins
  */
 class FutureStatsProviders {
+    
+    private static final Set data = new CopyOnWriteArraySet<StatsProviderInfo>();
+    
     static void add(StatsProviderInfo spInfo){
         if(spInfo != null)
             data.add(spInfo);
@@ -70,7 +74,5 @@ class FutureStatsProviders {
     }
     private FutureStatsProviders() {
     }
-
-
-    private final static Set data = new CopyOnWriteArraySet<StatsProviderInfo>();
+    
 }

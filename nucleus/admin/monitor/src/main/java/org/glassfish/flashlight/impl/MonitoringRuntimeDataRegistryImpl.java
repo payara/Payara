@@ -37,11 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.flashlight.impl;
 
@@ -56,24 +52,22 @@ import javax.inject.Singleton;
 /**
  * @author Harpreet Singh
  */
-
 @Service
 @Singleton
-public class MonitoringRuntimeDataRegistryImpl 
-        implements MonitoringRuntimeDataRegistry {
+public class MonitoringRuntimeDataRegistryImpl implements MonitoringRuntimeDataRegistry {
     
     
-    protected Map<String, TreeNode> children =
-            new ConcurrentHashMap<String, TreeNode>();
+    protected Map<String, TreeNode> children = new ConcurrentHashMap<String, TreeNode>();
 
 
     public MonitoringRuntimeDataRegistryImpl (){      
     }
     
+    @Override
     public void add(String name, TreeNode node) {
-        if (name != null )
+        if (name != null ) {
              children.put(name, node);
-        else {
+        } else {
             throw new RuntimeException ("MonitoringRuntimeDataRegistry does not take null keys");
         }
     }
@@ -83,6 +77,7 @@ public class MonitoringRuntimeDataRegistryImpl
             children.remove(name);
     }
 
+    @Override
     public TreeNode get (String name) {
         TreeNode node = (name != null)? children.get(name): null;
         return node;

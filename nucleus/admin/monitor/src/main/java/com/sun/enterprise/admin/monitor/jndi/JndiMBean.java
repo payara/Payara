@@ -37,34 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * JndiMBean.java
- *
- * Created on March 8, 2004, 1:42 PM
- */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.jndi;
 
+import java.util.ArrayList;
 import javax.management.DynamicMBean;
-import javax.management.MBeanException;
-import javax.naming.NameClassPair;
 import javax.naming.NamingException;
 
 /**
- * The JndiMBean DynamicMBean interface.
+ * The JNDI MBean DynamicMBean interface.
  * @author Rob Ruyak
+ * @since March 8, 2004, 1:42 PM
  */
 public interface JndiMBean extends DynamicMBean {
 
     /**
-     * Gets the jndi naming entries given a particular context
+     * Gets the JNDI naming entries given a particular context
      * or subcontext.
      *
      * @param context The context name under which the entries live.
      * @return An array of serializable NameClassPair objects.
-     * @throws MBeanException when an error occurs in retrieving the entries.
+     * @throws NamingException when an error occurs in retrieving the entries.
      */
-    public java.util.ArrayList getNames(String context) throws NamingException;
+    public ArrayList getNames(String context) throws NamingException;
 
 }

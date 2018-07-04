@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.jndi;
 
@@ -48,16 +49,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.ArrayList;
 import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.logging.LogDomains;
 import static org.glassfish.admin.monitor.MLogger.*;
 
 
 public class JndiNameLookupHelper {
+    
     private InitialContext context;
-    private static final Logger logger = getLogger();
+    private static final Logger LOGGER = getLogger();
     private static final StringManager sm =
         StringManager.getManager(JndiNameLookupHelper.class);
-    private final String SYSTEM_SUBCONTEXT = "__SYSTEM";
+    private static final String SYSTEM_SUBCONTEXT = "__SYSTEM";
 
     /** Creates a new instance of JndiMBeanHelper */
     public JndiNameLookupHelper() {
@@ -73,7 +74,7 @@ public class JndiNameLookupHelper {
         try {
             context = new InitialContext();
         } catch(javax.naming.NamingException e) {
-            logger.log(Level.WARNING, UNHANDLED_EXCEPTION, e);
+            LOGGER.log(Level.WARNING, UNHANDLED_EXCEPTION, e);
         }
     }
 
@@ -86,8 +87,7 @@ public class JndiNameLookupHelper {
      * @throws NamingException if an error occurs when connection with
      *         the naming service is established or retrieval fails.
      */
-    public ArrayList<String> getJndiEntriesByContextPath(String contextPath)
-            throws NamingException {
+    public ArrayList<String> getJndiEntriesByContextPath(String contextPath) throws NamingException {
         ArrayList<String> names;
         NamingEnumeration ee;
         if(contextPath == null) { contextPath = ""; }
@@ -96,7 +96,7 @@ public class JndiNameLookupHelper {
         } catch(NameNotFoundException e) {
             String msg = sm.getString("monitor.jndi.context_notfound",
                 new Object[]{contextPath});
-            logger.log(Level.WARNING, msg);
+            LOGGER.log(Level.WARNING, msg);
             throw new NamingException(msg);
         }
         names = toNameClassPairArray(ee);
@@ -113,13 +113,12 @@ public class JndiNameLookupHelper {
      * @throws NamingException if an error occurs when connection with
      *         the naming service is established or retrieval fails.
      */
-    ArrayList<String> toNameClassPairArray(NamingEnumeration ee)
-            throws javax.naming.NamingException{
+    ArrayList<String> toNameClassPairArray(NamingEnumeration ee) throws NamingException {
         ArrayList<String> names = new ArrayList<String>();
         while(ee.hasMore()) {
             // don't add the __SYSTEM subcontext - Fix for 6041360
             Object o = ee.next();
-            if(o.toString().indexOf(SYSTEM_SUBCONTEXT) == -1) {
+            if(!o.toString().contains(SYSTEM_SUBCONTEXT)) {
                 names.add(o.toString());
             }
         }

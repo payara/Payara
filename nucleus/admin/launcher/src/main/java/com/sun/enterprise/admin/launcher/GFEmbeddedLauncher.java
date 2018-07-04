@@ -51,7 +51,7 @@ import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import com.sun.enterprise.util.HostAndPort;
 
 /**
- *
+ * The launcher for use in embedded Payara
  * @author Byron Nevins
  */
 class GFEmbeddedLauncher extends GFLauncher {

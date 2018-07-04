@@ -37,11 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.flashlight.statistics.impl;
 
@@ -59,9 +55,9 @@ import org.glassfish.hk2.api.PerLookup;
 public class TimeStatsMillisImpl extends TimeStatsAbstractImpl
     implements TimeStatsMillis {
     
-    private String NAME = "timeStatsMillis";
-    private String UNIT = "Milli seconds";
-    private String DESCRIPTION = "TimeStatistic Milli Seconds";
+    private static final String NAME = "timeStatsMillis";
+    private static final String UNIT = "Milli seconds";
+    private static final String DESCRIPTION = "TimeStatistic Milli Seconds";
     
     public TimeStatsMillisImpl (){
         super.setName(NAME);
@@ -81,13 +77,17 @@ public class TimeStatsMillisImpl extends TimeStatsAbstractImpl
         return getTime ();
     }
 
+    @Override
     public String getUnit() {
-        return this.UNIT;
+        return UNIT;
     }
 
+    @Override
     public String getDescription() {
-        return this.DESCRIPTION;
+        return DESCRIPTION;
     }
+    
+    @Override
     public String toString() {
         return "Statistic " + getClass().getName() + NEWLINE +
                 "Name: " + getName() + NEWLINE +
