@@ -46,11 +46,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.Enumeration;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -75,6 +71,7 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.NotProcessed;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
+import fish.payara.microprofile.openapi.api.OpenAPIBuildException;
 import fish.payara.microprofile.openapi.impl.admin.OpenApiServiceConfiguration;
 import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
 import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
@@ -165,12 +162,11 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     }
 
     /**
-     * @return the document for the most recently deployed application. Creates one if it hasn't already been created.
-     * @throws TimeoutException if creating the document timed out.
-     * @throws ExecutionException if creating the document failed.
-     * @throws InterruptedException if creating the document was interrupted.
+     * @return the document for the most recently deployed application. Creates one
+     *         if it hasn't already been created.
+     * @throws OpenAPIBuildException if creating the document failed.
      */
-    public OpenAPI getDocument() throws InterruptedException, ExecutionException, TimeoutException {
+    public OpenAPI getDocument() throws OpenAPIBuildException {
         if (mappings.isEmpty() || !isEnabled()) {
             return null;
         }
@@ -235,72 +231,50 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
                     return loadedClass;
                 })
                 // Don't return null classes
-                .filter(x -> x != null)
-                .collect(toSet());
+                .filter(x -> x != null).collect(toSet());
     }
 
     private class OpenApiMapping {
 
         private final ApplicationInfo appInfo;
         private final OpenApiConfiguration appConfig;
-        private final CompletableFuture<OpenAPI> document;
+        private volatile OpenAPI document;
 
         private OpenApiMapping(ApplicationInfo appInfo) {
             this.appInfo = appInfo;
             this.appConfig = new OpenApiConfiguration(appInfo.getAppClassLoader());
-            this.document = new CompletableFuture<>();
         }
 
         private ApplicationInfo getAppInfo() {
             return appInfo;
         }
 
-        private OpenApiConfiguration getAppConfig() {
-            return appConfig;
-        }
-
-        private synchronized OpenAPI getDocument() throws InterruptedException, ExecutionException, TimeoutException {
-            if (!document.isDone()) {
-                executor.submit(new OpenApiBuilder(this, document));
+        private synchronized OpenAPI getDocument() throws OpenAPIBuildException {
+            if (document == null) {
+                document = buildDocument();
             }
-            return document.get(10, TimeUnit.SECONDS);
+            return document;
         }
 
-    }
+        private OpenAPI buildDocument() throws OpenAPIBuildException {
+            OpenAPI openapi = new OpenAPIImpl();
 
-    private class OpenApiBuilder implements Runnable {
+            try {
+                String contextRoot = getContextRoot(appInfo);
+                ReadableArchive archive = appInfo.getSource();
+                Set<Class<?>> classes = getClassesFromArchive(archive, appInfo.getAppClassLoader());
 
-        private final OpenApiMapping mapping;
-        private final CompletableFuture<OpenAPI> future;
-
-        private OpenApiBuilder(OpenApiMapping mapping, CompletableFuture<OpenAPI> future) {
-            this.mapping = mapping;
-            this.future = future;
-        }
-
-        @Override
-        public void run() {
-            if (!future.isDone()) {
-                OpenAPI openapi = new OpenAPIImpl();
-
-                String contextRoot = getContextRoot(mapping.getAppInfo());
-                ReadableArchive archive = mapping.getAppInfo().getSource();
-                Set<Class<?>> classes = getClassesFromArchive(archive, mapping.getAppInfo().getAppClassLoader());
-
-                try {
-                    openapi = new ModelReaderProcessor().process(openapi, mapping.getAppConfig());
-                    openapi = new FileProcessor(mapping.getAppInfo().getAppClassLoader()).process(openapi, mapping.getAppConfig());
-                    openapi = new ApplicationProcessor(classes).process(openapi, mapping.getAppConfig());
-                    openapi = new BaseProcessor(contextRoot).process(openapi, mapping.getAppConfig());
-                    openapi = new FilterProcessor().process(openapi, mapping.getAppConfig());
-                } catch (Throwable t) {
-                    future.completeExceptionally(t);
-                    return;
-                }
-
-                LOGGER.info("OpenAPI document created.");
-                future.complete(openapi);
+                openapi = new ModelReaderProcessor().process(openapi, appConfig);
+                openapi = new FileProcessor(appInfo.getAppClassLoader()).process(openapi, appConfig);
+                openapi = new ApplicationProcessor(classes).process(openapi, appConfig);
+                openapi = new BaseProcessor(contextRoot).process(openapi, appConfig);
+                openapi = new FilterProcessor().process(openapi, appConfig);
+            } catch (Throwable t) {
+                throw new OpenAPIBuildException(t);
             }
+
+            LOGGER.info("OpenAPI document created.");
+            return openapi;
         }
 
     }

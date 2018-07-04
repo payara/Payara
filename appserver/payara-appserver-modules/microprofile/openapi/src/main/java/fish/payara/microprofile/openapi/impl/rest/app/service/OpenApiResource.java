@@ -45,8 +45,6 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletResponse;
@@ -59,6 +57,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 
+import fish.payara.microprofile.openapi.api.OpenAPIBuildException;
 import fish.payara.microprofile.openapi.impl.OpenApiService;
 import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
 
@@ -81,7 +80,7 @@ public class OpenApiResource {
         OpenAPI document = null;
         try {
             document = OpenApiService.getInstance().getDocument();
-        } catch (InterruptedException | ExecutionException | TimeoutException ex) {
+        } catch (OpenAPIBuildException ex) {
             LOGGER.log(WARNING, "OpenAPI document creation failed.", ex);
         }
 
