@@ -43,6 +43,8 @@ package fish.payara.microprofile.metrics.jmx;
 import java.lang.management.ManagementFactory;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -60,6 +62,8 @@ public class MBeanExpression {
     private ObjectName objectName;
 
     private final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+
+    private static final Logger LOGGER = Logger.getLogger(MBeanExpression.class.getName());
 
     public MBeanExpression(String expression) {
         if (expression == null || expression.trim().isEmpty()) {
@@ -124,7 +128,8 @@ public class MBeanExpression {
                 throw new IllegalArgumentException(getMbean());
             }
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            LOGGER.log(Level.WARNING, ex.getMessage());
+            throw new IllegalStateException(ex);
         }
     }
 
