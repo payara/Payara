@@ -310,7 +310,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitProduces(Produces produces, AnnotatedElement element, ApiContext context) {
-        if (element instanceof Method) {
+        if (element instanceof Method && context.getWorkingOperation() != null) {
             for (org.eclipse.microprofile.openapi.models.responses.APIResponse response : context.getWorkingOperation()
                     .getResponses().values()) {
 
