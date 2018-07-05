@@ -69,8 +69,7 @@ import org.glassfish.config.support.TargetType;
 @Service(name = "flush-connection-pool")
 @PerLookup
 @I18n("flush.connection.pool")
-@TargetType(value = {CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP,
-    CommandTarget.CLUSTERED_INSTANCE})
+@TargetType(value = {CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE})
 @ExecuteOn(value = {RuntimeType.ALL})
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
