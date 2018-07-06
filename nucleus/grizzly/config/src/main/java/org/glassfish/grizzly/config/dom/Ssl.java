@@ -319,15 +319,15 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
      * @return 
      */
     @Attribute(dataType=Integer.class)
-    String getSslSessionTimeout();
-    void setSslSessionTimeout(String timeout);
+    String getTlsSessionTimeout();
+    void setTlsSessionTimeout(String timeout);
     
     /**
      * How large the SSL session cache can get
      * @return 
      */
     @Attribute(dataType=Integer.class)
-    String getSslSessionCacheSize();
-    void setSslSessionCacheSize(String size);
+    String getTlsSessionCacheSize();
+    void setTlsSessionCacheSize(String size);
 
 }
