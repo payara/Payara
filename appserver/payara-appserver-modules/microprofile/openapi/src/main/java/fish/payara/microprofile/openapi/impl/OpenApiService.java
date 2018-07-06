@@ -80,7 +80,6 @@ import fish.payara.microprofile.openapi.impl.processor.BaseProcessor;
 import fish.payara.microprofile.openapi.impl.processor.FileProcessor;
 import fish.payara.microprofile.openapi.impl.processor.FilterProcessor;
 import fish.payara.microprofile.openapi.impl.processor.ModelReaderProcessor;
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
 
 @Service(name = "microprofile-openapi-service")
 @RunLevel(StartupRunLevel.VAL)
@@ -95,9 +94,6 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
     @Inject
     private OpenApiServiceConfiguration config;
-
-    @Inject
-    private PayaraExecutorService executor;
 
     @Override
     public void postConstruct() {
