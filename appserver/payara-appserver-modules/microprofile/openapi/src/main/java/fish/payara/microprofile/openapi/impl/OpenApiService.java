@@ -201,7 +201,10 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
      * @return boolean if the app is a valid target for an OpenAPI document.
      */
     private static boolean isValidApp(ApplicationInfo appInfo) {
-        return appInfo.getMetaData(WebBundleDescriptorImpl.class) != null;
+        return appInfo.getMetaData(WebBundleDescriptorImpl.class) != null
+            && !appInfo.getSource().getURI().getPath().contains("glassfish/lib/install")
+            && !appInfo.getSource().getURI().getPath().contains("javadb/lib")
+            && !appInfo.getSource().getURI().getPath().contains("mq/lib");
     }
 
     /**
