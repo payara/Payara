@@ -77,6 +77,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
@@ -124,6 +125,8 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
     private final Map<String, Metadata> metadataMap = new HashMap<>();
 
     private final List<String> validationMessages = new ArrayList<>();
+    
+    private static final Logger LOGGER = Logger.getLogger(MetricCDIExtension.class.getName());
 
     private void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager manager) {
         beforeBeanDiscovery.addQualifier(org.eclipse.microprofile.metrics.annotation.Metric.class);
@@ -160,52 +163,52 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
                 continue;
             }
 
-            Consumer<MetricsResolver.Of> validate = metrics -> {
-                Metadata metadata = metrics.metadata();
-                E existingElement = annotatedElements.putIfAbsent(metrics.metricName(), element);
-                Metadata existingMetadata = metadataMap.putIfAbsent(metrics.metricName(), metadata);
-                if (null != existingElement && null != existingMetadata 
-                        && metadata.getTypeRaw() != existingMetadata.getTypeRaw()) {
-                    String errorMessage;
-                    if (element instanceof Constructor) {
-                        errorMessage = String.format("Duplicate metric name[%s] found on elements [%s#%s] and [%s#%s]",
-                                metrics.metricName(),
-                                existingElement, existingMetadata.getType(),
-                                element, metadata.getType()
-                        );
-                    } else {
-                        errorMessage = String.format("Duplicate metric name[%s] found on elements [%s.%s#%s] and [%s.%s#%s]",
-                                metrics.metricName(),
-                                existingElement.getDeclaringClass().getName(), existingElement.getName(), existingMetadata.getType(),
-                                element.getDeclaringClass().getName(), element.getName(), metadata.getType()
-                        );
-                    }
-                    validationMessages.add(errorMessage);
-                }
-            };
-
             MetricsResolver.Of counted = resolver.counted(bean, element);
             if (counted.isPresent()) {
-                validate.accept(counted);
+                validateMetricsElement(counted, element);
             }
 
             MetricsResolver.Of<Metered> metered = resolver.metered(bean, element);
             if (metered.isPresent()) {
-                validate.accept(metered);
+                validateMetricsElement(metered, element);
             }
 
             MetricsResolver.Of<Timed> timed = resolver.timed(bean, element);
             if (timed.isPresent()) {
-                validate.accept(timed);
+                validateMetricsElement(timed, element);
             }
 
             if (element instanceof Method
                     && element.isAnnotationPresent(org.eclipse.microprofile.metrics.annotation.Gauge.class)) {
                 MetricsResolver.Of<Gauge> gauge = resolver.gauge(bean, (Method) element);
                 if (gauge.isPresent()) {
-                    validate.accept(gauge);
+                    validateMetricsElement(gauge, element);
                 }
             }
+        }
+    }
+    
+    private void validateMetricsElement(MetricsResolver.Of metrics, E element) {
+        Metadata metadata = metrics.metadata();
+        E existingElement = annotatedElements.putIfAbsent(metrics.metricName(), element);
+        Metadata existingMetadata = metadataMap.putIfAbsent(metrics.metricName(), metadata);
+        if (null != existingElement && null != existingMetadata
+                && metadata.getTypeRaw() != existingMetadata.getTypeRaw()) {
+            String errorMessage;
+            if (element instanceof Constructor) {
+                errorMessage = String.format("Duplicate metric name[%s] found on elements [%s#%s] and [%s#%s]",
+                        metrics.metricName(),
+                        existingElement, existingMetadata.getType(),
+                        element, metadata.getType()
+                );
+            } else {
+                errorMessage = String.format("Duplicate metric name[%s] found on elements [%s.%s#%s] and [%s.%s#%s]",
+                        metrics.metricName(),
+                        existingElement.getDeclaringClass().getName(), existingElement.getName(), existingMetadata.getType(),
+                        element.getDeclaringClass().getName(), element.getName(), metadata.getType()
+                );
+            }
+            validationMessages.add(errorMessage);
         }
     }
 
@@ -239,7 +242,9 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
     }
 
     private void validationError(@Observes AfterBeanDiscovery afterBeanDiscovery){
-        validationMessages.forEach(message -> afterBeanDiscovery.addDefinitionError(new IllegalStateException(message)));
+         for(String validationMessage : validationMessages) {
+            LOGGER.severe(validationMessage);
+        }
         annotatedElements.clear();
         metadataMap.clear();
         validationMessages.clear();
