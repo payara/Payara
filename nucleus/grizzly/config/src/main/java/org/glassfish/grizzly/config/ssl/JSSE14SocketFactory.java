@@ -337,7 +337,7 @@ public class JSSE14SocketFactory extends JSSESocketFactory {
     */
 
     private void configureSSLSessionContext(SSLSessionContext sslSessionCtxt) {
-        String attrValue = (String) attributes.get("sslSessionTimeout");
+        String attrValue = (String) attributes.get("tlsSessionTimeout");
         if (attrValue != null) {
             sslSessionCtxt.setSessionTimeout(
                 Integer.parseInt(attrValue));
@@ -347,7 +347,7 @@ public class JSSE14SocketFactory extends JSSESocketFactory {
             sslSessionCtxt.setSessionTimeout(
                 Integer.parseInt(attrValue));
         }
-        attrValue = (String) attributes.get("sslSessionCacheSize");
+        attrValue = (String) attributes.get("tlsSessionCacheSize");
         if (attrValue != null) {
             sslSessionCtxt.setSessionCacheSize(
                 Integer.parseInt(attrValue));

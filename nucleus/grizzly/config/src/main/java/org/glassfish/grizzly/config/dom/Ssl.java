@@ -315,7 +315,7 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     void setHandshakeTimeoutMillis(String timeoutMillis);
     
     /**
-     * How long before SSL sessions expire from the cache
+     * How long before TLS sessions expire from the cache
      * @return 
      */
     @Attribute(dataType=Integer.class)
@@ -323,7 +323,7 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     void setTlsSessionTimeout(String timeout);
     
     /**
-     * How large the SSL session cache can get
+     * How large the TLS session cache can get
      * @return 
      */
     @Attribute(dataType=Integer.class)
