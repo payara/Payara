@@ -94,7 +94,7 @@
             onClick="if ( getConfirm(this,'$resource{i18n.msg.JS.confirmStartInstance}') )
                 { return submitAndDisable(this, '$resource{i18n.button.Processing}');}  else {return false;} " >
              <!command
-                 println("Staring instance ....");
+                 println("Starting instance ....");
                  println("#{sessionScope.REST_URL}/servers/server/#{pageSession.instanceName}/start-instance");
                  gf.restRequest(endpoint="#{sessionScope.REST_URL}/servers/server/#{pageSession.instanceName}/start-instance" );
                  gf.redirect("#{pageSession.selfPage}");
