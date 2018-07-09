@@ -45,7 +45,6 @@ import java.beans.PropertyChangeEvent;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.Enumeration;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Logger;
@@ -72,6 +71,7 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.NotProcessed;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
+import fish.payara.microprofile.openapi.api.OpenAPIBuildException;
 import fish.payara.microprofile.openapi.impl.admin.OpenApiServiceConfiguration;
 import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
 import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
@@ -87,7 +87,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
     private static final Logger LOGGER = Logger.getLogger(OpenApiService.class.getName());
 
-    private Deque<Map<ApplicationInfo, OpenAPI>> models;
+    private Deque<OpenApiMapping> mappings;
 
     @Inject
     private Events events;
@@ -97,7 +97,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
     @Override
     public void postConstruct() {
-        models = new ConcurrentLinkedDeque<>();
+        mappings = new ConcurrentLinkedDeque<>();
         events.register(this);
     }
 
@@ -142,22 +142,15 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
             ApplicationInfo appInfo = (ApplicationInfo) event.hook();
 
             // Create all the relevant resources
-            if (isEnabled() && isValidApp(appInfo)) {
-                // Create the OpenAPI config
-                OpenApiConfiguration appConfig = new OpenApiConfiguration(appInfo.getAppClassLoader());
-
-                // Map the application info to a new openapi document, and store it in the list
-                Map<ApplicationInfo, OpenAPI> map = Collections.singletonMap(appInfo,
-                        createOpenApiDocument(appInfo, appConfig));
-                models.add(map);
-
-                LOGGER.info("OpenAPI document created.");
+            if (isValidApp(appInfo)) {
+                // Store the application mapping in the list
+                mappings.add(new OpenApiMapping(appInfo));
             }
         } else if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo appInfo = (ApplicationInfo) event.hook();
-            for (Map<ApplicationInfo, OpenAPI> map : models) {
-                if (map.keySet().toArray()[0].equals(appInfo)) {
-                    models.remove(map);
+            for (OpenApiMapping mapping : mappings) {
+                if (mapping.getAppInfo().equals(appInfo)) {
+                    mappings.remove(mapping);
                     break;
                 }
             }
@@ -165,32 +158,19 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     }
 
     /**
-     * Gets the document for the most recently deployed application.
+     * @return the document for the most recently deployed application. Creates one
+     *         if it hasn't already been created.
+     * @throws OpenAPIBuildException if creating the document failed.
      */
-    public OpenAPI getDocument() {
-        if (models.isEmpty()) {
+    public OpenAPI getDocument() throws OpenAPIBuildException {
+        if (mappings.isEmpty() || !isEnabled()) {
             return null;
         }
-        return (OpenAPI) models.getLast().values().toArray()[0];
-    }
-
-    private OpenAPI createOpenApiDocument(ApplicationInfo appInfo, OpenApiConfiguration config) {
-        OpenAPI document = new OpenAPIImpl();
-
-        String contextRoot = getContextRoot(appInfo);
-        ReadableArchive archive = appInfo.getSource();
-        Set<Class<?>> classes = getClassesFromArchive(archive, appInfo.getAppClassLoader());
-
-        document = new ModelReaderProcessor().process(document, config);
-        document = new FileProcessor(appInfo.getAppClassLoader()).process(document, config);
-        document = new ApplicationProcessor(classes).process(document, config);
-        document = new BaseProcessor(contextRoot).process(document, config);
-        document = new FilterProcessor().process(document, config);
-        return document;
+        return (OpenAPI) mappings.peekLast().getDocument();
     }
 
     /**
-     * Retrieves an instance of this service from HK2.
+     * @return an instance of this service from HK2.
      */
     public static OpenApiService getInstance() {
         return Globals.getStaticBaseServiceLocator().getService(OpenApiService.class);
@@ -248,6 +228,51 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
                 })
                 // Don't return null classes
                 .filter(x -> x != null).collect(toSet());
+    }
+
+    private class OpenApiMapping {
+
+        private final ApplicationInfo appInfo;
+        private final OpenApiConfiguration appConfig;
+        private volatile OpenAPI document;
+
+        private OpenApiMapping(ApplicationInfo appInfo) {
+            this.appInfo = appInfo;
+            this.appConfig = new OpenApiConfiguration(appInfo.getAppClassLoader());
+        }
+
+        private ApplicationInfo getAppInfo() {
+            return appInfo;
+        }
+
+        private synchronized OpenAPI getDocument() throws OpenAPIBuildException {
+            if (document == null) {
+                document = buildDocument();
+            }
+            return document;
+        }
+
+        private OpenAPI buildDocument() throws OpenAPIBuildException {
+            OpenAPI openapi = new OpenAPIImpl();
+
+            try {
+                String contextRoot = getContextRoot(appInfo);
+                ReadableArchive archive = appInfo.getSource();
+                Set<Class<?>> classes = getClassesFromArchive(archive, appInfo.getAppClassLoader());
+
+                openapi = new ModelReaderProcessor().process(openapi, appConfig);
+                openapi = new FileProcessor(appInfo.getAppClassLoader()).process(openapi, appConfig);
+                openapi = new ApplicationProcessor(classes).process(openapi, appConfig);
+                openapi = new BaseProcessor(contextRoot).process(openapi, appConfig);
+                openapi = new FilterProcessor().process(openapi, appConfig);
+            } catch (Throwable t) {
+                throw new OpenAPIBuildException(t);
+            }
+
+            LOGGER.info("OpenAPI document created.");
+            return openapi;
+        }
+
     }
 
 }

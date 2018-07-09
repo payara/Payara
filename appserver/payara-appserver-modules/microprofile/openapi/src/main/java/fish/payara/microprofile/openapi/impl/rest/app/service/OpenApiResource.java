@@ -40,6 +40,7 @@
 package fish.payara.microprofile.openapi.impl.rest.app.service;
 
 import static fish.payara.microprofile.openapi.impl.rest.app.OpenApiApplication.APPLICATION_YAML;
+import static java.util.logging.Level.WARNING;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 
@@ -56,6 +57,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 
+import fish.payara.microprofile.openapi.api.OpenAPIBuildException;
 import fish.payara.microprofile.openapi.impl.OpenApiService;
 import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
 
@@ -75,11 +77,16 @@ public class OpenApiResource {
         }
 
         // Get the OpenAPI document
-        OpenAPI document = OpenApiService.getInstance().getDocument();
+        OpenAPI document = null;
+        try {
+            document = OpenApiService.getInstance().getDocument();
+        } catch (OpenAPIBuildException ex) {
+            LOGGER.log(WARNING, "OpenAPI document creation failed.", ex);
+        }
 
         // If there are none, return an empty OpenAPI document
         if (document == null) {
-            LOGGER.info("No document found.");
+            LOGGER.info("No OpenAPI document found.");
             return Response.status(Status.NOT_FOUND).entity(new OpenAPIImpl()).build();
         }
 
