@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.config.serverbeans;
 
 import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
@@ -349,6 +350,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
      * <p/>
      * Objects of the following type(s) are allowed in the list
      * {@link SystemProperty }
+     * @return 
      */
     @Element
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal system props" )
@@ -513,6 +515,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
 
             ConfigSupport.apply(new SingleConfigCode<Cluster>() {
 
+                @Override
                 public Object run(Cluster param) throws PropertyVetoException, TransactionFailure {
 
                     ResourceRef newResourceRef = param.createChild(ResourceRef.class);
@@ -867,7 +870,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
             //cannot be deleted
             //issue 12172
             List<ServerRef> serverRefs = child.getServerRef();
-            StringBuffer namesOfServers = new StringBuffer();
+            StringBuilder namesOfServers = new StringBuilder();
             if (serverRefs.size() > 0) {
                 for (ServerRef serverRef: serverRefs){
                     namesOfServers.append(new StringBuffer( serverRef.getRef()).append( ','));
