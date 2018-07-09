@@ -239,20 +239,31 @@ public class SSLConfigurator extends SSLEngineConfigurator {
                     setAttribute(serverSF, "algorithm", ssl.getKeyAlgorithm(), null, null);
                 }
                 setAttribute(serverSF, "trustMaxCertLength", ssl.getTrustMaxCertLength(), null, null);
+                
+                //key store settings
+                setAttribute(serverSF, "keystore", ssl.getKeyStore(), "javax.net.ssl.keyStore", null);
+                setAttribute(serverSF, "keystoreType", ssl.getKeyStoreType(), "javax.net.ssl.keyStoreType", "JKS");
+                setAttribute(serverSF, "keystorePass", getKeyStorePassword(ssl), "javax.net.ssl.keyStorePassword", "changeit");
+                
+                //trust store settings
+                setAttribute(serverSF, "truststore", ssl.getTrustStore(), "javax.net.ssl.trustStore", null);
+                setAttribute(serverSF, "truststoreType", ssl.getTrustStoreType(), "javax.net.ssl.trustStoreType", "JKS");
+                setAttribute(serverSF, "truststorePass", getTrustStorePassword(ssl), "javax.net.ssl.trustStorePassword", "changeit");
+                setAttribute(serverSF, "tlsSessionTimeout", ssl.getTlsSessionTimeout(), "javax.net.ssl.sessionTimeout", null);
+                setAttribute(serverSF, "tlsSessionCacheSize", ssl.getTlsSessionCacheSize(), "javax.net.ssl.sessionCacheSize", null);
+            } else {
+                //key store settings
+                setAttribute(serverSF, "keystore", null, "javax.net.ssl.keyStore", null);
+                setAttribute(serverSF, "keystoreType", null, "javax.net.ssl.keyStoreType", "JKS");
+                setAttribute(serverSF, "keystorePass", null, "javax.net.ssl.keyStorePassword", "changeit");
+                
+                //trust store settings
+                setAttribute(serverSF, "truststore", null, "javax.net.ssl.trustStore", null);
+                setAttribute(serverSF, "truststoreType", null, "javax.net.ssl.trustStoreType", "JKS");
+                setAttribute(serverSF, "truststorePass", null, "javax.net.ssl.trustStorePassword", "changeit");
+                
             }
-            // key store settings
-            setAttribute(serverSF, "keystore", ssl != null ? ssl.getKeyStore() : null, "javax.net.ssl.keyStore", null);
-            setAttribute(serverSF, "keystoreType", ssl != null ? ssl.getKeyStoreType() : null, "javax.net.ssl.keyStoreType",
-                    "JKS");
-            setAttribute(serverSF, "keystorePass", ssl != null ? getKeyStorePassword(ssl) : null,
-                    "javax.net.ssl.keyStorePassword", "changeit");
-            // trust store settings
-            setAttribute(serverSF, "truststore", ssl != null ? ssl.getTrustStore() : null, "javax.net.ssl.trustStore",
-                    null);
-            setAttribute(serverSF, "truststoreType", ssl != null ? ssl.getTrustStoreType() : null,
-                    "javax.net.ssl.trustStoreType", "JKS");
-            setAttribute(serverSF, "truststorePass", ssl != null ? getTrustStorePassword(ssl) : null,
-                    "javax.net.ssl.trustStorePassword", "changeit");
+            
             // cert nick name
             String certAlias = ssl != null ? ssl.getCertNickname() : null;
             if (sniCertAlias != null) {
