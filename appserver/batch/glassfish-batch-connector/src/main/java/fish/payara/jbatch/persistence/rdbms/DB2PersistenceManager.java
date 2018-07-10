@@ -33,6 +33,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
 
 /**
  * 
@@ -89,8 +90,6 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 		// put the create table strings into a hashmap
 	//	createTableStrings = setCreateTableMap(batchConfig);
 
-		createDB2Strings = setCreateDB2StringsMap(batchConfig);
-
 		logger.config("JNDI name = " + jndiName);
 
 		if (jndiName == null || jndiName.equals("")) {
@@ -103,7 +102,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 			if (!isDB2SchemaValid()) {
 				setDefaultSchema();
 			}
-			checkDB2Tables();
+			checkDB2Tables(tableNames);
 
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
@@ -155,10 +154,10 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 	 * Check the relevant db2 tables exist in the relevant schema
 	 * @throws SQLException
 	 */
-	private void checkDB2Tables() throws SQLException {
-
+	private void checkDB2Tables(Map<String, String> tableNames) throws SQLException {
+                
 		logger.entering(CLASSNAME, "checkDB2Tables");
-
+                setCreateDB2StringsMap(tableNames);
 		createDB2TableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
 				createDB2Strings.get(DB2_CREATE_TABLE_CHECKPOINTDATA));
 
@@ -180,6 +179,28 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 
 		logger.exiting(CLASSNAME, "checkDB2Tables");
 	}
+        
+             public void checkIfTablesExists(DataSource dataSource, BatchRuntimeConfiguration batchRuntimeConfiguration){
+
+                String prefix = batchRuntimeConfiguration.getTablePrefix();
+                String suffix = batchRuntimeConfiguration.getTableSuffix();
+
+                Map<String, String> tablenames = new HashMap<String, String>(6);
+                tablenames.put(JOB_INSTANCE_TABLE_KEY, prefix + "JOBINSTANCEDATA" + suffix);
+                tablenames.put(EXECUTION_INSTANCE_TABLE_KEY, prefix + "EXECUTIONINSTANCEDATA" + suffix);
+                tablenames.put(STEP_EXECUTION_INSTANCE_TABLE_KEY, prefix + "STEPEXECUTIONINSTANCEDATA" + suffix);
+                tablenames.put(JOB_STATUS_TABLE_KEY, prefix + "JOBSTATUS" + suffix);
+                tablenames.put(STEP_STATUS_TABLE_KEY, prefix + "STEPSTATUS" + suffix);
+                tablenames.put(CHECKPOINT_TABLE_KEY, prefix + "CHECKPOINTDATA" + suffix);
+
+                this.dataSource = dataSource;
+                schema = batchRuntimeConfiguration.getSchemaName();
+                try {
+                    checkDB2Tables(tablenames);
+                } catch (SQLException ex) {
+                    logger.severe(ex.getLocalizedMessage());
+                }
+         }
 
 	/**
 	 * Create the jbatch tables if they do not exist
@@ -230,8 +251,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 	 * Method invoked to insert the DB2 create table strings into a hashmap
 	 **/
 
-	protected Map<String, String> setCreateDB2StringsMap(
-			IBatchConfig batchConfig) {
+	private Map<String, String> setCreateDB2StringsMap(Map<String, String> tableNames) {
 		createDB2Strings = new HashMap<>();
 		createDB2Strings.put(DB2_CREATE_TABLE_CHECKPOINTDATA, "CREATE TABLE "
 				+ tableNames.get(CHECKPOINT_TABLE_KEY)
@@ -240,7 +260,8 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 				.put(DB2_CREATE_TABLE_JOBINSTANCEDATA,
 						"CREATE TABLE "
 								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
-								+ " (jobinstanceid BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) CONSTRAINT JOBINSTANCE_PK PRIMARY KEY,name VARCHAR(512), apptag VARCHAR(512))");
+								+ " (jobinstanceid BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) CONSTRAINT JOBINSTANCE_PK PRIMARY KEY,"
+                                                                        + "name VARCHAR(512), apptag VARCHAR(512))");
 
 		createDB2Strings
 				.put(DB2_CREATE_TABLE_EXECUTIONINSTANCEDATA,

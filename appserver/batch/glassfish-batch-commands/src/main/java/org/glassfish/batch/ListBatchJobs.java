@@ -214,7 +214,7 @@ public class ListBatchJobs
 
             } else if (database.contains("DB2")) {
                 DB2PersistenceManager dB2PersistenceManager = new DB2PersistenceManager();
-
+                dB2PersistenceManager.checkIfTablesExists(dataSource, batchRuntimeConfiguration);
             } else if (database.contains("Microsoft SQL Server")) {
                 SQLServerPersistenceManager sQLServerPersistenceManager = new SQLServerPersistenceManager();
 

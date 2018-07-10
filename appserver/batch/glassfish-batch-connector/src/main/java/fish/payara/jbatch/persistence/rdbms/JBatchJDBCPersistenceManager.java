@@ -362,28 +362,28 @@ public class JBatchJDBCPersistenceManager implements
                 }
          }
      
-        /**
-         * Create the Derby tables
+	/**
+	 * Create the Derby tables
 	 **/
 	protected void createDerbyTableNotExists(String tableName, String createTableStatement) throws SQLException {
 		logger.entering(CLASSNAME, "createIfNotExists", new Object[] { tableName, createTableStatement });
 		
 		try (Connection connection = getConnection()) {
-                try (ResultSet resultSet = connection.getMetaData().getTables(null, schema, tableName, null)) {
-                    if (!resultSet.next()) {
-                        logger.log(INFO, tableName + " table does not exists. Trying to create it.");
-                        try (PreparedStatement statement = connection.prepareStatement(createTableStatement)) {
-                            statement.executeUpdate();
-                        }
-                    }
-                } catch (SQLException e) {
-                    logger.severe(e.getLocalizedMessage());
-                    throw e;
-                }
-            }
+			try (ResultSet resultSet = connection.getMetaData().getTables(null, schema, tableName, null)) {
+    			if (!resultSet.next()) {
+    				logger.log(INFO, tableName + " table does not exists. Trying to create it.");
+    				try (PreparedStatement statement = connection.prepareStatement(createTableStatement)) {
+    				    statement.executeUpdate();
+    				}
+    			    }
+		        }
+		} catch (SQLException e) {
+			logger.severe(e.getLocalizedMessage());
+			throw e;
+		}
 
-            logger.exiting(CLASSNAME, "createIfNotExists");
-        }
+		logger.exiting(CLASSNAME, "createIfNotExists");
+	}
 
 	/**
 	 * Retrieve the number of rows in the resultset. This method is used to
@@ -426,7 +426,7 @@ public class JBatchJDBCPersistenceManager implements
 
 		logger.exiting(CLASSNAME, "executeStatement");
 	}
-        
+
 	/**
 	 * Get a connection from the datasource
 	 * 
@@ -2489,7 +2489,7 @@ public class JBatchJDBCPersistenceManager implements
 		logger.exiting(CLASSNAME, "getMostRecentExecutionId");
 		return mostRecentId;
 	}
-        
+
 	@Override
 	public void shutdown() throws BatchContainerServiceException {
 		// TODO Auto-generated method stub
@@ -2763,7 +2763,7 @@ public class JBatchJDBCPersistenceManager implements
 		return queryStrings;
 	}
 
-        /**
+	/**
 	 * Method invoked to insert the Derby create table strings into a hashmap
 	 **/
 
