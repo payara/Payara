@@ -355,11 +355,15 @@ public class JBatchJDBCPersistenceManager implements
 
                 this.dataSource = dataSource;
                 schema = batchRuntimeConfiguration.getSchemaName();
-                try {
-                    checkDerbyTables(tablenames);
-                } catch (SQLException ex) {
-                    logger.severe(ex.getLocalizedMessage());
+         
+            try {
+                if (!isDerbySchemaValid()) {
+                    setDefaultSchema();
                 }
+                checkDerbyTables(tablenames);
+            } catch (SQLException ex) {
+                logger.severe(ex.getLocalizedMessage());
+            }
          }
      
 	/**

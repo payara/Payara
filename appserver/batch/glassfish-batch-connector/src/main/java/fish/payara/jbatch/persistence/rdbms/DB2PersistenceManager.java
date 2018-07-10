@@ -180,7 +180,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 		logger.exiting(CLASSNAME, "checkDB2Tables");
 	}
         
-             public void checkIfTablesExists(DataSource dataSource, BatchRuntimeConfiguration batchRuntimeConfiguration){
+        public void checkIfTablesExists(DataSource dataSource, BatchRuntimeConfiguration batchRuntimeConfiguration){
 
                 String prefix = batchRuntimeConfiguration.getTablePrefix();
                 String suffix = batchRuntimeConfiguration.getTableSuffix();
@@ -195,11 +195,14 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 
                 this.dataSource = dataSource;
                 schema = batchRuntimeConfiguration.getSchemaName();
-                try {
-                    checkDB2Tables(tablenames);
-                } catch (SQLException ex) {
-                    logger.severe(ex.getLocalizedMessage());
-                }
+                 try {
+                     if (!isDB2SchemaValid()) {
+                         setDefaultSchema();
+                     }
+                     checkDB2Tables(tablenames);
+                 } catch (SQLException ex) {
+                     logger.severe(ex.getLocalizedMessage());
+                 }
          }
 
 	/**

@@ -134,7 +134,8 @@ public class ListBatchJobs
     protected void executeCommand(AdminCommandContext context, Properties extraProps)
             throws Exception {
 
-        String dataSourceName = batchRuntimeHelper.getDataSourceLookupName();
+        //String dataSourceName = batchRuntimeHelper.getDataSourceLookupName();
+        String dataSourceName = batchRuntimeConfiguration.getDataSourceLookupName();
         InitialContext ctx = new InitialContext();
         Object object = ctx.lookup(dataSourceName);
         //check whether the referenced JNDI entry is a DataSource
@@ -202,7 +203,7 @@ public class ListBatchJobs
                 jBatchJDBCPersistenceManager.checkIfTablesExists(dataSource, batchRuntimeConfiguration);
             } else if (database.contains("H2")) {
                 H2PersistenceManager h2PersistenceManager = new H2PersistenceManager();
-
+                h2PersistenceManager.checkIfTablesExists(dataSource, batchRuntimeConfiguration);
             } else if (database.contains("MySQL")) {
                 MySqlPersistenceManager mySqlPersistenceManager = new MySqlPersistenceManager();
 
