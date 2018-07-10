@@ -78,12 +78,11 @@ public class ProgressStatusJsonProvider extends BaseProvider<ProgressStatusBase>
     @Override
     public void writeTo(ProgressStatusBase proxy, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
             MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
-        try (JsonGenerator out = factory.createJsonGenerator(entityStream, JsonEncoding.UTF8)) {
-            out.writeStartObject();
-            writeJson("progress-status", proxy, -1, out);
-            out.writeEndObject();
-            out.flush();
-        }
+        JsonGenerator out = factory.createJsonGenerator(entityStream, JsonEncoding.UTF8);
+        out.writeStartObject();
+        writeJson("progress-status", proxy, -1, out);
+        out.writeEndObject();
+        out.flush();
     }
 
     public void writeJson(String name, ProgressStatusBase ps, int allocatedSteps, JsonGenerator out) throws IOException {

@@ -321,8 +321,10 @@ public class ValidateDcom implements AdminCommand {
     }
 
     private boolean testPort(int port, String description) {
-        try (Socket socket = new Socket()) {
+        try {
+            Socket socket = new Socket();
             socket.connect(new InetSocketAddress(host, port), 4000);
+            socket.close();
             out.append(Strings.get("validate.dcom.connect",
                     description, port, host)).append('\n');
             return true;

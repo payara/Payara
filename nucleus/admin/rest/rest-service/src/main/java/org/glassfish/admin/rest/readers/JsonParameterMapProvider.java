@@ -78,22 +78,25 @@ public class JsonParameterMapProvider implements MessageBodyReader<ParameterMap>
     public ParameterMap readFrom(Class<ParameterMap> type, Type genericType,
             Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> headers,
             InputStream in) throws IOException {
+
+
         JsonObject obj;
-        try (JsonParser parser = Json.createParser(in)) {
+        try {
+            JsonParser parser = Json.createParser(in);
             if (parser.hasNext()){
                 parser.next();
                 obj = parser.getObject();
             } else {
                 obj = JsonValue.EMPTY_JSON_OBJECT;
             }
-
+            
             ParameterMap map = new ParameterMap();
             for (String k : obj.keySet()) {
                 Object value = obj.get(k);
                 if (value instanceof JsonArray) {
                     JsonArray array = (JsonArray) value;
-                    for (JsonValue anArray : array) {
-                        map.add(k, "" + anArray);
+                    for (int i = 0; i < array.size(); i++) {
+                        map.add(k, "" + array.get(i));
                     }
 
                 } else {
@@ -106,8 +109,11 @@ public class JsonParameterMapProvider implements MessageBodyReader<ParameterMap>
             Logger.getLogger("org.glassfish.admin.rest").log(Level.SEVERE, null, ex);
             ParameterMap map = new ParameterMap();
             map.add("error", "Entity Parsing Error: " + ex.getMessage());
+
             return map;
         }
+
+
     }
 
     public static String inputStreamAsString(InputStream stream) throws IOException {

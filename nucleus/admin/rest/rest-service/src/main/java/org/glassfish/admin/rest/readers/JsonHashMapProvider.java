@@ -80,7 +80,8 @@ public class JsonHashMapProvider implements MessageBodyReader<HashMap<String, St
             Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> headers,
             InputStream in) throws IOException {
         HashMap map = new HashMap();
-        try (JsonParser parser = Json.createParser(in)) {
+        try {
+            JsonParser parser = Json.createParser(in);
             JsonObject obj;
             if (parser.hasNext()){
                 parser.next();
@@ -88,7 +89,7 @@ public class JsonHashMapProvider implements MessageBodyReader<HashMap<String, St
             } else {
                 obj = JsonValue.EMPTY_JSON_OBJECT;
             }
-
+            
             for (String k : obj.keySet()) {
                 JsonValue value = obj.get(k);
                 if (value.getValueType() == ValueType.STRING){

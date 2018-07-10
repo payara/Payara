@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2014, 2015, 2016 Payara Foundation. All rights reserved.
-
+ 
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
@@ -8,7 +8,7 @@
  * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
-
+ 
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at packager/legal/LICENSE.txt.
  */
@@ -16,6 +16,8 @@
 package fish.payara.jbatch.persistence.rdbms;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
+import com.ibm.jbatch.container.exception.PersistenceException;
+import com.ibm.jbatch.container.jobinstance.JobInstanceImpl;
 import com.ibm.jbatch.spi.services.IBatchConfig;
 
 import java.sql.Connection;
@@ -29,6 +31,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.batch.runtime.JobInstance;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -36,7 +39,7 @@ import javax.sql.DataSource;
 import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
 
 /**
- *
+ * 
  * Oracle Persistence Manager
  */
 
@@ -45,14 +48,14 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	private static final String CLASSNAME = OraclePersistenceManager.class
 			.getName();
 
-	private final static Logger LOGGER = Logger.getLogger(CLASSNAME);
+	private final static Logger logger = Logger.getLogger(CLASSNAME);
 
 	private IBatchConfig batchConfig = null;
-
+	
 	// oracle create table strings
 	protected Map<String, String> createOracleTableStrings;
 	protected Map<String, String> createOracleIndexStrings;
-
+        
         protected Map<String, String> oracleObjectNames;
 
 	@Override
@@ -91,14 +94,14 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	@Override
 	public void init(IBatchConfig batchConfig)
 			throws BatchContainerServiceException {
-		LOGGER.config("Entering CLASSNAME.init(), batchConfig =" + batchConfig);
+		logger.config("Entering CLASSNAME.init(), batchConfig =" + batchConfig);
 
 		this.batchConfig = batchConfig;
 
 		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
 
 		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
-
+		
 
 		if (jndiName == null || jndiName.equals("")) {
 			throw new BatchContainerServiceException(
@@ -110,7 +113,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 			dataSource = (DataSource) ctx.lookup(jndiName);
 
 		} catch (NamingException e) {
-			LOGGER.severe("Lookup failed for JNDI name: "
+			logger.severe("Lookup failed for JNDI name: "
 					+ jndiName
 					+ ".  One cause of this could be that the batch runtime is incorrectly configured to EE mode when it should be in SE mode.");
 			throw new BatchContainerServiceException(e);
@@ -128,8 +131,8 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 			// TODO Auto-generated catch block
 			throw new BatchContainerServiceException(e1);
 		}
-
-		LOGGER.config("JNDI name = " + jndiName);
+		
+		logger.config("JNDI name = " + jndiName);
 
 
 		try {
@@ -140,11 +143,11 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 			checkOracleTables();
 
 		} catch (SQLException e) {
-			LOGGER.severe(e.getLocalizedMessage());
+			logger.severe(e.getLocalizedMessage());
 			throw new BatchContainerServiceException(e);
 		}
 
-		LOGGER.config("Exiting CLASSNAME.init()");
+		logger.config("Exiting CLASSNAME.init()");
 	}
 
 	/**
@@ -154,7 +157,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	 */
 	private boolean isOracleSchemaValid() throws SQLException {
 
-		LOGGER.entering(CLASSNAME, "isOracleSchemaValid");
+		logger.entering(CLASSNAME, "isOracleSchemaValid");
 		boolean result = false;
 		Connection conn = null;
 		DatabaseMetaData dbmd = null;
@@ -169,17 +172,17 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 
 				String schemaname = rs.getString("TABLE_SCHEM");
 				if (schema.equalsIgnoreCase(schemaname)) {
-					LOGGER.exiting(CLASSNAME, "isSchemaValid", true);
+					logger.exiting(CLASSNAME, "isSchemaValid", true);
 					return true;
 				}
 			}
 		} catch (SQLException e) {
-			LOGGER.severe(e.getLocalizedMessage());
+			logger.severe(e.getLocalizedMessage());
 			throw e;
 		} finally {
 			cleanupConnection(conn, rs, null);
 		}
-		LOGGER.exiting(CLASSNAME, "isOracleSchemaValid", false);
+		logger.exiting(CLASSNAME, "isOracleSchemaValid", false);
 
 		return result;
 
@@ -195,13 +198,13 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 
 		// put the create index strings into a hashmap
 		createOracleIndexStrings = setOracleIndexMap(batchConfig);
-		LOGGER.entering(CLASSNAME, "checkOracleTables");
+		logger.entering(CLASSNAME, "checkOracleTables");
 
 		createOracleTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
 				createOracleTableStrings.get(CREATE_TABLE_CHECKPOINTDATA));
 
                 // do same check for indexes, triggers and sequences
-                // for triggers and indexes, also check for old names that did not include a prefix/suffix for backward compatibility
+                // for triggers and indexes, also check for old names that did not include a prefix/suffix for backward compatibility 
                 if (!checkOracleIndexExists(oracleObjectNames.get(CREATE_CHECKPOINTDATA_INDEX_KEY),
                                             CREATE_CHECKPOINTDATA_INDEX_KEY,
                                             tableNames.get(CHECKPOINT_TABLE_KEY))) {
@@ -217,7 +220,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
                                 createOracleTableStrings.get(CREATE_JOBINSTANCEDATA_TRG),
                                 DEFAULT_JOBINSTANCEDATA_TRG_KEY,
                                 tableNames.get(JOB_INSTANCE_TABLE_KEY));
-
+               
 
 		createOracleTableNotExists(
 				tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
@@ -228,7 +231,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
                                 createOracleTableStrings.get(CREATE_EXECUTIONINSTANCEDATA_TRG),
                                 DEFAULT_EXECUTIONINSTANCEDATA_TRG_KEY,
                                 tableNames.get(EXECUTION_INSTANCE_TABLE_KEY));
-
+            
 
 		createOracleTableNotExists(
 				tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY),
@@ -245,7 +248,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 		createOracleTableNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
 				createOracleTableStrings.get(CREATE_TABLE_STEPSTATUS));
 
-		LOGGER.exiting(CLASSNAME, "checkOracleTables");
+		logger.exiting(CLASSNAME, "checkOracleTables");
 	}
 
 	/**
@@ -256,45 +259,45 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	 */
 	protected void createOracleTableNotExists(String tableName,
 			String createTableStatement) throws SQLException {
-		LOGGER.entering(CLASSNAME, "createOracleTableNotExists", new Object[] {
+		logger.entering(CLASSNAME, "createOracleTableNotExists", new Object[] {
 				tableName, createTableStatement });
 
 		Connection conn = null;
+		Statement stmt = null;
 		ResultSet rs = null;
 		PreparedStatement ps = null;
 		try {
 			conn = getConnection();
-			try(Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-					ResultSet.CONCUR_READ_ONLY)) {
-				String query = "SELECT lower(owner),lower(table_name) FROM all_tables where lower(owner) =  "
-						+ "\'"
-						+ schema.toLowerCase()
-						+ "\'"
-						+ " and lower(table_name)= "
-						+ "\'"
-						+ tableName.toLowerCase() + "\'";
-				rs = stmt.executeQuery(query);
+			stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+					ResultSet.CONCUR_READ_ONLY);
+			String query = "SELECT lower(owner),lower(table_name) FROM all_tables where lower(owner) =  "
+					+ "\'"
+					+ schema.toLowerCase()
+					+ "\'"
+					+ " and lower(table_name)= "
+					+ "\'"
+					+ tableName.toLowerCase() + "\'";
+			rs = stmt.executeQuery(query);
 
-				int rowcount = getTableRowCount(rs);
+			int rowcount = getTableRowCount(rs);
 
-				// Create table if it does not exist
-				if (rowcount == 0) {
-					if (!rs.next()) {
-						LOGGER.log(Level.INFO, tableName
-								+ " table does not exists. Trying to create it.");
-						ps = conn.prepareStatement(createTableStatement);
-						ps.executeUpdate();
-					}
+			// Create table if it does not exist
+			if (rowcount == 0) {
+				if (!rs.next()) {
+					logger.log(Level.INFO, tableName
+							+ " table does not exists. Trying to create it.");
+					ps = conn.prepareStatement(createTableStatement);
+					ps.executeUpdate();
 				}
 			}
 		} catch (SQLException e) {
-			LOGGER.severe(e.getLocalizedMessage());
+			logger.severe(e.getLocalizedMessage());
 			throw e;
 		} finally {
 			cleanupConnection(conn, ps);
 		}
 
-		LOGGER.exiting(CLASSNAME, "createOracleTableNotExists");
+		logger.exiting(CLASSNAME, "createOracleTableNotExists");
 	}
 
 	/**
@@ -304,7 +307,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	 * @throws SQLException
 	 */
 	public void createOracleSequenceNotExists(String sequencename, String seqstmt) throws SQLException {
-		LOGGER.entering(CLASSNAME, "createOracleSequenceNotExists");
+		logger.entering(CLASSNAME, "createOracleSequenceNotExists");
 		// check sequences that exist
 		Connection conn = null;
 		boolean seqexists = false;
@@ -312,19 +315,18 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 		PreparedStatement ps = null;
 		try {
 			conn = getConnection();
-			try (Statement stmt = conn.createStatement()) {
-
-				String query = "select lower(sequence_name) from user_sequences where lower(sequence_name)="
+			Statement stmt = conn.createStatement();
+                        
+                        String query = "select lower(sequence_name) from user_sequences where lower(sequence_name)="
 				       + "\'" + sequencename.toLowerCase() + "\'";
 
-				results = stmt.executeQuery(query);
+			results = stmt.executeQuery(query);
 
-				while (results.next()) {
+			while (results.next()) {
 
-					seqexists = true;
-					break;
+				seqexists = true;
+				break;
 
-				}
 			}
 
 			if (!seqexists) {
@@ -335,12 +337,13 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 
 			}
 		} catch (SQLException e) {
-			LOGGER.severe(e.getLocalizedMessage());
+
+			e.printStackTrace();
 			throw e;
 		} finally {
 			cleanupConnection(conn, results, ps);
 		}
-		LOGGER.exiting(CLASSNAME, "createOracleSequenceNotExists");
+		logger.exiting(CLASSNAME, "createOracleSequenceNotExists");
 
 	}
     /**
@@ -349,10 +352,10 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
      * @param trgstmt
      * @throws SQLException
      */
-	public void createOracleTriggerNotExists(String triggername, String trgstmt,
+	public void createOracleTriggerNotExists(String triggername, String trgstmt, 
                     String defaultTriggername, String tablename) throws SQLException {
 
-		LOGGER.entering(CLASSNAME, "createOracleTableNotExists", new Object[] {
+		logger.entering(CLASSNAME, "createOracleTableNotExists", new Object[] {
 				triggername, trgstmt, defaultTriggername, tablename });
 		Connection conn = null;
 		boolean triggerexists = false;
@@ -360,36 +363,38 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 		Statement ps = null;
 		try {
 			conn = getConnection();
-			try (Statement stmt = conn.createStatement()) {
-				String query = "select lower(trigger_name) from user_triggers "
-							 + " where lower(table_owner)=\'" + schema.toLowerCase()+ "\'"
-							 +   " and lower(trigger_name) in ("
-									 + "\'" + triggername.toLowerCase() + "\',"
-									 + "\'" + defaultTriggername.toLowerCase() + "\')"
-							+    " and lower(table_name)=\'" + tablename.toLowerCase() + "\'";
-				results = stmt.executeQuery(query);
+			Statement stmt = conn.createStatement();
 
-				while (results.next()) {
+                        String query = "select lower(trigger_name) from user_triggers "
+                                     + " where lower(table_owner)=\'" + schema.toLowerCase()+ "\'"
+                                     +   " and lower(trigger_name) in ("
+                                             + "\'" + triggername.toLowerCase() + "\',"
+                                             + "\'" + defaultTriggername.toLowerCase() + "\')"
+                                    +    " and lower(table_name)=\'" + tablename.toLowerCase() + "\'";
+                        results = stmt.executeQuery(query);
 
-					triggerexists = true;
-					break;
+			while (results.next()) {
 
-				}
+				triggerexists = true;
+				break;
+
 			}
 
 			if (!triggerexists) {
 				// create the trigger
+
 				ps = conn.createStatement();
                                 ps.executeUpdate(trgstmt);
 
 			}
 		} catch (SQLException e) {
-			LOGGER.severe(e.getLocalizedMessage());
+
+			e.printStackTrace();
 			throw e;
 		} finally {
 			cleanupConnection(conn, results, null);
 		}
-		LOGGER.exiting(CLASSNAME, "createOracleTriggerNotExists");
+		logger.exiting(CLASSNAME, "createOracleTriggerNotExists");
 
 	}
     /**
@@ -399,41 +404,41 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
      * @throws SQLException
      */
 	public boolean checkOracleIndexExists(String indexname, String defaultIndexname, String tablename) throws SQLException {
-		LOGGER.entering(CLASSNAME, "createOracleIndexNotExists",new Object[] {
+		logger.entering(CLASSNAME, "createOracleIndexNotExists",new Object[] {
 				indexname, defaultIndexname, tablename });
 		Connection conn = null;
 		boolean indexexists = false;
 		ResultSet results = null;
 		try {
 			conn = getConnection();
-			try (Statement stmt = conn.createStatement()) {
-				String query = "select lower(index_name) from user_indexes"
-							 + " where lower(table_owner)=\'" + schema.toLowerCase()+ "\'"
-							 +   " and lower(index_name) in ("
-									 + "\'" + indexname.toLowerCase() + "\',"
-									 + "\'" + defaultIndexname.toLowerCase() + "\')"
-							 +   " and lower(table_name)=\'" + tablename.toLowerCase() + "\'";
+			Statement stmt = conn.createStatement();
+                        
+                        String query = "select lower(index_name) from user_indexes"
+                                     + " where lower(table_owner)=\'" + schema.toLowerCase()+ "\'"
+                                     +   " and lower(index_name) in ("
+                                             + "\'" + indexname.toLowerCase() + "\',"
+                                             + "\'" + defaultIndexname.toLowerCase() + "\')"
+                                     +   " and lower(table_name)=\'" + tablename.toLowerCase() + "\'";
 
-				results = stmt.executeQuery(query);
+			results = stmt.executeQuery(query);
 
-				while (results.next()) {
+			while (results.next()) {
 
-					indexexists = true;
-					break;
-
-				}
+				indexexists = true;
+				break;
 
 			}
 		} catch (SQLException e) {
-			LOGGER.severe(e.getLocalizedMessage());
+
+			e.printStackTrace();
 			throw e;
 		} finally {
 			cleanupConnection(conn, results, null);
 		}
-		LOGGER.exiting(CLASSNAME, "createOracleIndexNotExists");
+		logger.exiting(CLASSNAME, "createOracleIndexNotExists");
 		return indexexists;
 	}
-
+	
 	/**
 	 * Method invoked to insert the Oracle create table, trigger and sequence
 	 * strings into a hashmap
@@ -458,11 +463,11 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 				"CREATE SEQUENCE " + oracleObjectNames.get(JOBINSTANCEDATA_SEQ_KEY));
 		createOracleTableStrings
 				.put(CREATE_JOBINSTANCEDATA_TRG,
-						"CREATE OR REPLACE TRIGGER " + oracleObjectNames.get(JOBINSTANCEDATA_TRG_KEY)
+						"CREATE OR REPLACE TRIGGER " + oracleObjectNames.get(JOBINSTANCEDATA_TRG_KEY) 
                                                                 + " BEFORE INSERT ON "
 								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
 								+ " FOR EACH ROW BEGIN SELECT "
-                                                                + oracleObjectNames.get(JOBINSTANCEDATA_SEQ_KEY)
+                                                                + oracleObjectNames.get(JOBINSTANCEDATA_SEQ_KEY) 
                                                                 + ".nextval INTO :new.jobinstanceid FROM dual; END;");
 
 		createOracleTableStrings
@@ -543,24 +548,24 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 						+ " on " + tableNames.get(CHECKPOINT_TABLE_KEY) + "(id)");
 		return createOracleIndexStrings;
 	}
-
+	
         protected Map<String, String> getOracleObjectsMap(IBatchConfig batchConfig) {
 		String prefix = batchConfig.getConfigProperties().getProperty(
 				BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY, "");
 		String suffix = batchConfig.getConfigProperties().getProperty(
 				BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY, "");
 		Map<String, String> result = new HashMap<String, String>(7);
-
+                
 		result.put(JOBINSTANCEDATA_SEQ_KEY, prefix + JOBINSTANCEDATA_SEQ_KEY + suffix);
 		result.put(EXECUTIONINSTANCEDATA_SEQ_KEY, prefix + EXECUTIONINSTANCEDATA_SEQ_KEY + suffix);
 		result.put(STEPINSTANCEDATA_SEQ_KEY, prefix + STEPINSTANCEDATA_SEQ_KEY + suffix);
-
+                
                 result.put(JOBINSTANCEDATA_TRG_KEY, prefix + JOBINSTANCEDATA_TRG_KEY + suffix);
 		result.put(EXECUTIONINSTANCEDATA_TRG_KEY, prefix + EXECUTIONINSTANCEDATA_TRG_KEY + suffix);
 		result.put(STEPINSTANCEDATA_TRG_KEY, prefix + STEPINSTANCEDATA_TRG_KEY + suffix);
-
+                
                 result.put(CREATE_CHECKPOINTDATA_INDEX_KEY, prefix + CREATE_CHECKPOINTDATA_INDEX_KEY + suffix);
-
+                
 		return result;
 	}
 

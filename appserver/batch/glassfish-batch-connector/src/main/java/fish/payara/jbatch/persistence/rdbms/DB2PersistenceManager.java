@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2016 - 2018 Payara Foundation. All rights reserved.
-
+ * Copyright (c) 2016 Payara Foundation. All rights reserved.
+ 
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
@@ -8,7 +8,7 @@
  * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
-
+ 
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at packager/legal/LICENSE.txt.
  */
@@ -35,7 +35,7 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 /**
- *
+ * 
  * DB2 Persistence Manager
  */
 
@@ -47,7 +47,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 	private final static Logger logger = Logger.getLogger(CLASSNAME);
 
 	private IBatchConfig batchConfig = null;
-
+	
 	// db2 create table strings
 	protected Map<String, String> createDB2Strings;
 
@@ -61,7 +61,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
 
 		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
-
+		
 		try {
 			Context ctx = new InitialContext();
 			dataSource = (DataSource) ctx.lookup(jndiName);
@@ -98,7 +98,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 					"JNDI name is not defined.");
 		}
 
-
+		
 		try {
 			if (!isDB2SchemaValid()) {
 				setDefaultSchema();
@@ -112,7 +112,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 
 		logger.config("Exiting CLASSNAME.init()");
 	}
-
+    
 	/**
 	 * Check the schema exists
 	 * @return
@@ -150,7 +150,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 		return result;
 
 	}
-
+    
 	/**
 	 * Check the relevant db2 tables exist in the relevant schema
 	 * @throws SQLException
@@ -192,25 +192,28 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 		logger.entering(CLASSNAME, "createDB2TableNotExists", new Object[] {
 				tableName, createTableStatement });
 		Connection conn = null;
+		Statement stmt = null;
 		ResultSet rs = null;
 		PreparedStatement ps = null;
 
 		try {
 			conn = getConnection();
-			try (Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-						ResultSet.CONCUR_READ_ONLY)) {
-				String query = "select name from sysibm.systables where name ="
-						+ "\'" + tableName.toUpperCase() + "\'" + "and type = 'T'";
-				rs = stmt.executeQuery(query);
-				int rowcount = getTableRowCount(rs);
-				// Create table if it does not exist
-				if (rowcount == 0) {
-					if (!rs.next()) {
-						logger.log(Level.INFO, tableName
-								+ " table does not exists. Trying to create it.");
-						ps = conn.prepareStatement(createTableStatement);
-						ps.executeUpdate();
-					}
+			stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+					ResultSet.CONCUR_READ_ONLY);
+			String query = "select name from sysibm.systables where name ="
+					+ "\'" + tableName.toUpperCase() + "\'" + "and type = 'T'";
+			;
+			rs = stmt.executeQuery(query);
+
+			int rowcount = getTableRowCount(rs);
+
+			// Create table if it does not exist
+			if (rowcount == 0) {
+				if (!rs.next()) {
+					logger.log(Level.INFO, tableName
+							+ " table does not exists. Trying to create it.");
+					ps = conn.prepareStatement(createTableStatement);
+					ps.executeUpdate();
 				}
 			}
 		} catch (SQLException e) {
@@ -222,7 +225,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 
 		logger.exiting(CLASSNAME, "createDB2TableNotExists");
 	}
-
+	
 	/**
 	 * Method invoked to insert the DB2 create table strings into a hashmap
 	 **/
