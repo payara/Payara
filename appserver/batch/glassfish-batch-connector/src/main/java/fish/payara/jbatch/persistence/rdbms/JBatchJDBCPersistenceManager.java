@@ -99,6 +99,7 @@ import com.ibm.jbatch.spi.services.IBatchConfig;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.notification.requesttracing.RequestTraceSpanLog;
+import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
 
 /**
  *
@@ -130,7 +131,7 @@ public class JBatchJDBCPersistenceManager implements
 	protected Map<String, String> createDerbyStrings;
 
         protected RequestTracingService requestTracing;
-
+        
 	/*
 	 * (non-Javadoc)
 	 *
@@ -176,7 +177,7 @@ public class JBatchJDBCPersistenceManager implements
             if (!isDerbySchemaValid()) {
                 setDefaultSchema();
             }
-            checkDerbyTables();
+            checkDerbyTables(tableNames);
 
         } catch (SQLException e) {
             logger.severe(e.getLocalizedMessage());
@@ -318,8 +319,8 @@ public class JBatchJDBCPersistenceManager implements
 	/**
 	 * Check if the derby jbatch tables exist, if not create them
 	 **/
-	private void checkDerbyTables() throws SQLException {
-		setCreateDerbyStringsMap(batchConfig);
+	private void checkDerbyTables(Map<String, String> tableNames) throws SQLException {
+		setCreateDerbyStringsMap(tableNames);
 		createDerbyTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
 				createDerbyStrings.get(DERBY_CREATE_TABLE_CHECKPOINTDATA));
 
@@ -339,28 +340,50 @@ public class JBatchJDBCPersistenceManager implements
 
 	}
 
-	/**
-	 * Create the Derby tables
+        public void checkIfTablesExists(DataSource dataSource, BatchRuntimeConfiguration batchRuntimeConfiguration){
+
+                String prefix = batchRuntimeConfiguration.getTablePrefix();
+                String suffix = batchRuntimeConfiguration.getTableSuffix();
+
+                Map<String, String> tablenames = new HashMap<String, String>(6);
+                tablenames.put(JOB_INSTANCE_TABLE_KEY, prefix + "JOBINSTANCEDATA" + suffix);
+                tablenames.put(EXECUTION_INSTANCE_TABLE_KEY, prefix + "EXECUTIONINSTANCEDATA" + suffix);
+                tablenames.put(STEP_EXECUTION_INSTANCE_TABLE_KEY, prefix + "STEPEXECUTIONINSTANCEDATA" + suffix);
+                tablenames.put(JOB_STATUS_TABLE_KEY, prefix + "JOBSTATUS" + suffix);
+                tablenames.put(STEP_STATUS_TABLE_KEY, prefix + "STEPSTATUS" + suffix);
+                tablenames.put(CHECKPOINT_TABLE_KEY, prefix + "CHECKPOINTDATA" + suffix);
+
+                this.dataSource = dataSource;
+                schema = batchRuntimeConfiguration.getSchemaName();
+                try {
+                    checkDerbyTables(tablenames);
+                } catch (SQLException ex) {
+                    logger.severe(ex.getLocalizedMessage());
+                }
+         }
+     
+        /**
+         * Create the Derby tables
 	 **/
 	protected void createDerbyTableNotExists(String tableName, String createTableStatement) throws SQLException {
 		logger.entering(CLASSNAME, "createIfNotExists", new Object[] { tableName, createTableStatement });
 
 		try (Connection connection = getConnection()) {
-			try (ResultSet resultSet = connection.getMetaData().getTables(null, schema, tableName, null)) {
-    			if (!resultSet.next()) {
-    				logger.log(INFO, tableName + " table does not exists. Trying to create it.");
-    				try (PreparedStatement statement = connection.prepareStatement(createTableStatement)) {
-    				    statement.executeUpdate();
-    				}
-    			}
-			}
-		} catch (SQLException e) {
-			logger.severe(e.getLocalizedMessage());
-			throw e;
-		}
+                try (ResultSet resultSet = connection.getMetaData().getTables(null, schema, tableName, null)) {
+                    if (!resultSet.next()) {
+                        logger.log(INFO, tableName + " table does not exists. Trying to create it.");
+                        try (PreparedStatement statement = connection.prepareStatement(createTableStatement)) {
+                            statement.executeUpdate();
+                        }
+                    }
+                } catch (SQLException e) {
+                    logger.severe(e.getLocalizedMessage());
+                    throw e;
+                }
+            }
 
-		logger.exiting(CLASSNAME, "createIfNotExists");
-	}
+            logger.exiting(CLASSNAME, "createIfNotExists");
+        }
 
 	/**
 	 * Retrieve the number of rows in the resultset. This method is used to
@@ -403,7 +426,7 @@ public class JBatchJDBCPersistenceManager implements
 
 		logger.exiting(CLASSNAME, "executeStatement");
 	}
-
+        
 	/**
 	 * Get a connection from the datasource
 	 *
@@ -465,7 +488,7 @@ public class JBatchJDBCPersistenceManager implements
 		logger.finest("Entering " + CLASSNAME + ".setSchemaOnConnection()");
 
 		if (!(connection.getMetaData().getDatabaseProductName().contains("Oracle"))) {
-			try (PreparedStatement preparedStatement = connection.prepareStatement(queryStrings.get(Q_SET_SCHEMA))) {
+			try (PreparedStatement preparedStatement = connection.prepareStatement("SET SCHEMA ?")) {
 			    preparedStatement.setString(1, schema);
 	            preparedStatement.executeUpdate();
 			}
@@ -2465,7 +2488,7 @@ public class JBatchJDBCPersistenceManager implements
 		logger.exiting(CLASSNAME, "getMostRecentExecutionId");
 		return mostRecentId;
 	}
-
+        
 	@Override
 	public void shutdown() throws BatchContainerServiceException {
 		// TODO Auto-generated method stub
@@ -2739,12 +2762,11 @@ public class JBatchJDBCPersistenceManager implements
 		return queryStrings;
 	}
 
-	/**
+        /**
 	 * Method invoked to insert the Derby create table strings into a hashmap
 	 **/
 
-	protected Map<String, String> setCreateDerbyStringsMap(
-			IBatchConfig batchConfig) {
+	private Map<String, String> setCreateDerbyStringsMap(Map<String, String> tableNames) {
 		createDerbyStrings = new HashMap<>();
 		createDerbyStrings.put(DERBY_CREATE_TABLE_CHECKPOINTDATA,
 				"CREATE TABLE " + tableNames.get(CHECKPOINT_TABLE_KEY)
