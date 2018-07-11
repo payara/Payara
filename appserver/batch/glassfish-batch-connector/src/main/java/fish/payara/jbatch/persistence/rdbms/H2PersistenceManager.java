@@ -58,12 +58,6 @@ import javax.sql.DataSource;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.spi.services.IBatchConfig;
-import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.CHECKPOINT_TABLE_KEY;
-import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.EXECUTION_INSTANCE_TABLE_KEY;
-import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.JOB_INSTANCE_TABLE_KEY;
-import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.JOB_STATUS_TABLE_KEY;
-import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.STEP_EXECUTION_INSTANCE_TABLE_KEY;
-import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.STEP_STATUS_TABLE_KEY;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 

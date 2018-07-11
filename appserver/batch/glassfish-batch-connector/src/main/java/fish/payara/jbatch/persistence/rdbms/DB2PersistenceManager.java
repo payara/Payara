@@ -33,7 +33,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
 
 /**
  * 
@@ -114,6 +113,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 	 * @return
 	 * @throws SQLException
 	 */
+        @Override
 	protected boolean isSchemaValid() throws SQLException {
 
 		boolean result = false;
