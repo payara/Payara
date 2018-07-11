@@ -17,6 +17,12 @@ package fish.payara.jbatch.persistence.rdbms;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.spi.services.IBatchConfig;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.CHECKPOINT_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.EXECUTION_INSTANCE_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.JOB_INSTANCE_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.JOB_STATUS_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.STEP_EXECUTION_INSTANCE_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.STEP_STATUS_TABLE_KEY;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -33,6 +39,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
 
 /**
  *
@@ -89,20 +96,16 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 			// TODO Auto-generated catch block
 			throw new BatchContainerServiceException(e1);
 		}
-		// put the create table strings into a hashmap
-		//createTableStrings = setCreateTableMap(batchConfig);
-		
-		createMySQLStrings = setCreateMySQLStringsMap(batchConfig);
 
 		logger.config("JNDI name = " + jndiName);
 
 
 
 		try {
-			if (!isMySQLSchemaValid()) {
+			if (!isSchemaValid()) {
 				setDefaultSchema();
 			}
-			checkMySQLTables();
+			checkTables(tableNames);
 
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
@@ -117,7 +120,8 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 	 * @return
 	 * @throws SQLException
 	 */
-	private boolean isMySQLSchemaValid() throws SQLException {
+        @Override
+	protected boolean isSchemaValid() throws SQLException {
 
 		logger.entering(CLASSNAME, "isMySQLSchemaValid");
 		boolean result = false;
@@ -148,11 +152,15 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 
 	/**
 	 * Verify the relevant JBatch tables exist.
+         * 
+         * @param tableNames
 	 * @throws SQLException
 	 */
-	private void checkMySQLTables() throws SQLException {
+        @Override
+	protected void checkTables(Map<String, String> tableNames) throws SQLException {
 		
 		logger.entering(CLASSNAME, "checkMySQLTables");
+                setCreateMySQLStringsMap(tableNames);
 
 		createMySQLTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
 				createMySQLStrings.get(MYSQL_CREATE_TABLE_CHECKPOINTDATA));
@@ -245,7 +253,7 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
     @Override
     protected void setSchemaOnConnection(Connection connection) throws SQLException {
             PreparedStatement ps = null;
-            ps = connection.prepareStatement(queryStrings.get(Q_SET_SCHEMA));
+            ps = connection.prepareStatement("USE " + schema);
             ps.executeUpdate();
             ps.close();
     }
@@ -254,7 +262,7 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 	 * Method invoked to insert the MySql create table strings into a hashmap
 	 **/
 
-	protected Map<String, String> setCreateMySQLStringsMap (IBatchConfig batchConfig) {
+	private Map<String, String> setCreateMySQLStringsMap (Map<String, String> tableNames) {
 		createMySQLStrings = new HashMap<>();
 		
 		createMySQLStrings.put(MYSQL_CREATE_TABLE_CHECKPOINTDATA, "CREATE TABLE "

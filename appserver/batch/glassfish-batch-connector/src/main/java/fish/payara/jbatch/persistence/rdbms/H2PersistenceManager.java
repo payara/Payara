@@ -66,7 +66,6 @@ import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.STEP_EXECU
 import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.STEP_STATUS_TABLE_KEY;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
 
 /**
  * H2 Persistence Manager
@@ -115,10 +114,10 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
         }
 
         try {
-            if (!isH2SchemaValid()) {
+            if (!isSchemaValid()) {
                 setDefaultSchema();
             }
-            checkH2Tables(tableNames);
+            checkTables(tableNames);
 
         } catch (SQLException e) {
             logger.severe(e.getLocalizedMessage());
@@ -158,7 +157,8 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
      * @return true if the schema exists, false otherwise.
      * @throws SQLException
      */
-    protected boolean isH2SchemaValid() throws SQLException {
+    @Override
+    protected boolean isSchemaValid() throws SQLException {
         logger.entering(CLASSNAME, "isH2SchemaValid");
 
         try (Connection connection = getConnectionToDefaultSchema()) {
@@ -183,7 +183,8 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
      * Check if the h2 jbatch tables exist, if not create them
      *
      */
-    private void checkH2Tables(Map<String, String> tableNames) throws SQLException {
+    @Override
+    protected void checkTables(Map<String, String> tableNames) throws SQLException {
         setCreateH2StringsMap(tableNames);
         createH2TableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
                 createH2Strings.get(H2_CREATE_TABLE_CHECKPOINTDATA));
@@ -202,31 +203,6 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
         createH2TableNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
                 createH2Strings.get(H2_CREATE_TABLE_STEPSTATUS));
 
-    }
-   
-    public void checkIfTablesExists(DataSource dataSource, BatchRuntimeConfiguration batchRuntimeConfiguration) {
-
-        String prefix = batchRuntimeConfiguration.getTablePrefix();
-        String suffix = batchRuntimeConfiguration.getTableSuffix();
-
-        Map<String, String> tablenames = new HashMap<String, String>(6);
-        tablenames.put(JOB_INSTANCE_TABLE_KEY, prefix + "JOBINSTANCEDATA" + suffix);
-        tablenames.put(EXECUTION_INSTANCE_TABLE_KEY, prefix + "EXECUTIONINSTANCEDATA" + suffix);
-        tablenames.put(STEP_EXECUTION_INSTANCE_TABLE_KEY, prefix + "STEPEXECUTIONINSTANCEDATA" + suffix);
-        tablenames.put(JOB_STATUS_TABLE_KEY, prefix + "JOBSTATUS" + suffix);
-        tablenames.put(STEP_STATUS_TABLE_KEY, prefix + "STEPSTATUS" + suffix);
-        tablenames.put(CHECKPOINT_TABLE_KEY, prefix + "CHECKPOINTDATA" + suffix);
-
-        this.dataSource = dataSource;
-        schema = batchRuntimeConfiguration.getSchemaName();
-        try {
-            if (!isH2SchemaValid()) {
-                setDefaultSchema();
-            }
-            checkH2Tables(tablenames);
-        } catch (SQLException ex) {
-            logger.severe(ex.getLocalizedMessage());
-        }
     }
 
     /**

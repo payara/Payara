@@ -174,10 +174,10 @@ public class JBatchJDBCPersistenceManager implements
         }
 
         try {
-            if (!isDerbySchemaValid()) {
+            if (!isSchemaValid()) {
                 setDefaultSchema();
             }
-            checkDerbyTables(tableNames);
+            checkTables(tableNames);
 
         } catch (SQLException e) {
             logger.severe(e.getLocalizedMessage());
@@ -295,7 +295,7 @@ public class JBatchJDBCPersistenceManager implements
 	 * @return true if the schema exists, false otherwise.
 	 * @throws SQLException
 	 */
-	protected boolean isDerbySchemaValid() throws SQLException {
+	protected boolean isSchemaValid() throws SQLException {
 		logger.entering(CLASSNAME, "isDerbySchemaValid");
 		
 		try (Connection connection = getConnectionToDefaultSchema()) {
@@ -318,8 +318,11 @@ public class JBatchJDBCPersistenceManager implements
 
 	/**
 	 * Check if the derby jbatch tables exist, if not create them
+         * 
+         * @param tableNames
+         * @throws java.sql.SQLException
 	 **/
-	private void checkDerbyTables(Map<String, String> tableNames) throws SQLException {
+	protected void checkTables(Map<String, String> tableNames) throws SQLException {
 		setCreateDerbyStringsMap(tableNames);
 		createDerbyTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
 				createDerbyStrings.get(DERBY_CREATE_TABLE_CHECKPOINTDATA));
@@ -357,10 +360,10 @@ public class JBatchJDBCPersistenceManager implements
                 schema = batchRuntimeConfiguration.getSchemaName();
          
             try {
-                if (!isDerbySchemaValid()) {
+                if (!isSchemaValid()) {
                     setDefaultSchema();
                 }
-                checkDerbyTables(tablenames);
+                checkTables(tablenames);
             } catch (SQLException ex) {
                 logger.severe(ex.getLocalizedMessage());
             }
