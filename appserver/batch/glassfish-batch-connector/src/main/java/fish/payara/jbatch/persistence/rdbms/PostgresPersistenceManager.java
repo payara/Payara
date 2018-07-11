@@ -75,7 +75,7 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
     @Override
     protected void setSchemaOnConnection(Connection connection) throws SQLException {
             PreparedStatement ps = null;
-            ps = connection.prepareStatement(queryStrings.get(Q_SET_SCHEMA));
+            ps = connection.prepareStatement("set search_path to " + schema);
             ps.executeUpdate();
             ps.close();
     }
@@ -114,10 +114,7 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 			// TODO Auto-generated catch block
 			throw new BatchContainerServiceException(e1);
 		}
-		// put the create table strings into a hashmap
-		// createTableStrings = setCreateTableMap(batchConfig);
 
-		createPostgresStrings = setCreatePostgresStringsMap(batchConfig);
 
 		logger.config("JNDI name = " + jndiName);
 
@@ -129,10 +126,10 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 
 
 		try {
-			if (!isPostgresSchemaValid()) {
+			if (!isSchemaValid()) {
 				setDefaultSchema();
 			}
-			checkPostgresTables();
+			checkTables(tableNames);
 
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
@@ -148,7 +145,8 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 	 * @return
 	 * @throws SQLException
 	 */
-	private boolean isPostgresSchemaValid() throws SQLException {
+        @Override
+	protected boolean isSchemaValid() throws SQLException {
 
 		boolean result = false;
 		Connection conn = null;
@@ -187,9 +185,10 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 	 * 
 	 * @throws SQLException
 	 */
-	private void checkPostgresTables() throws SQLException {
+        @Override
+	protected void checkTables (Map<String, String> tableNames) throws SQLException {
 		logger.entering(CLASSNAME, "checkPostgresTables Postgres");
-
+                setCreatePostgresStringsMap(tableNames);
 		createPostgresTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
 				createPostgresStrings.get(POSTGRES_CREATE_TABLE_CHECKPOINTDATA));
 
@@ -270,8 +269,7 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 	 * Method invoked to insert the Postgres create table strings into a hashmap
 	 **/
 
-	protected Map<String, String> setCreatePostgresStringsMap(
-			IBatchConfig batchConfig) {
+	private Map<String, String> setCreatePostgresStringsMap(Map<String, String> tableNames) {
 		createPostgresStrings = new HashMap<>();
 		createPostgresStrings.put(POSTGRES_CREATE_TABLE_CHECKPOINTDATA,
 				"CREATE TABLE " + tableNames.get(CHECKPOINT_TABLE_KEY)

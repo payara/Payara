@@ -207,11 +207,11 @@ public class ListBatchJobs
                 MySqlPersistenceManager mySqlPersistenceManager = new MySqlPersistenceManager();
                 mySqlPersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
             } else if (database.contains("Oracle")) {
-                  OraclePersistenceManager oraclePersistenceManager = new OraclePersistenceManager();
-                  oraclePersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
-              } else if (database.contains("PostgreSQL")) {
+                OraclePersistenceManager oraclePersistenceManager = new OraclePersistenceManager();
+                oraclePersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
+            } else if (database.contains("PostgreSQL")) {
                 PostgresPersistenceManager postgresPersistenceManager = new PostgresPersistenceManager();
-
+                postgresPersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
             } else if (database.contains("DB2")) {
                 DB2PersistenceManager dB2PersistenceManager = new DB2PersistenceManager();
                 dB2PersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
