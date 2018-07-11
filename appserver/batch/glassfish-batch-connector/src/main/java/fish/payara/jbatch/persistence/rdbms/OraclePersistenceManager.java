@@ -16,9 +16,13 @@
 package fish.payara.jbatch.persistence.rdbms;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
-import com.ibm.jbatch.container.exception.PersistenceException;
-import com.ibm.jbatch.container.jobinstance.JobInstanceImpl;
 import com.ibm.jbatch.spi.services.IBatchConfig;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.CHECKPOINT_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.EXECUTION_INSTANCE_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.JOB_INSTANCE_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.JOB_STATUS_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.STEP_EXECUTION_INSTANCE_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.STEP_STATUS_TABLE_KEY;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -31,12 +35,14 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.runtime.JobInstance;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
 import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY;
 
 /**
  * 
@@ -101,8 +107,8 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
 
 		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
-		
-
+                
+ 
 		if (jndiName == null || jndiName.equals("")) {
 			throw new BatchContainerServiceException(
 					"JNDI name is not defined.");
@@ -136,11 +142,13 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 
 
 		try {
-			if (!isOracleSchemaValid()) {
+			if (!isSchemaValid()) {
 				setDefaultSchema();
 
 			}
-			checkOracleTables();
+                    String prefix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_PREFIX_PROPERTY, "");
+                    String suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
+                    checkOracleTables(tableNames, oracleObjectNames, prefix, suffix);
 
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
@@ -155,7 +163,8 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	 * @return
 	 * @throws SQLException
 	 */
-	private boolean isOracleSchemaValid() throws SQLException {
+        @Override
+	protected boolean isSchemaValid() throws SQLException {
 
 		logger.entering(CLASSNAME, "isOracleSchemaValid");
 		boolean result = false;
@@ -192,12 +201,9 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	 * Verify the relevant JBatch tables exist.
 	 * @throws SQLException
 	 */
-	private void checkOracleTables() throws SQLException {
-		// put the create table strings into a hashmap
-		createOracleTableStrings = setOracleTableMap(batchConfig);
-
-		// put the create index strings into a hashmap
-		createOracleIndexStrings = setOracleIndexMap(batchConfig);
+	private void checkOracleTables(Map<String, String> tableNames, Map<String, String> oracleObjectNames, String prefix, String suffix) throws SQLException {
+		 setOracleTableMap(tableNames, oracleObjectNames, prefix, suffix);
+                 setOracleIndexMap(tableNames, oracleObjectNames);
 		logger.entering(CLASSNAME, "checkOracleTables");
 
 		createOracleTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
@@ -250,6 +256,44 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 
 		logger.exiting(CLASSNAME, "checkOracleTables");
 	}
+        
+        @Override
+        public void createTables(DataSource dataSource, BatchRuntimeConfiguration batchRuntimeConfiguration){
+
+                String prefix = batchRuntimeConfiguration.getTablePrefix();
+                String suffix = batchRuntimeConfiguration.getTableSuffix();
+
+                Map<String, String> tablenames = new HashMap<String, String>(6);
+                tablenames.put(JOB_INSTANCE_TABLE_KEY, prefix + "JOBINSTANCEDATA" + suffix);
+                tablenames.put(EXECUTION_INSTANCE_TABLE_KEY, prefix + "EXECUTIONINSTANCEDATA" + suffix);
+                tablenames.put(STEP_EXECUTION_INSTANCE_TABLE_KEY, prefix + "STEPEXECUTIONINSTANCEDATA" + suffix);
+                tablenames.put(JOB_STATUS_TABLE_KEY, prefix + "JOBSTATUS" + suffix);
+                tablenames.put(STEP_STATUS_TABLE_KEY, prefix + "STEPSTATUS" + suffix);
+                tablenames.put(CHECKPOINT_TABLE_KEY, prefix + "CHECKPOINTDATA" + suffix);
+                
+  
+		Map<String, String> oracleObjectNames = new HashMap<String, String>(7);              
+		oracleObjectNames.put(JOBINSTANCEDATA_SEQ_KEY, prefix + JOBINSTANCEDATA_SEQ_KEY + suffix);
+		oracleObjectNames.put(EXECUTIONINSTANCEDATA_SEQ_KEY, prefix + EXECUTIONINSTANCEDATA_SEQ_KEY + suffix);
+		oracleObjectNames.put(STEPINSTANCEDATA_SEQ_KEY, prefix + STEPINSTANCEDATA_SEQ_KEY + suffix);
+                oracleObjectNames.put(JOBINSTANCEDATA_TRG_KEY, prefix + JOBINSTANCEDATA_TRG_KEY + suffix);
+		oracleObjectNames.put(EXECUTIONINSTANCEDATA_TRG_KEY, prefix + EXECUTIONINSTANCEDATA_TRG_KEY + suffix);
+		oracleObjectNames.put(STEPINSTANCEDATA_TRG_KEY, prefix + STEPINSTANCEDATA_TRG_KEY + suffix);
+                
+                oracleObjectNames.put(CREATE_CHECKPOINTDATA_INDEX_KEY, prefix + CREATE_CHECKPOINTDATA_INDEX_KEY + suffix);
+
+                this.dataSource = dataSource;
+                schema = batchRuntimeConfiguration.getSchemaName();
+         
+            try {
+                if (!isSchemaValid()) {
+                    setDefaultSchema();
+                }
+                checkOracleTables(tablenames, oracleObjectNames, prefix, suffix);
+            } catch (SQLException ex) {
+                logger.severe(ex.getLocalizedMessage());
+            }
+         }
 
 	/**
 	 * Create the jbatch tables if they do not exist.
@@ -444,11 +488,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	 * strings into a hashmap
 	 **/
 
-	protected Map<String, String> setOracleTableMap(IBatchConfig batchConfig) {
-                String prefix = batchConfig.getConfigProperties().getProperty(
-				BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY, "");
-		String suffix = batchConfig.getConfigProperties().getProperty(
-				BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY, "");
+	private Map<String, String> setOracleTableMap(Map<String, String> tableNames, Map<String, String> oracleObjectNames, String prefix, String suffix) {
 		createOracleTableStrings = new HashMap<>();
 		createOracleTableStrings.put(CREATE_TABLE_CHECKPOINTDATA, "CREATE TABLE "
 				+ tableNames.get(CHECKPOINT_TABLE_KEY)
@@ -540,7 +580,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	 * Method invoked to insert the Oracle create index strings into a hashmap
 	 **/
 
-	protected Map<String, String> setOracleIndexMap(IBatchConfig batchConfig) {
+	private Map<String, String> setOracleIndexMap(Map<String, String> tableNames, Map<String, String> oracleObjectNames) {
 		createOracleIndexStrings = new HashMap<>();
 		createOracleIndexStrings.put(
 				CREATE_CHECKPOINTDATA_INDEX,

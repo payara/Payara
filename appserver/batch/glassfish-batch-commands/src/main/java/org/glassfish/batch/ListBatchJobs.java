@@ -199,22 +199,22 @@ public class ListBatchJobs
             
             if (database.contains("Derby")) {
                 JBatchJDBCPersistenceManager jBatchJDBCPersistenceManager = new JBatchJDBCPersistenceManager();
-                jBatchJDBCPersistenceManager.checkIfTablesExists(dataSource, batchRuntimeConfiguration);
+                jBatchJDBCPersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
             } else if (database.contains("H2")) {
                 H2PersistenceManager h2PersistenceManager = new H2PersistenceManager();
-                h2PersistenceManager.checkIfTablesExists(dataSource, batchRuntimeConfiguration);
+                h2PersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
             } else if (database.contains("MySQL")) {
                 MySqlPersistenceManager mySqlPersistenceManager = new MySqlPersistenceManager();
-                mySqlPersistenceManager.checkIfTablesExists(dataSource, batchRuntimeConfiguration);
+                mySqlPersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
             } else if (database.contains("Oracle")) {
-                OraclePersistenceManager oraclePersistenceManager = new OraclePersistenceManager();
-
-            } else if (database.contains("PostgreSQL")) {
+                  OraclePersistenceManager oraclePersistenceManager = new OraclePersistenceManager();
+                  oraclePersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
+              } else if (database.contains("PostgreSQL")) {
                 PostgresPersistenceManager postgresPersistenceManager = new PostgresPersistenceManager();
 
             } else if (database.contains("DB2")) {
                 DB2PersistenceManager dB2PersistenceManager = new DB2PersistenceManager();
-                dB2PersistenceManager.checkIfTablesExists(dataSource, batchRuntimeConfiguration);
+                dB2PersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
             } else if (database.contains("Microsoft SQL Server")) {
                 SQLServerPersistenceManager sQLServerPersistenceManager = new SQLServerPersistenceManager();
 

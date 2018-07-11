@@ -343,7 +343,7 @@ public class JBatchJDBCPersistenceManager implements
 
 	}
 
-        public void checkIfTablesExists(DataSource dataSource, BatchRuntimeConfiguration batchRuntimeConfiguration){
+        public void createTables(DataSource dataSource, BatchRuntimeConfiguration batchRuntimeConfiguration){
 
                 String prefix = batchRuntimeConfiguration.getTablePrefix();
                 String suffix = batchRuntimeConfiguration.getTableSuffix();
