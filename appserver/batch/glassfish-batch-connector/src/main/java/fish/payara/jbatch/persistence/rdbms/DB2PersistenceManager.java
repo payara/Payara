@@ -33,6 +33,8 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY;
 
 /**
  * 
@@ -59,8 +61,9 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 		this.batchConfig = batchConfig;
 
 		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
-
 		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
+                prefix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_PREFIX_PROPERTY, "");
+	        suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
 		
 		try {
 			Context ctx = new InitialContext();
@@ -77,7 +80,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 		// Load the table names and queries shared between different database
 		// types
 
-		tableNames = getSharedTableMap(batchConfig);
+		tableNames = getSharedTableMap();
 
 		try {
 			queryStrings = getSharedQueryMap(batchConfig);
@@ -98,7 +101,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 			if (!isSchemaValid()) {
 				setDefaultSchema();
 			}
-			checkTables(tableNames);
+			checkTables();
 
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
@@ -152,7 +155,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 	 * @throws SQLException
 	 */
         @Override
-	protected void checkTables(Map<String, String> tableNames) throws SQLException {
+	protected void checkTables() throws SQLException {
                 
 		logger.entering(CLASSNAME, "checkDB2Tables");
                 setCreateDB2StringsMap(tableNames);
@@ -199,7 +202,6 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 					ResultSet.CONCUR_READ_ONLY);
 			String query = "select name from sysibm.systables where name ="
 					+ "\'" + tableName.toUpperCase() + "\'" + "and type = 'T'";
-			;
 			rs = stmt.executeQuery(query);
 
 			int rowcount = getTableRowCount(rs);

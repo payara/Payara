@@ -60,6 +60,8 @@ import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.spi.services.IBatchConfig;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY;
 
 /**
  * H2 Persistence Manager
@@ -84,6 +86,8 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
 
         schema = batchConfig.getDatabaseConfigurationBean().getSchema();
         jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
+        prefix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_PREFIX_PROPERTY, "");
+        suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
 
         logger.log(Level.CONFIG, "JNDI name = {0}", jndiName);
 
@@ -99,7 +103,7 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
         }
 
         // Load the table names and queries shared between different database types
-        tableNames = getSharedTableMap(batchConfig);
+        tableNames = getSharedTableMap();
 
         try {
             queryStrings = getSharedQueryMap(batchConfig);
@@ -111,7 +115,7 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
             if (!isSchemaValid()) {
                 setDefaultSchema();
             }
-            checkTables(tableNames);
+            checkTables();
 
         } catch (SQLException e) {
             logger.severe(e.getLocalizedMessage());
@@ -178,7 +182,7 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
      *
      */
     @Override
-    protected void checkTables(Map<String, String> tableNames) throws SQLException {
+    protected void checkTables() throws SQLException {
         setCreateH2StringsMap(tableNames);
         createH2TableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
                 createH2Strings.get(H2_CREATE_TABLE_CHECKPOINTDATA));

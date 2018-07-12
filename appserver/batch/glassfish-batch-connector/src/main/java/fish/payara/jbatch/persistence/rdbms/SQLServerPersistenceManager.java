@@ -33,7 +33,6 @@ import static fish.payara.jbatch.persistence.rdbms.SQLServerJDBCConstants.SQLSER
 import static fish.payara.jbatch.persistence.rdbms.SQLServerJDBCConstants.SQLSERVER_CREATE_TABLE_STEPINSTANCEDATA;
 import static fish.payara.jbatch.persistence.rdbms.SQLServerJDBCConstants.SQLSERVER_CREATE_TABLE_STEPSTATUS;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -45,7 +44,9 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
+import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY;
 
 public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager implements SQLServerJDBCConstants {
     
@@ -63,6 +64,8 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 
 		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
 		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
+                prefix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_PREFIX_PROPERTY, "");
+	        suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
 		
 		if (null == jndiName || jndiName.isEmpty()) {
 			throw new BatchContainerServiceException("JNDI name is not defined.");
@@ -83,8 +86,8 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 		}
 
 		// Load the table names and queries shared between different database types
-		tableNames = getSharedTableMap(batchConfig);
-                schemaTableNames = getSharedSchemaTableMap(batchConfig);
+		tableNames = getSharedTableMap();
+                schemaTableNames = getSharedSchemaTableMap();
 
 		try {
 			queryStrings = getSQLServerSharedQueryMap(batchConfig);
@@ -92,12 +95,12 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 			throw new BatchContainerServiceException(e1);
 		}
 		
-		SQLServerCreateStrings = setCreateSQLServerStringsMap(batchConfig);
+		//SQLServerCreateStrings = setCreateSQLServerStringsMap(batchConfig);
 
 		LOGGER.log(Level.CONFIG, "JNDI name = {0}", jndiName);
 
 		try {
-			if (!isSQLServerSchemaValid()) {
+			if (!isSchemaValid()) {
 				setDefaultSchema();
 			}
 			checkSQLServerTables();
@@ -115,7 +118,8 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 	 * @return
 	 * @throws SQLException
 	 */
-	private boolean isSQLServerSchemaValid() throws SQLException {
+        @Override
+	protected boolean isSchemaValid() throws SQLException {
 
 		LOGGER.entering(CLASSNAME, "isSQLServerSchemaValid");
 		boolean result = false;
@@ -151,7 +155,7 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 	private void checkSQLServerTables() throws SQLException {
 		
 		LOGGER.entering(CLASSNAME, "checkSQLServerTables");
-
+                setCreateSQLServerStringsMap();
 		createSQLServerTableIfNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
 				SQLServerCreateStrings.get(SQLSERVER_CREATE_TABLE_CHECKPOINTDATA));
 
@@ -173,6 +177,24 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 		LOGGER.exiting(CLASSNAME, "checkSQLServerTables");
 	}
 
+        @Override
+        public void createTables(DataSource dataSource, BatchRuntimeConfiguration batchRuntimeConfiguration){
+                 this.dataSource = dataSource;   
+                 prefix = batchRuntimeConfiguration.getTablePrefix();
+                 suffix = batchRuntimeConfiguration.getTableSuffix();
+                 schema = batchRuntimeConfiguration.getSchemaName();
+                 tableNames = getSharedTableMap();
+                 schemaTableNames = getSharedSchemaTableMap();
+                 
+            try {
+                if (!isSchemaValid()) {
+                    setDefaultSchema();
+                }
+                checkSQLServerTables();
+            } catch (SQLException ex) {
+                LOGGER.severe(ex.getLocalizedMessage());
+            }
+         }
 	/**
 	 * Create the jbatch tables if they do not exist.
 	 * @param tableName
@@ -222,13 +244,7 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 	}
         
         
-	protected Map<String, String> getSharedSchemaTableMap(IBatchConfig batchConfig) {
-		String prefix = batchConfig.getConfigProperties().getProperty(
-				BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY, "");
-		String suffix = batchConfig.getConfigProperties().getProperty(
-				BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY, "");
-                String schema = batchConfig.getDatabaseConfigurationBean().getSchema();
-                
+	protected Map<String, String> getSharedSchemaTableMap() {                
                 String schemaPrefix;
                 if(schema == null || schema.isEmpty()) {
                     schemaPrefix = "";
@@ -259,10 +275,9 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
     
         /**
 	 * Method invoked to insert the MySql create table strings into a hashmap
-         * @param  batchConfig
          * @return SQLServerCreateStrings
 	 **/
-	protected Map<String, String> setCreateSQLServerStringsMap (IBatchConfig batchConfig) {
+	private Map<String, String> setCreateSQLServerStringsMap () {
             
 		SQLServerCreateStrings = new HashMap<>();
 		

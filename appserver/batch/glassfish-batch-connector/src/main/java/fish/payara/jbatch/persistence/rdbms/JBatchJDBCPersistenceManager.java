@@ -119,6 +119,8 @@ public class JBatchJDBCPersistenceManager implements
 
 	protected DataSource dataSource = null;
 	protected String jndiName = null;
+        protected String prefix = null;
+        protected String suffix = null;
 
 	protected String schema = "";
 
@@ -148,6 +150,8 @@ public class JBatchJDBCPersistenceManager implements
 
         schema = batchConfig.getDatabaseConfigurationBean().getSchema();
         jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
+        prefix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_PREFIX_PROPERTY, "");
+	suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
         
         logger.config("JNDI name = " + jndiName);
 
@@ -165,7 +169,7 @@ public class JBatchJDBCPersistenceManager implements
         }
 
         // Load the table names and queries shared between different database types
-        tableNames = getSharedTableMap(batchConfig);
+        tableNames = getSharedTableMap();
 
         try {
             queryStrings = getSharedQueryMap(batchConfig);
@@ -177,7 +181,7 @@ public class JBatchJDBCPersistenceManager implements
             if (!isSchemaValid()) {
                 setDefaultSchema();
             }
-            checkTables(tableNames);
+            checkTables();
 
         } catch (SQLException e) {
             logger.severe(e.getLocalizedMessage());
@@ -322,7 +326,7 @@ public class JBatchJDBCPersistenceManager implements
          * @param tableNames
          * @throws java.sql.SQLException
 	 **/
-	protected void checkTables(Map<String, String> tableNames) throws SQLException {
+	protected void checkTables() throws SQLException {
 		setCreateDerbyStringsMap(tableNames);
 		createDerbyTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
 				createDerbyStrings.get(DERBY_CREATE_TABLE_CHECKPOINTDATA));
@@ -344,26 +348,17 @@ public class JBatchJDBCPersistenceManager implements
 	}
 
         public void createTables(DataSource dataSource, BatchRuntimeConfiguration batchRuntimeConfiguration){
-
-                String prefix = batchRuntimeConfiguration.getTablePrefix();
-                String suffix = batchRuntimeConfiguration.getTableSuffix();
-
-                Map<String, String> tablenames = new HashMap<String, String>(6);
-                tablenames.put(JOB_INSTANCE_TABLE_KEY, prefix + "JOBINSTANCEDATA" + suffix);
-                tablenames.put(EXECUTION_INSTANCE_TABLE_KEY, prefix + "EXECUTIONINSTANCEDATA" + suffix);
-                tablenames.put(STEP_EXECUTION_INSTANCE_TABLE_KEY, prefix + "STEPEXECUTIONINSTANCEDATA" + suffix);
-                tablenames.put(JOB_STATUS_TABLE_KEY, prefix + "JOBSTATUS" + suffix);
-                tablenames.put(STEP_STATUS_TABLE_KEY, prefix + "STEPSTATUS" + suffix);
-                tablenames.put(CHECKPOINT_TABLE_KEY, prefix + "CHECKPOINTDATA" + suffix);
-
-                this.dataSource = dataSource;
-                schema = batchRuntimeConfiguration.getSchemaName();
-         
+            this.dataSource = dataSource;
+            prefix = batchRuntimeConfiguration.getTablePrefix();
+            suffix = batchRuntimeConfiguration.getTableSuffix();
+            schema = batchRuntimeConfiguration.getSchemaName();
+            tableNames = getSharedTableMap();
+           
             try {
                 if (!isSchemaValid()) {
                     setDefaultSchema();
                 }
-                checkTables(tablenames);
+                checkTables();
             } catch (SQLException ex) {
                 logger.severe(ex.getLocalizedMessage());
             }
@@ -2508,11 +2503,8 @@ public class JBatchJDBCPersistenceManager implements
 	 * the prefix and suffix to the table names
 	 **/
 
-	protected Map<String, String> getSharedTableMap(IBatchConfig batchConfig) {
-		String prefix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_PREFIX_PROPERTY, "");
-		String suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
-		
-		Map<String, String> result = new HashMap<String, String>(6);
+	protected Map<String, String> getSharedTableMap() {
+		Map<String, String> result = new HashMap<>(6);
 		result.put(JOB_INSTANCE_TABLE_KEY, prefix + "JOBINSTANCEDATA" + suffix);
 		result.put(EXECUTION_INSTANCE_TABLE_KEY, prefix	+ "EXECUTIONINSTANCEDATA" + suffix);
 		result.put(STEP_EXECUTION_INSTANCE_TABLE_KEY, prefix + "STEPEXECUTIONINSTANCEDATA" + suffix);

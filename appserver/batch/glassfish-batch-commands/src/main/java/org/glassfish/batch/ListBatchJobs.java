@@ -217,7 +217,7 @@ public class ListBatchJobs
                 dB2PersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
             } else if (database.contains("Microsoft SQL Server")) {
                 SQLServerPersistenceManager sQLServerPersistenceManager = new SQLServerPersistenceManager();
-
+                sQLServerPersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
             }
         } catch (SQLException ex) {
              logger.severe(ex.getLocalizedMessage());

@@ -42,6 +42,8 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY;
 
 /**
  * PostgreSQL Persistence Manager
@@ -89,8 +91,9 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 		this.batchConfig = batchConfig;
 
 		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
-
 		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
+                prefix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_PREFIX_PROPERTY, "");
+	        suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
 		
 		try {
 			Context ctx = new InitialContext();
@@ -106,7 +109,7 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 		// Load the table names and queries shared between different database
 		// types
 
-		tableNames = getSharedTableMap(batchConfig);
+		tableNames = getSharedTableMap();
 
 		try {
 			queryStrings = getSharedQueryMap(batchConfig);
@@ -123,13 +126,11 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 					"JNDI name is not defined.");
 		}
 
-
-
 		try {
 			if (!isSchemaValid()) {
 				setDefaultSchema();
 			}
-			checkTables(tableNames);
+			checkTables();
 
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
@@ -186,7 +187,7 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 	 * @throws SQLException
 	 */
         @Override
-	protected void checkTables (Map<String, String> tableNames) throws SQLException {
+	protected void checkTables () throws SQLException {
 		logger.entering(CLASSNAME, "checkPostgresTables Postgres");
                 setCreatePostgresStringsMap(tableNames);
 		createPostgresTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
