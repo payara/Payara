@@ -191,7 +191,16 @@ public class MBeanMetadataHelper {
             LOGGER.log(Level.WARNING, "'unit' property not defined for {0} metadata", metadata.getName());
             valid = false;
         }
-        
+        if (metadata.getName() != null && metadata.getMBean() != null) {
+            if (metadata.getName().contains(SPECIFIER) && !metadata.getMBean().contains(SPECIFIER)) {
+                LOGGER.log(Level.WARNING, "'%s' placeholder not found in 'mbean' {0} property", metadata.getMBean());
+                valid = false;
+            } else if (metadata.getMBean().contains(SPECIFIER) && !metadata.getName().contains(SPECIFIER)) {
+                LOGGER.log(Level.WARNING, "'%s' placeholder not found in 'name' {0} property", metadata.getName());
+                valid = false;
+            }
+        }
+
         return valid;
     }
 
