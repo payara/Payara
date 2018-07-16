@@ -364,11 +364,12 @@ public class PayaraClientService implements PayaraClient {
     /**
      * Verify if the DAS is running or not.
      */
+    @Override
     public boolean isDASRunning() {
         try {
             getClientUtil().GETRequest("");
         } catch (ProcessingException clientEx) {
-            if (clientEx.getCause().getClass().equals(ConnectException.class)) {
+            if (clientEx.getCause()!= null && clientEx.getCause().getClass().equals(ConnectException.class)) {
                 // We were unable to connect to the DAS through Jersey
                 return false;
             }
