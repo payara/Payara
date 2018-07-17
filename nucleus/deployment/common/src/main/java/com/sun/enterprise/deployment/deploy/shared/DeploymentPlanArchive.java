@@ -187,9 +187,9 @@ public class DeploymentPlanArchive extends JarArchive implements ReadableArchive
             boolean isWar = DeploymentUtils.isArchiveOfType(getParentArchive(), warType, locator);
             if (entryName.contains("sun-web.xml") || entryName.contains("glassfish-web.xml") || entryName.contains("payara-web.xml")) {
                 prefix = "WEB-INF/";
-            } else if ((entryName.contains("glassfish-resources.xml") || entryName.contains("payara-resources.xml")) && isWar) {
+            } else if (entryName.contains("glassfish-resources.xml") && isWar) {
                 prefix = "WEB-INF/";
-            } else if ((entryName.contains("glassfish-services.xml") || entryName.contains("payara-services.xml")) && isWar) {
+            } else if (entryName.contains("glassfish-services.xml") && isWar) {
                 prefix = "WEB-INF/";
             }
             if (subArchiveUri != null && entryName.startsWith(subArchiveUri)) {
