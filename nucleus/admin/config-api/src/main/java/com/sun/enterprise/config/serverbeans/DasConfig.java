@@ -218,6 +218,7 @@ public interface DasConfig extends ConfigBeanProxy, PropertyBag {
      * Sets the value of the autodeployRetryTimeout property.
      *
      * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setAutodeployRetryTimeout(String value) throws PropertyVetoException;
 
@@ -267,7 +268,8 @@ public interface DasConfig extends ConfigBeanProxy, PropertyBag {
     void setAdminSessionTimeoutInMinutes(String value) throws PropertyVetoException;
     
     /**
-    	Properties as per {@link PropertyBag}
+     * Properties as per {@link PropertyBag}
+     * @return 
      */
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})

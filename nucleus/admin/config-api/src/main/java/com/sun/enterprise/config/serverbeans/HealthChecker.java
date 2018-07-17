@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions COpyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -45,17 +46,12 @@ import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import java.beans.PropertyVetoException;
-import java.io.Serializable;
 
-import javax.validation.constraints.Digits;
 import javax.validation.constraints.Min;
 
 /**
  * Each cluster would be configured for a ping based health check mechanism
  */
-
-/* @XmlType(name = "") */
-
 @Configured
 public interface HealthChecker extends ConfigBeanProxy {
 
@@ -74,8 +70,8 @@ public interface HealthChecker extends ConfigBeanProxy {
     /**
      * Sets the value of the url property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setUrl(String value) throws PropertyVetoException;
 
@@ -95,8 +91,8 @@ public interface HealthChecker extends ConfigBeanProxy {
     /**
      * Sets the value of the intervalInSeconds property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setIntervalInSeconds(String value) throws PropertyVetoException;
 
@@ -117,8 +113,8 @@ public interface HealthChecker extends ConfigBeanProxy {
     /**
      * Sets the value of the timeoutInSeconds property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setTimeoutInSeconds(String value) throws PropertyVetoException;
 }

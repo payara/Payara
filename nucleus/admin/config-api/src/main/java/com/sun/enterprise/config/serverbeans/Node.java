@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiiates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -46,7 +47,6 @@ import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.net.NetUtils;
 import com.sun.enterprise.util.StringUtils;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -302,10 +302,7 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
         public static boolean isDefaultLocalNode(Node node) {
             Dom serverDom = Dom.unwrap(node);
             Domain domain = serverDom.getHabitat().getService(Domain.class);
-            if (node.getName().equals("localhost-" + domain.getName())) {
-                return true;
-            }
-            return false;
+            return node.getName().equals("localhost-" + domain.getName());
         }
 
         public static boolean isLocal(Node node) {
