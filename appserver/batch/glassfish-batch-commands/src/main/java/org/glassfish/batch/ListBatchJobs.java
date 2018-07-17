@@ -121,6 +121,12 @@ public class ListBatchJobs
 
     @Param(primary = true, optional = true)
     String jobName;
+    
+    @Param(name = "offset", optional = true, defaultValue = "0")
+    String offSetValue;
+
+    @Param(name = "numberOfJobs", optional = true, defaultValue = "1000")
+    String numberOfJobs;
 
     @Inject
     BatchRuntimeHelper batchRuntimeHelper;
@@ -161,10 +167,13 @@ public class ListBatchJobs
                 extraProps.put("listBatchJobs", findSimpleJobInfo(jobsInstanceCount, columnFormatter));
             } else {
                 extraProps.put("simpleMode", false);
+                Map<String, Object> map = new HashMap<>();
+                map.put("allJobsCount", getAllJobInstanceCount());
+                extraProps.put("getJobCount", map);
                 List<Map<String, Object>> jobExecutions = new ArrayList<>();
                 extraProps.put("listBatchJobs", jobExecutions);
                 Map<String, Integer> jobsInstanceCount = new HashMap<>();
-                
+
                 if (Arrays.asList(getOutputHeaders()).contains(INSTANCE_COUNT)) {
                     // Get all aviable Job Names
                     List<String> jobNames = executeQuery(GET_JOB_NAMES_QUERY, "name");
@@ -174,7 +183,7 @@ public class ListBatchJobs
                     }
                 }
 
-                List<Long> jobInstanceIDs = getJobInstanceIDs("20");
+                List<Long> jobInstanceIDs = getJobInstanceIDs(numberOfJobs);
                 JobOperator jobOperator = AbstractListCommand.getJobOperatorFromBatchRuntime();
                 
                 for (Long jobExecution : jobInstanceIDs) {
@@ -242,45 +251,105 @@ public class ListBatchJobs
         return jobInstanceCount;
     }
     
+       private String getAllJobInstanceCount() {
+        String allJobInstanceCount = null;
+        
+        try (Connection connection = dataSource.getConnection()) {
+            String query = "SELECT COUNT(jobinstanceid) AS jobinstancecount FROM JOBINSTANCEDATA";
+            try (Statement statement = connection.createStatement()) {
+                try (ResultSet resultSet = statement.executeQuery(query)) {
+                    resultSet.next();
+                    allJobInstanceCount = resultSet.getString("jobinstancecount");
+                }
+            }
+        } catch (SQLException ex) {
+            logger.severe(ex.getLocalizedMessage());
+        }
+        
+        return allJobInstanceCount;
+    }
+    
     private List<Long> getJobInstanceIDs(String size) {
         List<Long> result = new ArrayList<>();
+        
+        int offset = Integer.parseInt(offSetValue);       
+        int limit = Integer.parseInt(size);
+        int rowSize = offset + limit;
         
         try (Connection connection = dataSource.getConnection()) {
             String database = connection.getMetaData().getDatabaseProductName();
             String query;
             String columnID = "jobinstanceid";
-            
+
             if (database.contains("Derby") || database.contains("DB2")) {
                 if (jobName != null) {
-                    query = "SELECT jobinstanceid FROM JOBINSTANCEDATA WHERE NAME ='" + jobName + "' "
-                            + "ORDER BY jobinstanceid DESC FETCH FIRST " + size + " ROWS ONLY";
+                    query = "SELECT jobinstanceid "
+                            + "FROM JOBINSTANCEDATA "
+                            + "WHERE NAME ='" + jobName + "' "
+                            + "ORDER BY jobinstanceid "
+                            + "DESC FETCH FIRST " + size + " ROWS ONLY";
                 } else {
-                    query = "SELECT jobinstanceid FROM JOBINSTANCEDATA ORDER BY jobinstanceid DESC "
-                            + "FETCH FIRST " + size + " ROWS ONLY";
+                    query = "SELECT jobinstanceid "
+                            + "FROM JOBINSTANCEDATA "
+                            + "ORDER BY jobinstanceid DESC "
+                            + "OFFSET " + offset + " "
+                            + "ROWS FETCH FIRST " + size + " ROWS ONLY";
                 }
+
 
             } else if (database.contains("Oracle")) {
                 if (jobName != null) {
-                    query = "SELECT jobinstanceid FROM (SELECT jobinstanceid FROM JOBINSTANCEDATA "
-                            + "WHERE NAME ='" + jobName + "') "
-                            + "WHERE ROWNUM <=" + size + " ORDER BY jobinstanceid DESC";
-                } else {
-                    query = "SELECT jobinstanceid FROM JOBINSTANCEDATA WHERE ROWNUM <=" + size + " "
+                    query = "SELECT jobinstanceid "
+                            + "FROM ("
+                            + "      SELECT jobinstanceid "
+                            + "      FROM JOBINSTANCEDATA "
+                            + "      WHERE NAME ='" + jobName + "'"
+                            + ") "
+                            + "WHERE ROWNUM <=" + size + " "
                             + "ORDER BY jobinstanceid DESC";
-                }
+                } else {
+                    query = "SELECT jobinstanceid "
+                            + "FROM ("
+                            + "      SELECT ROWNUM numofrows, tables.*"
+                            + "      FROM("
+                            + "           SELECT jobinstanceid"
+                            + "           FROM JOBINSTANCEDATA"
+                            + "           ORDER BY jobinstanceid DESC"
+                            + "      ) tables"
+                            + "     WHERE ROWNUM <= " + rowSize  
+                            + ")"
+                            + "WHERE numofrows > " + offset;
+                }                  
             } else if (database.contains("Microsoft SQL Server")) {
                 if (jobName != null) {
-                    query = "SELECT TOP " + size + " jobinstanceid FROM JOBINSTANCEDATA "
-                            + "WHERE NAME ='" + jobName + "' ORDER BY jobinstanceid DESC";
+                    query = "SELECT TOP " + size + " "
+                            + "jobinstanceid FROM JOBINSTANCEDATA "
+                            + "WHERE NAME ='" + jobName + "' "
+                            + "ORDER BY jobinstanceid DESC";
                 } else {
-                    query = "SELECT TOP" + size + " jobinstanceid FROM JOBINSTANCEDATA ORDER BY jobinstanceid DESC";
+                    query = "SELECT TOP " + size + " jobinstanceid "
+                            + "FROM ("
+                            + "      SELECT jobinstanceid, ROW_NUMBER()"
+                            + "      OVER ("
+                            + "            ORDER BY jobinstanceid DESC"
+                            + "            ) as RowNum "
+                            + "       FROM JOBINSTANCEDATA"
+                            + "      ) AS MyDerivedTable "
+                            + "WHERE MyDerivedTable.RowNum > " +offset;
                 }
             } else {
                 if (jobName != null) {
-                    query = "SELECT jobinstanceid FROM JOBINSTANCEDATA WHERE NAME ='" + jobName + "' "
-                            + "ORDER BY jobinstanceid DESC LIMIT " + size;
+                    query = "SELECT jobinstanceid "
+                            + "FROM JOBINSTANCEDATA "
+                            + "WHERE NAME ='" + jobName + "' "
+                            + "ORDER BY jobinstanceid "
+                            + "DESC LIMIT " + size;
                 } else {
-                    query = "SELECT jobinstanceid FROM JOBINSTANCEDATA ORDER BY jobinstanceid DESC LIMIT " + size;
+                    query = "SELECT jobinstanceid "
+                            + "FROM JOBINSTANCEDATA "
+                            + "ORDER BY jobinstanceid "
+                            + "DESC LIMIT " + size 
+                            + " OFFSET " + offset;
                 }
             }
 

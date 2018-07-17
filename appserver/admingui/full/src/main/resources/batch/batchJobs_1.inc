@@ -55,12 +55,21 @@
 #include "/full/batch/batchRequestParam.inc"
         setSessionAttribute(key="#{pageSession.tabSetName}" value="batchJobs");
         createMap(result="#{requestScope.attrsMap}");
+        py.getPageNumber(offset="#{pageSession.offsetValue}" result="#{pageSession.pageNumber}");
         mapPut(map="#{requestScope.attrsMap}" key="target" value="#{pageSession.encodedTarget}");
         mapPut(map="#{requestScope.attrsMap}"  key="output" value="executionid,jobname,batchstatus,exitstatus,instanceid,starttime,endtime");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-jobs" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.resp}");
+        mapPut(map="#{requestScope.attrsMap}"  key="offset" value="#{pageSession.offsetValue}");
+        mapPut(map="#{requestScope.attrsMap}"  key="numberOfJobs" value="$int{20}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-jobs-with-pagination" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.resp}");
         setAttribute(key="listOfRows", value="#{requestScope.resp.data.extraProperties.listBatchJobs}");
+        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getJobCount}");
+        py.getPageCount(jobCount="#{pageSession.valueMap['allJobsCount']}" result="#{pageSession.pageCount}");
+        if(#{pageSession.pageNumber}=#{pageSession.pageCount}){
+           setPageSessionAttribute(key="disableNextButton" value="#{true}");
+        }
         setPageSessionAttribute(key="tableTitle" value="$resource{i18nf.batch.batchJobsTableTitle}");
         setPageSessionAttribute(key="editLink" value="#{request.contextPath}/full/batch/batchJobExecution.jsf?target=#{pageSession.target}&isCluster=#{pageSession.isCluster}&tabSetName=#{pageSession.encodedTabSetName}");
     />
     </event>
+#include"/batch/assets/js/batch.js"
         <sun:form id="propertyForm">

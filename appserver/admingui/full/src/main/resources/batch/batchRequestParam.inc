@@ -44,6 +44,7 @@ getRequestValue(key="target" value="#{pageSession.target}");
 urlencode(value="#{pageSession.target}" encoding="UTF-8" result="#{pageSession.encodedTarget}");
 getRequestValue(key="isCluster" value="#{pageSession.isCluster}" default="false");
 getRequestValue(key="tabSetName" value="#{pageSession.tabSetName}");
+getRequestValue(key="offsetValue" value="#{pageSession.offsetValue}" default="$int{0}");
 urlencode(value="#{pageSession.tabSetName}" encoding="UTF-8" result="#{pageSession.encodedTabSetName}");
 
 if(#{pageSession.isCluster}=true){
@@ -56,7 +57,7 @@ if(#{pageSession.isCluster}=false){
     setPageSessionAttribute(key="instanceName", value="#{pageSession.target}");
     setPageSessionAttribute(key="encodedInstanceName", value="#{pageSession.encodedTarget}");
     if(#{pageSession.target}=server){
-        setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsServer.jsf?target=server&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");
+        setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsServer.jsf?target=server&offsetValue=#{pageSession.offsetValue}&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");
     }
     if("!(#{pageSession.target}=server)"){
         setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsStandalone.jsf?target=#{pageSession.encodedTarget}&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");

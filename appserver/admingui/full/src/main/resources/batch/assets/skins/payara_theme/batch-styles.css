@@ -1,0 +1,70 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : Jul 13, 2018, 5:51:48 PM
+    Author     : Susan Rai
+*/
+
+input[id$="previousJobsButton"], input[id$="nextJobsButton"] {
+    width: 100px;
+    height: 30px;
+    padding: 0px;
+    color:#000000;
+    font-weight: bold;
+    background-color: transparent;
+}
+
+input:hover[id$="previousJobsButton"], 
+input:hover[id$="nextJobsButton"], 
+input:hover[id$="goButton"]{
+    background-color: #cbced0 !important;
+}
+
+span[id$=":pagnationButtons"] {
+    background-color: #eeeeee;
+    border-radius: 5px;
+    padding: 10px;
+    display:block;
+    width : 350px;
+    margin: 0 0 20px 25%; 
+}
+
+input[id$="nextJobsButton"] {
+    float: right;
+}
+
+input[id$="pageNumber"]{
+    float: left;
+    margin: -25px 0 0 135px;
+    width: 30px;
+    text-align: center;
+}
+
+label[id$="totalNumberOfPages_label"] {
+    color: #333333;
+    float: right;
+    width: 60px;
+    font-weight:100;
+    margin: -22px 110px 0 0;
+}
+label[for$="pageNumber"] {
+   color: #333333;
+   font-weight:100;
+   float: left;
+   width: 35px;
+   margin: -22px 0 0 100px;
+}
+
+input[id$="goButton"]{
+    width: 35px;
+    height: 25px;
+    padding: 0px;
+     color: #333333;
+    font-weight: bold;
+     background-color: transparent;
+     float: right;
+     margin: -27px 95px 0 0;
+}

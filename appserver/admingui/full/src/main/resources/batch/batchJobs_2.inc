@@ -46,8 +46,8 @@
         <sun:table id="configs" title="#{tableTitle}"
             deselectMultipleButton="$boolean{false}"
             selectMultipleButton="$boolean{false}"
-            paginationControls="$boolean{true}"
-            paginateButton="$boolean{true}">
+            paginationControls="$boolean{false}"
+            paginateButton="$boolean{false}">
             <!afterCreate
                 getClientId(component="$this{component}" clientId=>$page{tableId});
             />
@@ -95,7 +95,44 @@
   </sun:tableRowGroup>
 </sun:table>
 
-<sun:hidden id="helpKey" value="$resource{help_full.batchJobs}" />
-            </sun:form>
-</define>
+     <sun:panelGroup id="pagnationButtons" >
+         <sun:button id="previousJobsButton"  
+                         text="<< Previous" 
+                         onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command 
+                    py.subtractFromOffSetValue(offset="#{pageSession.offsetValue}" result="offsetNewValue");
+                    gf.redirect(page="#{request.contextPath}/full/batch/batchJobsServer.jsf?target=server&offsetValue=#{requestScope.offsetNewValue}&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");
+                />
+         </sun:button>
+     <sun:button id="nextJobsButton"  
+                     disabled="#{pageSession.disableNextButton}"
+                     text="Next >>"
+                     onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command        
+                    py.addToOffSetValue(offset="#{pageSession.offsetValue}" result="offsetNewValue");
+                    gf.redirect(page="#{request.contextPath}/full/batch/batchJobsServer.jsf?target=server&offsetValue=#{requestScope.offsetNewValue}&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");
+                />
+        </sun:button>
+            <sun:property id="pageNumberProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="Page">
+            <sun:textField id="pageNumber" columns="$int{4}" maxLength="5" text="#{pageSession.pageNumber}" /> 
+        </sun:property>
+
+     <sun:button id="goButton"  
+                         text="Go" 
+                         onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command 
+                     if(#{pageSession.pageNumber}>#{pageSession.pageCount}){
+                               setPageSessionAttribute(key="pageNumber" value="#{pageSession.pageCount}");
+                      }
+                    py.goToSpecifiedPageNumber(pageNumber="#{pageSession.pageNumber}" result="offsetNewValue");
+                    gf.redirect(page="#{request.contextPath}/full/batch/batchJobsServer.jsf?target=server&offsetValue=#{requestScope.offsetNewValue}&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");
+                />
+     </sun:button>
+     <sun:property id="totalNumberOfPages" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="of #{pageSession.pageCount}">
+     </sun:property>
+         
+     </sun:panelGroup>
+    <sun:hidden id="helpKey" value="$resource{help_full.batchJobs}" />
+  </sun:form>
+ </define>
 </composition>
