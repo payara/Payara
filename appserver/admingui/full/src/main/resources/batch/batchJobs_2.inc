@@ -37,7 +37,8 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-
+    
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 -->
 
 #include "/common/shared/alertMsg_1.inc"
@@ -124,7 +125,7 @@
                      if(#{pageSession.pageNumber}>#{pageSession.pageCount}){
                                setPageSessionAttribute(key="pageNumber" value="#{pageSession.pageCount}");
                       }
-                    py.goToSpecifiedPageNumber(pageNumber="#{pageSession.pageNumber}" result="offsetNewValue");
+                    py.getSpecifiedPageNumber(pageNumber="#{pageSession.pageNumber}" result="offsetNewValue");
                     gf.redirect(page="#{request.contextPath}/full/batch/batchJobsServer.jsf?target=server&offsetValue=#{requestScope.offsetNewValue}&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");
                 />
      </sun:button>
