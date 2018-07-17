@@ -108,14 +108,17 @@ public abstract class CollectionLeafResource extends AbstractResource {
     public void setParentAndTagName(Dom parent, String tagName) {
         this.parent = parent;
         this.tagName = tagName;
-        if (parent!=null){
-            if (parent.getImplementationClass().equals(JavaConfig.class) && isJvmOptions(tagName)) {
-                JavaConfig javaConfig = (JavaConfig)parent.get();
-                entity = javaConfig.getJvmRawOptions();
-                isJvmOptions = true;
-            }
-            else {
-                synchronized (parent) {
+        if (parent != null) {
+            synchronized (parent) {
+                if (parent.getImplementationClass().equals(JavaConfig.class) && isJvmOptions(tagName)) {
+                    JavaConfig javaConfig = (JavaConfig) parent.get();
+                    if (javaConfig != null) {
+                        entity = javaConfig.getJvmRawOptions();
+                    } else {
+                        entity = parent.leafElements(tagName);
+                    }
+                    isJvmOptions = true;
+                } else {
                     entity = parent.leafElements(tagName);
                 }
             }
