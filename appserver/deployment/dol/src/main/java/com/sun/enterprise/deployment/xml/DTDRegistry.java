@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 // START OF IASRI 4661135
 
@@ -292,6 +293,13 @@ public final class DTDRegistry {
         "-//GlassFish.org//DTD GlassFish Application Server 3.1 EJB 3.1//EN";
     public static final String GF_EJBJAR_311_DTD_SYSTEM_ID =
         "http://glassfish.org/dtds/glassfish-ejb-jar_3_1-1.dtd";
+    
+    
+    // Payara DTDs
+    
+    public static final String PAYARA_WEBAPP_4_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Application Server 4 Servlet 3.0//EN";
+    public static final String PAYARA_WEBAPP_4_DTD_SYSTEM_ID = "https://raw.githubusercontent.com/payara/Payara/master/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara-web-app_4.dtd";
+    
 }
 
 // END OF IASRI 4661135

@@ -49,19 +49,19 @@
 
   It must include a DOCTYPE of the following form:
 
-  <!DOCTYPE glassfish-web-app PUBLIC "-/Payara.fish//DTD Payara Application Server 4 Servlet 3.0//EN" "https://raw.githubusercontent.com/payara/Payara/master/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara-web-app_4.dtd">
+  <!DOCTYPE payara-web-app PUBLIC "-//Payara.fish//DTD Payara Application Server 4 Servlet 3.0//EN" "https://raw.githubusercontent.com/payara/Payara/master/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara-web-app_4.dtd">
 
 -->
 
 <!ENTITY % boolean "(yes | no | on | off | 1 | 0 | true | false)">
 
 <!-- root element for vendor specific web application (module) configuration -->
-<!ELEMENT glassfish-web-app (context-root?, security-role-mapping*, servlet*, idempotent-url-pattern*, session-config?,
+<!ELEMENT payara-web-app (context-root?, security-role-mapping*, servlet*, idempotent-url-pattern*, session-config?,
                        ejb-ref*, resource-ref*, resource-env-ref*,  service-ref*,
                        message-destination-ref*, cache?, class-loader?,
                        jsp-config?, locale-charset-info?, parameter-encoding?,
                        property*, valve*, message-destination*, webservice-description*, scanning-exclude*, scanning-include*, whitelist-package*, keep-state?, version-identifier?, container-initializer-enabled?, jaxrs-roles-allowed-enabled?)>
-<!ATTLIST glassfish-web-app error-url CDATA ""
+<!ATTLIST payara-web-app error-url CDATA ""
                       httpservlet-security-provider CDATA #IMPLIED>
 
 <!--
@@ -75,7 +75,7 @@
 
 <!-- 
  Context Root for the web application when the war file is a standalone module.
- When the war module is part of the Java EE Application, use the application.xml
+ When the war module is part of the Jakarta EE Application, use the application.xml
 -->
 <!ELEMENT context-root (#PCDATA)>
 
@@ -160,7 +160,7 @@ This element holds password text.
                                                                                    
         max-entries        Maximum number of entries this cache may hold. [4096]
         timeout-in-seconds Default timeout for the cache entries in seconds. [30]
-        enabled            Is this cache enabled? [true]                                                   The default value is changed to true from 8.1
+        enabled            Is this cache enabled? [true]
 -->
 <!ELEMENT cache (cache-helper*, default-helper?, property*, cache-mapping*)>
 <!ATTLIST cache  max-entries         CDATA     "4096"
@@ -321,7 +321,7 @@ value element specifies the applicable value and a matching expression for a con
                               and resources within the WAR file or the
                               extra-class-path over those higher up in the
                               classloader hierarchy, unless those classes or
-                              resources are part of the Java EE platform.
+                              resources are part of the Jakarta EE platform.
                               If set to its default value of true, classes
                               and resources residing in container-wide library
                               JAR files are loaded in preference to classes
