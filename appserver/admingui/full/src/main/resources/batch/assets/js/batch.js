@@ -49,7 +49,5 @@
             style.rel = 'stylesheet';
             head.appendChild(style);
         }
-        
-      window.onload = disablePreviousButton("#{pageSession.offsetValue}");
     </script>
 </f:verbatim>

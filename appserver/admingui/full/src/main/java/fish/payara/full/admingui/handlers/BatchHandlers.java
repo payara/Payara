@@ -128,7 +128,9 @@ public class BatchHandlers {
 
         try {
             int pageNumber = Integer.parseInt(pageNumberValue);
-            result = (pageNumber * DEFAULT_OFFSET_VALUE) - DEFAULT_OFFSET_VALUE;
+            if (pageNumber > 0) {
+                result = (pageNumber * DEFAULT_OFFSET_VALUE) - DEFAULT_OFFSET_VALUE;
+            }
         } catch (NumberFormatException ex) {
             GuiUtil.getLogger().info("Value isn't a valid integer " + ex);
         }

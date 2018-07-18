@@ -98,6 +98,7 @@
 
      <sun:panelGroup id="pagnationButtons" >
          <sun:button id="previousJobsButton"  
+                         disabled="#{pageSession.disablePreviousButton}"
                          text="<< Previous" 
                          onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command 

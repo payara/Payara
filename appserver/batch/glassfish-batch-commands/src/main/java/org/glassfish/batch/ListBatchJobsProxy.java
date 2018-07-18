@@ -79,24 +79,39 @@ public class ListBatchJobsProxy
     @Param(primary = true, optional = true)
     String jobName;
 
+    @Param(name = "offset", optional = true, defaultValue = "0")
+    String offSetValue;
+
+    @Param(name = "limit", optional = true, defaultValue = "2000")
+    String limitValue;
+
+
     @Override
     protected String getCommandName() {
         return "_ListBatchJobs";
     }
 
     protected void fillParameterMap(ParameterMap parameterMap) {
-       super.fillParameterMap(parameterMap);
-        if (jobName != null)
+        super.fillParameterMap(parameterMap);
+        if (jobName != null) {
             parameterMap.add("DEFAULT", jobName);
+        }
+        parameterMap.add("offset", offSetValue);
+        parameterMap.add("limit", limitValue);
     }
 
 
     protected void postInvoke(AdminCommandContext context, ActionReport subReport) {
         Properties subProperties = subReport.getExtraProperties();
         Properties extraProps = context.getActionReport().getExtraProperties();
-        if (subProperties.get("simpleMode") != null)
+        if (subProperties.get("simpleMode") != null) {
             extraProps.put("simpleMode", subProperties.get("simpleMode"));
-        if (subProperties.get("listBatchJobs") != null)
+        }
+        if (subProperties.get("listBatchJobs") != null) {
             extraProps.put("listBatchJobs", subProperties.get("listBatchJobs"));
+        }
+        if (subProperties.get("listJobsCount") != null) {
+            extraProps.put("listJobsCount", subProperties.get("listJobsCount"));
+        }
     }
 }
