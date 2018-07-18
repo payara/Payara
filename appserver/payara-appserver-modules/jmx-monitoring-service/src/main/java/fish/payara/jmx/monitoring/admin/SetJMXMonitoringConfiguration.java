@@ -306,8 +306,7 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
      * attribute value.
      */
     private MonitoredAttribute parseToMonitoredAttribute(String input, MonitoredAttribute monitoredAttribute) throws PropertyVetoException {
-        // Negative lookbehind - find space characters not preceeded by \
-        String[] attributeTokens = input.split("(?<!\\\\) ");
+        String[] attributeTokens = input.split("(?=objectName)|(?=attributeName)|(?=description)");
         String attributeName = null;
         String objectName = null;
         String description = null;
