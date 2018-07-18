@@ -281,12 +281,8 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
                     mci.heading = cname.toUpperCase(Locale.ENGLISH);
                     try {
                         mci.duckGetter = targetModel.getDuckMethod(m);
-                    } catch (ClassNotFoundException ex) { // @todo Java SE 7 multicatch
-                        ConfigApiLoggerInfo.getLogger().log(Level.SEVERE, 
-                                ConfigApiLoggerInfo.CANNOT_IDENTIFY_LIST_COL_GETTER, ex);
-                    } catch (NoSuchMethodException ex) {
-                        ConfigApiLoggerInfo.getLogger().log(Level.SEVERE, 
-                                ConfigApiLoggerInfo.CANNOT_IDENTIFY_LIST_COL_GETTER, ex);
+                    } catch (ClassNotFoundException | NoSuchMethodException ex) {
+                        ConfigApiLoggerInfo.getLogger().log(Level.SEVERE, ConfigApiLoggerInfo.CANNOT_IDENTIFY_LIST_COL_GETTER, ex);
                     }
                     cols.add(mci);
                 }
@@ -315,7 +311,7 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
     }
 
     private String[] getColumnHeadings(List<ColumnInfo> cols) {
-        String rv[] = new String[cols.size()];
+        String[] rv = new String[cols.size()];
         for (int i = 0; i < rv.length; i++) {
             rv[i] = cols.get(i).heading;
         }
@@ -323,7 +319,7 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
     }
 
     private String[] getColumnData(ConfigBeanProxy child, List<ColumnInfo> cols) {
-        String rv[] = new String[cols.size()];
+        String[] rv= new String[cols.size()];
         for (int i = 0; i < rv.length; i++) {
             rv[i] = cols.get(i).getValue(child);
         }

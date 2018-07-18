@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans.customvalidators;
 
@@ -68,8 +69,10 @@ public @interface ReferenceConstraint {
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
     
-    /** In GlassFish a lot of configurations are made in batch and its references
+    /** 
+     * In Payara a lot of configurations are made in batch and its references
      * could not be fulfilled during creation process.
+     * @return 
      */
     boolean skipDuringCreation();
     
@@ -81,7 +84,8 @@ public @interface ReferenceConstraint {
     @Documented
     public @interface RemoteKey {
         String message() default "";
-        /** Type of {@code ConfigBeanProxy} where this remote key points to. 
+        /** Type of {@code ConfigBeanProxy} where this remote key points to.
+         * @return 
          */
         Class<? extends ConfigBeanProxy> type(); 
     }
