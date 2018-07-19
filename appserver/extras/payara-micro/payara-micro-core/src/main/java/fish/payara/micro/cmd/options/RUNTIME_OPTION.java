@@ -102,7 +102,8 @@ public enum RUNTIME_OPTION {
     interfaces(true),
     sslcert(true),
     help(false),
-    enablesni(false);
+    enablesni(false),
+    hzpublicaddress(true);
 
     private RUNTIME_OPTION(boolean hasValue) {
         this(hasValue, new Validator());

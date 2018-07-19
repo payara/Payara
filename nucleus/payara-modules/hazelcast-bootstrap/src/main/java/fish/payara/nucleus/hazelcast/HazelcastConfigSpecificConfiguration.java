@@ -56,6 +56,10 @@ public interface HazelcastConfigSpecificConfiguration extends ConfigBeanProxy, C
     String getEnabled();
     public void setEnabled(String value);
     
+    @Attribute(defaultValue = "", dataType = String.class)
+    String getPublicAddress();
+    public void setPublicAddress(String value);
+    
     @Attribute(defaultValue = "payara")
     String getMemberName();
     public void setMemberName(String value);

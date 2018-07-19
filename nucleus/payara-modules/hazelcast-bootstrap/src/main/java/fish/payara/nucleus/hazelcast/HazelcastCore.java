@@ -400,6 +400,9 @@ public class HazelcastCore implements EventListener, ConfigListener {
 
     private void buildNetworkConfiguration(Config config) throws NumberFormatException {
         NetworkConfig nConfig = config.getNetworkConfig();
+        if (nodeConfig.getPublicAddress() != null && !nodeConfig.getPublicAddress().isEmpty()) {
+            nConfig.setPublicAddress(nodeConfig.getPublicAddress());
+        }
         
 
         MemberAddressProviderConfig memberAddressProviderConfig = nConfig.getMemberAddressProviderConfig();

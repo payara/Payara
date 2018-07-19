@@ -177,6 +177,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private String sslCert;
     private boolean showServletMappings;
     private boolean sniEnabled = false;
+    private String publicAddress = "";
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -1401,6 +1402,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case enablesni:
                         sniEnabled = true;
                         break;
+                    case hzpublicaddress:
+                        publicAddress = value;
+                        break;
                     default:
                         break;
                 }
@@ -1877,6 +1881,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             if (instanceGroup != null) {
                 preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.member-group=" + instanceGroup));
             }
+            
+            if (publicAddress != null && !publicAddress.isEmpty()) {
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.public-address=" + publicAddress));                
+            }
             preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.host-aware-partitioning=" + hostAware));
             
             if (clustermode != null) {
@@ -2126,6 +2134,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         interfaces = getProperty("payaramicro.interfaces");
         secretsDir = getProperty("payaramicro.secretsDir");
         showServletMappings = getBooleanProperty("payaramicro.showServletMappings", "false");
+        publicAddress = getProperty("payaramicro.publicAddress");
 
         // Set the rootDir file
         String rootDirFileStr = getProperty("payaramicro.rootDir");
@@ -2281,6 +2290,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         props.setProperty("payaramicro.disablePhoneHome", Boolean.toString(disablePhoneHome));
         props.setProperty("payaramicro.showServletMappings", Boolean.toString(showServletMappings));
         props.setProperty("payaramicro.sniEnabled", Boolean.toString(sniEnabled));
+        props.setProperty("payaramicro.publicAddress", publicAddress);
 
         if (userLogFile != null) {
             props.setProperty("payaramicro.userLogFile", userLogFile);
