@@ -243,6 +243,8 @@
         <thread-pool name="admin-thread-pool" max-thread-pool-size="15" min-thread-pool-size="1" max-queue-size="256"></thread-pool>
       </thread-pools>
       <system-property name="fish.payara.classloading.delegate" value="false"/>
+      <system-property name="jersey.config.client.readTimeout" value="300000"/>
+      <system-property name="jersey.config.client.connectTimeout" value="300000"/>
       <system-property name="org.jboss.weld.clustering.rollingUpgradesIdDelimiter" value=".."/>
       <system-property name="org.jboss.weld.probe.allowRemoteAddress" value="127.0.0.1|::1|::1%.+|0:0:0:0:0:0:0:1|0:0:0:0:0:0:0:1%.+"/>
     </config>
