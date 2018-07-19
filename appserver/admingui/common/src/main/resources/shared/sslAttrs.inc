@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2018] Payara Foundation and/or affiliates -->
 
 <!-- sslAttrs.inc -->
 
@@ -102,6 +103,12 @@
      </sun:property>
      <sun:property id="trustStore"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.trustStore}" helpText="$resource{i18n.ssl.trustStoreHelp}" >
         <sun:textField id="trustStore" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.ssl.trustStore']}" text="#{pageSession.valueMap['trustStore']}" />
+     </sun:property>
+     <sun:property id="sessionTimeout"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.sessionTimeout}" helpText="$resource{i18n.ssl.sessionTimeoutHelp}" >
+        <sun:textField id="sessionTimeout" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.ssl.sessionTimeout']}" text="#{pageSession.valueMap['tlsSessionTimeout']}" />
+     </sun:property>
+     <sun:property id="sessionCacheSize"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.sessionCacheSize}" helpText="$resource{i18n.ssl.sessionCacheSizeHelp}" >
+        <sun:textField id="sessionCacheSize" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.ssl.sessionCacheSize']}" text="#{pageSession.valueMap['tlsSessionCacheSize']}" />
      </sun:property>
 
 

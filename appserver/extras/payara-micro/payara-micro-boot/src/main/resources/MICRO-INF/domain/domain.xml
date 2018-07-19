@@ -204,6 +204,8 @@ Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
                 <thread-pool name="thread-pool-1" min-thread-pool-size="2" max-thread-pool-size="200"/>
             </thread-pools>
             <microprofile-config/>
+            <system-property name="jersey.config.client.readTimeout" value="300000"/>
+            <system-property name="jersey.config.client.connectTimeout" value="300000"/>
         </config> 
     </configs>
     <property name="administrative.domain.name" value="domain1"/>

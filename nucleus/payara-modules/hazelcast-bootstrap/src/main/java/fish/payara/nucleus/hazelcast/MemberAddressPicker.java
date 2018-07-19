@@ -107,7 +107,15 @@ public class MemberAddressPicker implements MemberAddressProvider {
      */
     private void findAppropriateInterfaces() {
         
-        //
+        if (localConfig.getPublicAddress() != null && !localConfig.getPublicAddress().isEmpty()) {
+            String address[] = localConfig.getPublicAddress().split(":");
+            if (address.length > 1) {
+                publicAddress = new InetSocketAddress(address[0], Integer.parseInt(address[1]));
+            } else {
+                publicAddress = new InetSocketAddress(address[0], Integer.parseInt(config.getStartPort()));
+            }
+        }
+        
         logger.fine("Finding an appropriate address for Hazelcast to use");
         int port = 0;
         if (env.isDas() && !env.isMicro()) {

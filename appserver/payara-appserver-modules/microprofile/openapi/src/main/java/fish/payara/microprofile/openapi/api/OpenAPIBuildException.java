@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,54 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.microprofile.config.spi;
+package fish.payara.microprofile.openapi.api;
 
-import java.io.Serializable;
-import java.util.Optional;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.spi.ConfigSource;
+public class OpenAPIBuildException extends Exception {
+    private static final long serialVersionUID = 1L;
 
-/**
- *
- * @author Steve Millidge <Payara Services Limited>
- */
-public class InjectedPayaraConfig implements Config, Serializable {
-    
-    private transient Config delegate;
-    private String appName;
-    
-    public InjectedPayaraConfig(Config delegate, String appName) {
-        this.delegate = delegate;
-        this.appName = appName;
+	public OpenAPIBuildException(Throwable t) {
+        super(t);
     }
-    @Override
-    public <T> T getValue(String propertyName, Class<T> propertyType) {
-        ensureDelegate();
-        return delegate.getValue(propertyName, propertyType);
-    }
-
-    @Override
-    public <T> Optional<T> getOptionalValue(String propertyName, Class<T> propertyType) {
-        ensureDelegate();
-        return delegate.getOptionalValue(propertyName, propertyType);
-    }
-
-    @Override
-    public Iterable<String> getPropertyNames() {
-        ensureDelegate();
-        return delegate.getPropertyNames();
-    }
-
-    @Override
-    public Iterable<ConfigSource> getConfigSources() {
-        ensureDelegate();
-        return delegate.getConfigSources();
-    }
-    
-    private void ensureDelegate() {
-        if (delegate == null) {
-            delegate = (PayaraConfig) ((ConfigProviderResolverImpl)ConfigProviderResolverImpl.instance()).getNamedConfig(appName);
-        }
-    }
-    
 }

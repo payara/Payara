@@ -124,6 +124,9 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
     @Param(name = "startPort", optional = true)
     private String startPort;
 
+    @Param(name = "publicAddress", optional = true)
+    private String publicAddress;
+    
     @Param(name = "dasPublicAddress", optional = true)
     private String dasPublicAddress;
 
@@ -316,6 +319,9 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                             }
                             if (memberGroup != null) {
                                 hazelcastRuntimeConfigurationProxy.setMemberGroup(memberGroup);
+                            }
+                            if (publicAddress != null) {
+                                hazelcastRuntimeConfigurationProxy.setPublicAddress(publicAddress);
                             }
                             actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                             return null;
