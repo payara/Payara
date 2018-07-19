@@ -99,8 +99,8 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
     @Inject @Self
     private ActiveDescriptor<?> myself;
 
-    final protected static Logger logger = ConfigApiLoggerInfo.getLogger();
-    final protected static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GenericCrudCommand.class);
+    protected static final Logger LOGGER = ConfigApiLoggerInfo.getLogger();
+    protected static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(GenericCrudCommand.class);
 
     protected String commandName;
     protected Class parentType=null;
@@ -108,7 +108,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
     protected Method targetMethod;
     
     // default level of noise, useful for just swithching these classes in debugging.
-    protected final Level level = Level.FINE;
+    protected static final Level level = Level.FINE;
     
     @Inject
     ServiceLocator habitat;
@@ -149,16 +149,16 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
         commandName = myself.getName();
         
         String parentTypeName = getOne(GenerateServiceFromMethod.PARENT_CONFIGURED, myself.getMetadata());
-        logger.log(level, "Generic method parent targeted type is {0}", parentTypeName);
+        LOGGER.log(level, "Generic method parent targeted type is {0}", parentTypeName);
 
         try {
             parentType = loadClass(parentTypeName);
         } catch(ClassNotFoundException e) {
-            String msg = localStrings.getLocalString(GenericCrudCommand.class,
+            String msg = LOCAL_STRINGS.getLocalString(GenericCrudCommand.class,
                     "GenericCrudCommand.configbean_not_found",
                     "The Config Bean {0} cannot be loaded by the generic command implementation : {1}",
                     parentTypeName, e.getMessage());
-            LogHelper.log(logger, Level.SEVERE, ConfigApiLoggerInfo.CFG_BEAN_CL_FAILED, e, parentTypeName);
+            LogHelper.log(LOGGER, Level.SEVERE, ConfigApiLoggerInfo.CFG_BEAN_CL_FAILED, e, parentTypeName);
             throw new RuntimeException(msg, e);
         }
 
@@ -169,11 +169,11 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
         targetMethod = getMethodFromAnnotation(methodName);
 
         if (targetMethod==null) {
-            String msg = localStrings.getLocalString(GenericCrudCommand.class,
+            String msg = LOCAL_STRINGS.getLocalString(GenericCrudCommand.class,
                     "GenericCrudCommand.configbean_not_found",
                     "The Config Bean {0} cannot be loaded by the generic command implementation : {1}",
                     parentTypeName, methodName);
-            logger.log(Level.SEVERE, ConfigApiLoggerInfo.CFG_BEAN_CL_FAILED, parentTypeName);
+            LOGGER.log(Level.SEVERE, ConfigApiLoggerInfo.CFG_BEAN_CL_FAILED, parentTypeName);
             throw new RuntimeException(msg);
         }
         
@@ -181,11 +181,11 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
         try {
             targetType = loadClass(targetTypeName);
         } catch(ClassNotFoundException e) {
-            String msg = localStrings.getLocalString(GenericCrudCommand.class,
+            String msg = LOCAL_STRINGS.getLocalString(GenericCrudCommand.class,
                     "GenericCrudCommand.configbean_not_found",
                     "The Config Bean {0} cannot be loaded by the generic command implementation : {1}",
                     targetTypeName, e.getMessage());
-            LogHelper.log(logger, Level.SEVERE, ConfigApiLoggerInfo.CFG_BEAN_CL_FAILED, e, targetTypeName);
+            LogHelper.log(LOGGER, Level.SEVERE, ConfigApiLoggerInfo.CFG_BEAN_CL_FAILED, e, targetTypeName);
             throw new RuntimeException(msg, e);
         }
     }
@@ -193,7 +193,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
     protected <T extends Annotation> T getAnnotation(Method target, Class<T> type) {
         T annotation = targetMethod.getAnnotation(type);
         if (annotation == null) {
-            String msg = localStrings.getLocalString(GenericCrudCommand.class,
+            String msg = LOCAL_STRINGS.getLocalString(GenericCrudCommand.class,
                     "GenericCrudCommand.annotation_not_found",
                     "Cannot find annotation {0} with value {1} on method {2}",
                     type.getName(), commandName, targetMethod.toString());
@@ -226,24 +226,24 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                         } else if (annotated instanceof Field) {
                             values = (List<ConfigBeanProxy>) ((Field) annotated).get(component);
                         } else {
-                            String msg = localStrings.getLocalString(GenericCrudCommand.class,
+                            String msg = LOCAL_STRINGS.getLocalString(GenericCrudCommand.class,
                                     "GenericCrudCommand.invalid_type",
                                     "Invalid annotated type {0} passed to InjectionResolver:getValue()",
                                     annotated.getClass().toString());
-                            logger.log(Level.SEVERE, ConfigApiLoggerInfo.INVALID_ANNO_TYPE, annotated.getClass().toString());
+                            LOGGER.log(Level.SEVERE, ConfigApiLoggerInfo.INVALID_ANNO_TYPE, annotated.getClass().toString());
                             throw new MultiException(new IllegalArgumentException(msg));
                         }
                     } catch (IllegalAccessException | InvocationTargetException e) {
-                        String msg = localStrings.getLocalString(GenericCrudCommand.class,
+                        String msg = LOCAL_STRINGS.getLocalString(GenericCrudCommand.class,
                                 "GenericCrudCommand.invocation_failure",
                                 "Failure {0} while getting List<?> values from component",
                                 e.getMessage());
-                        logger.log(Level.SEVERE,ConfigApiLoggerInfo.INVOKE_FAILURE);
+                        LOGGER.log(Level.SEVERE,ConfigApiLoggerInfo.INVOKE_FAILURE);
                         throw new MultiException(new IllegalStateException(msg, e));
                     }
                     Object value = delegate.getValue(component, annotated, genericType, type);
                     if (value==null) {
-                        logger.log(level, "Value of {0} is null", annotated.toString());
+                        LOGGER.log(level, "Value of {0} is null", annotated);
                         return null;
                     }
                     Type genericReturnType=null;
@@ -253,46 +253,45 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                         genericReturnType = ((Field) annotated).getGenericType();
                     }
                     if (genericReturnType==null) {
-                        throw new MultiException(new IllegalArgumentException(
-                                "Cannot determine parametized type from " + annotated.toString()));
+                        throw new MultiException(new IllegalArgumentException("Cannot determine parametized type from " + annotated));
                     }
 
                     final Class<? extends ConfigBeanProxy> itemType = Types.erasure(Types.getTypeArgument(genericReturnType, 0));
-                    if (logger.isLoggable(level)) {
-                        logger.log(level, "Found that List<?> really is a List<{0}>", itemType.toString());
+                    if (LOGGER.isLoggable(level)) {
+                        LOGGER.log(level, "Found that List<?> really is a List<{0}>", itemType);
                     }
                     if (itemType==null) {
-                            String msg = localStrings.getLocalString(GenericCrudCommand.class,
+                            String msg = LOCAL_STRINGS.getLocalString(GenericCrudCommand.class,
                                     "GenericCrudCommand.nongeneric_type",
                                     "The List type returned by {0} must be a generic type",
                                     annotated.toString());
-                            logger.log(Level.SEVERE, ConfigApiLoggerInfo.LIST_NOT_GENERIC_TYPE, annotated.toString());
+                            LOGGER.log(Level.SEVERE, ConfigApiLoggerInfo.LIST_NOT_GENERIC_TYPE, annotated.toString());
                             throw new MultiException(new IllegalArgumentException(msg));
                     }
                     if (!ConfigBeanProxy.class.isAssignableFrom(itemType)) {
-                        String msg = localStrings.getLocalString(GenericCrudCommand.class,
+                        String msg = LOCAL_STRINGS.getLocalString(GenericCrudCommand.class,
                                 "GenericCrudCommand.wrong_type",
                                 "The generic type {0} is not supported, only List<? extends ConfigBeanProxy> is",
                                 annotated.toString());
-                        logger.log(Level.SEVERE, ConfigApiLoggerInfo.GENERIC_TYPE_NOT_SUPPORTED, annotated.toString());
+                        LOGGER.log(Level.SEVERE, ConfigApiLoggerInfo.GENERIC_TYPE_NOT_SUPPORTED, annotated.toString());
                         throw new MultiException(new IllegalArgumentException(msg));
                         
                     }
                     Properties props = convertStringToProperties(value.toString(), ':');
-                    if (logger.isLoggable(level)) {
+                    if (LOGGER.isLoggable(level)) {
                         for (Map.Entry<Object, Object> entry : props.entrySet()) {
-                            logger.log(level, "Subtype {0} key:{1} value:{2}", new Object[]{itemType, entry.getKey(), entry.getValue()});
+                            LOGGER.log(level, "Subtype {0} key:{1} value:{2}", new Object[]{itemType, entry.getKey(), entry.getValue()});
                         }
                     }
                     final BeanInfo beanInfo;
                     try {
                         beanInfo = Introspector.getBeanInfo(itemType);
                     } catch (IntrospectionException e) {
-                        String msg = localStrings.getLocalString(GenericCrudCommand.class,
+                        String msg = LOCAL_STRINGS.getLocalString(GenericCrudCommand.class,
                                 "GenericCrudCommand.introspection_failure",
                                 "Failure {0} while instrospecting {1} to find all getters and setters",
                                 e.getMessage(), itemType.getName());
-                        LogHelper.log(logger, Level.SEVERE, ConfigApiLoggerInfo.INTROSPECTION_FAILED, e, itemType.getName());
+                        LogHelper.log(LOGGER, Level.SEVERE, ConfigApiLoggerInfo.INTROSPECTION_FAILED, e, itemType.getName());
                         throw new MultiException(new IllegalStateException(msg, e));
                     }
                     for (final Map.Entry<Object, Object> entry : props.entrySet()) {
@@ -338,11 +337,11 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                             });
                             values.add(cc);
                         } catch (TransactionFailure transactionFailure) {
-                            String msg = localStrings.getLocalString(GenericCrudCommand.class,
+                            String msg = LOCAL_STRINGS.getLocalString(GenericCrudCommand.class,
                                 "GenericCrudCommand.transactionException",
                                 "Transaction exception {0} while injecting {1}",
                                 transactionFailure.getMessage(), itemType);
-                            LogHelper.log(logger, Level.SEVERE, ConfigApiLoggerInfo.TX_FAILED,
+                            LogHelper.log(LOGGER, Level.SEVERE, ConfigApiLoggerInfo.TX_FAILED,
                                     transactionFailure, itemType);
                             throw new MultiException(new IllegalStateException(msg, transactionFailure));
                         }

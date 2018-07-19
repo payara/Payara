@@ -47,7 +47,6 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.module.bootstrap.StartupContext;
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigurationCleanup;
@@ -99,8 +98,7 @@ public abstract class DomainXml implements Populator {
     @Inject
     ConfigurationAccess configAccess;
 
-    static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DomainXml.class);
-    private static final LocalStringsImpl strings = new LocalStringsImpl(DomainXml.class);
+    static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(DomainXml.class);
 
     @Override
     public void run(ConfigParser parser) throws ConfigPopulatorException {
@@ -122,7 +120,7 @@ public abstract class DomainXml implements Populator {
         try {
             parseDomainXml(parser, getDomainXml(env), env.getInstanceName());
         } catch (IOException e) {
-            throw new ConfigPopulatorException(localStrings.getLocalString("ConfigParsingFailed", "Failed to parse domain.xml"), e);
+            throw new ConfigPopulatorException(LOCAL_STRINGS.getLocalString("ConfigParsingFailed", "Failed to parse domain.xml"), e);
         }
 
         // run the upgrades...
@@ -193,6 +191,9 @@ public abstract class DomainXml implements Populator {
 
     /**
      * Determines the location of <tt>domain.xml</tt> to be parsed.
+     * @param env
+     * @return 
+     * @throws IOException
      */
     protected URL getDomainXml(ServerEnvironmentImpl env) throws IOException {
         File domainXml = new File(env.getConfigDirPath(), ServerEnvironmentImpl.kConfigXMLFileName);
@@ -214,7 +215,7 @@ public abstract class DomainXml implements Populator {
             EarlyLogHandler.earlyMessages.add(lr);
 
         }
-        throw new IOException(localStrings.getLocalString("NoUsableConfigFile", "No usable configuration file at {0}", env.getConfigDirPath()));
+        throw new IOException(LOCAL_STRINGS.getLocalString("NoUsableConfigFile", "No usable configuration file at {0}", env.getConfigDirPath()));
     }
 
     /**
