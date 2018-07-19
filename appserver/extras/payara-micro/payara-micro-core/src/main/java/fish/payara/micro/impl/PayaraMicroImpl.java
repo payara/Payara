@@ -1882,7 +1882,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.member-group=" + instanceGroup));
             }
             
-            if (publicAddress != null && !publicAddress.isEmpty()){
+            if (publicAddress != null && !publicAddress.isEmpty()) {
                 preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.public-address=" + publicAddress));                
             }
             preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.host-aware-partitioning=" + hostAware));
