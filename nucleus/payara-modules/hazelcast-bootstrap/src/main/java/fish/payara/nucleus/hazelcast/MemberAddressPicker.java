@@ -116,7 +116,6 @@ public class MemberAddressPicker implements MemberAddressProvider {
             }
         }
         
-        //
         logger.fine("Finding an appropriate address for Hazelcast to use");
         int port = 0;
         if (env.isDas() && !env.isMicro()) {
