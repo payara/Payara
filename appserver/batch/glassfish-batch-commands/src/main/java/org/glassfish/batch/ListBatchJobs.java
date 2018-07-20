@@ -72,6 +72,7 @@ import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import javax.validation.constraints.Min;
 import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
 import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
 
@@ -122,9 +123,11 @@ public class ListBatchJobs
     @Param(primary = true, optional = true)
     String jobName;
     
+    @Min(value = 0, message = "Offset value needs to be greter than 0")
     @Param(name = "offset", optional = true, defaultValue = "0")
     String offSetValue;
 
+    @Min(value = 0, message = "Limit value needs to be greter than 0")
     @Param(name = "limit", optional = true, defaultValue = "2000")
     String limitValue;
 
