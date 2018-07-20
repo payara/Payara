@@ -42,6 +42,7 @@
 package org.glassfish.weld;
 
 import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
 import static org.glassfish.cdi.CDILoggerInfo.ADDING_INJECTION_SERVICES;
 import static org.glassfish.weld.connector.WeldUtils.BDAType.JAR;
 import static org.glassfish.weld.connector.WeldUtils.BDAType.RAR;
@@ -307,8 +308,13 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     de.initCause(t);
                     throw(de);
                 } finally {
-                    invocationManager.postInvoke(inv);
-                    invocationManager.popAppEnvironment();
+                    try {
+                        invocationManager.postInvoke(inv);
+                        invocationManager.popAppEnvironment();
+                        deploymentComplete( deploymentImpl );
+                    } catch (Throwable t) {
+                        logger.log(SEVERE, "Exception dispatching post deploy event", t);
+                    }
 
                     //The TCL is originally the EAR classloader
                     //and is reset during Bean deployment to the
@@ -316,7 +322,6 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     //for Bean classloading to succeed. The TCL is reset
                     //to its old value here.
                     Thread.currentThread().setContextClassLoader(oldTCL);
-                    deploymentComplete( deploymentImpl );
                 }
             }
         } else if ( event.is(org.glassfish.internal.deployment.Deployment.APPLICATION_STOPPED) ||
