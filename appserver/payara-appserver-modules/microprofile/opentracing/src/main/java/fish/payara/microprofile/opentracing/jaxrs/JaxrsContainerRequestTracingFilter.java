@@ -112,6 +112,8 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                 beanManager = CDI.current().getBeanManager();
             } catch (IllegalStateException ise) {
                 // *Should* only get here if CDI hasn't been initialised, indicating that the app isn't using it
+                logger.log(Level.FINE, "Error getting Bean Manager, presumably due to this application not using CDI", 
+                        ise);
             }
 
             // Get the Traced annotation from the target method if CDI is initialised
@@ -170,6 +172,8 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                     beanManager = CDI.current().getBeanManager();
                 } catch (IllegalStateException ise) {
                     // *Should* only get here if CDI hasn't been initialised, indicating that the app isn't using it
+                    logger.log(Level.FINE, "Error getting Bean Manager, presumably due to this application not using CDI", 
+                            ise);
                 }
 
                 // Get the Traced annotation from the target method if CDI is initialised
