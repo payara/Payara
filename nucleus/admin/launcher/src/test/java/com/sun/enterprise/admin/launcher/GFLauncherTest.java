@@ -96,6 +96,8 @@ public class GFLauncherTest {
     /**
      * First Test -- Fake Launch the default domain in the default domain dir
      * Since we have more than 1 domain in there -- it should fail!
+     * @throws GFLauncherException
+     * @throws MiniXmlParserException
      */
     @Test(expected=GFLauncherException.class)
     public void test1() throws GFLauncherException, MiniXmlParserException {
@@ -104,6 +106,8 @@ public class GFLauncherTest {
     
     /**
      * Let's fake-launch domain1  -- which DOES have the jvm logging args
+     * @throws GFLauncherException
+     * @throws MiniXmlParserException
      */
     @Test
     public void test2() throws GFLauncherException, MiniXmlParserException {
@@ -125,6 +129,8 @@ public class GFLauncherTest {
 
     /**
      * Let's fake-launch domain2 -- which does NOT have the jvm logging args
+     * @throws GFLauncherException
+     * @throws MiniXmlParserException
      */
     @Test
     public void test3() throws GFLauncherException, MiniXmlParserException {
@@ -144,6 +150,8 @@ public class GFLauncherTest {
     /**
      * Let's fake-launch a domain that doesn't exist
      * it has an XML error in it.
+     * @throws GFLauncherException
+     * @throws MiniXmlParserException
      */
     @Test(expected=GFLauncherException.class)
     public void test4() throws GFLauncherException, MiniXmlParserException {
@@ -159,6 +167,8 @@ public class GFLauncherTest {
     /**
      * Let's fake-launch baddomain
      * it has an XML error in it.
+     * @throws GFLauncherException
+     * @throws MiniXmlParserException
      */
     @Test(expected=GFLauncherException.class)
     public void test5() throws GFLauncherException, MiniXmlParserException {
@@ -174,6 +184,7 @@ public class GFLauncherTest {
 
     /**
      * Test the logfilename handling -- log-service is in domain.xml like V2
+     * @throws GFLauncherException
      */
     @Test
     public void test6() throws GFLauncherException {
@@ -184,6 +195,7 @@ public class GFLauncherTest {
 
     /**
      * Test the logfilename handling -- no log-service is in domain.xml
+     * @throws GFLauncherException
      */
 
     @Test
