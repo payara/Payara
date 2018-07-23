@@ -322,7 +322,7 @@
         <v3-docs.version>4.1</v3-docs.version>
         <v3-docs-l10n.version>4.0-b07</v3-docs-l10n.version>
         <l10n.version>3.1-b41</l10n.version>
-        <asm.version>6.0</asm.version>
+        <asm.version>6.2</asm.version>
         <ha-api.version>3.1.9</ha-api.version>
         <hazelcast.version>3.10.2</hazelcast.version>
         <smack.version>4.1.9</smack.version>
