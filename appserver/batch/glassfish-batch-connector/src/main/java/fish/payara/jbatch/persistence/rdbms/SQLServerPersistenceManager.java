@@ -201,12 +201,12 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 
         @Override
         public void createTables(DataSource dataSource, BatchRuntimeConfiguration batchRuntimeConfiguration){
-                 this.dataSource = dataSource;   
-                 prefix = batchRuntimeConfiguration.getTablePrefix();
-                 suffix = batchRuntimeConfiguration.getTableSuffix();
-                 schema = batchRuntimeConfiguration.getSchemaName();
-                 tableNames = getSharedTableMap();
-                 schemaTableNames = getSharedSchemaTableMap();
+            this.dataSource = dataSource;   
+            prefix = batchRuntimeConfiguration.getTablePrefix();
+            suffix = batchRuntimeConfiguration.getTableSuffix();
+            schema = batchRuntimeConfiguration.getSchemaName();
+            tableNames = getSharedTableMap();
+            schemaTableNames = getSharedSchemaTableMap();
                  
             try {
                 if (!isSchemaValid()) {
