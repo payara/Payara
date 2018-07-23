@@ -45,6 +45,7 @@
              <sun:title id="propertyContentPage" title="$resource{i18nf.batch.jobListingTitle}" helpText="$resource{i18nf.batch.jobListingTitleHelp}" />
 #include "/common/shared/nameSection.inc"
         <sun:table id="configs" title="#{tableTitle}"
+            visible="#{pageSession.showJobExecutions}"
             deselectMultipleButton="$boolean{false}"
             selectMultipleButton="$boolean{false}"
             paginationControls="$boolean{false}"
@@ -96,10 +97,10 @@
   </sun:tableRowGroup>
 </sun:table>
 
-     <sun:panelGroup id="paginationButtons" >
+    <sun:panelGroup id="paginationButtons" rendered="#{pageSession.showJobExecutions}" >
          <sun:button id="previousJobsButton"  
                          disabled="#{pageSession.disablePreviousButton}"
-                         text="<< Previous" 
+                         text="$resource{i18nf.batch.pagination.perviousButton}" 
                          onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command 
                     py.subtractFromOffSetValue(offset="#{pageSession.offsetValue}" result="offsetNewValue");
@@ -119,7 +120,7 @@
          </sun:button>
      <sun:button id="nextJobsButton"  
                      disabled="#{pageSession.disableNextButton}"
-                     text="Next >>"
+                     text="$resource{i18nf.batch.pagination.nextButton}"
                      onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command        
                     py.addToOffSetValue(offset="#{pageSession.offsetValue}" result="offsetNewValue");
@@ -142,7 +143,7 @@
         </sun:property>
 
      <sun:button id="goButton"  
-                         text="Go" 
+                         text="$resource{i18nf.batch.pagination.goButton}" 
                          onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command 
                      if(#{pageSession.pageNumber}>#{pageSession.pageCount}){
@@ -163,10 +164,17 @@
                     }      
                 />
      </sun:button>
-     <sun:property id="totalNumberOfPages" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="of #{pageSession.pageCount}">
-     </sun:property>
-         
-     </sun:panelGroup>
+      <sun:property id="totalNumberOfPages" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="of #{pageSession.pageCount}">
+      </sun:property>         
+    </sun:panelGroup>
+
+    <sun:propertySheet id="infoSheet">
+        <sun:propertySheetSection id="infoSheetSection">
+        <sun:property id="noJobsProp" rendered="#{pageSession.displayNoJobsMessage}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" >
+            <sun:staticText id="noJobs"  text="$resource{i18nf.batch.pagination.noJobsToDisplayMessage}" />
+        </sun:property>
+        </sun:propertySheetSection>
+    </sun:propertySheet>
     <sun:hidden id="helpKey" value="$resource{help_full.batchJobs}" />
   </sun:form>
  </define>

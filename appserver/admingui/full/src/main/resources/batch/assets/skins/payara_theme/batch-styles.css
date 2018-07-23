@@ -63,7 +63,7 @@ span[id$=":paginationButtons"] {
     padding: 10px;
     display:block;
     width : 350px;
-    margin: 0 0 20px 25%; 
+    margin: 0 0 20px 23%; 
 }
 
 input[id$="nextJobsButton"] {

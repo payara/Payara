@@ -62,9 +62,17 @@
         mapPut(map="#{requestScope.attrsMap}"  key="limit" value="$int{20}");
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-jobs" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.resp}");
         setAttribute(key="listOfRows", value="#{requestScope.resp.data.extraProperties.listBatchJobs}");
+        setPageSessionAttribute(key="size" value="#{requestScope.listOfRows.size()}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.listJobsCount}");
         py.getPageCount(jobCount="#{pageSession.valueMap['allJobsCount']}" result="#{pageSession.pageCount}");
-        
+        setPageSessionAttribute(key="showJobExecutions" value="#{true}");
+        setPageSessionAttribute(key="displayNoJobsMessage" value="#{false}");
+
+        if (#{pageSession.size}<$int{1}){
+            setPageSessionAttribute(key="showJobExecutions" value="#{false}");
+            setPageSessionAttribute(key="displayNoJobsMessage" value="#{true}");
+        }
+
         if (#{pageSession.pageNumber}<$int{1}){
             setPageSessionAttribute(key="pageNumber" value="$int{1}");
         }
