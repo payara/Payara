@@ -74,6 +74,7 @@ public class CookiePersistentManager extends StandardManager {
 
     @Override
     public void add(Session session) {
+        sessions.put(session.getIdInternal(), session);
         synchronized (sessionIds) {
             if (!sessionIds.add(session.getIdInternal())) {
                 throw new IllegalArgumentException("Session with id " + session.getIdInternal() +
