@@ -42,6 +42,7 @@
  */
 package com.sun.enterprise.v3.admin;
 
+import com.sun.enterprise.util.OS;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -104,7 +105,7 @@ public class GenerateBashAutoCompletionCommand implements AdminCommand {
             + "\n"
             + "}\n";
     private static final String COMPLETE_CALL = "complete -F _asadmin asadmin";
-    private static final String ADD_PATH = "PATH=$PATH:$(pwd)";
+    private static final String ADD_PATH = "PATH=$PATH:";
     
     private static final String DEFAULT_FILE = File.separator + "bin" + File.separator + "bash_autocomplete";
 
@@ -182,8 +183,9 @@ public class GenerateBashAutoCompletionCommand implements AdminCommand {
             //write function to tell bash what function the autocompletion is for
             writer.write(COMPLETE_CALL);
             writer.newLine();
-            //Add bin directory of Payara to the path
+            //Add directory of payara5/glassfish/bin to the path
             writer.write(ADD_PATH);
+            writer.write(serverContext.getInstallRoot().getPath() + File.separator + "bin");
             //flush the buffer
             writer.flush();
             return true;
