@@ -51,7 +51,7 @@ import org.glassfish.admingui.common.util.GuiUtil;
  */
 public class BatchHandlers {
 
-    private static final int DEFAULT_OFFSET_VALUE = 20;
+    private static final int DEFAULT_OFFSET_INCREMENT = 20;
 
     @Handler(id = "py.addToOffSetValue",
             input = {
@@ -64,7 +64,7 @@ public class BatchHandlers {
         int result = 0;
 
         try {
-            result = Integer.parseInt(offsetValue) + DEFAULT_OFFSET_VALUE;
+            result = Integer.parseInt(offsetValue) + DEFAULT_OFFSET_INCREMENT;
         } catch (NumberFormatException ex) {
             GuiUtil.getLogger().info("Value isn't a valid integer " + ex);
         }
@@ -84,8 +84,8 @@ public class BatchHandlers {
 
         try {
             result = Integer.parseInt(offsetValue);
-            if (result >= DEFAULT_OFFSET_VALUE) {
-                result = result - DEFAULT_OFFSET_VALUE;
+            if (result >= DEFAULT_OFFSET_INCREMENT) {
+                result = result - DEFAULT_OFFSET_INCREMENT;
             } else {
                 result = 0;
             }
@@ -108,7 +108,7 @@ public class BatchHandlers {
 
         try {
             int offSet = Integer.parseInt(offsetValue);
-            result = (offSet + DEFAULT_OFFSET_VALUE) / DEFAULT_OFFSET_VALUE;
+            result = (offSet + DEFAULT_OFFSET_INCREMENT) / DEFAULT_OFFSET_INCREMENT;
         } catch (NumberFormatException ex) {
             GuiUtil.getLogger().info("Value isn't a valid integer " + ex);
         }
@@ -129,7 +129,7 @@ public class BatchHandlers {
         try {
             int pageNumber = Integer.parseInt(pageNumberValue);
             if (pageNumber > 0) {
-                result = (pageNumber * DEFAULT_OFFSET_VALUE) - DEFAULT_OFFSET_VALUE;
+                result = (pageNumber * DEFAULT_OFFSET_INCREMENT) - DEFAULT_OFFSET_INCREMENT;
             }
         } catch (NumberFormatException ex) {
             GuiUtil.getLogger().info("Value isn't a valid integer " + ex);
@@ -151,7 +151,7 @@ public class BatchHandlers {
         try {
             int jobCount = Integer.parseInt(jobCountValue);
             if (jobCount > 0) {
-                result = (jobCount + DEFAULT_OFFSET_VALUE - 1) / DEFAULT_OFFSET_VALUE;
+                result = (jobCount + DEFAULT_OFFSET_INCREMENT - 1) / DEFAULT_OFFSET_INCREMENT;
             }
         } catch (NumberFormatException ex) {
             GuiUtil.getLogger().info("Value isn't a valid integer " + ex);
