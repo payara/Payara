@@ -1,24 +1,53 @@
 /*
- * Copyright (c) 2014, 2015, 2016 Payara Foundation. All rights reserved.
- 
- * The contents of this file are subject to the terms of the Common Development
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2014-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
- 
+ *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
  */
 
 package fish.payara.jbatch.persistence.rdbms;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
-import com.ibm.jbatch.container.exception.PersistenceException;
-import com.ibm.jbatch.container.jobinstance.JobInstanceImpl;
 import com.ibm.jbatch.spi.services.IBatchConfig;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.CHECKPOINT_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.EXECUTION_INSTANCE_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.JOB_INSTANCE_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.JOB_STATUS_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.STEP_EXECUTION_INSTANCE_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.STEP_STATUS_TABLE_KEY;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -31,12 +60,13 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.runtime.JobInstance;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
+import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY;
 
 /**
  * 
@@ -98,11 +128,12 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 
 		this.batchConfig = batchConfig;
 
-		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
-
-		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
-		
-
+                schema = batchConfig.getDatabaseConfigurationBean().getSchema();
+                jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
+                prefix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_PREFIX_PROPERTY, "");
+                suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
+                
+ 
 		if (jndiName == null || jndiName.equals("")) {
 			throw new BatchContainerServiceException(
 					"JNDI name is not defined.");
@@ -122,8 +153,8 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 		// Load the table names and queries shared between different database
 		// types
 
-		tableNames = getSharedTableMap(batchConfig);
-                oracleObjectNames = getOracleObjectsMap(batchConfig);
+		tableNames = getSharedTableMap();
+                oracleObjectNames = getOracleObjectsMap();
 
 		try {
 			queryStrings = getSharedQueryMap(batchConfig);
@@ -136,11 +167,11 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 
 
 		try {
-			if (!isOracleSchemaValid()) {
+			if (!isSchemaValid()) {
 				setDefaultSchema();
 
 			}
-			checkOracleTables();
+                    checkOracleTables();
 
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
@@ -155,7 +186,8 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	 * @return
 	 * @throws SQLException
 	 */
-	private boolean isOracleSchemaValid() throws SQLException {
+        @Override
+	protected boolean isSchemaValid() throws SQLException {
 
 		logger.entering(CLASSNAME, "isOracleSchemaValid");
 		boolean result = false;
@@ -193,11 +225,8 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	 * @throws SQLException
 	 */
 	private void checkOracleTables() throws SQLException {
-		// put the create table strings into a hashmap
-		createOracleTableStrings = setOracleTableMap(batchConfig);
-
-		// put the create index strings into a hashmap
-		createOracleIndexStrings = setOracleIndexMap(batchConfig);
+		 setOracleTableMap();
+                 setOracleIndexMap();
 		logger.entering(CLASSNAME, "checkOracleTables");
 
 		createOracleTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
@@ -250,6 +279,25 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 
 		logger.exiting(CLASSNAME, "checkOracleTables");
 	}
+        
+        @Override
+        public void createTables(DataSource dataSource, BatchRuntimeConfiguration batchRuntimeConfiguration){
+            this.dataSource = dataSource;
+            prefix = batchRuntimeConfiguration.getTablePrefix();
+            suffix = batchRuntimeConfiguration.getTableSuffix();
+            schema = batchRuntimeConfiguration.getSchemaName();
+            tableNames = getSharedTableMap();
+            oracleObjectNames = getOracleObjectsMap();
+                  
+            try {
+                if (!isSchemaValid()) {
+                    setDefaultSchema();
+                }
+                checkOracleTables();
+            } catch (SQLException ex) {
+                logger.severe(ex.getLocalizedMessage());
+            }
+         }
 
 	/**
 	 * Create the jbatch tables if they do not exist.
@@ -444,11 +492,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	 * strings into a hashmap
 	 **/
 
-	protected Map<String, String> setOracleTableMap(IBatchConfig batchConfig) {
-                String prefix = batchConfig.getConfigProperties().getProperty(
-				BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY, "");
-		String suffix = batchConfig.getConfigProperties().getProperty(
-				BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY, "");
+	private Map<String, String> setOracleTableMap() {
 		createOracleTableStrings = new HashMap<>();
 		createOracleTableStrings.put(CREATE_TABLE_CHECKPOINTDATA, "CREATE TABLE "
 				+ tableNames.get(CHECKPOINT_TABLE_KEY)
@@ -540,7 +584,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	 * Method invoked to insert the Oracle create index strings into a hashmap
 	 **/
 
-	protected Map<String, String> setOracleIndexMap(IBatchConfig batchConfig) {
+	private Map<String, String> setOracleIndexMap() {
 		createOracleIndexStrings = new HashMap<>();
 		createOracleIndexStrings.put(
 				CREATE_CHECKPOINTDATA_INDEX,
@@ -549,11 +593,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 		return createOracleIndexStrings;
 	}
 	
-        protected Map<String, String> getOracleObjectsMap(IBatchConfig batchConfig) {
-		String prefix = batchConfig.getConfigProperties().getProperty(
-				BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY, "");
-		String suffix = batchConfig.getConfigProperties().getProperty(
-				BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY, "");
+        protected Map<String, String> getOracleObjectsMap() {
 		Map<String, String> result = new HashMap<String, String>(7);
                 
 		result.put(JOBINSTANCEDATA_SEQ_KEY, prefix + JOBINSTANCEDATA_SEQ_KEY + suffix);

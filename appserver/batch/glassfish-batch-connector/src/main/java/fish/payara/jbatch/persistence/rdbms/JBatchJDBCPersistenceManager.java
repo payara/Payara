@@ -96,9 +96,10 @@ import com.ibm.jbatch.container.status.JobStatus;
 import com.ibm.jbatch.container.status.StepStatus;
 import com.ibm.jbatch.container.util.TCCLObjectInputStream;
 import com.ibm.jbatch.spi.services.IBatchConfig;
-import fish.payara.notification.requesttracing.RequestTraceSpanLog;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.notification.requesttracing.RequestTraceSpanLog;
+import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
 
 /**
  * 
@@ -118,6 +119,8 @@ public class JBatchJDBCPersistenceManager implements
 
 	protected DataSource dataSource = null;
 	protected String jndiName = null;
+        protected String prefix = null;
+        protected String suffix = null;
 
 	protected String schema = "";
 
@@ -147,6 +150,8 @@ public class JBatchJDBCPersistenceManager implements
 
         schema = batchConfig.getDatabaseConfigurationBean().getSchema();
         jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
+        prefix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_PREFIX_PROPERTY, "");
+	suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
         
         logger.config("JNDI name = " + jndiName);
 
@@ -164,7 +169,7 @@ public class JBatchJDBCPersistenceManager implements
         }
 
         // Load the table names and queries shared between different database types
-        tableNames = getSharedTableMap(batchConfig);
+        tableNames = getSharedTableMap();
 
         try {
             queryStrings = getSharedQueryMap(batchConfig);
@@ -173,10 +178,10 @@ public class JBatchJDBCPersistenceManager implements
         }
 
         try {
-            if (!isDerbySchemaValid()) {
+            if (!isSchemaValid()) {
                 setDefaultSchema();
             }
-            checkDerbyTables();
+            checkTables();
 
         } catch (SQLException e) {
             logger.severe(e.getLocalizedMessage());
@@ -294,7 +299,7 @@ public class JBatchJDBCPersistenceManager implements
 	 * @return true if the schema exists, false otherwise.
 	 * @throws SQLException
 	 */
-	protected boolean isDerbySchemaValid() throws SQLException {
+	protected boolean isSchemaValid() throws SQLException {
 		logger.entering(CLASSNAME, "isDerbySchemaValid");
 		
 		try (Connection connection = getConnectionToDefaultSchema()) {
@@ -317,9 +322,12 @@ public class JBatchJDBCPersistenceManager implements
 
 	/**
 	 * Check if the derby jbatch tables exist, if not create them
+         * 
+         * @param tableNames
+         * @throws java.sql.SQLException
 	 **/
-	private void checkDerbyTables() throws SQLException {
-		setCreateDerbyStringsMap(batchConfig);
+	protected void checkTables() throws SQLException {
+		setCreateDerbyStringsMap(tableNames);
 		createDerbyTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
 				createDerbyStrings.get(DERBY_CREATE_TABLE_CHECKPOINTDATA));
 
@@ -339,6 +347,23 @@ public class JBatchJDBCPersistenceManager implements
 
 	}
 
+        public void createTables(DataSource dataSource, BatchRuntimeConfiguration batchRuntimeConfiguration){
+            this.dataSource = dataSource;
+            prefix = batchRuntimeConfiguration.getTablePrefix();
+            suffix = batchRuntimeConfiguration.getTableSuffix();
+            schema = batchRuntimeConfiguration.getSchemaName();
+            tableNames = getSharedTableMap();
+           
+            try {
+                if (!isSchemaValid()) {
+                    setDefaultSchema();
+                }
+                checkTables();
+            } catch (SQLException ex) {
+                logger.severe(ex.getLocalizedMessage());
+            }
+         }
+     
 	/**
 	 * Create the Derby tables
 	 **/
@@ -352,8 +377,8 @@ public class JBatchJDBCPersistenceManager implements
     				try (PreparedStatement statement = connection.prepareStatement(createTableStatement)) {
     				    statement.executeUpdate();
     				}
-    			}
-			}
+    			    }
+		        }
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
 			throw e;
@@ -465,7 +490,7 @@ public class JBatchJDBCPersistenceManager implements
 		logger.finest("Entering " + CLASSNAME + ".setSchemaOnConnection()");
 
 		if (!(connection.getMetaData().getDatabaseProductName().contains("Oracle"))) {
-			try (PreparedStatement preparedStatement = connection.prepareStatement(queryStrings.get(Q_SET_SCHEMA))) {
+			try (PreparedStatement preparedStatement = connection.prepareStatement("SET SCHEMA ?")) {
 			    preparedStatement.setString(1, schema);
 	            preparedStatement.executeUpdate();
 			}
@@ -2478,11 +2503,8 @@ public class JBatchJDBCPersistenceManager implements
 	 * the prefix and suffix to the table names
 	 **/
 
-	protected Map<String, String> getSharedTableMap(IBatchConfig batchConfig) {
-		String prefix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_PREFIX_PROPERTY, "");
-		String suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
-		
-		Map<String, String> result = new HashMap<String, String>(6);
+	protected Map<String, String> getSharedTableMap() {
+		Map<String, String> result = new HashMap<>(6);
 		result.put(JOB_INSTANCE_TABLE_KEY, prefix + "JOBINSTANCEDATA" + suffix);
 		result.put(EXECUTION_INSTANCE_TABLE_KEY, prefix	+ "EXECUTIONINSTANCEDATA" + suffix);
 		result.put(STEP_EXECUTION_INSTANCE_TABLE_KEY, prefix + "STEPEXECUTIONINSTANCEDATA" + suffix);
@@ -2744,8 +2766,7 @@ public class JBatchJDBCPersistenceManager implements
 	 * Method invoked to insert the Derby create table strings into a hashmap
 	 **/
 
-	protected Map<String, String> setCreateDerbyStringsMap(
-			IBatchConfig batchConfig) {
+	private Map<String, String> setCreateDerbyStringsMap(Map<String, String> tableNames) {
 		createDerbyStrings = new HashMap<>();
 		createDerbyStrings.put(DERBY_CREATE_TABLE_CHECKPOINTDATA,
 				"CREATE TABLE " + tableNames.get(CHECKPOINT_TABLE_KEY)

@@ -37,17 +37,19 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-
+    
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 -->
 
 #include "/common/shared/alertMsg_1.inc"
              <sun:title id="propertyContentPage" title="$resource{i18nf.batch.jobListingTitle}" helpText="$resource{i18nf.batch.jobListingTitleHelp}" />
 #include "/common/shared/nameSection.inc"
         <sun:table id="configs" title="#{tableTitle}"
+            visible="#{pageSession.showJobExecutions}"
             deselectMultipleButton="$boolean{false}"
             selectMultipleButton="$boolean{false}"
-            paginationControls="$boolean{true}"
-            paginateButton="$boolean{true}">
+            paginationControls="$boolean{false}"
+            paginateButton="$boolean{false}">
             <!afterCreate
                 getClientId(component="$this{component}" clientId=>$page{tableId});
             />
@@ -95,7 +97,85 @@
   </sun:tableRowGroup>
 </sun:table>
 
-<sun:hidden id="helpKey" value="$resource{help_full.batchJobs}" />
-            </sun:form>
-</define>
+    <sun:panelGroup id="paginationButtons" rendered="#{pageSession.showJobExecutions}" >
+         <sun:button id="previousJobsButton"  
+                         disabled="#{pageSession.disablePreviousButton}"
+                         text="$resource{i18nf.batch.pagination.perviousButton}" 
+                         onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command 
+                    py.subtractFromOffSetValue(offset="#{pageSession.offsetValue}" result="offsetNewValue");
+                    if(#{pageSession.isCluster}=true){
+                        gf.redirect(page="#{request.contextPath}/full/batch/batchJobsCluster.jsf?target=#{pageSession.encodedTarget}&offsetValue=#{requestScope.offsetNewValue}&isCluster=true&tabSetName=#{pageSession.encodedTabSetName}");
+                    }
+
+                    if(#{pageSession.isCluster}=false){
+                        if(#{pageSession.target}=server){
+                            gf.redirect(page="#{request.contextPath}/full/batch/batchJobsServer.jsf?target=server&offsetValue=#{requestScope.offsetNewValue}&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");
+                        }
+                        if("!(#{pageSession.target}=server)"){
+                             gf.redirect(page="#{request.contextPath}/full/batch/batchJobsStandalone.jsf?target=#{pageSession.encodedTarget}&offsetValue=#{requestScope.offsetNewValue}&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");
+                        }
+                    }                  
+                />
+         </sun:button>
+     <sun:button id="nextJobsButton"  
+                     disabled="#{pageSession.disableNextButton}"
+                     text="$resource{i18nf.batch.pagination.nextButton}"
+                     onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command        
+                    py.addToOffSetValue(offset="#{pageSession.offsetValue}" result="offsetNewValue");
+                    if(#{pageSession.isCluster}=true){
+                        gf.redirect(page="#{request.contextPath}/full/batch/batchJobsCluster.jsf?target=#{pageSession.encodedTarget}&offsetValue=#{requestScope.offsetNewValue}&isCluster=true&tabSetName=#{pageSession.encodedTabSetName}");
+                    }
+
+                    if(#{pageSession.isCluster}=false){
+                        if(#{pageSession.target}=server){
+                            gf.redirect(page="#{request.contextPath}/full/batch/batchJobsServer.jsf?target=server&offsetValue=#{requestScope.offsetNewValue}&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");
+                        }
+                        if("!(#{pageSession.target}=server)"){
+                             gf.redirect(page="#{request.contextPath}/full/batch/batchJobsStandalone.jsf?target=#{pageSession.encodedTarget}&offsetValue=#{requestScope.offsetNewValue}&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");
+                        }
+                    }
+                />
+        </sun:button>
+            <sun:property id="pageNumberProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="Page">
+            <sun:textField id="pageNumber" columns="$int{4}" maxLength="5" text="#{pageSession.pageNumber}" /> 
+        </sun:property>
+
+     <sun:button id="goButton"  
+                         text="$resource{i18nf.batch.pagination.goButton}" 
+                         onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command 
+                     if(#{pageSession.pageNumber}>#{pageSession.pageCount}){
+                               setPageSessionAttribute(key="pageNumber" value="#{pageSession.pageCount}");
+                      }
+                    py.getSpecifiedPageNumber(pageNumber="#{pageSession.pageNumber}" result="offsetNewValue");
+                    if(#{pageSession.isCluster}=true){
+                        gf.redirect(page="#{request.contextPath}/full/batch/batchJobsCluster.jsf?target=#{pageSession.encodedTarget}&offsetValue=#{requestScope.offsetNewValue}&isCluster=true&tabSetName=#{pageSession.encodedTabSetName}");
+                    }
+
+                    if(#{pageSession.isCluster}=false){
+                        if(#{pageSession.target}=server){
+                            gf.redirect(page="#{request.contextPath}/full/batch/batchJobsServer.jsf?target=server&offsetValue=#{requestScope.offsetNewValue}&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");
+                        }
+                        if("!(#{pageSession.target}=server)"){
+                             gf.redirect(page="#{request.contextPath}/full/batch/batchJobsStandalone.jsf?target=#{pageSession.encodedTarget}&offsetValue=#{requestScope.offsetNewValue}&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");
+                        }
+                    }      
+                />
+     </sun:button>
+      <sun:property id="totalNumberOfPages" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="of #{pageSession.pageCount}">
+      </sun:property>         
+    </sun:panelGroup>
+
+    <sun:propertySheet id="infoSheet">
+        <sun:propertySheetSection id="infoSheetSection">
+        <sun:property id="noJobsProp" rendered="#{pageSession.displayNoJobsMessage}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" >
+            <sun:staticText id="noJobs"  text="$resource{i18nf.batch.pagination.noJobsToDisplayMessage}" />
+        </sun:property>
+        </sun:propertySheetSection>
+    </sun:propertySheet>
+    <sun:hidden id="helpKey" value="$resource{help_full.batchJobs}" />
+  </sun:form>
+ </define>
 </composition>
