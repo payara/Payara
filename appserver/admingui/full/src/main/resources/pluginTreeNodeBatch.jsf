@@ -19,7 +19,7 @@
 
 <sun:treeNode  id="batch"
     text="$resource{i18nf.tree.batch}"
-    url="/full/batch.jsf?config=${configName}"
+    url="/full/batch.jsf?configName=${configName}"
     imageURL="/resource/images/batch.png"
     >
     <!beforeCreate
