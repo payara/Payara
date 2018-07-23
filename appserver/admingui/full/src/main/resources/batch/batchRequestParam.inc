@@ -51,7 +51,7 @@ urlencode(value="#{pageSession.tabSetName}" encoding="UTF-8" result="#{pageSessi
 if(#{pageSession.isCluster}=true){
     setPageSessionAttribute(key="clusterName", value="#{pageSession.target}");
     setPageSessionAttribute(key="encodedClusterName", value="#{pageSession.encodedTarget}");
-    setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsCluster.jsf?target=#{pageSession.encodedTarget}&isCluster=true&tabSetName=#{pageSession.encodedTabSetName}");
+    setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsCluster.jsf?target=#{pageSession.encodedTarget}&offsetValue=#{pageSession.offsetValue}&isCluster=true&tabSetName=#{pageSession.encodedTabSetName}");
 }
 if(#{pageSession.isCluster}=false){
     setPageSessionAttribute(key="isCluster", value="false");
@@ -61,7 +61,7 @@ if(#{pageSession.isCluster}=false){
         setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsServer.jsf?target=server&offsetValue=#{pageSession.offsetValue}&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");
     }
     if("!(#{pageSession.target}=server)"){
-        setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsStandalone.jsf?target=#{pageSession.encodedTarget}&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");
+        setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsStandalone.jsf?target=#{pageSession.encodedTarget}&offsetValue=#{pageSession.offsetValue}&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");
     }
 }
 

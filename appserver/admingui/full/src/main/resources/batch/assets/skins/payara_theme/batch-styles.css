@@ -57,7 +57,7 @@ input:hover[id$="goButton"]{
     background-color: #cbced0 !important;
 }
 
-span[id$=":pagnationButtons"] {
+span[id$=":paginationButtons"] {
     background-color: #eeeeee;
     border-radius: 5px;
     padding: 10px;
