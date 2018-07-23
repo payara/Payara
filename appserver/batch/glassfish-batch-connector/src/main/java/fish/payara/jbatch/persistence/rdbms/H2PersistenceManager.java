@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,6 +60,8 @@ import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.spi.services.IBatchConfig;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY;
 
 /**
  * H2 Persistence Manager
@@ -84,6 +86,8 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
 
         schema = batchConfig.getDatabaseConfigurationBean().getSchema();
         jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
+        prefix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_PREFIX_PROPERTY, "");
+        suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
 
         logger.log(Level.CONFIG, "JNDI name = {0}", jndiName);
 
@@ -99,7 +103,7 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
         }
 
         // Load the table names and queries shared between different database types
-        tableNames = getSharedTableMap(batchConfig);
+        tableNames = getSharedTableMap();
 
         try {
             queryStrings = getSharedQueryMap(batchConfig);
@@ -108,10 +112,10 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
         }
 
         try {
-            if (!isH2SchemaValid()) {
+            if (!isSchemaValid()) {
                 setDefaultSchema();
             }
-            checkH2Tables();
+            checkTables();
 
         } catch (SQLException e) {
             logger.severe(e.getLocalizedMessage());
@@ -151,7 +155,8 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
      * @return true if the schema exists, false otherwise.
      * @throws SQLException
      */
-    protected boolean isH2SchemaValid() throws SQLException {
+    @Override
+    protected boolean isSchemaValid() throws SQLException {
         logger.entering(CLASSNAME, "isH2SchemaValid");
 
         try (Connection connection = getConnectionToDefaultSchema()) {
@@ -176,8 +181,9 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
      * Check if the h2 jbatch tables exist, if not create them
      *
      */
-    private void checkH2Tables() throws SQLException {
-        setCreateH2StringsMap(batchConfig);
+    @Override
+    protected void checkTables() throws SQLException {
+        setCreateH2StringsMap(tableNames);
         createH2TableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
                 createH2Strings.get(H2_CREATE_TABLE_CHECKPOINTDATA));
 
@@ -237,7 +243,7 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
     @Override
     protected void setSchemaOnConnection(Connection connection) throws SQLException {
         logger.log(Level.FINEST, "Entering {0}.setSchemaOnConnection()", CLASSNAME);
-        try (PreparedStatement preparedStatement = connection.prepareStatement(queryStrings.get(Q_SET_SCHEMA) + schema)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SET SCHEMA " + schema)) {
             preparedStatement.executeUpdate();
         }
         logger.log(Level.FINEST, "Exiting {0}.setSchemaOnConnection()", CLASSNAME);
@@ -257,7 +263,7 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
      * @param batchConfig
      * @return 
      */
-    protected Map<String, String> setCreateH2StringsMap(IBatchConfig batchConfig) {
+    private Map<String, String> setCreateH2StringsMap(Map<String, String> tableNames) {
         createH2Strings = new HashMap<>();
         createH2Strings.put(H2_CREATE_TABLE_CHECKPOINTDATA,
                 "CREATE TABLE " + tableNames.get(CHECKPOINT_TABLE_KEY)

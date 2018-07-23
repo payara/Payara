@@ -1,16 +1,41 @@
 /*
- * Copyright (c) 2014, 2016 Payara Foundation. All rights reserved.
- 
- * The contents of this file are subject to the terms of the Common Development
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2014-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
- 
+ *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
  */
 
 package fish.payara.jbatch.persistence.rdbms;
@@ -42,6 +67,8 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY;
 
 /**
  * PostgreSQL Persistence Manager
@@ -75,7 +102,7 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
     @Override
     protected void setSchemaOnConnection(Connection connection) throws SQLException {
             PreparedStatement ps = null;
-            ps = connection.prepareStatement(queryStrings.get(Q_SET_SCHEMA));
+            ps = connection.prepareStatement("set search_path to " + schema);
             ps.executeUpdate();
             ps.close();
     }
@@ -89,8 +116,9 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 		this.batchConfig = batchConfig;
 
 		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
-
 		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
+                prefix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_PREFIX_PROPERTY, "");
+	        suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
 		
 		try {
 			Context ctx = new InitialContext();
@@ -106,7 +134,7 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 		// Load the table names and queries shared between different database
 		// types
 
-		tableNames = getSharedTableMap(batchConfig);
+		tableNames = getSharedTableMap();
 
 		try {
 			queryStrings = getSharedQueryMap(batchConfig);
@@ -114,10 +142,7 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 			// TODO Auto-generated catch block
 			throw new BatchContainerServiceException(e1);
 		}
-		// put the create table strings into a hashmap
-		// createTableStrings = setCreateTableMap(batchConfig);
 
-		createPostgresStrings = setCreatePostgresStringsMap(batchConfig);
 
 		logger.config("JNDI name = " + jndiName);
 
@@ -126,13 +151,11 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 					"JNDI name is not defined.");
 		}
 
-
-
 		try {
-			if (!isPostgresSchemaValid()) {
+			if (!isSchemaValid()) {
 				setDefaultSchema();
 			}
-			checkPostgresTables();
+			checkTables();
 
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
@@ -148,7 +171,8 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 	 * @return
 	 * @throws SQLException
 	 */
-	private boolean isPostgresSchemaValid() throws SQLException {
+        @Override
+	protected boolean isSchemaValid() throws SQLException {
 
 		boolean result = false;
 		Connection conn = null;
@@ -187,9 +211,10 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 	 * 
 	 * @throws SQLException
 	 */
-	private void checkPostgresTables() throws SQLException {
+        @Override
+	protected void checkTables () throws SQLException {
 		logger.entering(CLASSNAME, "checkPostgresTables Postgres");
-
+                setCreatePostgresStringsMap(tableNames);
 		createPostgresTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
 				createPostgresStrings.get(POSTGRES_CREATE_TABLE_CHECKPOINTDATA));
 
@@ -270,8 +295,7 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 	 * Method invoked to insert the Postgres create table strings into a hashmap
 	 **/
 
-	protected Map<String, String> setCreatePostgresStringsMap(
-			IBatchConfig batchConfig) {
+	private Map<String, String> setCreatePostgresStringsMap(Map<String, String> tableNames) {
 		createPostgresStrings = new HashMap<>();
 		createPostgresStrings.put(POSTGRES_CREATE_TABLE_CHECKPOINTDATA,
 				"CREATE TABLE " + tableNames.get(CHECKPOINT_TABLE_KEY)
