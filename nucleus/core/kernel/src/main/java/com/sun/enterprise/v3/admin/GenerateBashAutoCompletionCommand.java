@@ -42,8 +42,6 @@
  */
 package com.sun.enterprise.v3.admin;
 
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.tools.javac.resources.javac;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -51,12 +49,9 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AccessRequired;
@@ -65,6 +60,7 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.CommandModel;
 import org.glassfish.common.util.admin.CommandModelImpl;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
@@ -75,6 +71,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author jonathan
  */
 @Service(name = "generate-bash-autocomplete")
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @AccessRequired(resource = "domain", action = "read")
 public class GenerateBashAutoCompletionCommand implements AdminCommand {
@@ -106,9 +103,10 @@ public class GenerateBashAutoCompletionCommand implements AdminCommand {
             + "    COMPREPLY=( $(compgen -W \"${__asadmin_commands}\" -- ${cur}))\n"
             + "\n"
             + "}\n";
-    private static final String COMPLETE_CALL = "complete -F _asadmin";
+    private static final String COMPLETE_CALL = "complete -F _asadmin asadmin";
+    private static final String ADD_PATH = "PATH=$PATH:$(pwd)";
+    
     private static final String DEFAULT_FILE = File.separator + "bin" + File.separator + "bash_autocomplete";
-    private static final String ASADMIN_FILE = File.separator + "bin" + File.separator + "asadmin";
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -133,7 +131,13 @@ public class GenerateBashAutoCompletionCommand implements AdminCommand {
                 //    System.out.print("\t" + param);
             }
         }
-        
+        if (writeCommands(commandNames)){
+            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+            report.setMessage("Written bash autocomplete file to " + filePath);
+        } else {
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage("Unable to write to file at " + filePath + ", see server.log for details");
+        }
         
     }
 
@@ -141,14 +145,14 @@ public class GenerateBashAutoCompletionCommand implements AdminCommand {
 
         try {
             if (filePath == null) {
-                filePath = DEFAULT_FILE;
+                filePath = serverContext.getInstallRoot().getCanonicalPath() + DEFAULT_FILE;
             }
             file = new File(filePath);
             if ((file.exists() && file.isFile() && force) || file.createNewFile()) {
                 return true;
             }
         } catch (IOException ex) {
-            Logger.getLogger(GenerateBashCompletionCommand.class.getName()).log(Level.WARNING, "Unable to create file at " + filePath, ex);
+            Logger.getLogger(GenerateBashAutoCompletionCommand.class.getName()).log(Level.WARNING, "Unable to create file at {0}:{1}", new Object[]{filePath, ex.getMessage()});
         }
         return false;
     }
@@ -171,18 +175,20 @@ public class GenerateBashAutoCompletionCommand implements AdminCommand {
                 writer.newLine();
             }
             writer.write("\"");
+            writer.newLine();
             //Write function to generate the commands
             writer.write(BASH_FUNCTION);
             writer.newLine();
             //write function to tell bash what function the autocompletion is for
             writer.write(COMPLETE_CALL);
-            writer.write(serverContext.getInstallRoot().getCanonicalPath());
-            writer.write(ASADMIN_FILE);
+            writer.newLine();
+            //Add bin directory of Payara to the path
+            writer.write(ADD_PATH);
             //flush the buffer
             writer.flush();
             return true;
         } catch (IOException ex) {
-            Logger.getLogger(GenerateBashCompletionCommand.class.getName()).log(Level.WARNING, "Unable to write to file at " + filePath, ex);
+            Logger.getLogger(GenerateBashAutoCompletionCommand.class.getName()).log(Level.WARNING, "Unable to write to file at " + filePath, ex);
         }
         return false;
 
