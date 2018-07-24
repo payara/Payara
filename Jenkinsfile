@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage("Analyse") {
             agent {
-                label "sonarqube"
+                label "sonar"
             }
             tools {
                 jdk "zulu-8"
