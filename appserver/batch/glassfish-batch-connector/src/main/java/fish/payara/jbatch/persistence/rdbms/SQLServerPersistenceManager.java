@@ -116,8 +116,6 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 		} catch (SQLException e1) {
 			throw new BatchContainerServiceException(e1);
 		}
-		
-		//SQLServerCreateStrings = setCreateSQLServerStringsMap(batchConfig);
 
 		LOGGER.log(Level.CONFIG, "JNDI name = {0}", jndiName);
 

@@ -165,8 +165,8 @@ public class ListBatchJobs
                     // Get all aviable Job Names
                     List<String> jobNames = executeQuery(queryToGetUniqueJobNames, "name");
 
-                    for (String jobName : jobNames) {
-                        jobsInstanceCount.put(jobName, getJobInstanceCount(jobName));
+                    for (String job_Name : jobNames) {
+                        jobsInstanceCount.put(job_Name, getJobInstanceCount(job_Name));
                     }
                 }
                 
@@ -184,8 +184,8 @@ public class ListBatchJobs
                     // Get all aviable Job Names
                     List<String> jobNames = executeQuery(queryToGetUniqueJobNames, "name");
 
-                    for (String jobName : jobNames) {
-                        jobsInstanceCount.put(jobName, getJobInstanceCount(jobName));
+                    for (String job_Name : jobNames) {
+                        jobsInstanceCount.put(job_Name, getJobInstanceCount(job_Name));
                     }
                 }
 
