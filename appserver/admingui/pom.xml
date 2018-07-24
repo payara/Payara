@@ -154,6 +154,7 @@
         <module>newrelic-notifier-console-plugin</module>
         <module>jmx-monitoring-plugin</module>
         <module>rest-monitoring-plugin</module>
+        <module>microprofile-console-plugin</module>
     </modules>
     <build>
         <plugins>

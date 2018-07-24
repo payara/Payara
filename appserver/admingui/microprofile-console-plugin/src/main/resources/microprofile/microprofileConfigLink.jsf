@@ -1,0 +1,14 @@
+
+<sun:property>
+    <sun:hyperlink 
+        toolTip="$resource{i18nmp.tree.microprofile}"
+        url="/microprofile/microprofile/microprofileConfiguration.jsf?configName=#{configName}"
+        >
+        <sun:image url="/resource/images/microprofile.png" />
+        <sun:staticText text="$resource{i18nmp.tree.microprofile}" />
+    </sun:hyperlink>
+    <!beforeCreate
+        setResourceBundle(key="i18nhx" bundle="fish.payara.admingui.microprofile.Strings");
+        />
+</sun:property>
+

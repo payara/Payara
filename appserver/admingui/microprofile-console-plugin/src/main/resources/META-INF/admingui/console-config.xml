@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<console-config id="microprofile">
+    <integration-point
+        id="microprofile"
+        type="org.glassfish.admingui:navNode"
+        priority="460"
+        parentId="#{configNameId}"
+        content="pluginTreeNodeMicroprofile.jsf"
+    />
+    
+    <integration-point
+        id="microprofileLink"
+        type="org.glassfish.admingui:configuration"
+        priority="460"
+        parentId="propSheetSection"
+        content="microprofile/microprofileConfigLink.jsf"
+    />
+</console-config>

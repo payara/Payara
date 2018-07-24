@@ -1,0 +1,15 @@
+
+
+<!-- pluginTreeNodeMicroprofile.jsf -->
+
+<!--  ===================================== Nodes ======================  -->
+<sun:treeNode  id="microprofile"
+    text="$resource{i18nmp.tree.microprofile}"
+    url="/microprofile/microprofile/microprofileConfiguration.jsf?configName=${configName}"
+    imageURL="/resource/images/microprofile.png"
+    >
+    <!beforeCreate
+        setResourceBundle(key="i18nmp" bundle="fish.payara.admingui.microprofile.Strings");
+    />
+</sun:treeNode>
+
