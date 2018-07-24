@@ -272,11 +272,13 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
     }
 
     @Override
-    protected void setSchemaOnConnection(Connection connection) throws SQLException {
-            PreparedStatement ps = null;
-            ps = connection.prepareStatement("USE " + schema);
-            ps.executeUpdate();
-            ps.close();
+    protected void setSchemaOnConnection(Connection connection) throws SQLException {      
+            try (PreparedStatement preparedStatement = connection.prepareStatement("USE " + schema)) {
+                preparedStatement.executeUpdate();
+
+            } catch (SQLException ex) {
+                logger.severe(ex.getLocalizedMessage());
+            }
     }
     
     /**
