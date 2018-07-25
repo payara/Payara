@@ -37,19 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.batch;
 
 /**
  *
  * @author Susan Rai
  */
-public interface BatchConstants {
+public final class BatchConstants {
 
-    public final static String SIMPLE_MODE = "simpleMode";
-    public final static String LIST_BATCH_JOBS = "listBatchJobs";
-    public final static String LIST_JOBS_COUNT = "listJobsCount";
-    public final static String LIST_BATCH_JOBS_STEPS = "listBatchJobSteps";
-    public final static String LIST_BATCH_JOBS_EXECUTIONS = "listBatchJobExecutions";
+    public static final String SIMPLE_MODE = "simpleMode";
+    public static final String LIST_BATCH_JOBS = "listBatchJobs";
+    public static final String LIST_JOBS_COUNT = "listJobsCount";
+    public static final String LIST_BATCH_JOBS_STEPS = "listBatchJobSteps";
+    public static final String LIST_BATCH_JOBS_EXECUTIONS = "listBatchJobExecutions";
 
 }

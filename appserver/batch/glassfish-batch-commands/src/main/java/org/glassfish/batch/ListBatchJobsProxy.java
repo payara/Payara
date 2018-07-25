@@ -53,6 +53,9 @@ import org.jvnet.hk2.annotations.Service;
 
 import java.util.Properties;
 import javax.validation.constraints.Min;
+import static org.glassfish.batch.BatchConstants.LIST_BATCH_JOBS;
+import static org.glassfish.batch.BatchConstants.LIST_JOBS_COUNT;
+import static org.glassfish.batch.BatchConstants.SIMPLE_MODE;
 
 /**
  * Command to list batch jobs info
@@ -75,7 +78,7 @@ import javax.validation.constraints.Min;
                 description = "List Batch Jobs")
 })
 public class ListBatchJobsProxy
-    extends AbstractListCommandProxy implements BatchConstants{
+    extends AbstractListCommandProxy {
 
     @Param(primary = true, optional = true)
     String jobName;

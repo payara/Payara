@@ -69,9 +69,11 @@ import java.util.*;
 import java.util.logging.Level;
 import javax.inject.Inject;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 import javax.validation.constraints.Min;
+import static org.glassfish.batch.BatchConstants.LIST_BATCH_JOBS;
+import static org.glassfish.batch.BatchConstants.LIST_JOBS_COUNT;
+import static org.glassfish.batch.BatchConstants.SIMPLE_MODE;
 import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
 import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
 
@@ -95,8 +97,7 @@ import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
             path = "_ListBatchJobs",
             description = "_List Batch Jobs")
 })
-public class ListBatchJobs
-        extends AbstractLongListCommand implements BatchConstants{
+public class ListBatchJobs extends AbstractLongListCommand {
 
 
     private static final String JOB_NAME = "jobName";
@@ -155,59 +156,67 @@ public class ListBatchJobs
             queryToGetUniqueJobNames = "SELECT DISTINCT name FROM " + jobInstanceTableKey ;
 
             ColumnFormatter columnFormatter = new ColumnFormatter(getDisplayHeaders());
+            
             if (isSimpleMode()) {
-                extraProps.put(SIMPLE_MODE, true);
-                Map<String, Integer> jobsInstanceCount = new HashMap<>();
-                
-                if (jobName != null) {
-                    jobsInstanceCount.put(jobName, getJobInstanceCount(jobName));
-                } else {
-                    // Get all aviable Job Names
-                    List<String> jobNames = executeQuery(queryToGetUniqueJobNames, "name");
-
-                    for (String job_Name : jobNames) {
-                        jobsInstanceCount.put(job_Name, getJobInstanceCount(job_Name));
-                    }
-                }
-                
-                extraProps.put(LIST_BATCH_JOBS, findSimpleJobInfo(jobsInstanceCount, columnFormatter));
+                setToSimpleMode(extraProps, columnFormatter);
             } else {
-                extraProps.put(SIMPLE_MODE, false);
-                Map<String, Object> map = new HashMap<>();
-                map.put("allJobsCount", getAllJobInstanceCount());
-                extraProps.put(LIST_JOBS_COUNT, map);
-                List<Map<String, Object>> jobExecutions = new ArrayList<>();
-                extraProps.put(LIST_BATCH_JOBS, jobExecutions);
-                Map<String, Integer> jobsInstanceCount = new HashMap<>();
-
-                if (Arrays.asList(getOutputHeaders()).contains(INSTANCE_COUNT)) {
-                    // Get all aviable Job Names
-                    List<String> jobNames = executeQuery(queryToGetUniqueJobNames, "name");
-
-                    for (String job_Name : jobNames) {
-                        jobsInstanceCount.put(job_Name, getJobInstanceCount(job_Name));
-                    }
-                }
-
-                List<Long> jobInstanceIDs = getJobInstanceIDs();
-                JobOperator jobOperator = AbstractListCommand.getJobOperatorFromBatchRuntime();
-                
-                for (Long jobExecution : jobInstanceIDs) {
-                    try {
-                        if (glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) jobOperator.getJobExecution(jobExecution)).getTagName())) {
-                            jobExecutions.add(handleJob(jobOperator.getJobExecution(jobExecution), columnFormatter, jobsInstanceCount));
-                        }
-                    } catch (Exception ex) {
-                        logger.log(Level.WARNING, "Exception while getting jobExecution details: " + ex);
-                        logger.log(Level.FINE, "Exception while getting jobExecution details ", ex);
-                    }
-                }
+                setToLongMode(extraProps, columnFormatter);
             }
             
             context.getActionReport().setMessage(columnFormatter.toString());
         }
     }
 
+    private void setToSimpleMode(Properties extraProps, ColumnFormatter columnFormatter) {
+        extraProps.put(SIMPLE_MODE, true);
+        Map<String, Integer> jobsInstanceCount = new HashMap<>();
+
+        if (jobName != null) {
+            jobsInstanceCount.put(jobName, getJobInstanceCount(jobName));
+        } else {
+            // Get names of all available Jobs
+            List<String> jobNames = executeQuery(queryToGetUniqueJobNames, "name");
+
+            for (String job_Name : jobNames) {
+                jobsInstanceCount.put(job_Name, getJobInstanceCount(job_Name));
+            }
+        }
+        extraProps.put(LIST_BATCH_JOBS, findSimpleJobInfo(jobsInstanceCount, columnFormatter));
+    }
+    
+    private void setToLongMode(Properties extraProps, ColumnFormatter columnFormatter) {
+        extraProps.put(SIMPLE_MODE, false);
+        Map<String, Object> map = new HashMap<>();
+        map.put("allJobsCount", getAllJobInstanceCount());
+        extraProps.put(LIST_JOBS_COUNT, map);
+        List<Map<String, Object>> jobExecutions = new ArrayList<>();
+        extraProps.put(LIST_BATCH_JOBS, jobExecutions);
+        Map<String, Integer> jobsInstanceCount = new HashMap<>();
+
+        if (Arrays.asList(getOutputHeaders()).contains(INSTANCE_COUNT)) {
+            // Get names of all available Jobs
+            List<String> jobNames = executeQuery(queryToGetUniqueJobNames, "name");
+
+            for (String job_Name : jobNames) {
+                jobsInstanceCount.put(job_Name, getJobInstanceCount(job_Name));
+            }
+        }
+
+        List<Long> jobInstanceIDs = getJobInstanceIDs();
+        JobOperator jobOperator = AbstractListCommand.getJobOperatorFromBatchRuntime();
+
+        for (Long jobExecution : jobInstanceIDs) {
+            try {
+                if (glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) jobOperator.getJobExecution(jobExecution)).getTagName())) {
+                    jobExecutions.add(handleJob(jobOperator.getJobExecution(jobExecution), columnFormatter, jobsInstanceCount));
+                }
+            } catch (Exception ex) {
+                logger.log(Level.WARNING, "Exception while getting jobExecution details: " + ex);
+                logger.log(Level.FINE, "Exception while getting jobExecution details ", ex);
+            }
+        }
+    }
+    
     private void createTables(){
           try (Connection connection = dataSource.getConnection()) {
             String database = connection.getMetaData().getDatabaseProductName();
@@ -282,7 +291,6 @@ public class ListBatchJobs
         try (Connection connection = dataSource.getConnection()) {
             String database = connection.getMetaData().getDatabaseProductName();
             String query;
-            String columnID = "jobinstanceid";
 
             if (database.contains("Derby") || database.contains("DB2")) {
                 if (jobName != null) {
@@ -490,7 +498,7 @@ public class ListBatchJobs
         return result;
     }
       
-    private List<String> executeQuery(String query, String columnID) throws NamingException {
+    private List<String> executeQuery(String query, String columnID) {
         List<String> result = new ArrayList<>();
 
         try (Connection connection = dataSource.getConnection()) {
