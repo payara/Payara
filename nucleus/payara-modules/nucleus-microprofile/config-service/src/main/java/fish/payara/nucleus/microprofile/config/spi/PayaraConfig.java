@@ -204,10 +204,6 @@ public class PayaraConfig implements Config {
     }
     
     private <T> T convertString(String value, Class<T>  propertyType) {
-        if (String.class.equals(propertyType)) {
-            return (T) value;
-        }
-        
         // find a converter
         Converter<T> converter = getConverter(propertyType);
         if (converter == null) {
