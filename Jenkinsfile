@@ -13,12 +13,7 @@ pipeline {
                 checkoutAndBuildSource()
             }
         }
-    }
-   post {
-        always {
-            hipchatSend (color: 'GRAY', credentialId: 'hipchat2', textFormat: false, message: "${env.JOB_NAME} build # ${env.BUILD_NUMBER} Completed. See <a href='${BUILD_URL}'>Jenkins</a>")
-        }
-    } 
+    }     
 }
 
 def checkoutAndBuildSource(){
