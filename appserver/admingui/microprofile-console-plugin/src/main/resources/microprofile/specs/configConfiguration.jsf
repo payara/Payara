@@ -1,0 +1,37 @@
+<!initPage
+    setResourceBundle(key="i18n_microprofile" bundle="fish.payara.admingui.microprofile.Strings");
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18n_microprofile.microprofile.configuration.configTab}">
+
+<!define name="content">
+
+<event>
+    <!beforeCreate
+        setSessionAttribute(key="microprofileTabs" value="microprofileConfigTab");
+        getRequestValue(key="configName" value="#{pageSession.configName}");
+        setSessionAttribute(key="MICROPROFILE_CONFIG_URL", 
+                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/microprofile-config");
+    />
+</event>
+    
+    
+<sun:form id="propertyForm">
+#include "/common/shared/alertMsg_1.inc"
+#include "/microprofile/microprofile/microprofileConfigTabs.inc
+    <sun:title id="propertyContentPage" title="$resource{i18n_microprofile.microprofile.specs.configuration.config.pageTitle}" 
+               helpText="$resource{i18n_microprofile.microprofile.specs.configuration.config.pageTitleHelpText}" >
+        <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
+                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+            </sun:button>
+        </sun:panelGroup>
+    </facet>
+</sun:title>
+<sun:propertySheet id="propertySheet">
+#include "/common/shared/configNameSection.inc"
+
+</sun:propertySheet>
+</sun:form>
+</define>
+</composition>

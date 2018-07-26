@@ -4,12 +4,12 @@
 
 <!--  ===================================== Nodes ======================  -->
 <sun:treeNode  id="microprofile"
-    text="$resource{i18nmp.tree.microprofile}"
-    url="/microprofile/microprofile/microprofileConfiguration.jsf?configName=${configName}"
+    text="$resource{i18n_microprofile.tree.microprofile}"
+    url="/microprofile/microprofile/specs/configConfiguration.jsf?configName=${configName}"
     imageURL="/resource/images/microprofile.png"
     >
     <!beforeCreate
-        setResourceBundle(key="i18nmp" bundle="fish.payara.admingui.microprofile.Strings");
+        setResourceBundle(key="i18n_microprofile" bundle="fish.payara.admingui.microprofile.Strings");
     />
 </sun:treeNode>
 
