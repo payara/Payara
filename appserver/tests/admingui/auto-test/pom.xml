@@ -52,7 +52,6 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-auto-tests</artifactId>
-    <packaging>jar</packaging>
     <name>Admin Console Auto Tests</name>
     <description>This module contains the dev tests for the admin console</description>
 	

@@ -51,7 +51,6 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>vboxjws</artifactId>
-    <packaging>jar</packaging>
     <name>virtualbox client SDK repackaged as module</name>
     <build>
         <plugins>

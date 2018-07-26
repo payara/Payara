@@ -121,7 +121,6 @@
                                     <groupId>org.glassfish.extras</groupId>
                                     <artifactId>glassfish-embedded-web</artifactId>
                                     <version>${project.version}</version>
-                                    <type>jar</type>
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>${project.build.directory}</outputDirectory>

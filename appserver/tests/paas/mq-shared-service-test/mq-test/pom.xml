@@ -38,7 +38,7 @@
   ~ only if the new code is made subject to such option by the copyright
   ~ holder.
   -->
-<!--"Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]" -->
+<!-- Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -47,7 +47,6 @@
     <artifactId>mq-test</artifactId>
     <version>4.1-SNAPSHOT</version>
     <name>MQ Shared Service Test</name>
-    <packaging>jar</packaging>
     <properties>
         <mqplugin.url>
             https://maven.java.net/content/repositories/snapshots/org/glassfish/paas.mqplugin/${project.version}/paas.mqplugin-${project.version}.jar

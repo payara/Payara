@@ -104,19 +104,16 @@
             <groupId>org.glassfish.main.core</groupId>
             <artifactId>glassfish</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-service</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-boot</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>fish.payara.payara-appserver-modules</groupId>
