@@ -187,7 +187,7 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
             // error message (instead of as the error object)
             if (responseContext.hasEntity() && responseContext.getEntity() instanceof Throwable) {
                 Throwable throwable = (Throwable) responseContext.getEntity();
-                logger.log(Level.SEVERE, throwable.toString());
+                logger.log(Level.SEVERE, throwable.toString(), throwable);
                 responseContext.setEntity(throwable.toString());
             }
         }
