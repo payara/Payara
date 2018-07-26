@@ -99,14 +99,19 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 		return result;
 	}
 	
-    @Override
+     /**
+     * Set the schema to the default schema or the schema defined at batch
+     * configuration time
+     *
+     * @param connection
+     * @throws SQLException
+     */
     protected void setSchemaOnConnection(Connection connection) throws SQLException {
+            logger.log(Level.FINEST, "Entering {0}.setSchemaOnConnection()", CLASSNAME);
             try (PreparedStatement preparedStatement = connection.prepareStatement("set search_path to " + schema)) {
                 preparedStatement.executeUpdate();
-
-            } catch (SQLException ex) {
-                logger.severe(ex.getLocalizedMessage());
             }
+            logger.log(Level.FINEST, "Exiting {0}.setSchemaOnConnection()", CLASSNAME);
     }
 
 

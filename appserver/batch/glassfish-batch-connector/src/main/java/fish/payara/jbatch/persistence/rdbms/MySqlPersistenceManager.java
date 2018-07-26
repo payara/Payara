@@ -258,7 +258,7 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 
 
 	
-	@Override
+    @Override
     protected Map<String, String> getSharedQueryMap(IBatchConfig batchConfig) throws SQLException {
         Map<String, String> result = super.getSharedQueryMap(batchConfig);
         if(schema.equals("") || schema.length() == 0)
@@ -272,13 +272,12 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
     }
 
     @Override
-    protected void setSchemaOnConnection(Connection connection) throws SQLException {      
-            try (PreparedStatement preparedStatement = connection.prepareStatement("USE " + schema)) {
-                preparedStatement.executeUpdate();
-
-            } catch (SQLException ex) {
-                logger.severe(ex.getLocalizedMessage());
-            }
+    protected void setSchemaOnConnection(Connection connection) throws SQLException { 
+        logger.log(Level.FINEST, "Entering {0}.setSchemaOnConnection()", CLASSNAME);
+        try (PreparedStatement preparedStatement = connection.prepareStatement("USE " + schema)) {
+            preparedStatement.executeUpdate();
+        }
+        logger.log(Level.FINEST, "Exiting {0}.setSchemaOnConnection()", CLASSNAME);
     }
     
     /**
