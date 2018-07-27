@@ -49,7 +49,7 @@ package com.sun.jdo.api.persistence.model;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
-import com.sun.jdo.spi.persistence.utility.StringHelper;
+import org.glassfish.common.util.StringHelper;
 
 /** 
  *

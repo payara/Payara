@@ -58,6 +58,7 @@ import com.sun.jdo.api.persistence.model.jdo.*;
 import com.sun.jdo.api.persistence.model.mapping.*;
 import com.sun.jdo.spi.persistence.utility.*;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
+import org.glassfish.common.util.StringHelper;
 import org.glassfish.persistence.common.I18NHelper;
 
 /** 

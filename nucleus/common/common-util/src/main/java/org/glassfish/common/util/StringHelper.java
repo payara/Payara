@@ -44,7 +44,7 @@
  * Created on March 3, 2000
  */
 
-package com.sun.jdo.spi.persistence.utility;
+package org.glassfish.common.util;
 
 import java.util.*;
 

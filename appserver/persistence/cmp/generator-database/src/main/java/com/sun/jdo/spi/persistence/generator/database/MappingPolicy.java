@@ -65,7 +65,7 @@ import java.security.PrivilegedAction;
 import java.sql.Types;
 
 import org.glassfish.persistence.common.I18NHelper;
-import com.sun.jdo.spi.persistence.utility.StringHelper;
+import org.glassfish.common.util.StringHelper;
 
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
 

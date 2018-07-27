@@ -50,7 +50,7 @@ import java.util.ResourceBundle;
 
 import com.sun.jdo.api.persistence.model.ModelException;
 import org.glassfish.persistence.common.I18NHelper;
-import com.sun.jdo.spi.persistence.utility.StringHelper;
+import org.glassfish.common.util.StringHelper;
 
 /** 
  *

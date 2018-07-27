@@ -64,7 +64,7 @@ import java.text.MessageFormat;
 import org.netbeans.modules.dbschema.*;
 
 import com.sun.jdo.api.persistence.mapping.ejb.beans.*;
-import com.sun.jdo.spi.persistence.utility.StringHelper;
+import org.glassfish.common.util.StringHelper;
 import com.sun.jdo.api.persistence.model.*;
 import com.sun.jdo.api.persistence.model.mapping.*;
 import com.sun.jdo.api.persistence.model.mapping.impl.*;

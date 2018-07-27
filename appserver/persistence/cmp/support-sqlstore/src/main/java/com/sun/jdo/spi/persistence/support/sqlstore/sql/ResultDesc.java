@@ -55,7 +55,7 @@ import com.sun.jdo.spi.persistence.support.sqlstore.model.FieldDesc;
 import com.sun.jdo.spi.persistence.support.sqlstore.model.ForeignFieldDesc;
 import com.sun.jdo.spi.persistence.support.sqlstore.model.LocalFieldDesc;
 import com.sun.jdo.spi.persistence.support.sqlstore.sql.generator.ColumnRef;
-import com.sun.jdo.spi.persistence.utility.StringHelper;
+import org.glassfish.common.util.StringHelper;
 import com.sun.jdo.spi.persistence.utility.FieldTypeEnumeration;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
 import org.glassfish.persistence.common.I18NHelper;

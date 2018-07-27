@@ -55,7 +55,7 @@ import javax.sql.DataSource;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.jdo.api.persistence.support.JDOFatalUserException;
 import com.sun.jdo.spi.persistence.support.sqlstore.LogHelperPersistenceManager;
-import com.sun.jdo.spi.persistence.utility.StringHelper;
+import org.glassfish.common.util.StringHelper;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
 
 import org.glassfish.hk2.api.ServiceLocator;

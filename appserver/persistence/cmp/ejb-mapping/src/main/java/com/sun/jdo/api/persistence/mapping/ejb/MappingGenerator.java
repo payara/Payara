@@ -59,7 +59,7 @@ import com.sun.jdo.api.persistence.model.mapping.MappingFieldElement;
 import com.sun.jdo.api.persistence.model.jdo.PersistenceClassElement;
 import com.sun.jdo.api.persistence.model.jdo.PersistenceFieldElement;
 
-import com.sun.jdo.spi.persistence.utility.StringHelper;
+import org.glassfish.common.util.StringHelper;
 import com.sun.jdo.spi.persistence.utility.JavaTypeHelper;
 
 import com.sun.jdo.spi.persistence.generator.database.DatabaseGenerator;

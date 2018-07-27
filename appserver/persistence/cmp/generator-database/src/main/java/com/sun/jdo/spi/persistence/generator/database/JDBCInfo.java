@@ -41,7 +41,7 @@
 package com.sun.jdo.spi.persistence.generator.database;
 
 
-import com.sun.jdo.spi.persistence.utility.StringHelper;
+import org.glassfish.common.util.StringHelper;
 
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
 

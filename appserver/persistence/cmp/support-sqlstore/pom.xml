@@ -160,5 +160,10 @@
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>common-util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

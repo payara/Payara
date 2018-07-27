@@ -51,7 +51,7 @@ import java.util.*;
 import java.text.MessageFormat;
 
 import org.glassfish.persistence.common.I18NHelper;
-import com.sun.jdo.spi.persistence.utility.StringHelper;
+import org.glassfish.common.util.StringHelper;
 
 /** 
  * This class provides a default implementation of the 
