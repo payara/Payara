@@ -51,11 +51,11 @@ import org.jvnet.hk2.config.Configured;
 @Configured(name = "microprofile-fault-tolerance-configuration")
 public interface FaultToleranceServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
 
-    @Attribute(defaultValue = "", dataType = String.class)
+    @Attribute(defaultValue = "concurrent/__defaultManagedExecutorService", dataType = String.class)
     public String getManagedExecutorService();
     public void setManagedExecutorService(String managedExecutorServiceName);
     
-    @Attribute(defaultValue = "", dataType = String.class)
+    @Attribute(defaultValue = "concurrent/__defaultManagedScheduledExecutorService", dataType = String.class)
     public String getManagedScheduledExecutorService();
     public void setManagedScheduledExecutorService(String managedScheduledExecutorServiceName);
 }

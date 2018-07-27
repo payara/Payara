@@ -1,7 +1,7 @@
 <!initPage
     setResourceBundle(key="i18n_microprofile" bundle="fish.payara.admingui.microprofile.Strings");
 />
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18n_microprofile.microprofile.configuration.configTab}">
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18n_microprofile.microprofile.specs.configuration.config.pageTitle}">
 
 <!define name="content">
 

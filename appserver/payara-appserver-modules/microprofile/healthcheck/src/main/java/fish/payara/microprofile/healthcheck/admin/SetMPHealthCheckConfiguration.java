@@ -40,13 +40,12 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.microprofile.healthcheck.config;
+package fish.payara.microprofile.healthcheck.admin;
 
 import javax.inject.Inject;
 import com.sun.enterprise.config.serverbeans.Config;
-import java.beans.PropertyChangeEvent;
+import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 import java.beans.PropertyVetoException;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.ActionReport;
@@ -69,13 +68,11 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
-import org.jvnet.hk2.config.UnprocessedChangeEvent;
-import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 /**
  *
  * @author jonathan coustick
- * @since 4.1.2.172
+ * @since 4.1.2.182
  */
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})

@@ -82,7 +82,7 @@ public class SetFaultToleranceConfigurationCommand implements AdminCommand {
     
     @Param(optional = true, alias = "managedexecutorservicename")
     private String managedExecutorServiceName;
-    
+
     @Param(optional = true, alias = "managedscheduledexecutorservicename")
     private String managedScheduledExecutorServiceName;
     

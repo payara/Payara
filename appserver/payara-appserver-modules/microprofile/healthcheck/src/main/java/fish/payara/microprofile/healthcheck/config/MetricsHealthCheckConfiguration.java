@@ -43,6 +43,7 @@
 package fish.payara.microprofile.healthcheck.config;
 
 import java.beans.PropertyVetoException;
+import javax.inject.Named;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -51,7 +52,7 @@ import org.jvnet.hk2.config.Configured;
 /**
  *
  * @author jonathan coustick
- * @since 4.1.2.172
+ * @since 4.1.2.182
  */
 @Configured
 public interface MetricsHealthCheckConfiguration extends ConfigBeanProxy, ConfigExtension {
@@ -65,7 +66,6 @@ public interface MetricsHealthCheckConfiguration extends ConfigBeanProxy, Config
     String getEnabled();
 
     void setEnabled(String value) throws PropertyVetoException;
-    
     
     @Attribute(defaultValue = "health")
     String getEndpoint();

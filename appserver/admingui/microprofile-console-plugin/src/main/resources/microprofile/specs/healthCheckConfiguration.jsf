@@ -1,16 +1,27 @@
 <!initPage
     setResourceBundle(key="i18n_microprofile" bundle="fish.payara.admingui.microprofile.Strings");
 />
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18n_microprofile.microprofile.configuration.healthCheckTab}">
+<!composition template="/templates/default.layout"  
+    guiTitle="$resource{i18n_microprofile.microprofile.specs.configuration.healthCheck.pageTitle}">
 
 <!define name="content">
 
 <event>
     <!beforeCreate
-        setSessionAttribute(key="microprofileTabs" value="microprofileHealthCheckTab");
         getRequestValue(key="configName" value="#{pageSession.configName}");
-        setSessionAttribute(key="MICROPROFILE_HEALTH_CHECK_URL", 
+        setPageSessionAttribute(key="MICROPROFILE_HEALTHCHECK_URL", 
                 value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/metrics-health-check-configuration");
+        gf.restRequest(endpoint="#{pageSession.MICROPROFILE_HEALTHCHECK_URL}/get-microprofile-healthcheck-configuration?target=#{pageSession.configName}"  
+                method="GET" result="#{requestScope.resp}");         
+        
+        setPageSessionAttribute(key="valueMap", 
+                value="#{requestScope.resp.data.extraProperties.microprofileHealthCheckConfiguration}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled"});
+        
+        if (#{pageSession.valueMap['enabled']}=true) {
+            setPageSessionAttribute(key="enabledSelected", value="true");
+        }
     />
 </event>
     
@@ -18,20 +29,40 @@
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg_1.inc"
 #include "/microprofile/microprofile/microprofileConfigTabs.inc
-    <sun:title id="propertyContentPage" title="$resource{i18n_microprofile.microprofile.specs.configuration.healthCheck.pageTitle}" 
+    <sun:title id="propertyContentPage" 
+               title="$resource{i18n_microprofile.microprofile.specs.configuration.healthCheck.pageTitle}" 
                helpText="$resource{i18n_microprofile.microprofile.specs.configuration.healthCheck.pageTitleHelpText}" >
         <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
             <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
-                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) 
+                        submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                 <!command
+                        prepareSuccessfulMsg();
+                        gf.restRequest(endpoint="#{pageSession.MICROPROFILE_HEALTHCHECK_URL}/set-microprofile-healthcheck-configuration" 
+                        method="POST" attrs="#{pageSession.valueMap}");
+                    />
             </sun:button>
         </sun:panelGroup>
-    </facet>
-</sun:title>
-<sun:propertySheet id="propertySheet">
+        </facet>
+    </sun:title>
+   <sun:propertySheet id="propertySheet">
 #include "/common/shared/configNameSection.inc"
-
-</sun:propertySheet>
-</sun:form>
-</define>
+    <sun:propertySheetSection id="healthCheckProps">
+        <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.healthCheck.configuration.enabled}"  
+                      helpText="$resource{i18n_microprofile.healthCheck.configuration.enabledHelp}">
+            <sun:checkbox id="enabled" selected="#{pageSession.enabledSelected}" 
+                          selectedValue="true" />
+        </sun:property>
+        <sun:property id="endPointProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.healthCheck.configuration.endpoint}"  
+                      helpText="$resource{i18n_microprofile.healthCheck.configuration.endpointHelp}">
+            <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
+                           text="#{pageSession.valueMap['endpoint']}"/>
+        </sun:property>
+    </sun:propertySheetSection>
+   </sun:propertySheet>
+  </sun:form>
+ </define>
 </composition>

@@ -2,7 +2,7 @@
 <sun:property>
     <sun:hyperlink 
         toolTip="$resource{i18n_microprofile.tree.microprofile}"
-        url="/microprofile/microprofile/microprofileConfiguration.jsf?configName=#{configName}"
+        url="/microprofile/microprofile/specs/configConfiguration.jsf?configName=#{configName}"
         >
         <sun:image url="/resource/images/microprofile.png" />
         <sun:staticText text="$resource{i18n_microprofile.tree.microprofile}" />
