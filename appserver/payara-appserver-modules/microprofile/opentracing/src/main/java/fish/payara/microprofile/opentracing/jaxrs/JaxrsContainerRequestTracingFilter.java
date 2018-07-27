@@ -42,7 +42,8 @@ package fish.payara.microprofile.opentracing.jaxrs;
 import fish.payara.microprofile.opentracing.cdi.OpenTracingCdiUtils;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
@@ -122,7 +123,8 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                 SpanBuilder spanBuilder = tracer.buildSpan(determineOperationName(requestContext, tracedAnnotation))
                         .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
                         .withTag(Tags.HTTP_METHOD.getKey(), requestContext.getMethod())
-                        .withTag(Tags.HTTP_URL.getKey(), requestContext.getUriInfo().getRequestUri().toURL().toString());
+                        .withTag(Tags.HTTP_URL.getKey(), requestContext.getUriInfo().getRequestUri().toURL().toString())
+                        .withTag(Tags.COMPONENT.getKey(), "jaxrs");
 
                 // Don't extract a context if using in-built tracer as we don't support it yet
                 if (!(tracer instanceof fish.payara.opentracing.tracer.Tracer)) {
@@ -137,7 +139,7 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                 }
 
                 // Start the span and continue on to the targeted method
-                spanBuilder.startActive();
+                spanBuilder.startActive(true);
             }
         }
     }
@@ -161,9 +163,10 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                 // should trace the method...
                 if (tracedAnnotation == null || (boolean) OpenTracingCdiUtils.getConfigOverrideValue(
                         Traced.class, "value", resourceInfo, boolean.class).orElse(tracedAnnotation.value())) {
-                    // Get the active span from the application's tracer - this *should* never be null
-                    try (ActiveSpan activeSpan = openTracing.getTracer(openTracing.getApplicationName(
-                        serviceLocator.getService(InvocationManager.class))).activeSpan()) {
+                    // Get the active scope and span from the application's tracer - this *should* never be null
+                    try (Scope activeScope = openTracing.getTracer(openTracing.getApplicationName(
+                        serviceLocator.getService(InvocationManager.class))).scopeManager().active()) {
+                        Span activeSpan = activeScope.span();
                         // Get and add the response status to the active span
                         Response.StatusType statusInfo = responseContext.getStatusInfo();
                         activeSpan.setTag(Tags.HTTP_STATUS.getKey(), statusInfo.getStatusCode());

@@ -42,11 +42,12 @@ package fish.payara.opentracing.span;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.notification.requesttracing.RequestTraceSpanLog;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
@@ -55,6 +56,7 @@ import org.glassfish.internal.api.Globals;
  * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
+//@OpenTracingScoped
 public class Span extends RequestTraceSpan implements io.opentracing.Span {
     
     private transient RequestTracingService requestTracing;
@@ -68,6 +70,11 @@ public class Span extends RequestTraceSpan implements io.opentracing.Span {
         if (serviceLocator != null) {
             requestTracing = serviceLocator.getService(RequestTracingService.class);
         }
+    }
+    
+    @PreDestroy
+    public void preDestory(){
+        finish();
     }
 
     /**
@@ -133,8 +140,7 @@ public class Span extends RequestTraceSpan implements io.opentracing.Span {
     @Override
     public io.opentracing.Span log(long timestampMicroseconds, Map<String, ?> map) {
         // Create a RequestTracingSpanLog, add all of the map entries, and pass it through to the Request Tracing Service
-        RequestTraceSpanLog spanLog = new RequestTraceSpanLog(
-                convertTimestampMicrosToTimestampMillis(timestampMicroseconds));
+        RequestTraceSpanLog spanLog = new RequestTraceSpanLog(convertTimestampMicrosToTimestampMillis(timestampMicroseconds));
 
         for (Map.Entry<String, ?> entry : map.entrySet()) {
             spanLog.addLogEntry(entry.getKey(), String.valueOf(entry.getValue()));
@@ -166,20 +172,6 @@ public class Span extends RequestTraceSpan implements io.opentracing.Span {
     }
 
     @Override
-    public io.opentracing.Span log(String key, Object value) {
-        Map<String, Object> map = new HashMap();
-        map.put(key, value);
-        return log(map);
-    }
-
-    @Override
-    public io.opentracing.Span log(long timestamp, String key, Object value) {
-        Map<String, Object> map = new HashMap();
-        map.put(key, value);
-        return log(timestamp, map);
-    }
-
-    @Override
     public io.opentracing.Span setBaggageItem(String key, String value) {
         // Pass through to the Request Tracing Service
         getSpanContext().addBaggageItem(key, value);
@@ -203,7 +195,7 @@ public class Span extends RequestTraceSpan implements io.opentracing.Span {
     public void finish() {
         // Pass through to the Request Tracing Service
         getRequestTracingServiceIfNull();
-        requestTracing.traceSpan(this);
+        requestTracing.traceSpan(this);        
     }
 
     @Override

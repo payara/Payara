@@ -272,6 +272,10 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         return startTime.compareTo(span.startTime);
     }
     
+    /**
+     * Span state that is copied across boundaries and
+     * stores a reference to the parent trace
+     */
     public class SpanContext implements Serializable {
 
         private final UUID spanId;

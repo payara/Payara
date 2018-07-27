@@ -41,12 +41,15 @@ package fish.payara.opentracing.tracer;
 
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.notification.requesttracing.RequestTraceSpan.SpanContextRelationshipType;
-import fish.payara.opentracing.span.ActiveSpanSource;
-import io.opentracing.ActiveSpan;
-import io.opentracing.BaseSpan;
+
+import io.opentracing.References;
+import io.opentracing.Scope;
+import io.opentracing.ScopeManager;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.propagation.Format;
+import io.opentracing.util.ThreadLocalScopeManager;
+
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -54,10 +57,11 @@ import java.util.concurrent.TimeUnit;
  * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
-public class Tracer extends ActiveSpanSource implements io.opentracing.Tracer {
+public class Tracer implements io.opentracing.Tracer {
 
     private final String applicationName;
-    
+    private final ScopeManager scopeManager;
+        
     /**
      * Constructor that registers this Tracer to an application.
      * 
@@ -65,6 +69,7 @@ public class Tracer extends ActiveSpanSource implements io.opentracing.Tracer {
      */
     public Tracer(String applicationName) {
         this.applicationName = applicationName;
+        scopeManager = new fish.payara.opentracing.ScopeManager();
     }
     
     @Override
@@ -82,6 +87,20 @@ public class Tracer extends ActiveSpanSource implements io.opentracing.Tracer {
     public <C> SpanContext extract(Format<C> format, C carrier) {
         // To Do
         throw new UnsupportedOperationException("Not supported yet."); 
+    }
+
+    @Override
+    public ScopeManager scopeManager() {
+        return scopeManager;
+    }
+    
+    @Override
+    public Span activeSpan() {
+        Scope activeScope = scopeManager().active();
+        if (activeScope != null){
+            return activeScope.span();
+        }
+        return null;
     }
 
     /**
@@ -110,18 +129,16 @@ public class Tracer extends ActiveSpanSource implements io.opentracing.Tracer {
                     RequestTraceSpan.SpanContextRelationshipType.ChildOf);
             return this;
         }
-
+        
         @Override
-        public SpanBuilder asChildOf(BaseSpan<?> bs) {
-            span.addSpanReference((fish.payara.opentracing.span.Span.SpanContext) bs.context(), 
-                    SpanContextRelationshipType.ChildOf);
+        public SpanBuilder addReference(String referenceType, SpanContext referencedContext) {
+            span.addSpanReference((fish.payara.opentracing.span.Span.SpanContext) referencedContext, SpanContextRelationshipType.valueOf(referenceType));
             return this;
         }
         
         @Override
-        public SpanBuilder addReference(String referenceType, SpanContext referencedContext) {
-            span.addSpanReference((fish.payara.opentracing.span.Span.SpanContext) referencedContext,
-                    SpanContextRelationshipType.valueOf(referenceType));
+        public SpanBuilder asChildOf(Span parentSpan) {
+            addReference(References.CHILD_OF, parentSpan.context());
             return this;
         }
 
@@ -154,20 +171,28 @@ public class Tracer extends ActiveSpanSource implements io.opentracing.Tracer {
             microsecondsStartTime = microseconds;
             return this;
         }
-
+        
         @Override
-        public ActiveSpan startActive() {
-            return makeActive(startManual());
+        public Scope startActive(boolean bln) {
+            Scope origin = scopeManager().active();
+            if (origin != null){ 
+                Span parent = origin.span();
+                asChildOf(parent);
+            }
+            origin = scopeManager.activate(span, bln);
+            return origin;
+            //return makeActive(startManual());
+            //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
         
         @Override
         public Span startManual() {
             // If we shouldn't ignore the currently active span, set it as this span's parent
             if (!ignoreActiveSpan) {
-                fish.payara.opentracing.span.ActiveSpan activeSpan = (fish.payara.opentracing.span.ActiveSpan) activeSpan();
+                fish.payara.opentracing.span.Span activeSpan = (fish.payara.opentracing.span.Span) activeSpan();
                 
                 if (activeSpan != null) {
-                    span.addSpanReference(activeSpan.getWrappedSpan().getSpanContext(), SpanContextRelationshipType.ChildOf);
+                    span.addSpanReference(activeSpan.getSpanContext(), SpanContextRelationshipType.ChildOf);
                 }
             }
 
