@@ -1,16 +1,33 @@
 <!initPage
     setResourceBundle(key="i18n_microprofile" bundle="fish.payara.admingui.microprofile.Strings");
 />
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18n_microprofile.microprofile.configuration.metricsTab}">
+<!composition template="/templates/default.layout"  
+    guiTitle="$resource{i18n_microprofile.microprofile.specs.configuration.metrics.pageTitle}">
 
 <!define name="content">
 
 <event>
     <!beforeCreate
-        setSessionAttribute(key="microprofileTabs" value="microprofileMetricsTab");
         getRequestValue(key="configName" value="#{pageSession.configName}");
-        setSessionAttribute(key="MICROPROFILE_METRICS_URL", 
+        setPageSessionAttribute(key="MICROPROFILE_METRICS_URL", 
                 value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/microprofile-metrics-configuration");
+        gf.restRequest(endpoint="#{pageSession.MICROPROFILE_METRICS_URL}/get-metrics-configuration?target=#{pageSession.configName}"  
+                method="GET" result="#{requestScope.resp}");  
+        setPageSessionAttribute(key="valueMap", 
+                value="#{requestScope.resp.data.extraProperties.metricsConfiguration}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+        
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "secureMetrics"});
+        if (#{pageSession.valueMap['enabled']}=true) {
+            setPageSessionAttribute(key="enabledSelected", value="true");
+        }
+        
+        setPageSessionAttribute(key="dynamic", value="true");
+        
+        if (#{pageSession.valueMap['secureMetrics']}=true) {
+            setPageSessionAttribute(key="secureMetricsSelected", value="true");
+        }
+        
     />
 </event>
     
@@ -23,15 +40,43 @@
         <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
             <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
-                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) 
+                        submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command
+                    mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                    mapPut(map="#{pageSession.valueMap}" key="secureMetrics" value="#{pageSession.secureMetricsSelected}");
+                    prepareSuccessfulMsg();
+                    gf.updateEntity(endpoint="#{pageSession.MICROPROFILE_METRICS_URL}/set-metrics-configuration" 
+                       attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                    />
             </sun:button>
         </sun:panelGroup>
-    </facet>
-</sun:title>
-<sun:propertySheet id="propertySheet">
+        </facet>
+    </sun:title>
+  <sun:propertySheet id="propertySheet">
 #include "/common/shared/configNameSection.inc"
-
-</sun:propertySheet>
-</sun:form>
-</define>
+    <sun:propertySheetSection id="metricsProps">
+        <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.metrics.configuration.enabled}"  
+                      helpText="$resource{i18n_microprofile.metrics.configuration.enabledHelp}">
+            <sun:checkbox id="enabled" selected="#{pageSession.enabledSelected}" 
+                          selectedValue="true" />
+        </sun:property>
+        <sun:property id="dynamicProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.metrics.configuration.dynamic}"  
+                      helpText="$resource{i18n_microprofile.metrics.configuration.dynamicHelp}">
+            <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" 
+                          selectedValue="true" />
+        </sun:property>
+        <sun:property id="secureMetricsProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.metrics.configuration.secureMetrics}"  
+                      helpText="$resource{i18n_microprofile.metrics.configuration.secureMetricsHelp}">
+            <sun:checkbox id="secureMetrics" selected="#{pageSession.secureMetricsSelected}" 
+                          selectedValue="true" />
+        </sun:property>
+    </sun:propertySheetSection>
+   </sun:propertySheet>
+  </sun:form>
+ </define>
 </composition>

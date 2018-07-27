@@ -39,8 +39,9 @@
                         submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                  <!command
                         prepareSuccessfulMsg();
-                        gf.restRequest(endpoint="#{pageSession.MICROPROFILE_HEALTHCHECK_URL}/set-microprofile-healthcheck-configuration" 
-                        method="POST" attrs="#{pageSession.valueMap}");
+                        mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                        gf.updateEntity(endpoint="#{pageSession.MICROPROFILE_HEALTHCHECK_URL}/set-microprofile-healthcheck-configuration" 
+                            attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     />
             </sun:button>
         </sun:panelGroup>

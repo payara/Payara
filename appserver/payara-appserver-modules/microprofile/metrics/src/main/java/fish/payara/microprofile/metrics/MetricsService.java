@@ -183,7 +183,7 @@ public class MetricsService implements EventListener {
 
     public Boolean isMetricsSecure() {
         if (metricsSecure == null) {
-            metricsSecure = Boolean.valueOf(metricsServiceConfiguration.getSecure());
+            metricsSecure = Boolean.valueOf(metricsServiceConfiguration.getSecureMetrics());
         }
         return metricsSecure;
     }
