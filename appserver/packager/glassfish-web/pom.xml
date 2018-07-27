@@ -145,6 +145,11 @@ Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
                     <artifactId>oauth2-client-integration</artifactId>
                     <version>${project.version}</version>
                 </dependency>
+                <dependency>
+                    <groupId>fish.payara.security</groupId>
+                    <artifactId>oidc-client-integration</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
             </dependencies>
         </profile>
     </profiles>

@@ -84,6 +84,7 @@
             <modules>
                 <module>microprofile</module>
                 <module>security-oauth2</module>
+                <module>security-oidc</module>
             </modules>
         </profile>
     </profiles>
