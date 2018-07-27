@@ -1,16 +1,26 @@
 <!initPage
     setResourceBundle(key="i18n_microprofile" bundle="fish.payara.admingui.microprofile.Strings");
 />
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18n_microprofile.microprofile.configuration.openAPITab}">
+<!composition template="/templates/default.layout"  
+    guiTitle="$resource{i18n_microprofile.microprofile.specs.configuration.openAPI.pageTitle}">
 
 <!define name="content">
 
 <event>
     <!beforeCreate
-        setSessionAttribute(key="microprofileTabs" value="microprofileOpenAPITab");
         getRequestValue(key="configName" value="#{pageSession.configName}");
-        setSessionAttribute(key="MICROPROFILE_OPENAPI_URL", 
+        setPageSessionAttribute(key="MICROPROFILE_OPENAPI_URL", 
                 value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/microprofile-openapi-configuration");
+        gf.restRequest(endpoint="#{pageSession.MICROPROFILE_OPENAPI_URL}/get-openapi-configuration?target=#{pageSession.configName}"  
+                method="GET" result="#{requestScope.resp}"); 
+        setPageSessionAttribute(key="valueMap", 
+                value="#{requestScope.resp.data.extraProperties.openApiConfiguration}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+        
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled"});
+        if (#{pageSession.valueMap['enabled']}=true) {
+            setPageSessionAttribute(key="enabledSelected", value="true");
+        }
     />
 </event>
     
@@ -23,15 +33,29 @@
         <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
             <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
-                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) 
+                        submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+            <!command
+                mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");;
+                prepareSuccessfulMsg();
+                gf.updateEntity(endpoint="#{pageSession.MICROPROFILE_OPENAPI_URL}/set-openapi-configuration" 
+                   attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+            />
             </sun:button>
         </sun:panelGroup>
-    </facet>
-</sun:title>
-<sun:propertySheet id="propertySheet">
+        </facet>
+    </sun:title>
+   <sun:propertySheet id="propertySheet">
 #include "/common/shared/configNameSection.inc"
-
-</sun:propertySheet>
-</sun:form>
-</define>
+    <sun:propertySheetSection id="openAPIProps">
+        <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.openAPI.configuration.enabled}"  
+                      helpText="$resource{i18n_microprofile.openAPI.configuration.enabledHelp}">
+            <sun:checkbox id="enabled" selected="#{pageSession.enabledSelected}" 
+                          selectedValue="true" />
+        </sun:property>
+    </sun:propertySheetSection>
+   </sun:propertySheet>
+  </sun:form>
+ </define>
 </composition>

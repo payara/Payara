@@ -49,7 +49,7 @@
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{pageSession.MICROPROFILE_METRICS_URL}/set-metrics-configuration" 
                        attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
-                    />
+                />
             </sun:button>
         </sun:panelGroup>
         </facet>
