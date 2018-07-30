@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -45,7 +46,6 @@ import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import java.beans.PropertyVetoException;
-import java.io.Serializable;
 
 import javax.validation.constraints.Pattern;
 
@@ -55,9 +55,6 @@ import javax.validation.constraints.Pattern;
  * client provider's ClientAuthModule.initiateRequest() method is called or
  * when a server provider's ServerAuthModule.validateRequest() method is called)
  */
-
-/* @XmlType(name = "") */
-
 @Configured
 public interface RequestPolicy extends ConfigBeanProxy  {
     
@@ -77,8 +74,8 @@ public interface RequestPolicy extends ConfigBeanProxy  {
     /**
      * Sets the value of the authSource property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setAuthSource(String value) throws PropertyVetoException;
 
@@ -107,8 +104,8 @@ public interface RequestPolicy extends ConfigBeanProxy  {
     /**
      * Sets the value of the authRecipient property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setAuthRecipient(String value) throws PropertyVetoException;
 

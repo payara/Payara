@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -55,52 +56,47 @@ import org.glassfish.api.admin.RestRedirect;
 /**
  *
  */
-
-/* @XmlType(name = "") */
-
 @Configured
 @RestRedirects({
- @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-resource-ref"),
+    @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-resource-ref")
+    ,
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-resource-ref")
 })
-public interface ResourceRef extends ConfigBeanProxy  {
+public interface ResourceRef extends ConfigBeanProxy {
 
     /**
      * Determines whether the resource is active or ignored.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="true",dataType=Boolean.class)
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
     String getEnabled();
 
     /**
      * Sets the value of the enabled property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setEnabled(String value) throws PropertyVetoException;
 
     /**
-     * References the name attribute of a resources, such as an {@link org.glassfish.connectors.config.JdbcResource} or {@link org.glassfish.connectors.config.JdbcConnectionPool}.
+     * References the name attribute of a resources, such as an {@link org.glassfish.connectors.config.JdbcResource} or
+     * {@link org.glassfish.connectors.config.JdbcConnectionPool}.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute(key=true)
+    @Attribute(key = true)
     @NotNull
-    @Pattern(regexp="[^':,][^':,]*")
+    @Pattern(regexp = "[^':,][^':,]*")
     String getRef();
 
     /**
      * Sets the value of the ref property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setRef(String value) throws PropertyVetoException;
-
-
 
 }

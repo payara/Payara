@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -54,8 +55,7 @@ public interface ResourcePoolReference {
     /**
      * Gets the value of the poolName property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute
     @NotNull
@@ -64,8 +64,8 @@ public interface ResourcePoolReference {
     /**
      * Sets the value of the poolName property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setPoolName(String value) throws PropertyVetoException;
 }

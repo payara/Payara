@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
@@ -92,7 +93,7 @@ class DomainXmlPreParser {
     private String serverConfigRef;
     private boolean valid = false;
     
-    private static final boolean debug = Boolean.parseBoolean(Utility.getEnvOrProp("AS_DEBUG"));
+    private static final boolean DEBUG = Boolean.parseBoolean(Utility.getEnvOrProp("AS_DEBUG"));
     private static final Logger LOGGER = Logger.getLogger("org.glassfish.config.support");
 
     DomainXmlPreParser(URL domainXml, XMLInputFactory xif, String instanceNameIn) throws DomainXmlPreParserException {
@@ -307,7 +308,7 @@ class DomainXmlPreParser {
     }
 
     private static void printf(String message) {
-        if (debug)
+        if (DEBUG)
             LOGGER.log(Level.INFO, message);
     }
 

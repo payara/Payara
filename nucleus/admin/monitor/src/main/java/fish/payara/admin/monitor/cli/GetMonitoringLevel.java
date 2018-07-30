@@ -71,6 +71,7 @@ import org.jvnet.hk2.annotations.Service;
  * Asadmin command to list Module Monitoring level
  *
  * @author Susan Rai
+ * @since 4.1.2.183
  */
 @Service(name = "get-monitoring-level")
 @PerLookup
@@ -107,7 +108,7 @@ public class GetMonitoringLevel implements AdminCommand {
 
         MonitoringService monitoringService = config.getMonitoringService();
         final ActionReport actionReport = context.getActionReport();
-        final String headers[] = {"Module", "Monitoring Level"};
+        final String[] headers= {"Module", "Monitoring Level"};
 
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
         Map<String, Object> extraPropertiesMap = new HashMap<>();

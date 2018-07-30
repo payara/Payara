@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
 import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
@@ -62,12 +62,6 @@ import org.jvnet.hk2.config.*;
  * The jmx-connector element defines the configuration of a JSR 160 compliant
  * remote JMX Connector.                                   
  */
-
-/* @XmlType(name = "", propOrder = {
-    "ssl",
-    "property"
-}) */
-
 @Configured
 @ReferenceConstraint(skipDuringCreation=true, payload=JmxConnector.class)
 public interface JmxConnector extends ConfigBeanProxy, Named, PropertyBag, Payload {
@@ -90,8 +84,8 @@ public interface JmxConnector extends ConfigBeanProxy, Named, PropertyBag, Paylo
     /**
      * Sets the value of the enabled property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setEnabled(String value) throws PropertyVetoException;
 
@@ -111,8 +105,8 @@ public interface JmxConnector extends ConfigBeanProxy, Named, PropertyBag, Paylo
     /**
      * Sets the value of the protocol property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setProtocol(String value) throws PropertyVetoException;
 
@@ -131,8 +125,8 @@ public interface JmxConnector extends ConfigBeanProxy, Named, PropertyBag, Paylo
     /**
      * Sets the value of the address property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setAddress(String value) throws PropertyVetoException;
 
@@ -143,8 +137,7 @@ public interface JmxConnector extends ConfigBeanProxy, Named, PropertyBag, Paylo
      * is a function of protocol, port and address as defined by the JSR 160 1.0
      * Specification.
      * 
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute
     @Pattern(regexp=PORT_PATTERN,
@@ -155,8 +148,8 @@ public interface JmxConnector extends ConfigBeanProxy, Named, PropertyBag, Paylo
     /**
      * Sets the value of the port property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setPort(String value) throws PropertyVetoException;
 
@@ -167,8 +160,7 @@ public interface JmxConnector extends ConfigBeanProxy, Named, PropertyBag, Paylo
      * interfaces. A value of false implies that the connections only for this
      * specific address will be selected.
      * 
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute (defaultValue="false", dataType=Boolean.class)
     String getAcceptAll();
@@ -176,8 +168,8 @@ public interface JmxConnector extends ConfigBeanProxy, Named, PropertyBag, Paylo
     /**
      * Sets the value of the acceptAll property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setAcceptAll(String value) throws PropertyVetoException;
 
@@ -202,8 +194,8 @@ public interface JmxConnector extends ConfigBeanProxy, Named, PropertyBag, Paylo
     /**
      * Sets the value of the authRealmName property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setAuthRealmName(String value) throws PropertyVetoException;
 
@@ -213,8 +205,7 @@ public interface JmxConnector extends ConfigBeanProxy, Named, PropertyBag, Paylo
      * Decides whether the transport layer security be used in jmx-connector.
      * If true, configure the ssl element
      * 
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute (defaultValue="true", dataType=Boolean.class)
     String getSecurityEnabled();
@@ -222,16 +213,15 @@ public interface JmxConnector extends ConfigBeanProxy, Named, PropertyBag, Paylo
     /**
      * Sets the value of the securityEnabled property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws java.beans.PropertyVetoException
      */
     void setSecurityEnabled(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the ssl property.
      *
-     * @return possible object is
-     *         {@link Ssl }
+     * @return possible object is {@link Ssl }
      */
     @Element
     Ssl getSsl();
@@ -239,16 +229,18 @@ public interface JmxConnector extends ConfigBeanProxy, Named, PropertyBag, Paylo
     /**
      * Sets the value of the ssl property.
      *
-     * @param value allowed object is
-     *              {@link Ssl }
+     * @param value allowed object is  {@link Ssl }
+     * @throws PropertyVetoException
      */
     void setSsl(Ssl value) throws PropertyVetoException;
     
     /**
-    	Properties as per {@link PropertyBag}
+     * Properties as per {@link PropertyBag}
+     * @return 
      */
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 }

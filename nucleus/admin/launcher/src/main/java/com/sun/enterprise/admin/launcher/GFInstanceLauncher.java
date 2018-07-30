@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.launcher;
 
@@ -47,7 +48,7 @@ import static com.sun.enterprise.util.SystemPropertyConstants.*;
 
 
 /**
- *
+ * Launcher for an instance of Payara (not DAS, embedded or micro)
  * @author bnevins
  */
 class GFInstanceLauncher extends GFLauncher{

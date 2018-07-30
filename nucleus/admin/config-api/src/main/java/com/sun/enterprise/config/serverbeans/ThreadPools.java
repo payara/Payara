@@ -59,6 +59,7 @@ public interface ThreadPools extends ConfigBeanProxy {
      *    getThreadPool().add(newItem);
      * </pre>
      * <p/> <p/> <p/> Objects of the following type(s) are allowed in the list {@link ThreadPool }
+     * @return 
      */
     @Element(required = true)
     List<ThreadPool> getThreadPool();
