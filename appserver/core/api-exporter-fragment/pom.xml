@@ -51,7 +51,6 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>api-exporter-fragment</artifactId>
-    <packaging>jar</packaging>
     <name>GlassFish API Exporter Module Fragment</name>
     <description>This bundle attached itself as a fragment to api-exporter bundle</description>
     

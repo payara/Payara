@@ -76,7 +76,6 @@
             <artifactId>payara-micro-boot</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.ejb</groupId>

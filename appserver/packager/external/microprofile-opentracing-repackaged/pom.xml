@@ -48,7 +48,6 @@
 
     <groupId>fish.payara.external</groupId>
     <artifactId>microprofile-opentracing-repackaged</artifactId>
-    <packaging>jar</packaging>
 
     <name>Repackaged MicroProfile OpenTracing</name>
     <description>Repackages MicroProfile OpenTracing jar to expose more packages into the OSGI module</description>

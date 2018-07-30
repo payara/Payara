@@ -54,7 +54,6 @@
 
     <groupId>org.glassfish.tests.hk2.isolation</groupId>
     <artifactId>runner</artifactId>
-    <packaging>jar</packaging>
     <version>4.1-SNAPSHOT</version>
 
     <name>GlassFish HK2 Isolation Test Runner</name>
@@ -97,7 +96,6 @@
             <artifactId>utils-ng</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
-            <type>jar</type>
         </dependency>
     </dependencies>
 </project>
