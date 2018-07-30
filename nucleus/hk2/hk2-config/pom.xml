@@ -57,7 +57,7 @@
 
     <properties>
         <javax.validation.version.upperbound>3</javax.validation.version.upperbound>
-        <hibernate-validator.version.upperbound>7</hibernate-validator.version.upperbound>
+        <hibernate.validator.version.upperbound>7</hibernate.validator.version.upperbound>
     </properties>
     
     <build>
@@ -112,7 +112,7 @@
                         <Import-Package>
                             javax.validation.*;resolution:=optional;version="${range;[==,${javax.validation.version.upperbound});${javax.validation.version}}
 ",
-                            org.hibernate.validator.*;resolution:=optional;version="${range;[==,${hibernate-validator.version.upperbound});${hibernate.validator.version}}",
+                            org.hibernate.validator.*;resolution:=optional;version="${range;[==,${hibernate.validator.version.upperbound});${hibernate.validator.version}}",
                             *
                         </Import-Package>
                     </instructions>
