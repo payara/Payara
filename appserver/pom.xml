@@ -121,10 +121,10 @@
 
         <!-- CDI -->
         <javax.inject.version>1</javax.inject.version>
-        <cdi-api.version>2.0</cdi-api.version>
-        <weld.version>3.0.4.Final</weld.version>
-        <weld-api.version>3.0.SP2</weld-api.version>
-        <jboss.classfilewriter.version>1.2.2.Final</jboss.classfilewriter.version>
+        <cdi-api.version>2.0.SP1</cdi-api.version>
+        <weld.version>3.0.5.Final</weld.version>
+        <weld-api.version>3.0.SP4</weld-api.version>
+        <jboss.classfilewriter.version>1.2.3.Final</jboss.classfilewriter.version>
         <apache.bcel.version>6.2</apache.bcel.version>
 
         <!-- Java EE Security API -->
