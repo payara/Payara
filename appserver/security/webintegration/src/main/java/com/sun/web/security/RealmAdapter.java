@@ -38,7 +38,6 @@
  * holder.
  */
 // Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
-
 package com.sun.web.security;
 
 import static com.sun.enterprise.security.auth.digest.api.Constants.A1;
@@ -80,10 +79,6 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-/*V3:Comment
-import com.sun.enterprise.webservice.monitoring.WebServiceEngineImpl;
-import com.sun.enterprise.webservice.monitoring.AuthenticationListener;
- */
 import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedAction;
@@ -139,12 +134,10 @@ import org.glassfish.security.common.CNonceCache;
 import org.glassfish.security.common.NonceInfo;
 import org.jvnet.hk2.annotations.Service;
 
-//import com.sun.enterprise.Switch;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
-//import org.glassfish.deployment.common.SecurityRoleMapper;
 import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.security.AppCNonceCacheMap;
 import com.sun.enterprise.security.CNonceCacheFactory;
@@ -160,7 +153,7 @@ import com.sun.enterprise.security.auth.login.LoginContextDriver;
 import com.sun.enterprise.security.authorize.PolicyContextHandlerImpl;
 import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.integration.RealmInitializer;
-import com.sun.enterprise.security.jmac.config.HttpServletHelper;
+import com.sun.enterprise.security.jmac.config.PayaraJaspicServletServices;
 import com.sun.enterprise.security.web.integration.WebPrincipal;
 import com.sun.enterprise.security.web.integration.WebSecurityManager;
 import com.sun.enterprise.security.web.integration.WebSecurityManagerFactory;
@@ -239,7 +232,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
     private String moduleID;
     private boolean isSystemApp;
-    private HttpServletHelper httpServletHelper;
+    private PayaraJaspicServletServices httpServletHelper;
 
     @Inject
     private ServerContext serverContext;
@@ -1666,11 +1659,11 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     /**
      * This must be invoked after virtualServer is set.
      */
-    private HttpServletHelper getConfigHelper(final ServletContext servletContext) {
-        Map<String, WebBundleDescriptor> map = new HashMap<>();
+    private PayaraJaspicServletServices getConfigHelper(final ServletContext servletContext) {
+        Map<String, Object> map = new HashMap<>();
         map.put(WEB_BUNDLE, webDescriptor);
 
-        return new HttpServletHelper(
+        return new PayaraJaspicServletServices(
                 getAppContextID(servletContext), map, null, // null handler
                 realmName, isSystemApp, defaultSystemProviderID);
     }

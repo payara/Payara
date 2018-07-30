@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,58 +38,38 @@
  * holder.
  */
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.jmac;
+package com.sun.enterprise.security.jmac.config;
 
 import java.util.Map;
 
-import javax.security.auth.message.MessageInfo;
+import javax.security.auth.callback.CallbackHandler;
 
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.jvnet.hk2.annotations.Contract;
-
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
-import com.sun.enterprise.security.jauth.AuthParam;
-import com.sun.jaspic.services.RegistrationWrapperRemover;
+import com.sun.enterprise.security.jmac.AuthMessagePolicy;
+import com.sun.jaspic.services.JaspicServices;
 
 /**
- * A Delegate Interface for handling WebServices Specific Security and JSR 196 Providers This insulates the GF
- * Web-Bundle from any WebServices Dependencies.
- * 
- * @author kumar.jayanti
+ * This is based Helper class for 196 Configuration.
  */
-@Contract
-public interface WebServicesDelegate extends RegistrationWrapperRemover {
-    /**
-     * 
-     * @param svcRef The ServiceReferenceDescriptor
-     * @param properties The Properties Map passed to WebServices Code Via PipeCreator
-     * @return The MessageSecurityBindingDescriptor
-     */
-    public MessageSecurityBindingDescriptor getBinding(ServiceReferenceDescriptor svcRef, Map properties);
+public abstract class PayaraJaspicServices extends JaspicServices {
 
     /**
-     * @return the classname of the Default JSR 196 WebServices Security Provider (A.k.a Metro Security Provider)
+     * Get the default callback handler
      */
-    public String getDefaultWebServicesProvider();
+    public CallbackHandler getCallbackHandler() {
+        CallbackHandler callbackHandler = AuthMessagePolicy.getDefaultCallbackHandler();
+
+        if (callbackHandler instanceof CallbackHandlerConfig) {
+            ((CallbackHandlerConfig) callbackHandler).setHandlerContext(getHandlerContext(map));
+        }
+
+        return callbackHandler;
+    }
 
     /**
-     * @param messageInfo The MessageInfo
-     * @return the AuthContextID computed from the argument MessageInfo
+     * This method is invoked by the constructor and should be overridden by a subclass.
      */
-    public String getAuthContextID(MessageInfo messageInfo);
+    protected HandlerContext getHandlerContext(Map<String, ?> map) {
+        return null;
+    }
 
-    /**
-     * @param messageInfo TheMessageInfo
-     * @return a new instance of SOAPAuthParam
-     */
-    public AuthParam newSOAPAuthParam(MessageInfo messageInfo);
-
-    /**
-     * return the SOAP Message from the invocation, to be used by JACC PolicyContextHandler
-     * 
-     * @param inv the invocation
-     * @return the SOAP Message
-     */
-    public Object getSOAPMessage(ComponentInvocation inv);
 }
