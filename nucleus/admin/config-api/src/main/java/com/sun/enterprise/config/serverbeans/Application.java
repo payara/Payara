@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.config.serverbeans;
 
 import java.beans.PropertyVetoException;
@@ -96,16 +97,15 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
     /**
      * Sets the value of the contextRoot property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setContextRoot(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the location property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute
     String getLocation();
@@ -113,16 +113,15 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
     /**
      * Sets the value of the location property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setLocation(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the objectType property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute(required = true)
     @NotNull
@@ -131,16 +130,15 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
     /**
      * Sets the value of the objectType property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setObjectType(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the enabled property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute(defaultValue = "true", dataType = Boolean.class)
     String getEnabled();
@@ -148,16 +146,15 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
     /**
      * Sets the value of the enabled property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setEnabled(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the libraries property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute
     String getLibraries();
@@ -165,16 +162,15 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
     /**
      * Sets the value of the libraries property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setLibraries(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the availabilityEnabled property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getAvailabilityEnabled();
@@ -182,16 +178,15 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
     /**
      * Sets the value of the availabilityEnabled property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setAvailabilityEnabled(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the asyncReplication property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute(defaultValue = "true", dataType = Boolean.class)
     String getAsyncReplication();
@@ -199,16 +194,15 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
     /**
      * Sets the value of the asyncReplication property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setAsyncReplication(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the directoryDeployed property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getDirectoryDeployed();
@@ -216,16 +210,15 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
     /**
      * Sets the value of the directoryDeployed property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setDirectoryDeployed(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the description property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute
     String getDescription();
@@ -233,16 +226,14 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
     /**
      * Sets the value of the description property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
      */
     void setDescription(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the deploymentOrder property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute(defaultValue = "100", dataType = Integer.class)
     String getDeploymentOrder();
@@ -250,8 +241,8 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
     /**
      * Sets the value of the deploymentOrder property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setDeploymentOrder(String value) throws PropertyVetoException;
     
@@ -275,8 +266,8 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
      * <p/>
      * <p/>
      * <p/>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Engine }
+     * Objects of the following type(s) are allowed in the list {@link Engine }
+     * @return 
      */
     @Element
     List<Engine> getEngine();
@@ -359,10 +350,7 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
                     deploymentProps.put(prop.getName(), prop.getValue());
                 }
             }
-            if (instance.getObjectType() != null) {
-                deploymentProps.setProperty(ServerTags.OBJECT_TYPE,
-                    instance.getObjectType());
-            }
+            deploymentProps.setProperty(ServerTags.OBJECT_TYPE, instance.getObjectType());
             if (instance.getContextRoot() != null) {
                 deploymentProps.setProperty(ServerTags.CONTEXT_ROOT,
                         instance.getContextRoot());
@@ -409,41 +397,39 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
             }
             deploymentParams.deploymentorder = new Integer(app.getDeploymentOrder());
             for (Property prop : app.getProperty()) {
-                if (prop.getName().equals(ARCHIVE_TYPE_PROP_NAME)) {
-                    deploymentParams.type = prop.getValue();
-                }
-                else if (prop.getName().equals(ALT_DD_LOCATION_PROP_NAME)) {
-                    URI altDDUri = null;
-                    try {
-                        altDDUri = new URI(prop.getValue());
-                    } catch (URISyntaxException e) {
-                        Logger.getAnonymousLogger().log(
-                            Level.SEVERE, e.getMessage(), e);
-                    }
-                    if (altDDUri != null) {
-                        deploymentParams.altdd = new File(altDDUri);
-                    }
-                } else if (prop.getName().equals(
-                        RUNTIME_ALT_DD_LOCATION_PROP_NAME)) {
-                    URI runtimeAltDDUri = null;
-                    try {
-                        runtimeAltDDUri = new URI(prop.getValue());
-                    } catch (URISyntaxException e) {
-                        Logger.getAnonymousLogger().log(
-                            Level.SEVERE, e.getMessage(), e);
-                    }
-                    if (runtimeAltDDUri != null) {
-                        deploymentParams.runtimealtdd = new File(runtimeAltDDUri);
-                    }
+                switch (prop.getName()) {
+                    case ARCHIVE_TYPE_PROP_NAME:
+                        deploymentParams.type = prop.getValue();
+                        break;
+                    case ALT_DD_LOCATION_PROP_NAME:
+                        URI altDDUri = null;
+                        try {
+                            altDDUri = new URI(prop.getValue());
+                        } catch (URISyntaxException e) {
+                            Logger.getAnonymousLogger().log(
+                                    Level.SEVERE, e.getMessage(), e);
+                        }   if (altDDUri != null) {
+                            deploymentParams.altdd = new File(altDDUri);
+                        }   break;
+                    case RUNTIME_ALT_DD_LOCATION_PROP_NAME:
+                        URI runtimeAltDDUri = null;
+                        try {
+                            runtimeAltDDUri = new URI(prop.getValue());
+                        } catch (URISyntaxException e) {
+                            Logger.getAnonymousLogger().log(
+                                    Level.SEVERE, e.getMessage(), e);
+                        }   if (runtimeAltDDUri != null) {
+                            deploymentParams.runtimealtdd = new File(runtimeAltDDUri);
+                        }   break;
+                    default:
+                        break;
                 }
             }
             return deploymentParams;
         }
 
-        public static Map<String, Properties> getModulePropertiesMap(
-                Application me) {
-            Map<String, Properties> modulePropertiesMap =
-                    new HashMap<String, Properties>();
+        public static Map<String, Properties> getModulePropertiesMap(Application me) {
+            Map<String, Properties> modulePropertiesMap = new HashMap<String, Properties>();
             for (Module module : me.getModule()) {
                 if (module.getProperty() != null) {
                     Properties moduleProps = new Properties();

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans.customvalidators;
 
@@ -128,35 +129,30 @@ public class ContextRootCheckValidator implements ConstraintValidator<ContextRoo
 
     }
 
-    private static final boolean isSameApp(String name1, String name2) {
+    private static boolean isSameApp(String name1, String name2) {
         try {
-            if (name1.equals(name2)) {
-                return true;
-            } else if (name1.equals(getUntaggedName(name2))) {
-                return true;
-            } else if (name2.equals(getUntaggedName(name1))) {
-                return true;
-            } else if (getUntaggedName(name1).equals(getUntaggedName(name2))) {
+            if (name1.equals(name2) || name1.equals(getUntaggedName(name2)) || name2.equals(getUntaggedName(name1)) || 
+                    getUntaggedName(name1).equals(getUntaggedName(name2))) {
                 return true;
             }
-        } catch (Exception ex) {
+        } catch (InvalidNameException | NullPointerException ex) {
             // ignore
         }
         return false;
     }
 
-    private static final String getUntaggedName(String appName) throws Exception {
+    private static String getUntaggedName(String appName) throws InvalidNameException {
 
         if(appName != null && !appName.isEmpty()){
-            int colonIndex = appName.indexOf(":");
+            int colonIndex = appName.indexOf(':');
             // if the appname contains a EXPRESSION_SEPARATOR
             if (colonIndex >= 0){
                 if (colonIndex == 0) {
                     // if appName is starting with a colon
-                    throw new Exception("excepted application name before colon: " + appName);
+                    throw new InvalidNameException("expected application name before colon: " + appName);
                 } else if (colonIndex == (appName.length() - 1)) {
                     // if appName is ending with a colon
-                    throw new Exception("excepted version identifier after colon: " + appName);
+                    throw new InvalidNameException("expected version identifier after colon: " + appName);
                 }
                 // versioned
                 return appName.substring(0, colonIndex);
@@ -164,6 +160,13 @@ public class ContextRootCheckValidator implements ConstraintValidator<ContextRoo
         }
         // not versioned
         return appName;
+    }
+    
+    private static class InvalidNameException extends Exception {
+        
+        InvalidNameException(String message){
+            super(message);
+        }
     }
 
 }

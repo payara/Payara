@@ -105,18 +105,18 @@ public class GenericDeleteCommand extends GenericCrudCommand implements AdminCom
                     habitat.<DomDocument>getService(DomDocument.class), commandName, 
                     AnnotationUtil.presentTransitive(ManagedJob.class, delete.decorator()),
                     delete.resolver(), delete.decorator());
-            if (logger.isLoggable(level)) {
+            if (LOGGER.isLoggable(level)) {
                 for (String paramName : model.getParametersNames()) {
                     CommandModel.ParamModel param = model.getModelFor(paramName);
-                    logger.log(Level.FINE, "I take {0} parameters", param.getName());
+                    LOGGER.log(Level.FINE, "I take {0} parameters", param.getName());
                 }
             }
         } catch(Exception e) {
-            String msg = localStrings.getLocalString(GenericCrudCommand.class,
+            String msg = LOCAL_STRINGS.getLocalString(GenericCrudCommand.class,
                     "GenericCreateCommand.command_model_exception",
                     "Exception while creating the command model for the generic command {0} : {1}",
                     commandName, e.getMessage());
-            LogHelper.log(logger, Level.SEVERE, ConfigApiLoggerInfo.GENERIC_CREATE_CMD_FAILED, e, new Object[] {commandName});
+            LogHelper.log(LOGGER, Level.SEVERE, ConfigApiLoggerInfo.GENERIC_CREATE_CMD_FAILED, e, new Object[] {commandName});
             throw new RuntimeException(msg, e);
         }
         
@@ -152,11 +152,11 @@ public class GenericDeleteCommand extends GenericCrudCommand implements AdminCom
         
         if (tgt==null) {
             
-            String msg = localStrings.getLocalString(GenericDeleteCommand.class,
+            String msg = LOCAL_STRINGS.getLocalString(GenericDeleteCommand.class,
                     "TypeAndNameResolver.target_object_not_found",
                     "Cannot find a {0} with a name {1}", targetType.getSimpleName(), name);
-            logger.log(Level.SEVERE, ConfigApiLoggerInfo.TARGET_OBJ_NOT_FOUND, new Object[] {resolver.getClass().toString(), parentType, targetType});
-            result.failure(logger, msg);
+            LOGGER.log(Level.SEVERE, ConfigApiLoggerInfo.TARGET_OBJ_NOT_FOUND, new Object[] {resolver.getClass().toString(), parentType, targetType});
+            result.failure(LOGGER, msg);
             return;
         }
         
@@ -169,11 +169,11 @@ public class GenericDeleteCommand extends GenericCrudCommand implements AdminCom
 
                     DeletionDecorator<ConfigBeanProxy, ConfigBeanProxy> decorator = habitat.getService(delete.decorator());
                     if (decorator==null) {
-                        String msg = localStrings.getLocalString(GenericCrudCommand.class,
+                        String msg = LOCAL_STRINGS.getLocalString(GenericCrudCommand.class,
                                 "GenericCreateCommand.deletion_decorator_not_found",
                                 "The DeletionDecorator {0} could not be found in the habitat,is it annotated with @Service ?",
                                 delete.decorator().toString());
-                        result.failure(logger, msg);
+                        result.failure(LOGGER, msg);
                         throw new TransactionFailure(msg);
                     } else {
                         // inject the decorator with any parameters from the initial CLI invocation
@@ -189,11 +189,11 @@ public class GenericDeleteCommand extends GenericCrudCommand implements AdminCom
 
 
         } catch(TransactionFailure e) {
-            String msg = localStrings.getLocalString(GenericCrudCommand.class,
+            String msg = LOCAL_STRINGS.getLocalString(GenericCrudCommand.class,
                     "GenericDeleteCommand.transaction_exception",
                     "Exception while deleting the configuration {0} :{1}",
                     child.getImplementation(), e.getMessage());
-            result.failure(logger, msg);
+            result.failure(LOGGER, msg);
         }
 
     }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -45,15 +46,11 @@ import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import java.beans.PropertyVetoException;
-import java.io.Serializable;
 
 
 /**
  *
  */
-
-/* @XmlType(name = "") */
-
 @Configured
 public interface HttpAccessLog extends ConfigBeanProxy {
 
@@ -73,8 +70,8 @@ public interface HttpAccessLog extends ConfigBeanProxy {
     /**
      * Sets the value of the logDirectory property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setLogDirectory(String value) throws PropertyVetoException;
 
@@ -84,8 +81,7 @@ public interface HttpAccessLog extends ConfigBeanProxy {
      * If the IP address of the user agent should be specified or a  DNS lookup
      * should be done
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute
     public String getIponly();
@@ -93,8 +89,8 @@ public interface HttpAccessLog extends ConfigBeanProxy {
     /**
      * Sets the value of the iponly property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setIponly(String value) throws PropertyVetoException;
 

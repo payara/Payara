@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.management.support;
 
@@ -46,12 +47,13 @@ import java.util.HashMap;
 import java.util.Collections;
 
 /**
-    See also com.sun.enterprise.management.support.SystemInfoImpl
-    
-    @see com.sun.appserv.management.base.SystemInfo
-    @see com.sun.enterprise.management.support.SystemInfoImpl
+ * See also com.sun.enterprise.management.support.SystemInfoImpl
+ *
+ * @see com.sun.appserv.management.base.SystemInfo
+ * @see com.sun.enterprise.management.support.SystemInfoImpl
  */
 public final class SystemInfoData {
+    
     private static final SystemInfoData INSTANCE = new SystemInfoData();
     
     private final Map<String,Long>      mPerformanceMillis;
@@ -62,27 +64,26 @@ public final class SystemInfoData {
         mUnmodifiablePerformanceMillis  = Collections.unmodifiableMap( mPerformanceMillis );
     }
     
-        public static SystemInfoData
-    getInstance() {
+    public static SystemInfoData getInstance() {
         return INSTANCE;
     }
     
     /**
-        Add a performance metric.
+     * Add a performance metric.
+     * @param name
+     * @param millis
      */
-        public synchronized void
-    addPerformanceMillis( final String name, final long millis ) {
-        if ( mPerformanceMillis.containsKey( name ) ) {
+    public synchronized void addPerformanceMillis(final String name, final long millis) {
+        if (mPerformanceMillis.containsKey(name)) {
             throw new IllegalStateException();
         }
-        mPerformanceMillis.put( name, millis );
+        mPerformanceMillis.put(name, millis);
     }
     
     /**
-       @return unmodifiable Map of performance data
+     * @return unmodifiable Map of performance data
      */
-        public Map<String,Long>
-    getPerformanceMillis() {
+    public Map<String, Long> getPerformanceMillis() {
         return mUnmodifiablePerformanceMillis;
     }
 }

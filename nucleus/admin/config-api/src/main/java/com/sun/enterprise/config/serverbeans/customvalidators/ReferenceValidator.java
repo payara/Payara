@@ -37,15 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans.customvalidators;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.logging.Logger;
+import java.util.Collections;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.UnexpectedTypeException;
@@ -68,7 +68,7 @@ public class ReferenceValidator implements ConstraintValidator<ReferenceConstrai
         }
     }
 
-    static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ReferenceValidator.class);
+    static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(ReferenceValidator.class);
     
     private ReferenceConstraint rc;
     
@@ -87,13 +87,13 @@ public class ReferenceValidator implements ConstraintValidator<ReferenceConstrai
             return true; //During creation the coresponding DOM is not fully loaded.
         }
         Collection<RemoteKeyInfo> remoteKeys = findRemoteKeys(config);
-        if (remoteKeys != null && !remoteKeys.isEmpty()) {
+        if (!remoteKeys.isEmpty()) {
             ServiceLocator habitat = dom.getHabitat();
             boolean result = true;
             boolean disableGlobalMessage = true;
             for (RemoteKeyInfo remoteKeyInfo : remoteKeys) {
                 if (remoteKeyInfo.method.getParameterTypes().length > 0) {
-                    throw new UnexpectedTypeException(localStrings.getLocalString("referenceValidator.not.getter", 
+                    throw new UnexpectedTypeException(LOCAL_STRINGS.getLocalString("referenceValidator.not.getter", 
                             "The RemoteKey annotation must be on a getter method."));
                 }
                 try {
@@ -112,7 +112,7 @@ public class ReferenceValidator implements ConstraintValidator<ReferenceConstrai
                             }
                         }
                     } else {
-                        throw new UnexpectedTypeException(localStrings.getLocalString("referenceValidator.not.string", 
+                        throw new UnexpectedTypeException(LOCAL_STRINGS.getLocalString("referenceValidator.not.string", 
                             "The RemoteKey annotation must identify a method that returns a String."));
                     }
                 } catch (Exception ex) {
@@ -130,7 +130,7 @@ public class ReferenceValidator implements ConstraintValidator<ReferenceConstrai
     private Collection<RemoteKeyInfo> findRemoteKeys(Object o) {
         Collection<RemoteKeyInfo> result = new ArrayList<RemoteKeyInfo>();
         if (o == null) {
-            return result;
+            return Collections.emptyList();
         }
         findRemoteKeys(o.getClass(), result);
         return result;

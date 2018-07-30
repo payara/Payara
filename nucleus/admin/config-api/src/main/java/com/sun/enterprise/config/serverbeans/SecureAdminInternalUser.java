@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -54,7 +55,6 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 
-@Configured
 /**
  * Records information about a username/password-alias pair to be
  * used for authentication internally among GlassFish processes (DAS to instance, for
@@ -62,20 +62,22 @@ import javax.inject.Inject;
  * 
  * @author Tim Quinn
  */
+@Configured
 public interface SecureAdminInternalUser extends ConfigBeanProxy {
-    
-    /**
-     * Retrieves the username for this authorized internal admin user entry..
-     *
-     * @return {@link String } containing the username
-     */
-    @Param(primary=true)
-    void setUsername(String value);
     
     /**
      * Sets the username for this authorized internal admin user entry.
      *
      * @param value username
+     */
+    @Param(primary=true)
+    void setUsername(String value);
+    
+    /**
+     * 
+     * Retrieves the username for this authorized internal admin user entry..
+     *
+     * @return {@link String } containing the username
      */
     @Attribute (required=true, key=true)
     String getUsername();
