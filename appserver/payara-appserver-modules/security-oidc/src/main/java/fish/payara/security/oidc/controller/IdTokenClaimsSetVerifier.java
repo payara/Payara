@@ -147,6 +147,17 @@ public class IdTokenClaimsSetVerifier implements JWTClaimsSetVerifier {
         }
 
         /**
+         * The current time must be after the time represented by the iat Claim.
+         */
+        Date iat = claims.getIssueTime();
+        if (isNull(iat)) {
+            throw new IllegalStateException("Missing issue time (iat) claim");
+        }
+        if ((iat.getTime() - clockSkewInMillis) > currentTime) {
+            throw new IllegalStateException("Issue time must be after current time " + iat);
+        }
+
+        /**
          * If a nonce was sent in the authentication request, a nonce claim must
          * be present and its value checked to verify that it is the same value
          * as the one that was sent in the authentication request to detect

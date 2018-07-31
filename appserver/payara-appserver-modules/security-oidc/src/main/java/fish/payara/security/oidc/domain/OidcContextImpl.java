@@ -134,7 +134,11 @@ public class OidcContextImpl implements OidcContext {
         return claims;
     }
 
+    @Override
     public OidcClaims getClaims() {
+        if (claims == null) {
+            return null;
+        }
         return new OidcClaims(claims);
     }
 
