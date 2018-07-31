@@ -258,6 +258,7 @@ public class OidcAuthenticationMechanism implements HttpAuthenticationMechanism 
 
         String accessToken = tokensObject.getString(ACCESS_TOKEN, null);
         if (nonNull(accessToken)) {
+            tokenController.validateAccessToken(context, accessToken, idTokenJWT.getHeader().getAlgorithm());
             context.setAccessToken(accessToken);
             JsonObject userInfo = userInfoController.getUserInfo(configuration, accessToken);
             context.setClaims(userInfo);

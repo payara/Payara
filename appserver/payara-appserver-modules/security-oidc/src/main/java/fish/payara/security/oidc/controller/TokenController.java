@@ -54,6 +54,7 @@ import com.nimbusds.jose.proc.JWEDecryptionKeySelector;
 import com.nimbusds.jose.proc.JWEKeySelector;
 import com.nimbusds.jose.proc.JWSKeySelector;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
+import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -64,6 +65,7 @@ import com.nimbusds.jwt.proc.BadJWTException;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.nimbusds.jwt.proc.JWTClaimsSetVerifier;
+import static fish.payara.security.oidc.api.OidcConstant.ACCESS_TOKEN_HASH;
 import fish.payara.security.oidc.domain.OidcConfiguration;
 import static fish.payara.security.oidc.api.OidcConstant.AUTHORIZATION_CODE;
 import static fish.payara.security.oidc.api.OidcConstant.CLIENT_ID;
@@ -71,12 +73,17 @@ import static fish.payara.security.oidc.api.OidcConstant.CLIENT_SECRET;
 import static fish.payara.security.oidc.api.OidcConstant.CODE;
 import static fish.payara.security.oidc.api.OidcConstant.GRANT_TYPE;
 import static fish.payara.security.oidc.api.OidcConstant.REDIRECT_URI;
+import fish.payara.security.oidc.api.OidcContext;
 import fish.payara.security.oidc.domain.OidcNonce;
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.Map;
 import static java.util.Objects.isNull;
 import javax.enterprise.context.ApplicationScoped;
@@ -164,7 +171,7 @@ public class TokenController {
     }
 
     /**
-     * (5) Validate Id Token's claims and verify ID Token's signature.
+     * (5.1) Validate Id Token's claims and verify ID Token's signature.
      *
      * @param configuration
      * @param nonce
@@ -346,4 +353,48 @@ public class TokenController {
                 .orElseThrow(() -> new IllegalStateException("Signing key not found with a matching alg [%s] & kid [%s] property in the filtered JWKS"));
     }
 
+    /**
+     * (5.2) Validate the access token
+     *
+     * @param context
+     * @param accessToken
+     * @param algorithm
+     */
+    public void validateAccessToken(OidcContext context, String accessToken, Algorithm algorithm) {
+        if (context.getIdentityTokenClaims().containsKey(ACCESS_TOKEN_HASH)) {
+
+            //Get the message digest for the JWS algorithm value used in the header(alg) of the ID Token
+            MessageDigest md = getMessageDigest(algorithm);
+
+            // Hash the octets of the ASCII representation of the access_token with the hash algorithm
+            md.update(accessToken.getBytes(US_ASCII));
+            byte[] hash = md.digest();
+
+            // Take the left-most half of the hash and base64url encode it.
+            byte[] leftHalf = Arrays.copyOf(hash, hash.length / 2);
+            String accessTokenHash = Base64URL.encode(leftHalf).toString();
+
+            // The value of at_hash in the ID Token MUST match the value produced
+            if (!context.getIdentityTokenClaims().get(ACCESS_TOKEN_HASH).equals(accessTokenHash)) {
+                throw new IllegalStateException("Invalid access token hash (at_hash) value");
+            }
+        }
+    }
+
+    /**
+     * Get the message digest instance for the given JWS algorithm value.
+     *
+     * @param algorithm The JSON Web Signature (JWS) algorithm.
+     *
+     * @return The message digest instance
+     */
+    public static MessageDigest getMessageDigest(Algorithm algorithm) {
+        String mdAlgorithm = "SHA-" + algorithm.getName().substring(2);
+
+        try {
+            return MessageDigest.getInstance(mdAlgorithm);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException("No MessageDigest instance found with the specified algorithm : " + mdAlgorithm, ex);
+        }
+    }
 }
