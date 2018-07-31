@@ -75,7 +75,6 @@ import static fish.payara.security.oidc.api.OidcConstant.GRANT_TYPE;
 import static fish.payara.security.oidc.api.OidcConstant.REDIRECT_URI;
 import fish.payara.security.oidc.api.OidcContext;
 import fish.payara.security.oidc.domain.OidcNonce;
-import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import static java.nio.charset.StandardCharsets.US_ASCII;
@@ -87,8 +86,6 @@ import java.util.Arrays;
 import java.util.Map;
 import static java.util.Objects.isNull;
 import javax.enterprise.context.ApplicationScoped;
-import javax.json.Json;
-import javax.json.JsonObject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -97,7 +94,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Form;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 /**
  * Controller for Token endpoint
@@ -205,27 +201,11 @@ public class TokenController {
                 jwtProcessor.setJWTClaimsSetVerifier(new IdTokenClaimsSetVerifier(configuration, nonce));
                 claimsSet = jwtProcessor.process(signedToken, null);
 
-//            String kid = header.getKeyID();
-//            JsonObject jwk = getJWK(configuration, alg, kid);
-//            /**
-//             * Build the public key using JSON Web Key (JWK)
-//             */
-//            Base64URL modulus = new Base64URL(jwk.getString("n"));
-//            Base64URL publicExponent = new Base64URL(jwk.getString("e"));
-//            RSAKey publicKey = new RSAKey.Builder(modulus, publicExponent)
-//                    .keyUse(KeyUse.SIGNATURE)
-//                    .keyID(kid)
-//                    .build();
-//            new JWSVerificationKeySelector(expectedJWSAlg, new ImmutableSecret(clientSecret.getValueBytes()))
-//            // verify the ID Token using public key
-//            try {
-//                if (!signedToken.verify(new RSASSAVerifier(jwk))) {
-//                    throw new IllegalStateException("Signature invalid");
-//                }
-//            } catch (JOSEException ex) {
-//                throw new IllegalStateException("Error in verifying the Id Token", ex);
-//            }
-            } else if (idToken instanceof EncryptedJWT) { // If ID Token is encrypted, decrypt it using the keys and algorithms
+            } else if (idToken instanceof EncryptedJWT) {
+                /**
+                 * If ID Token is encrypted, decrypt it using the keys and
+                 * algorithms
+                 */
                 EncryptedJWT encryptedToken = (EncryptedJWT) idToken;
                 JWEHeader header = encryptedToken.getHeader();
                 String alg = header.getAlgorithm().getName();
@@ -244,6 +224,16 @@ public class TokenController {
         return claimsSet.getClaims();
     }
 
+    /**
+     * JWSKeySelector finds the JSON Web Key Set (JWKS) from jwks_uri endpoint
+     * and filter for potential signing keys in the JWKS with a matching kid
+     * property.
+     *
+     * @param configuration
+     * @param alg the algorithm for the key
+     * @param kid the unique identifier for the key
+     * @return the JSON Web Signing (JWS) key selector
+     */
     private JWSKeySelector getJWSKeySelector(OidcConfiguration configuration, String alg) {
         JWSKeySelector jwsKeySelector;
         JWKSource jwkSource;
@@ -270,6 +260,13 @@ public class TokenController {
         return jwsKeySelector;
     }
 
+    /**
+     * JWEKeySelector selects the key to decrypt JSON Web Encryption (JWE) and
+     * validate encrypted JWT.
+     *
+     * @param configuration
+     * @return the JSON Web Encryption (JWE) key selector
+     */
     private JWEKeySelector getJWEKeySelector(OidcConfiguration configuration) {
         JWEKeySelector jweKeySelector;
 
@@ -292,65 +289,6 @@ public class TokenController {
 
         jweKeySelector = new JWEDecryptionKeySelector(jwsAlg, jweEnc, jwkSource);
         return jweKeySelector;
-    }
-
-    /**
-     * Retrieve the JSON Web Key Set (JWKS) from jwks_uri endpoint and filter
-     * for potential signing keys in the JWKS with a matching alg & kid
-     * property.
-     *
-     * @param configuration
-     * @param alg the algorithm for the key
-     * @param kid the unique identifier for the key
-     * @return the JSON Web Key (JWK), a cryptographic key
-     */
-    private JsonObject getJWK(OidcConfiguration configuration, String alg, String kid) {
-
-        /**
-         * Fetch the JSON Web Key Set (JWKS), the set of keys containing the
-         * public keys that should be used to verify any JWT issued by the
-         * authorization server.
-         */
-        Client client = ClientBuilder.newClient();
-        WebTarget target = client.target(configuration.getProviderMetadata().getJwksUri());
-        Response response = target.request()
-                .accept(APPLICATION_JSON)
-                .get();
-        if (response.getStatus() != Status.OK.getStatusCode()) {
-            throw new IllegalStateException("Unable to fetch the JSON Web Key Set (JWKS) from jwks_uri endpoint : " + configuration.getProviderMetadata().getJwksUri());
-        }
-        String jwksBody = response.readEntity(String.class);
-
-//        JWKSet jwks;
-//        try {
-//            jwks = JWKSet.parse(jwksBody);
-//        } catch (ParseException ex) {
-//            throw new IllegalStateException(ex);
-//        }
-//
-//        /**
-//         * Get the JWK from JSON Web Key set (JWKS) as identified by its KeyId
-//         * (kid).
-//         */
-//        JWK jwk = jwks.getKeyByKeyId(kid);
-//        if (jwk == null) {
-//            throw new IllegalStateException();
-//        } else if (!jwk.getAlgorithm().getName().equals(alg)) {
-//            throw new IllegalStateException();
-//        }
-//
-//        return jwk;
-        JsonObject jwksObject = Json.createReader(new StringReader(jwksBody)).readObject();
-
-        /**
-         * Find the signing key in the JWKS with a matching alg & kid property.
-         */
-        return jwksObject.getJsonArray("keys").stream()
-                .map(jwk -> jwk.asJsonObject())
-                .filter(jwk -> jwk.getString("alg").equals(alg))
-                .filter(jwk -> jwk.getString("kid").equals(kid))
-                .findAny()
-                .orElseThrow(() -> new IllegalStateException("Signing key not found with a matching alg [%s] & kid [%s] property in the filtered JWKS"));
     }
 
     /**
