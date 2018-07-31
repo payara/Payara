@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portion Copyright [2018] Payara Foundation and/or affiliates
 
 /*
  * MappingFile.java
@@ -58,8 +59,6 @@ import java.util.HashMap;
 import java.util.ResourceBundle;
 import java.util.Iterator;
 import java.io.IOException;
-
-import java.text.MessageFormat;
 
 import org.netbeans.modules.dbschema.*;
 

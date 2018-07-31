@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portion Copyright [2018] Payara Foundation and/or affiliates
 
 /*
  * MappingGenerator.java
@@ -67,7 +68,6 @@ import com.sun.jdo.spi.persistence.generator.database.MappingPolicy;
 
 import org.netbeans.modules.dbschema.*;
 import org.netbeans.modules.dbschema.jdbcimpl.SchemaElementImpl;
-import org.netbeans.modules.dbschema.util.NameUtil;
 
 import org.netbeans.modules.schema2beans.Schema2BeansException;
 
