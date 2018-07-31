@@ -42,6 +42,7 @@ package fish.payara.security.oidc.controller;
 import fish.payara.security.oidc.domain.OidcConfiguration;
 import static fish.payara.security.oidc.api.OidcConstant.ERROR_DESCRIPTION_PARAM;
 import static fish.payara.security.oidc.api.OidcConstant.ERROR_PARAM;
+import static fish.payara.security.oidc.api.OidcConstant.SUBJECT_IDENTIFIER;
 import fish.payara.security.oidc.api.OidcContext;
 import java.io.StringReader;
 import static java.util.Objects.nonNull;
@@ -119,7 +120,19 @@ public class UserInfoController {
             LOGGER.log(WARNING, "Error occurred in fetching user info: {0} caused by {1}", new Object[]{error, errorDescription});
             throw new IllegalStateException("Error occurred in fetching user info");
         }
+        validateUserInfoClaims(userInfo);
         return userInfo;
+    }
+
+    private void validateUserInfoClaims(JsonObject userInfo) {
+        /**
+         * Check the token substitution attacks : The sub Claim in the UserInfo
+         * Response must be verified to exactly match the sub claim in the ID
+         * Token.
+         */
+        if (!context.getSubject().equals(userInfo.getString(SUBJECT_IDENTIFIER))) {
+            throw new IllegalStateException("UserInfo Response is invalid as sub claim must match with the sub Claim in the ID Token");
+        }
     }
 
 }
