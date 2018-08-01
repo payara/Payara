@@ -138,7 +138,7 @@ public class Tracer implements io.opentracing.Tracer {
         
         @Override
         public SpanBuilder asChildOf(Span parentSpan) {
-            addReference(References.CHILD_OF, parentSpan.context());
+            asChildOf(parentSpan.context());
             return this;
         }
 
@@ -182,7 +182,6 @@ public class Tracer implements io.opentracing.Tracer {
             origin = scopeManager.activate(span, bln);
             return origin;
             //return makeActive(startManual());
-            //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
         
         @Override

@@ -60,6 +60,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
+import javax.annotation.Priority;
 import javax.enterprise.inject.spi.CDI;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -79,6 +80,7 @@ import org.glassfish.internal.api.Globals;
  * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
+@Priority(500)
 public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     private static final Logger logger = Logger.getLogger(JaxrsContainerRequestTracingFilter.class.getName());

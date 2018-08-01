@@ -276,7 +276,7 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
      * Span state that is copied across boundaries and
      * stores a reference to the parent trace
      */
-    public class SpanContext implements Serializable {
+    public class SpanContext implements Serializable, io.opentracing.SpanContext {
 
         private final UUID spanId;
         private UUID traceId;
@@ -323,6 +323,11 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         
         public Map<String, String> getBaggageItems() {
             return baggageItems;
+        }
+
+        @Override
+        public Iterable<Entry<String, String>> baggageItems() {
+            return getBaggageItems().entrySet();
         }
 
     }

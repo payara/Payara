@@ -240,16 +240,5 @@ public class Span extends RequestTraceSpan implements io.opentracing.Span {
             }
         }
     }
-    
-    /**
-     * Implementation of the OpenTracing SpanContext class, that extends from the Request Tracing Service.
-     */
-    public class SpanContext extends RequestTraceSpan.SpanContext implements io.opentracing.SpanContext {
 
-        @Override
-        public Iterable<Map.Entry<String, String>> baggageItems() {
-            return super.getBaggageItems().entrySet();
-        }
-
-    }
 }

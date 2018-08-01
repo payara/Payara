@@ -43,20 +43,17 @@
 package fish.payara.opentracing;
 
 import io.opentracing.Span;
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
  * Implementation of Scope from Opentracing.
  * 
- * This class is managed by HK2
  * @author jonathan coustick
  * @since 5.183
  */
-public class OTScope /*extends org.glassfish.hk2.extras.operation.OperationContext<OpenTracingScoped>*/ implements io.opentracing.Scope {
+public class OTScope implements io.opentracing.Scope {
 
     private Span currentSpan;
     private Map<Span, Boolean> allSpans;
@@ -67,10 +64,13 @@ public class OTScope /*extends org.glassfish.hk2.extras.operation.OperationConte
     
     @Override
     public void close() {
-        for (Span span: allSpans.keySet()){
+        Iterator<Span> keys = allSpans.keySet().iterator();
+        while (keys.hasNext()){
+            Span span = keys.next();
             if (allSpans.get(span)){
                 span.finish();
             }
+            allSpans.remove(span);//prevents scope holding on a reference to old spans
         }
     }
 
@@ -88,10 +88,5 @@ public class OTScope /*extends org.glassfish.hk2.extras.operation.OperationConte
     void removeSpan(Span span){
         allSpans.remove(span);
     }
-
-    /*@Override
-    public Class<? extends Annotation> getScope() {
-        return OpenTracingScoped.class;
-    }*/
     
 }
