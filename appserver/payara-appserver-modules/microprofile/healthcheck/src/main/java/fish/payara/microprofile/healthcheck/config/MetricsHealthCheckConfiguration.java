@@ -43,7 +43,6 @@
 package fish.payara.microprofile.healthcheck.config;
 
 import java.beans.PropertyVetoException;
-import javax.inject.Named;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
