@@ -1,37 +1,78 @@
 <!initPage
     setResourceBundle(key="i18n_microprofile" bundle="fish.payara.admingui.microprofile.Strings");
-/>
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18n_microprofile.microprofile.specs.configuration.config.pageTitle}">
+    />
+<!composition template="/templates/default.layout"  
+    guiTitle="$resource{i18n_microprofile.microprofile.specs.configuration.faultTolerance.pageTitle}">
 
 <!define name="content">
 
 <event>
     <!beforeCreate
-        setSessionAttribute(key="microprofileTabs" value="microprofileConfigTab");
         getRequestValue(key="configName" value="#{pageSession.configName}");
-        setSessionAttribute(key="MICROPROFILE_CONFIG_URL", 
-                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/microprofile-config");
-    />
+        createMap(result="#{pageSession.attrsMap}")
+        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.configName}");
+        setPageSessionAttribute(key="MICROPROFILE_FAULT_TOLERANCE_URL", 
+                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/microprofile-fault-tolerance-configuration");
+        gf.restRequest(endpoint="#{pageSession.MICROPROFILE_FAULT_TOLERANCE_URL}/get-fault-tolerance-configuration?target=#{pageSession.configName}"  
+                method="GET" result="#{requestScope.resp}");      
+
+        setPageSessionAttribute(key="valueMap", 
+                value="#{requestScope.resp.data.extraProperties.faultToleranceConfiguration}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+        />
 </event>
-    
-    
+
+
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg_1.inc"
 #include "/microprofile/microprofile/microprofileConfigTabs.inc
-    <sun:title id="propertyContentPage" title="$resource{i18n_microprofile.microprofile.specs.configuration.config.pageTitle}" 
-               helpText="$resource{i18n_microprofile.microprofile.specs.configuration.config.pageTitleHelpText}" >
+    <sun:title id="propertyContentPage" title="$resource{i18n_microprofile.microprofile.specs.configuration.faultTolerance.pageTitle}" 
+               helpText="$resource{i18n_microprofile.microprofile.specs.configuration.faultTolerance.pageTitleHelpText}" >
         <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
             <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
-                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) 
+                        submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command
+                        prepareSuccessfulMsg();
+                        gf.restRequest(endpoint="#{pageSession.MICROPROFILE_FAULT_TOLERANCE_URL}/set-fault-tolerance-configuration" 
+                        method="POST" attrs="#{pageSession.valueMap}");
+                    />               
             </sun:button>
         </sun:panelGroup>
-    </facet>
-</sun:title>
+        </facet>
+    </sun:title>
 <sun:propertySheet id="propertySheet">
 #include "/common/shared/configNameSection.inc"
-
-</sun:propertySheet>
-</sun:form>
-</define>
+    <sun:propertySheetSection id="faultToleranceProps">
+        <sun:property id="managedExecutorServiceNameProp" labelAlign="left" 
+                      noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.faultTolerance.configuration.managedExecutorServiceName}"  
+                      helpText="$resource{i18n_microprofile.faultTolerance.configuration.managedExecutorServiceNameHelp}">
+            <sun:dropDown id="managedExecutorServiceName" selected="#{pageSession.valueMap['managedExecutorServiceName']}" 
+                          labels="$pageSession{managedExecutorServiceList}"  
+                          values="$pageSession{managedExecutorServiceList}"  >
+                <!beforeCreate
+                    gf.getChildrenNameFromListCmd(endpoint="#{sessionScope.REST_URL}/resources/list-managed-executor-services", 
+                            attrs="#{pageSession.attrsMap}" result="#{pageSession.managedExecutorServiceList}");
+                    />
+            </sun:dropDown>
+        </sun:property>
+        <sun:property id="managedScheduledExecutorServiceNameProp" labelAlign="left" 
+                      noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.faultTolerance.configuration.managedScheduledExecutorServiceName}"  
+                      helpText="$resource{i18n_microprofile.faultTolerance.configuration.managedScheduledExecutorServiceNameHelp}">
+            <sun:dropDown id="managedExecutorServiceName" selected="#{pageSession.valueMap['managedScheduledExecutorServiceName']}" 
+                          labels="$pageSession{managedScheduledExecutorServiceList}"  
+                          values="$pageSession{managedScheduledExecutorServiceList}"  >
+                <!beforeCreate
+                    gf.getChildrenNameFromListCmd(endpoint="#{sessionScope.REST_URL}/resources/list-managed-scheduled-executor-services", 
+                            attrs="#{pageSession.attrsMap}" result="#{pageSession.managedScheduledExecutorServiceList}");
+                    />
+            </sun:dropDown>
+        </sun:property>
+    </sun:propertySheetSection>
+   </sun:propertySheet>
+  </sun:form>
+ </define>
 </composition>
