@@ -55,7 +55,6 @@
 
     <artifactId>console-devtests</artifactId>
     <version>4.0</version>
-    <packaging>jar</packaging>
     <name>Admin Console Dev Tests</name>
     <description>This module contains the dev tests for the admin console</description>
 

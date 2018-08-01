@@ -27,13 +27,13 @@
 <!define name="content">
 <event>
     <!beforeCreate
-        getRequestValue(key="config" value="#{pageSession.config}");
-
+        getRequestValue(key="configName" value="#{pageSession.configName}");
+        setPageSessionAttribute(key="target", value="#{pageSession.configName}");
         createMap(result="#{pageSession.attrsMap}")
-        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.config}");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-runtime-configuration?target=#{pageSession.config}"  method="GET" result="#{requestScope.resp}");
+        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.target}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-runtime-configuration?target=#{pageSession.target}"  method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.listBatchRuntimeConfiguration}");
-        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.config}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         />
 </event>
 

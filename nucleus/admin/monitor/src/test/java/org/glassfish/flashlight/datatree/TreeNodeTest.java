@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 /**
  * @author Harpreet Singh
@@ -93,8 +94,6 @@ public class TreeNodeTest {
         System.out.println("test:simpleTree");
         TreeNode server = setupSimpleTree ();
         TreeNode grandson = server.getNode("wto.wtoson.wtograndson");
-//        System.out.println ("Retreived :"+grandson.getName()+ " should be "+
-//                "wtograndson");
         assertEquals ("wtograndson", grandson.getName());
     }
     
@@ -120,11 +119,8 @@ public class TreeNodeTest {
             wto.addChild (methodInv);
             
             TreeNode child = server.getNode("wto.helloWorld");
-//            System.out.println ("Invoking hello world. Got Value: " + child.getValue ());
-            assertEquals(child.getValue(), "Hello World");
-        } catch (NoSuchMethodException ex) {
-            Logger.getLogger(TreeNodeTest.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SecurityException ex) {
+            assertEquals("Hello World", child.getValue());
+        } catch (NoSuchMethodException | SecurityException ex) {
             Logger.getLogger(TreeNodeTest.class.getName()).log(Level.SEVERE, null, ex);
         }
         
@@ -147,7 +143,7 @@ public class TreeNodeTest {
         grandson.addChild((TreeNode)counter);
         
         TreeNode counterNode = server.getNode ("wto.wtoson.wtograndson.counter");
-        assertEquals (returnValue, counterNode.getValue());
+        assertEquals(returnValue, counterNode.getValue());
         
         
     }
@@ -196,13 +192,13 @@ public class TreeNodeTest {
         TreeNode server = setupComplexTree ();
         List<TreeNode> list = server.traverse(false);
         String[] expected = new String [7];
-        expected[0] = new String ("server");
-        expected[1] = new String ("server.wto");
-        expected[2] = new String ("server.wto.wtoson");
-        expected[3] = new String ("server.wto.wtoson.wtosonsdaughter");
-        expected[4] = new String ("server.wto.wtoson.wtosonsson");
-        expected[5] = new String ("server.wto.wtodaughter");
-        expected[6] = new String ("server.wto.wtodaughter.wtodaughtersdaughter");
+        expected[0] = "server";
+        expected[1] = "server.wto";
+        expected[2] = "server.wto.wtoson";
+        expected[3] = "server.wto.wtoson.wtosonsdaughter";
+        expected[4] = "server.wto.wtoson.wtosonsson";
+        expected[5] = "server.wto.wtodaughter";
+        expected[6] = "server.wto.wtodaughter.wtodaughtersdaughter";
         // System.out.println ("---- Printing Traversed Tree ---");
         String[] actual = new String[7];
       //  int i=0;
@@ -222,10 +218,10 @@ public class TreeNodeTest {
         wtoson.setEnabled(false);
         List<TreeNode> list = server.traverse(true);
         String[] expected = new String [4];
-        expected[0] = new String ("server");
-        expected[1] = new String ("server.wto");
-        expected[2] = new String ("server.wto.wtodaughter");
-        expected[3] = new String ("server.wto.wtodaughter.wtodaughtersdaughter");
+        expected[0] = "server";
+        expected[1] = "server.wto";
+        expected[2] = "server.wto.wtodaughter";
+        expected[3] = "server.wto.wtodaughter.wtodaughtersdaughter";
         // System.out.println ("---- Printing Traversed Tree ---");
  /*       String[] actual = new String[4];
           int i=0;
@@ -254,13 +250,13 @@ public class TreeNodeTest {
         TreeNode server = setupComplexTree ();
         List<TreeNode> list = server.getNodes("*", false, true);
         String[] expected = new String [7];
-        expected[0] = new String ("server");
-        expected[1] = new String ("server.wto");
-        expected[2] = new String ("server.wto.wtoson");
-        expected[3] = new String ("server.wto.wtoson.wtosonsdaughter");
-        expected[4] = new String ("server.wto.wtoson.wtosonsson");
-        expected[5] = new String ("server.wto.wtodaughter");
-        expected[6] = new String ("server.wto.wtodaughter.wtodaughtersdaughter");
+        expected[0] = "server";
+        expected[1] = "server.wto";
+        expected[2] = "server.wto.wtoson";
+        expected[3] = "server.wto.wtoson.wtosonsdaughter";
+        expected[4] = "server.wto.wtoson.wtosonsson";
+        expected[5] = "server.wto.wtodaughter";
+        expected[6] = "server.wto.wtodaughter.wtodaughtersdaughter";
         // System.out.println ("---- Printing Traversed Tree ---");
 /*        String[] actual = new String[7];
         int i=0;

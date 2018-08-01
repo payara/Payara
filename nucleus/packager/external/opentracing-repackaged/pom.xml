@@ -48,7 +48,6 @@
 
     <groupId>fish.payara.external</groupId>
     <artifactId>opentracing-repackaged</artifactId>
-    <packaging>jar</packaging>
 
     <name>Repackaged OpenTracing</name>
     <description>Repackages OpenTracing jar to expose more packages into the OSGI module</description>

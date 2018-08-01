@@ -38,7 +38,7 @@
  * holder.
  */
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.jmac.config;
+package com.sun.jaspic.services;
 
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
@@ -55,19 +55,13 @@ import javax.security.auth.message.config.AuthConfigFactory.RegistrationContext;
 import javax.security.auth.message.config.AuthConfigProvider;
 import javax.security.auth.message.config.ClientAuthConfig;
 import javax.security.auth.message.config.ClientAuthContext;
-import javax.security.auth.message.config.RegistrationListener;
 import javax.security.auth.message.config.ServerAuthConfig;
 import javax.security.auth.message.config.ServerAuthContext;
-
-import org.glassfish.internal.api.Globals;
-
-import com.sun.enterprise.security.jmac.AuthMessagePolicy;
-import com.sun.enterprise.security.jmac.WebServicesDelegate;
 
 /**
  * This is based Helper class for 196 Configuration.
  */
-public abstract class ConfigHelper {
+public abstract class JaspicServices {
 
     protected static final AuthConfigFactory factory = AuthConfigFactory.getFactory();
 
@@ -81,7 +75,7 @@ public abstract class ConfigHelper {
     protected CallbackHandler callbackHandler;
     protected AuthConfigRegistrationWrapper listenerWrapper;
 
-    protected void init(String layer, String appContext, Map<String, ?> map, CallbackHandler callbackHandler) {
+    protected void init(String layer, String appContext, Map<String, ?> map, CallbackHandler callbackHandler, RegistrationWrapperRemover removerDelegate) {
         this.layer = layer;
         this.appCtxt = appContext;
         this.map = map;
@@ -94,11 +88,11 @@ public abstract class ConfigHelper {
         this.readLock = readWriteLock.readLock();
         this.writeLock = readWriteLock.writeLock();
 
-        listenerWrapper = new AuthConfigRegistrationWrapper(this.layer, this.appCtxt);
+        listenerWrapper = new AuthConfigRegistrationWrapper(this.layer, this.appCtxt, removerDelegate);
     }
 
-    public void setJmacProviderRegisID(String jmacProviderRegisID) {
-        this.listenerWrapper.setJmacProviderRegisID(jmacProviderRegisID);
+    public void setRegistrationId(String registrationId) {
+        listenerWrapper.setRegistrationId(registrationId);
     }
 
     public AuthConfigRegistrationWrapper getRegistrationWrapper() {
@@ -178,8 +172,8 @@ public abstract class ConfigHelper {
             if (!disabled) {
                 configData = listenerWrapper.getConfigData();
                 if (configData != null) {
-                    authConfig = isServer ? configData.serverConfig : configData.clientConfig;
-                    lastConfigProvider = configData.provider;
+                    authConfig = isServer ? configData.getServerConfig() : configData.getClientConfig();
+                    lastConfigProvider = configData.getProvider();
                 }
             }
 
@@ -209,7 +203,7 @@ public abstract class ConfigHelper {
             }
         }
 
-        return isServer ? configData.serverConfig : configData.clientConfig;
+        return isServer ? configData.getServerConfig() : configData.getClientConfig();
     }
 
     /**
@@ -236,177 +230,8 @@ public abstract class ConfigHelper {
     /**
      * Get the callback default handler
      */
-    private CallbackHandler getCallbackHandler() {
-        CallbackHandler callbackHandler = AuthMessagePolicy.getDefaultCallbackHandler();
-
-        if (callbackHandler instanceof CallbackHandlerConfig) {
-            ((CallbackHandlerConfig) callbackHandler).setHandlerContext(getHandlerContext(map));
-        }
-
-        return callbackHandler;
-    }
-
-    /**
-     * This method is invoked by the constructor and should be overrided by subclass.
-     */
-    protected HandlerContext getHandlerContext(Map<String, ?> map) {
+    protected CallbackHandler getCallbackHandler() {
         return null;
-    }
-
-    private static class ConfigData {
-
-        private AuthConfigProvider provider;
-        private AuthConfig serverConfig;
-        private AuthConfig clientConfig;
-
-        ConfigData() {
-        }
-
-        ConfigData(AuthConfigProvider authConfigProvider, AuthConfig authConfig) {
-            provider = authConfigProvider;
-
-            if (authConfig == null) {
-                serverConfig = null;
-                clientConfig = null;
-            } else if (authConfig instanceof ServerAuthConfig) {
-                serverConfig = authConfig;
-            } else if (authConfig instanceof ClientAuthConfig) {
-                clientConfig = authConfig;
-            } else {
-                throw new IllegalArgumentException();
-            }
-        }
-    }
-
-    // Adding extra inner class because specializing the Linstener Impl class would
-    // make the GF 196 implementation Non-Replaceable.
-    // This class would hold a RegistrationListener within.
-    public static class AuthConfigRegistrationWrapper {
-
-        private String layer;
-        private String appCtxt;
-        private String jmacProviderRegisID;
-        private boolean enabled;
-        private ConfigData data;
-
-        private Lock wLock;
-        private ReadWriteLock rwLock;
-
-        private AuthConfigRegistrationListener listener;
-        private int referenceCount = 1;
-        private WebServicesDelegate delegate = null;
-
-        public AuthConfigRegistrationWrapper(String layer, String appCtxt) {
-            this.layer = layer;
-            this.appCtxt = appCtxt;
-            this.rwLock = new ReentrantReadWriteLock(true);
-            this.wLock = rwLock.writeLock();
-
-            enabled = factory != null;
-            listener = new AuthConfigRegistrationListener(layer, appCtxt);
-            delegate = Globals.get(WebServicesDelegate.class);
-        }
-
-        public AuthConfigRegistrationListener getListener() {
-            return listener;
-        }
-
-        public void setListener(AuthConfigRegistrationListener listener) {
-            this.listener = listener;
-        }
-
-        public void disable() {
-            this.wLock.lock();
-
-            try {
-                setEnabled(false);
-            } finally {
-                this.wLock.unlock();
-                data = null;
-            }
-
-            if (factory != null) {
-                factory.detachListener(this.listener, layer, appCtxt);
-                if (getJmacProviderRegisID() != null) {
-                    factory.removeRegistration(getJmacProviderRegisID());
-                }
-            }
-        }
-
-        // detach the listener, but dont remove-registration
-        public void disableWithRefCount() {
-            if (referenceCount <= 1) {
-                disable();
-                if (delegate != null) {
-                    delegate.removeListener(this);
-                }
-            } else {
-                try {
-                    this.wLock.lock();
-                    referenceCount--;
-                } finally {
-                    this.wLock.unlock();
-                }
-
-            }
-        }
-
-        public void incrementReference() {
-            try {
-                this.wLock.lock();
-                referenceCount++;
-            } finally {
-                this.wLock.unlock();
-            }
-        }
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
-
-        public String getJmacProviderRegisID() {
-            return this.jmacProviderRegisID;
-        }
-
-        public void setJmacProviderRegisID(String jmacProviderRegisID) {
-            this.jmacProviderRegisID = jmacProviderRegisID;
-        }
-
-        private ConfigData getConfigData() {
-            return data;
-        }
-
-        private void setConfigData(ConfigData data) {
-            this.data = data;
-        }
-
-        public class AuthConfigRegistrationListener implements RegistrationListener {
-
-            private String layer;
-            private String appCtxt;
-
-            public AuthConfigRegistrationListener(String layer, String appCtxt) {
-                this.layer = layer;
-                this.appCtxt = appCtxt;
-            }
-
-            @Override
-            public void notify(String layer, String appContext) {
-                if (this.layer.equals(layer) && ((this.appCtxt == null && appContext == null) || (appContext != null && appContext.equals(this.appCtxt)))) {
-                    try {
-                        wLock.lock();
-                        data = null;
-                    } finally {
-                        wLock.unlock();
-                    }
-                }
-            }
-
-        }
     }
 
 }

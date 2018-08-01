@@ -40,6 +40,8 @@
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
+import static com.sun.enterprise.security.webservices.PipeConstants.SECURITY_TOKEN;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -224,13 +226,13 @@ public class ClientSecurityTube extends AbstractFilterTubeImpl implements Secure
 
             // put MessageInfo in properties map, since MessageInfo
             // is not passed to getAuthContext, key idicates function
-            HashMap map = new HashMap();
-            map.put(PipeConstants.SECURITY_TOKEN, locInfo);
+            HashMap<String, Object> map = new HashMap<>();
+            map.put(SECURITY_TOKEN, locInfo);
 
             helper.getSessionToken(map, locInfo, locClientSubject);
 
             // helper returns token in map of msgInfo, using same key
-            Object o = locInfo.getMap().get(PipeConstants.SECURITY_TOKEN);
+            Object o = locInfo.getMap().get(SECURITY_TOKEN);
 
             if (o != null && o instanceof JAXBElement) {
                 token = (JAXBElement) o;

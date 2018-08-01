@@ -40,27 +40,33 @@
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jmac.config;
 
+import static com.sun.enterprise.deployment.web.LoginConfiguration.CLIENT_CERTIFICATION_AUTHENTICATION;
 import static com.sun.enterprise.security.jmac.config.GFServerConfigProvider.HTTPSERVLET;
+import static com.sun.enterprise.security.jmac.config.HttpServletConstants.POLICY_CONTEXT;
 import static com.sun.enterprise.security.jmac.config.HttpServletConstants.WEB_BUNDLE;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.message.config.AuthConfigProvider;
 
+import org.glassfish.internal.api.Globals;
+
 import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
+import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
+import com.sun.enterprise.security.jmac.WebServicesDelegate;
 import com.sun.enterprise.security.web.integration.WebSecurityManager;
 
-public class HttpServletHelper extends ConfigHelper {
+public class PayaraJaspicServletServices extends PayaraJaspicServices {
     
     public static final String AUTH_TYPE = "javax.servlet.http.authType";
     
     private String realmName;
 
-    public HttpServletHelper(String appContext, Map map, CallbackHandler cbh, String realmName, boolean isSystemApp, String defaultSystemProviderID) {
+    public PayaraJaspicServletServices(String appContext, Map<String, Object> map, CallbackHandler callbackHandler, String realmName, boolean isSystemApp, String defaultSystemProviderID) {
 
         WebBundleDescriptor webBundle = null;
         
@@ -69,7 +75,7 @@ public class HttpServletHelper extends ConfigHelper {
             if (webBundle != null) {
                 LoginConfiguration loginConfig = webBundle.getLoginConfiguration();
                 if (loginConfig != null
-                        && LoginConfiguration.CLIENT_CERTIFICATION_AUTHENTICATION.equals(loginConfig.getAuthenticationMethod())) {
+                        && CLIENT_CERTIFICATION_AUTHENTICATION.equals(loginConfig.getAuthenticationMethod())) {
                     this.realmName = CertificateRealm.AUTH_TYPE;
                 } else {
                     this.realmName = realmName;
@@ -78,11 +84,11 @@ public class HttpServletHelper extends ConfigHelper {
         }
 
         // Set realmName before init
-        init(HTTPSERVLET, appContext, map, cbh);
+        init(HTTPSERVLET, appContext, map, callbackHandler, Globals.get(WebServicesDelegate.class));
 
         if (webBundle != null) {
             String policyContextId = WebSecurityManager.getContextID(webBundle);
-            map.put(HttpServletConstants.POLICY_CONTEXT, policyContextId);
+            map.put(POLICY_CONTEXT, policyContextId);
 
             SunWebApp sunWebApp = webBundle.getSunDescriptor();
             String pid = (sunWebApp != null ? sunWebApp.getAttributeValue(sunWebApp.HTTPSERVLET_SECURITY_PROVIDER) : null);
@@ -95,13 +101,16 @@ public class HttpServletHelper extends ConfigHelper {
                 }
             }
 
-            if (((pid != null && pid.length() > 0) || nullConfigProvider) && (!hasExactMatchAuthProvider())) {
-                AuthConfigProvider configProvider = ((nullConfigProvider) ? null : new GFServerConfigProvider(new HashMap(), null));
+            if (((pid != null && pid.length() > 0) || nullConfigProvider) && !hasExactMatchAuthProvider()) {
+                AuthConfigProvider configProvider = nullConfigProvider ? null : new GFServerConfigProvider(new HashMap<>(), null);
                 
-                String jmacProviderRegisID = factory.registerConfigProvider(configProvider, HTTPSERVLET, appContext,
-                        "GlassFish provider: " + GFServerConfigProvider.HTTPSERVLET + ":" + appContext);
-                this.setJmacProviderRegisID(jmacProviderRegisID);
-
+                // Register the Payara JASPIC provider
+                
+                String jaspicRegistrationId = factory.registerConfigProvider(
+                    configProvider, HTTPSERVLET, appContext,
+                    "Payara provider: " + HTTPSERVLET + ":" + appContext);
+                
+                setRegistrationId(jaspicRegistrationId);
             }
         }
 
@@ -109,10 +118,9 @@ public class HttpServletHelper extends ConfigHelper {
 
     // realmName must be set first and this is invoked inside the init()
     protected HandlerContext getHandlerContext(Map map) {
-        final String fRealmName = realmName;
         return new HandlerContext() {
             public String getRealmName() {
-                return fRealmName;
+                return realmName;
             }
         };
     }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -54,9 +55,6 @@ import javax.validation.constraints.NotNull;
 /**
  * References to applications deployed to the server instance    
  */
-
-/* @XmlType(name = "") */
-
 @Configured
 public interface ApplicationRef extends ConfigBeanProxy, Payload  {
 
@@ -72,8 +70,8 @@ public interface ApplicationRef extends ConfigBeanProxy, Payload  {
     /**
      * Sets the value of the enabled property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     @Param(name="enabled", optional=true, defaultValue="true")
     public void setEnabled(String value) throws PropertyVetoException;
@@ -81,8 +79,7 @@ public interface ApplicationRef extends ConfigBeanProxy, Payload  {
     /**
      * Gets the value of the virtualServers property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute
     public String getVirtualServers();
@@ -90,8 +87,8 @@ public interface ApplicationRef extends ConfigBeanProxy, Payload  {
     /**
      * Sets the value of the virtualServers property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     @Param(name="virtualservers", optional=true)
     public void setVirtualServers(String value) throws PropertyVetoException;
@@ -101,8 +98,7 @@ public interface ApplicationRef extends ConfigBeanProxy, Payload  {
      * A boolean flag that causes any and all load-balancers using this
      * application to consider this application unavailable to them.     
      * 
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute (defaultValue="true",dataType=Boolean.class)
     public String getLbEnabled();
@@ -110,8 +106,8 @@ public interface ApplicationRef extends ConfigBeanProxy, Payload  {
     /**
      * Sets the value of the lbEnabled property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setLbEnabled(String value) throws PropertyVetoException;
 
@@ -120,8 +116,7 @@ public interface ApplicationRef extends ConfigBeanProxy, Payload  {
      * The time, in minutes, that it takes this application to reach a quiescent 
      * state after having been disabled
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute (defaultValue="30")
     public String getDisableTimeoutInMinutes();
@@ -129,16 +124,15 @@ public interface ApplicationRef extends ConfigBeanProxy, Payload  {
     /**
      * Sets the value of the disableTimeoutInMinutes property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setDisableTimeoutInMinutes(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the ref property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute(key=true)
     @NotNull
@@ -148,8 +142,8 @@ public interface ApplicationRef extends ConfigBeanProxy, Payload  {
     /**
      * Sets the value of the ref property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     @Param(name="reference-name", primary = true)
     public void setRef(String value) throws PropertyVetoException;

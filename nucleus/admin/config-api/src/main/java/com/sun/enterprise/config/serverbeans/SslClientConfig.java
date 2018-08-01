@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -52,11 +53,6 @@ import java.beans.PropertyVetoException;
  * Specifies the SSL configuration when the Application Server is making
  * outbound IIOP/SSL connections.   
  */
-
-/* @XmlType(name = "", propOrder = {
-    "ssl"
-}) */
-
 @Configured
 public interface SslClientConfig extends ConfigBeanProxy {
 
@@ -72,8 +68,8 @@ public interface SslClientConfig extends ConfigBeanProxy {
     /**
      * Sets the value of the ssl property.
      *
-     * @param value allowed object is
-     *              {@link Ssl }
+     * @param value allowed object is {@link Ssl }
+     * @throws PropertyVetoException
      */
     void setSsl(Ssl value) throws PropertyVetoException;
 

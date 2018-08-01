@@ -49,7 +49,6 @@
 
     <artifactId>payara-jbatch</artifactId>
     <groupId>fish.payara.appserver</groupId>
-    <packaging>jar</packaging>
     <name>IBM JBatch Combined</name>
     <description>Combining of all IBM JBatch jars</description>
 
