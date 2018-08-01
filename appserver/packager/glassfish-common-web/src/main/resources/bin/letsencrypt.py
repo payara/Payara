@@ -89,28 +89,28 @@ if __name__=="__main__":
 		"to retrieve your certificate and uploads the certificate to the default keystore of the Payara domain. In addition, this script configures the listener "
 		"with the given alias and restarts it (the listener only, not the whole domain), so that the new certificate is effective. Afterwards the WAR is undeployed. "
 		"CertBot requires root, and as a consequence, so does this script.")
-	parser.add_argument('-n','--domain-name', action="append", help="The FQDN of the domain(s) the certificate will be bound too. You may use this arg multiple times.", required=True)
-	parser.add_argument('-p','--payara-domain', help="The name of the payara-domain where the certificate will be uploaded.", required=False, default='production')
-	parser.add_argument('-d','--domain-dir', help="The directory where payara domains are defined. Necessary to provide only when the domains are in non-standard locations.", required=False)
+	parser.add_argument('-c','--cert-domain', action="append", help="The FQDN of the domain(s) the certificate will be bound too. You may use this arg multiple times.", required=True)
+	parser.add_argument('-n','--name', help="The name of the payara-domain where the certificate will be uploaded.", required=False, default='production')
+	parser.add_argument('-d','--domain-dir', '--domaindir', help="The directory where payara domains are defined. Necessary to provide only when the domains are in non-standard locations.", required=False)
 	parser.add_argument('-l','--listener', help="HTTP Listener's name. By default http-listener-2", required=False, default="http-listener-2")
 	parser.add_argument('-a','--alias', help="The alias that is used to import the keypar and the listener will be configured to use this alias. "
 		"The default is constructed like: 'le_{listener}'", required=False)
 	
 	args = parser.parse_args()
-	alias = "le_" + args.domain_name[0] if args.alias is None else args.alias
+	alias = "le_" + args.cert_domain[0] if args.alias is None else args.alias
 	create_le_war()
 	if deploy_war() != 0:
 		exit(1)
 
-	code = invoke_certbot(args.domain_name)
+	code = invoke_certbot(args.cert_domain)
 	undeploy_war()
 
 	if code != 0:
 		exit(code)
 
-	key_path = LE_LIVE_PATH / args.domain_name[0] / "privkey.pem"
-	cert_path = LE_LIVE_PATH / args.domain_name[0] / "fullchain.pem"
-	code = upload_keypair(key_path, cert_path, alias, args.payara_domain, args.domain_dir)
+	key_path = LE_LIVE_PATH / args.cert_domain[0] / "privkey.pem"
+	cert_path = LE_LIVE_PATH / args.cert_domain[0] / "fullchain.pem"
+	code = upload_keypair(key_path, cert_path, alias, args.name, args.domain_dir)
 	if code == 0:
 		code = configure_listener_alias(alias)
 		if code == 0:
