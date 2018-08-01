@@ -7,7 +7,7 @@
 <!define name="content">
       
 <sun:form id="propertyForm">
-#include "/microprofile/microprofile/microprofileConfigTabs.inc
+#include "/microprofile/microprofile/microprofileConfigTabs.inc"
     <sun:title id="propertyContentPage" title="$resource{i18n_microprofile.microprofile.specs.configuration.openTracing.pageTitle}" 
                helpText="$resource{i18n_microprofile.microprofile.specs.configuration.openTracing.pageTitleHelpText}" >
 </sun:title>

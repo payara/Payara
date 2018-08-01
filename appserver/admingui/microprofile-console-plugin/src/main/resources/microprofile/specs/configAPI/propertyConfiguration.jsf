@@ -1,37 +1,83 @@
 <!initPage
     setResourceBundle(key="i18n_microprofile" bundle="fish.payara.admingui.microprofile.Strings");
 />
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18n_microprofile.microprofile.specs.configuration.config.pageTitle}">
+<!composition template="/templates/default.layout"  
+    guiTitle="$resource{i18n_microprofile.microprofile.specs.configuration.config.property.pageTitle}">
 
 <!define name="content">
 
 <event>
     <!beforeCreate
-        setSessionAttribute(key="microprofileTabs" value="microprofileConfigTab");
+        createMap(result="#{pageSession.attrsMap}")
+        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.configName}");
+        mapPut(map="#{pageSession.attrsMap}" key="propertyName" value=" ");
+        mapPut(map="#{pageSession.attrsMap}" key="propertyValue" value=" ");
+        mapPut(map="#{pageSession.attrsMap}" key="source" value="domain");
+        mapPut(map="#{pageSession.attrsMap}" key="sourceName" value=" ");
+        mapPut(map="#{pageSession.attrsMap}" key="moduleName" value=" ");
+        setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigPropertyTab");
         getRequestValue(key="configName" value="#{pageSession.configName}");
-        setSessionAttribute(key="MICROPROFILE_CONFIG_URL", 
-                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/microprofile-config");
-    />
+        setPageSessionAttribute(key="MICROPROFILE_CONFIG_URL", 
+        value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/microprofile-config");;
+        />
 </event>
     
     
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg_1.inc"
-#include "/microprofile/microprofile/microprofileConfigTabs.inc
-    <sun:title id="propertyContentPage" title="$resource{i18n_microprofile.microprofile.specs.configuration.config.pageTitle}" 
-               helpText="$resource{i18n_microprofile.microprofile.specs.configuration.config.pageTitleHelpText}" >
+#include "/microprofile/microprofile/microprofileConfigTabs.inc"
+#include "/microprofile/microprofile/microprofileConfigAPITabs.inc"
+    <sun:title id="propertyContentPage" title="$resource{i18n_microprofile.microprofile.specs.configuration.config.property.pageTitle}" 
+               helpText="$resource{i18n_microprofile.microprofile.specs.configuration.config.property.pageTitleHelpText}" >
         <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
             <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
-                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) 
+                        submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command
+                    prepareSuccessfulMsg();
+                    gf.restRequest(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/set-config-property" 
+                    method="POST" attrs="#{pageSession.attrsMap}");
+                    /> 
             </sun:button>
         </sun:panelGroup>
     </facet>
-</sun:title>
+    </sun:title>
 <sun:propertySheet id="propertySheet">
 #include "/common/shared/configNameSection.inc"
-
-</sun:propertySheet>
-</sun:form>
-</define>
+  <sun:propertySheetSection id="propertyProps">
+        <sun:property id="propertyNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.config.property.configuration.propertyName}"  
+                      helpText="$resource{i18n_microprofile.config.property.configuration.propertyNameHelp}">
+              <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
+                           text="#{pageSession.attrsMap['propertyName']}"/>
+        </sun:property>
+        <sun:property id="propertyValueProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.config.property.configuration.propertyValue}"  
+                      helpText="$resource{i18n_microprofile.config.property.configuration.propertyValueHelp}">
+              <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
+                           text="#{pageSession.attrsMap['propertyValue']}"/>
+        </sun:property>
+        <sun:property id="sourceProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.config.property.configuration.source}"  
+                      helpText="$resource{i18n_microprofile.config.property.configuration.sourceHelp}">
+            <sun:dropDown id="sourceNames" selected="#{pageSession.attrsMap['source']}" 
+                          labels={"application", "cluster", "config", "domain", "jndi", "module", "password", "secret", "server"} />
+        </sun:property>
+        <sun:property id="sourceNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.config.property.configuration.sourceName}"  
+                      helpText="$resource{i18n_microprofile.config.property.configuration.sourceNameHelp}">
+              <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
+                           text="#{pageSession.attrsMap['sourceName']}"/>
+        </sun:property>
+        <sun:property id="moduleNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.config.property.configuration.moduleName}"  
+                      helpText="$resource{i18n_microprofile.config.property.configuration.moduleNameHelp}">
+              <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
+                           text="#{pageSession.attrsMap['moduleName']}"/>
+        </sun:property>
+    </sun:propertySheetSection>
+   </sun:propertySheet>
+  </sun:form>
+ </define>
 </composition>

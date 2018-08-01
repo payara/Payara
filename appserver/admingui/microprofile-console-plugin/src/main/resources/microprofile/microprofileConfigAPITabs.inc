@@ -1,51 +1,27 @@
 
-<sun:tabSet id="microprofileTabs" immediate="$boolean{true}" selected="#{sessionScope.microprofileTabs}">
-    <sun:tab id="microprofileConfigTab" immediate="$boolean{true}" 
-             text="$resource{i18n_microprofile.microprofile.configuration.configTab}" 
-             toolTip="$resource{i18n_microprofile.microprofile.configuration.configTab} Tab" >
+<sun:tabSet id="microprofileConfigTabs" immediate="$boolean{true}" selected="#{sessionScope.microprofileConfigTabs}">
+    <sun:tab id="microProfileConfigOrdinalTab" immediate="$boolean{true}" 
+             text="$resource{i18n_microprofile.microprofile.configuration.configOrdinalTab}" 
+             toolTip="$resource{i18n_microprofile.microprofile.configuration.configOrdinalTab} Tab" >
         <!command
-        setSessionAttribute(key="microprofileTabs" value="microprofileConfigTab");
-        gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configConfiguration.jsf?configName=#{configName}");
+          setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigOrdinalTab");
+          gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configConfiguration.jsf?configName=#{configName}");
         />
     </sun:tab>
-    <sun:tab id="microprofileFaultToleranceTab" immediate="$boolean{true}" 
-             text="$resource{i18n_microprofile.microprofile.configuration.faultToleranceTab}" 
-             toolTip="$resource{i18n_microprofile.microprofile.configuration.faultToleranceTab} Tab" >
+    <sun:tab id="microProfileConfigPropertyTab" immediate="$boolean{true}" 
+             text="$resource{i18n_microprofile.microprofile.configuration.configPropertyTab}" 
+             toolTip="$resource{i18n_microprofile.microprofile.configuration.configPropertyTab} Tab" >
         <!command
-        setSessionAttribute(key="microprofileTabs" value="microprofileFaultToleranceTab");
-        gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/faultToleranceConfiguration.jsf?configName=#{configName}");
+          setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigPropertyTab");
+          gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/propertyConfiguration.jsf?configName=#{configName}");
         />
     </sun:tab>
-   <sun:tab id="microprofileHealthCheckTab" immediate="$boolean{true}" 
-             text="$resource{i18n_microprofile.microprofile.configuration.healthCheckTab}" 
-             toolTip="$resource{i18n_microprofile.microprofile.configuration.healthCheckTab} Tab" >
+    <sun:tab id="microProfileConfigSecretsDirectoryTab" immediate="$boolean{true}" 
+             text="$resource{i18n_microprofile.microprofile.configuration.configSecretsDirectoryTab}" 
+             toolTip="$resource{i18n_microprofile.microprofile.configuration.configSecretsDirectoryTab} Tab" >
         <!command
-        setSessionAttribute(key="microprofileTabs" value="microprofileHealthCheckTab");
-        gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/healthCheckConfiguration.jsf?configName=#{configName}");
-        />
-    </sun:tab>
-   <sun:tab id="microprofileMetricsTab" immediate="$boolean{true}" 
-             text="$resource{i18n_microprofile.microprofile.configuration.metricsTab}" 
-             toolTip="$resource{i18n_microprofile.microprofile.configuration.metricsTab} Tab" >
-        <!command
-        setSessionAttribute(key="microprofileTabs" value="microprofileMetricsTab");
-        gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/metricsConfiguration.jsf?configName=#{configName}");
-        />
-    </sun:tab>
-   <sun:tab id="microprofileOpenAPITab" immediate="$boolean{true}" 
-             text="$resource{i18n_microprofile.microprofile.configuration.openAPITab}" 
-             toolTip="$resource{i18n_microprofile.microprofile.configuration.openAPITab} Tab" >
-        <!command
-        setSessionAttribute(key="microprofileTabs" value="microprofileOpenAPITab");
-        gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/openAPIConfiguration.jsf?configName=#{configName}");
-        />
-    </sun:tab>
-   <sun:tab id="microprofileOpenTracingTab" immediate="$boolean{true}" 
-             text="$resource{i18n_microprofile.microprofile.configuration.openTracingTab}" 
-             toolTip="$resource{i18n_microprofile.microprofile.configuration.openTracingTab} Tab" >
-        <!command
-        setSessionAttribute(key="microprofileTabs" value="microprofileOpenTracingTab");
-        gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/openTracingConfiguration.jsf?configName=#{configName}");
+          setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigSecretsDirectoryTab");
+          gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/secretsDirectoryConfiguration.jsf?configName=#{configName}");
         />
     </sun:tab>
 </sun:tabSet>

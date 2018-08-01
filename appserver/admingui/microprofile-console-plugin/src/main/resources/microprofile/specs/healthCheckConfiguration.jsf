@@ -28,7 +28,7 @@
     
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg_1.inc"
-#include "/microprofile/microprofile/microprofileConfigTabs.inc
+#include "/microprofile/microprofile/microprofileConfigTabs.inc"
     <sun:title id="propertyContentPage" 
                title="$resource{i18n_microprofile.microprofile.specs.configuration.healthCheck.pageTitle}" 
                helpText="$resource{i18n_microprofile.microprofile.specs.configuration.healthCheck.pageTitleHelpText}" >
