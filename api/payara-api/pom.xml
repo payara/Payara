@@ -151,7 +151,7 @@
                                     fish.payara.notification.requesttracing,
                                     fish.payara.security.annotations,
                                     fish.payara.security.oauth2.api,
-                                    fish.payara.security.oidc.api
+                                    fish.payara.security.openid.api
                                 </Export-Package>
                             </instructions>
                         </configuration>
