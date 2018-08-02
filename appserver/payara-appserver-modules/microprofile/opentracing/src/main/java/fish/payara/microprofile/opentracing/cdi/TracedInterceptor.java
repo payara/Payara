@@ -85,7 +85,7 @@ public class TracedInterceptor {
         ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
         OpenTracingService openTracing = serviceLocator.getService(OpenTracingService.class);
         InvocationManager invocationManager = serviceLocator.getService(InvocationManager.class);
-
+        
         // Initialise return value
         Object proceed = null;
 
@@ -116,7 +116,7 @@ public class TracedInterceptor {
                 // If we *have* been told to, get the application's Tracer instance and start an active span.
                 Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(invocationManager, invocationContext));
                 Span activeSpan = tracer.buildSpan(operationName).start();
-                try (Scope scope = tracer.scopeManager().activate(activeSpan, false)) { // TODO Check whether this should be true or false
+                try (Scope scope = tracer.scopeManager().activate(activeSpan, true)) { // TODO Check whether this should be true or false
 
                     // Proceed the invocation
                     try {
