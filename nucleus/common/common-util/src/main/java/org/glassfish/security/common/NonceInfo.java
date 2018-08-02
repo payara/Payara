@@ -37,14 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.security.common;
 
 import java.io.Serializable;
 
 public class NonceInfo implements Serializable {
 
+    private static final long serialVersionUID = -6955116651538083936L;
+    
     private volatile long count;
     private volatile long timestamp;
 

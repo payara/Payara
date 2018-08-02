@@ -64,6 +64,7 @@ public class EmailNotifierExecutionOptionsFactory extends NotifierExecutionOptio
     public NotifierExecutionOptions build(EmailNotifier notifier) {
         EmailNotifierExecutionOptions executionOptions = new EmailNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
+        executionOptions.setNoisy(Boolean.parseBoolean(notifier.getNoisy()));
 
         return executionOptions;
     }

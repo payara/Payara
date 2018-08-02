@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
-        <version>5.182-SNAPSHOT</version>
+        <version>5.183-SNAPSHOT</version>
     </parent>
     
     <artifactId>payara-api</artifactId>
@@ -134,6 +134,7 @@
                                     javax.enterprise.util,
                                     javax.security.enterprise.credential,
                                     javax.security.enterprise.identitystore,
+                                    javax.security.enterprise.authentication.mechanism.http,
                                     javax.security.jacc
                                 </Import-Package>
                                 <Export-Package>
@@ -147,7 +148,7 @@
                                     fish.payara.notification.eventbus,
                                     fish.payara.notification.healthcheck,
                                     fish.payara.notification.requesttracing,
-                                    fish.payara.security.oauth2.annotation,
+                                    fish.payara.security.annotations,
                                     fish.payara.security.oauth2.api
                                 </Export-Package>
                             </instructions>
@@ -174,6 +175,13 @@
             <artifactId>javaee-api</artifactId>
             <scope>provided</scope>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-api</artifactId>
+            <version>${opentracing.version}</version>
+            <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

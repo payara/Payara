@@ -37,12 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
 import com.sun.common.util.logging.LoggingConfigImpl;
-import com.sun.enterprise.config.modularity.parser.ModuleConfigurationLoader;
-import com.sun.enterprise.config.serverbeans.GroupManagementService;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTargetName;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
 import com.sun.enterprise.config.util.ServerHelper;
@@ -132,8 +131,8 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
     /**
      * Sets the value of the dynamicReconfigurationEnabled property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setDynamicReconfigurationEnabled(String value) throws PropertyVetoException;
 
@@ -149,6 +148,7 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
      * Sets the value of the networkConfig property.
      *
      * @param value allowed object is {@link NetworkConfig }
+     * @throws PropertyVetoException
      */
     void setNetworkConfig(NetworkConfig value) throws PropertyVetoException;
 
@@ -164,16 +164,15 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
     /**
      * Sets the value of the httpService property.
      *
-     * @param value allowed object is
-     *              {@link HttpService }
+     * @param value allowed object is {@link HttpService }
+     * @throws PropertyVetoException
      */
     void setHttpService(HttpService value) throws PropertyVetoException;
 
     /**
      * Gets the value of the adminService property.
      *
-     * @return possible object is
-     *         {@link AdminService }
+     * @return possible object is {@link AdminService }
      */
     @Element(required = true)
     AdminService getAdminService();
@@ -181,16 +180,14 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
     /**
      * Sets the value of the adminService property.
      *
-     * @param value allowed object is
-     *              {@link AdminService }
+     * @param value allowed object is {@link AdminService }
      */
     void setAdminService(AdminService value) throws PropertyVetoException;
 
     /**
      * Gets the value of the logService property.
      *
-     * @return possible object is
-     *         {@link LogService }
+     * @return possible object is {@link LogService }
      */
     @Element(required = true)
     LogService getLogService();
@@ -198,16 +195,15 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
     /**
      * Sets the value of the logService property.
      *
-     * @param value allowed object is
-     *              {@link LogService }
+     * @param value allowed object is {@link LogService }
+     * @throws PropertyVetoException
      */
     void setLogService(LogService value) throws PropertyVetoException;
 
     /**
      * Gets the value of the securityService property.
      *
-     * @return possible object is
-     *         {@link SecurityService }
+     * @return possible object is {@link SecurityService }
      */
     @Element(required = true)
     SecurityService getSecurityService();
@@ -215,16 +211,15 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
     /**
      * Sets the value of the securityService property.
      *
-     * @param value allowed object is
-     *              {@link SecurityService }
+     * @param value allowed object is {@link SecurityService }
+     * @throws PropertyVetoException
      */
     void setSecurityService(SecurityService value) throws PropertyVetoException;
 
     /**
      * Gets the value of the monitoringService property.
      *
-     * @return possible object is
-     *         {@link MonitoringService }
+     * @return possible object is {@link MonitoringService }
      */
     @Element()
     @NotNull
@@ -233,16 +228,14 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
     /**
      * Sets the value of the monitoringService property.
      *
-     * @param value allowed object is
-     *              {@link MonitoringService }
+     * @param value allowed object is {@link MonitoringService }
      */
     void setMonitoringService(MonitoringService value) throws PropertyVetoException;
 
     /**
      * Gets the value of the diagnosticService property.
      *
-     * @return possible object is
-     *         {@link DiagnosticService }
+     * @return possible object is {@link DiagnosticService }
      */
     @Element
     DiagnosticService getDiagnosticService();
@@ -250,16 +243,14 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
     /**
      * Sets the value of the diagnosticService property.
      *
-     * @param value allowed object is
-     *              {@link DiagnosticService }
+     * @param value allowed object is {@link DiagnosticService }
      */
     void setDiagnosticService(DiagnosticService value) throws PropertyVetoException;
 
     /**
      * Gets the value of the javaConfig property.
      *
-     * @return possible object is
-     *         {@link JavaConfig }
+     * @return possible object is {@link JavaConfig }
      */
     @Element(required = true)
     JavaConfig getJavaConfig();
@@ -267,16 +258,14 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
     /**
      * Sets the value of the javaConfig property.
      *
-     * @param value allowed object is
-     *              {@link JavaConfig }
+     * @param value allowed object is {@link JavaConfig }
      */
     void setJavaConfig(JavaConfig value) throws PropertyVetoException;
 
     /**
      * Gets the value of the availabilityService property.
      *
-     * @return possible object is
-     *         {@link AvailabilityService }
+     * @return possible object is {@link AvailabilityService }
      */
     @Element
     @NotNull
@@ -285,16 +274,14 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
     /**
      * Sets the value of the availabilityService property.
      *
-     * @param value allowed object is
-     *              {@link AvailabilityService }
+     * @param value allowed object is {@link AvailabilityService }
      */
     void setAvailabilityService(AvailabilityService value) throws PropertyVetoException;
 
     /**
      * Gets the value of the threadPools property.
      *
-     * @return possible object is
-     *         {@link ThreadPools }
+     * @return possible object is {@link ThreadPools }
      */
     @Element(required = true)
     ThreadPools getThreadPools();
@@ -302,16 +289,14 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
     /**
      * Sets the value of the threadPools property.
      *
-     * @param value allowed object is
-     *              {@link ThreadPools }
+     * @param value allowed object is {@link ThreadPools }
      */
     void setThreadPools(ThreadPools value) throws PropertyVetoException;
 
     /**
      * Gets the value of the groupManagementService property.
      *
-     * @return possible object is
-     *         {@link GroupManagementService }
+     * @return possible object is {@link GroupManagementService }
      */
     @Element
     @NotNull
@@ -320,8 +305,7 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
     /**
      * Sets the value of the groupManagementService property.
      *
-     * @param value allowed object is
-     *              {@link GroupManagementService }
+     * @param value allowed object is {@link GroupManagementService }
      */
     void setGroupManagementService(GroupManagementService value) throws PropertyVetoException;
 
@@ -344,6 +328,7 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
      * <p/>
      * Objects of the following type(s) are allowed in the list
      * {@link SystemProperty }
+     * @return 
      */
     @ToDo(priority = ToDo.Priority.IMPORTANT, details = "Any more legal system properties?")
     @PropertiesDesc(
@@ -537,6 +522,7 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
         public static void createResourceRef(Config config, final String enabled, final String refName) throws TransactionFailure {
             ConfigSupport.apply(new SingleConfigCode<Config>() {
 
+                @Override
                 public Object run(Config param) throws PropertyVetoException, TransactionFailure {
 
                     ResourceRef newResourceRef = param.createChild(ResourceRef.class);
@@ -566,6 +552,7 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
             if (ref != null) {
                 ConfigSupport.apply(new SingleConfigCode<Config>() {
 
+                    @Override
                     public Object run(Config param) {
                         return param.getResourceRef().remove(ref);
                     }

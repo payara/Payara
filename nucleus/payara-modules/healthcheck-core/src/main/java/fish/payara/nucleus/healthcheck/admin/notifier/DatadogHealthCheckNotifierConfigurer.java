@@ -73,5 +73,10 @@ public class DatadogHealthCheckNotifierConfigurer extends BaseHealthCheckNotifie
         if(this.enabled != null) {
             notifier.enabled(enabled);
         }
-    }
+        if (this.noisy != null) {
+            notifier.noisy(noisy);
+        } else {
+            notifier.noisy(getNotifierNoisy("get-datadog-notifier-configuration"));
+        }
+   }
 }

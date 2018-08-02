@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor.cli;
 
@@ -74,10 +75,10 @@ public class Monitor implements AdminCommand {
     @Inject
     private ServiceLocator habitat;
 
-    final private LocalStringManagerImpl localStrings = 
-        new LocalStringManagerImpl(Monitor.class);
+    private static final LocalStringManagerImpl LOCALSTRINGS = new LocalStringManagerImpl(Monitor.class);
 
 
+    @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         MonitorContract mContract = null;
@@ -91,10 +92,9 @@ public class Monitor implements AdminCommand {
             mContract.process(report, filter);
             return;
         }
-        if (habitat.getAllServices(MonitorContract.class).size() != 0) {
-            StringBuffer buf = new StringBuffer();
-            Iterator<MonitorContract> contractsIterator = habitat.
-                    <MonitorContract>getAllServices(MonitorContract.class).iterator();
+        if (!habitat.getAllServices(MonitorContract.class).isEmpty()) {
+            StringBuilder buf = new StringBuilder();
+            Iterator<MonitorContract> contractsIterator = habitat.<MonitorContract>getAllServices(MonitorContract.class).iterator();
             while (contractsIterator.hasNext()) {
                 buf.append(contractsIterator.next().getName());
                 if (contractsIterator.hasNext()) {
@@ -102,11 +102,11 @@ public class Monitor implements AdminCommand {
                 }
             }
             String validTypes = buf.toString();
-            report.setMessage(localStrings.getLocalString("monitor.type.error",
+            report.setMessage(LOCALSTRINGS.getLocalString("monitor.type.error",
                 "No type exists in habitat for the given monitor type {0}. " +
                 "Valid types are: {1}", type, validTypes));
         } else {
-            report.setMessage(localStrings.getLocalString("monitor.type.invalid",
+            report.setMessage(LOCALSTRINGS.getLocalString("monitor.type.invalid",
                  "No type exists in habitat for the given monitor type {0}", type));
         }
 

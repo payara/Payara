@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -58,19 +59,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import org.jvnet.hk2.config.DuckTyped;
 
-/**
- *
- */
-
-/* @XmlType(name = "", propOrder = {
-    "webContainerAvailability",
-    "ejbContainerAvailability",
-    "jmsAvailability",
-    "property"
-}) */
-
 @Configured
-
 public interface AvailabilityService extends ConfigBeanProxy, PropertyBag {
 
     /**
@@ -94,8 +83,8 @@ public interface AvailabilityService extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the availabilityEnabled property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setAvailabilityEnabled(String value) throws PropertyVetoException;
 
@@ -105,8 +94,8 @@ public interface AvailabilityService extends ConfigBeanProxy, PropertyBag {
      * Comma-delimited list of server host names or IP addresses where
      * high availability store management agents are running.  
      *
-     * @return possible object is
-     *         {@link String }
+     * @deprecated 
+     * @return possible object is {@link String }
      */
     @Attribute
     @Deprecated
@@ -115,8 +104,8 @@ public interface AvailabilityService extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the haAgentHosts property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setHaAgentHosts(String value) throws PropertyVetoException;
 
@@ -126,8 +115,7 @@ public interface AvailabilityService extends ConfigBeanProxy, PropertyBag {
      * Port number where highly available store management agents
      * can be contacted
      * 
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute
     @Max(value=65535)
@@ -138,8 +126,8 @@ public interface AvailabilityService extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the haAgentPort property.     
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setHaAgentPort(String value) throws PropertyVetoException;
 
@@ -157,8 +145,8 @@ public interface AvailabilityService extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the haAgentPassword property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setHaAgentPassword(String value) throws PropertyVetoException;
 
@@ -166,8 +154,7 @@ public interface AvailabilityService extends ConfigBeanProxy, PropertyBag {
      * Gets the value of the haStoreName property.
      * Name of the session store
      * 
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute
     @Deprecated
@@ -176,8 +163,8 @@ public interface AvailabilityService extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the haStoreName property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setHaStoreName(String value) throws PropertyVetoException;
 
@@ -199,8 +186,8 @@ public interface AvailabilityService extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the autoManageHaStore property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setAutoManageHaStore(String value) throws PropertyVetoException;
 
@@ -220,8 +207,7 @@ public interface AvailabilityService extends ConfigBeanProxy, PropertyBag {
      * corresponding JDBC Resource and JDBC Connection Pool defined for
      * this new pool name.
      * 
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute
     @Deprecated
@@ -230,8 +216,8 @@ public interface AvailabilityService extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the storePoolName property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setStorePoolName(String value) throws PropertyVetoException;
 
@@ -244,8 +230,7 @@ public interface AvailabilityService extends ConfigBeanProxy, PropertyBag {
      * detect if the store service has become available again.
      * If healthcheck succeeds the session state saving is resumed. 
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute (defaultValue="false",dataType=Boolean.class)
     @Deprecated
@@ -256,6 +241,7 @@ public interface AvailabilityService extends ConfigBeanProxy, PropertyBag {
      *
      * @param value allowed object is
      *              {@link String }
+     * @throws PropertyVetoException
      */
     void setHaStoreHealthcheckEnabled(String value) throws PropertyVetoException;
 
@@ -275,8 +261,8 @@ public interface AvailabilityService extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the haStoreHealthcheckIntervalInSeconds property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setHaStoreHealthcheckIntervalInSeconds(String value) throws PropertyVetoException;
 

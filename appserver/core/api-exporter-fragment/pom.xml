@@ -47,11 +47,10 @@
     <parent>
         <groupId>org.glassfish.main.core</groupId>
         <artifactId>core</artifactId>
-        <version>5.182-SNAPSHOT</version>
+        <version>5.183-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>api-exporter-fragment</artifactId>
-    <packaging>jar</packaging>
     <name>GlassFish API Exporter Module Fragment</name>
     <description>This bundle attached itself as a fragment to api-exporter bundle</description>
     

@@ -43,7 +43,7 @@ holder.
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>5.182-SNAPSHOT</version>
+        <version>5.183-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.microprofile</groupId>
@@ -53,9 +53,11 @@ holder.
     
     <modules>
         <module>config</module>
-	      <module>fault-tolerance</module>
-	      <module>healthcheck</module>
-	      <module>jwt-auth</module>
+        <module>fault-tolerance</module>
+        <module>healthcheck</module>
+        <module>jwt-auth</module>
         <module>metrics</module>
+        <module>openapi</module>
+        <module>opentracing</module>
     </modules>
 </project>

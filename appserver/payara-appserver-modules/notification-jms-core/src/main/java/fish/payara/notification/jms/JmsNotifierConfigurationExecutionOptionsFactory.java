@@ -63,6 +63,7 @@ public class JmsNotifierConfigurationExecutionOptionsFactory
     public JmsNotifierConfigurationExecutionOptions build(JmsNotifierConfiguration notifierConfiguration) {
         JmsNotifierConfigurationExecutionOptions executionOptions = new JmsNotifierConfigurationExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
+        executionOptions.setNoisy(Boolean.parseBoolean(notifierConfiguration.getNoisy()));
         executionOptions.setContextFactoryClass(notifierConfiguration.getContextFactoryClass());
         executionOptions.setConnectionFactoryName(notifierConfiguration.getConnectionFactoryName());
         executionOptions.setQueueName(notifierConfiguration.getQueueName());

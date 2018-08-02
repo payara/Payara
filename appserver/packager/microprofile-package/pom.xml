@@ -43,7 +43,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.182-SNAPSHOT</version>
+        <version>5.183-SNAPSHOT</version>
     </parent>
     
     <artifactId>microprofile-package</artifactId>
@@ -165,6 +165,18 @@
             <artifactId>microprofile-metrics</artifactId>
             <version>${project.version}</version>
         </dependency>
+      
+        <!-- OpenAPI -->
+        <dependency>
+            <groupId>org.eclipse.microprofile.openapi</groupId>
+            <artifactId>microprofile-openapi-api</artifactId>
+            <version>${microprofile-openapi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.microprofile.openapi</groupId>
+            <artifactId>microprofile-openapi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         
         <!-- JWT -->
         <dependency>
@@ -195,7 +207,39 @@
             <artifactId>microprofile-healthcheck</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <!-- REST Client -->
+        <dependency>
+            <groupId>org.eclipse.microprofile.rest.client</groupId>
+            <artifactId>microprofile-rest-client-api</artifactId>
+            <version>${microprofile-rest-client.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.ext</groupId>
+            <artifactId>jersey-proxy-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.ext</groupId>
+            <artifactId>jersey-microprofile-rest-client</artifactId>
+        </dependency>
             
+        <!-- OpenTracing -->
+        <dependency>
+            <groupId>org.eclipse.microprofile.opentracing</groupId>
+            <artifactId>microprofile-opentracing-api</artifactId>
+            <version>${microprofile-opentracing.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.microprofile</groupId>
+            <artifactId>microprofile-opentracing</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.external</groupId>
+            <artifactId>microprofile-opentracing-repackaged</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+           
         <!-- Nimbus -->
         <dependency>
             <groupId>org.glassfish.main.external</groupId>

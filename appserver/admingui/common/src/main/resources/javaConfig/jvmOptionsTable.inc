@@ -91,7 +91,7 @@
         <sun:tableColumn headerText="Max JVM Version" rowHeader="$boolean{false}" id="col1hmax">
             <sun:textField columns="$int{6}" maxLength="#{sessionScope.fieldLengths['maxLength.jvm.PropertyValue']}" id="col1max" value="#{td.value.maxVersion}" />
         </sun:tableColumn>
-        <sun:tableColumn headerText="$resource{i18n.common.PropertyValue}" sort="value" rowHeader="$boolean{false}" id="col3">
+        <sun:tableColumn headerText="$resource{i18n.common.PropertyValue}" sort="jvmOption" rowHeader="$boolean{false}" id="col3">
             <sun:textField columns="$int{100}" maxLength="#{sessionScope.fieldLengths['maxLength.jvm.PropertyValue']}" id="col1St" value="#{td.value.jvmOption}" />
         </sun:tableColumn>
         "<br/>

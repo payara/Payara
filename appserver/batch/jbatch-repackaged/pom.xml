@@ -44,12 +44,11 @@
     <parent>
         <groupId>org.glassfish.main.batch</groupId>
         <artifactId>batch</artifactId>
-        <version>5.182-SNAPSHOT</version>
+        <version>5.183-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-jbatch</artifactId>
     <groupId>fish.payara.appserver</groupId>
-    <packaging>jar</packaging>
     <name>IBM JBatch Combined</name>
     <description>Combining of all IBM JBatch jars</description>
 

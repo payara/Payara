@@ -58,6 +58,7 @@ public final class Constants {
     public final static String PY_HANDLER_MAXIMUM_FILES = PY_FILE_HANDLER + "maxHistoryFiles";
     public final static String PY_HANDLER_LOG_FILE = PY_FILE_HANDLER + "file";
     public final static String PY_HANDLER_COMPRESS_ON_ROTATION = PY_FILE_HANDLER + "compressOnRotation";
+    public final static String PY_HANDLER_LOG_FORMATTER = PY_FILE_HANDLER + "formatter";
 
     public final static String GF_HANDLER_LOG_TO_FILE_DEFAULT_VALUE = "true";
     
@@ -68,5 +69,6 @@ public final class Constants {
     public final static String PY_HANDLER_MAXIMUM_FILES_DEFAULT_VALUE = "0";
     public final static String PY_HANDLER_LOG_FILE_DEFAULT_VALUE = "${com.sun.aas.instanceRoot}/logs/notification.log";
     public final static String PY_HANDLER_COMPRESS_ON_ROTATION_DEFAULT_VALUE = "false";
+    public final static String PY_HANDLER_LOG_FORMATTER_DEFAULT_VALUE = "com.sun.enterprise.server.logging.ODLLogFormatter";
 
 }

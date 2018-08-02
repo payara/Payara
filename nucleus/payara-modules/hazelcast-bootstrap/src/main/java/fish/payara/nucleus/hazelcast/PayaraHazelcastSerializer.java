@@ -56,7 +56,7 @@ public class PayaraHazelcastSerializer implements StreamSerializer<Object> {
     @SuppressWarnings("unchecked")
     public PayaraHazelcastSerializer(JavaEEContextUtil ctxUtil, StreamSerializer<?> delegate) {
         this.ctxUtil = ctxUtil;
-        this.delegate = delegate != null? (StreamSerializer<Object>)delegate : new JavaDefaultSerializers.JavaSerializer(true, false);
+        this.delegate = delegate != null? (StreamSerializer<Object>)delegate : new JavaDefaultSerializers.JavaSerializer(true, false, null);
     }
 
 

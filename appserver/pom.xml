@@ -49,7 +49,7 @@
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>5.182-SNAPSHOT</version>
+        <version>5.183-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>
 
@@ -63,7 +63,7 @@
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</url>
-        <tag>payara-server-5.182-SNAPSHOT</tag>
+        <tag>payara-server-5.183-SNAPSHOT</tag>
     </scm>
 
 
@@ -98,7 +98,7 @@
 
         <!-- JSON-B -->
         <json.bind-api.version>1.0</json.bind-api.version>
-        <yasson.version>1.0.1</yasson.version>
+        <yasson.version>1.0.2-SNAPSHOT-07-05-2018.payara-p1</yasson.version>
 
         <!-- JSON-P -->
         <jsonp-api.version>1.1</jsonp-api.version>
@@ -107,7 +107,7 @@
 
         <!-- JPA -->
         <javax-persistence-api.version>2.2.0</javax-persistence-api.version>
-        <eclipselink.version>2.7.1.payara-p1</eclipselink.version>
+        <eclipselink.version>2.7.2.payara-p1</eclipselink.version>
 
         <!-- JTA -->
         <javax.transaction-api.version>1.2.1</javax.transaction-api.version>
@@ -121,10 +121,10 @@
 
         <!-- CDI -->
         <javax.inject.version>1</javax.inject.version>
-        <cdi-api.version>2.0</cdi-api.version>
-        <weld.version>3.0.4.Final</weld.version>
-        <weld-api.version>3.0.SP2</weld-api.version>
-        <jboss.classfilewriter.version>1.2.2.Final</jboss.classfilewriter.version>
+        <cdi-api.version>2.0.SP1</cdi-api.version>
+        <weld.version>3.0.5.Final</weld.version>
+        <weld-api.version>3.0.SP4</weld-api.version>
+        <jboss.classfilewriter.version>1.2.3.Final</jboss.classfilewriter.version>
         <apache.bcel.version>6.2</apache.bcel.version>
 
         <!-- Java EE Security API -->
@@ -142,7 +142,7 @@
         <jms-api.version>2.0.1</jms-api.version>
 
         <!-- 5.1.1-b02.payara-p1 -->
-        <mq.version>5.1.1.final-payara-p1</mq.version>
+        <mq.version>5.1.1.final.payara-p4</mq.version>
 
         <!-- Batch -->
         <javax.batch-api.version>1.0.1</javax.batch-api.version>
@@ -184,13 +184,13 @@
 
         <version_suffix>#badassfish</version_suffix>
         <major_version>5</major_version>
-        <minor_version>182-SNAPSHOT</minor_version>
+        <minor_version>183-SNAPSHOT</minor_version>
         <update_version></update_version>
         <install.dir.name>payara${major_version}</install.dir.name>
 
         <jsf-ext.version>0.2</jsf-ext.version>
         <jsftemplating.version>2.1.2</jsftemplating.version>
-        <woodstock.version>4.0.2.10.payara-p8</woodstock.version>
+        <woodstock.version>4.0.2.10.payara-p10</woodstock.version>
 
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
@@ -212,16 +212,19 @@
         <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
 
          <!-- Microprofile version properties -->
-         <microprofile-config.version>1.1-payara-p1</microprofile-config.version>
          <microprofile-fault-tolerance.version>1.0.payara-p1</microprofile-fault-tolerance.version>
          <microprofile-jwt-auth.version>1.0.payara-p1</microprofile-jwt-auth.version>
          <microprofile-healthcheck.version>1.0.payara-p1</microprofile-healthcheck.version>
          <microprofile-metrics.version>1.1.payara-p1</microprofile-metrics.version>
-      
+         <microprofile-rest-client.version>1.1-payara-p1</microprofile-rest-client.version>
+         <microprofile-openapi.version>1.0</microprofile-openapi.version>
+
          <nimbus-jose-jwt.version>5.4</nimbus-jose-jwt.version>
          <accessors-smart.version>1.2.payara-p1</accessors-smart.version>
          <json-smart.version>2.3</json-smart.version>
          <jcip-annotations.version>1.0-1</jcip-annotations.version>
+         <!-- Yubico client validation version property -->
+         <yubico-validation-client2.version>3.0.2.payara-p1</yubico-validation-client2.version>
 
     </properties>
 
@@ -687,12 +690,12 @@
                 <artifactId>javax.security.enterprise-api</artifactId>
                 <version>${javax.security.enterprise-api.version}</version>
             </dependency>
-             <dependency>
+            <dependency>
                 <groupId>org.glassfish.soteria</groupId>
                 <artifactId>javax.security.enterprise</artifactId>
                 <version>${javax.security.enterprise.version}</version>
             </dependency>
-
+            
             <!-- JACC -->
             <dependency>
                 <groupId>javax.security.jacc</groupId>
@@ -705,11 +708,6 @@
                 <groupId>javax.security.auth.message</groupId>
                 <artifactId>javax.security.auth.message-api</artifactId>
                 <version>${javax.security.auth.message-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.soteria</groupId>
-                <artifactId>javax.security.enterprise</artifactId>
-                <version>${javax.security.enterprise.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish</groupId>

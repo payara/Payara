@@ -37,36 +37,39 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
  */
-
 package org.glassfish.security.common;
 
 import org.jvnet.hk2.annotations.Contract;
 
 /**
  * High Availability Utilities for getting cluster and instance name
+ * 
  * @author vbkumarjayanti
  * @see org.glassfish.gms.bootstrap.GMSAdapterService
  */
 @Contract
 public interface HAUtil {
-    
+
     /**
      * Gets the name of the shoal cluster, or null if the instance isn't clustered
-     * @return 
+     * 
+     * @return
      */
     public String getClusterName();
-    
+
     /**
      * Gets the name of the instance if GMS is present, otherwise null
-     * @return 
+     * 
+     * @return
      */
     public String getInstanceName();
-    
+
     /**
      * Returns true if GMS is enabled with the high availability flag set to true
-     * @return 
+     * 
+     * @return
      */
     public boolean isHAEnabled();
 

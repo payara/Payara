@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.util;
 
@@ -45,11 +46,9 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
-import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.net.*;
 import java.beans.PropertyVetoException;
 import java.util.*;
-import java.util.logging.*;
 import org.jvnet.hk2.config.TransactionFailure;
 
 /**
@@ -133,7 +132,7 @@ public final class PortManager {
             // in any case ALL port assignments should be displayed.
             Map<String, Integer> finalPorts = newServerPorts.getMap();
 
-            if (entries.size() > 0) {
+            if (!entries.isEmpty()) {
                 for (Map.Entry<String, Integer> entry : entries) {
                     String name = entry.getKey();
                     int port = entry.getValue();
@@ -155,7 +154,7 @@ public final class PortManager {
         for (ServerPorts sp : serversOnHost)
             sb.append(sp).append('\n');
 
-        sb.append("All Ports in all other servers on same host: " + allPorts);
+        sb.append("All Ports in all other servers on same host: ").append(allPorts);
         return sb.toString();
     }
 
@@ -167,7 +166,7 @@ public final class PortManager {
             for (Map.Entry<String, Integer> entry : entries) {
                 String name = entry.getKey();
                 int port = entry.getValue();
-                sb.append("\n").append(name).append("=").append("" + port);
+                sb.append("\n").append(name).append("=").append(port);
             }
             return Strings.get("PortManager.port.summary", serverName, sb.toString());
         }

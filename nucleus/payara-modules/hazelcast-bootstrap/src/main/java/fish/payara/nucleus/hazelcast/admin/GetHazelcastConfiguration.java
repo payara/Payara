@@ -132,8 +132,9 @@ public class GetHazelcastConfiguration implements AdminCommand {
         columnFormatter.addRow(new Object[]{"Executor Queue Capacity",nodeConfiguration.getExecutorQueueCapacity(),"Config"});
         columnFormatter.addRow(new Object[]{"Scheduled Executor Pool Size",nodeConfiguration.getScheduledExecutorPoolSize(),"Config"});
         columnFormatter.addRow(new Object[]{"Scheduled Executor Queue Capacity",nodeConfiguration.getScheduledExecutorQueueCapacity(),"Config"});
+        columnFormatter.addRow(new Object[]{"Public Address",nodeConfiguration.getPublicAddress(),"Config"});
         
-        Map<String, Object> map = new HashMap<>(25);
+        Map<String, Object> map = new HashMap<>(26);
         Properties extraProps = new Properties();
         map.put("hazelcastConfigurationFile", runtimeConfiguration.getHazelcastConfigurationFile());
         map.put("enabled", nodeConfiguration.getEnabled());
@@ -160,6 +161,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         map.put("executorQueueCapacity", nodeConfiguration.getExecutorQueueCapacity());
         map.put("scheduledExecutorPoolSize", nodeConfiguration.getScheduledExecutorPoolSize());
         map.put("scheduledExecutorQueueCapacity", nodeConfiguration.getScheduledExecutorQueueCapacity());
+        map.put("publicAddress", nodeConfiguration.getPublicAddress());
 
         extraProps.put("getHazelcastConfiguration",map);
                 

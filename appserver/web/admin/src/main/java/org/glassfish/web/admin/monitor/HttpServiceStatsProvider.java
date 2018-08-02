@@ -208,13 +208,15 @@ public class HttpServiceStatsProvider implements PostConstruct {
     public void postConstruct() {
     }
 
-    private long getInitialOpenConnections(){
+    private long getInitialOpenConnections() {
         long initialCount = 0;
         GrizzlyMonitoring monitoring = Globals.get(GrizzlyService.class).getMonitoring();
         if (monitoring != null) {
             for (String networkListener : networkListeners) {
                 ConnectionQueueStatsProvider connectionQueueStats = monitoring.getConnectionQueueStatsProvider(networkListener);
-                initialCount += connectionQueueStats.getOpenConnectionsCount().getCount();
+                if (connectionQueueStats != null) {
+                    initialCount += connectionQueueStats.getOpenConnectionsCount().getCount();
+                }
             }
         } else {
             logger.log(Level.FINER, "Tried to get monitoring service connections before service started");

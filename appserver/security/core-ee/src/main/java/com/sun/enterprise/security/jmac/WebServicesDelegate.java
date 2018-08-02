@@ -40,14 +40,17 @@
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jmac;
 
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
-import com.sun.enterprise.security.jmac.config.ConfigHelper;
 import java.util.Map;
+
 import javax.security.auth.message.MessageInfo;
-import com.sun.enterprise.security.jauth.AuthParam;
+
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.jvnet.hk2.annotations.Contract;
+
+import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
+import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
+import com.sun.enterprise.security.jauth.AuthParam;
+import com.sun.jaspic.services.RegistrationWrapperRemover;
 
 /**
  * A Delegate Interface for handling WebServices Specific Security and JSR 196 Providers This insulates the GF
@@ -56,7 +59,7 @@ import org.jvnet.hk2.annotations.Contract;
  * @author kumar.jayanti
  */
 @Contract
-public interface WebServicesDelegate {
+public interface WebServicesDelegate extends RegistrationWrapperRemover {
     /**
      * 
      * @param svcRef The ServiceReferenceDescriptor
@@ -64,13 +67,6 @@ public interface WebServicesDelegate {
      * @return The MessageSecurityBindingDescriptor
      */
     public MessageSecurityBindingDescriptor getBinding(ServiceReferenceDescriptor svcRef, Map properties);
-
-    /**
-     * remove the registration of the argument listener from the Pipe
-     * 
-     * @param listener
-     */
-    public void removeListener(ConfigHelper.AuthConfigRegistrationWrapper listener);
 
     /**
      * @return the classname of the Default JSR 196 WebServices Security Provider (A.k.a Metro Security Provider)

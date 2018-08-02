@@ -37,8 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm;
+
 import org.glassfish.external.probe.provider.annotations.ProbeProvider;
 import org.glassfish.external.probe.provider.annotations.Probe;
 import org.glassfish.external.probe.provider.annotations.ProbeParam;
@@ -47,19 +48,15 @@ import org.glassfish.external.probe.provider.annotations.ProbeParam;
  *
  * @author nithyasubramanian
  */
-@ProbeProvider(moduleProviderName="glassfish",moduleName="security",probeProviderName="realm")
+@ProbeProvider(moduleProviderName = "glassfish", moduleName = "security", probeProviderName = "realm")
 public class RealmsProbeProvider {
-    
-    @Probe(name="realmAddedEvent")
-    public void realmAddedEvent(
-            @ProbeParam("realmName") String realmName
-            )
-    {}
-    
-    @Probe(name="realmRemovedEvent")
-    public void realmRemovedEvent(
-            @ProbeParam("realmName") String realmName
-            )
-    {}
+
+    @Probe(name = "realmAddedEvent")
+    public void realmAddedEvent(@ProbeParam("realmName") String realmName) {
+    }
+
+    @Probe(name = "realmRemovedEvent")
+    public void realmRemovedEvent(@ProbeParam("realmName") String realmName) {
+    }
 
 }

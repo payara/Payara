@@ -61,7 +61,7 @@ public class HealthCheckResult implements Iterable<HealthCheckResultEntry> {
 
     public void add(HealthCheckResultEntry e) {
         if (entries.isEmpty()) {
-            cumulativeStatus = HealthCheckResultStatus.GOOD;
+            cumulativeStatus = HealthCheckResultStatus.FINE;
         }
         entries.add(e);
         if (e.getStatus().getLevel() < cumulativeStatus.getLevel()) {

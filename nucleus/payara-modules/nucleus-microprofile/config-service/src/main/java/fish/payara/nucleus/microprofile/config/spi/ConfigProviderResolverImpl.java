@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,49 +39,35 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
-import fish.payara.nucleus.microprofile.config.converters.BooleanConverter;
-import fish.payara.nucleus.microprofile.config.converters.ChronoUnitConverter;
-import fish.payara.nucleus.microprofile.config.converters.DoubleConverter;
-import fish.payara.nucleus.microprofile.config.converters.DurationConverter;
-import fish.payara.nucleus.microprofile.config.converters.FloatConverter;
-import fish.payara.nucleus.microprofile.config.converters.InetAddressConverter;
-import fish.payara.nucleus.microprofile.config.converters.InstantConverter;
-import fish.payara.nucleus.microprofile.config.converters.IntegerConverter;
-import fish.payara.nucleus.microprofile.config.converters.LocalDateConverter;
-import fish.payara.nucleus.microprofile.config.converters.LocalDateTimeConverter;
-import fish.payara.nucleus.microprofile.config.converters.LocalTimeConverter;
-import fish.payara.nucleus.microprofile.config.converters.LongConverter;
-import fish.payara.nucleus.microprofile.config.converters.OffsetDateTimeConverter;
-import fish.payara.nucleus.microprofile.config.converters.OffsetTimeConverter;
-import fish.payara.nucleus.microprofile.config.converters.URLConverter;
-import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
-import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
-import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
-import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
-import fish.payara.nucleus.microprofile.config.source.EnvironmentConfigSource;
-import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
-import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
-import fish.payara.nucleus.microprofile.config.source.PasswordAliasConfigSource;
-import fish.payara.nucleus.microprofile.config.source.PayaraServerProperties;
-import fish.payara.nucleus.microprofile.config.source.PropertiesConfigSource;
-import fish.payara.nucleus.microprofile.config.source.SecretsDirConfigSource;
-import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
-import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
+import java.net.InetAddress;
 import java.net.URL;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
@@ -99,6 +85,37 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ModuleInfo;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.nucleus.microprofile.config.converters.BooleanConverter;
+import fish.payara.nucleus.microprofile.config.converters.ChronoUnitConverter;
+import fish.payara.nucleus.microprofile.config.converters.ClassConverter;
+import fish.payara.nucleus.microprofile.config.converters.DoubleConverter;
+import fish.payara.nucleus.microprofile.config.converters.DurationConverter;
+import fish.payara.nucleus.microprofile.config.converters.FloatConverter;
+import fish.payara.nucleus.microprofile.config.converters.InetAddressConverter;
+import fish.payara.nucleus.microprofile.config.converters.InstantConverter;
+import fish.payara.nucleus.microprofile.config.converters.IntegerConverter;
+import fish.payara.nucleus.microprofile.config.converters.LocalDateConverter;
+import fish.payara.nucleus.microprofile.config.converters.LocalDateTimeConverter;
+import fish.payara.nucleus.microprofile.config.converters.LocalTimeConverter;
+import fish.payara.nucleus.microprofile.config.converters.LongConverter;
+import fish.payara.nucleus.microprofile.config.converters.OffsetDateTimeConverter;
+import fish.payara.nucleus.microprofile.config.converters.OffsetTimeConverter;
+import fish.payara.nucleus.microprofile.config.converters.StringConverter;
+import fish.payara.nucleus.microprofile.config.converters.URLConverter;
+import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
+import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
+import fish.payara.nucleus.microprofile.config.source.EnvironmentConfigSource;
+import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
+import fish.payara.nucleus.microprofile.config.source.PasswordAliasConfigSource;
+import fish.payara.nucleus.microprofile.config.source.PayaraServerProperties;
+import fish.payara.nucleus.microprofile.config.source.PropertiesConfigSource;
+import fish.payara.nucleus.microprofile.config.source.SecretsDirConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
+import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource;
 
 /**
  * This Service implements the Microprofile Config API and provides integration
@@ -213,9 +230,9 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             result = serverLevelConfig;
             if (result == null) {
                 LinkedList<ConfigSource> sources = new LinkedList<>();
-                LinkedList<Converter> converters = new LinkedList<>();
+                Map<Type, Converter> converters = new HashMap<>();
                 sources.addAll(getDefaultSources());
-                converters.addAll(getDefaultConverters());
+                converters.putAll(getDefaultConverters());
                 serverLevelConfig = new PayaraConfig(sources, converters);
                 result = serverLevelConfig;
             }
@@ -225,11 +242,11 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                 // build an application specific configuration
                 initialiseApplicationConfig(appInfo);
                 LinkedList<ConfigSource> sources = new LinkedList<>();
-                LinkedList<Converter> converters = new LinkedList<>();
-                sources.addAll(getDefaultSources());
+                Map<Type, Converter> converters = new HashMap<>();
+                sources.addAll(getDefaultSources(appInfo));
                 sources.addAll(getDiscoveredSources(appInfo));
-                converters.addAll(getDefaultConverters());
-                converters.addAll(getDiscoveredConverters(appInfo));
+                converters.putAll(getDefaultConverters());
+                converters.putAll(getDiscoveredConverters(appInfo));
                 result = new PayaraConfig(sources, converters);
                 appInfo.addTransientAppMetaData(METADATA_KEY, result);
             }
@@ -260,22 +277,8 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         return result;
     }
 
-    List<ConfigSource> getDefaultSources() {
+    private List<ConfigSource> getDefaultSources(String appName, String moduleName) {
         LinkedList<ConfigSource> sources = new LinkedList<>();
-        String appName = null;
-        String moduleName = null;
-        ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
-        if (currentInvocation == null) {
-            ApplicationInfo info = getAppInfo(Thread.currentThread().getContextClassLoader());
-            if (info != null) {
-                appName = info.getName();
-                moduleName = appName;
-            }
-        } else {
-            appName = currentInvocation.getAppName();
-            moduleName = currentInvocation.getModuleName();
-        }
-
         String serverName = context.getInstanceName();
         String configName = context.getConfigBean().getConfig().getName();
         sources.add(new DomainConfigSource());
@@ -293,8 +296,31 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             sources.add(new ModuleConfigSource(appName, moduleName));
             for (Properties props : getDeployedApplicationProperties(appName)) {
                 sources.add(new PropertiesConfigSource(props, appName));
-            }        }
+            }
+        }
         return sources;
+    }
+    List<ConfigSource> getDefaultSources() {
+        return getDefaultSources(null);
+    }
+
+    List<ConfigSource> getDefaultSources(ApplicationInfo appInfo) {
+        String appName = null;
+        String moduleName = null;
+        ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
+        if (currentInvocation == null) {
+            if (appInfo == null) {
+                appInfo = getAppInfo(Thread.currentThread().getContextClassLoader());
+            }
+            if (appInfo != null) {
+                appName = appInfo.getName();
+                moduleName = appName;
+            }
+        } else {
+            appName = currentInvocation.getAppName();
+            moduleName = currentInvocation.getModuleName();
+        }
+        return getDefaultSources(appName, moduleName);
     }
 
     @Override
@@ -363,35 +389,40 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         return sources;
     }
 
-    List<Converter> getDefaultConverters() {
-        LinkedList<Converter> result = new LinkedList<>();
-        result.add(new BooleanConverter());
-        result.add(new IntegerConverter());
-        result.add(new LongConverter());
-        result.add(new FloatConverter());
-        result.add(new DoubleConverter());
-        result.add(new DurationConverter());
-        result.add(new LocalTimeConverter());
-        result.add(new LocalDateConverter());
-        result.add(new LocalDateTimeConverter());
-        result.add(new OffsetDateTimeConverter());
-        result.add(new OffsetTimeConverter());
-        result.add(new InstantConverter());
-        result.add(new URLConverter());
-        result.add(new InetAddressConverter());
-        result.add(new ChronoUnitConverter());
+    Map<Type,Converter> getDefaultConverters() {
+        Map<Type,Converter> result = new HashMap<>();
+        result.put(Boolean.class, new BooleanConverter());
+        result.put(Integer.class, new IntegerConverter());
+        result.put(Long.class, new LongConverter());
+        result.put(Float.class, new FloatConverter());
+        result.put(Double.class, new DoubleConverter());
+        result.put(Duration.class, new DurationConverter());
+        result.put(LocalTime.class, new LocalTimeConverter());
+        result.put(LocalDate.class, new LocalDateConverter());
+        result.put(LocalDateTime.class, new LocalDateTimeConverter());
+        result.put(OffsetDateTime.class, new OffsetDateTimeConverter());
+        result.put(OffsetTime.class, new OffsetTimeConverter());
+        result.put(Instant.class, new InstantConverter());
+        result.put(URL.class, new URLConverter());
+        result.put(InetAddress.class, new InetAddressConverter());
+        result.put(ChronoUnit.class, new ChronoUnitConverter());
+        result.put(Class.class, new ClassConverter());
+        result.put(String.class, new StringConverter());
         return result;
 
     }
 
-    List<Converter> getDiscoveredConverters(ApplicationInfo appInfo) {
-        LinkedList<Converter> converters = appInfo.getTransientAppMetaData(CUSTOM_CONVERTERS_KEY, LinkedList.class);
+    Map<Type, Converter> getDiscoveredConverters(ApplicationInfo appInfo) {
+        Map<Type, Converter> converters = appInfo.getTransientAppMetaData(CUSTOM_CONVERTERS_KEY, Map.class);
         if (converters == null) {
-            converters = new LinkedList<>();
+            converters = new HashMap<>();
             // resolve custom config sources
             ServiceLoader<Converter> serviceLoader = ServiceLoader.load(Converter.class, appInfo.getAppClassLoader());
             for (Converter converter : serviceLoader) {
-                converters.add(converter);
+                Type type = PayaraConfigBuilder.getTypeForConverter(converter);
+                if (type != null) {
+                    converters.put(type,converter);
+                }
             }
             appInfo.addTransientAppMetaData(CUSTOM_CONVERTERS_KEY, converters);
         }
@@ -403,18 +434,25 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         info.addTransientAppMetaData(APP_METADATA_KEY, appConfigProperties);
         try {
             // Read application defined properties and add as transient metadata
-            Enumeration<URL> resources = info.getAppClassLoader().getResources("META-INF/microprofile-config.properties");
-            while (resources.hasMoreElements()) {
-                URL url = resources.nextElement();
-                Properties p = new Properties();
-                try (InputStream is = url.openStream()) {
-                    p.load(url.openStream());
-                }
-                appConfigProperties.add(p);
-            }
+            appConfigProperties.add(getPropertiesFromFile(info.getAppClassLoader(), "META-INF/microprofile-config.properties"));
+            appConfigProperties.add(getPropertiesFromFile(info.getAppClassLoader(), "../../META-INF/microprofile-config.properties"));
         } catch (IOException ex) {
             Logger.getLogger(ConfigProviderResolverImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    private Properties getPropertiesFromFile(ClassLoader appClassLoader, String fileName) throws IOException {
+        // Read application defined properties and add as transient metadata
+        Enumeration<URL> resources = appClassLoader.getResources(fileName);
+        while (resources.hasMoreElements()) {
+            URL url = resources.nextElement();
+            Properties p = new Properties();
+            try (InputStream is = url.openStream()) {
+                p.load(url.openStream());
+            }
+            return p;
+        }
+        return new Properties();
     }
 
 }

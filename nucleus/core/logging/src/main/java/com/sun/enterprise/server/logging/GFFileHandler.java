@@ -52,7 +52,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.FieldPosition;
 import java.text.ParseException;
@@ -149,8 +148,8 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     private Long rotationTimeLimitValue;
     private boolean compressionOnRotation;
     private boolean multiLineMode;
-    private String gffileHandlerFormatter = "";
-    private String currentgffileHandlerFormatter = "";
+    private String fileHandlerFormatter = "";
+    private String currentFileHandlerFormatter = "";
 
     /** Initially the LogRotation will be off until the domain.xml value is read. */
     private int limitForFileRotation = 0;
@@ -182,7 +181,6 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     private Thread pump;
 
     boolean dayBasedFileRotation = false;
-    //boolean compressLogs = false;
 
     private String RECORD_BEGIN_MARKER = "[#|";
     private String RECORD_END_MARKER = "|#]";
@@ -268,9 +266,9 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         }
 
         if (odlFormatter > 0) {
-            currentgffileHandlerFormatter = "com.sun.enterprise.server.logging.ODLLogFormatter";
+            currentFileHandlerFormatter = "com.sun.enterprise.server.logging.ODLLogFormatter";
         } else if (uniformLogFormatter > 0) {
-            currentgffileHandlerFormatter = "com.sun.enterprise.server.logging.UniformLogFormatter";
+            currentFileHandlerFormatter = "com.sun.enterprise.server.logging.UniformLogFormatter";
         }
 
         // start the Queue consumer thread.
@@ -335,12 +333,12 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
 
         // Below snapshot of the code is used to rotate server.log file on startup. It is used to avoid different format
         // log messages logged under same server.log file.
-        gffileHandlerFormatter = formatterName;
+        fileHandlerFormatter = formatterName;
         if (mustRotate) {
             rotate();
-        } else if (gffileHandlerFormatter != null
-                && !gffileHandlerFormatter
-                        .equals(currentgffileHandlerFormatter)) {
+        } else if (fileHandlerFormatter != null
+                && !fileHandlerFormatter
+                        .equals(currentFileHandlerFormatter)) {
             rotate();
         }
         excludeFields = manager.getProperty(LogManagerService.EXCLUDE_FIELDS_PROPERTY);
@@ -419,12 +417,12 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         dayBasedFileRotation = true;
         rotationTimeLimitValue = 0L;
 
-        int MILLISECONDS_IN_DAY = 1000 * 60 * 60 * 24;
+        int millisecondsInDay = 1000 * 60 * 60 * 24;
         Date date = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yy");
 
         long systemTime = System.currentTimeMillis();
-        String nextDate = dateFormat.format(date.getTime() + MILLISECONDS_IN_DAY);
+        String nextDate = dateFormat.format(date.getTime() + millisecondsInDay);
         Date nextDay = null;
 
         try {
@@ -482,13 +480,12 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         }
 }
     
-    private void rotationOnFileSizeLimit(String propertyValue){
-        if (rotationLimitAttrValue == null)
-          // Also honor the size based rotation if configured.
-        rotationLimitAttrValue = DEFAULT_ROTATION_LIMIT_BYTES;
-        try {          
+    private void rotationOnFileSizeLimit(String propertyValue) {
+        try {
             if (propertyValue != null) {
                 rotationLimitAttrValue = Integer.parseInt(propertyValue);
+            } else {
+                rotationLimitAttrValue = DEFAULT_ROTATION_LIMIT_BYTES;
             }
         } catch (NumberFormatException e) {
             logRecord = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
@@ -1100,21 +1097,21 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         this.multiLineMode = multiLineMode;
         // Rotate log file to avoid different log format to be displayed in same log file
         rotate();
-        configureLogFormatter(gffileHandlerFormatter, excludeFields, multiLineMode);
+        configureLogFormatter(fileHandlerFormatter, excludeFields, multiLineMode);
     }
 
-    public synchronized void setGffileHandlerFormatter(String gffileHandlerFormatter) {
-        this.gffileHandlerFormatter = gffileHandlerFormatter;
+    public synchronized void setFileHandlerFormatter(String fileHandlerFormatter) {
+        this.fileHandlerFormatter = fileHandlerFormatter;
         // Rotate log file to avoid different log format to be displayed in same log file
         rotate();
-        configureLogFormatter(gffileHandlerFormatter, excludeFields, multiLineMode);
+        configureLogFormatter(fileHandlerFormatter, excludeFields, multiLineMode);
     }
 
     public synchronized void setExcludeFields(String excludeFields) {
         this.excludeFields = excludeFields;
         // Rotate log file to avoid different log format to be displayed in same log file
         rotate();
-        configureLogFormatter(gffileHandlerFormatter, excludeFields, multiLineMode);
+        configureLogFormatter(fileHandlerFormatter, excludeFields, multiLineMode);
     }
 
     public synchronized void setRotationLimitAttrValue(Integer rotationLimitAttrValue) {

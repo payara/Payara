@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.182-SNAPSHOT</version>
+        <version>5.183-SNAPSHOT</version>
     </parent>
     <artifactId>requesttracing</artifactId>
     <name>Request Tracing Package</name>
@@ -103,6 +103,18 @@
             <artifactId>requesttracing-package</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-appserver-modules</groupId>
+            <artifactId>jaxrs-client-tracing</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-appserver-modules</groupId>
+            <artifactId>opentracing-cdi</artifactId>
+            <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
     </dependencies>

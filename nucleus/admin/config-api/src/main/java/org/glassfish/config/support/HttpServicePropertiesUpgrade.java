@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
@@ -58,18 +59,20 @@ import javax.inject.Inject;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Service
 public class HttpServicePropertiesUpgrade extends BaseLegacyConfigurationUpgrade {
+    
     @Inject
     private Configs configs;
 
+    @Override
     public void execute(AdminCommandContext context) {
         for (Config config : configs.getConfig()) {
             HttpService service = config.getHttpService();
-            if(service == null)
+            if (service == null){
                 continue;
+            }
             boolean done = false;
             try {
                 final List<Property> properties = service.getProperty();
@@ -86,8 +89,7 @@ public class HttpServicePropertiesUpgrade extends BaseLegacyConfigurationUpgrade
                     }
                 }
             } catch (TransactionFailure tf) {
-                ConfigApiLoggerInfo.getLogger().log(Level.SEVERE, 
-                        ConfigApiLoggerInfo.ERR_UPGRADE_HTTP_SVC_PROPS, tf);
+                ConfigApiLoggerInfo.getLogger().log(Level.SEVERE, ConfigApiLoggerInfo.ERR_UPGRADE_HTTP_SVC_PROPS, tf);
                 throw new RuntimeException(tf);
             }
         }
@@ -95,32 +97,39 @@ public class HttpServicePropertiesUpgrade extends BaseLegacyConfigurationUpgrade
 
     private void upgrade(final AdminCommandContext context, final Property property, final HttpService service)
             throws TransactionFailure {
-        if ("accessLoggingEnabled".equals(property.getName())) {
-            updatePropertyToAttribute(context, service, "accessLoggingEnabled", "accessLoggingEnabled");
-        } else if ("accessLogBufferSize".equals(property.getName())) {
-            ConfigSupport.apply(new SingleConfigCode<AccessLog>() {
-                @Override
-                public Object run(AccessLog param) {
-                    param.setBufferSizeBytes(property.getValue());
-                    return param;
-                }
-            }, service.getAccessLog());
-            removeProperty(service, "accessLogBufferSize");
-            report(context,
-                "Moved http-service.property.accessLogBufferSize to http-service.access-log.buffer-size-bytes");
-        } else if ("accessLogWriteInterval".equals(property.getName())) {
-            ConfigSupport.apply(new SingleConfigCode<AccessLog>() {
-                @Override
-                public Object run(AccessLog param) {
-                    param.setWriteIntervalSeconds(property.getValue());
-                    return param;
-                }
-            }, service.getAccessLog());
-            removeProperty(service, "accessLogWriteInterval");
-            report(context,
-                "Moved http-service.property.accessLogWriteInterval to http-service.access-log.write-interval-seconds");
-        } else if ("sso-enabled".equals(property.getName())) {
-            updatePropertyToAttribute(context, service, "sso-enabled", "ssoEnabled");
+        if (null != property.getName()) switch (property.getName()) {
+            case "accessLoggingEnabled":
+                updatePropertyToAttribute(context, service, "accessLoggingEnabled", "accessLoggingEnabled");
+                break;
+            case "accessLogBufferSize":
+                ConfigSupport.apply(new SingleConfigCode<AccessLog>() {
+                    @Override
+                    public Object run(AccessLog param) {
+                        param.setBufferSizeBytes(property.getValue());
+                        return param;
+                    }
+                }, service.getAccessLog());
+                removeProperty(service, "accessLogBufferSize");
+                report(context,
+                        "Moved http-service.property.accessLogBufferSize to http-service.access-log.buffer-size-bytes");
+                break;
+            case "accessLogWriteInterval":
+                ConfigSupport.apply(new SingleConfigCode<AccessLog>() {
+                    @Override
+                    public Object run(AccessLog param) {
+                        param.setWriteIntervalSeconds(property.getValue());
+                        return param;
+                    }
+                }, service.getAccessLog());
+                removeProperty(service, "accessLogWriteInterval");
+                report(context,
+                        "Moved http-service.property.accessLogWriteInterval to http-service.access-log.write-interval-seconds");
+                break;
+            case "sso-enabled":
+                updatePropertyToAttribute(context, service, "sso-enabled", "ssoEnabled");
+                break;
+            default:
+                break;
         }
     }
 

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.launcher;
 
@@ -49,6 +50,8 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  * @author bnevins
  */
 public class GFLauncherException extends Exception {
+    
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(GFLauncherException.class);
 
     /**
      * 
@@ -57,7 +60,7 @@ public class GFLauncherException extends Exception {
      */
     public GFLauncherException(String msg)
     {
-        super(strings.get(msg));
+        super(STRINGS.get(msg));
     }
 
     /**
@@ -69,7 +72,7 @@ public class GFLauncherException extends Exception {
      */
     public GFLauncherException(String msg, Object... objs)
     {
-        super(strings.get(msg, objs));
+        super(STRINGS.get(msg, objs));
     }
 
     /**
@@ -80,7 +83,7 @@ public class GFLauncherException extends Exception {
      */
     public GFLauncherException(String msg, Throwable t)
     {
-        super(strings.get(msg), t);
+        super(STRINGS.get(msg), t);
     }
 
     /**
@@ -93,7 +96,7 @@ public class GFLauncherException extends Exception {
      */
     public GFLauncherException(String msg, Throwable t, Object... objs)
     {
-        super(strings.get(msg, objs), t);
+        super(STRINGS.get(msg, objs), t);
     }
     /**
      * 
@@ -103,5 +106,5 @@ public class GFLauncherException extends Exception {
     {
         super(t);
     }
-    private final static LocalStringsImpl strings = new LocalStringsImpl(GFLauncherException.class);
+    
 }

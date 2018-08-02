@@ -225,174 +225,190 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
         Iterator it = matchedVersions.iterator();
         while (it.hasNext()) {
             String appName = (String) it.next();
-            Application app = applications.getApplication(appName);
+            Application applicationInfo = applications.getApplication(appName);
+            List<DeploymentGroup> deploymentGroups = domain.getDeploymentGroupsForInstance(target);
+            boolean isAppOnDeploymentGroupInstance = false;
 
-            ApplicationRef applicationRef = domain.getApplicationRefInTarget(appName, target);
-            if ( applicationRef != null ) {
-                // we provides warning messages
-                // if a versioned name has been provided to the command
-                if( isVersionExpression ){
-                    ActionReport.MessagePart childPart = part.addChild();
-                    childPart.setMessage(localStrings.getLocalString("appref.already.exists",
-                            "Application reference {0} already exists in target {1}.", appName, target));
-                } else {
-                    // returns failure if an untagged name has been provided to the command
-                    report.setMessage(localStrings.getLocalString("appref.already.exists",
-                            "Application reference {0} already exists in target {1}.", name, target));
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return;
+            if (deploymentGroups != null && deploymentGroups.isEmpty()) {
+                List<Application> applicationsInTarget = domain.getApplicationsInTarget(target);
+                List<String> listOfApplications = new ArrayList<>();
+                for (Application application : applicationsInTarget) {
+                    listOfApplications.add(application.getName());
                 }
-            } else {
-
-                Transaction t = new Transaction();
-                if (app.isLifecycleModule()) {
-                    handleLifecycleModule(context, t);
-                    return;
+                if (listOfApplications.contains(appName)) {
+                    isAppOnDeploymentGroupInstance = true;
+                    break;
                 }
+            }
 
-                ReadableArchive archive;
-                File file = null;
-                DeployCommandParameters commandParams=null;
-                Properties contextProps;
-                Map<String, Properties> modulePropsMap = null;
-                ApplicationConfigInfo savedAppConfig = null;
-                try {
-                    commandParams = app.getDeployParameters(null);
-                    commandParams.origin = Origin.create_application_ref;
-                    commandParams.command = Command.create_application_ref;
-                    commandParams.target = target;
-                    commandParams.virtualservers = virtualservers;
-                    commandParams.enabled = enabled;
-                    if(lbenabled != null){
-                        commandParams.lbenabled = lbenabled;
+            if (!isAppOnDeploymentGroupInstance) {
+                ApplicationRef applicationRef = domain.getApplicationRefInTarget(appName, target);
+                if (applicationRef != null) {
+                    // we provides warning messages
+                    // if a versioned name has been provided to the command
+                    if (isVersionExpression) {
+                        ActionReport.MessagePart childPart = part.addChild();
+                        childPart.setMessage(localStrings.getLocalString("appref.already.exists",
+                                "Application reference {0} already exists in target {1}.", appName, target));
+                    } else {
+                        // returns failure if an untagged name has been provided to the command
+                        report.setMessage(localStrings.getLocalString("appref.already.exists",
+                                "Application reference {0} already exists in target {1}.", name, target));
+                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                        return;
                     }
-                    commandParams.type = app.archiveType();
+                } else {
 
-                    contextProps = app.getDeployProperties();
-                    modulePropsMap = app.getModulePropertiesMap();
-                    savedAppConfig = new ApplicationConfigInfo(app);
+                    Transaction t = new Transaction();
+                    if (applicationInfo.isLifecycleModule()) {
+                        handleLifecycleModule(context, t);
+                        return;
+                    }
 
-                    URI uri = new URI(app.getLocation());
-                    file = new File(uri);
+                    ReadableArchive archive;
+                    File file = null;
+                    DeployCommandParameters commandParams = null;
+                    Properties contextProps;
+                    Map<String, Properties> modulePropsMap = null;
+                    ApplicationConfigInfo savedAppConfig = null;
+                    try {
+                        commandParams = applicationInfo.getDeployParameters(null);
+                        commandParams.origin = Origin.create_application_ref;
+                        commandParams.command = Command.create_application_ref;
+                        commandParams.target = target;
+                        commandParams.virtualservers = virtualservers;
+                        commandParams.enabled = enabled;
+                        if (lbenabled != null) {
+                            commandParams.lbenabled = lbenabled;
+                        }
+                        commandParams.type = applicationInfo.archiveType();
 
-                    if (!file.exists()) {
-                        report.setMessage(localStrings.getLocalString("fnf",
-                            "File not found", file.getAbsolutePath()));
+                        contextProps = applicationInfo.getDeployProperties();
+                        modulePropsMap = applicationInfo.getModulePropertiesMap();
+                        savedAppConfig = new ApplicationConfigInfo(applicationInfo);
+
+                        URI uri = new URI(applicationInfo.getLocation());
+                        file = new File(uri);
+
+                        if (!file.exists()) {
+                            report.setMessage(localStrings.getLocalString("fnf",
+                                    "File not found", file.getAbsolutePath()));
+                            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                            return;
+                        }
+
+                        archive = archiveFactory.openArchive(file);
+                    } catch (Exception e) {
+                        logger.log(Level.SEVERE, "Error opening deployable artifact : " + file.getAbsolutePath(), e);
+                        report.setMessage(localStrings.getLocalString("unknownarchiveformat", "Archive format not recognized"));
                         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                         return;
                     }
 
-                    archive = archiveFactory.openArchive(file);
-                } catch (Exception e) {
-                    logger.log(Level.SEVERE, "Error opening deployable artifact : " + file.getAbsolutePath(), e);
-                    report.setMessage(localStrings.getLocalString("unknownarchiveformat", "Archive format not recognized"));
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return;
-                }
+                    try {
+                        final ExtendedDeploymentContext deploymentContext
+                                = deployment.getBuilder(logger, commandParams, report).source(archive).build();
 
-                try {
-                    final ExtendedDeploymentContext deploymentContext =
-                            deployment.getBuilder(logger, commandParams, report).source(archive).build();
+                        Properties appProps = deploymentContext.getAppProps();
+                        appProps.putAll(contextProps);
 
-                    Properties appProps = deploymentContext.getAppProps();
-                    appProps.putAll(contextProps);
+                        // relativize the location so it could be set properly in
+                        // domain.xml
+                        String location = DeploymentUtils.relativizeWithinDomainIfPossible(new URI(applicationInfo.getLocation()));
+                        appProps.setProperty(ServerTags.LOCATION, location);
 
-                    // relativize the location so it could be set properly in
-                    // domain.xml
-                    String location = DeploymentUtils.relativizeWithinDomainIfPossible(new URI(app.getLocation()));
-                    appProps.setProperty(ServerTags.LOCATION, location);
+                        // relativize the URI properties so they could store in the
+                        // domain.xml properly on the instances
+                        String appLocation = appProps.getProperty(Application.APP_LOCATION_PROP_NAME);
+                        appProps.setProperty(Application.APP_LOCATION_PROP_NAME, DeploymentUtils.relativizeWithinDomainIfPossible(new URI(appLocation)));
+                        String planLocation = appProps.getProperty(Application.DEPLOYMENT_PLAN_LOCATION_PROP_NAME);
+                        if (planLocation != null) {
+                            appProps.setProperty(Application.DEPLOYMENT_PLAN_LOCATION_PROP_NAME, DeploymentUtils.relativizeWithinDomainIfPossible(new URI(planLocation)));
+                        }
+                        String altDDLocation = appProps.getProperty(Application.ALT_DD_LOCATION_PROP_NAME);
+                        if (altDDLocation != null) {
+                            appProps.setProperty(Application.ALT_DD_LOCATION_PROP_NAME, DeploymentUtils.relativizeWithinDomainIfPossible(new URI(altDDLocation)));
+                        }
+                        String runtimeAltDDLocation = appProps.getProperty(Application.RUNTIME_ALT_DD_LOCATION_PROP_NAME);
+                        if (runtimeAltDDLocation != null) {
+                            appProps.setProperty(Application.RUNTIME_ALT_DD_LOCATION_PROP_NAME, DeploymentUtils.relativizeWithinDomainIfPossible(new URI(runtimeAltDDLocation)));
+                        }
+                        savedAppConfig.store(appProps);
 
-                    // relativize the URI properties so they could store in the
-                    // domain.xml properly on the instances
-                    String appLocation = appProps.getProperty(Application.APP_LOCATION_PROP_NAME);
-                    appProps.setProperty(Application.APP_LOCATION_PROP_NAME, DeploymentUtils.relativizeWithinDomainIfPossible(new URI(appLocation)));
-                    String planLocation = appProps.getProperty(Application.DEPLOYMENT_PLAN_LOCATION_PROP_NAME);
-                    if (planLocation != null) {
-                        appProps.setProperty(Application.DEPLOYMENT_PLAN_LOCATION_PROP_NAME, DeploymentUtils.relativizeWithinDomainIfPossible(new URI(planLocation)));
-                    }
-                    String altDDLocation = appProps.getProperty(Application.ALT_DD_LOCATION_PROP_NAME);
-                    if (altDDLocation != null) {
-                        appProps.setProperty(Application.ALT_DD_LOCATION_PROP_NAME, DeploymentUtils.relativizeWithinDomainIfPossible(new URI(altDDLocation)));
-                    }
-                    String runtimeAltDDLocation = appProps.getProperty(Application.RUNTIME_ALT_DD_LOCATION_PROP_NAME);
-                    if (runtimeAltDDLocation != null) {
-                        appProps.setProperty(Application.RUNTIME_ALT_DD_LOCATION_PROP_NAME, DeploymentUtils.relativizeWithinDomainIfPossible(new URI(runtimeAltDDLocation)));
-                    }
-                    savedAppConfig.store(appProps);
+                        if (modulePropsMap != null) {
+                            deploymentContext.setModulePropsMap(modulePropsMap);
+                        }
 
-                    if (modulePropsMap != null) {
-                        deploymentContext.setModulePropsMap(modulePropsMap);
-                    }
+                        if (enabled) {
+                            versioningService.handleDisable(appName, target, deploymentContext.getActionReport(), context.getSubject());
+                        }
 
-                    if(enabled){
-                        versioningService.handleDisable(appName, target, deploymentContext.getActionReport(), context.getSubject());
-                    }
+                        if (domain.isCurrentInstanceMatchingTarget(target, appName, server.getName(), null)) {
+                            deployment.deploy(deployment.getSniffersFromApp(applicationInfo), deploymentContext);
+                        } else {
+                            // send the APPLICATION_PREPARED event for DAS
+                            events.send(new Event<DeploymentContext>(Deployment.APPLICATION_PREPARED, deploymentContext), false);
+                        }
 
-                    if (domain.isCurrentInstanceMatchingTarget(target, appName, server.getName(), null)) {
-                        deployment.deploy(deployment.getSniffersFromApp(app), deploymentContext);
-                    } else {
-                        // send the APPLICATION_PREPARED event for DAS
-                        events.send(new Event<DeploymentContext>(Deployment.APPLICATION_PREPARED, deploymentContext), false);
-                    }
+                        final List<String> targets
+                                = new ArrayList<String>(Arrays.asList(commandParams.target.split(",")));
 
-                    final List<String> targets
-                            = new ArrayList<String>(Arrays.asList(commandParams.target.split(",")));
+                        List<String> deploymentTarget = new ArrayList<>();
 
-                    List<String> deploymentTarget = new ArrayList<>();
-                    
-                    // If targets contains Deployment Group, check if the application is already deployed to instances in it.
-                    for (String target : targets) {
-                        if (isDeploymentGroup(target)) {
-                            List<Server> instances = domain.getDeploymentGroupNamed(target).getInstances();
-                            for (Server instance : instances) {
-                                List<Application> applications = domain.getApplicationsInTarget(instance.getName());
-                                List<String> listOfApplications = new ArrayList<>();
-                                for (Application application : applications) {
-                                    listOfApplications.add(application.getName());
-                                }
-                                if (!listOfApplications.contains(appName)) {
-                                    deploymentTarget.add(instance.getName());
+                        // If targets contains Deployment Group, check if the application is already deployed to instances in it.
+                        for (String target : targets) {
+                            if (isDeploymentGroup(target)) {
+                                List<Server> instances = domain.getDeploymentGroupNamed(target).getInstances();
+                                for (Server instance : instances) {
+                                    List<Application> applications = domain.getApplicationsInTarget(instance.getName());
+                                    List<String> listOfApplications = new ArrayList<>();
+                                    for (Application application : applications) {
+                                        listOfApplications.add(application.getName());
+                                    }
+                                    if (!listOfApplications.contains(appName)) {
+                                        deploymentTarget.add(instance.getName());
+                                    }
                                 }
                             }
                         }
-                    }                 
-                 
-                    if (report.getActionExitCode().equals(
-                        ActionReport.ExitCode.SUCCESS)) {
-                        try {
-                            deployment.registerAppInDomainXML(null, deploymentContext, t, true);
-                        } catch(TransactionFailure e) {
-                            logger.warning("failed to create application ref for " + appName);
+
+                        if (report.getActionExitCode().equals(
+                                ActionReport.ExitCode.SUCCESS)) {
+                            try {
+                                deployment.registerAppInDomainXML(null, deploymentContext, t, true);
+                            } catch (TransactionFailure e) {
+                                logger.warning("failed to create application ref for " + appName);
+                            }
                         }
-                    }
 
-                    // if the target is DAS, we do not need to do anything more
-                    if (!isVersionExpression && DeploymentUtils.isDASTarget(target)) {
-                        return;
-                    }
-                
-                    final ParameterMap paramMap
-                            = deployment.prepareInstanceDeployParamMap(deploymentContext);
+                        // if the target is DAS, we do not need to do anything more
+                        if (!isVersionExpression && DeploymentUtils.isDASTarget(target)) {
+                            return;
+                        }
 
-                    if (!deploymentTarget.isEmpty()) {
-                        replicateCommand(deploymentTarget, context, paramMap);
-                    } else {
-                        replicateCommand(targets, context, paramMap);
-                    }             
+                        final ParameterMap paramMap
+                                = deployment.prepareInstanceDeployParamMap(deploymentContext);
 
-                } catch(Exception e) {
-                    logger.log(Level.SEVERE, "Error during creating application ref ", e);
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                } finally {
-                    try {
-                        archive.close();
-                    } catch(IOException e) {
-                        logger.log(Level.INFO, "Error while closing deployable artifact : " + file.getAbsolutePath(), e);
+                        if (!deploymentTarget.isEmpty()) {
+                            replicateCommand(deploymentTarget, context, paramMap);
+                        } else {
+                            replicateCommand(targets, context, paramMap);
+                        }
+
+                    } catch (Exception e) {
+                        logger.log(Level.SEVERE, "Error during creating application ref ", e);
+                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    } finally {
+                        try {
+                            archive.close();
+                        } catch (IOException e) {
+                            logger.log(Level.INFO, "Error while closing deployable artifact : " + file.getAbsolutePath(), e);
+                        }
                     }
                 }
             }
         }
-    } 
+    }
 
     private void replicateCommand(List<String> targets, AdminCommandContext context, ParameterMap paramMap) {
         ClusterOperationUtil.replicateCommand(
@@ -448,7 +464,7 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
                 paramMap.add(DeploymentProperties.VIRTUAL_SERVERS, 
                     virtualservers);
             }
-            // pass the app props so we have the information to persist in the
+            // pass the applicationInfo props so we have the information to persist in the
             // domain.xml
             Properties appProps = app.getDeployProperties();
             paramMap.set(DeploymentProperties.APP_PROPS, DeploymentUtils.propertiesValue(appProps, ':'));

@@ -202,7 +202,7 @@ public class CircuitBreakerInterceptor implements Serializable {
                 
                 // If open, immediately throw an error
                 throw new CircuitBreakerOpenException("CircuitBreaker for method " 
-                        + invocationContext.getMethod().getName() + "is in state OPEN.");
+                        + invocationContext.getMethod().getName() + " is in state OPEN.");
             case CLOSED:
                 // If closed, attempt to proceed the invocation context
                 try {

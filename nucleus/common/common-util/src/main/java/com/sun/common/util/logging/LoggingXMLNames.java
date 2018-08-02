@@ -63,6 +63,8 @@ public class LoggingXMLNames {
     public static final String payaraNotificationLogRotationTimelimitInMinutes = "payara-notification-log-rotation-timelimit-in-minutes";
 
     public static final String logFormatter = "log-formatter";
+    
+    public static final String payaraNotificationLogFormatter = "payara-notification-log-formatter";
 
     public static final String logHandler = "log-handler";
 
@@ -124,6 +126,7 @@ public class LoggingXMLNames {
                 put(file, LoggingPropertyNames.file);
                 put(payaraNotificationFile, LoggingPropertyNames.payaraNotificationFile);
                 put(logFormatter, LoggingPropertyNames.logFormatter);
+                put(payaraNotificationLogFormatter, LoggingPropertyNames.payaraNotificationLogFormatter);
                 put(logHandler, LoggingPropertyNames.logHandler);
                 put(useSystemLogging, LoggingPropertyNames.useSystemLogging);
                 put(retainErrorStatisticsForHours, LoggingPropertyNames.retainErrorStatisticsForHours);

@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.microprofile</groupId>
         <artifactId>microprofile</artifactId>
-        <version>5.182-SNAPSHOT</version>
+        <version>5.183-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.microprofile.healthcheck</groupId>
     <artifactId>microprofile-healthcheck</artifactId>
@@ -77,13 +77,16 @@
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>container-common</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>weld-integration</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.admin</groupId>
+            <artifactId>config-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>javax</groupId>

@@ -611,7 +611,7 @@ public class PayaraRestApiHandlers {
                 RestUtil.restRequest(restEndpoint, null, "post", handlerCtx, quiet, throwException);
             }
             if (forHealthCheck) {
-                String restEndpoint = endpoint +  "/bootstrap-healthcheck";
+                String restEndpoint = endpoint +  "/reboot-healthcheck";
                 RestUtil.restRequest(restEndpoint, null, "post", handlerCtx, quiet, throwException);
             }
             if (forMonitoring){
@@ -785,7 +785,7 @@ public class PayaraRestApiHandlers {
         input = {
             @HandlerInput(name = "deploymentGroupName", type = String.class, required = true),
             @HandlerInput(name = "instanceRow", type = List.class, required = true)})
-    public static void createClusterInstances(HandlerContext handlerCtx) {
+    public static void createDeploymentGroupInstances(HandlerContext handlerCtx) {
         String deploymentGroupName = (String) handlerCtx.getInputValue("deploymentGroupName");
         List<Map> instanceRow = (List<Map>) handlerCtx.getInputValue("instanceRow");
         Map<String, Object> instanceAttributesMap = new HashMap<>();

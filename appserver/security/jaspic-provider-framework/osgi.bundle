@@ -38,6 +38,7 @@
 # holder.
 #
 -exportcontents: \
+                        com.sun.jaspic.services; \
                         com.sun.jaspic.config.delegate; \
                         com.sun.jaspic.config.factory; \
                         com.sun.jaspic.config.jaas; \

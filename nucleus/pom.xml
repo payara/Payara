@@ -54,7 +54,7 @@
 
     <groupId>fish.payara</groupId>
     <artifactId>payara-nucleus-parent</artifactId>
-    <version>5.182-SNAPSHOT</version>
+    <version>5.183-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Payara Nucleus Parent Project</name>
 
@@ -62,7 +62,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.182-SNAPSHOT</tag>
+        <tag>payara-server-5.183-SNAPSHOT</tag>
     </scm>
 
     <issueManagement>
@@ -249,19 +249,22 @@
 
         <!-- Servlet -->
         <servlet-api.version>4.0.0</servlet-api.version>
-        <grizzly.version>2.4.3.payara-p2</grizzly.version>
+        <grizzly.version>2.4.3.payara-p4</grizzly.version>
         <!-- Requires JDK8u161 or above-->
         <grizzly.npn.version>1.8</grizzly.npn.version>
+        
+        <!-- Microprofile -->
+        <microprofile-config.version>1.2.1</microprofile-config.version>
 
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.1</jax-rs-api.impl.version>
-        <jersey.version>2.27</jersey.version>
+        <jersey.version>2.27.payara-p8</jersey.version>
 
         <!-- Bean Validation -->
-        <javax.validation.version>2.0.0.Final</javax.validation.version>
-        <hibernate.validator.version>6.0.9.Final</hibernate.validator.version>
-        <hibernate.validator-cdi.version>6.0.9.Final</hibernate.validator-cdi.version>
+        <javax.validation.version>2.0.1.Final</javax.validation.version>
+        <hibernate.validator.version>6.0.11.Final</hibernate.validator.version>
+        <hibernate.validator-cdi.version>6.0.11.Final</hibernate.validator-cdi.version>
 
         <!-- Expression language -->
         <javax.el.version>3.0.1-b04</javax.el.version>
@@ -302,11 +305,14 @@
 
         <!-- Jackson is a high-performance JSON processor (parser, generator) -->
         <jackson.version>2.9.5</jackson.version>
-        <!-- A StAX implementation for JSON. -->
+        <!-- SnakeYAML is required for the YAML conversion in Jackson -->
+        <snakeyaml.version>1.18</snakeyaml.version>
 
         <jsonp.version>1.1</jsonp.version>
 
         <mimepull.version>1.9.7</mimepull.version>
+        
+        <opentracing.version>0.30.0</opentracing.version>
 
         <!-- Java Business Integration (JBI) is a specification for an approach to implementing a service-oriented architecture (SOA).  -->
         <jbi.version>1.0</jbi.version>
@@ -316,9 +322,9 @@
         <v3-docs.version>4.1</v3-docs.version>
         <v3-docs-l10n.version>4.0-b07</v3-docs-l10n.version>
         <l10n.version>3.1-b41</l10n.version>
-        <asm.version>6.0</asm.version>
+        <asm.version>6.2</asm.version>
         <ha-api.version>3.1.9</ha-api.version>
-        <hazelcast.version>3.9.3</hazelcast.version>
+        <hazelcast.version>3.10.2</hazelcast.version>
         <smack.version>4.1.9</smack.version>
         <jxmpp.version>0.4.2</jxmpp.version>
         <xpp3.version>1.1.4c_7</xpp3.version>
@@ -345,6 +351,10 @@
         <findbugs.exclude />
         <findbugs.version>2.5.2</findbugs.version>
         <findbugs.glassfish.logging.validLoggerPrefixes>javax.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
+        <jacoco.plugin.version>0.8.0</jacoco.plugin.version>
+
+        <!-- MicroProfile API Versions -->
+        <microprofile-opentracing.version>1.0.payara-p1</microprofile-opentracing.version>
     </properties>
 
     <modules>
@@ -584,7 +594,49 @@
                     <artifactId>build-helper-maven-plugin</artifactId>
                     <version>${maven.build.helper.plugin.version}</version>
                 </plugin>
-
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco.plugin.version}</version>
+                    <configuration>
+                        <skip>${maven.test.skip}</skip>
+                        <propertyName>argLine</propertyName>
+                        <destFile>${basedir}/target/jacoco.exec</destFile>
+                         <append>true</append>
+                        <excludes>
+                            <exclude>**/Q*.*</exclude>
+                        </excludes>
+                    </configuration>
+                    
+                    <executions>
+                        <execution>
+                            <id>default-prepare-agent</id>
+                            <phase>initialize</phase>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>default-prepare-agent-integration</id>
+                            <goals>
+                                <goal>prepare-agent-integration</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>default-report</id>
+                            <phase>prepare-package</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>default-report-integration</id>
+                            <goals>
+                                <goal>report-integration</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -740,7 +792,7 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <echo>
 Building ${project.artifactId} (final name ${project.build.finalName})
 Running from ${basedir}
@@ -755,7 +807,7 @@ Parent is ${project.parent}</echo>
                                         <present present="srconly" targetdir="${project.build.outputDirectory}/META-INF"/>
                                     </fileset>
                                 </copy>
-                            </tasks>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
@@ -837,38 +889,6 @@ Parent is ${project.parent}</echo>
                     </dependency>
                 </dependencies>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <configuration>
-                    <reportPlugins>
-                        <plugin>
-                            <groupId>org.codehaus.mojo</groupId>
-                            <artifactId>findbugs-maven-plugin</artifactId>
-                            <version>${findbugs.version}</version>
-                            <configuration>
-                                <skip>${findbugs.skip}</skip>
-                                <threshold>${findbugs.threshold}</threshold>
-                                <excludeFilterFile>
-                                    exclude-common.xml,${findbugs.exclude}
-                                </excludeFilterFile>
-                            </configuration>
-                            <!--
-                            <dependencies>
-                                <dependency>
-                                    <groupId>org.glassfish.main</groupId>
-                                    <artifactId>findbugs</artifactId>
-                                    <version>${project.version}</version>
-                                </dependency>
-                            </dependencies>
-                            -->
-                        </plugin>
-                    </reportPlugins>
-                </configuration>
-            </plugin>
-
-
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -1125,6 +1145,16 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-xml</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${snakeyaml.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
 
@@ -1527,6 +1557,22 @@ Parent is ${project.parent}</echo>
                 </plugins>
             </build>
         </profile>
+         <profile>
+            <id>CodeCoverage</id>
+            <activation>
+                <property>
+                    <name>BUILD_NUMBER</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <dependencies>
@@ -1537,4 +1583,30 @@ Parent is ${project.parent}</echo>
             <optional>true</optional>
         </dependency>
     </dependencies>
+    
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <configuration>
+                    <reportPlugins>
+                        <plugin>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>findbugs-maven-plugin</artifactId>
+                            <version>${findbugs.version}</version>
+                            <configuration>
+                                <skip>${findbugs.skip}</skip>
+                                <threshold>${findbugs.threshold}</threshold>
+                                <excludeFilterFile>
+                                    exclude-common.xml,${findbugs.exclude}
+                                </excludeFilterFile>
+                            </configuration>
+                        </plugin>
+                    </reportPlugins>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
+    
 </project>

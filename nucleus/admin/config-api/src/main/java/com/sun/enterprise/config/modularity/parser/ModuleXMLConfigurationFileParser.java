@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.modularity.parser;
 
@@ -127,16 +128,24 @@ public class ModuleXMLConfigurationFileParser {
                     Iterator<Attribute> attributes = startElement.getAttributes();
                     while (attributes.hasNext()) {
                         Attribute attribute = attributes.next();
-                        if (attribute.getName().toString().equals(DEFAULT_VALUE)) {
-                            value = attribute.getValue();
-                        } else if (attribute.getName().toString().equals(DESCRIPTION)) {
-                            description = getLocalizedValue(attribute.getValue());
-                        } else if (attribute.getName().toString().equals(NAME)) {
-                            name = attribute.getValue();
-                        } else if (attribute.getName().toString().equals(TITLE)) {
-                            title = getLocalizedValue(attribute.getValue());
-                        } else if (attribute.getName().toString().equals(VALIDATION_EXPRESSION)) {
-                            validationExpression = getLocalizedValue(attribute.getValue());
+                        switch (attribute.getName().toString()) {
+                            case DEFAULT_VALUE:
+                                value = attribute.getValue();
+                                break;
+                            case DESCRIPTION:
+                                description = getLocalizedValue(attribute.getValue());
+                                break;
+                            case NAME:
+                                name = attribute.getValue();
+                                break;
+                            case TITLE:
+                                title = getLocalizedValue(attribute.getValue());
+                                break;
+                            case VALIDATION_EXPRESSION:
+                                validationExpression = getLocalizedValue(attribute.getValue());
+                                break;
+                            default:
+                                break;
                         }
 
                     }//attributes

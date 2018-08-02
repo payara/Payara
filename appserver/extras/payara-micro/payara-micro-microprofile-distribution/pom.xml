@@ -45,12 +45,11 @@
     <parent>
         <groupId>fish.payara.extras.payara-micro</groupId>
         <artifactId>payara-micro-parent</artifactId>
-        <version>5.182-SNAPSHOT</version>
+        <version>5.183-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.extras</groupId>
     <artifactId>payara-microprofile</artifactId>
     <name>Payara MicroProfile Distribution</name>    
-    <packaging>jar</packaging>
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
@@ -922,28 +921,24 @@
             <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-core</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
         </dependency>
         <!-- Add Boot classes -->
         <dependency>
             <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-boot</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>            
-        </dependency>  
+        </dependency>
         <!-- Add Payara Micro Services -->
         <dependency>
             <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-service</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
         </dependency>
         <!-- Add Payara Micro CDI Integration -->
         <dependency>
             <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-cdi</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
         </dependency>
         
         <!-- Payara Domain will be deleted during assembly -->
@@ -951,14 +946,12 @@
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>payara-domain</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
         </dependency>
         
         <!-- Add Concurrency -->
         <dependency>
             <groupId>javax.enterprise.concurrent</groupId>
             <artifactId>javax.enterprise.concurrent-api</artifactId>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
@@ -968,14 +961,12 @@
             <groupId>org.glassfish.main.concurrent</groupId>
             <artifactId>concurrent-connector</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.concurrent</groupId>
             <artifactId>concurrent-impl</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
-        </dependency> 
+        </dependency>
     </dependencies>
     <profiles>
         <profile>

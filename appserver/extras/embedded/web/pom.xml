@@ -48,13 +48,12 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>5.182-SNAPSHOT</version>
+        <version>5.183-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>payara-embedded-web</artifactId>
     <name>Embedded Payara Web</name>
-    <packaging>jar</packaging>
 
     <build>
         <defaultGoal>install</defaultGoal>
@@ -281,8 +280,8 @@
 
         <!-- Request Tracing Package -->
         <dependency>
-            <groupId>fish.payara.packager</groupId>
-            <artifactId>requesttracing-package</artifactId>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>requesttracing</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
@@ -380,6 +379,13 @@
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
+        </dependency>
+        <!-- Yubikey Authentication -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>yubikey-authentication</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
         </dependency>
         <!-- roles api -->
         <dependency>

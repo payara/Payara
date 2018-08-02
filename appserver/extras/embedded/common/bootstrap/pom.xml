@@ -39,7 +39,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
---> 
+-->
+<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -73,7 +74,6 @@
                                     <groupId>org.glassfish.main.common</groupId>
                                     <artifactId>simple-glassfish-api</artifactId>
                                     <version>${project.version}</version>
-                                    <type>jar</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
                                     <excludes>META-INF/**</excludes>
@@ -82,7 +82,6 @@
                                     <groupId>org.glassfish.main.core</groupId>
                                     <artifactId>glassfish</artifactId>
                                     <version>${project.version}</version>
-                                    <type>jar</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
                                     <includes>**/OSGiFrameworkLauncher**,**/AutoProcessor**</includes>

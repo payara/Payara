@@ -3,7 +3,7 @@
 <!--
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   
-   Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
   
    The contents of this file are subject to the terms of either the GNU
    General Public License Version 2 only ("GPL") or the Common Development
@@ -45,7 +45,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>5.182-SNAPSHOT</version>
+        <version>5.183-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.payara-appserver-modules</groupId>
     <artifactId>environment-warning</artifactId>
@@ -61,13 +61,11 @@
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
         </dependency>
     </dependencies>
 </project>

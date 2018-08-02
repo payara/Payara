@@ -42,6 +42,7 @@ package com.sun.common.util.logging;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -218,11 +219,10 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
     public class LoggingPrintStream extends PrintStream {
         LogManager logManager = LogManager.getLogManager();
 
-        private ThreadLocal perThreadStObjects = new ThreadLocal();
+        private ThreadLocal<StackTraceObjects> perThreadStObjects = new ThreadLocal<>();
 
         public LoggingPrintStream(ByteArrayOutputStream os) {
             super(os, true);
-
         }
 
         public void setLogger(Logger l) {
@@ -395,8 +395,20 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         }
 
         public void write(byte[] buf, int off, int len) {
-            if (checkLocks()) {
-                super.write(buf, off, len);
+            try {
+                synchronized (this) {
+                    if (out == null)
+                        throw new IOException("Stream closed");
+                    out.write(buf, off, len);
+                    if (len <= 8129)
+                        out.flush();
+                }
+            }
+            catch (InterruptedIOException x) {
+                Thread.currentThread().interrupt();
+            }
+            catch (IOException x) {
+                setError();
             }
         }
 

@@ -66,6 +66,7 @@ public class LogNotifierConfigurationExecutionOptionsFactory
 
         executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
         executionOptions.setUseSeparateLogFile(Boolean.parseBoolean(notifierConfiguration.getUseSeparateLogFile()));
+        executionOptions.setNoisy(Boolean.parseBoolean(notifierConfiguration.getNoisy()));
 
         return executionOptions;
     }

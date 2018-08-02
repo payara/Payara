@@ -83,7 +83,6 @@ import org.glassfish.internal.api.PostStartupRunLevel;
  * triggered is not yet clear.
  */
 @Service
-@RunLevel(mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING, value=PostStartupRunLevel.VAL)
 public final class AMXJ2EEStartupService implements org.glassfish.hk2.api.PostConstruct, org.glassfish.hk2.api.PreDestroy, AMXLoader, ConfigListener {
 
     @Inject
@@ -242,9 +241,13 @@ public final class AMXJ2EEStartupService implements org.glassfish.hk2.api.PostCo
 
     @Override
     public synchronized void unloadAMXMBeans() {
-        final J2EEDomain j2eeDomain = getJ2EEDomainProxy();
-        if (j2eeDomain != null) {
-            ImplUtil.unregisterAMXMBeans(j2eeDomain);
+        try {
+            final J2EEDomain j2eeDomain = getJ2EEDomainProxy();
+            if (j2eeDomain != null) {
+                ImplUtil.unregisterAMXMBeans(j2eeDomain);
+            }
+        } catch (NullPointerException e){
+            logger.log(Level.FINEST, "NullPointerException when stopping AMX, AMX may not have been started", e);
         }
     }
 }

@@ -37,21 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.digest.api;
 
 /**
- * Represents the Key(username+realmname+passwd) to be used in the Digest calculation.
- * Password is to be obtained from the store using the Key to complete the digest
- * calculation.
+ * Represents the Key (username + realmname+passwd) to be used in the Digest calculation. Password is to be obtained from
+ * the store using the Key to complete the digest calculation.
  *
  * @author K.Venugopal@sun.com
  */
 public interface Key {
-
-    
-    public java.lang.String getRealmName();
-
-    public java.lang.String getUsername();
-
+    String getRealmName();
+    String getUsername();
 }

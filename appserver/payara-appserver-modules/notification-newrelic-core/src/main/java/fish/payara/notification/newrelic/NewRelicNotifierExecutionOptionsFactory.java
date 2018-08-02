@@ -64,6 +64,7 @@ public class NewRelicNotifierExecutionOptionsFactory extends NotifierExecutionOp
     public NotifierExecutionOptions build(NewRelicNotifier notifier) {
         NewRelicNotifierExecutionOptions executionOptions = new NewRelicNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
+        executionOptions.setNoisy(Boolean.parseBoolean(notifier.getNoisy()));
         return executionOptions;
     }
 }

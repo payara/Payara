@@ -64,6 +64,7 @@ public class SnmpNotifierExecutionOptionsFactory extends NotifierExecutionOption
     public NotifierExecutionOptions build(SnmpNotifier notifier) {
         SnmpNotifierExecutionOptions executionOptions = new SnmpNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
+        executionOptions.setNoisy(Boolean.parseBoolean(notifier.getNoisy()));
         return executionOptions;
     }
 }

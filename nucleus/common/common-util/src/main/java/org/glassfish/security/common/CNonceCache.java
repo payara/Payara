@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.security.common;
 
 import java.util.Map;
@@ -52,28 +53,30 @@ public interface CNonceCache extends Map<String, NonceInfo> {
     /**
      * @param cnonceCacheSize the cnonceCacheSize to set
      */
-    public void setCnonceCacheSize(long cnonceCacheSize);
+    void setCnonceCacheSize(long cnonceCacheSize);
+
     /**
      * @param nonceValidity the nonceValidity to set
      */
-    public void setNonceValidity(long nonceValidity);
+    void setNonceValidity(long nonceValidity);
 
     /**
      * @return the cnonceCacheSize
      */
-    public long getCnonceCacheSize();
+    long getCnonceCacheSize();
 
     /**
      * @return the nonceValidity
      */
-    public long getNonceValidity();
+    long getNonceValidity();
 
     /**
      * Initialize the cache
      */
-    public void init(long size, String name, long validity, Map<String, String> props);
+    void init(long size, String name, long validity, Map<String, String> props);
+
     /**
      * destroy
      */
-    public void destroy();
+    void destroy();
 }

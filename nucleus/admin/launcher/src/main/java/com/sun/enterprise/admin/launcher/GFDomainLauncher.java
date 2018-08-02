@@ -57,6 +57,7 @@ class GFDomainLauncher extends GFLauncher {
         super(info);
     }
 
+    @Override
     void internalLaunch() throws GFLauncherException {
         try {
             launchInstance();
@@ -69,6 +70,7 @@ class GFDomainLauncher extends GFLauncher {
         }
     }
 
+    @Override
     List<File> getMainClasspath() throws GFLauncherException {
         List<File> list = new ArrayList<File>();
         File dir = new File(getEnvProps().get(INSTALL_ROOT_PROPERTY),"modules");
@@ -83,6 +85,7 @@ class GFDomainLauncher extends GFLauncher {
         return list;
     }
 
+    @Override
     String getMainClass() throws GFLauncherException {
         return MAIN_CLASS;
     }

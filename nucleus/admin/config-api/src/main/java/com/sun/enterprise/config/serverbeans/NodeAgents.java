@@ -50,11 +50,6 @@ import java.util.List;
 /**
  *
  */
-
-/* @XmlType(name = "", propOrder = {
-    "nodeAgent"
-}) */
-
 // general solution needed; this is intermediate solution
 @Configured
 public interface NodeAgents extends ConfigBeanProxy {
@@ -78,6 +73,7 @@ public interface NodeAgents extends ConfigBeanProxy {
      * <p/>
      * Objects of the following type(s) are allowed in the list
      * {@link NodeAgent }
+     * @return 
      */
     @Element
     public List<NodeAgent> getNodeAgent();

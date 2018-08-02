@@ -45,23 +45,25 @@ import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 /**
- * A POL (plain old logger).
+ * A POL (plain old LOGGER).
  *
  * @author bnevins
  */
 public class MLogger {
 
     public static Logger getLogger() {
-        return logger;
+        return LOGGER;
     }
 
     private MLogger() {
     }
+    
     @LogMessagesResourceBundle
     public static final String SHARED_LOGMESSAGE_RESOURCE = "com.sun.enterprise.admin.monitor.LogMessages";
     @LoggerInfo(subsystem = "Monitoring", description = "Monitoring Logger", publish = true)
     public static final String LOGGER_NAME = "javax.enterprise.monitoring";
-    private final static Logger logger = Logger.getLogger(LOGGER_NAME, SHARED_LOGMESSAGE_RESOURCE);
+    private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME, SHARED_LOGMESSAGE_RESOURCE);
+    
     // these messages are historical.  We've transitioned to this latest Logging API
     // TODO figure out cause/action etc.  This is too expensive to do right now...
     @LogMessageInfo(message =

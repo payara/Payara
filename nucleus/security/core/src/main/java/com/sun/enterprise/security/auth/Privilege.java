@@ -37,23 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth;
 
-import java.rmi.*;
+import java.io.Serializable;
 
 /**
- * This remote interface enables the deployment tool to query the
- * details of the Privilege.
+ * This remote interface enables the deployment tool to query the details of the Privilege.
+ * 
  * @author Harish Prabandham
  */
-public interface Privilege extends java.io.Serializable {
+public interface Privilege extends Serializable {
+    
     /**
      * Returns the name of the name of the Privilege.
+     * 
      * @return The name of the name of the Privilege.
      */
-    public String getName();
+    String getName();
 }
-
-
-

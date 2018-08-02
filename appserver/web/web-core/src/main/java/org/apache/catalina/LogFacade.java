@@ -1211,7 +1211,7 @@ public class LogFacade {
     @LogMessageInfo(
         message = "Exception during cleanup after start failed",
         level = "SEVERE",
-        cause = "Stop staring up failed",
+        cause = "Stop starting up failed",
         action = "Verify configurations to stop starting up"
     )
     public static final String CLEANUP_FAILED_EXCEPTION = prefix + "00175";

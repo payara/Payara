@@ -64,19 +64,20 @@ tests.  The file will automatically be picked up as part of the suite. There is
 no need to modify this pom.xml file or any other configuration file. Useful
 utilities are in the NucleusTestUtils class.
 -->
+<!--"Portions Copyright [2018] [Payara Foundation and/or its affiliates]" -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
         <groupId>org.glassfish.main.tests</groupId>
         <artifactId>nucleus-tests</artifactId>
-        <version>5.182-SNAPSHOT</version>
+        <version>5.183-SNAPSHOT</version>
     </parent>
     
     <groupId>org.glassfish.main.tests</groupId>
     <artifactId>nucleus-quicklook</artifactId>
     <name>Nucleus Quicklook Tests</name>
-    <version>5.182-SNAPSHOT</version>
+    <version>5.183-SNAPSHOT</version>
     <description>This pom describes how to run QuickLook tests on the Nucleus distribution</description>
     
     <dependencies>
@@ -85,14 +86,12 @@ utilities are in the NucleusTestUtils class.
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.tests</groupId>
             <artifactId>utils-ng</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>

@@ -47,11 +47,10 @@
     <parent>
 	<groupId>org.glassfish.main.web</groupId>
     	<artifactId>web</artifactId>
-        <version>5.182-SNAPSHOT</version>
+        <version>5.183-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>weld-integration-test-fragment</artifactId>
-    <packaging>jar</packaging>
     <name>Fragment bundle for Weld related testing</name>
     <description>This fragment bundle extends the weld osgi bundle to export additional packages from the weld-osgi-bundle as they are used in the Weld Arquillian tests</description>
     

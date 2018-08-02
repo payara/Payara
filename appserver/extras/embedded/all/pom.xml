@@ -42,68 +42,68 @@
 -->
 <!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>5.182-SNAPSHOT</version>
-    <relativePath>../../pom.xml</relativePath>
+        <version>5.183-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
     <groupId>fish.payara.extras</groupId>
     <artifactId>payara-embedded-all</artifactId>
     <name>Embedded Payara All-In-One</name>
 
-    <packaging>jar</packaging>
+    <build>
+        <defaultGoal>install</defaultGoal>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/packager_zips</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <excludeTransitive>true</excludeTransitive>
+                            <includeScope>compile</includeScope>
+                            <includeScope>runtime</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+                <artifactId>maven-antrun-extended-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <ant dir="." antfile="../build.xml" target="create.distribution">
+                                    <property name="finaljar"
+                                              value="${project.build.directory}/payara-embedded-all.jar"/>
+                                    <property name="bundlename" value="org.glassfish.main.embedded.all"/>
+                                    <property name="install.dir.name" value="${install.dir.name}"/>
+                                </ant>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
-  <build>
-    <defaultGoal>install</defaultGoal>
-    <plugins>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-                <execution>
-                    <id>copy-dependencies</id>
-                    <goals>
-                        <goal>copy-dependencies</goal>
-                    </goals>
-                    <configuration>
-                        <outputDirectory>${project.build.directory}/packager_zips</outputDirectory>
-                        <overWriteReleases>false</overWriteReleases>
-                        <overWriteSnapshots>true</overWriteSnapshots>
-                        <excludeTransitive>true</excludeTransitive>
-                        <includeScope>compile</includeScope>
-                        <includeScope>runtime</includeScope>
-                    </configuration>
-               </execution>
-            </executions>
-        </plugin>
-        <plugin>
-        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-        <artifactId>maven-antrun-extended-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <tasks>
-                  <ant dir="." antfile="../build.xml" target="create.distribution">
-                      <property name="finaljar" value="${project.build.directory}/payara-embedded-all.jar" />
-                      <property name="bundlename" value="org.glassfish.main.embedded.all" />
-                      <property name="install.dir.name" value="${install.dir.name}" />                    
-                  </ant>
-              </tasks>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
-
-   <dependencies>
+    <dependencies>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-cmp</artifactId>
@@ -182,7 +182,7 @@
             <optional>true</optional>
         </dependency>
 
-	<!-- additional grizzly modules package which includes websockets -->
+        <!-- additional grizzly modules package which includes websockets -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-grizzly-full</artifactId>
@@ -302,8 +302,8 @@
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
-        </dependency>        
-	<!-- hazelcast package -->
+        </dependency>
+        <!-- hazelcast package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>hazelcast</artifactId>
@@ -326,22 +326,22 @@
             <optional>true</optional>
         </dependency>
 
-       <dependency>
-           <groupId>fish.payara.packager</groupId>
-           <artifactId>requesttracing-package</artifactId>
-           <version>${project.version}</version>
-           <type>zip</type>
-           <optional>true</optional>
-       </dependency>
-
-       <dependency>
-           <groupId>fish.payara.packager</groupId>
-           <artifactId>notification-package</artifactId>
-           <version>${project.version}</version>
-           <type>zip</type>
-           <optional>true</optional>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>requesttracing</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
         </dependency>
-               
+
+        <dependency>
+            <groupId>fish.payara.packager</groupId>
+            <artifactId>notification-package</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>notification-email</artifactId>
@@ -422,20 +422,27 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-       
-       <dependency>
-           <groupId>fish.payara.packager</groupId>
-           <artifactId>payara-api-package</artifactId>
-           <version>${project.version}</version>
-           <type>zip</type>
-           <optional>true</optional>
-       </dependency>
-       <dependency>
+
+        <dependency>
+            <groupId>fish.payara.packager</groupId>
+            <artifactId>payara-api-package</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
+        </dependency>
+        <!-- Yubikey Authentication -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>yubikey-authentication</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>

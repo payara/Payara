@@ -39,6 +39,7 @@
  */
 
 package com.sun.enterprise.security.auth.login;
+
 import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
 
 /**
@@ -49,11 +50,11 @@ public class DigestCredentials {
 
     private String realmName = "";
     private String username = "";
-    private DigestAlgorithmParameter [] params = null;    
+    private DigestAlgorithmParameter[] params = null;
 
-    public DigestCredentials(String realmName, String username,DigestAlgorithmParameter [] params) {
+    public DigestCredentials(String realmName, String username, DigestAlgorithmParameter[] params) {
         this.realmName = realmName;
-        this.username = username;        
+        this.username = username;
         this.params = params;
     }
 
@@ -65,7 +66,7 @@ public class DigestCredentials {
         return this.username;
     }
 
-    public DigestAlgorithmParameter [] getParameters(){
+    public DigestAlgorithmParameter[] getParameters() {
         return params;
     }
 }
