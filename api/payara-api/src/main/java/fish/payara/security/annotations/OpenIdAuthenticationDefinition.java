@@ -233,14 +233,28 @@ public @interface OpenIdAuthenticationDefinition {
     /**
      * The Microprofile Config key for the nonce is <code>{@value}</code>.
      */
-    public static final String OPENID_MP_NONCE = "payara.security.openid.useNonce";
+    public static final String OPENID_MP_USE_NONCE = "payara.security.openid.useNonce";
 
     /**
-     * Optional. String value used to mitigate replay attacks.
+     * Optional. Enables string value used to mitigate replay attacks.
      *
      * @return
      */
     boolean useNonce() default true;
+
+    /**
+     * The Microprofile Config key to enable the session is
+     * <code>{@value}</code>.
+     */
+    public static final String OPENID_MP_USE_SESSION = "payara.security.openid.useSession";
+
+    /**
+     * Optional. If enabled state & nonce value stored in session otherwise in
+     * cookies.
+     *
+     * @return
+     */
+    boolean useSession() default true;
 
     /**
      * An array of extra options that will be sent to the OAuth provider.

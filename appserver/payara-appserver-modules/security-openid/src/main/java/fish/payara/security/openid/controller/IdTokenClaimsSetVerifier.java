@@ -46,7 +46,6 @@ import com.nimbusds.jwt.proc.JWTClaimsSetVerifier;
 import static fish.payara.security.openid.api.OpenIdConstant.AUTHORIZED_PARTY;
 import static fish.payara.security.openid.api.OpenIdConstant.NONCE;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
-import fish.payara.security.openid.domain.OpenIdNonce;
 import java.util.Date;
 import java.util.List;
 import static java.util.Objects.isNull;
@@ -60,11 +59,11 @@ import static java.util.Objects.nonNull;
 public class IdTokenClaimsSetVerifier implements JWTClaimsSetVerifier {
 
     private final OpenIdConfiguration configuration;
-    private final OpenIdNonce expectedNonce;
+    private final String expectedNonceHash;
 
-    public IdTokenClaimsSetVerifier(OpenIdConfiguration configuration, OpenIdNonce expectedNonce) {
+    public IdTokenClaimsSetVerifier(OpenIdConfiguration configuration, String expectedNonceHash) {
         this.configuration = configuration;
-        this.expectedNonce = expectedNonce;
+        this.expectedNonceHash = expectedNonceHash;
     }
 
     /**
@@ -88,11 +87,9 @@ public class IdTokenClaimsSetVerifier implements JWTClaimsSetVerifier {
         if (isNull(claims.getIssuer())) {
             throw new IllegalStateException("Missing issuer (iss) claim");
         }
-//      Azure OpenId Connect failing
-//      "https://login.microsoftonline.com/f1195e3a-584e-4eba-867f-030b6d4cffa9/v2.0" == "https://login.microsoftonline.com/{tenantid}/v2.0"
-//      if (!claims.getIssuer().equals(configuration.getProviderMetadata().getIssuerUri())) {
-//          throw new IllegalStateException("Invalid issuer : " + configuration.getProviderMetadata().getIssuerUri());
-//      }
+        if (!claims.getIssuer().equals(configuration.getProviderMetadata().getIssuerUri())) {
+            throw new IllegalStateException("Invalid issuer : " + configuration.getProviderMetadata().getIssuerUri());
+        }
 
         /**
          * Subject Identifier is locally unique and never reassigned identifier
@@ -176,11 +173,15 @@ public class IdTokenClaimsSetVerifier implements JWTClaimsSetVerifier {
             if (isNull(nonce)) {
                 throw new IllegalStateException("Missing nonce claim");
             }
-
-            if (!expectedNonce.getValue().equals(nonce)) {
+            if (isNull(expectedNonceHash)) {
+                throw new IllegalStateException("Missing expected nonce claim");
+            }
+            if (!expectedNonceHash.equals(nonce)) {
                 throw new IllegalStateException("Invalid nonce claim : " + nonce);
             }
         }
+
+//      5.5.1.  Individual Claims Requests
 //      If the acr Claim was requested, the Client SHOULD check that the asserted Claim Value is appropriate. The meaning and processing of acr Claim Values is out of scope for this specification. ??
 //      If the auth_time Claim was requested, either through a specific request for this Claim or by using the max_age parameter, the Client SHOULD check the auth_time Claim value and request re-authentication if it determines too much time has elapsed since the last End-User authentication.
     }

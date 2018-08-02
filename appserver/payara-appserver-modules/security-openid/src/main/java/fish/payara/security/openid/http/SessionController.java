@@ -37,55 +37,42 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.openid;
+package fish.payara.security.openid.http;
 
 import java.util.Optional;
-import java.util.function.Predicate;
-import javax.el.ELProcessor;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.CDI;
-import org.eclipse.microprofile.config.Config;
-import org.glassfish.config.support.TranslatedConfigView;
+import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
+import javax.servlet.http.HttpSession;
 
 /**
  *
  * @author Gaurav Gupta
  */
-public final class OpenIdUtil {
+public class SessionController implements HttpStorageController {
 
-    public static final String DEFAULT_JWT_SIGNED_ALGORITHM = "RS256";
+    private final HttpSession session;
 
-    public final static String DEFAULT_HASH_ALGORITHM = "SHA-256";
-
-    public static <T> T getConfiguredValue(Class<T> type, T value, Config provider, String mpConfigKey) {
-        T result = value;
-        Optional<T> configResult = provider.getOptionalValue(mpConfigKey, type);
-        if (configResult.isPresent()) {
-            return configResult.get();
-        }
-        result = (T) TranslatedConfigView.getTranslatedValue(result);
-        if (type == String.class && isELExpression((String) value)) {
-            ELProcessor elProcessor = new ELProcessor();
-            BeanManager beanManager = CDI.current().getBeanManager();
-            elProcessor.getELManager().addELResolver(beanManager.getELResolver());
-            result = (T) elProcessor.getValue(toRawExpression((String) result), type);
-        }
-        return result;
+    public SessionController(HttpMessageContext httpContext) {
+        this.session = httpContext.getRequest().getSession();
     }
 
-    public static boolean isELExpression(String expression) {
-        return !expression.isEmpty() && isDeferredExpression(expression);
+    @Override
+    public void store(String name, String value, Integer maxAge) {
+        session.setAttribute(name, value);
     }
 
-    public static boolean isDeferredExpression(String expression) {
-        return expression.startsWith("#{") && expression.endsWith("}");
+    @Override
+    public Optional<Object> get(String name) {
+        return Optional.ofNullable(session.getAttribute(name));
     }
 
-    public static String toRawExpression(String expression) {
-        return expression.substring(2, expression.length() - 1);
+    @Override
+    public Optional<String> getAsString(String name) {
+        return get(name).map(Object::toString);
     }
 
-    public static <T> Predicate<T> not(Predicate<T> t) {
-        return t.negate();
+    @Override
+    public void remove(String name) {
+        session.removeAttribute(name);
     }
+
 }

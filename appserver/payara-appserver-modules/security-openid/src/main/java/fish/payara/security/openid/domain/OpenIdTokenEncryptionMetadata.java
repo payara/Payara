@@ -45,7 +45,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import java.text.ParseException;
-import org.glassfish.common.util.StringHelper;
+import static org.glassfish.common.util.StringHelper.isEmpty;
 
 /**
  * OpenId Connect Id token encryption configuration (algo, method and key)
@@ -68,7 +68,7 @@ public class OpenIdTokenEncryptionMetadata {
     }
 
     public OpenIdTokenEncryptionMetadata setEncryptionAlgorithm(String encryptionAlgorithm) {
-        if (!StringHelper.isEmpty(encryptionAlgorithm)) {
+        if (!isEmpty(encryptionAlgorithm)) {
             this.encryptionAlgorithm = JWEAlgorithm.parse(encryptionAlgorithm);
         }
         return this;
@@ -84,7 +84,7 @@ public class OpenIdTokenEncryptionMetadata {
     }
 
     public OpenIdTokenEncryptionMetadata setEncryptionMethod(String encryptionMethod) {
-        if (!StringHelper.isEmpty(encryptionMethod)) {
+        if (!isEmpty(encryptionMethod)) {
             this.encryptionMethod = EncryptionMethod.parse(encryptionMethod);
         }
         return this;
@@ -100,7 +100,7 @@ public class OpenIdTokenEncryptionMetadata {
     }
 
     public OpenIdTokenEncryptionMetadata setPrivateKeySource(String jwks) {
-        if (!StringHelper.isEmpty(jwks)) {
+        if (!isEmpty(jwks)) {
             try {
                 this.privateKeySource = new ImmutableJWKSet(JWKSet.parse(jwks));
             } catch (ParseException ex) {

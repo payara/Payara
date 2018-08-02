@@ -53,6 +53,8 @@ import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdNonce;
 import static java.util.logging.Level.FINEST;
 import java.util.logging.Logger;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.security.enterprise.AuthenticationStatus;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.ws.rs.core.UriBuilder;
@@ -63,7 +65,15 @@ import org.glassfish.common.util.StringHelper;
  *
  * @author Gaurav Gupta
  */
+@ApplicationScoped
 public class AuthenticationController {
+
+    @Inject
+    private StateController stateController;
+
+    @Inject
+    private NonceController nonceController;
+
 
      private static final Logger LOGGER = Logger.getLogger(AuthenticationController.class.getName());
 
@@ -82,15 +92,15 @@ public class AuthenticationController {
      *
      * @param configuration
      * @param httpMessageContext
-     * @param state
-     * @param nonce
      * @return
      */
     public AuthenticationStatus authenticateUser(
             OpenIdConfiguration configuration,
-            OpenIdState state,
-            OpenIdNonce nonce,
             HttpMessageContext httpMessageContext) {
+
+        OpenIdState state = new OpenIdState();
+        OpenIdNonce nonce = null;
+
         /**
          * Client prepares an authentication request and redirect to the
          * Authorization Server.
@@ -103,11 +113,14 @@ public class AuthenticationController {
                         .queryParam(RESPONSE_TYPE, configuration.getResponseType())
                         .queryParam(CLIENT_ID, configuration.getClientID())
                         .queryParam(REDIRECT_URI, configuration.getRedirectURI())
-                        .queryParam(STATE, state.getState());
+                        .queryParam(STATE, state.getValue());
 
+        // add nonce for replay attack prevention
         if (configuration.isUseNonce()) {
-            // add nonce for replay attack prevention
-            authRequest.queryParam(NONCE, nonce.getValue());
+            nonce = new OpenIdNonce();
+            // use a cryptographic hash of the value as the nonce parameter
+            String nonceHash = nonceController.getNonceHash(nonce);
+            authRequest.queryParam(NONCE, nonceHash);
         }
         if (!StringHelper.isEmpty(configuration.getResponseMode())) {
             authRequest.queryParam(RESPONSE_MODE, configuration.getResponseMode());
@@ -119,14 +132,15 @@ public class AuthenticationController {
             authRequest.queryParam(PROMPT, configuration.getPrompt());
         }
 
-        configuration.getExtraParameters()
-                .forEach((key, value) -> authRequest.queryParam(key, value));
+        configuration.getExtraParameters().forEach(authRequest::queryParam);
+
+        stateController.store(state, configuration, httpMessageContext);
+        nonceController.store(nonce, configuration, httpMessageContext);
 
         String authUrl = authRequest.toString();
-
         LOGGER.log(FINEST, "Redirecting for authentication to {0}", authUrl);
-
         return httpMessageContext.redirect(authUrl);
     }
+
 
 }

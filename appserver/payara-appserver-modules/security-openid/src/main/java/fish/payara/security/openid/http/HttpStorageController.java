@@ -37,55 +37,36 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.openid;
+package fish.payara.security.openid.http;
 
+import fish.payara.security.openid.domain.OpenIdConfiguration;
 import java.util.Optional;
-import java.util.function.Predicate;
-import javax.el.ELProcessor;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.CDI;
-import org.eclipse.microprofile.config.Config;
-import org.glassfish.config.support.TranslatedConfigView;
+import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 
 /**
  *
  * @author Gaurav Gupta
  */
-public final class OpenIdUtil {
+public interface HttpStorageController {
 
-    public static final String DEFAULT_JWT_SIGNED_ALGORITHM = "RS256";
+    static HttpStorageController getInstance(OpenIdConfiguration configuration, HttpMessageContext httpContext) {
+        HttpStorageController controller;
 
-    public final static String DEFAULT_HASH_ALGORITHM = "SHA-256";
-
-    public static <T> T getConfiguredValue(Class<T> type, T value, Config provider, String mpConfigKey) {
-        T result = value;
-        Optional<T> configResult = provider.getOptionalValue(mpConfigKey, type);
-        if (configResult.isPresent()) {
-            return configResult.get();
+        if (configuration.isUseSession()) {
+            controller = new SessionController(httpContext);
+        } else {
+            controller = new CookieController(httpContext);
         }
-        result = (T) TranslatedConfigView.getTranslatedValue(result);
-        if (type == String.class && isELExpression((String) value)) {
-            ELProcessor elProcessor = new ELProcessor();
-            BeanManager beanManager = CDI.current().getBeanManager();
-            elProcessor.getELManager().addELResolver(beanManager.getELResolver());
-            result = (T) elProcessor.getValue(toRawExpression((String) result), type);
-        }
-        return result;
+
+        return controller;
     }
 
-    public static boolean isELExpression(String expression) {
-        return !expression.isEmpty() && isDeferredExpression(expression);
-    }
+    void store(String name, String value, Integer maxAge);
 
-    public static boolean isDeferredExpression(String expression) {
-        return expression.startsWith("#{") && expression.endsWith("}");
-    }
+    <T> Optional<T> get(String name);
 
-    public static String toRawExpression(String expression) {
-        return expression.substring(2, expression.length() - 1);
-    }
+    Optional<String> getAsString(String name);
 
-    public static <T> Predicate<T> not(Predicate<T> t) {
-        return t.negate();
-    }
+    void remove(String name);
+
 }

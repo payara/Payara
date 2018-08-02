@@ -40,17 +40,18 @@
 package fish.payara.security.openid.api;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.UUID;
-import javax.enterprise.context.SessionScoped;
 
 /**
  * Class to hold state of OpenId
  * <p>
  * This is used in the authentication mechanism to both help prevent CSRF and to 
  * pass data to the callback page.
+ *
+ * @author Gaurav Gupta
  * @author jonathan
  */
-@SessionScoped
 public class OpenIdState implements Serializable {
 
     private final String state;
@@ -82,8 +83,12 @@ public class OpenIdState implements Serializable {
      *
      * @return
      */
-    public String getState(){
+    public String getValue() {
         return state;
+    }
+
+    public boolean equals(String expectedStateValue) {
+        return Objects.equals(this.state, expectedStateValue);
     }
 
 }

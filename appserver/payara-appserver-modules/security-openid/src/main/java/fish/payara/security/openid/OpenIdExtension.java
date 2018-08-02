@@ -46,7 +46,6 @@ import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
-import fish.payara.security.openid.api.OpenIdState;
 import java.util.ArrayList;
 import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
@@ -59,9 +58,10 @@ import javax.security.enterprise.identitystore.IdentityStore;
 import fish.payara.security.openid.controller.AuthenticationController;
 import fish.payara.security.openid.controller.TokenController;
 import fish.payara.security.openid.controller.UserInfoController;
-import fish.payara.security.openid.domain.OpenIdNonce;
 import static java.util.Objects.nonNull;
 import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
+import fish.payara.security.openid.controller.NonceController;
+import fish.payara.security.openid.controller.StateController;
 
 /**
  * Activates {@link OpenIdAuthenticationMechanism} with the
@@ -78,9 +78,9 @@ public class OpenIdExtension implements Extension {
         addAnnotatedType(OpenIdIdentityStore.class, manager, beforeBeanDiscovery);
 
         addAnnotatedType(OpenIdContextImpl.class, manager, beforeBeanDiscovery);
-        addAnnotatedType(OpenIdState.class, manager, beforeBeanDiscovery);
-        addAnnotatedType(OpenIdNonce.class, manager, beforeBeanDiscovery);
 
+        addAnnotatedType(NonceController.class, manager, beforeBeanDiscovery);
+        addAnnotatedType(StateController.class, manager, beforeBeanDiscovery);
         addAnnotatedType(ConfigurationController.class, manager, beforeBeanDiscovery);
         addAnnotatedType(ProviderMetadataContoller.class, manager, beforeBeanDiscovery);
         addAnnotatedType(AuthenticationController.class, manager, beforeBeanDiscovery);

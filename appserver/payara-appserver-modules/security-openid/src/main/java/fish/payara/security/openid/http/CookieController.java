@@ -37,55 +37,60 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.openid;
+package fish.payara.security.openid.http;
 
+import static java.util.Objects.nonNull;
 import java.util.Optional;
-import java.util.function.Predicate;
-import javax.el.ELProcessor;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.CDI;
-import org.eclipse.microprofile.config.Config;
-import org.glassfish.config.support.TranslatedConfigView;
+import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
+import javax.servlet.http.Cookie;
+import org.glassfish.common.util.StringHelper;
 
 /**
  *
  * @author Gaurav Gupta
  */
-public final class OpenIdUtil {
+public class CookieController implements HttpStorageController {
 
-    public static final String DEFAULT_JWT_SIGNED_ALGORITHM = "RS256";
+    private final HttpMessageContext httpContext;
 
-    public final static String DEFAULT_HASH_ALGORITHM = "SHA-256";
+    public CookieController(HttpMessageContext httpContext) {
+        this.httpContext = httpContext;
+    }
 
-    public static <T> T getConfiguredValue(Class<T> type, T value, Config provider, String mpConfigKey) {
-        T result = value;
-        Optional<T> configResult = provider.getOptionalValue(mpConfigKey, type);
-        if (configResult.isPresent()) {
-            return configResult.get();
+    @Override
+    public void store(String name, String value, Integer maxAge) {
+        Cookie cookie = new Cookie(name, value);
+        if (maxAge != null) {
+            cookie.setMaxAge(maxAge);
         }
-        result = (T) TranslatedConfigView.getTranslatedValue(result);
-        if (type == String.class && isELExpression((String) value)) {
-            ELProcessor elProcessor = new ELProcessor();
-            BeanManager beanManager = CDI.current().getBeanManager();
-            elProcessor.getELManager().addELResolver(beanManager.getELResolver());
-            result = (T) elProcessor.getValue(toRawExpression((String) result), type);
+        cookie.setHttpOnly(true);
+        cookie.setPath(StringHelper.isEmpty(httpContext.getRequest().getContextPath()) ? "/" : httpContext.getRequest().getContextPath());
+
+        httpContext.getResponse().addCookie(cookie);
+    }
+
+    @Override
+    public Optional<Cookie> get(String name) {
+        if (httpContext.getRequest().getCookies() != null) {
+            for (Cookie cookie : httpContext.getRequest().getCookies()) {
+                if (name.equals(cookie.getName())
+                        && nonNull(cookie.getValue())
+                        && !cookie.getValue().trim().isEmpty()) {
+                    return Optional.of(cookie);
+                }
+            }
         }
-        return result;
+        return Optional.empty();
     }
 
-    public static boolean isELExpression(String expression) {
-        return !expression.isEmpty() && isDeferredExpression(expression);
+    @Override
+    public Optional<String> getAsString(String name) {
+        return get(name).map(Cookie::getValue);
     }
 
-    public static boolean isDeferredExpression(String expression) {
-        return expression.startsWith("#{") && expression.endsWith("}");
+    @Override
+    public void remove(String name) {
+        store(name, null, 0);
     }
 
-    public static String toRawExpression(String expression) {
-        return expression.substring(2, expression.length() - 1);
-    }
-
-    public static <T> Predicate<T> not(Predicate<T> t) {
-        return t.negate();
-    }
 }

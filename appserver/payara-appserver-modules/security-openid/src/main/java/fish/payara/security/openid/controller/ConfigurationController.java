@@ -43,7 +43,6 @@ import fish.payara.security.openid.domain.OpenIdConfiguration;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_CLIENT_ID;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_CLIENT_SECRET;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_DISPLAY;
-import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_NONCE;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_PROMPT;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_REDIRECT_URI;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_RESPONSE_MODE;
@@ -83,6 +82,8 @@ import static fish.payara.security.openid.api.OpenIdConstant.HYBRID_FLOW_TYPES;
 import java.util.HashMap;
 import java.util.Map;
 import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
+import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_USE_NONCE;
+import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_USE_SESSION;
 
 /**
  * Build and validate the OpenId Connect client configuration
@@ -179,7 +180,8 @@ public class ConfigurationController {
             extraParameters.put(key, value);
         }
 
-        boolean nonce = getConfiguredValue(Boolean.class, definition.useNonce(), provider, OPENID_MP_NONCE);
+        boolean nonce = getConfiguredValue(Boolean.class, definition.useNonce(), provider, OPENID_MP_USE_NONCE);
+        boolean session = getConfiguredValue(Boolean.class, definition.useSession(), provider, OPENID_MP_USE_SESSION);
 
         String encryptionAlgorithm = provider.getOptionalValue(OPENID_MP_CLIENT_ENC_ALGORITHM, String.class).orElse(null);
         String encryptionMethod = provider.getOptionalValue(OPENID_MP_CLIENT_ENC_METHOD, String.class).orElse(null);
@@ -206,7 +208,8 @@ public class ConfigurationController {
                 .setExtraParameters(extraParameters)
                 .setPrompt(prompt)
                 .setDisplay(display)
-                .setUseNonce(nonce);
+                .setUseNonce(nonce)
+                .setUseSession(session);
 
         validateConfiguration(configuration);
 

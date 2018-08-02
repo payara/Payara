@@ -65,6 +65,7 @@ import com.nimbusds.jwt.proc.BadJWTException;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.nimbusds.jwt.proc.JWTClaimsSetVerifier;
+import static fish.payara.security.openid.OpenIdUtil.DEFAULT_JWT_SIGNED_ALGORITHM;
 import static fish.payara.security.openid.api.OpenIdConstant.ACCESS_TOKEN_HASH;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import static fish.payara.security.openid.api.OpenIdConstant.AUTHORIZATION_CODE;
@@ -94,6 +95,8 @@ import javax.ws.rs.core.Form;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import javax.ws.rs.core.Response;
 import fish.payara.security.openid.api.OpenIdContext;
+import javax.inject.Inject;
+import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 
 /**
  * Controller for Token endpoint
@@ -103,7 +106,8 @@ import fish.payara.security.openid.api.OpenIdContext;
 @ApplicationScoped
 public class TokenController {
 
-    private static final String DEFAULT_SIGNING_ALGORITHM = "RS256";
+    @Inject
+    private NonceController nonceController;
 
     /**
      * (4) A Client makes a token request to the token endpoint and the OpenId
@@ -149,12 +153,10 @@ public class TokenController {
      * Validates the ID token and retrieves the End-User's subject identifier
      * and other claims.
      *
-     * @param configuration
-     * @param nonce
      * @param idToken
      * @return id token claims
      */
-    public JWT parseIdToken(OpenIdConfiguration configuration, OpenIdNonce nonce, String idToken) {
+    public JWT parseIdToken(String idToken) {
         try {
             /**
              * The ID tokens are in JSON Web Token (JWT) format.
@@ -170,19 +172,27 @@ public class TokenController {
      * (5.1) Validate Id Token's claims and verify ID Token's signature.
      *
      * @param configuration
-     * @param nonce
+     * @param httpContext
      * @param idToken
      * @return JWT Claims
      */
-    public Map<String, Object> validateIdToken(OpenIdConfiguration configuration, OpenIdNonce nonce, JWT idToken) {
+    public Map<String, Object> validateIdToken(OpenIdConfiguration configuration, HttpMessageContext httpContext, JWT idToken) {
         JWTClaimsSet claimsSet;
+
+        /**
+         * The nonce in the returned ID Token is compared to the hash of the
+         * session cookie to detect ID Token replay by third parties.
+         */
+        OpenIdNonce expectedNonce = nonceController.get(configuration, httpContext);
+        String expectedNonceHash = nonceController.getNonceHash(expectedNonce);
+
         try {
 
             if (idToken instanceof PlainJWT) {
                 PlainJWT plainToken = (PlainJWT) idToken;
                 try {
                     claimsSet = plainToken.getJWTClaimsSet();
-                    JWTClaimsSetVerifier jwtVerifier = new IdTokenClaimsSetVerifier(configuration, nonce);
+                    JWTClaimsSetVerifier jwtVerifier = new IdTokenClaimsSetVerifier(configuration, expectedNonceHash);
                     jwtVerifier.verify(claimsSet, null);
                 } catch (ParseException | BadJWTException e) {
                     throw new IllegalStateException(e.getMessage(), e);
@@ -193,12 +203,12 @@ public class TokenController {
                 String alg = header.getAlgorithm().getName();
                 if (isNull(alg)) {
                     // set the default value
-                    alg = DEFAULT_SIGNING_ALGORITHM;
+                    alg = DEFAULT_JWT_SIGNED_ALGORITHM;
                 }
 
                 ConfigurableJWTProcessor jwtProcessor = new DefaultJWTProcessor();
                 jwtProcessor.setJWSKeySelector(getJWSKeySelector(configuration, alg));
-                jwtProcessor.setJWTClaimsSetVerifier(new IdTokenClaimsSetVerifier(configuration, nonce));
+                jwtProcessor.setJWTClaimsSetVerifier(new IdTokenClaimsSetVerifier(configuration, expectedNonceHash));
                 claimsSet = jwtProcessor.process(signedToken, null);
 
             } else if (idToken instanceof EncryptedJWT) {
@@ -213,13 +223,15 @@ public class TokenController {
                 ConfigurableJWTProcessor jwtProcessor = new DefaultJWTProcessor();
                 jwtProcessor.setJWSKeySelector(getJWSKeySelector(configuration, alg));
                 jwtProcessor.setJWEKeySelector(getJWEKeySelector(configuration));
-                jwtProcessor.setJWTClaimsSetVerifier(new IdTokenClaimsSetVerifier(configuration, nonce));
+                jwtProcessor.setJWTClaimsSetVerifier(new IdTokenClaimsSetVerifier(configuration, expectedNonceHash));
                 claimsSet = jwtProcessor.process(encryptedToken, null);
             } else {
                 throw new IllegalStateException("Unexpected JWT type: " + idToken.getClass());
             }
         } catch (BadJOSEException | JOSEException ex) {
             throw new IllegalStateException(ex);
+        } finally {
+            nonceController.remove(configuration, httpContext);
         }
         return claimsSet.getClaims();
     }

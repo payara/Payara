@@ -45,7 +45,6 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Objects;
 import static java.util.Objects.isNull;
-import javax.enterprise.context.SessionScoped;
 import org.glassfish.common.util.StringHelper;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 
@@ -55,7 +54,6 @@ import static org.glassfish.common.util.StringHelper.isEmpty;
  *
  * @author Gaurav Gupta
  */
-@SessionScoped
 public class OpenIdNonce implements Serializable {
 
     /**

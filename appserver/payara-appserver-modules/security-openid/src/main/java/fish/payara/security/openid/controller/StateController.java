@@ -37,55 +37,51 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.openid;
+package fish.payara.security.openid.controller;
 
-import java.util.Optional;
-import java.util.function.Predicate;
-import javax.el.ELProcessor;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.CDI;
-import org.eclipse.microprofile.config.Config;
-import org.glassfish.config.support.TranslatedConfigView;
+import static fish.payara.security.openid.OpenIdUtil.not;
+import fish.payara.security.openid.api.OpenIdState;
+import fish.payara.security.openid.domain.OpenIdConfiguration;
+import static fish.payara.security.openid.http.HttpStorageController.getInstance;
+import javax.enterprise.context.ApplicationScoped;
+import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
+import org.glassfish.common.util.StringHelper;
 
 /**
+ * Controller to manage OpenId state parameter value
  *
  * @author Gaurav Gupta
  */
-public final class OpenIdUtil {
+@ApplicationScoped
+public class StateController {
 
-    public static final String DEFAULT_JWT_SIGNED_ALGORITHM = "RS256";
+    private final static String STATE_KEY = "oidc.state";
 
-    public final static String DEFAULT_HASH_ALGORITHM = "SHA-256";
+    public void store(
+            OpenIdState state,
+            OpenIdConfiguration configuration,
+            HttpMessageContext context) {
 
-    public static <T> T getConfiguredValue(Class<T> type, T value, Config provider, String mpConfigKey) {
-        T result = value;
-        Optional<T> configResult = provider.getOptionalValue(mpConfigKey, type);
-        if (configResult.isPresent()) {
-            return configResult.get();
-        }
-        result = (T) TranslatedConfigView.getTranslatedValue(result);
-        if (type == String.class && isELExpression((String) value)) {
-            ELProcessor elProcessor = new ELProcessor();
-            BeanManager beanManager = CDI.current().getBeanManager();
-            elProcessor.getELManager().addELResolver(beanManager.getELResolver());
-            result = (T) elProcessor.getValue(toRawExpression((String) result), type);
-        }
-        return result;
+        getInstance(configuration, context)
+                .store(STATE_KEY, state.getValue(), null);
     }
 
-    public static boolean isELExpression(String expression) {
-        return !expression.isEmpty() && isDeferredExpression(expression);
+    public OpenIdState get(
+            OpenIdConfiguration configuration,
+            HttpMessageContext context) {
+
+        return getInstance(configuration, context)
+                .getAsString(STATE_KEY)
+                .filter(not(StringHelper::isEmpty))
+                .map(OpenIdState::new)
+                .orElse(null);
     }
 
-    public static boolean isDeferredExpression(String expression) {
-        return expression.startsWith("#{") && expression.endsWith("}");
-    }
+    public void remove(
+            OpenIdConfiguration configuration,
+            HttpMessageContext context) {
 
-    public static String toRawExpression(String expression) {
-        return expression.substring(2, expression.length() - 1);
-    }
-
-    public static <T> Predicate<T> not(Predicate<T> t) {
-        return t.negate();
+        getInstance(configuration, context)
+                .remove(STATE_KEY);
     }
 }

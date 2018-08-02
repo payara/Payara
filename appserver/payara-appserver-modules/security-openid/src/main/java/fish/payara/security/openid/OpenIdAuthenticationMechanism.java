@@ -65,7 +65,6 @@ import static fish.payara.security.openid.api.OpenIdConstant.IDENTITY_TOKEN;
 import static fish.payara.security.openid.api.OpenIdConstant.REFRESH_TOKEN;
 import static fish.payara.security.openid.api.OpenIdConstant.STATE;
 import static fish.payara.security.openid.api.OpenIdConstant.TOKEN_TYPE;
-import fish.payara.security.openid.api.OpenIdState;
 import javax.ws.rs.core.Response.Status;
 import static java.util.logging.Level.WARNING;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
@@ -74,7 +73,6 @@ import static fish.payara.security.openid.api.OpenIdConstant.ERROR_DESCRIPTION_P
 import static fish.payara.security.openid.api.OpenIdConstant.ERROR_PARAM;
 import fish.payara.security.openid.controller.AuthenticationController;
 import fish.payara.security.openid.controller.UserInfoController;
-import fish.payara.security.openid.domain.OpenIdNonce;
 import java.util.Map;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -82,6 +80,8 @@ import java.util.logging.Logger;
 import javax.security.enterprise.credential.CallerOnlyCredential;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
+import fish.payara.security.openid.api.OpenIdState;
+import fish.payara.security.openid.controller.StateController;
 
 /**
  * The AuthenticationMechanism used to authenticate users using the OpenId
@@ -127,12 +127,6 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
     private OpenIdConfiguration configuration;
 
     @Inject
-    private OpenIdState state;
-
-    @Inject
-    private OpenIdNonce nonce;
-
-    @Inject
     private OpenIdContextImpl context;
 
     @Inject
@@ -149,6 +143,9 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
 
     @Inject
     private UserInfoController userInfoController;
+
+    @Inject
+    private StateController stateController;
 
     private static final Logger LOGGER = Logger.getLogger(OpenIdAuthenticationMechanism.class.getName());
 
@@ -190,24 +187,28 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
     public AuthenticationStatus validateRequest(
             HttpServletRequest request,
             HttpServletResponse response,
-            HttpMessageContext httpMessageContext) throws AuthenticationException {
+            HttpMessageContext httpContext) throws AuthenticationException {
 
-        if (httpMessageContext.isProtected() && isNull(request.getUserPrincipal())) {
+        if (httpContext.isProtected() && isNull(request.getUserPrincipal())) {
             // (1) The End-User is not already authenticated
-            return authenticationController.authenticateUser(configuration, state, nonce, httpMessageContext);
+            return authenticationController.authenticateUser(configuration, httpContext);
         }
 
         if (request.getRequestURL().toString().equals(configuration.getRedirectURI())) {
             String recievedState = request.getParameter(STATE);
-            if (nonNull(recievedState) && recievedState.equals(state.getState())) {
-                // (3) Successful Authentication Response : redirect_uri?code=abc&state=123
-                return validateAuthorizationCode(request, httpMessageContext);
-            } else if (nonNull(recievedState) && !recievedState.equals(state.getState())) {
-                LOGGER.fine("Inconsistent recieved state, value not matched");
-                return httpMessageContext.notifyContainerAboutLogin(NOT_VALIDATED_RESULT);
+            OpenIdState expectedState = stateController.get(configuration, httpContext);
+
+            if (nonNull(recievedState) && nonNull(expectedState)) {
+                if (expectedState.equals(recievedState)) {
+                    // (3) Successful Authentication Response : redirect_uri?code=abc&state=123
+                    return validateAuthorizationCode(httpContext);
+                } else {
+                    LOGGER.fine("Inconsistent recieved state, value not matched");
+                    return httpContext.notifyContainerAboutLogin(NOT_VALIDATED_RESULT);
+                }
             }
         }
-        return httpMessageContext.doNothing();
+        return httpContext.doNothing();
     }
 
     /**
@@ -220,14 +221,16 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
      * @param context
      * @return
      */
-    private AuthenticationStatus validateAuthorizationCode(HttpServletRequest request, HttpMessageContext httpMessageContext) {
+    private AuthenticationStatus validateAuthorizationCode(HttpMessageContext httpContext) {
+        HttpServletRequest request = httpContext.getRequest();
         String error = request.getParameter(ERROR_PARAM);
         String errorDescription = request.getParameter(ERROR_DESCRIPTION_PARAM);
         if (!isEmpty(error)) {
             // Error responses sent to the redirect_uri
             LOGGER.log(WARNING, "Error occurred in reciving Authorization Code : {0} caused by {1}", new Object[]{error, errorDescription});
-            return httpMessageContext.notifyContainerAboutLogin(INVALID_RESULT);
+            return httpContext.notifyContainerAboutLogin(INVALID_RESULT);
         }
+        stateController.remove(configuration, httpContext);
 
         LOGGER.finer("Authorization Code received, now fetching Access token & Id token");
 
@@ -236,24 +239,26 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
         JsonObject tokensObject = Json.createReader(new StringReader(tokensBody)).readObject();
         
         if (response.getStatus() == Status.OK.getStatusCode()) {
+
             // Successful Token Response
-            updateContext(tokensObject);
+            updateContext(tokensObject, httpContext);
             CallerOnlyCredential credential = new CallerOnlyCredential(context.getSubject());
             CredentialValidationResult validationResult = identityStoreHandler.validate(credential);
-            return httpMessageContext.notifyContainerAboutLogin(validationResult);
+            return httpContext.notifyContainerAboutLogin(validationResult);
         } else {
             // Token Request is invalid or unauthorized
             error = tokensObject.getString(ERROR_PARAM, "Unknown Error");
             errorDescription = tokensObject.getString(ERROR_DESCRIPTION_PARAM, "Unknown");
             LOGGER.log(WARNING, "Error occurred in validating Authorization Code : {0} caused by {1}", new Object[]{error, errorDescription});
-            return httpMessageContext.notifyContainerAboutLogin(INVALID_RESULT);
+            return httpContext.notifyContainerAboutLogin(INVALID_RESULT);
         }
     }
 
-    private void updateContext(JsonObject tokensObject) {
+    private void updateContext(JsonObject tokensObject, HttpMessageContext httpContext) {
         String idToken = tokensObject.getString(IDENTITY_TOKEN);
-        JWT idTokenJWT = tokenController.parseIdToken(configuration, nonce, idToken);
-        Map<String, Object> claims = tokenController.validateIdToken(configuration, nonce, idTokenJWT);
+        JWT idTokenJWT = tokenController.parseIdToken(idToken);
+
+        Map<String, Object> claims = tokenController.validateIdToken(configuration, httpContext, idTokenJWT);
         context.setIdentityToken(idToken);
         context.setIdentityTokenClaims(claims);
 

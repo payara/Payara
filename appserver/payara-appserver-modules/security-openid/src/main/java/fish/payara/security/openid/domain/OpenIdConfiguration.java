@@ -59,6 +59,7 @@ public class OpenIdConfiguration {
     private String prompt;
     private String display;
     private boolean useNonce;
+    private boolean useSession;
     private OpenIdProviderMetadata providerMetadata;
     private OpenIdTokenEncryptionMetadata encryptionMetadata;
 
@@ -152,6 +153,15 @@ public class OpenIdConfiguration {
         return this;
     }
 
+    public boolean isUseSession() {
+        return useSession;
+    }
+
+    public OpenIdConfiguration setUseSession(boolean useSession) {
+        this.useSession = useSession;
+        return this;
+    }
+
     public OpenIdProviderMetadata getProviderMetadata() {
         return providerMetadata;
     }
@@ -184,6 +194,7 @@ public class OpenIdConfiguration {
                 + ", prompt=" + prompt
                 + ", display=" + display
                 + ", useNonce=" + useNonce
+                + ", useSession=" + useSession
                 + ", providerMetadata=" + providerMetadata
                 + ", encryptionMetadata=" + encryptionMetadata
                 + '}';
