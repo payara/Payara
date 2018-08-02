@@ -6,9 +6,10 @@ import os
 import sys
 from subprocess import PIPE,call, check_call, CalledProcessError
 import argparse
+import shutil
 
 ASADMIN_PATH="./asadmin"
-WEB_ROOT_PATH=Path(path.expanduser("~")) / "payara_le_war"
+WEB_ROOT_PATH=Path("/tmp/payara_le_war")
 LE_LIVE_PATH=Path("/etc/letsencrypt/live/")
 APP_NAME="le"
 FNULL = open(os.devnull, 'w')
@@ -54,6 +55,7 @@ def deploy_war():
 		print('[' + OKGREEN + " OK " + ENDC + ']')
 	except CalledProcessError: 
 		print('[' + FAIL + "FAIL" + ENDC + ']' + " Is the server up and running?\n", sys.exc_info()[1])
+		shutil.rmtree(WEB_ROOT_PATH)
 		return 1
 
 	return 0
@@ -63,8 +65,10 @@ def undeploy_war():
 	try:
 		check_call([ASADMIN_PATH, "undeploy", APP_NAME], stdout=FNULL, stderr=FNULL)
 		print('[' + OKGREEN + " OK " + ENDC + ']')
+		shutil.rmtree(WEB_ROOT_PATH)
 	except CalledProcessError: 
 		print('[' + FAIL + "FAIL" + ENDC + ']' + " Is the server up and running?\n", sys.exc_info()[1])
+		shutil.rmtree(WEB_ROOT_PATH)
 		return 1
 
 	return 0
