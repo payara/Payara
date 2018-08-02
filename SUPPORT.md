@@ -19,7 +19,7 @@ Production Support for the Payara Platform is currently offered with two support
 
 Both support levels give you full access to all the features listed below:
 
-| Feature | Selling Point |
+| Feature | What you get |
 |---|---|
 | **Unlimited Tickets** | There is no limit on the number of tickets that you can raise during your support contract.
 | **Private Payara Support Portal** | Raise tickets for bugs, incidents or questions related to Payara Server or Payara Micro, including any general questions you may have about configuration, deployment, security, monitoring and troubleshooting.
@@ -45,7 +45,7 @@ For more information on support, including pricing, visit [payara.fish/support](
 
 Migration & Project Support includes the following features:
 
-| Feature | Selling Point |
+| Feature | What you get |
 |---|---|
 | **Flat Fee** | You only pay $19,000 (per annum) - no matter how large your environment is!
 | **Unlimited Number of Units** | There is no need to count the number of Payara Server/Micro units being used - Migration & Project Support subscription covers an unlimited number of units in development environments for a flat fee.
