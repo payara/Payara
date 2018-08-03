@@ -278,6 +278,8 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
      */
     public class SpanContext implements Serializable, io.opentracing.SpanContext {
 
+        private static final long serialVersionUID = 20180803L;
+        
         private final UUID spanId;
         private UUID traceId;
         private final Map<String, String> baggageItems;
@@ -333,7 +335,7 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
     }
     
     public class SpanReference implements Serializable {
-
+        
         private final SpanContext referenceSpanContext;
         private final SpanContextRelationshipType relationshipType;
         

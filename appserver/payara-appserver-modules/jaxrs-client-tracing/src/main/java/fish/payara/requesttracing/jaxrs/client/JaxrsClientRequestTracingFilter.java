@@ -147,14 +147,11 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
             // Start the span and mark it as active
             Span activeSpan = spanBuilder.startActive(false).span();
 
-            // Don't inject if using in-built tracer as we don't support it yet
-            if (!(tracer instanceof fish.payara.opentracing.tracer.Tracer)) {
                 // Inject the active span context for propagation
                 tracer.inject(
                         activeSpan.context(),
                         Format.Builtin.HTTP_HEADERS,
                         new MultivaluedMapToTextMap(requestContext.getHeaders()));
-            }
         }
     }
 

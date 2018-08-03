@@ -128,16 +128,12 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                         .withTag(Tags.HTTP_URL.getKey(), requestContext.getUriInfo().getRequestUri().toURL().toString())
                         .withTag(Tags.COMPONENT.getKey(), "jaxrs");
 
-                // Don't extract a context if using in-built tracer as we don't support it yet
-                if (!(tracer instanceof fish.payara.opentracing.tracer.Tracer)) {
-                    // Extract the context from the tracer if there is one
-                    SpanContext spanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, new MultivaluedMapToTextMap(
-                            requestContext.getHeaders()));
+                // Extract the context from the tracer if there is one
+                SpanContext spanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, new MultivaluedMapToTextMap(requestContext.getHeaders()));
 
-                    // If there was a context injected into the tracer, add it as a parent of the new span
-                    if (spanContext != null) {
-                        spanBuilder.asChildOf(spanContext);
-                    }
+                // If there was a context injected into the tracer, add it as a parent of the new span
+                if (spanContext != null) {
+                    spanBuilder.asChildOf(spanContext);
                 }
 
                 // Start the span and continue on to the targeted method
@@ -169,6 +165,11 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                     try (Scope activeScope = openTracing.getTracer(openTracing.getApplicationName(
                         serviceLocator.getService(InvocationManager.class))).scopeManager().active()) {
                         Span activeSpan = activeScope.span();
+                        
+                        // Get the application's tracer instance
+                        //Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(serviceLocator.getService(InvocationManager.class)));
+                        //tracer.inject(activeSpan.context(), Format.Builtin.HTTP_HEADERS, new MultivaluedMapToTextMap(responseContext.getStringHeaders()));
+                        
                         // Get and add the response status to the active span
                         Response.StatusType statusInfo = responseContext.getStatusInfo();
                         activeSpan.setTag(Tags.HTTP_STATUS.getKey(), statusInfo.getStatusCode());

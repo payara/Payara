@@ -40,53 +40,50 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.opentracing;
+package fish.payara.opentracing.tracer;
 
-import io.opentracing.Span;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
+import io.opentracing.propagation.Format;
 /**
- * Implementation of Scope from Opentracing.
- * 
+ * Exception thrown if the {@link Format} is not supported by the Carrier,
+ * or Payara does not support the carrier.
  * @author jonathan coustick
  * @since 5.183
  */
-public class OTScope implements io.opentracing.Scope {
-
-    private Span currentSpan;
-    private Map<Span, Boolean> allSpans;
+public class InvalidCarrierFormatException extends IllegalArgumentException {
     
-    public OTScope (){
-        allSpans = new LinkedHashMap<>();
+    private final Format format;
+    private final Object carrier;
+    
+    public InvalidCarrierFormatException(Format invalidFormat, Object carrierClass){
+        super();
+        this.format = invalidFormat;
+        this.carrier = carrierClass;
     }
     
     @Override
-    public void close() {
-        Iterator<Span> keys = allSpans.keySet().iterator();
-        while (keys.hasNext()){
-            Span span = keys.next();
-            if (allSpans.get(span)){
-                span.finish();
-            }
-            allSpans.remove(span);//prevents scope holding on a reference to old spans
-        }
-    }
-
-    @Override
-    public Span span() {
-        return currentSpan;
+    public String getMessage(){
+        return "Carrier class" + carrier.getClass().toString() + "does not support Format" + format.getClass().toString();
     }
     
-    //package private - used only by ScopeManager
-    void setSpan(Span span, Boolean finishOnClose){
-        allSpans.put(span, finishOnClose);
-        currentSpan = span;
+    /**
+     * Returns the format that is not supported by the carrier
+     * @return 
+     */
+    public Format getFormat(){
+        return format;
     }
     
-    void removeSpan(Span span){
-        allSpans.remove(span);
+    /**
+     * Returns the carrier class;
+     * @return 
+     */
+    public Object getCarrierClass(){
+        return carrier;
     }
+    
+    
+    
+    
     
 }
