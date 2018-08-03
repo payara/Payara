@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.grizzly.config.ssl;
 
@@ -337,7 +338,7 @@ public class JSSE14SocketFactory extends JSSESocketFactory {
     */
 
     private void configureSSLSessionContext(SSLSessionContext sslSessionCtxt) {
-        String attrValue = (String) attributes.get("sslSessionTimeout");
+        String attrValue = (String) attributes.get("tlsSessionTimeout");
         if (attrValue != null) {
             sslSessionCtxt.setSessionTimeout(
                 Integer.parseInt(attrValue));
@@ -347,7 +348,7 @@ public class JSSE14SocketFactory extends JSSESocketFactory {
             sslSessionCtxt.setSessionTimeout(
                 Integer.parseInt(attrValue));
         }
-        attrValue = (String) attributes.get("sslSessionCacheSize");
+        attrValue = (String) attributes.get("tlsSessionCacheSize");
         if (attrValue != null) {
             sslSessionCtxt.setSessionCacheSize(
                 Integer.parseInt(attrValue));
