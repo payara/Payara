@@ -196,7 +196,7 @@
     <integration-point
         id="batch"
         type="org.glassfish.admingui:navNode"
-        priority="400"
+        priority="150"
         parentId="#{configNameId}"
         content="pluginTreeNodeBatch.jsf"
     />
@@ -204,7 +204,7 @@
     <integration-point
         id="batchLink"
         type="org.glassfish.admingui:configuration"
-        priority="400"
+        priority="150"
         parentId="propSheetSection"
         content="batchConfigLink.jsf"
     />
