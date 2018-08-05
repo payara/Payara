@@ -4,9 +4,10 @@ from pathlib import Path
 from os import path
 import os
 import sys
-from subprocess import PIPE,call, check_call, CalledProcessError
+from subprocess import PIPE,call, check_call, CalledProcessError,Popen
 import argparse
 import shutil
+import re
 
 ASADMIN_PATH="./asadmin"
 WEB_ROOT_PATH=Path("/tmp/payara_le_war")
@@ -87,12 +88,22 @@ def invoke_certbot(domain_names):
 
 	return 0
 
+def check_http_port():
+	proc = Popen([ASADMIN_PATH, "get", "server.network-config.network-listeners.network-listener.*.port"], stdout=PIPE)
+	ports = proc.stdout.read()
+	running_on_port_80 = '.port=80\n'.encode() in ports
+	print(WARNING + "WARNING: " + ENDC + "None of the listeners of Payara are running on the standard HTTP port (80).\nUnless there is a port mapping, "
+		"a reverse-proxy exposing port 80 or other solution making the deployed web-app visible through port 80, the following invocation of certbot will "
+		"likely fail (due to a failing 'HTTP Challenge' of the ACME protocol; see Chapter 8.3 on https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html). "
+		"Proceeding nevertheless.")
+
 
 if __name__=="__main__":
-	parser = argparse.ArgumentParser(description="Payara Let's Encrypt integration script.\n\nThis script deploys an empty WAR, calls (and requires) certbot "
+	parser = argparse.ArgumentParser(description="Payara Let's Encrypt integration script. This script deploys an empty WAR, calls (and requires) certbot "
 		"to retrieve your certificate and uploads the certificate to the default keystore of the Payara domain. In addition, this script configures the listener "
 		"with the given alias and restarts it (the listener only, not the whole domain), so that the new certificate is effective. Afterwards the WAR is undeployed. "
-		"CertBot requires root, and as a consequence, so does this script.")
+		"CertBot requires root, and as a consequence, so does this script. NOTE: In order for the web-challenge to be successful, the deployed application must be "
+		"visible through the standard HTTP port (80) of the provided certification domain name (see parameter --cert-domain below).")
 	parser.add_argument('-c','--cert-domain', action="append", help="The FQDN of the domain(s) the certificate will be bound too. You may use this arg multiple times.", required=True)
 	parser.add_argument('-n','--name', help="The name of the payara-domain where the certificate will be uploaded.", required=False, default='production')
 	parser.add_argument('-d','--domain-dir', '--domaindir', help="The directory where payara domains are defined. Necessary to provide only when the domains are in non-standard locations.", required=False)
@@ -106,6 +117,7 @@ if __name__=="__main__":
 	if deploy_war() != 0:
 		exit(1)
 
+	check_http_port()
 	code = invoke_certbot(args.cert_domain)
 	undeploy_war()
 
