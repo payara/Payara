@@ -49,20 +49,26 @@ import javax.servlet.http.HttpSession;
  */
 public class SessionController implements HttpStorageController {
 
-    private final HttpSession session;
+    private final HttpMessageContext httpContext;
 
     public SessionController(HttpMessageContext httpContext) {
-        this.session = httpContext.getRequest().getSession();
+        this.httpContext = httpContext;
     }
 
     @Override
     public void store(String name, String value, Integer maxAge) {
+        HttpSession session = httpContext.getRequest().getSession();
         session.setAttribute(name, value);
     }
 
     @Override
     public Optional<Object> get(String name) {
-        return Optional.ofNullable(session.getAttribute(name));
+        HttpSession session = httpContext.getRequest().getSession(false);
+        if (session != null) {
+            return Optional.ofNullable(session.getAttribute(name));
+        } else {
+            return Optional.empty();
+        }
     }
 
     @Override
@@ -72,7 +78,10 @@ public class SessionController implements HttpStorageController {
 
     @Override
     public void remove(String name) {
-        session.removeAttribute(name);
+        HttpSession session = httpContext.getRequest().getSession(false);
+        if (session != null) {
+            session.removeAttribute(name);
+        }
     }
 
 }
