@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 package com.sun.web.security;
 
 import java.io.IOException;
@@ -57,11 +57,11 @@ import org.apache.catalina.Context;
 import org.apache.catalina.HttpResponse;
 import org.apache.catalina.Request;
 
-class HttpResponseWrapper extends HttpServletResponseWrapper implements HttpResponse {
+public class HttpResponseWrapper extends HttpServletResponseWrapper implements HttpResponse {
 
     private HttpResponse httpResponse;
 
-    HttpResponseWrapper(HttpResponse response, HttpServletResponse servletResponse) {
+    public HttpResponseWrapper(HttpResponse response, HttpServletResponse servletResponse) {
         super(servletResponse);
         httpResponse = response;
     }
