@@ -48,6 +48,7 @@ import static fish.payara.security.openid.http.HttpStorageController.getInstance
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import static java.util.Objects.requireNonNull;
 import javax.enterprise.context.ApplicationScoped;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import org.glassfish.common.util.StringHelper;
@@ -85,6 +86,8 @@ public class NonceController {
     }
 
     public String getNonceHash(OpenIdNonce nonce) {
+        requireNonNull(nonce, "OpenId nonce value must not be null");
+
         String nonceHash;
         try {
             MessageDigest md = MessageDigest.getInstance(DEFAULT_HASH_ALGORITHM);

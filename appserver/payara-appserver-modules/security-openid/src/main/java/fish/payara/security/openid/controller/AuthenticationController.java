@@ -98,8 +98,6 @@ public class AuthenticationController {
             HttpMessageContext httpMessageContext) {
 
         HttpServletRequest request = httpMessageContext.getRequest();
-        OpenIdState state = new OpenIdState();
-        OpenIdNonce nonce = null;
 
         /**
          * Client prepares an authentication request and redirect to the
@@ -111,15 +109,20 @@ public class AuthenticationController {
                         .queryParam(SCOPE, configuration.getScopes())
                         .queryParam(RESPONSE_TYPE, configuration.getResponseType())
                         .queryParam(CLIENT_ID, configuration.getClientId())
-                        .queryParam(REDIRECT_URI, configuration.buildRedirectURI(request))
-                        .queryParam(STATE, state.getValue());
+                        .queryParam(REDIRECT_URI, configuration.buildRedirectURI(request));
+
+        OpenIdState state = new OpenIdState();
+        authRequest.queryParam(STATE, state.getValue());
+        stateController.store(state, configuration, httpMessageContext);
 
         // add nonce for replay attack prevention
         if (configuration.isUseNonce()) {
-            nonce = new OpenIdNonce();
+            OpenIdNonce nonce = new OpenIdNonce();
             // use a cryptographic hash of the value as the nonce parameter
             String nonceHash = nonceController.getNonceHash(nonce);
             authRequest.queryParam(NONCE, nonceHash);
+            nonceController.store(nonce, configuration, httpMessageContext);
+
         }
         if (!isEmpty(configuration.getResponseMode())) {
             authRequest.queryParam(RESPONSE_MODE, configuration.getResponseMode());
@@ -132,9 +135,6 @@ public class AuthenticationController {
         }
 
         configuration.getExtraParameters().forEach(authRequest::queryParam);
-
-        stateController.store(state, configuration, httpMessageContext);
-        nonceController.store(nonce, configuration, httpMessageContext);
 
         String authUrl = authRequest.toString();
         LOGGER.log(FINEST, "Redirecting for authentication to {0}", authUrl);

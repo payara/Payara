@@ -183,8 +183,12 @@ public class TokenController {
          * The nonce in the returned ID Token is compared to the hash of the
          * session cookie to detect ID Token replay by third parties.
          */
-        OpenIdNonce expectedNonce = nonceController.get(configuration, httpContext);
-        String expectedNonceHash = nonceController.getNonceHash(expectedNonce);
+        String expectedNonceHash = null;
+        if (configuration.isUseNonce()) {
+            OpenIdNonce expectedNonce = nonceController.get(configuration, httpContext);
+            expectedNonceHash = nonceController.getNonceHash(expectedNonce);
+        }
+
 
         try {
 
