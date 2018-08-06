@@ -37,11 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.flashlight.datatree.impl;
 
@@ -49,6 +45,8 @@ import org.glassfish.flashlight.datatree.MethodInvoker;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /**
  *
  * @author Harpreet Singh
@@ -57,19 +55,23 @@ public class MethodInvokerImpl extends AbstractTreeNode implements MethodInvoker
     Method method;
     Object methodInstance;
 
+    @Override
     public void setMethod (Method m){
         method = m;
     }
+    
+    @Override
     public Method getMethod (){
         return method;
     }
     
+    @Override
     public void setInstance (Object i){
         methodInstance = i;
     }
     
+    @Override
     public Object getInstance (){
-    
         return methodInstance;
     }
     
@@ -79,22 +81,16 @@ public class MethodInvokerImpl extends AbstractTreeNode implements MethodInvoker
         Object retValue = null;
         try {
             if (method == null){
-                throw new RuntimeException ("Flashlight:MethodInvoker: method, " +
-                        "is null - cannot be null.");
+                throw new RuntimeException ("Flashlight:MethodInvoker: method, is null - cannot be null.");
             }
-            if (methodInstance == null)
-                 throw new RuntimeException ("Flashlight:MethodInvoker: object, " +
-                        " instance is null - cannot be null.");
-                
-            if (super.isEnabled())
+            if (methodInstance == null) {
+                 throw new RuntimeException ("Flashlight:MethodInvoker: object,  instance is null - cannot be null.");
+            }
+            if (super.isEnabled()) {
                 retValue = method.invoke(methodInstance, null);
-        } catch (IllegalAccessException ex) {
-            
-            // Logger.getLogger(MethodInvokerImpl.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalArgumentException ex) {
-            // Logger.getLogger(MethodInvokerImpl.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvocationTargetException ex) {
-            // Logger.getLogger(MethodInvokerImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            Logger.getLogger(MethodInvokerImpl.class.getName()).log(Level.WARNING, null, ex);
         }
         return retValue;
     }

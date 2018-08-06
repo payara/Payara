@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -97,8 +98,8 @@ public interface GroupManagementService extends PropertyBag, ConfigExtension {
     /**
      * Sets the value of the failureDetection property
      *
-     * @param value allowed object is
-     *              {@link FailureDetection }
+     * @param value allowed object is {@link FailureDetection }
+     * @throws PropertyVetoException
      * @since glassfish v3.1
      */
     void setFailureDetection(FailureDetection value) throws PropertyVetoException;
@@ -122,8 +123,8 @@ public interface GroupManagementService extends PropertyBag, ConfigExtension {
     /**
      * Sets the value of the groupDiscoveryTimeoutInMillis property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      * @since glassfish v3.1
      */
     void setGroupDiscoveryTimeoutInMillis(String value) throws PropertyVetoException;
@@ -154,8 +155,8 @@ public interface GroupManagementService extends PropertyBag, ConfigExtension {
     /**
      * Sets the value of the fdProtocolMaxTries property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      * @deprecate
      * Replaced by {@link FailureDetection.setMaxMissedHeartbeats(String)}
      */
@@ -190,8 +191,8 @@ public interface GroupManagementService extends PropertyBag, ConfigExtension {
     /**
      * Sets the value of the fdProtocolTimeoutInMillis property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      * @deprecate
      * Replaced by {@link FailureDetection.setHeartbeatFrequency(String)}.
      */
@@ -222,8 +223,8 @@ public interface GroupManagementService extends PropertyBag, ConfigExtension {
     /**
      * Sets the value of the mergeProtocolMaxIntervalInMillis property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      * @deprecate
      */
     /* Not needed by gms in v3.1, was not used in v2. */
@@ -251,8 +252,8 @@ public interface GroupManagementService extends PropertyBag, ConfigExtension {
     /**
      * Sets the value of the mergeProtocolMinIntervalInMillis property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      * @deprecate
      */
     @Deprecated
@@ -282,6 +283,7 @@ public interface GroupManagementService extends PropertyBag, ConfigExtension {
      *
      * @param value allowed object is
      *              {@link String }
+     * @throws PropertyVetoException
      * @deprecate
      * @see #setGroupDiscoveryTimeoutInMillis(String)
      */
@@ -314,8 +316,8 @@ public interface GroupManagementService extends PropertyBag, ConfigExtension {
     /**
      * Sets the value of the vsProtocolTimeoutInMillis property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      * @deprecate
      * Replaced by {@link FailureDetection.setVerifyFailureWaittimeInMillis(String)}.
      */
@@ -326,10 +328,12 @@ public interface GroupManagementService extends PropertyBag, ConfigExtension {
 
 
     /**
-    	Properties as per {@link org.jvnet.hk2.config.types.PropertyBag}
+     * Properties as per {@link org.jvnet.hk2.config.types.PropertyBag}
+     * @return 
      */
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 }

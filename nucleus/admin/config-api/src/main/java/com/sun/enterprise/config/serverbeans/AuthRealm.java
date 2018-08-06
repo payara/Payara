@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -90,8 +91,8 @@ public interface AuthRealm extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the name property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws java.beans.PropertyVetoException
      */
     void setName(String value) throws PropertyVetoException;
 
@@ -109,8 +110,8 @@ public interface AuthRealm extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the classname property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setClassname(String value) throws PropertyVetoException;
 
@@ -163,6 +164,7 @@ public interface AuthRealm extends ConfigBeanProxy, PropertyBag {
     }
     )
     @Element
+    @Override
     List<Property> getProperty();
 }
 

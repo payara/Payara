@@ -75,8 +75,7 @@ public class TranslatedConfigView implements ConfigView {
     static final Pattern envP = Pattern.compile("([^\\$]*)\\$\\{ENV=([^\\}]*)\\}([^\\$]*)");
 
     private static final String ALIAS_TOKEN = "ALIAS";
-    private static final String ENV_TOKEN = "ENV";
-    private static int MAX_SUBSTITUTION_DEPTH = 100;
+    private static final int MAX_SUBSTITUTION_DEPTH = 100;
     public static final ThreadLocal<Boolean> doSubstitution = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
@@ -238,8 +237,7 @@ public class TranslatedConfigView implements ConfigView {
             final String msg = String.format("Alias  %s does not exist", an);
             throw new IllegalArgumentException(msg);
         }
-        final String real = new String(domainPasswordAliasStore.get(an));
-        return real;
+        return new String(domainPasswordAliasStore.get(an));
     }
 
 

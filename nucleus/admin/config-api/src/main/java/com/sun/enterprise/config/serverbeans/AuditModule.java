@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -65,11 +66,6 @@ import com.sun.enterprise.config.serverbeans.customvalidators.JavaClassName;
  * An audit-module specifies an optional plug-in module which implements audit
  * capabilities.
  */
-
-/* @XmlType(name = "", propOrder = {
-    "property"
-}) */
-
 @Configured
 @RestRedirects({
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-audit-module"),
@@ -92,8 +88,8 @@ public interface AuditModule extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the name property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setName(String value) throws PropertyVetoException;
 
@@ -101,8 +97,7 @@ public interface AuditModule extends ConfigBeanProxy, PropertyBag {
      * Gets the value of the classname property.
      * Defines the java class which implements this audit module
      * 
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute
     @NotNull
@@ -112,8 +107,8 @@ public interface AuditModule extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the classname property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setClassname(String value) throws PropertyVetoException;
     
@@ -123,5 +118,6 @@ public interface AuditModule extends ConfigBeanProxy, PropertyBag {
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 }

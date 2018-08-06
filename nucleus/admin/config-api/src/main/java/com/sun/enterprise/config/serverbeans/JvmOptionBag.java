@@ -95,7 +95,7 @@ public interface JvmOptionBag extends ConfigBeanProxy {
         private static int getMemory(JvmOptionBag me, String which) {
             List<String> options = me.getJvmOptions();
             for (String opt : options) {
-                if(opt.indexOf(which) >= 0) {
+                if(opt.contains(which)) {
                     return toMeg(opt, which);
                 }
             }
@@ -109,14 +109,19 @@ public interface JvmOptionBag extends ConfigBeanProxy {
                 return -1;
             char unit = second.charAt(second.length()-1);
             try {
-                if (unit =='g' || unit == 'G')
-                    return Integer.parseInt(second.substring(0, second.length()-1)) * 1024; //I don't think we'll have an overflow
-                else if (unit == 'm' || unit == 'M')
-                    return Integer.parseInt(second.substring(0, second.length()-1));
-                else if (unit == 'k' || unit == 'K')
-                    return Integer.parseInt(second.substring(0, second.length()-1)) / 1024; //beware, integer division
-                else
-                    return Integer.parseInt(second) / (1024*1024); //bytes, this is a rare case, hopefully -- who does -Xmx1073741824 to specify a meg?
+                switch (unit) {
+                    case 'g':
+                    case 'G':
+                        return Integer.parseInt(second.substring(0, second.length()-1)) * 1024; //I don't think we'll have an overflow
+                    case 'm':
+                    case 'M':
+                        return Integer.parseInt(second.substring(0, second.length()-1));
+                    case 'k':
+                    case 'K':
+                        return Integer.parseInt(second.substring(0, second.length()-1)) / 1024; //beware, integer division
+                    default:
+                        return Integer.parseInt(second) / (1024*1024); //bytes, this is a rare case, hopefully -- who does -Xmx1073741824 to specify a meg?
+                }
             } catch(NumberFormatException e) {
                 //squelch all exceptions
                 return -1;

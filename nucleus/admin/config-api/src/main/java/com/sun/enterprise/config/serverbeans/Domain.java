@@ -69,13 +69,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-@Configured
 /**
  * Top level Domain Element that includes applications, resources, configs,
  * servers, clusters and node-agents, load balancer configurations and load
  * balancers. node-agents and load balancers are SE/EE related entities only.
  *
  */
+@Configured
 public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag, ConfigLoader  {
 
     public static final String DOMAIN_NAME_PROPERTY = "administrative.domain.name";
@@ -86,8 +86,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
      *
      * For PE this defines the location where applications are deployed
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute
     String getApplicationRoot();
@@ -95,8 +94,8 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     /**
      * Sets the value of the applicationRoot property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setApplicationRoot(String value) throws PropertyVetoException;
 
@@ -116,8 +115,8 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     /**
      * Sets the value of the logRoot property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setLogRoot(String value) throws PropertyVetoException;
 
@@ -133,8 +132,8 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     /**
      * Sets the value of the locale property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setLocale(String value) throws PropertyVetoException;
 
@@ -174,8 +173,8 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     /**
      * Sets the value of the system-applications property.
      *
-     * @param value allowed object is
-     *              {@link Applications }
+     * @param value allowed object is {@link Applications }
+     * @throws PropertyVetoException
      */
     void setApplications(Applications value) throws PropertyVetoException;
 
@@ -186,8 +185,8 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     /**
      * Sets the value of the system-applications property.
      *
-     * @param value allowed object is
-     *              {@link Applications }
+     * @param value allowed object is {@link Applications }
+     * @throws PropertyVetoException
      */
     void setSystemApplications(SystemApplications value) throws PropertyVetoException;
     /**
@@ -203,8 +202,8 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     /**
      * Sets the value of the resources property.
      *
-     * @param value allowed object is
-     *              {@link Resources }
+     * @param value allowed object is {@link Resources }
+     * @throws PropertyVetoException
      */
     void setResources(Resources value) throws PropertyVetoException;
 
@@ -221,16 +220,15 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     /**
      * Sets the value of the configs property.
      *
-     * @param value allowed object is
-     *              {@link Configs }
+     * @param value allowed object is {@link Configs }
+     * @throws java.beans.PropertyVetoException
      */
     void setConfigs(Configs value) throws PropertyVetoException;
 
     /**
      * Gets the value of the servers property.
      *
-     * @return possible object is
-     *         {@link Servers }
+     * @return possible object is {@link Servers }
      */
     @Element(required=true)
     @NotNull
@@ -239,8 +237,8 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     /**
      * Sets the value of the servers property.
      *
-     * @param value allowed object is
-     *              {@link Servers }
+     * @param value allowed object is {@link Servers }
+     * @throws PropertyVetoException
      */
     void setServers(Servers value) throws PropertyVetoException;
 
@@ -257,8 +255,8 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     /**
      * Sets the value of the clusters property.
      *
-     * @param value allowed object is
-     *              {@link Clusters }
+     * @param value allowed object is {@link Clusters }
+     * @throws PropertyVetoException
      */
     void setClusters(Clusters value) throws PropertyVetoException;
 
@@ -274,8 +272,8 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     /**
      * Sets the value of the nodes property.
      *
-     * @param value allowed object is
-     *              {@link Nodes }
+     * @param value allowed object is {@link Nodes }
+     * @throws PropertyVetoException
      */
     void setNodes(Nodes value) throws PropertyVetoException;
 
@@ -291,8 +289,8 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     /**
      * Sets the value of the nodeAgents property.
      *
-     * @param value allowed object is
-     *              {@link NodeAgents }
+     * @param value allowed object is {@link NodeAgents }
+     * @throws PropertyVetoException
      */
     void setNodeAgents(NodeAgents value) throws PropertyVetoException;
 
@@ -315,6 +313,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
      * <p/>
      * Objects of the following type(s) are allowed in the list
      * {@link SystemProperty }
+     * @return 
      */
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Any more legal system properties?" )
 @PropertiesDesc(
@@ -349,14 +348,17 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     }
     )
     @Element
+    @Override
     List<SystemProperty> getSystemProperty();
 
     /**
     	Properties as per {@link PropertyBag}
+     * @return 
      */
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 
 
@@ -481,7 +483,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     <P extends ConfigBeanProxy> boolean checkIfExtensionExists(Class<P> configBeanType);
 
     class Duck {
-        private final static Logger logger=ConfigApiLoggerInfo.getLogger();
+        private static final Logger LOGGER=ConfigApiLoggerInfo.getLogger();
         public static String getName(Domain domain) {
             return domain.getPropertyValue(DOMAIN_NAME_PROPERTY);
         }
@@ -502,7 +504,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                 }
             }
             catch(Exception e) {
-                 logger.log(Level.WARNING,ConfigApiLoggerInfo.errorGettingServers , e.getLocalizedMessage());
+                 LOGGER.log(Level.WARNING,ConfigApiLoggerInfo.errorGettingServers , e.getLocalizedMessage());
             }
             return ret;
         }
@@ -524,7 +526,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                 }
             }
             catch(Exception e) {
-                logger.log(Level.WARNING, ConfigApiLoggerInfo.errorGettingCluster, e.getLocalizedMessage());
+                LOGGER.log(Level.WARNING, ConfigApiLoggerInfo.errorGettingCluster, e.getLocalizedMessage());
 
             }
             return new ArrayList(clMap.values());
@@ -533,10 +535,9 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
         public static List<Application> getAllDefinedSystemApplications(Domain me) {
             List<Application> allSysApps = new ArrayList<Application>();
             SystemApplications sa = me.getSystemApplications();
-            if (sa != null) {
-                for (ApplicationName m : sa.getModules()) {
-                    if (m instanceof Application)
-                        allSysApps.add((Application)m);
+            for (ApplicationName m : sa.getModules()) {
+                if (m instanceof Application) {
+                    allSysApps.add((Application) m);
                 }
             }
             return Collections.unmodifiableList(allSysApps);
@@ -570,7 +571,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
             if (server != null) {
                 return server.getApplicationRef();
             } else {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
         }
 
@@ -639,7 +640,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
         }
 
          public static Cluster getClusterNamed(Domain d, String name) {
-            if (d.getClusters() == null || name == null) {
+            if (name == null) {
                 return null;
             }
             List<Cluster> clusters = d.getClusters().getCluster();
@@ -795,10 +796,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                 }
             }
             // if we found the ref(s) and the enable attribute(s) is/are true
-            if (found) {
-                return true;
-            }
-            return false;
+            return found;
         }
 
         public static boolean isAppEnabledInTarget(
@@ -832,10 +830,8 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                     targets.add(server.getName());
                 }
             }
-            if (d.getClusters() != null) {
-                for (Cluster cluster : d.getClusters().getCluster()) {
-                    targets.add(cluster.getName());
-                }
+            for (Cluster cluster : d.getClusters().getCluster()) {
+                targets.add(cluster.getName());
             }
             return targets;
         }
@@ -855,10 +851,8 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
             List<String> referencedTargets = me.getAllReferencedTargetsForApplication(appName);
             for (String target : referencedTargets) {
                 Cluster cluster = me.getClusterNamed(target);
-                if (cluster != null) {
-                    if (cluster.isVirtual()) {
-                        return true;
-                    }
+                if (cluster != null && cluster.isVirtual()) {
+                    return true;
                 }
             }
             return false;
@@ -937,12 +931,10 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
         }
 
         public static List<ReferenceContainer> getAllReferenceContainers(Domain d) {
-            List<ReferenceContainer> ReferenceContainers = new LinkedList<ReferenceContainer>();
-            ReferenceContainers.addAll(d.getServers().getServer());
-            if (d.getClusters() != null) {
-                ReferenceContainers.addAll(d.getClusters().getCluster());
-            }
-            return ReferenceContainers;
+            List<ReferenceContainer> referenceContainers = new LinkedList<ReferenceContainer>();
+            referenceContainers.addAll(d.getServers().getServer());
+            referenceContainers.addAll(d.getClusters().getCluster());
+            return referenceContainers;
         }
 
         public static Cluster getClusterForInstance(Domain d,String instanceName){
@@ -960,7 +952,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
 
         public static boolean isServer(Domain d, String name) {
             final Server server = d.getServerNamed(name);
-            return (server != null ? true : false);
+            return (server != null);
         }
 
         public static <P extends DomainExtension> boolean checkIfExtensionExists(Domain d, Class<P> configBeanType) {

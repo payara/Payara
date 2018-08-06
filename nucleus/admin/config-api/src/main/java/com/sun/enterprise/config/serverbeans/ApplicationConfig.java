@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
-import java.beans.PropertyVetoException;
-import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
@@ -52,7 +51,7 @@ import org.jvnet.hk2.config.Configured;
  * the application configuration customizations apply.
  * <p>
  * Each different container type provides its own sub-interface of ApplicationConfig
- * to reprsent the customizable parts of its application config information.
+ * to represent the customizable parts of its application config information.
  * See WebAppConfig in web/webgui-plugin-common for an example.
  * 
  * @author tjquinn

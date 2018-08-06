@@ -228,6 +228,7 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
      * <p/>
      * Objects of the following type(s) are allowed in the list
      * {@link SystemProperty }
+     * @return 
      */
     @ToDo(priority = ToDo.Priority.IMPORTANT, details = "Provide PropertyDesc for legal system properties")
     @Element
@@ -798,12 +799,11 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
             final ActionReport report = context.getActionReport();
             Transaction t = Transaction.getTransaction(parent);
             Cluster cluster = domain.getClusterForInstance(child.getName());
-            boolean isStandAlone = cluster == null ? true : false;
+            boolean isStandAlone = (cluster == null);
 
             /* setup supplemental */
             if (!isStandAlone && env.isDas()) {
-                context.getActionReport().
-                        setResultType(String.class, cluster.getName());
+                context.getActionReport().setResultType(String.class, cluster.getName());
             }
 
             if (isStandAlone) { // remove config <instance>-config
@@ -870,8 +870,7 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
                         }
                     }
                     catch (TransactionFailure ex) {
-                        LogHelper.log(logger, Level.SEVERE,ConfigApiLoggerInfo.deleteServerRefFailed,
-                        		ex, instanceName, cluster.getName());
+                        LogHelper.log(logger, Level.SEVERE,ConfigApiLoggerInfo.deleteServerRefFailed, ex, instanceName, cluster.getName());
                         String msg = ex.getMessage() != null ? ex.getMessage()
                                 : localStrings.getLocalString("deleteServerRefFailed",
                                 "Unable to remove server-ref {0} from cluster {1}", instanceName, cluster.getName());

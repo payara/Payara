@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.config.serverbeans;
 
 import java.io.IOException;
 import java.security.KeyStoreException;
 import org.jvnet.hk2.annotations.Contract;
 
-@Contract()
 /**
  * Definition of some utility behavior that needs to be invoked from
  * config classes in admin/config-api but implemented elsewhere (in a module
@@ -51,6 +52,7 @@ import org.jvnet.hk2.annotations.Contract;
  * 
  * @author Tim Quinn
  */
+@Contract
 public interface SecureAdminHelper {
     
     /**
@@ -59,6 +61,8 @@ public interface SecureAdminHelper {
      * @param value the user-specified value
      * @param isAlias whether the value is an alias or the DN itself
      * @return the DN
+     * @throws IOException
+     * @throws KeyStoreException
      */
     public String getDN(String value, boolean isAlias) throws IOException, KeyStoreException;
     

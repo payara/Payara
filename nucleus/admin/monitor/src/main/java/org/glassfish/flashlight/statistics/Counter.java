@@ -37,17 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyrigh [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.flashlight.statistics;
 
 import org.glassfish.external.statistics.CountStatistic;
 import org.glassfish.flashlight.datatree.TreeNode;
-import org.glassfish.flashlight.datatree.TreeElement;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -59,6 +54,7 @@ public interface Counter extends TreeNode, CountStatistic{
 
     public void decrement();
 
+    @Override
     public long getCount();
 
     public void increment();
