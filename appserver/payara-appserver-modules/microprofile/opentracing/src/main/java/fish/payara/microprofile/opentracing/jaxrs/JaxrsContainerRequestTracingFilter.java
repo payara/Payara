@@ -61,6 +61,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.Priority;
+import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -108,10 +109,22 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
     public void filter(ContainerRequestContext requestContext) throws IOException {
         // If request tracing is enabled, and there's a trace in progress (which there should be!)
         if (requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()) {
-            // Get the Traced annotation from the target method
-            Traced tracedAnnotation = OpenTracingCdiUtils.getAnnotation(CDI.current().getBeanManager(), 
-                    Traced.class, resourceInfo);
+            // Check if CDI has been initialised by trying to get the BeanManager
+            BeanManager beanManager = null;
+            try {
+                beanManager = CDI.current().getBeanManager();
+            } catch (IllegalStateException ise) {
+                // *Should* only get here if CDI hasn't been initialised, indicating that the app isn't using it
+                logger.log(Level.FINE, "Error getting Bean Manager, presumably due to this application not using CDI", 
+                        ise);
+            }
 
+            // Get the Traced annotation from the target method if CDI is initialised
+            Traced tracedAnnotation = null;
+            if (beanManager != null) {
+                tracedAnnotation = OpenTracingCdiUtils.getAnnotation(beanManager, Traced.class, resourceInfo);
+            }
+            
             // If there is no annotation, or if there is an annotation and a config override indicating that we should
             // trace the method...
             if (tracedAnnotation == null || (boolean) OpenTracingCdiUtils.getConfigOverrideValue(
@@ -157,9 +170,21 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                     && requestTracing.isRequestTracingEnabled()
                     && requestTracing.isTraceInProgress()) {
 
-                // Get the traced annotation from the method
-                Traced tracedAnnotation = OpenTracingCdiUtils.getAnnotation(CDI.current().getBeanManager(),
-                        Traced.class, resourceInfo);
+                // Check if CDI has been initialised by trying to get the BeanManager
+                BeanManager beanManager = null;
+                try {
+                    beanManager = CDI.current().getBeanManager();
+                } catch (IllegalStateException ise) {
+                    // *Should* only get here if CDI hasn't been initialised, indicating that the app isn't using it
+                    logger.log(Level.FINE, "Error getting Bean Manager, presumably due to this application not using CDI", 
+                            ise);
+                }
+
+                // Get the Traced annotation from the target method if CDI is initialised
+                Traced tracedAnnotation = null;
+                if (beanManager != null) {
+                    tracedAnnotation = OpenTracingCdiUtils.getAnnotation(beanManager, Traced.class, resourceInfo);
+                }
 
                 // If there is no annotation, or if there is an annotation and a config override indicating that we 
                 // should trace the method...
