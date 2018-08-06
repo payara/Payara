@@ -66,6 +66,8 @@ public class PayaraApplicationHandlers {
     private static final String DEPLOYMENT_GROUP = "/deployment-groups/deployment-group/";
     private static final String APPLICATION_REF = "/application-ref/";
     private static final String RESOURCE_REF = "/resource-ref/";
+    private static final String REST_URL = "REST_URL";
+    private static final String RESOURCE_NAME = "resourceName";
 
     @Handler(id = "py.getApplicationTargetList",
             input = {
@@ -74,7 +76,7 @@ public class PayaraApplicationHandlers {
                 @HandlerOutput(name = "result", type = List.class)})
     public static void getTargetListInfo(HandlerContext handlerCtx) {
         String applicationName = (String) handlerCtx.getInputValue("appName");
-        String prefix = (String) GuiUtil.getSessionValue("REST_URL");
+        String prefix = (String) GuiUtil.getSessionValue(REST_URL);
         
         List<String> clusters = TargetUtil.getClusters();
         List<String> standalone = TargetUtil.getStandaloneInstances();
@@ -139,10 +141,10 @@ public class PayaraApplicationHandlers {
                 @HandlerOutput(name = "selectedTarget", type = List.class)
             })
     public static void getAllSelectedTarget(HandlerContext handlerCtx) {
-        String prefix = (String) GuiUtil.getSessionValue("REST_URL");
+        String prefix = (String) GuiUtil.getSessionValue(REST_URL);
 
         List<String> targetList = (List) handlerCtx.getInputValue("targetList");
-        String resourceName = (String) handlerCtx.getInputValue("resourceName");
+        String resourceName = (String) handlerCtx.getInputValue(RESOURCE_NAME);
         List<String> selectedTargetList = new ArrayList<>();
         String endpoint;
 
@@ -200,8 +202,8 @@ public class PayaraApplicationHandlers {
                 @HandlerOutput(name = "isPresent", type = Boolean.class)})
     public static void isResourceInInstance(HandlerContext handlerCtx) {
         String instanceName = (String) handlerCtx.getInputValue("instanceName");
-        String resourceName = (String) handlerCtx.getInputValue("resourceName");
-        String prefix = (String) GuiUtil.getSessionValue("REST_URL");
+        String resourceName = (String) handlerCtx.getInputValue(RESOURCE_NAME);
+        String prefix = (String) GuiUtil.getSessionValue(REST_URL);
         String endpoint = prefix + SERVER + instanceName + RESOURCE_REF;
 
         boolean isPresent = false;
@@ -234,8 +236,8 @@ public class PayaraApplicationHandlers {
     public static void isInstanceInDeploymentGroupWithResource(HandlerContext handlerCtx) {
         List<String> selectedTargetList = (List) handlerCtx.getInputValue("selectedTarget");
         String target = (String) handlerCtx.getInputValue("target");
-        String prefix = (String) GuiUtil.getSessionValue("REST_URL");
-        String resourceName = (String) handlerCtx.getInputValue("resourceName");
+        String prefix = (String) GuiUtil.getSessionValue(REST_URL);
+        String resourceName = (String) handlerCtx.getInputValue(RESOURCE_NAME);
         String endpoint;
         boolean isPresent = false;
 
