@@ -42,12 +42,11 @@ package fish.payara.opentracing;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import io.opentracing.Tracer;
 import io.opentracing.mock.MockTracer;
-import io.opentracing.util.ThreadLocalActiveSpanSource;
+import io.opentracing.util.ThreadLocalScopeManager;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.interceptor.InvocationContext;
 import org.glassfish.api.event.EventListener;
@@ -65,8 +64,6 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "opentracing-service")
 public class OpenTracingService implements EventListener {
-
-    private static final Logger logger = Logger.getLogger(OpenTracingService.class.getCanonicalName());
 
     // The tracer instances
     private static final Map<String, Tracer> tracers = new ConcurrentHashMap<>();
@@ -101,7 +98,7 @@ public class OpenTracingService implements EventListener {
         if (tracer == null) {
             // Check which type of Tracer to create
             if (Boolean.getBoolean("USE_OPENTRACING_MOCK_TRACER")) {
-                tracer = new MockTracer(new ThreadLocalActiveSpanSource(), MockTracer.Propagator.TEXT_MAP);
+                tracer = new MockTracer(new ThreadLocalScopeManager(), MockTracer.Propagator.TEXT_MAP);
             } else {
                 tracer = new fish.payara.opentracing.tracer.Tracer(applicationName);
             }
