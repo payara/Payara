@@ -41,11 +41,12 @@ package fish.payara.security.openid.domain;
 
 import fish.payara.security.openid.api.OpenIdClaims;
 import static fish.payara.security.openid.api.OpenIdConstant.SUBJECT_IDENTIFIER;
+import fish.payara.security.openid.api.OpenIdContext;
+import static java.util.Collections.emptyMap;
+import java.util.Map;
 import java.util.Optional;
 import javax.enterprise.context.SessionScoped;
 import javax.json.JsonObject;
-import java.util.Map;
-import fish.payara.security.openid.api.OpenIdContext;
 
 /**
  * An injectable interface that provides access to access token, identity token,
@@ -92,7 +93,7 @@ public class OpenIdContextImpl implements OpenIdContext {
     public void setAccessToken(String token) {
         this.accessToken = token;
     }
-    
+
     @Override
     public String getIdentityToken() {
         return identityToken;
@@ -101,9 +102,12 @@ public class OpenIdContextImpl implements OpenIdContext {
     public void setIdentityToken(String identityToken) {
         this.identityToken = identityToken;
     }
-    
+
     @Override
     public Map<String, Object> getIdentityTokenClaims() {
+        if (identityTokenClaims == null) {
+            return emptyMap();
+        }
         return identityTokenClaims;
     }
 
@@ -150,7 +154,7 @@ public class OpenIdContextImpl implements OpenIdContext {
     public JsonObject getProviderMetadata() {
         return providerMetadata;
     }
-    
+
     public void setProviderMetadata(JsonObject providerMetadata) {
         this.providerMetadata = providerMetadata;
     }

@@ -87,8 +87,8 @@ public class IdTokenClaimsSetVerifier implements JWTClaimsSetVerifier {
         if (isNull(claims.getIssuer())) {
             throw new IllegalStateException("Missing issuer (iss) claim");
         }
-        if (!claims.getIssuer().equals(configuration.getProviderMetadata().getIssuerUri())) {
-            throw new IllegalStateException("Invalid issuer : " + configuration.getProviderMetadata().getIssuerUri());
+        if (!claims.getIssuer().equals(configuration.getProviderMetadata().getIssuerURI())) {
+            throw new IllegalStateException("Invalid issuer : " + configuration.getProviderMetadata().getIssuerURI());
         }
 
         /**
@@ -107,7 +107,7 @@ public class IdTokenClaimsSetVerifier implements JWTClaimsSetVerifier {
         if (isNull(audience) || audience.isEmpty()) {
             throw new IllegalStateException("Missing audience (aud) claim");
         }
-        if (!audience.contains(configuration.getClientID())) {
+        if (!audience.contains(configuration.getClientId())) {
             throw new IllegalStateException("Invalid audience (aud) claim " + audience);
         }
 
@@ -126,8 +126,8 @@ public class IdTokenClaimsSetVerifier implements JWTClaimsSetVerifier {
          */
         if (audience.size() > 1
                 && nonNull(authorizedParty)
-                && !authorizedParty.equals(configuration.getClientID())) {
-            throw new IllegalStateException("Invalid authorized party (azp) claim " + configuration.getClientID());
+                && !authorizedParty.equals(configuration.getClientId())) {
+            throw new IllegalStateException("Invalid authorized party (azp) claim " + configuration.getClientId());
         }
 
         /**

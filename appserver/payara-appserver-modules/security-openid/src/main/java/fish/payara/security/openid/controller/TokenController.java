@@ -67,13 +67,14 @@ import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.nimbusds.jwt.proc.JWTClaimsSetVerifier;
 import static fish.payara.security.openid.OpenIdUtil.DEFAULT_JWT_SIGNED_ALGORITHM;
 import static fish.payara.security.openid.api.OpenIdConstant.ACCESS_TOKEN_HASH;
-import fish.payara.security.openid.domain.OpenIdConfiguration;
 import static fish.payara.security.openid.api.OpenIdConstant.AUTHORIZATION_CODE;
 import static fish.payara.security.openid.api.OpenIdConstant.CLIENT_ID;
 import static fish.payara.security.openid.api.OpenIdConstant.CLIENT_SECRET;
 import static fish.payara.security.openid.api.OpenIdConstant.CODE;
 import static fish.payara.security.openid.api.OpenIdConstant.GRANT_TYPE;
 import static fish.payara.security.openid.api.OpenIdConstant.REDIRECT_URI;
+import fish.payara.security.openid.api.OpenIdContext;
+import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdNonce;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -86,6 +87,8 @@ import java.util.Arrays;
 import java.util.Map;
 import static java.util.Objects.isNull;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -94,9 +97,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Form;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import javax.ws.rs.core.Response;
-import fish.payara.security.openid.api.OpenIdContext;
-import javax.inject.Inject;
-import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 
 /**
  * Controller for Token endpoint
@@ -255,7 +255,7 @@ public class TokenController {
             throw new IllegalStateException("Unsupported JWS algorithm: " + jwsAlg);
         } else if (JWSAlgorithm.Family.RSA.contains(jwsAlg) || JWSAlgorithm.Family.EC.contains(jwsAlg)) {
             try {
-                jwkSource = new RemoteJWKSet(new URL(configuration.getProviderMetadata().getJwksUri()));
+                jwkSource = new RemoteJWKSet(new URL(configuration.getProviderMetadata().getJwksURI()));
             } catch (MalformedURLException ex) {
                 throw new IllegalStateException(ex);
             }

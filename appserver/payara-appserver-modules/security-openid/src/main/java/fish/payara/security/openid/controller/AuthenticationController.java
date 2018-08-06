@@ -75,12 +75,10 @@ public class AuthenticationController {
     @Inject
     private NonceController nonceController;
 
-
-     private static final Logger LOGGER = Logger.getLogger(AuthenticationController.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AuthenticationController.class.getName());
 
     /**
-     * (1)
-     * The RP (Client) sends a request to the OpenId Connect Provider (OP)
+     * (1) The RP (Client) sends a request to the OpenId Connect Provider (OP)
      * to authenticates the End-User using the Authorization Code Flow and
      * authorization Code is returned from the Authorization Endpoint.
      * <br>
@@ -123,13 +121,13 @@ public class AuthenticationController {
             String nonceHash = nonceController.getNonceHash(nonce);
             authRequest.queryParam(NONCE, nonceHash);
         }
-        if (!StringHelper.isEmpty(configuration.getResponseMode())) {
+        if (!isEmpty(configuration.getResponseMode())) {
             authRequest.queryParam(RESPONSE_MODE, configuration.getResponseMode());
         }
-        if (!StringHelper.isEmpty(configuration.getDisplay())) {
+        if (!isEmpty(configuration.getDisplay())) {
             authRequest.queryParam(DISPLAY, configuration.getDisplay());
         }
-        if (!StringHelper.isEmpty(configuration.getPrompt())) {
+        if (!isEmpty(configuration.getPrompt())) {
             authRequest.queryParam(PROMPT, configuration.getPrompt());
         }
 
@@ -142,6 +140,5 @@ public class AuthenticationController {
         LOGGER.log(FINEST, "Redirecting for authentication to {0}", authUrl);
         return httpMessageContext.redirect(authUrl);
     }
-
 
 }

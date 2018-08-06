@@ -63,11 +63,11 @@ import static javax.json.JsonValue.ValueType.STRING;
 public class OpenIdProviderMetadata {
 
     private JsonObject document;
-    private final String issuerUri;
+    private final String issuerURI;
     private String authorizationEndpoint;
     private String tokenEndpoint;
     private String userinfoEndpoint;
-    private String jwksUri;
+    private String jwksURI;
     private final Set<String> scopesSupported;
     private final Set<String> responseTypeSupported;
     private final Set<String> idTokenSigningAlgorithmsSupported;
@@ -77,7 +77,7 @@ public class OpenIdProviderMetadata {
 
     public OpenIdProviderMetadata(JsonObject document) {
         this.document = document;
-        this.issuerUri = document.getString(ISSUER);
+        this.issuerURI = document.getString(ISSUER);
         this.scopesSupported = getValues(SCOPES_SUPPORTED);
         this.responseTypeSupported = getValues(RESPONSE_TYPES_SUPPORTED);
         this.idTokenSigningAlgorithmsSupported = getValues(ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED);
@@ -86,8 +86,8 @@ public class OpenIdProviderMetadata {
         this.subjectTypesSupported = getValues(SUBJECT_TYPES_SUPPORTED);
     }
 
-    public String getIssuerUri() {
-        return issuerUri;
+    public String getIssuerURI() {
+        return issuerURI;
     }
 
     public String getAuthorizationEndpoint() {
@@ -117,12 +117,12 @@ public class OpenIdProviderMetadata {
         return this;
     }
 
-    public String getJwksUri() {
-        return jwksUri;
+    public String getJwksURI() {
+        return jwksURI;
     }
 
-    public OpenIdProviderMetadata setJwksUri(String jwksUri) {
-        this.jwksUri = jwksUri;
+    public OpenIdProviderMetadata setJwksURI(String jwksURI) {
+        this.jwksURI = jwksURI;
         return this;
     }
 
@@ -177,12 +177,12 @@ public class OpenIdProviderMetadata {
     public String toString() {
         return OpenIdProviderMetadata.class.getSimpleName()
                 + "{"
-                + "providerUri=" + issuerUri
+                + "issuerURI=" + issuerURI
                 + ", authorizationEndpoint=" + authorizationEndpoint
                 + ", tokenEndpoint=" + tokenEndpoint
                 + ", userinfoEndpoint=" + userinfoEndpoint
-                + ", jwksUri=" + jwksUri
+                + ", jwksURI=" + jwksURI
                 + '}';
     }
-    
+
 }

@@ -55,7 +55,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
-import javax.ws.rs.core.MediaType;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -93,7 +92,7 @@ public class UserInfoController {
         Client client = ClientBuilder.newClient();
         WebTarget target = client.target(configuration.getProviderMetadata().getUserinfoEndpoint());
         Response response = target.request()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(APPLICATION_JSON)
                 .header(AUTHORIZATION_HEADER, BEARER_TYPE + accessToken)
                 // 5.5.  Requesting Claims using the "claims" Request Parameter ??
                 .get();

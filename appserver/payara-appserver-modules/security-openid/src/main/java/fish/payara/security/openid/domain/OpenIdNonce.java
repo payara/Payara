@@ -45,7 +45,6 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Objects;
 import static java.util.Objects.isNull;
-import org.glassfish.common.util.StringHelper;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 
 /**
@@ -75,7 +74,7 @@ public class OpenIdNonce implements Serializable {
      * @param value The nonce value. Must not be {@code null} or empty.
      */
     public OpenIdNonce(String value) {
-        if (StringHelper.isEmpty(value)) {
+        if (isEmpty(value)) {
             throw new IllegalArgumentException("The nonce value can't be null or empty");
         }
         this.value = value;

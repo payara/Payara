@@ -39,29 +39,29 @@
  */
 package fish.payara.security.openid;
 
-import fish.payara.security.openid.domain.OpenIdContextImpl;
-import fish.payara.security.openid.controller.ProviderMetadataContoller;
+import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
+import fish.payara.security.openid.controller.AuthenticationController;
 import fish.payara.security.openid.controller.ConfigurationController;
+import fish.payara.security.openid.controller.NonceController;
+import fish.payara.security.openid.controller.ProviderMetadataContoller;
+import fish.payara.security.openid.controller.StateController;
+import fish.payara.security.openid.controller.TokenController;
+import fish.payara.security.openid.controller.UserInfoController;
+import fish.payara.security.openid.domain.OpenIdContextImpl;
+import java.util.ArrayList;
+import java.util.List;
+import static java.util.Objects.nonNull;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.Extension;
-import java.util.ArrayList;
-import java.util.List;
-import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.DefinitionException;
+import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessBean;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.identitystore.IdentityStore;
-import fish.payara.security.openid.controller.AuthenticationController;
-import fish.payara.security.openid.controller.TokenController;
-import fish.payara.security.openid.controller.UserInfoController;
-import static java.util.Objects.nonNull;
-import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
-import fish.payara.security.openid.controller.NonceController;
-import fish.payara.security.openid.controller.StateController;
 
 /**
  * Activates {@link OpenIdAuthenticationMechanism} with the
@@ -128,7 +128,7 @@ public class OpenIdExtension implements Extension {
                     .types(IdentityStore.class, Object.class)
                     .createWith(obj -> CDI.current().select(OpenIdIdentityStore.class).get());
         }
-        
+
         for (OpenIdAuthenticationDefinition definition : definitions) {
             afterBean.addBean()
                     .scope(ApplicationScoped.class)
@@ -136,7 +136,7 @@ public class OpenIdExtension implements Extension {
                     .types(HttpAuthenticationMechanism.class, Object.class)
                     .createWith(obj -> CDI.current().select(OpenIdAuthenticationMechanism.class).get().setConfiguration(definition));
         }
-        
+
         definitions.clear();
     }
 

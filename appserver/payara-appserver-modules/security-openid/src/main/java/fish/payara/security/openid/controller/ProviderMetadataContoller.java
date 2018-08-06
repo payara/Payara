@@ -49,7 +49,7 @@ import javax.json.JsonObject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -73,40 +73,40 @@ public class ProviderMetadataContoller {
      * revocation_endpoint etc), scopes, Claims, and public key location
      * information (jwks_uri)
      *
-     * @param providerUri the OpenID Provider's uri
+     * @param providerURI the OpenID Provider's uri
      * @return the OpenID Provider's configuration information / document
      *
      */
-    public JsonObject getDocument(String providerUri) {
-        if (isNull(providerDocuments.get(providerUri))) {
-            if (providerUri.endsWith("/")) {
-                providerUri = providerUri.substring(0, providerUri.length() - 1);
+    public JsonObject getDocument(String providerURI) {
+        if (isNull(providerDocuments.get(providerURI))) {
+            if (providerURI.endsWith("/")) {
+                providerURI = providerURI.substring(0, providerURI.length() - 1);
             }
 
-            if (!providerUri.endsWith(WELL_KNOWN_PREFIX)) {
-                providerUri = providerUri + WELL_KNOWN_PREFIX;
+            if (!providerURI.endsWith(WELL_KNOWN_PREFIX)) {
+                providerURI = providerURI + WELL_KNOWN_PREFIX;
             }
 
             Client client = ClientBuilder.newClient();
-            WebTarget target = client.target(providerUri);
+            WebTarget target = client.target(providerURI);
             Response response = target.request()
-                    .accept(MediaType.APPLICATION_JSON)
+                    .accept(APPLICATION_JSON)
                     .get();
 
             if (response.getStatus() == Status.OK.getStatusCode()) {
                 // Get back the result of the REST request
                 String responseBody = response.readEntity(String.class);
                 JsonObject responseObject = Json.createReader(new StringReader(responseBody)).readObject();
-                providerDocuments.put(providerUri, responseObject);
+                providerDocuments.put(providerURI, responseObject);
             } else {
                 throw new IllegalStateException(String.format(
                         "Unable to retrieve OpenID Provider's [%s] configuration document, HTTP respons code : [%s] ",
-                        providerUri,
+                        providerURI,
                         response.getStatus()
                 ));
             }
         }
-        return providerDocuments.get(providerUri);
+        return providerDocuments.get(providerURI);
     }
 
 }

@@ -107,7 +107,7 @@ public @interface OpenIdProviderMetadata {
     /**
      * The Microprofile Config key for the jwks uri is <code>{@value}</code>
      */
-    public static final String OPENID_MP_JWKS_URI = "payara.security.openid.provider.jwksUri";
+    public static final String OPENID_MP_JWKS_URI = "payara.security.openid.provider.jwksURI";
 
     /**
      * Required. An OpenId Connect Provider's JSON Web Key Set document
@@ -121,5 +121,5 @@ public @interface OpenIdProviderMetadata {
      *
      * @return
      */
-    String jwksUri() default "";
+    String jwksURI() default "";
 }

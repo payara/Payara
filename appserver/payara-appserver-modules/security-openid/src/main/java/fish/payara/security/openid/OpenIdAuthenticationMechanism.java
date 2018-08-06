@@ -40,11 +40,29 @@
 package fish.payara.security.openid;
 
 import com.nimbusds.jwt.JWT;
-import fish.payara.security.openid.domain.OpenIdContextImpl;
-import fish.payara.security.openid.domain.OpenIdConfiguration;
-import fish.payara.security.openid.controller.TokenController;
+import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
+import static fish.payara.security.openid.api.OpenIdConstant.ACCESS_TOKEN;
+import static fish.payara.security.openid.api.OpenIdConstant.ERROR_DESCRIPTION_PARAM;
+import static fish.payara.security.openid.api.OpenIdConstant.ERROR_PARAM;
+import static fish.payara.security.openid.api.OpenIdConstant.EXPIRES_IN;
+import static fish.payara.security.openid.api.OpenIdConstant.IDENTITY_TOKEN;
+import static fish.payara.security.openid.api.OpenIdConstant.REFRESH_TOKEN;
+import static fish.payara.security.openid.api.OpenIdConstant.STATE;
+import static fish.payara.security.openid.api.OpenIdConstant.TOKEN_TYPE;
+import fish.payara.security.openid.api.OpenIdState;
+import fish.payara.security.openid.controller.AuthenticationController;
 import fish.payara.security.openid.controller.ConfigurationController;
+import fish.payara.security.openid.controller.StateController;
+import fish.payara.security.openid.controller.TokenController;
+import fish.payara.security.openid.controller.UserInfoController;
+import fish.payara.security.openid.domain.OpenIdConfiguration;
+import fish.payara.security.openid.domain.OpenIdContextImpl;
 import java.io.StringReader;
+import java.util.Map;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.logging.Level.WARNING;
+import java.util.logging.Logger;
 import javax.enterprise.inject.Typed;
 import javax.inject.Inject;
 import javax.json.Json;
@@ -54,34 +72,16 @@ import javax.security.enterprise.AuthenticationStatus;
 import javax.security.enterprise.authentication.mechanism.http.AutoApplySession;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
+import javax.security.enterprise.credential.CallerOnlyCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 import javax.security.enterprise.identitystore.IdentityStoreHandler;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Response;
-import static fish.payara.security.openid.api.OpenIdConstant.ACCESS_TOKEN;
-import static fish.payara.security.openid.api.OpenIdConstant.EXPIRES_IN;
-import static fish.payara.security.openid.api.OpenIdConstant.IDENTITY_TOKEN;
-import static fish.payara.security.openid.api.OpenIdConstant.REFRESH_TOKEN;
-import static fish.payara.security.openid.api.OpenIdConstant.STATE;
-import static fish.payara.security.openid.api.OpenIdConstant.TOKEN_TYPE;
 import javax.ws.rs.core.Response.Status;
-import static java.util.logging.Level.WARNING;
-import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
-import static fish.payara.security.openid.api.OpenIdConstant.ERROR_DESCRIPTION_PARAM;
-import static fish.payara.security.openid.api.OpenIdConstant.ERROR_PARAM;
-import fish.payara.security.openid.controller.AuthenticationController;
-import fish.payara.security.openid.controller.UserInfoController;
-import java.util.Map;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import java.util.logging.Logger;
-import javax.security.enterprise.credential.CallerOnlyCredential;
 import static org.glassfish.common.util.StringHelper.isEmpty;
-import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
-import fish.payara.security.openid.api.OpenIdState;
-import fish.payara.security.openid.controller.StateController;
 
 /**
  * The AuthenticationMechanism used to authenticate users using the OpenId
@@ -92,8 +92,6 @@ import fish.payara.security.openid.controller.StateController;
  *
  * @author Gaurav Gupta
  */
-    
-
 //  +--------+                                                       +--------+
 //  |        |                                                       |        |
 //  |        |---------------(1) Authentication Request------------->|        |
@@ -119,7 +117,6 @@ import fish.payara.security.openid.controller.StateController;
 //  |        |<------------------------------------------------------|        |
 //  |        |                                                       |        |
 //  +--------+                                                       +--------+
-
 @AutoApplySession
 @Typed(OpenIdAuthenticationMechanism.class)
 public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanism {
@@ -208,16 +205,17 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
                     LOGGER.fine("Inconsistent recieved state, value not matched");
                     return httpContext.notifyContainerAboutLogin(NOT_VALIDATED_RESULT);
                 }
+            } else {
+                LOGGER.fine("Expected state not found");
             }
         }
         return httpContext.doNothing();
     }
 
     /**
-     * (3) & (4-6) 
-     * An Authorization Code returned to Client (RP) via Authorization Code Flow
-     * must be validated and exchanged for an ID Token, an Access Token and 
-     * optionally a Refresh Token directly.
+     * (3) & (4-6) An Authorization Code returned to Client (RP) via
+     * Authorization Code Flow must be validated and exchanged for an ID Token,
+     * an Access Token and optionally a Refresh Token directly.
      *
      * @param request
      * @param context
@@ -239,7 +237,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
         Response response = tokenController.getTokens(configuration, request);
         String tokensBody = response.readEntity(String.class);
         JsonObject tokensObject = Json.createReader(new StringReader(tokensBody)).readObject();
-        
+
         if (response.getStatus() == Status.OK.getStatusCode()) {
 
             // Successful Token Response

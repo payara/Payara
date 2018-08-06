@@ -39,30 +39,43 @@
  */
 package fish.payara.security.openid.controller;
 
-import fish.payara.security.openid.domain.OpenIdConfiguration;
+import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
+import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_CLIENT_ENC_ALGORITHM;
+import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_CLIENT_ENC_JWKS;
+import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_CLIENT_ENC_METHOD;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_CLIENT_ID;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_CLIENT_SECRET;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_DISPLAY;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_PROMPT;
+import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_PROVIDER_URI;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_REDIRECT_URI;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_RESPONSE_MODE;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_RESPONSE_TYPE;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_SCOPE;
+import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_USE_NONCE;
+import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_USE_SESSION;
 import static fish.payara.security.annotations.OpenIdProviderMetadata.OPENID_MP_AUTHORIZATION_ENDPOINT;
 import static fish.payara.security.annotations.OpenIdProviderMetadata.OPENID_MP_JWKS_URI;
 import static fish.payara.security.annotations.OpenIdProviderMetadata.OPENID_MP_TOKEN_ENDPOINT;
 import static fish.payara.security.annotations.OpenIdProviderMetadata.OPENID_MP_USERINFO_ENDPOINT;
 import static fish.payara.security.openid.OpenIdUtil.getConfiguredValue;
+import static fish.payara.security.openid.api.OpenIdConstant.AUTHORIZATION_CODE_FLOW_TYPES;
 import static fish.payara.security.openid.api.OpenIdConstant.AUTHORIZATION_ENDPOINT;
+import static fish.payara.security.openid.api.OpenIdConstant.HYBRID_FLOW_TYPES;
+import static fish.payara.security.openid.api.OpenIdConstant.IMPLICIT_FLOW_TYPES;
 import static fish.payara.security.openid.api.OpenIdConstant.JWKS_URI;
 import static fish.payara.security.openid.api.OpenIdConstant.OPENID_SCOPE;
 import static fish.payara.security.openid.api.OpenIdConstant.TOKEN_ENDPOINT;
 import static fish.payara.security.openid.api.OpenIdConstant.USERINFO_ENDPOINT;
 import fish.payara.security.openid.api.PromptType;
+import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdProviderMetadata;
+import fish.payara.security.openid.domain.OpenIdTokenEncryptionMetadata;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import static java.util.stream.Collectors.joining;
 import javax.enterprise.context.ApplicationScoped;
@@ -70,20 +83,7 @@ import javax.inject.Inject;
 import javax.json.JsonObject;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
-import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_CLIENT_ENC_ALGORITHM;
-import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_CLIENT_ENC_JWKS;
-import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_CLIENT_ENC_METHOD;
-import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_PROVIDER_URI;
-import fish.payara.security.openid.domain.OpenIdTokenEncryptionMetadata;
 import static org.glassfish.common.util.StringHelper.isEmpty;
-import static fish.payara.security.openid.api.OpenIdConstant.AUTHORIZATION_CODE_FLOW_TYPES;
-import static fish.payara.security.openid.api.OpenIdConstant.IMPLICIT_FLOW_TYPES;
-import static fish.payara.security.openid.api.OpenIdConstant.HYBRID_FLOW_TYPES;
-import java.util.HashMap;
-import java.util.Map;
-import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
-import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_USE_NONCE;
-import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_USE_SESSION;
 
 /**
  * Build and validate the OpenId Connect client configuration
@@ -110,16 +110,16 @@ public class ConfigurationController {
     public OpenIdConfiguration buildConfig(OpenIdAuthenticationDefinition definition) {
         Config provider = ConfigProvider.getConfig();
 
-        String providerUri;
+        String providerURI;
         JsonObject providerDocument;
         String authorizationEndpoint;
         String tokenEndpoint;
         String userinfoEndpoint;
-        String jwksUri;
+        String jwksURI;
 
-        providerUri = getConfiguredValue(String.class, definition.providerUri(), provider, OPENID_MP_PROVIDER_URI);
+        providerURI = getConfiguredValue(String.class, definition.providerURI(), provider, OPENID_MP_PROVIDER_URI);
         fish.payara.security.annotations.OpenIdProviderMetadata providerMetadata = definition.providerMetadata();
-        providerDocument = configurationContoller.getDocument(providerUri);
+        providerDocument = configurationContoller.getDocument(providerURI);
 
         if (isEmpty(providerMetadata.authorizationEndpoint()) && providerDocument.containsKey(AUTHORIZATION_ENDPOINT)) {
             authorizationEndpoint = getConfiguredValue(String.class, providerDocument.getString(AUTHORIZATION_ENDPOINT), provider, OPENID_MP_AUTHORIZATION_ENDPOINT);
@@ -136,13 +136,13 @@ public class ConfigurationController {
         } else {
             userinfoEndpoint = getConfiguredValue(String.class, providerMetadata.userinfoEndpoint(), provider, OPENID_MP_USERINFO_ENDPOINT);
         }
-        if (isEmpty(providerMetadata.jwksUri()) && providerDocument.containsKey(JWKS_URI)) {
-            jwksUri = getConfiguredValue(String.class, providerDocument.getString(JWKS_URI), provider, OPENID_MP_JWKS_URI);
+        if (isEmpty(providerMetadata.jwksURI()) && providerDocument.containsKey(JWKS_URI)) {
+            jwksURI = getConfiguredValue(String.class, providerDocument.getString(JWKS_URI), provider, OPENID_MP_JWKS_URI);
         } else {
-            jwksUri = getConfiguredValue(String.class, providerMetadata.jwksUri(), provider, OPENID_MP_JWKS_URI);
+            jwksURI = getConfiguredValue(String.class, providerMetadata.jwksURI(), provider, OPENID_MP_JWKS_URI);
         }
 
-        String clientID = getConfiguredValue(String.class, definition.clientId(), provider, OPENID_MP_CLIENT_ID);
+        String clientId = getConfiguredValue(String.class, definition.clientId(), provider, OPENID_MP_CLIENT_ID);
         char[] clientSecret = getConfiguredValue(String.class, definition.clientSecret(), provider, OPENID_MP_CLIENT_SECRET).toCharArray();
         String redirectURI = getConfiguredValue(String.class, definition.redirectURI(), provider, OPENID_MP_REDIRECT_URI);
 
@@ -188,18 +188,20 @@ public class ConfigurationController {
         String privateKeyJWKS = provider.getOptionalValue(OPENID_MP_CLIENT_ENC_JWKS, String.class).orElse(null);
 
         OpenIdConfiguration configuration = new OpenIdConfiguration()
-                .setProviderMetadata(new OpenIdProviderMetadata(providerDocument)
+                .setProviderMetadata(
+                        new OpenIdProviderMetadata(providerDocument)
                                 .setAuthorizationEndpoint(authorizationEndpoint)
                                 .setTokenEndpoint(tokenEndpoint)
                                 .setUserinfoEndpoint(userinfoEndpoint)
-                                .setJwksUri(jwksUri)
+                                .setJwksURI(jwksURI)
                 )
-                .setEncryptionMetadata(new OpenIdTokenEncryptionMetadata()
+                .setEncryptionMetadata(
+                        new OpenIdTokenEncryptionMetadata()
                                 .setEncryptionAlgorithm(encryptionAlgorithm)
                                 .setEncryptionMethod(encryptionMethod)
                                 .setPrivateKeySource(privateKeyJWKS)
                 )
-                .setClientID(clientID)
+                .setClientId(clientId)
                 .setClientSecret(clientSecret)
                 .setRedirectURI(redirectURI)
                 .setScopes(scopes)
@@ -224,7 +226,7 @@ public class ConfigurationController {
         List<String> errorMessages = new ArrayList<>();
 
         //validate provider metadata
-        if (isEmpty(configuration.getProviderMetadata().getIssuerUri())) {
+        if (isEmpty(configuration.getProviderMetadata().getIssuerURI())) {
             errorMessages.add("issuer metadata is mandatory");
         }
         if (isEmpty(configuration.getProviderMetadata().getAuthorizationEndpoint())) {
@@ -233,7 +235,7 @@ public class ConfigurationController {
         if (isEmpty(configuration.getProviderMetadata().getTokenEndpoint())) {
             errorMessages.add("token_endpoint metadata is mandatory");
         }
-        if (isEmpty(configuration.getProviderMetadata().getJwksUri())) {
+        if (isEmpty(configuration.getProviderMetadata().getJwksURI())) {
             errorMessages.add("jwks_uri metadata is mandatory");
         }
         if (configuration.getProviderMetadata().getResponseTypeSupported().isEmpty()) {
@@ -247,7 +249,7 @@ public class ConfigurationController {
         }
 
         //validate client configuration
-        if (isEmpty(configuration.getClientID())) {
+        if (isEmpty(configuration.getClientId())) {
             errorMessages.add("client_id request parameter is mandatory");
         }
         if (isEmpty(configuration.getRedirectURI())) {
@@ -270,7 +272,7 @@ public class ConfigurationController {
                     errorMessages.add(String.format(
                             "%s scope is not supported by %s OpenId Connect provider",
                             scope,
-                            configuration.getProviderMetadata().getIssuerUri())
+                            configuration.getProviderMetadata().getIssuerURI())
                     );
                 }
             }

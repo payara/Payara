@@ -66,7 +66,7 @@ public @interface OpenIdAuthenticationDefinition {
     /**
      * The Microprofile Config key for the provider uri is <code>{@value}</code>
      */
-    public static final String OPENID_MP_PROVIDER_URI = "payara.security.openid.provider.uri";
+    public static final String OPENID_MP_PROVIDER_URI = "payara.security.openid.providerURI";
 
     /**
      * Required. The provider uri (
@@ -75,7 +75,7 @@ public @interface OpenIdAuthenticationDefinition {
      *
      * @return
      */
-    String providerUri() default "";
+    String providerURI() default "";
 
     /**
      * To override the openid connect provider's metadata property discovered
