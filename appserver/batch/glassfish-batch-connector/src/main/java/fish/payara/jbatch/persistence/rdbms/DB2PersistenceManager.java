@@ -45,13 +45,11 @@ import com.ibm.jbatch.spi.services.IBatchConfig;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.naming.Context;
@@ -184,71 +182,62 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
                 
 		logger.entering(CLASSNAME, "checkDB2Tables");
                 setCreateDB2StringsMap(tableNames);
-		createDB2TableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
 				createDB2Strings.get(DB2_CREATE_TABLE_CHECKPOINTDATA));
 
-		createDB2TableNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
 				createDB2Strings.get(DB2_CREATE_TABLE_JOBINSTANCEDATA));
 
-		createDB2TableNotExists(tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
 				createDB2Strings.get(DB2_CREATE_TABLE_EXECUTIONINSTANCEDATA));
 
-		createDB2TableNotExists(
+		createTableIfNotExists(
 				tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY),
 				createDB2Strings.get(DB2_CREATE_TABLE_STEPINSTANCEDATA));
 
-		createDB2TableNotExists(tableNames.get(JOB_STATUS_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(JOB_STATUS_TABLE_KEY),
 				createDB2Strings.get(DB2_CREATE_TABLE_JOBSTATUS));
 
-		createDB2TableNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
 				createDB2Strings.get(DB2_CREATE_TABLE_STEPSTATUS));
 
 		logger.exiting(CLASSNAME, "checkDB2Tables");
 	}
 
-	/**
-	 * Create the jbatch tables if they do not exist
-	 * @param tableName
-	 * @param createTableStatement
-	 * @throws SQLException
-	 */
-	protected void createDB2TableNotExists(String tableName,
-			String createTableStatement) throws SQLException {
-		logger.entering(CLASSNAME, "createDB2TableNotExists", new Object[] {
-				tableName, createTableStatement });
-		Connection conn = null;
-		Statement stmt = null;
-		ResultSet rs = null;
-		PreparedStatement ps = null;
+        @Override
+        public boolean checkIfTableExists(DataSource dSource, String tableName, String schemaName) {
+                Statement statement = null;
+                ResultSet resultSet = null;
+                dataSource = dSource;
 
-		try {
-			conn = getConnection();
-			stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-					ResultSet.CONCUR_READ_ONLY);
-			String query = "select name from sysibm.systables where name ="
-					+ "\'" + tableName.toUpperCase() + "\'" + "and type = 'T'";
-			rs = stmt.executeQuery(query);
+                boolean result = true;
 
-			int rowcount = getTableRowCount(rs);
+                try (Connection connection = dataSource.getConnection()) {
+                    schema = schemaName;
 
-			// Create table if it does not exist
-			if (rowcount == 0) {
-				if (!rs.next()) {
-					logger.log(Level.INFO, tableName
-							+ " table does not exists. Trying to create it.");
-					ps = conn.prepareStatement(createTableStatement);
-					ps.executeUpdate();
-				}
-			}
-		} catch (SQLException e) {
-			logger.severe(e.getLocalizedMessage());
-			throw e;
-		} finally {
-			cleanupConnection(conn, rs, ps);
-		}
+                    if (!isSchemaValid()) {
+                        setDefaultSchema();
+                    }
 
-		logger.exiting(CLASSNAME, "createDB2TableNotExists");
-	}
+                    statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                            ResultSet.CONCUR_READ_ONLY);
+                    String query = "select name from sysibm.systables where name ="
+                            + "\'" + tableName.toUpperCase() + "\'" + "and type = 'T'";
+                    resultSet = statement.executeQuery(query);
+
+                    int rowcount = getTableRowCount(resultSet);
+
+                    if (rowcount == 0) {
+                        if (!resultSet.next()) {
+                            result = false;
+                        }
+                    }
+                } catch (SQLException ex) {
+                    logger.severe(ex.getLocalizedMessage());
+                }
+
+                return result;
+        }
 	
 	/**
 	 * Method invoked to insert the DB2 create table strings into a hashmap

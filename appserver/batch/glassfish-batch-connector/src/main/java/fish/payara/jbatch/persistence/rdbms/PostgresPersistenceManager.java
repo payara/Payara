@@ -106,12 +106,14 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
      * @param connection
      * @throws SQLException
      */
+    @Override
     protected void setSchemaOnConnection(Connection connection) throws SQLException {
             logger.log(Level.FINEST, "Entering {0}.setSchemaOnConnection()", CLASSNAME);
             try (PreparedStatement preparedStatement = connection.prepareStatement("set search_path to " + schema)) {
                 preparedStatement.executeUpdate();
-            }
-            logger.log(Level.FINEST, "Exiting {0}.setSchemaOnConnection()", CLASSNAME);
+            } finally {
+                logger.log(Level.FINEST, "Exiting {0}.setSchemaOnConnection()", CLASSNAME);
+            }          
     }
 
 
@@ -222,81 +224,70 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 	protected void checkTables () throws SQLException {
 		logger.entering(CLASSNAME, "checkPostgresTables Postgres");
                 setCreatePostgresStringsMap(tableNames);
-		createPostgresTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
 				createPostgresStrings.get(POSTGRES_CREATE_TABLE_CHECKPOINTDATA));
 
-		createPostgresTableNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
 				createPostgresStrings
 						.get(POSTGRES_CREATE_TABLE_JOBINSTANCEDATA));
 
-		createPostgresTableNotExists(
+		createTableIfNotExists(
 				tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
 				createPostgresStrings
 						.get(POSTGRES_CREATE_TABLE_EXECUTIONINSTANCEDATA));
 
-		createPostgresTableNotExists(
+		createTableIfNotExists(
 				tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY),
 				createPostgresStrings
 						.get(POSTGRES_CREATE_TABLE_STEPINSTANCEDATA));
 
-		createPostgresTableNotExists(tableNames.get(JOB_STATUS_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(JOB_STATUS_TABLE_KEY),
 				createPostgresStrings.get(POSTGRES_CREATE_TABLE_JOBSTATUS));
-		createPostgresTableNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
 				createPostgresStrings.get(POSTGRES_CREATE_TABLE_STEPSTATUS));
 
 		logger.exiting(CLASSNAME, "checkAllTables Postgres");
 	}
+        
+        @Override
+        public boolean checkIfTableExists(DataSource dSource, String tableName, String schemaName) {
+                Statement statement = null;
+                ResultSet resultSet = null;
+                dataSource = dSource;
 
-	/**
-	 * Create Postgres tables if they do not exist
-	 * 
-	 * @param tableName
-	 * @param createTableStatement
-	 * @throws SQLException
-	 */
-	protected void createPostgresTableNotExists(String tableName,
-			String createTableStatement) throws SQLException {
-		logger.entering(CLASSNAME, "createPostgresTableNotExists",
-				new Object[] { tableName, createTableStatement });
+                boolean result = true;
 
-		Connection conn = null;
-		Statement stmt = null;
-		ResultSet rs = null;
-		PreparedStatement ps = null;
+                try (Connection connection = dataSource.getConnection()) {
+                    schema = schemaName;
 
-		try {
-			conn = getConnection();
-			stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-					ResultSet.CONCUR_READ_ONLY);
-			String query = "select lower(table_schema),lower(table_name) FROM information_schema.tables where lower(table_schema)= "
-					+ "\'"
-					+ schema
-					+ "\'"
-					+ " and lower(table_name)= "
-					+ "\'"
-					+ tableName.toLowerCase() + "\'";
-			rs = stmt.executeQuery(query);
+                    if (!isSchemaValid()) {
+                        setDefaultSchema();
+                    }
 
-			int rowcount = getTableRowCount(rs);
+                    statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                            ResultSet.CONCUR_READ_ONLY);
+                    String query = "select lower(table_schema),lower(table_name) FROM information_schema.tables where lower(table_schema)= "
+                            + "\'"
+                            + schema
+                            + "\'"
+                            + " and lower(table_name)= "
+                            + "\'"
+                            + tableName.toLowerCase() + "\'";
+                    resultSet = statement.executeQuery(query);
 
-			// Create table if it does not exist
-			if (rowcount == 0) {
-				if (!rs.next()) {
-					logger.log(Level.INFO, tableName
-							+ " table does not exists. Trying to create it.");
-					ps = conn.prepareStatement(createTableStatement);
-					ps.executeUpdate();
-				}
-			}
-		} catch (SQLException e) {
-			logger.severe(e.getLocalizedMessage());
-			throw e;
-		} finally {
-			cleanupConnection(conn, ps);
-		}
+                    int rowcount = getTableRowCount(resultSet);
 
-		logger.exiting(CLASSNAME, "createPostgresTableNotExists");
-	}
+                    if (rowcount == 0) {
+                        if (!resultSet.next()) {
+                            result = false;
+                        }
+                    }
+                } catch (SQLException ex) {
+                    logger.severe(ex.getLocalizedMessage());
+                }
+
+                return result;
+        }
 
 	/**
 	 * Method invoked to insert the Postgres create table strings into a hashmap

@@ -183,80 +183,68 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 		logger.entering(CLASSNAME, "checkMySQLTables");
                 setCreateMySQLStringsMap(tableNames);
 
-		createMySQLTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
 				createMySQLStrings.get(MYSQL_CREATE_TABLE_CHECKPOINTDATA));
 
 
-		createMySQLTableNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
 				createMySQLStrings.get(MYSQL_CREATE_TABLE_JOBINSTANCEDATA));
 		
-		createMySQLTableNotExists(
+		createTableIfNotExists(
 				tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
 				createMySQLStrings.get(MYSQL_CREATE_TABLE_EXECUTIONINSTANCEDATA));
 		
-		createMySQLTableNotExists(
+		createTableIfNotExists(
 				tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY),
 				createMySQLStrings.get(MYSQL_CREATE_TABLE_STEPINSTANCEDATA));
 		
-		createMySQLTableNotExists(tableNames.get(JOB_STATUS_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(JOB_STATUS_TABLE_KEY),
 				createMySQLStrings.get(MYSQL_CREATE_TABLE_JOBSTATUS));
-		createMySQLTableNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
 				createMySQLStrings.get(MYSQL_CREATE_TABLE_STEPSTATUS));
 
 		logger.exiting(CLASSNAME, "checkMySQLTables");
 	}
+    
+        @Override
+        public boolean checkIfTableExists(DataSource dSource, String tableName, String schemaName) {
+                Statement statement = null;
+                ResultSet resultSet = null;
+                dataSource = dSource;
 
-	/**
-	 * Create the jbatch tables if they do not exist.
-	 * @param tableName
-	 * @param createTableStatement
-	 * @throws SQLException
-	 */
-	protected void createMySQLTableNotExists(String tableName,
-			String createTableStatement) throws SQLException {
-		logger.entering(CLASSNAME, "createMySQLTableNotExists",
-				new Object[] { tableName, createTableStatement });
+                boolean result = true;
 
-		Connection conn = null;
-		Statement stmt = null;
-		ResultSet rs = null;
-		PreparedStatement ps = null;
+                try (Connection connection = dataSource.getConnection()) {
+                    schema = schemaName;
 
-		try {
-			conn = getConnection();
-			stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-					ResultSet.CONCUR_READ_ONLY);
-			String query = "select lower(table_schema),lower(table_name) FROM information_schema.tables where lower(table_schema)= "
-					+ "\'"
-					+ schema
-					+ "\'"
-					+ " and lower(table_name)= "
-					+ "\'"
-					+ tableName.toLowerCase() + "\'";
-			rs = stmt.executeQuery(query);
+                    if (!isSchemaValid()) {
+                        setDefaultSchema();
+                    }
 
-			int rowcount = getTableRowCount(rs);
+                    statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                            ResultSet.CONCUR_READ_ONLY);
+                    String query = "select lower(table_schema),lower(table_name) FROM information_schema.tables where lower(table_schema)= "
+                            + "\'"
+                            + schema
+                            + "\'"
+                            + " and lower(table_name)= "
+                            + "\'"
+                            + tableName.toLowerCase() + "\'";
+                    resultSet = statement.executeQuery(query);
 
-			// Create table if it does not exist
-			if (rowcount == 0) {
-				if (!rs.next()) {
-					logger.log(Level.INFO, tableName
-							+ " table does not exists. Trying to create it.");
-					ps = conn.prepareStatement(createTableStatement);
-					ps.executeUpdate();
-				}
-			}
-		} catch (SQLException e) {
-			logger.severe(e.getLocalizedMessage());
-			throw e;
-		} finally {
-			cleanupConnection(conn, ps);
-		}
+                    int rowcount = getTableRowCount(resultSet);
 
-		logger.exiting(CLASSNAME, "createMySQLTableNotExists");
-	}
+                    if (rowcount == 0) {
+                        if (!resultSet.next()) {
+                            result = false;
+                        }
+                    }
+                } catch (SQLException ex) {
+                    logger.severe(ex.getLocalizedMessage());
+                }
 
-
+                return result;
+        }
 	
     @Override
     protected Map<String, String> getSharedQueryMap(IBatchConfig batchConfig) throws SQLException {
@@ -276,8 +264,9 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
         logger.log(Level.FINEST, "Entering {0}.setSchemaOnConnection()", CLASSNAME);
         try (PreparedStatement preparedStatement = connection.prepareStatement("USE " + schema)) {
             preparedStatement.executeUpdate();
-        }
-        logger.log(Level.FINEST, "Exiting {0}.setSchemaOnConnection()", CLASSNAME);
+        } finally {
+            logger.log(Level.FINEST, "Exiting {0}.setSchemaOnConnection()", CLASSNAME);
+        }    
     }
     
     /**

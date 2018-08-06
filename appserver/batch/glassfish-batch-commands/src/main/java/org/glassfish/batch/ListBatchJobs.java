@@ -150,20 +150,24 @@ public class ListBatchJobs extends AbstractLongListCommand {
         if (object instanceof DataSource) {
             dataSource = DataSource.class.cast(object);
             String prefix = batchRuntimeConfiguration.getTablePrefix();
-            String suffix = batchRuntimeConfiguration.getTablePrefix();
-            jobInstanceTableKey = prefix + "JOBINSTANCEDATA" + suffix;
+            String suffix = batchRuntimeConfiguration.getTableSuffix();
             createTables();
-            queryToGetUniqueJobNames = "SELECT DISTINCT name FROM " + jobInstanceTableKey ;
+            jobInstanceTableKey = prefix + "JOBINSTANCEDATA" + suffix;
+            if (checkIfTableExists(jobInstanceTableKey)) {
+                queryToGetUniqueJobNames = "SELECT DISTINCT name FROM " + jobInstanceTableKey;
 
-            ColumnFormatter columnFormatter = new ColumnFormatter(getDisplayHeaders());
-            
-            if (isSimpleMode()) {
-                setToSimpleMode(extraProps, columnFormatter);
+                ColumnFormatter columnFormatter = new ColumnFormatter(getDisplayHeaders());
+
+                if (isSimpleMode()) {
+                    setToSimpleMode(extraProps, columnFormatter);
+                } else {
+                    setToLongMode(extraProps, columnFormatter);
+                }
+
+                context.getActionReport().setMessage(columnFormatter.toString());
             } else {
-                setToLongMode(extraProps, columnFormatter);
+                context.getActionReport().failure(logger, jobInstanceTableKey + " table doesn't exists");
             }
-            
-            context.getActionReport().setMessage(columnFormatter.toString());
         }
     }
 
@@ -215,6 +219,40 @@ public class ListBatchJobs extends AbstractLongListCommand {
                 logger.log(Level.FINE, "Exception while getting jobExecution details ", ex);
             }
         }
+    }
+
+    private boolean checkIfTableExists(String tableName) {
+        boolean result = true;
+        String schema = batchRuntimeConfiguration.getSchemaName();
+        try (Connection connection = dataSource.getConnection()) {
+            String database = connection.getMetaData().getDatabaseProductName();
+            if (database.contains("Derby")) {
+                JBatchJDBCPersistenceManager jBatchJDBCPersistenceManager = new JBatchJDBCPersistenceManager();
+                result = jBatchJDBCPersistenceManager.checkIfTableExists(dataSource, tableName, schema);
+            } else if (database.contains("H2")) {
+                H2PersistenceManager h2PersistenceManager = new H2PersistenceManager();
+                result = h2PersistenceManager.checkIfTableExists(dataSource, tableName, schema);
+            } else if (database.contains("MySQL")) {
+                MySqlPersistenceManager mySqlPersistenceManager = new MySqlPersistenceManager();
+                result = mySqlPersistenceManager.checkIfTableExists(dataSource, tableName, schema);
+            } else if (database.contains("Oracle")) {
+                OraclePersistenceManager oraclePersistenceManager = new OraclePersistenceManager();
+                result = oraclePersistenceManager.checkIfTableExists(dataSource, tableName, schema);
+            } else if (database.contains("PostgreSQL")) {
+                PostgresPersistenceManager postgresPersistenceManager = new PostgresPersistenceManager();
+                result = postgresPersistenceManager.checkIfTableExists(dataSource, tableName, schema);
+            } else if (database.contains("DB2")) {
+                DB2PersistenceManager dB2PersistenceManager = new DB2PersistenceManager();
+                result = dB2PersistenceManager.checkIfTableExists(dataSource, tableName, schema);
+            } else if (database.contains("Microsoft SQL Server")) {
+                SQLServerPersistenceManager sQLServerPersistenceManager = new SQLServerPersistenceManager();
+                result = sQLServerPersistenceManager.checkIfTableExists(dataSource, tableName, schema);
+            }
+        } catch (SQLException e) {
+            logger.severe(e.getLocalizedMessage());
+        }
+
+        return result;
     }
     
     private void createTables(){

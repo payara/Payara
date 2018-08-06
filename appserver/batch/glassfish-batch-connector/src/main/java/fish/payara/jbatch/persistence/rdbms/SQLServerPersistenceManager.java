@@ -176,22 +176,22 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 		
 		LOGGER.entering(CLASSNAME, "checkSQLServerTables");
                 setCreateSQLServerStringsMap();
-		createSQLServerTableIfNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
 				SQLServerCreateStrings.get(SQLSERVER_CREATE_TABLE_CHECKPOINTDATA));
 
-		createSQLServerTableIfNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
 				SQLServerCreateStrings.get(SQLSERVER_CREATE_TABLE_JOBINSTANCEDATA));
 		
-		createSQLServerTableIfNotExists(tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
 				SQLServerCreateStrings.get(SQLSERVER_CREATE_TABLE_EXECUTIONINSTANCEDATA));
 		
-		createSQLServerTableIfNotExists(tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY),
 				SQLServerCreateStrings.get(SQLSERVER_CREATE_TABLE_STEPINSTANCEDATA));
 		
-		createSQLServerTableIfNotExists(tableNames.get(JOB_STATUS_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(JOB_STATUS_TABLE_KEY),
 				SQLServerCreateStrings.get(SQLSERVER_CREATE_TABLE_JOBSTATUS));
                 
-		createSQLServerTableIfNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
 				SQLServerCreateStrings.get(SQLSERVER_CREATE_TABLE_STEPSTATUS));
 
 		LOGGER.exiting(CLASSNAME, "checkSQLServerTables");
@@ -221,7 +221,7 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 	 * @param createTableStatement
 	 * @throws SQLException
 	 */
-	protected void createSQLServerTableIfNotExists(String tableName,
+	protected void createSQLServerTableIfNotExist(String tableName,
 			String createTableStatement) throws SQLException {
             
 		LOGGER.entering(CLASSNAME, "createSQLServerTableIfNotExists",
@@ -263,7 +263,45 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 		LOGGER.exiting(CLASSNAME, "createSQLServerTableIfNotExists");
 	}
         
-        
+        @Override
+        public boolean checkIfTableExists(DataSource dSource, String tableName, String schemaName) {
+                PreparedStatement preparedStatement = null;
+                ResultSet resultSet = null;
+                dataSource = dSource;
+
+                boolean result = true;
+
+                try (Connection connection = dSource.getConnection()) {
+                    schema = schemaName;
+
+                    if (!isSchemaValid()) {
+                        setDefaultSchema();
+                    }
+
+                    preparedStatement = connection.prepareStatement(
+                          "SELECT table_schema, table_name FROM information_schema.tables "
+                                + "WHERE table_schema LIKE ? AND table_name LIKE ?",
+                          ResultSet.TYPE_SCROLL_INSENSITIVE,
+                          ResultSet.CONCUR_READ_ONLY
+                        );
+                    
+                        preparedStatement.setString(1, schema);
+                        preparedStatement.setString(2, tableName);
+                        resultSet = preparedStatement.executeQuery();
+
+                    int rowcount = getTableRowCount(resultSet);
+
+                    if (rowcount == 0) {
+                        if (!resultSet.next()) {
+                            result = false;
+                        }
+                    }
+                } catch (SQLException ex) {
+                    LOGGER.severe(ex.getLocalizedMessage());
+                }
+
+                return result;          
+        }
 	protected Map<String, String> getSharedSchemaTableMap() {                
                 String schemaPrefix;
                 if(schema == null || schema.isEmpty()) {
