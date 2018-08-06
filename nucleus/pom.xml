@@ -196,6 +196,7 @@
         <jax-rs-api.spec.version>2.0</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.0.1</jax-rs-api.impl.version>
         <mimepull.version>1.9.6</mimepull.version>
+        <!-- Java Business Integration (JBI) is a specification for an approach to implementing a service-oriented architecture (SOA).  -->
         <jbi.version>1.0</jbi.version>
         <glassfish-management-api.version>3.2.1-b002.payara-p1</glassfish-management-api.version>
         <btrace.version>1.2.3</btrace.version>
@@ -257,8 +258,8 @@
         <woodstox.version>4.2.0</woodstox.version>
         <!-- Microprofile -->
         <microprofile-config.version>1.2.1</microprofile-config.version>
-        <microprofile-opentracing.version>1.0.payara-p1</microprofile-opentracing.version>
-        <opentracing.version>0.30.0</opentracing.version>
+        <microprofile-opentracing.version>1.1</microprofile-opentracing.version>
+        <opentracing.version>0.31.0</opentracing.version>
 
         <jansi.version>1.17</jansi.version>
         <deploy.skip>true</deploy.skip>

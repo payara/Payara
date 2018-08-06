@@ -117,6 +117,7 @@
                             <instructions>
                                 <Import-Package>
                                     fish.payara.cdi.jsr107.implementation,
+                                    io.opentracing,
                                     javax.inject,
                                     javax.enterprise.util,
                                     javax.security.enterprise.credential,
@@ -227,6 +228,7 @@
                                     <instructions>
                                         <Import-Package>
                                             fish.payara.cdi.jsr107.implementation,
+                                            io.opentracing,
                                             javax.inject,
                                             javax.enterprise.util,
                                             javax.security.jacc
@@ -311,6 +313,7 @@
                                     <instructions>
                                         <Import-Package>
                                             fish.payara.cdi.jsr107.implementation,
+                                            io.opentracing,
                                             javax.inject,
                                             javax.enterprise.util,
                                             javax.security.enterprise.credential,
