@@ -123,7 +123,7 @@ public final class PEAccessLogValve
     private static final String LOG_ROTATION_TIME_FORMAT
             = "'T'HH-mm-ss";
 
-    private static final SimpleDateFormat logRotationTimeFormatter
+    private static final SimpleDateFormat LOG_ROTATION_TIME_FORMATTER
             = new SimpleDateFormat(LOG_ROTATION_TIME_FORMAT);
     
     // ----------------------------------------------------- Instance Variables
@@ -858,18 +858,14 @@ public final class PEAccessLogValve
         //Conditional access log
         if (accessLogConfig != null) {
             setCondition(accessLogConfig.getCondition());
+            maximumLogFileSize = Integer.parseInt(accessLogConfig.getMaximumFileSize());
         } else {
             setCondition(ConfigBeansUtilities.getDefaultCondition());
+            maximumLogFileSize = DEFAULT_FILE_SIZE_ROTATION_LIMIT;
         }
 
         // log to console
-        accessLogToConsole = Boolean.parseBoolean(accessLogConfig.getLogToConsoleEnabled());
-      
-        if (accessLogConfig != null) {
-            maximumLogFileSize = Integer.parseInt(accessLogConfig.getMaximumFileSize());
-        } else {
-            maximumLogFileSize = DEFAULT_FILE_SIZE_ROTATION_LIMIT;
-        }     
+        accessLogToConsole = Boolean.parseBoolean(accessLogConfig.getLogToConsoleEnabled());   
     }
 
     // -------------------------------------------------------- Private Methods
@@ -1093,7 +1089,7 @@ public final class PEAccessLogValve
                         File oldLogFile = logFile;
                         StringBuffer renamedLogFile = new StringBuffer(
                                 logFile.getAbsolutePath().replace(".txt", ""));
-                        logRotationTimeFormatter.format(new Date(), renamedLogFile, new FieldPosition(0));
+                        LOG_ROTATION_TIME_FORMATTER.format(new Date(), renamedLogFile, new FieldPosition(0));
                         File rotatedFile = new File(renamedLogFile
                                 .toString() + ".txt");
 
