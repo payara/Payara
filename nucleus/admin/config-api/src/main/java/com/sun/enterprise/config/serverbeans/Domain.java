@@ -830,9 +830,8 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                     targets.add(server.getName());
                 }
             }
-                for (Cluster cluster : d.getClusters().getCluster()) {
-                    targets.add(cluster.getName());
-                }
+            for (Cluster cluster : d.getClusters().getCluster()) {
+                targets.add(cluster.getName());
             }
             return targets;
         }
