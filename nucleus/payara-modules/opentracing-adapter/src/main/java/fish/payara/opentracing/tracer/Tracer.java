@@ -42,7 +42,6 @@ package fish.payara.opentracing.tracer;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.notification.requesttracing.RequestTraceSpan.SpanContextRelationshipType;
 import fish.payara.notification.requesttracing.RequestTraceSpanContext;
-import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
 
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
@@ -152,8 +151,6 @@ public class Tracer implements io.opentracing.Tracer {
         boolean traceIDRecieved = false;
         
         if (carrier instanceof TextMap) {
-            fish.payara.opentracing.span.Span span = new fish.payara.opentracing.span.Span(null, null);//needed to create a span context
-            //fish.payara.opentracing.span.Span.SpanContext payaraSpanContext = span.getSpanContext();
 
             TextMap map = (TextMap) carrier;
             Map<String,String> baggageItems = new HashMap<>();

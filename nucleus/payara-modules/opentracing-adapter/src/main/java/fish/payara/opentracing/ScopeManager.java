@@ -44,13 +44,6 @@ package fish.payara.opentracing;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.jvnet.hk2.annotations.Service;
 
 /**
  * Manages OpenTracing Spans and Scopes
@@ -58,19 +51,8 @@ import org.jvnet.hk2.annotations.Service;
  * @author jonathan coustick
  * @since 5.183
  * @see io.opentracing.ScopeManager
- * @see org.glassfish.hk2.extras.operation.OperationContext
  */
-//@Service
-//@Singleton //Looked up when a new Tracer is created
 public class ScopeManager implements io.opentracing.ScopeManager {
-
-    @Inject
-    ServiceLocator locator;
-    
-    //@Inject
-    //private OperationManager manager;
-    
-    private ConcurrentHashMap<Integer, Scope> scopes;
     
     private ThreadLocal<OTScope> activeScope;
     
