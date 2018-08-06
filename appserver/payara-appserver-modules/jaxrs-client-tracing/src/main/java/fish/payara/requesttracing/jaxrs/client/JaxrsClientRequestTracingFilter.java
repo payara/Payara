@@ -52,9 +52,13 @@ import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 import io.opentracing.tag.Tags;
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
@@ -142,10 +146,15 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
             // If there is a propagated span context, set it as a parent of the new span
             if (parentSpanContext != null) {
                 spanBuilder.asChildOf(parentSpanContext);
+                
+                parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, new MultivaluedMapToTextMap(requestContext.getHeaders()));
+                if (parentSpanContext != null) {
+                    spanBuilder.asChildOf(parentSpanContext);
+                }
             }
 
             // Start the span and mark it as active
-            Span activeSpan = spanBuilder.startActive(false).span();
+            Span activeSpan = spanBuilder.startActive(true).span();
 
                 // Inject the active span context for propagation
                 tracer.inject(
@@ -198,8 +207,8 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
 
         @Override
         public Iterator<Map.Entry<String, String>> iterator() {
-            // Not needed as we're not iterating over the map
-            throw new UnsupportedOperationException("Not supported yet.");
+            return new MultiValuedMapStringIterator(map.entrySet());
+            
         }
 
         @Override
@@ -207,6 +216,41 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
             map.add(key, value);
         }
 
+    }
+    
+    private class MultiValuedMapStringIterator implements Iterator<Map.Entry<String, String>> {
+
+        private final Iterator<Map.Entry<String, List<Object>>> mapIterator;
+
+        private Map.Entry<String, List<Object>> mapEntry;
+        private Iterator<Object> mapEntryIterator;
+        
+        public MultiValuedMapStringIterator(Set<Map.Entry<String, List<Object>>> entrySet){
+            mapIterator = entrySet.iterator();
+        }
+        
+        @Override
+        public boolean hasNext() {
+            // True if the MapEntry (value) is not equal to null and has another value, or if there is another key
+            return ((mapEntryIterator != null && mapEntryIterator.hasNext()) || mapIterator.hasNext());
+        }
+
+        @Override
+        public Map.Entry<String, String> next() {
+            if (mapEntry == null || (!mapEntryIterator.hasNext() && mapIterator.hasNext())) {
+                mapEntry = mapIterator.next();
+                mapEntryIterator = mapEntry.getValue().iterator();
+            }
+
+            // Return either the next map entry with toString, or an entry with no value if there isn't one
+            if (mapEntryIterator.hasNext()) {
+                return new AbstractMap.SimpleImmutableEntry<>(mapEntry.getKey(), mapEntryIterator.next().toString());
+            } else {
+                return new AbstractMap.SimpleImmutableEntry<>(mapEntry.getKey(), null);
+            }
+        }
+        
+        
     }
 
 }

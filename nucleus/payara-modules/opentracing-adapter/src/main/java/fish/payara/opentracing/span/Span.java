@@ -42,6 +42,7 @@ package fish.payara.opentracing.span;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.notification.requesttracing.RequestTraceSpanLog;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import io.opentracing.SpanContext;
 
 import java.time.Instant;
 import java.util.Map;
@@ -56,7 +57,6 @@ import org.glassfish.internal.api.Globals;
  * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
-//@OpenTracingScoped
 public class Span extends RequestTraceSpan implements io.opentracing.Span {
     
     private transient RequestTracingService requestTracing;

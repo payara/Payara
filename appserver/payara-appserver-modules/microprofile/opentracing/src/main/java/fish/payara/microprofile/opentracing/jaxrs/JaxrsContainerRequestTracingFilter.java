@@ -118,8 +118,7 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                     Traced.class, "value", resourceInfo, boolean.class)
                     .orElse(tracedAnnotation.value())) {
                 // Get the application's tracer instance
-                Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
-                        serviceLocator.getService(InvocationManager.class)));
+                Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(serviceLocator.getService(InvocationManager.class)));
                 
                 // Create a Span and instrument it with details about the request
                 SpanBuilder spanBuilder = tracer.buildSpan(determineOperationName(requestContext, tracedAnnotation))
@@ -128,8 +127,13 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                         .withTag(Tags.HTTP_URL.getKey(), requestContext.getUriInfo().getRequestUri().toURL().toString())
                         .withTag(Tags.COMPONENT.getKey(), "jaxrs");
 
-                // Extract the context from the tracer if there is one
-                SpanContext spanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, new MultivaluedMapToTextMap(requestContext.getHeaders()));
+                SpanContext spanContext = null;
+                try {
+                    // Extract the context from the tracer if there is one
+                    spanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, new MultivaluedMapToTextMap(requestContext.getHeaders()));
+                } catch (IllegalArgumentException e){
+                    logger.log(Level.WARNING, e.getMessage());
+                }
 
                 // If there was a context injected into the tracer, add it as a parent of the new span
                 if (spanContext != null) {

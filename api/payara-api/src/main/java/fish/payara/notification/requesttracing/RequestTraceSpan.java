@@ -56,7 +56,7 @@ import java.util.UUID;
  */
 public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSpan> {
     
-    private final SpanContext spanContext;
+    private final RequestTraceSpanContext spanContext;
     private Instant startTime;
     private Instant endTime;
     private long spanDuration;
@@ -67,7 +67,7 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
     private final List<SpanReference> spanReferences;
 
     protected RequestTraceSpan() {
-        this.spanContext = new SpanContext();
+        this.spanContext = new RequestTraceSpanContext();
         this.spanTags = new HashMap<>();
         this.spanLogs = new ArrayList<>();
         this.spanReferences = new ArrayList<>();
@@ -78,7 +78,7 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
     }
 
     public RequestTraceSpan(EventType eventType, String eventName) {
-        this.spanContext = new SpanContext();
+        this.spanContext = new RequestTraceSpanContext();
         this.startTime = Instant.now();
         this.eventType = eventType;
         this.eventName = eventName;
@@ -89,14 +89,14 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
     
     public RequestTraceSpan(EventType eventType, String eventName, UUID propagatedTraceId, UUID propagatedParentId, 
             SpanContextRelationshipType spanContextRelationship) {
-        this.spanContext = new SpanContext(propagatedTraceId);
+        this.spanContext = new RequestTraceSpanContext(propagatedTraceId);
         this.startTime = Instant.now();
         this.eventType = eventType;
         this.eventName = eventName;
         this.spanTags = new HashMap<>();
         this.spanLogs = new ArrayList<>();
         this.spanReferences = new ArrayList<>();
-        spanReferences.add(new SpanReference(new SpanContext(propagatedTraceId, propagatedParentId), 
+        spanReferences.add(new SpanReference(new RequestTraceSpanContext(propagatedTraceId, propagatedParentId), 
                 spanContextRelationship));
     }
 
@@ -112,7 +112,7 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         spanContext.setTraceId(traceId);
     }
     
-    public SpanContext getSpanContext() {
+    public RequestTraceSpanContext getSpanContext() {
         return spanContext;
     }
     
@@ -179,7 +179,7 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         spanLogs.add(spanLog);
     }
     
-    public void addSpanReference(SpanContext spanContext, SpanContextRelationshipType relationshipType) {
+    public void addSpanReference(RequestTraceSpanContext spanContext, SpanContextRelationshipType relationshipType) {
         spanReferences.add(new SpanReference(spanContext, relationshipType));
     }
     
@@ -272,79 +272,17 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         return startTime.compareTo(span.startTime);
     }
     
-    /**
-     * Span state that is copied across boundaries and
-     * stores a reference to the parent trace
-     */
-    public class SpanContext implements Serializable, io.opentracing.SpanContext {
-
-        private static final long serialVersionUID = 20180803L;
-        
-        private final UUID spanId;
-        private UUID traceId;
-        private final Map<String, String> baggageItems;
-        
-        protected SpanContext() {
-            spanId = UUID.randomUUID();
-            traceId = UUID.randomUUID();
-            baggageItems = new HashMap<>();
-        }
-        
-        protected SpanContext(UUID traceId) {
-            spanId = UUID.randomUUID();
-            this.traceId = traceId;
-            baggageItems = new HashMap<>();
-        }
-        
-        protected SpanContext(UUID traceId, UUID parentId) {
-            spanId = parentId;
-            this.traceId = traceId;
-            baggageItems = new HashMap<>();
-        }
-        
-        public UUID getSpanId() {
-            return spanId;
-        }
-        
-        public UUID getTraceId() {
-            return traceId;
-        }
-        
-        public void setTraceId(UUID traceId) {
-            this.traceId = traceId;
-        }
-        
-        public void addBaggageItem(String name, String value) {
-            if (value != null) {
-                // Escape any quotes
-                addSpanTag(name, value.replaceAll("\"", "\\\""));
-            } else {
-                addSpanTag(name, value);
-            }
-        }
-        
-        public Map<String, String> getBaggageItems() {
-            return baggageItems;
-        }
-
-        @Override
-        public Iterable<Entry<String, String>> baggageItems() {
-            return getBaggageItems().entrySet();
-        }
-
-    }
-    
     public class SpanReference implements Serializable {
         
-        private final SpanContext referenceSpanContext;
+        private final RequestTraceSpanContext referenceSpanContext;
         private final SpanContextRelationshipType relationshipType;
         
-        private SpanReference(SpanContext referenceSpanContext, SpanContextRelationshipType relationshipType) {
+        private SpanReference(RequestTraceSpanContext referenceSpanContext, SpanContextRelationshipType relationshipType) {
             this.referenceSpanContext = referenceSpanContext;
             this.relationshipType = relationshipType;
         }
         
-        public SpanContext getReferenceSpanContext() {
+        public RequestTraceSpanContext getReferenceSpanContext() {
             return referenceSpanContext;
         }
         

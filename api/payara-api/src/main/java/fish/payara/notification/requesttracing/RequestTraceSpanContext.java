@@ -40,12 +40,74 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.microprofile.opentracing.jaxrs;
+package fish.payara.notification.requesttracing;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
- *
- * @author jonathan
+ *Span state that is copied across boundaries and stores a reference to the parent trace
+ * 
+ * @author andrew pielage
+ * @author jonathan coustick
+ * @since 5.183
  */
-public class JaxrsClientTracingRegistrar {
-    
+public class RequestTraceSpanContext implements Serializable, io.opentracing.SpanContext {
+
+    private static final long serialVersionUID = 20180803L;
+
+    private final UUID spanId;
+    private UUID traceId;
+    private final Map<String, String> baggageItems;
+
+    protected RequestTraceSpanContext() {
+        spanId = UUID.randomUUID();
+        traceId = UUID.randomUUID();
+        baggageItems = new HashMap<>();
+    }
+
+    protected RequestTraceSpanContext(UUID traceId) {
+        spanId = UUID.randomUUID();
+        this.traceId = traceId;
+        baggageItems = new HashMap<>();
+    }
+
+    public RequestTraceSpanContext(UUID traceId, UUID parentId) {
+        spanId = parentId;
+        this.traceId = traceId;
+        baggageItems = new HashMap<>();
+    }
+
+    public UUID getSpanId() {
+        return spanId;
+    }
+
+    public UUID getTraceId() {
+        return traceId;
+    }
+
+    public void setTraceId(UUID traceId) {
+        this.traceId = traceId;
+    }
+
+    public void addBaggageItem(String name, String value) {
+        if (value != null) {
+            // Escape any quotes
+            baggageItems.put(name, value.replaceAll("\"", "\\\""));
+        } else {
+            baggageItems.put(name, value);
+        }
+    }
+
+    public Map<String, String> getBaggageItems() {
+        return baggageItems;
+    }
+
+    @Override
+    public Iterable<Map.Entry<String, String>> baggageItems() {
+        return getBaggageItems().entrySet();
+    }
+
 }

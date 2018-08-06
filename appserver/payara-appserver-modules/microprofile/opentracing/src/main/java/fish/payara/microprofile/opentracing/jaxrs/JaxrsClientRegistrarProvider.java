@@ -47,16 +47,18 @@ import javax.ws.rs.client.ClientBuilder;
 import org.eclipse.microprofile.opentracing.ClientTracingRegistrarProvider;
 
 /**
- *
- * @author jonathan
+ * A no-op {@link ClientTracingRegistrarProvider}.
+ * 
+ * Client tracing is enabled globally in Payara
+ * @author jonathan coustick
+ * @since 5.183
  */
 public class JaxrsClientRegistrarProvider implements ClientTracingRegistrarProvider {
 
     @Override
     public ClientBuilder configure(ClientBuilder clientBuilder) {
-        
-        
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        //no-op as opentracing is enabled globally in Payara
+        return clientBuilder;
     }
 
     @Override

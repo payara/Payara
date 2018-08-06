@@ -41,6 +41,7 @@ package fish.payara.opentracing.tracer;
 
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.notification.requesttracing.RequestTraceSpan.SpanContextRelationshipType;
+import fish.payara.notification.requesttracing.RequestTraceSpanContext;
 import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
 
 import io.opentracing.Scope;
@@ -60,6 +61,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -78,6 +80,9 @@ public class Tracer implements io.opentracing.Tracer {
 
     private final String applicationName;
     private final ScopeManager scopeManager;
+    
+    private static final String TRACEID_KEY = "traceid";
+    private static final String SPANID_KEY = "spanid";
     
     /**
      * Constructor that registers this Tracer to an application.
@@ -98,25 +103,29 @@ public class Tracer implements io.opentracing.Tracer {
     public <C> void inject(SpanContext spanContext, Format<C> format, C carrier) {
         
         Iterable<Map.Entry<String, String>> baggageItems = spanContext.baggageItems();
-        fish.payara.opentracing.span.Span.SpanContext payaraSpanContext = (fish.payara.opentracing.span.Span.SpanContext) spanContext;
+        RequestTraceSpanContext payaraSpanContext = (RequestTraceSpanContext) spanContext;
             
         if (carrier instanceof TextMap) {
             TextMap map = (TextMap) carrier;
             
-            map.put(PropagationHeaders.PROPAGATED_TRACE_ID, payaraSpanContext.getTraceId().toString());
             if (format.equals(Format.Builtin.HTTP_HEADERS)) {          
                 for (Map.Entry<String, String> baggage : baggageItems) {
                     map.put(encodeURLString(baggage.getKey()), encodeURLString(baggage.getValue()));
                 }
+                map.put(TRACEID_KEY, encodeURLString(payaraSpanContext.getTraceId().toString()));
+                map.put(SPANID_KEY, encodeURLString(payaraSpanContext.getSpanId().toString()));
             } else if (format.equals(Format.Builtin.TEXT_MAP)) {
                 for (Map.Entry<String, String> baggage : baggageItems) {
                     map.put(baggage.getKey(), baggage.getValue());
-                } 
+                }
+                map.put(TRACEID_KEY, payaraSpanContext.getTraceId().toString());
+                map.put(SPANID_KEY, payaraSpanContext.getSpanId().toString());
             } else {
                 throw new InvalidCarrierFormatException(format, carrier);
             }
 
         } else if (carrier instanceof ByteBuffer) {
+            
             ByteBuffer buffer = (ByteBuffer) carrier;
             if (format.equals(Format.Builtin.BINARY)) {
                 ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
@@ -144,42 +153,58 @@ public class Tracer implements io.opentracing.Tracer {
         
         if (carrier instanceof TextMap) {
             fish.payara.opentracing.span.Span span = new fish.payara.opentracing.span.Span(null, null);//needed to create a span context
-            fish.payara.opentracing.span.Span.SpanContext payaraSpanContext = span.getSpanContext();
-            Map<String, String> baggageItems = payaraSpanContext.getBaggageItems();
-            baggageItems.clear();//make sure nothing comes from the span created above
+            //fish.payara.opentracing.span.Span.SpanContext payaraSpanContext = span.getSpanContext();
 
             TextMap map = (TextMap) carrier;
+            Map<String,String> baggageItems = new HashMap<>();
             Iterator<Map.Entry<String, String>> allEntries = map.iterator();
+            
+            UUID traceId = null;
+            UUID spanId = null;
 
             if (format.equals(Format.Builtin.HTTP_HEADERS)) {
                 while (allEntries.hasNext()) {
                     Entry<String, String> entry = allEntries.next();
-                    if (entry.getKey().equals(PropagationHeaders.PROPAGATED_TRACE_ID)) {
-                        payaraSpanContext.setTraceId(UUID.fromString(decodeURLString(entry.getValue())));
-                        traceIDRecieved = true;
-                    } else {
-                        baggageItems.put(decodeURLString(entry.getKey()), decodeURLString(entry.getValue()));
+                    switch (entry.getKey()) {
+                        case TRACEID_KEY:
+                            traceId = UUID.fromString(decodeURLString(entry.getValue()));
+                            traceIDRecieved = true;
+                            break;
+                        case SPANID_KEY:
+                            spanId = UUID.fromString(decodeURLString(entry.getValue()));
+                            break;
+                        default:
+                            baggageItems.put(decodeURLString(entry.getKey()), decodeURLString(entry.getValue()));
+                            break;
                     }
-                }                
+                }
             
             } else if (format.equals(Format.Builtin.TEXT_MAP)){
                 while (allEntries.hasNext()) {
                     Entry<String, String> entry = allEntries.next();
-                    if (entry.getKey().equals(PropagationHeaders.PROPAGATED_TRACE_ID)) {
-                        payaraSpanContext.setTraceId(UUID.fromString(entry.getValue()));
-                        traceIDRecieved = true;
-                    } else {
-                        baggageItems.put(entry.getKey(), entry.getValue());
+                    switch (entry.getKey()) {
+                        case TRACEID_KEY:
+                            traceId = UUID.fromString(entry.getValue());
+                            traceIDRecieved = true;
+                            break;
+                        case SPANID_KEY:
+                            spanId = UUID.fromString(entry.getValue());
+                            break;
+                        default:
+                            baggageItems.put(entry.getKey(), entry.getValue());
+                            break;
                     }
-
                 }
             } else {
                 throw new InvalidCarrierFormatException(format, carrier);
             }
             if (traceIDRecieved) {
-                    return payaraSpanContext;
-                } else {
-                    return null; //Did not recieve a SpanContext
+                if (spanId == null){
+                    throw new IllegalArgumentException("No SpanId recieved");
+                }
+                return new RequestTraceSpanContext(traceId, spanId);
+            } else {
+                return null; //Did not recieve a SpanContext
             }
         } else if (carrier instanceof ByteBuffer){
             ByteBuffer buffer = (ByteBuffer) carrier;
@@ -252,14 +277,14 @@ public class Tracer implements io.opentracing.Tracer {
 
         @Override
         public SpanBuilder asChildOf(SpanContext parentSpanContext) {
-            span.addSpanReference(((fish.payara.opentracing.span.Span.SpanContext) parentSpanContext),
+            span.addSpanReference(((RequestTraceSpanContext) parentSpanContext),
                     RequestTraceSpan.SpanContextRelationshipType.ChildOf);
             return this;
         }
 
         @Override
         public SpanBuilder addReference(String referenceType, SpanContext referencedContext) {
-            span.addSpanReference((fish.payara.opentracing.span.Span.SpanContext) referencedContext, SpanContextRelationshipType.valueOf(referenceType));
+            span.addSpanReference((RequestTraceSpanContext) referencedContext, SpanContextRelationshipType.valueOf(referenceType));
             return this;
         }
 
@@ -308,7 +333,7 @@ public class Tracer implements io.opentracing.Tracer {
             }
             origin = scopeManager.activate(span, bln);
             return origin;
-            //return makeActive(startManual());
+            
         }
 
         @Override
