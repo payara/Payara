@@ -194,11 +194,13 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             return authenticationController.authenticateUser(configuration, httpContext);
         }
 
-        if (request.getRequestURL().toString().equals(configuration.getRedirectURI())) {
-            String recievedState = request.getParameter(STATE);
-            OpenIdState expectedState = stateController.get(configuration, httpContext);
+        String recievedState = request.getParameter(STATE);
+        String redirectURI = configuration.buildRedirectURI(request);
+        if (nonNull(recievedState)
+                && request.getRequestURL().toString().equals(redirectURI)) {
 
-            if (nonNull(recievedState) && nonNull(expectedState)) {
+            OpenIdState expectedState = stateController.get(configuration, httpContext);
+            if (nonNull(expectedState)) {
                 if (expectedState.equals(recievedState)) {
                     // (3) Successful Authentication Response : redirect_uri?code=abc&state=123
                     return validateAuthorizationCode(httpContext);

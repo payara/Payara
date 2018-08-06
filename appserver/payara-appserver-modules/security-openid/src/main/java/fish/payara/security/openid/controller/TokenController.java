@@ -134,11 +134,11 @@ public class TokenController {
          * initial authorization request's redirect_uri parameter value.
          */
         Form form = new Form()
-                .param(CLIENT_ID, configuration.getClientID())
+                .param(CLIENT_ID, configuration.getClientId())
                 .param(CLIENT_SECRET, new String(configuration.getClientSecret()))
                 .param(GRANT_TYPE, AUTHORIZATION_CODE)
                 .param(CODE, authorizationCode)
-                .param(REDIRECT_URI, configuration.getRedirectURI());
+                .param(REDIRECT_URI, configuration.buildRedirectURI(request));
 
         //  ID Token and Access Token Request
         Client client = ClientBuilder.newClient();

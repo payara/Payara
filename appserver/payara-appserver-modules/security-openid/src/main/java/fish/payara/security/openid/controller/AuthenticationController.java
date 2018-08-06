@@ -57,8 +57,9 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.security.enterprise.AuthenticationStatus;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.UriBuilder;
-import org.glassfish.common.util.StringHelper;
+import static org.glassfish.common.util.StringHelper.isEmpty;
 
 /**
  * Controller for Authentication endpoint
@@ -98,21 +99,21 @@ public class AuthenticationController {
             OpenIdConfiguration configuration,
             HttpMessageContext httpMessageContext) {
 
+        HttpServletRequest request = httpMessageContext.getRequest();
         OpenIdState state = new OpenIdState();
         OpenIdNonce nonce = null;
 
         /**
          * Client prepares an authentication request and redirect to the
-         * Authorization Server.
-         * if url query param value is invalid then OpenId
+         * Authorization Server. if query param value is invalid then OpenId
          * Connect provider redirect to error page (hosted in OP domain).
          */
         UriBuilder authRequest
                 = UriBuilder.fromUri(configuration.getProviderMetadata().getAuthorizationEndpoint())
                         .queryParam(SCOPE, configuration.getScopes())
                         .queryParam(RESPONSE_TYPE, configuration.getResponseType())
-                        .queryParam(CLIENT_ID, configuration.getClientID())
-                        .queryParam(REDIRECT_URI, configuration.getRedirectURI())
+                        .queryParam(CLIENT_ID, configuration.getClientId())
+                        .queryParam(REDIRECT_URI, configuration.buildRedirectURI(request))
                         .queryParam(STATE, state.getValue());
 
         // add nonce for replay attack prevention

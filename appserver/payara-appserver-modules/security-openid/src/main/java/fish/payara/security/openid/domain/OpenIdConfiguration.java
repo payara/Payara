@@ -41,15 +41,16 @@ package fish.payara.security.openid.domain;
 
 import java.util.Arrays;
 import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * OpenId Connect client configuration
- * * 
+ *
  * @author Gaurav Gupta
  */
 public class OpenIdConfiguration {
 
-    private String clientID;
+    private String clientId;
     private char[] clientSecret;
     private String redirectURI;
     private String scopes;
@@ -63,12 +64,14 @@ public class OpenIdConfiguration {
     private OpenIdProviderMetadata providerMetadata;
     private OpenIdTokenEncryptionMetadata encryptionMetadata;
 
-    public String getClientID() {
-        return clientID;
+    private static final String BASE_URL_EXPRESSION = "${baseUrl}";
+
+    public String getClientId() {
+        return clientId;
     }
 
-    public OpenIdConfiguration setClientID(String clientID) {
-        this.clientID = clientID;
+    public OpenIdConfiguration setClientId(String clientId) {
+        this.clientId = clientId;
         return this;
     }
 
@@ -79,6 +82,15 @@ public class OpenIdConfiguration {
     public OpenIdConfiguration setClientSecret(char[] clientSecret) {
         this.clientSecret = clientSecret;
         return this;
+    }
+
+    public String buildRedirectURI(HttpServletRequest request) {
+        if (redirectURI.contains(BASE_URL_EXPRESSION)) {
+            String baseUrl = request.getRequestURL().substring(0, request.getRequestURL().length() - request.getRequestURI().length())
+                    + request.getContextPath();
+            return redirectURI.replace(BASE_URL_EXPRESSION, baseUrl);
+        }
+        return redirectURI;
     }
 
     public String getRedirectURI() {
@@ -184,7 +196,7 @@ public class OpenIdConfiguration {
     public String toString() {
         return OpenIdConfiguration.class.getSimpleName()
                 + "{"
-                + "clientID=" + clientID
+                + "clientID=" + clientId
                 + ", clientSecret=" + Arrays.toString(clientSecret)
                 + ", redirectURI=" + redirectURI
                 + ", scopes=" + scopes
@@ -199,6 +211,5 @@ public class OpenIdConfiguration {
                 + ", encryptionMetadata=" + encryptionMetadata
                 + '}';
     }
-
 
 }
