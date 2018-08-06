@@ -91,11 +91,11 @@ def invoke_certbot(domain_names):
 def check_http_port():
 	proc = Popen([ASADMIN_PATH, "get", "server.network-config.network-listeners.network-listener.*.port"], stdout=PIPE)
 	ports = proc.stdout.read()
-	running_on_port_80 = '.port=80\n'.encode() in ports
-	print(WARNING + "WARNING: " + ENDC + "None of the listeners of Payara are running on the standard HTTP port (80).\nUnless there is a port mapping, "
-		"a reverse-proxy exposing port 80 or other solution making the deployed web-app visible through port 80, the following invocation of certbot will "
-		"likely fail (due to a failing 'HTTP Challenge' of the ACME protocol; see Chapter 8.3 on https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html). "
-		"Proceeding nevertheless.")
+	if not '.port=80\n'.encode() in ports:
+		print(WARNING + "WARNING: " + ENDC + "None of the listeners of Payara are running on the standard HTTP port (80).\nUnless there is a port mapping, "
+			"a reverse-proxy exposing port 80 or other solution making the deployed web-app visible through port 80, the following invocation of certbot will "
+			"likely fail (due to a failing 'HTTP Challenge' of the ACME protocol; see Chapter 8.3 on https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html). "
+			"Proceeding nevertheless.")
 
 
 if __name__=="__main__":
