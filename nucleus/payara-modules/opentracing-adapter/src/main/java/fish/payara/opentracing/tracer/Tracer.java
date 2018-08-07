@@ -39,10 +39,11 @@
  */
 package fish.payara.opentracing.tracer;
 
+import fish.payara.notification.requesttracing.EventType;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.notification.requesttracing.RequestTraceSpan.SpanContextRelationshipType;
 import fish.payara.notification.requesttracing.RequestTraceSpanContext;
-import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
 
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
@@ -70,6 +71,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.internal.api.Globals;
 
 /**
  * Implementation of the OpenTracing Tracer class.
@@ -101,10 +103,9 @@ public class Tracer implements io.opentracing.Tracer {
 
     @Override
     public <C> void inject(SpanContext spanContext, Format<C> format, C carrier) {
-        
-        Iterable<Map.Entry<String, String>> baggageItems = spanContext.baggageItems();
         RequestTraceSpanContext payaraSpanContext = (RequestTraceSpanContext) spanContext;
-            
+        Iterable<Map.Entry<String, String>> baggageItems = payaraSpanContext.baggageItems();
+        
         if (carrier instanceof TextMap) {
             TextMap map = (TextMap) carrier;
             
@@ -112,20 +113,20 @@ public class Tracer implements io.opentracing.Tracer {
                 for (Map.Entry<String, String> baggage : baggageItems) {
                     map.put(encodeURLString(baggage.getKey()), encodeURLString(baggage.getValue()));
                 }
+                
                 map.put(TRACEID_KEY, encodeURLString(payaraSpanContext.getTraceId().toString()));
                 map.put(SPANID_KEY, encodeURLString(payaraSpanContext.getSpanId().toString()));
             } else if (format.equals(Format.Builtin.TEXT_MAP)) {
                 for (Map.Entry<String, String> baggage : baggageItems) {
                     map.put(baggage.getKey(), baggage.getValue());
                 }
+                
                 map.put(TRACEID_KEY, payaraSpanContext.getTraceId().toString());
                 map.put(SPANID_KEY, payaraSpanContext.getSpanId().toString());
             } else {
                 throw new InvalidCarrierFormatException(format, carrier);
             }
-
         } else if (carrier instanceof ByteBuffer) {
-            
             ByteBuffer buffer = (ByteBuffer) carrier;
             if (format.equals(Format.Builtin.BINARY)) {
                 ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
@@ -152,9 +153,6 @@ public class Tracer implements io.opentracing.Tracer {
         boolean traceIDRecieved = false;
         
         if (carrier instanceof TextMap) {
-            fish.payara.opentracing.span.Span span = new fish.payara.opentracing.span.Span(null, null);//needed to create a span context
-            //fish.payara.opentracing.span.Span.SpanContext payaraSpanContext = span.getSpanContext();
-
             TextMap map = (TextMap) carrier;
             Map<String,String> baggageItems = new HashMap<>();
             Iterator<Map.Entry<String, String>> allEntries = map.iterator();
@@ -263,6 +261,7 @@ public class Tracer implements io.opentracing.Tracer {
         private boolean ignoreActiveSpan;
         private long microsecondsStartTime;
         private final fish.payara.opentracing.span.Span span;
+        private RequestTracingService requestTracing;
 
         /**
          * Constructor that gives the Span an operation name.
@@ -273,6 +272,7 @@ public class Tracer implements io.opentracing.Tracer {
             ignoreActiveSpan = false;
             microsecondsStartTime = 0;
             span = new fish.payara.opentracing.span.Span(operationName, applicationName);
+            requestTracing = Globals.getDefaultBaseServiceLocator().getService(RequestTracingService.class);
         }
 
         @Override
@@ -332,6 +332,12 @@ public class Tracer implements io.opentracing.Tracer {
                 asChildOf(parent);
             }
             origin = scopeManager.activate(span, bln);
+            
+            if (requestTracing != null && !requestTracing.isTraceInProgress()) {
+                span.setEventType(EventType.TRACE_START);
+                requestTracing.startTrace(span);
+            }
+            
             return origin;
             
         }
@@ -354,6 +360,11 @@ public class Tracer implements io.opentracing.Tracer {
                 span.setStartTime(TimeUnit.MICROSECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
             }
 
+            if (requestTracing != null && !requestTracing.isTraceInProgress()) {
+                span.setEventType(EventType.TRACE_START);
+                requestTracing.startTrace(span);
+            } 
+            
             return span;
         }
 

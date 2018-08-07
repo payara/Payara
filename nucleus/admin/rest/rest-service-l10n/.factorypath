@@ -1,0 +1,4 @@
+<factorypath>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/glassfish/annotations/logging-annotation-processor/1.7/logging-annotation-processor-1.7.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="EXTJAR" id="/usr/lib64/jvm/zulu8.30.0.1-jdk8.0.172-linux_x64/jre/../lib/tools.jar" enabled="true" runInBatchMode="false"/>
+</factorypath>

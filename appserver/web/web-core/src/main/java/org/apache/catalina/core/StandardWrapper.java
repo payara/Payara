@@ -148,6 +148,10 @@ import org.glassfish.web.valve.GlassFishValve;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
+import fish.payara.opentracing.OpenTracingService;
+import io.opentracing.tag.Tags;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.internal.api.Globals;
 
 /**
  * Standard implementation of the <b>Wrapper</b> interface that represents
@@ -163,6 +167,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     private static final String[] DEFAULT_SERVLET_METHODS = { "GET", "HEAD", "POST" };
 
     private final RequestTracingService requestTracing;
+    private final OpenTracingService openTracing;
     private static final ThreadLocal<Boolean> isInSuppressFFNFThread = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
@@ -365,7 +370,8 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         swValve = new StandardWrapperValve();
         pipeline.setBasic(swValve);
         requestTracing = getDefaultHabitat().getService(RequestTracingService.class);
-
+        openTracing = getDefaultHabitat().getService(OpenTracingService.class);
+        
         // suppress PWC6117 file not found errors
         Logger jspLog = Logger.getLogger("org.apache.jasper.servlet.JspServlet");
         if (!(jspLog.getFilter() instanceof NotFoundErrorSupressionFilter)) {
@@ -1622,6 +1628,17 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                         servlet.service((HttpServletRequest) request, (HttpServletResponse) response);
                     }
                     finally {
+                        String applicationName = openTracing.getApplicationName(
+                                Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class));
+                                                
+                        if (openTracing.getTracer(applicationName).activeSpan() != null) {
+                            // Presumably held open by return being handled by another thread
+                            openTracing.getTracer(applicationName).activeSpan().setTag(
+                                    Tags.HTTP_STATUS.getKey(), 
+                                    Integer.toString(((HttpServletResponse) response).getStatus()));
+                            openTracing.getTracer(applicationName).activeSpan().finish();
+                        }
+                        
                         if (requestTracing.isRequestTracingEnabled() && span != null) {
                             span.addSpanTag("ResponseStatus", Integer.toString(
                                     ((HttpServletResponse) response).getStatus()));
