@@ -41,6 +41,12 @@
 package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.security.SecurityContext;
+import fish.payara.opentracing.propagation.MapToTextMap;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.opentracing.OpenTracingService;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.propagation.Format;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.enterprise.concurrent.spi.ContextHandle;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -48,12 +54,18 @@ import org.glassfish.internal.data.ApplicationRegistry;
 
 import javax.security.auth.Subject;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
 
 public class InvocationContext implements ContextHandle {
 
     private transient ComponentInvocation invocation;
     private transient ClassLoader contextClassLoader;
     private transient SecurityContext securityContext;
+    private transient Map spanContextMap;
     private boolean useTransactionOfExecutionThread;
 
     static final long serialVersionUID = 5642415011655486579L;
@@ -64,8 +76,35 @@ public class InvocationContext implements ContextHandle {
         this.contextClassLoader = contextClassLoader;
         this.securityContext = securityContext;
         this.useTransactionOfExecutionThread = useTransactionOfExecutionThread;
+        saveTracingContext();
     }
 
+    private void saveTracingContext() {
+        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
+        
+        if (serviceLocator != null) {
+            RequestTracingService requestTracing = serviceLocator.getService(RequestTracingService.class);
+            OpenTracingService openTracing = serviceLocator.getService(OpenTracingService.class);
+            
+            // Check that there's actually a trace running
+            if (requestTracing != null && requestTracing.isRequestTracingEnabled()
+                    && requestTracing.isTraceInProgress() && openTracing != null) {
+                
+                // Check if there's an active Span running
+                Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
+                        serviceLocator.getService(InvocationManager.class)));
+                Span activeSpan = tracer.activeSpan();
+                
+                if (activeSpan != null) {
+                    tracer.inject(
+                            activeSpan.context(), 
+                            Format.Builtin.TEXT_MAP, 
+                            new MapToTextMap(spanContextMap = new HashMap()));
+                }
+            }   
+        }    
+    }
+    
     public ComponentInvocation getInvocation() {
         return invocation;
     }
@@ -81,7 +120,11 @@ public class InvocationContext implements ContextHandle {
     public boolean isUseTransactionOfExecutionThread() {
         return useTransactionOfExecutionThread;
     }
-
+    
+    public Map getSpanContextMap() {
+        return spanContextMap;
+    }
+    
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
         out.writeBoolean(useTransactionOfExecutionThread);
         // write values for invocation
@@ -159,6 +202,5 @@ public class InvocationContext implements ContextHandle {
         );
         return newInv;
     }
-
 
 }
