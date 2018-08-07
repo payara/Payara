@@ -46,6 +46,8 @@ import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OP
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_CLIENT_ID;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_CLIENT_SECRET;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_DISPLAY;
+import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_JWKS_CONNECT_TIMEOUT;
+import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_JWKS_READ_TIMEOUT;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_PROMPT;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_PROVIDER_URI;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_REDIRECT_URI;
@@ -71,6 +73,8 @@ import fish.payara.security.openid.api.PromptType;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdProviderMetadata;
 import fish.payara.security.openid.domain.OpenIdTokenEncryptionMetadata;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -116,6 +120,7 @@ public class ConfigurationController {
         String tokenEndpoint;
         String userinfoEndpoint;
         String jwksURI;
+        URL jwksURL;
 
         providerURI = getConfiguredValue(String.class, definition.providerURI(), provider, OPENID_MP_PROVIDER_URI);
         fish.payara.security.annotations.OpenIdProviderMetadata providerMetadata = definition.providerMetadata();
@@ -141,7 +146,11 @@ public class ConfigurationController {
         } else {
             jwksURI = getConfiguredValue(String.class, providerMetadata.jwksURI(), provider, OPENID_MP_JWKS_URI);
         }
-
+        try {
+            jwksURL = new URL(jwksURI);
+        } catch (MalformedURLException ex) {
+            throw new IllegalStateException("jwksURI is invalid", ex);
+        }
         String clientId = getConfiguredValue(String.class, definition.clientId(), provider, OPENID_MP_CLIENT_ID);
         char[] clientSecret = getConfiguredValue(String.class, definition.clientSecret(), provider, OPENID_MP_CLIENT_SECRET).toCharArray();
         String redirectURI = getConfiguredValue(String.class, definition.redirectURI(), provider, OPENID_MP_REDIRECT_URI);
@@ -183,6 +192,9 @@ public class ConfigurationController {
         boolean nonce = getConfiguredValue(Boolean.class, definition.useNonce(), provider, OPENID_MP_USE_NONCE);
         boolean session = getConfiguredValue(Boolean.class, definition.useSession(), provider, OPENID_MP_USE_SESSION);
 
+        int jwksConnectTimeout = getConfiguredValue(Integer.class, definition.jwksConnectTimeout(), provider, OPENID_MP_JWKS_CONNECT_TIMEOUT);
+        int jwksReadTimeout = getConfiguredValue(Integer.class, definition.jwksReadTimeout(), provider, OPENID_MP_JWKS_READ_TIMEOUT);
+
         String encryptionAlgorithm = provider.getOptionalValue(OPENID_MP_CLIENT_ENC_ALGORITHM, String.class).orElse(null);
         String encryptionMethod = provider.getOptionalValue(OPENID_MP_CLIENT_ENC_METHOD, String.class).orElse(null);
         String privateKeyJWKS = provider.getOptionalValue(OPENID_MP_CLIENT_ENC_JWKS, String.class).orElse(null);
@@ -193,7 +205,7 @@ public class ConfigurationController {
                                 .setAuthorizationEndpoint(authorizationEndpoint)
                                 .setTokenEndpoint(tokenEndpoint)
                                 .setUserinfoEndpoint(userinfoEndpoint)
-                                .setJwksURI(jwksURI)
+                                .setJwksURL(jwksURL)
                 )
                 .setEncryptionMetadata(
                         new OpenIdTokenEncryptionMetadata()
@@ -211,7 +223,9 @@ public class ConfigurationController {
                 .setPrompt(prompt)
                 .setDisplay(display)
                 .setUseNonce(nonce)
-                .setUseSession(session);
+                .setUseSession(session)
+                .setJwksConnectTimeout(jwksConnectTimeout)
+                .setJwksReadTimeout(jwksReadTimeout);
 
         validateConfiguration(configuration);
 
@@ -235,7 +249,7 @@ public class ConfigurationController {
         if (isEmpty(configuration.getProviderMetadata().getTokenEndpoint())) {
             errorMessages.add("token_endpoint metadata is mandatory");
         }
-        if (isEmpty(configuration.getProviderMetadata().getJwksURI())) {
+        if (configuration.getProviderMetadata().getJwksURL() == null) {
             errorMessages.add("jwks_uri metadata is mandatory");
         }
         if (configuration.getProviderMetadata().getResponseTypeSupported().isEmpty()) {
@@ -254,6 +268,12 @@ public class ConfigurationController {
         }
         if (isEmpty(configuration.getRedirectURI())) {
             errorMessages.add("redirect_uri request parameter is mandatory");
+        }
+        if (configuration.getJwksConnectTimeout() <= 0) {
+            errorMessages.add("jwksConnectTimeout value is not valid");
+        }
+        if (configuration.getJwksReadTimeout() <= 0) {
+            errorMessages.add("jwksReadTimeout value is not valid");
         }
 
         if (isEmpty(configuration.getResponseType())) {

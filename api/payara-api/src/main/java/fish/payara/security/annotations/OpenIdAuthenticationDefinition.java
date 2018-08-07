@@ -266,6 +266,36 @@ public @interface OpenIdAuthenticationDefinition {
     String[] extraParameters() default {};
 
     /**
+     * The Microprofile Config key for the connect timeout of JWKS retrieval is
+     * <code>{@value}</code>.
+     */
+    public static final String OPENID_MP_JWKS_CONNECT_TIMEOUT = "payara.security.openid.jwks.connect.timeout";
+
+    /**
+     * Optional. Sets the connect timeout(in milliseconds) for Remote JWKS
+     * retrieval. Value must not be negative and if value is zero then infinite
+     * timeout.
+     *
+     * @return
+     */
+    int jwksConnectTimeout() default 500;
+
+    /**
+     * The Microprofile Config key for the read timeout of JWKS retrieval is
+     * <code>{@value}</code>.
+     */
+    public static final String OPENID_MP_JWKS_READ_TIMEOUT = "payara.security.openid.jwks.read.timeout";
+
+    /**
+     * Optional. Sets the read timeout(in milliseconds) for Remote JWKS
+     * retrieval. Value must not be negative and if value is zero then infinite
+     * timeout.
+     *
+     * @return
+     */
+    int jwksReadTimeout() default 500;
+
+    /**
      * The Microprofile Config key for the encryption algorithm is
      * <code>{@value}</code>.
      */
@@ -282,5 +312,4 @@ public @interface OpenIdAuthenticationDefinition {
      * <code>{@value}</code>.
      */
     public static final String OPENID_MP_CLIENT_ENC_JWKS = "payara.security.openid.client.encryption.jwks";
-
 }

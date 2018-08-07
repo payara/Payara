@@ -46,6 +46,7 @@ import static fish.payara.security.openid.api.OpenIdConstant.ISSUER;
 import static fish.payara.security.openid.api.OpenIdConstant.RESPONSE_TYPES_SUPPORTED;
 import static fish.payara.security.openid.api.OpenIdConstant.SCOPES_SUPPORTED;
 import static fish.payara.security.openid.api.OpenIdConstant.SUBJECT_TYPES_SUPPORTED;
+import java.net.URL;
 import static java.util.Collections.emptySet;
 import static java.util.Objects.isNull;
 import java.util.Set;
@@ -67,7 +68,7 @@ public class OpenIdProviderMetadata {
     private String authorizationEndpoint;
     private String tokenEndpoint;
     private String userinfoEndpoint;
-    private String jwksURI;
+    private URL jwksURL;
     private final Set<String> scopesSupported;
     private final Set<String> responseTypeSupported;
     private final Set<String> idTokenSigningAlgorithmsSupported;
@@ -117,12 +118,12 @@ public class OpenIdProviderMetadata {
         return this;
     }
 
-    public String getJwksURI() {
-        return jwksURI;
+    public URL getJwksURL() {
+        return jwksURL;
     }
 
-    public OpenIdProviderMetadata setJwksURI(String jwksURI) {
-        this.jwksURI = jwksURI;
+    public OpenIdProviderMetadata setJwksURL(URL jwksURL) {
+        this.jwksURL = jwksURL;
         return this;
     }
 
@@ -181,7 +182,7 @@ public class OpenIdProviderMetadata {
                 + ", authorizationEndpoint=" + authorizationEndpoint
                 + ", tokenEndpoint=" + tokenEndpoint
                 + ", userinfoEndpoint=" + userinfoEndpoint
-                + ", jwksURI=" + jwksURI
+                + ", jwksURI=" + jwksURL
                 + '}';
     }
 

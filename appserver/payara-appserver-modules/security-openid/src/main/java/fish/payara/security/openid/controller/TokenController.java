@@ -49,12 +49,15 @@ import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.jwk.source.RemoteJWKSet;
+import static com.nimbusds.jose.jwk.source.RemoteJWKSet.DEFAULT_HTTP_SIZE_LIMIT;
 import com.nimbusds.jose.proc.BadJOSEException;
 import com.nimbusds.jose.proc.JWEDecryptionKeySelector;
 import com.nimbusds.jose.proc.JWEKeySelector;
 import com.nimbusds.jose.proc.JWSKeySelector;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.util.Base64URL;
+import com.nimbusds.jose.util.DefaultResourceRetriever;
+import com.nimbusds.jose.util.ResourceRetriever;
 import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -76,8 +79,6 @@ import static fish.payara.security.openid.api.OpenIdConstant.REDIRECT_URI;
 import fish.payara.security.openid.api.OpenIdContext;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdNonce;
-import java.net.MalformedURLException;
-import java.net.URL;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import java.security.MessageDigest;
@@ -230,7 +231,7 @@ public class TokenController {
                 jwtProcessor.setJWTClaimsSetVerifier(new IdTokenClaimsSetVerifier(configuration, expectedNonceHash));
                 claimsSet = jwtProcessor.process(encryptedToken, null);
             } else {
-                throw new IllegalStateException("Unexpected JWT type: " + idToken.getClass());
+                throw new IllegalStateException("Unexpected JWT type : " + idToken.getClass());
             }
         } catch (BadJOSEException | JOSEException ex) {
             throw new IllegalStateException(ex);
@@ -251,29 +252,28 @@ public class TokenController {
      * @return the JSON Web Signing (JWS) key selector
      */
     private JWSKeySelector getJWSKeySelector(OpenIdConfiguration configuration, String alg) {
-        JWSKeySelector jwsKeySelector;
         JWKSource jwkSource;
-        JWSAlgorithm jwsAlg = new JWSAlgorithm(alg);
-        if (Algorithm.NONE.equals(jwsAlg)) {
-            // Skip creation of JWS key selector, plain ID tokens expected
-            throw new IllegalStateException("Unsupported JWS algorithm: " + jwsAlg);
-        } else if (JWSAlgorithm.Family.RSA.contains(jwsAlg) || JWSAlgorithm.Family.EC.contains(jwsAlg)) {
-            try {
-                jwkSource = new RemoteJWKSet(new URL(configuration.getProviderMetadata().getJwksURI()));
-            } catch (MalformedURLException ex) {
-                throw new IllegalStateException(ex);
-            }
-            jwsKeySelector = new JWSVerificationKeySelector(jwsAlg, jwkSource);
-        } else if (JWSAlgorithm.Family.HMAC_SHA.contains(jwsAlg)) {
+        JWSAlgorithm jWSAlgorithm = new JWSAlgorithm(alg);
+        if (Algorithm.NONE.equals(jWSAlgorithm)) {
+            throw new IllegalStateException("Unsupported JWS algorithm : " + jWSAlgorithm);
+        } else if (JWSAlgorithm.Family.RSA.contains(jWSAlgorithm)
+                || JWSAlgorithm.Family.EC.contains(jWSAlgorithm)) {
+            ResourceRetriever jwkSetRetriever = new DefaultResourceRetriever(
+                    configuration.getJwksConnectTimeout(),
+                    configuration.getJwksReadTimeout(),
+                    DEFAULT_HTTP_SIZE_LIMIT
+            );
+            jwkSource = new RemoteJWKSet(configuration.getProviderMetadata().getJwksURL(), jwkSetRetriever);
+        } else if (JWSAlgorithm.Family.HMAC_SHA.contains(jWSAlgorithm)) {
             byte[] clientSecret = new String(configuration.getClientSecret()).getBytes(UTF_8);
             if (isNull(clientSecret)) {
                 throw new IllegalStateException("Missing client secret");
             }
-            return new JWSVerificationKeySelector(jwsAlg, new ImmutableSecret(clientSecret));
+            jwkSource = new ImmutableSecret(clientSecret);
         } else {
-            throw new IllegalStateException("Unsupported JWS algorithm: " + jwsAlg);
+            throw new IllegalStateException("Unsupported JWS algorithm : " + jWSAlgorithm);
         }
-        return jwsKeySelector;
+        return new JWSVerificationKeySelector(jWSAlgorithm, jwkSource);
     }
 
     /**

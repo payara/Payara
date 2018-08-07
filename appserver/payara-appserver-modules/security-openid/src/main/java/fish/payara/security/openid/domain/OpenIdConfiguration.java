@@ -61,6 +61,8 @@ public class OpenIdConfiguration {
     private String display;
     private boolean useNonce;
     private boolean useSession;
+    private int jwksConnectTimeout;
+    private int jwksReadTimeout;
     private OpenIdProviderMetadata providerMetadata;
     private OpenIdTokenEncryptionMetadata encryptionMetadata;
 
@@ -167,6 +169,24 @@ public class OpenIdConfiguration {
 
     public boolean isUseSession() {
         return useSession;
+    }
+
+    public int getJwksConnectTimeout() {
+        return jwksConnectTimeout;
+    }
+
+    public OpenIdConfiguration setJwksConnectTimeout(int jwksConnectTimeout) {
+        this.jwksConnectTimeout = jwksConnectTimeout;
+        return this;
+    }
+
+    public int getJwksReadTimeout() {
+        return jwksReadTimeout;
+    }
+
+    public OpenIdConfiguration setJwksReadTimeout(int jwksReadTimeout) {
+        this.jwksReadTimeout = jwksReadTimeout;
+        return this;
     }
 
     public OpenIdConfiguration setUseSession(boolean useSession) {

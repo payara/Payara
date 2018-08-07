@@ -113,11 +113,11 @@ public @interface OpenIdProviderMetadata {
      * Required. An OpenId Connect Provider's JSON Web Key Set document
      * <p>
      * This contains the signing key(s) the RP uses to validate signatures from
-     * the OP. The JWK Set MAY also contain the Server's encryption key(s),
+     * the OP. The JWK Set may also contain the Server's encryption key(s),
      * which are used by RPs to encrypt requests to the Server.
      * </p>
      * To set this using Microprofile Config use
-     * {@code payara.security.openid.provider.jwksUri}
+     * {@code payara.security.openid.provider.jwksURI}
      *
      * @return
      */

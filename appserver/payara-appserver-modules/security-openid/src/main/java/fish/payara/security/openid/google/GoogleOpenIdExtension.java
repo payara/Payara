@@ -186,6 +186,16 @@ public class GoogleOpenIdExtension extends OpenIdExtension {
             public Class<? extends Annotation> annotationType() {
                 return googleDefinition.annotationType();
             }
+
+            @Override
+            public int jwksConnectTimeout() {
+                return googleDefinition.jwksConnectTimeout();
+            }
+
+            @Override
+            public int jwksReadTimeout() {
+                return googleDefinition.jwksReadTimeout();
+            }
         };
         return definition;
     }

@@ -197,6 +197,16 @@ public class AzureOpenIdExtension extends OpenIdExtension {
             public Class<? extends Annotation> annotationType() {
                 return azureDefinition.annotationType();
             }
+
+            @Override
+            public int jwksConnectTimeout() {
+                return azureDefinition.jwksConnectTimeout();
+            }
+
+            @Override
+            public int jwksReadTimeout() {
+                return azureDefinition.jwksReadTimeout();
+            }
         };
         return definition;
     }
