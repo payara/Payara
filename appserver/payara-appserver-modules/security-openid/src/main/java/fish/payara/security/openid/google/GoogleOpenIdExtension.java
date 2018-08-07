@@ -37,17 +37,16 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.openid;
+package fish.payara.security.openid.google;
 
+import fish.payara.security.annotations.GoogleAuthenticationDefinition;
 import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
-import fish.payara.security.openid.controller.AuthenticationController;
-import fish.payara.security.openid.controller.ConfigurationController;
-import fish.payara.security.openid.controller.NonceController;
-import fish.payara.security.openid.controller.ProviderMetadataContoller;
-import fish.payara.security.openid.controller.StateController;
-import fish.payara.security.openid.controller.TokenController;
-import fish.payara.security.openid.controller.UserInfoController;
-import fish.payara.security.openid.domain.OpenIdContextImpl;
+import fish.payara.security.annotations.OpenIdProviderMetadata;
+import fish.payara.security.openid.OpenIdExtension;
+import fish.payara.security.openid.OpenIdIdentityStore;
+import fish.payara.security.openid.api.DisplayType;
+import fish.payara.security.openid.api.PromptType;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 import static java.util.Objects.nonNull;
@@ -57,69 +56,43 @@ import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.CDI;
-import javax.enterprise.inject.spi.DefinitionException;
-import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessBean;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.identitystore.IdentityStore;
 
 /**
- * Activates {@link OpenIdAuthenticationMechanism} with the
- * {@link OpenIdAuthenticationDefinition} annotation configuration.
+ * Activates {@link GoogleOpenIdAuthenticationMechanism} with the
+ * {@link GoogleAuthenticationDefinition} annotation configuration.
  *
  * @author Gaurav Gupta
  */
-public class OpenIdExtension implements Extension {
+public class GoogleOpenIdExtension extends OpenIdExtension {
 
-    private final List<OpenIdAuthenticationDefinition> definitions = new ArrayList<>();
+    private final List<GoogleAuthenticationDefinition> definitions = new ArrayList<>();
 
+    @Override
     protected void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager manager) {
-        addAnnotatedType(OpenIdAuthenticationMechanism.class, manager, beforeBeanDiscovery);
-        addAnnotatedType(OpenIdIdentityStore.class, manager, beforeBeanDiscovery);
-
-        addAnnotatedType(OpenIdContextImpl.class, manager, beforeBeanDiscovery);
-
-        addAnnotatedType(NonceController.class, manager, beforeBeanDiscovery);
-        addAnnotatedType(StateController.class, manager, beforeBeanDiscovery);
-        addAnnotatedType(ConfigurationController.class, manager, beforeBeanDiscovery);
-        addAnnotatedType(ProviderMetadataContoller.class, manager, beforeBeanDiscovery);
-        addAnnotatedType(AuthenticationController.class, manager, beforeBeanDiscovery);
-        addAnnotatedType(TokenController.class, manager, beforeBeanDiscovery);
-        addAnnotatedType(UserInfoController.class, manager, beforeBeanDiscovery);
-    }
-
-    protected <T extends Object> void addAnnotatedType(Class<T> type, BeanManager manager, BeforeBeanDiscovery beforeBeanDiscovery) {
-        beforeBeanDiscovery.addAnnotatedType(manager.createAnnotatedType(type), type.getName());
+        addAnnotatedType(GoogleOpenIdAuthenticationMechanism.class, manager, beforeBeanDiscovery);
+        super.beforeBeanDiscovery(beforeBeanDiscovery, manager);
     }
 
     /**
-     * Find the {@link OpenIdAuthenticationDefinition} annotation and validate.
+     * Find the {@link GoogleAuthenticationDefinition} annotation and validate.
      *
      * @param <T>
      * @param bean
      * @param beanManager
      */
+    @Override
     protected <T> void findOpenIdDefinitionAnnotation(@Observes ProcessBean<T> bean, BeanManager beanManager) {
-        OpenIdAuthenticationDefinition definition = bean.getAnnotated().getAnnotation(OpenIdAuthenticationDefinition.class);
+        GoogleAuthenticationDefinition definition = bean.getAnnotated().getAnnotation(GoogleAuthenticationDefinition.class);
         if (nonNull(definition) && !definitions.contains(definition)) {
             definitions.add(definition);
-            validateExtraParametersFormat(definition);
+            validateExtraParametersFormat(toOpenIdAuthDefinition(definition));
         }
     }
 
-    protected void validateExtraParametersFormat(OpenIdAuthenticationDefinition definition) {
-        for (String extraParameter : definition.extraParameters()) {
-            String[] parts = extraParameter.split("=");
-            if (parts.length != 2) {
-                throw new DefinitionException(
-                        OpenIdAuthenticationDefinition.class.getSimpleName()
-                        + ".extraParameters() value '" + extraParameter
-                        + "' is not of the format key=value"
-                );
-            }
-        }
-    }
-
+    @Override
     protected void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBean, BeanManager beanManager) {
         if (!definitions.isEmpty() && beanManager.getBeans(IdentityStore.class).isEmpty()) {
             afterBean.addBean()
@@ -129,15 +102,92 @@ public class OpenIdExtension implements Extension {
                     .createWith(obj -> CDI.current().select(OpenIdIdentityStore.class).get());
         }
 
-        for (OpenIdAuthenticationDefinition definition : definitions) {
+        for (GoogleAuthenticationDefinition definition : definitions) {
             afterBean.addBean()
                     .scope(ApplicationScoped.class)
                     .beanClass(HttpAuthenticationMechanism.class)
                     .types(HttpAuthenticationMechanism.class, Object.class)
-                    .createWith(obj -> CDI.current().select(OpenIdAuthenticationMechanism.class).get().setConfiguration(definition));
+                    .createWith(obj -> CDI.current().select(GoogleOpenIdAuthenticationMechanism.class).get().setConfiguration(definition));
         }
 
         definitions.clear();
+    }
+
+    static OpenIdAuthenticationDefinition toOpenIdAuthDefinition(GoogleAuthenticationDefinition googleDefinition) {
+
+        OpenIdAuthenticationDefinition definition = new OpenIdAuthenticationDefinition() {
+
+            @Override
+            public String providerURI() {
+                return googleDefinition.providerURI();
+            }
+
+            @Override
+            public OpenIdProviderMetadata providerMetadata() {
+                return googleDefinition.providerMetadata();
+            }
+
+            @Override
+            public String clientId() {
+                return googleDefinition.clientId();
+            }
+
+            @Override
+            public String clientSecret() {
+                return googleDefinition.clientSecret();
+            }
+
+            @Override
+            public String redirectURI() {
+                return googleDefinition.redirectURI();
+            }
+
+            @Override
+            public String[] scope() {
+                return googleDefinition.scope();
+            }
+
+            @Override
+            public String responseType() {
+                return googleDefinition.responseType();
+            }
+
+            @Override
+            public String responseMode() {
+                return googleDefinition.responseMode();
+            }
+
+            @Override
+            public PromptType[] prompt() {
+                return googleDefinition.prompt();
+            }
+
+            @Override
+            public DisplayType display() {
+                return googleDefinition.display();
+            }
+
+            @Override
+            public boolean useNonce() {
+                return googleDefinition.useNonce();
+            }
+
+            @Override
+            public boolean useSession() {
+                return googleDefinition.useSession();
+            }
+
+            @Override
+            public String[] extraParameters() {
+                return googleDefinition.extraParameters();
+            }
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return googleDefinition.annotationType();
+            }
+        };
+        return definition;
     }
 
 }

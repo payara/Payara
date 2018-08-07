@@ -73,7 +73,7 @@ public class OpenIdContextImpl implements OpenIdContext {
 
     @Override
     public String getSubject() {
-        return (String) identityTokenClaims.get(SUBJECT_IDENTIFIER);
+        return (String) getIdentityTokenClaims().get(SUBJECT_IDENTIFIER);
     }
 
     @Override

@@ -64,7 +64,7 @@ public class OpenIdConfiguration {
     private OpenIdProviderMetadata providerMetadata;
     private OpenIdTokenEncryptionMetadata encryptionMetadata;
 
-    private static final String BASE_URL_EXPRESSION = "${baseUrl}";
+    private static final String BASE_URL_EXPRESSION = "${baseURL}";
 
     public String getClientId() {
         return clientId;
@@ -86,9 +86,9 @@ public class OpenIdConfiguration {
 
     public String buildRedirectURI(HttpServletRequest request) {
         if (redirectURI.contains(BASE_URL_EXPRESSION)) {
-            String baseUrl = request.getRequestURL().substring(0, request.getRequestURL().length() - request.getRequestURI().length())
+            String baseURL = request.getRequestURL().substring(0, request.getRequestURL().length() - request.getRequestURI().length())
                     + request.getContextPath();
-            return redirectURI.replace(BASE_URL_EXPRESSION, baseUrl);
+            return redirectURI.replace(BASE_URL_EXPRESSION, baseURL);
         }
         return redirectURI;
     }

@@ -47,9 +47,8 @@ import static fish.payara.security.openid.api.OpenIdConstant.PROFILE_SCOPE;
 import fish.payara.security.openid.api.PromptType;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
-
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
 
 /**
