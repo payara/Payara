@@ -41,6 +41,7 @@
 package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.security.SecurityContext;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.opentracing.propagation.MapToTextMap;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
@@ -96,6 +97,10 @@ public class InvocationContext implements ContextHandle {
                 Span activeSpan = tracer.activeSpan();
                 
                 if (activeSpan != null) {
+                    // The traceId is likely incorrect at this point as it initialises as a random UUID
+                    ((RequestTraceSpan) activeSpan).setTraceId(requestTracing.getConversationID());
+                    
+                    // Convert the SpanContext into a Map for propagation
                     tracer.inject(
                             activeSpan.context(), 
                             Format.Builtin.TEXT_MAP, 

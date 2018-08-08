@@ -334,7 +334,15 @@ public class Tracer implements io.opentracing.Tracer {
             origin = scopeManager.activate(span, bln);
             
             if (requestTracing != null && !requestTracing.isTraceInProgress()) {
-                span.setEventType(EventType.TRACE_START);
+                if (span.getSpanReferences().isEmpty()) {
+                    span.setEventType(EventType.TRACE_START);
+                } else {
+                    span.setEventType(EventType.PROPAGATED_TRACE);
+                    
+                    // Assume the first parent reference found has the correct traceId - would it ever not be?
+                    span.setTraceId(span.getSpanReferences().get(0).getReferenceSpanContext().getTraceId());
+                }
+                
                 requestTracing.startTrace(span);
             }
             
@@ -361,7 +369,15 @@ public class Tracer implements io.opentracing.Tracer {
             }
 
             if (requestTracing != null && !requestTracing.isTraceInProgress()) {
-                span.setEventType(EventType.TRACE_START);
+                if (span.getSpanReferences().isEmpty()) {
+                    span.setEventType(EventType.TRACE_START);
+                } else {
+                    span.setEventType(EventType.PROPAGATED_TRACE);
+                    
+                    // Assume the first parent reference found has the correct traceId - would it ever not be?
+                    span.setTraceId(span.getSpanReferences().get(0).getReferenceSpanContext().getTraceId());
+                }
+                
                 requestTracing.startTrace(span);
             } 
             
