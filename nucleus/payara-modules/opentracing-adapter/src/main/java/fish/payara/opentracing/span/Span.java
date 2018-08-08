@@ -48,7 +48,6 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
@@ -70,11 +69,6 @@ public class Span extends RequestTraceSpan implements io.opentracing.Span {
         if (serviceLocator != null) {
             requestTracing = serviceLocator.getService(RequestTracingService.class);
         }
-    }
-    
-    @PreDestroy
-    public void preDestory(){
-        finish();
     }
 
     /**

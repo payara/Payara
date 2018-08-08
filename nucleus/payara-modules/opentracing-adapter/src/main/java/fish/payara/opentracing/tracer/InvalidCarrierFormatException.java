@@ -42,8 +42,8 @@
  */
 package fish.payara.opentracing.tracer;
 
-
 import io.opentracing.propagation.Format;
+
 /**
  * Exception thrown if the {@link Format} is not supported by the Carrier,
  * or Payara does not support the carrier.
@@ -81,9 +81,5 @@ public class InvalidCarrierFormatException extends IllegalArgumentException {
     public Object getCarrierClass(){
         return carrier;
     }
-    
-    
-    
-    
     
 }

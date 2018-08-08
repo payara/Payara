@@ -2,7 +2,7 @@
 <!--
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   
-   Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
   
    The contents of this file are subject to the terms of either the GNU
    General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,7 @@
     <integration-point
         id="hazelcast"
         type="org.glassfish.admingui:navNode"
-        priority="180"
+        priority="210"
         parentId="nodes"
         content="pluginTreeNodeHazelcast.jsf"
     />
@@ -51,15 +51,15 @@
     <integration-point
         id="hazelcastLocal"
         type="org.glassfish.admingui:navNode"
-        priority="60"
+        priority="210"
         parentId="#{configNameId}"
         content="pluginTreeNodeHazelcastLocal.jsf"
     />
 
     <integration-point
-        id="notificationLink"
+        id="hazelcastLocalLink"
         type="org.glassfish.admingui:configuration"
-        priority="60"
+        priority="210"
         parentId="propSheetSection"
         content="hazelcast/hazelcastConfigLink.jsf"
     />
@@ -75,7 +75,7 @@
     <integration-point
         id="requesttracing"
         type="org.glassfish.admingui:navNode"
-        priority="60"
+        priority="610"
         parentId="#{configNameId}"
         content="pluginTreeNodeRequestTracing.jsf"
     />
@@ -83,7 +83,7 @@
     <integration-point
         id="requesttracingLink"
         type="org.glassfish.admingui:configuration"
-        priority="60"
+        priority="610"
         parentId="propSheetSection"
         content="requestTracing/requestTracingConfigLink.jsf"
     />
@@ -99,7 +99,7 @@
     <integration-point
         id="notification"
         type="org.glassfish.admingui:navNode"
-        priority="70"
+        priority="560"
         parentId="#{configNameId}"
         content="pluginTreeNodeNotification.jsf"
     />
@@ -107,7 +107,7 @@
     <integration-point
         id="notificationLink"
         type="org.glassfish.admingui:configuration"
-        priority="70"
+        priority="560"
         parentId="propSheetSection"
         content="notification/notificationConfigLink.jsf"
     />

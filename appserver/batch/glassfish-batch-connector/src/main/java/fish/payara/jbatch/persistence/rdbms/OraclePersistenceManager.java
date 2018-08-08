@@ -243,7 +243,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 
 		createOracleTableNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
 				createOracleTableStrings.get(CREATE_TABLE_JOBINSTANCEDATA));
-                createOracleSequenceNotExists(oracleObjectNames.get(JOBINSTANCEDATA_SEQ_KEY),
+                createTableIfNotExists(oracleObjectNames.get(JOBINSTANCEDATA_SEQ_KEY),
                                 createOracleTableStrings.get(CREATE_JOBINSTANCEDATA_SEQ));
                 createOracleTriggerNotExists(oracleObjectNames.get(JOBINSTANCEDATA_TRG_KEY),
                                 createOracleTableStrings.get(CREATE_JOBINSTANCEDATA_TRG),
@@ -254,7 +254,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 		createOracleTableNotExists(
 				tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
 				createOracleTableStrings.get(CREATE_TABLE_EXECUTIONINSTANCEDATA));
-                createOracleSequenceNotExists(oracleObjectNames.get(EXECUTIONINSTANCEDATA_SEQ_KEY),
+                createTableIfNotExists(oracleObjectNames.get(EXECUTIONINSTANCEDATA_SEQ_KEY),
                                 createOracleTableStrings.get(CREATE_EXECUTIONINSTANCEDATA_SEQ));
                 createOracleTriggerNotExists(oracleObjectNames.get(EXECUTIONINSTANCEDATA_TRG_KEY),
                                 createOracleTableStrings.get(CREATE_EXECUTIONINSTANCEDATA_TRG),
@@ -265,7 +265,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 		createOracleTableNotExists(
 				tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY),
 				createOracleTableStrings.get(CREATE_TABLE_STEPINSTANCEDATA));
-                createOracleSequenceNotExists(oracleObjectNames.get(STEPINSTANCEDATA_SEQ_KEY),
+                createTableIfNotExists(oracleObjectNames.get(STEPINSTANCEDATA_SEQ_KEY),
                                 createOracleTableStrings.get(CREATE_STEPINSTANCEDATA_SEQ));
                 createOracleTriggerNotExists(oracleObjectNames.get(STEPINSTANCEDATA_TRG_KEY),
                                 createOracleTableStrings.get(CREATE_STEPINSTANCEDATA_TRG),
@@ -348,52 +348,37 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 		logger.exiting(CLASSNAME, "createOracleTableNotExists");
 	}
 
-	/**
-	 * Create the jbatch sequences if they do not exist
-	 * @param sequencename
-	 * @param seqstmt
-	 * @throws SQLException
-	 */
-	public void createOracleSequenceNotExists(String sequencename, String seqstmt) throws SQLException {
-		logger.entering(CLASSNAME, "createOracleSequenceNotExists");
-		// check sequences that exist
-		Connection conn = null;
-		boolean seqexists = false;
-		ResultSet results = null;
-		PreparedStatement ps = null;
-		try {
-			conn = getConnection();
-			Statement stmt = conn.createStatement();
-                        
-                        String query = "select lower(sequence_name) from user_sequences where lower(sequence_name)="
-				       + "\'" + sequencename.toLowerCase() + "\'";
+        @Override
+        public boolean checkIfTableExists(DataSource dSource, String tableName, String schemaName) {
+                Statement statement = null;
+                ResultSet resultSet = null;
+                dataSource = dSource;
 
-			results = stmt.executeQuery(query);
+                boolean result = false;
 
-			while (results.next()) {
+                try (Connection connection = dataSource.getConnection()) {
+                    schema = schemaName;
 
-				seqexists = true;
-				break;
+                    if (!isSchemaValid()) {
+                        setDefaultSchema();
+                    }
 
-			}
+                    statement = connection.createStatement();
+                    String query = "select lower(sequence_name) from user_sequences where lower(sequence_name)="
+                            + "\'" + tableName.toLowerCase() + "\'";
+                    resultSet = statement.executeQuery(query);
 
-			if (!seqexists) {
-				// create the sequence
+                    while (resultSet.next()) {
+                        result = true;
+                        break;
+                    }
 
-				ps = conn.prepareStatement(seqstmt);
-				ps.executeUpdate();
+                } catch (SQLException ex) {
+                    logger.severe(ex.getLocalizedMessage());
+                }
 
-			}
-		} catch (SQLException e) {
-
-			e.printStackTrace();
-			throw e;
-		} finally {
-			cleanupConnection(conn, results, ps);
-		}
-		logger.exiting(CLASSNAME, "createOracleSequenceNotExists");
-
-	}
+                return result;
+        }
     /**
      * Create the relevant jbatch triggers as required
      * @param triggername

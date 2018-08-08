@@ -52,6 +52,9 @@ import org.glassfish.admingui.common.util.GuiUtil;
 public class BatchHandlers {
 
     private static final int DEFAULT_OFFSET_INCREMENT = 20;
+    private static final String OFFSET = "offset";
+    private static final String NUMBER_FORMAT_EXCEPTION_MESSAGE = "Value isn't a valid integer ";
+    private static final String RESULT = "result";
 
     @Handler(id = "py.addToOffSetValue",
             input = {
@@ -60,16 +63,16 @@ public class BatchHandlers {
                 @HandlerOutput(name = "result", type = String.class)})
     public static void addToOffSetValue(HandlerContext handlerCtx) {
 
-        String offsetValue = (String) handlerCtx.getInputValue("offset");
+        String offsetValue = (String) handlerCtx.getInputValue(OFFSET);
         int result = 0;
 
         try {
             result = Integer.parseInt(offsetValue) + DEFAULT_OFFSET_INCREMENT;
         } catch (NumberFormatException ex) {
-            GuiUtil.getLogger().info("Value isn't a valid integer " + ex);
+            GuiUtil.getLogger().info(NUMBER_FORMAT_EXCEPTION_MESSAGE + ex);
         }
 
-        handlerCtx.setOutputValue("result", result);
+        handlerCtx.setOutputValue(RESULT, result);
     }
 
     @Handler(id = "py.subtractFromOffSetValue",
@@ -79,7 +82,7 @@ public class BatchHandlers {
                 @HandlerOutput(name = "result", type = String.class)})
     public static void subtractFromOffSetValue(HandlerContext handlerCtx) {
 
-        String offsetValue = (String) handlerCtx.getInputValue("offset");
+        String offsetValue = (String) handlerCtx.getInputValue(OFFSET);
         int result = 0;
 
         try {
@@ -90,10 +93,10 @@ public class BatchHandlers {
                 result = 0;
             }
         } catch (NumberFormatException ex) {
-            GuiUtil.getLogger().info("Value isn't a valid integer " + ex);
+            GuiUtil.getLogger().info(NUMBER_FORMAT_EXCEPTION_MESSAGE + ex);
         }
 
-        handlerCtx.setOutputValue("result", result);
+        handlerCtx.setOutputValue(RESULT, result);
     }
 
     @Handler(id = "py.getPageNumber",
@@ -103,17 +106,17 @@ public class BatchHandlers {
                 @HandlerOutput(name = "result", type = String.class)})
     public static void getPageNumber(HandlerContext handlerCtx) {
 
-        String offsetValue = (String) handlerCtx.getInputValue("offset");
+        String offsetValue = (String) handlerCtx.getInputValue(OFFSET);
         int result = 0;
 
         try {
             int offSet = Integer.parseInt(offsetValue);
             result = (offSet + DEFAULT_OFFSET_INCREMENT) / DEFAULT_OFFSET_INCREMENT;
         } catch (NumberFormatException ex) {
-            GuiUtil.getLogger().info("Value isn't a valid integer " + ex);
+            GuiUtil.getLogger().info(NUMBER_FORMAT_EXCEPTION_MESSAGE + ex);
         }
 
-        handlerCtx.setOutputValue("result", result);
+        handlerCtx.setOutputValue(RESULT, result);
     }
 
     @Handler(id = "py.getSpecifiedPageNumber",
@@ -132,10 +135,10 @@ public class BatchHandlers {
                 result = (pageNumber * DEFAULT_OFFSET_INCREMENT) - DEFAULT_OFFSET_INCREMENT;
             }
         } catch (NumberFormatException ex) {
-            GuiUtil.getLogger().info("Value isn't a valid integer " + ex);
+            GuiUtil.getLogger().info(NUMBER_FORMAT_EXCEPTION_MESSAGE + ex);
         }
 
-        handlerCtx.setOutputValue("result", result);
+        handlerCtx.setOutputValue(RESULT, result);
     }
 
     @Handler(id = "py.getPageCount",
@@ -154,10 +157,10 @@ public class BatchHandlers {
                 result = (jobCount + DEFAULT_OFFSET_INCREMENT - 1) / DEFAULT_OFFSET_INCREMENT;
             }
         } catch (NumberFormatException ex) {
-            GuiUtil.getLogger().info("Value isn't a valid integer " + ex);
+            GuiUtil.getLogger().info(NUMBER_FORMAT_EXCEPTION_MESSAGE + ex);
         }
 
-        handlerCtx.setOutputValue("result", result);
+        handlerCtx.setOutputValue(RESULT, result);
     }
 
 }
