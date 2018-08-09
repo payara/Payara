@@ -68,6 +68,13 @@ public class CommonSenseConverter implements Converter<Object> {
         if (result == null) {
             result = convertViaCharSequence(value);
         }
+        if (result == null) {
+            result = convertViaOf(value);
+        }
+        
+        if (result == null) {
+            throw new IllegalArgumentException("Unable to convert value to type " + this.clazz.getCanonicalName());
+        }
         return result;
     }
     
@@ -78,7 +85,7 @@ public class CommonSenseConverter implements Converter<Object> {
             Constructor method = clazz.getConstructor(String.class);
             result = method.newInstance(propertyValue);
             
-        } catch (NoSuchMethodException | SecurityException |InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+        } catch (NoSuchMethodException | SecurityException |InstantiationException | IllegalAccessException | InvocationTargetException ex) {
             // do nothing as this is normal
         }
         return result;
@@ -89,6 +96,20 @@ public class CommonSenseConverter implements Converter<Object> {
         try {
             // need to do common sense reflected conversion
             Method method = clazz.getMethod("valueOf", String.class);
+            result = method.invoke(null, propertyValue);
+            
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            // do nothing as this is normal
+        }
+        return result;
+    }
+    
+    
+    private Object convertViaOf(String propertyValue) {
+        Object result = null;
+        try {
+            // need to do common sense reflected conversion
+            Method method = clazz.getMethod("of", String.class);
             result = method.invoke(null, propertyValue);
             
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
