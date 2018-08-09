@@ -42,10 +42,12 @@ package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.security.SecurityContext;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
+import fish.payara.notification.requesttracing.RequestTraceSpanContext;
 import fish.payara.opentracing.propagation.MapToTextMap;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
 import io.opentracing.Span;
+import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -91,21 +93,27 @@ public class InvocationContext implements ContextHandle {
             if (requestTracing != null && requestTracing.isRequestTracingEnabled()
                     && requestTracing.isTraceInProgress() && openTracing != null) {
                 
-                // Check if there's an active Span running
                 Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
                         serviceLocator.getService(InvocationManager.class)));
-                Span activeSpan = tracer.activeSpan();
                 
+                SpanContext spanContext = null;
+                
+                // Check if there's an active Span running
+                Span activeSpan = tracer.activeSpan();
                 if (activeSpan != null) {
                     // The traceId is likely incorrect at this point as it initialises as a random UUID
                     ((RequestTraceSpan) activeSpan).setTraceId(requestTracing.getConversationID());
                     
-                    // Convert the SpanContext into a Map for propagation
-                    tracer.inject(
-                            activeSpan.context(), 
-                            Format.Builtin.TEXT_MAP, 
-                            new MapToTextMap(spanContextMap = new HashMap()));
+                    spanContext = activeSpan.context();
+                } else {
+                    // Create a new span context using the starting span as a parent - the request tracing service doesn't
+                    // know about unfinished spans so we can't get the actual parent with the current impl
+                    spanContext = new RequestTraceSpanContext(
+                            requestTracing.getConversationID(), 
+                            requestTracing.getStartingTraceID());
                 }
+                
+                tracer.inject(spanContext, Format.Builtin.TEXT_MAP, new MapToTextMap(spanContextMap = new HashMap()));
             }   
         }    
     }
