@@ -60,6 +60,20 @@ public class EnvironmentConfigSource implements ConfigSource {
 
     @Override
     public String getValue(String propertyName) {
+        
+        // search environment variables as defined in the spec
+        // https://github.com/eclipse/microprofile-config/blob/master/spec/src/main/asciidoc/configsources.asciidoc 
+        String result = System.getenv(propertyName);
+        
+        if (result == null) {
+            // replace all non-alphanumeric characters
+            propertyName = propertyName.replaceAll("[^A-Za-z0-9]", "_");
+            result = System.getenv(propertyName);
+        }
+        
+        if (result == null) {
+            propertyName = propertyName.toUpperCase();
+        }
         return System.getenv(propertyName);
     }
 
