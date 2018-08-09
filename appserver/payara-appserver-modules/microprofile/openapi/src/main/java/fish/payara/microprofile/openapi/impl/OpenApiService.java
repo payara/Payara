@@ -333,14 +333,11 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
             boolean securityEnabled = Boolean.parseBoolean(networkListener.findProtocol().getSecurityEnabled());
             List<Integer> ports = securityEnabled ? httpPorts : httpsPorts;
 
-            /**
-             * micro instances can use the admin listener as both an admin and
-             * HTTP/HTTPS port
-             */
-            if (networkListener.getName().equals(adminListener) && instanceType.equals("MICRO")) {
+            // If this listener isn't the admin listener, it must be an HTTP/HTTPS listener
+            if (!networkListener.getName().equals(adminListener)) {
                 ports.add(port);
-            } else {
-                // If this listener isn't the admin listener, it must be an HTTP/HTTPS listener
+            } else if (instanceType.equals("MICRO")) {
+                // micro instances can use the admin listener as both an admin and HTTP/HTTPS port
                 ports.add(port);
             }
                 });
