@@ -40,6 +40,7 @@
 
 package org.glassfish.concurrent.runtime;
 
+import com.hazelcast.logging.Logger;
 import com.sun.enterprise.security.SecurityContext;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.notification.requesttracing.RequestTraceSpanContext;
@@ -59,6 +60,7 @@ import javax.security.auth.Subject;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
@@ -102,7 +104,11 @@ public class InvocationContext implements ContextHandle {
                 Span activeSpan = tracer.activeSpan();
                 if (activeSpan != null) {
                     // The traceId is likely incorrect at this point as it initialises as a random UUID
-                    ((RequestTraceSpan) activeSpan).setTraceId(requestTracing.getConversationID());
+                    try {
+                        ((RequestTraceSpan) activeSpan).setTraceId(requestTracing.getConversationID());
+                    } catch (ClassCastException cce) {
+                        Logger.getLogger(InvocationContext.class).log(Level.FINE, "Caught ClassCastException", cce);
+                    }
                     
                     spanContext = activeSpan.context();
                 } else {
