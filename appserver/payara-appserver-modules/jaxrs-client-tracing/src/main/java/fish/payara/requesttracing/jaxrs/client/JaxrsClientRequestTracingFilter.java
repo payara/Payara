@@ -55,7 +55,6 @@ import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -147,7 +146,8 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
             if (parentSpanContext != null) {
                 spanBuilder.asChildOf(parentSpanContext);
                 
-                parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, new MultivaluedMapToTextMap(requestContext.getHeaders()));
+                parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, 
+                        new MultivaluedMapToTextMap(requestContext.getHeaders()));
                 if (parentSpanContext != null) {
                     spanBuilder.asChildOf(parentSpanContext);
                 }

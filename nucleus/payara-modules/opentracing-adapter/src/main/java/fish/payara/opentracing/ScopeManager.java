@@ -54,7 +54,7 @@ import io.opentracing.Span;
  */
 public class ScopeManager implements io.opentracing.ScopeManager {
     
-    private ThreadLocal<OTScope> activeScope;
+    private ThreadLocal<OpenTracingScope> activeScope;
     
     public ScopeManager(){
         activeScope= new ThreadLocal<>();
@@ -63,7 +63,7 @@ public class ScopeManager implements io.opentracing.ScopeManager {
     @Override
     public Scope activate(Span span, boolean autoClose) {
         if (activeScope.get() == null){
-            OTScope newscope = new OTScope();
+            OpenTracingScope newscope = new OpenTracingScope();
             newscope.setSpan(span, autoClose);
             activeScope.set(newscope);
         } else {

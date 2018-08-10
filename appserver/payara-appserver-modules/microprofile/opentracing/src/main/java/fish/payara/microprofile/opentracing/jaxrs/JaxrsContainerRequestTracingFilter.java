@@ -42,6 +42,7 @@ package fish.payara.microprofile.opentracing.jaxrs;
 import fish.payara.microprofile.opentracing.cdi.OpenTracingCdiUtils;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
+import fish.payara.opentracing.propagation.MapToTextMap;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
@@ -53,6 +54,7 @@ import io.opentracing.tag.Tags;
 import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -131,7 +133,8 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                     Traced.class, "value", resourceInfo, boolean.class)
                     .orElse(tracedAnnotation.value())) {
                 // Get the application's tracer instance
-                Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(serviceLocator.getService(InvocationManager.class)));
+                Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(serviceLocator.getService(
+                        InvocationManager.class)));
                 
                 // Create a Span and instrument it with details about the request
                 SpanBuilder spanBuilder = tracer.buildSpan(determineOperationName(requestContext, tracedAnnotation))
@@ -143,7 +146,8 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                 SpanContext spanContext = null;
                 try {
                     // Extract the context from the tracer if there is one
-                    spanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, new MultivaluedMapToTextMap(requestContext.getHeaders()));
+                    spanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, 
+                            new MultivaluedMapToTextMap(requestContext.getHeaders()));
                 } catch (IllegalArgumentException e){
                     logger.log(Level.WARNING, e.getMessage());
                 }
@@ -194,10 +198,6 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                     try (Scope activeScope = openTracing.getTracer(openTracing.getApplicationName(
                         serviceLocator.getService(InvocationManager.class))).scopeManager().active()) {
                         Span activeSpan = activeScope.span();
-                        
-                        // Get the application's tracer instance
-                        //Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(serviceLocator.getService(InvocationManager.class)));
-                        //tracer.inject(activeSpan.context(), Format.Builtin.HTTP_HEADERS, new MultivaluedMapToTextMap(responseContext.getStringHeaders()));
                         
                         // Get and add the response status to the active span
                         Response.StatusType statusInfo = responseContext.getStatusInfo();
@@ -336,5 +336,5 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
         }
 
     }
-
+    
 }
