@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] 
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 /*
  * BaseContainerCallbackHandler.java
  *
@@ -46,22 +46,26 @@
 
 package com.sun.enterprise.security.jmac.callback;
 
+import static com.sun.enterprise.security.SecurityContext.getDefaultCallerPrincipal;
+import static com.sun.enterprise.security.auth.login.LoginContextDriver.jaspicAddRealmGroupsToSubject;
+import static com.sun.enterprise.security.common.AppservAccessController.privileged;
+import static java.util.Arrays.stream;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.KeyStore.PrivateKeyEntry;
 import java.security.KeyStoreException;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
-import java.security.PrivilegedAction;
 import java.security.PrivateKey;
-import java.security.cert.Certificate;
+import java.security.PrivilegedAction;
 import java.security.cert.CertStore;
+import java.security.cert.Certificate;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -69,6 +73,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -85,33 +90,32 @@ import javax.security.auth.message.callback.SecretKeyCallback;
 import javax.security.auth.message.callback.TrustStoreCallback;
 import javax.security.auth.x500.X500Principal;
 
+import org.glassfish.internal.api.Globals;
 //V3:Commented import com.sun.enterprise.Switch;
 import org.glassfish.security.common.Group;
+import org.glassfish.security.common.MasterPassword;
 import org.glassfish.security.common.PrincipalImpl;
-import com.sun.enterprise.security.common.AppservAccessController;
+
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.SecurityServicesUtil;
-import com.sun.enterprise.security.ssl.SSLUtils;
-import com.sun.enterprise.security.auth.login.LoginContextDriver;
 import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
+import com.sun.enterprise.security.auth.login.LoginContextDriver;
 import com.sun.enterprise.security.auth.login.common.LoginException;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
+import com.sun.enterprise.security.common.AppservAccessController;
 import com.sun.enterprise.security.jmac.config.CallbackHandlerConfig;
-import com.sun.enterprise.security.jmac.config.GFServerConfigProvider;
 import com.sun.enterprise.security.jmac.config.HandlerContext;
-import org.glassfish.security.common.MasterPassword;
+import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.security.web.integration.WebPrincipal;
 import com.sun.enterprise.server.pluggable.SecuritySupport;
 import com.sun.logging.LogDomains;
-import java.util.Set;
 
 import sun.security.util.DerValue;
-import org.glassfish.internal.api.Globals;
 
 /**
  * Base Callback Handler for JSR 196
- * 
+ *
  * @author Harpreet Singh
  * @author Shing Wai Chan
  */
@@ -145,6 +149,7 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
         }
     }
 
+    @Override
     public void setHandlerContext(HandlerContext handlerContext) {
         this.handlerContext = handlerContext;
     }
@@ -160,6 +165,7 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
 
     protected abstract void handleSupportedCallbacks(Callback[] callbacks) throws IOException, UnsupportedCallbackException;
 
+    @Override
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         if (callbacks == null) {
             return;
@@ -167,8 +173,8 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
 
         for (Callback callback : callbacks) {
             if (!isSupportedCallback(callback)) {
-                if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.FINE, "JMAC: UnsupportedCallback : " + callback.getClass().getName());
+                if (_logger.isLoggable(FINE)) {
+                    _logger.log(FINE, "JASPIC: UnsupportedCallback : " + callback.getClass().getName());
                 }
                 throw new UnsupportedCallbackException(callback);
             }
@@ -192,8 +198,8 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
             processPrivateKey((PrivateKeyCallback) callback);
         } else if (callback instanceof TrustStoreCallback) {
             TrustStoreCallback tstoreCallback = (TrustStoreCallback) callback;
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "JMAC: In TrustStoreCallback Processor");
+            if (_logger.isLoggable(FINE)) {
+                _logger.log(FINE, "JASPIC: In TrustStoreCallback Processor");
             }
             tstoreCallback.setTrustStore(sslUtils.getMergedTrustStore());
 
@@ -256,6 +262,7 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
             /**
              * this method uses 4 (numbered) criteria to determine if the argument WebPrincipal can be reused
              */
+            @Override
             public Boolean run() {
 
                 /*
@@ -338,9 +345,9 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
         })).booleanValue();
     }
 
-    private void processCallerPrincipal(CallerPrincipalCallback cpCallback) {
-        final Subject fs = cpCallback.getSubject();
-        Principal principal = cpCallback.getPrincipal();
+    private void processCallerPrincipal(CallerPrincipalCallback callerPrincipalCallback) {
+        Subject subject = callerPrincipalCallback.getSubject();
+        Principal principal = callerPrincipalCallback.getPrincipal();
 
         // PAYARA-755 If the SAM has set a custom principal then we check that the original WebPrincipal has
         // the same custom principal within it
@@ -353,25 +360,27 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
         }
 
         if (principal instanceof WebPrincipal) {
-            WebPrincipal wp = (WebPrincipal) principal;
+            WebPrincipal webPrincipal = (WebPrincipal) principal;
+
             /**
              * Check if the WebPrincipal satisfies the criteria for reuse. If it does, the CBH will have already
              * copied its contents into the Subject, and established the caller principal.
              */
-            if (reuseWebPrincipal(fs, wp)) {
+            if (reuseWebPrincipal(subject, webPrincipal)) {
                 return;
             }
+
             /**
              * Otherwise the webPrincipal must be distinguished as the callerPrincipal, but the contents of its
              * internal SecurityContext will not be copied. For the special case where the WebPrincipal
              * represents the defaultCallerPrincipal, the argument principal is set to null to cause the handler
              * to assign its representation of the unauthenticated caller in the Subject.
              */
-            Principal dp = SecurityContext.getDefaultCallerPrincipal();
-            SecurityContext sc = wp.getSecurityContext();
-            Principal cp = sc != null ? sc.getCallerPrincipal() : null;
+            Principal defaultCallerPrincipal = SecurityContext.getDefaultCallerPrincipal();
+            SecurityContext securityContext = webPrincipal.getSecurityContext();
+            Principal callerPrincipal = securityContext != null ? securityContext.getCallerPrincipal() : null;
 
-            if (wp.getName() == null || wp.equals(dp) || cp == null || cp.equals(dp)) {
+            if (webPrincipal.getName() == null || webPrincipal.equals(defaultCallerPrincipal) || callerPrincipal == null || callerPrincipal.equals(defaultCallerPrincipal)) {
                 principal = null;
             }
         }
@@ -383,73 +392,60 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
 
         boolean isCertRealm = CertificateRealm.AUTH_TYPE.equals(realmName);
         if (principal == null) {
-            if (cpCallback.getName() != null) {
+            if (callerPrincipalCallback.getName() != null) {
                 if (isCertRealm) {
-                    principal = new X500Principal(cpCallback.getName());
+                    principal = new X500Principal(callerPrincipalCallback.getName());
                 } else {
-                    principal = new PrincipalImpl(cpCallback.getName());
+                    principal = new PrincipalImpl(callerPrincipalCallback.getName());
                 }
             } else {
-                // 196 unauthenticated caller principal
-                principal = SecurityContext.getDefaultCallerPrincipal();
+                // JASPIC/196 unauthenticated caller principal
+                principal = getDefaultCallerPrincipal();
             }
         }
 
         if (isCertRealm) {
             if (principal instanceof X500Principal) {
-                LoginContextDriver.jmacLogin(fs, (X500Principal) principal);
+                LoginContextDriver.jaspicX500Login(subject, (X500Principal) principal);
             }
         } else {
-            if (!principal.equals(SecurityContext.getDefaultCallerPrincipal())) {
-                LoginContextDriver.jmacLogin(fs, principal.getName(), realmName);
+            if (!principal.equals(getDefaultCallerPrincipal())) {
+                jaspicAddRealmGroupsToSubject(subject, principal.getName(), realmName);
             }
         }
 
-        final Principal fprin = principal;
-        final DistinguishedPrincipalCredential fdpc = new DistinguishedPrincipalCredential(principal);
-        AppservAccessController.doPrivileged(new PrivilegedAction() {
-            public java.lang.Object run() {
-                fs.getPrincipals().add(fprin);
-                Iterator iter = fs.getPublicCredentials().iterator();
-                while (iter.hasNext()) {
-                    Object obj = iter.next();
-                    if (obj instanceof DistinguishedPrincipalCredential) {
-                        iter.remove();
-                    }
+        final Principal finalPrincipal = principal;
+        DistinguishedPrincipalCredential distinguishedPrincipalCredential = new DistinguishedPrincipalCredential(principal);
+
+        privileged(() -> {
+            subject.getPrincipals().add(finalPrincipal);
+
+            Iterator<Object> publicCredentials = subject.getPublicCredentials().iterator();
+            while (publicCredentials.hasNext()) {
+                if (publicCredentials.next() instanceof DistinguishedPrincipalCredential) {
+                    publicCredentials.remove();
                 }
-                fs.getPublicCredentials().add(fdpc);
-                return fs;
             }
+
+            subject.getPublicCredentials().add(distinguishedPrincipalCredential);
         });
     }
 
-    private void processGroupPrincipal(GroupPrincipalCallback gpCallback) {
-        final Subject fs = gpCallback.getSubject();
-        final String[] groups = gpCallback.getGroups();
+    private void processGroupPrincipal(GroupPrincipalCallback groupCallback) {
+        Subject subject = groupCallback.getSubject();
+        String[] groups = groupCallback.getGroups();
+
         if (groups != null && groups.length > 0) {
-            AppservAccessController.doPrivileged(new PrivilegedAction() {
-                public java.lang.Object run() {
-                    for (String group : groups) {
-                        fs.getPrincipals().add(new Group(group));
-                    }
-                    return fs;
-                }
-            });
+            privileged(() -> stream(groups).forEach(group -> subject.getPrincipals().add(new Group(group))));
         } else if (groups == null) {
-            AppservAccessController.doPrivileged(new PrivilegedAction() {
-                public java.lang.Object run() {
-                    Set<Principal> principalSet = fs.getPrincipals();
-                    principalSet.removeAll(fs.getPrincipals(Group.class));
-                    return fs;
-                }
-            });
+            privileged(() -> subject.getPrincipals().removeAll(subject.getPrincipals(Group.class)));
         }
     }
 
     private void processPasswordValidation(PasswordValidationCallback pwdCallback) {
 
         if (SecurityServicesUtil.getInstance().isACC()) {
-            _logger.log(FINE, "JMAC: In PasswordValidationCallback Processor for appclient - will do nothing");
+            _logger.log(FINE, "JASPIC: In PasswordValidationCallback Processor for appclient - will do nothing");
             pwdCallback.setResult(true);
             return;
         }
@@ -457,24 +453,24 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
 
         char[] passwd = pwdCallback.getPassword();
 
-        _logger.log(FINE, "JMAC: In PasswordValidationCallback Processor");
-        
+        _logger.log(FINE, "JASPIC: In PasswordValidationCallback Processor");
+
         try {
             String realmName = null;
             if (handlerContext != null) {
                 realmName = handlerContext.getRealmName();
             }
-            
-            LoginContextDriver.jmacLogin(pwdCallback.getSubject(), username, passwd, realmName);
-            
-            _logger.log(FINE, "JMAC: authentication succeeded for user = ", username);
-            
+
+            LoginContextDriver.jaspicValidateUsernamePassword(pwdCallback.getSubject(), username, passwd, realmName);
+
+            _logger.log(FINE, "JASPIC: authentication succeeded for user = ", username);
+
             // Explicitly ditch the password
             if (passwd != null) {
                 for (int i = 0; i < passwd.length; i++)
                     passwd[i] = ' ';
             }
-            
+
             pwdCallback.setResult(true);
         } catch (LoginException le) {
             // login failed
@@ -485,7 +481,7 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
 
     private void processPrivateKey(PrivateKeyCallback privKeyCallback) {
         KeyStore[] kstores = secSup.getKeyStores();
-        _logger.log(Level.FINE, "JMAC: In PrivateKeyCallback Processor");
+        _logger.log(Level.FINE, "JASPIC: In PrivateKeyCallback Processor");
 
         // Make sure we have a keystore
         if (kstores == null || kstores.length == 0) {
@@ -610,8 +606,8 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
             // UnrecoverableKeyException
             // NoSuchAlgorithmException
             // KeyStoreException
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "JMAC: In PrivateKeyCallback Processor: " + " Error reading key !", e);
+            if (_logger.isLoggable(FINE)) {
+                _logger.log(FINE, "JASPIC: In PrivateKeyCallback Processor: " + " Error reading key !", e);
             }
         } finally {
             privKeyCallback.setKey(privKey, certs);
@@ -682,20 +678,20 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
     }
 
     private void processCertStore(CertStoreCallback certStoreCallback) {
-        _logger.log(Level.FINE, "JMAC: In CertStoreCallback Processor");
+        _logger.log(Level.FINE, "JASPIC: In CertStoreCallback Processor");
 
         KeyStore certStore = sslUtils.getMergedTrustStore();
         if (certStore == null) {// should never happen
             certStoreCallback.setCertStore(null);
         }
-        
+
         List<Certificate> list = new ArrayList<Certificate>();
         CollectionCertStoreParameters ccsp;
         try {
             if (certStore != null) {
-                Enumeration enu = certStore.aliases();
+                Enumeration<String> enu = certStore.aliases();
                 while (enu.hasMoreElements()) {
-                    String alias = (String) enu.nextElement();
+                    String alias = enu.nextElement();
                     if (certStore.isCertificateEntry(alias)) {
                         try {
                             Certificate cert = certStore.getCertificate(alias);
@@ -703,7 +699,7 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
                         } catch (KeyStoreException kse) {
                             // ignore and move to next
                             if (_logger.isLoggable(FINE)) {
-                                _logger.log(FINE, "JMAC: Cannot retrieve certificate for alias " + alias);
+                                _logger.log(FINE, "JASPIC: Cannot retrieve certificate for alias " + alias);
                             }
                         }
                     }
@@ -713,15 +709,15 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
             CertStore certstore = CertStore.getInstance("Collection", ccsp);
             certStoreCallback.setCertStore(certstore);
         } catch (KeyStoreException kse) {
-            _logger.log(FINE, "JMAC:  Cannot determine truststore aliases", kse);
+            _logger.log(FINE, "JASPIC:  Cannot determine truststore aliases", kse);
         } catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException iape) {
-            _logger.log(FINE, "JMAC:  Cannot instantiate CertStore", iape);
+            _logger.log(FINE, "JASPIC:  Cannot instantiate CertStore", iape);
         }
     }
 
     private void processSecretKey(SecretKeyCallback secretKeyCallback) {
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "JMAC: In SecretKeyCallback Processor");
+        if (_logger.isLoggable(FINE)) {
+            _logger.log(FINE, "JASPIC: In SecretKeyCallback Processor");
         }
 
         String alias = ((SecretKeyCallback.AliasRequest) secretKeyCallback.getRequest()).getAlias();
@@ -738,7 +734,7 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
                 secretKeyCallback.setKey(passwordAdapter.getPasswordSecretKeyForAlias(alias));
             } catch (Exception e) {
                 if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.FINE, "JMAC: In SecretKeyCallback Processor: " + " Error reading key ! for alias " + alias, e);
+                    _logger.log(Level.FINE, "JASPIC: In SecretKeyCallback Processor: " + " Error reading key ! for alias " + alias, e);
                 }
                 secretKeyCallback.setKey(null);
             }

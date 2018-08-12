@@ -75,10 +75,10 @@ import org.glassfish.config.support.TargetType;
 /**
  * Update File User Command
  *
- * Usage: update-file-user [--terse=false] [--echo=false] [--interactive=true] 
+ * Usage: update-file-user [--terse=false] [--echo=false] [--interactive=true]
  *   [--host localhost] [--port 4848|4849] [--secure | -s] [--user admin_user]
- *   [--passwordfile file_name] [--userpassword admin_passwd] 
- *   [--groups user_groups[:user_groups]*] [--authrealmname authrealm_name] 
+ *   [--passwordfile file_name] [--userpassword admin_passwd]
+ *   [--groups user_groups[:user_groups]*] [--authrealmname authrealm_name]
  *   [--target target(Default server)] username
  *
  * @author Nandini Ektare
@@ -91,17 +91,17 @@ import org.glassfish.config.support.TargetType;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean=AuthRealm.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="update-user", 
+        opType=RestEndpoint.OpType.POST,
+        path="update-user",
         description="Update Users",
         params={
             @RestParam(name="authrealmname", value="$parent")
         })
 })
 public class UpdateFileUser implements AdminCommand, AdminCommandSecurity.Preauthorization {
-    
-    final private static LocalStringManagerImpl localStrings = 
-        new LocalStringManagerImpl(UpdateFileUser.class);    
+
+    final private static LocalStringManagerImpl localStrings =
+        new LocalStringManagerImpl(UpdateFileUser.class);
 
     @Param(name="groups", optional=true, separator=':')
     private List<String> groups = null;
@@ -114,7 +114,7 @@ public class UpdateFileUser implements AdminCommand, AdminCommandSecurity.Preaut
 
     @Param(name="authrealmname", optional=true)
     private String authRealmName;
-    
+
     @Param(name = "target", optional = true, defaultValue =
     SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     private String target;
@@ -127,18 +127,18 @@ public class UpdateFileUser implements AdminCommand, AdminCommandSecurity.Preaut
 
     @Inject
     private Domain domain;
-    
+
     @Inject
     private RealmsManager realmsManager;
-    
+
     @Inject
     private AdminService adminService;
-    
+
     private SecureAdmin secureAdmin = null;
 
     @AccessRequired.To("update")
     private AuthRealm fileAuthRealm;
-    
+
     private SecurityService securityService;
 
     @Override
@@ -153,10 +153,10 @@ public class UpdateFileUser implements AdminCommand, AdminCommandSecurity.Preaut
             final ActionReport report = context.getActionReport();
             report.setMessage(localStrings.getLocalString(
                 "update.file.user.filerealmnotfound",
-                "File realm {0} does not exist", 
+                "File realm {0} does not exist",
                 authRealmName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return false;                                            
+            return false;
         }
         /*
          * The realm might have been defaulted, so capture the actual name.
@@ -164,22 +164,23 @@ public class UpdateFileUser implements AdminCommand, AdminCommandSecurity.Preaut
         authRealmName = fileAuthRealm.getName();
         return true;
     }
-    
+
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the paramter names and the values the parameter values
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
-        
+
         final ActionReport report = context.getActionReport();
 
         // Get FileRealm class name, match it with what is expected.
         String fileRealmClassName = fileAuthRealm.getClassname();
-        
+
         // Report error if provided impl is not the one expected
-        if (fileRealmClassName != null && 
+        if (fileRealmClassName != null &&
             !fileRealmClassName.equals(
                 "com.sun.enterprise.security.auth.realm.file.FileRealm")) {
             report.setMessage(
@@ -188,7 +189,7 @@ public class UpdateFileUser implements AdminCommand, AdminCommandSecurity.Preaut
                     "Configured file realm {0} is not supported.",
                     fileRealmClassName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;                
+            return;
         }
 
         // ensure we have the file associated with the authrealm
@@ -200,10 +201,10 @@ public class UpdateFileUser implements AdminCommand, AdminCommandSecurity.Preaut
         if (keyFile == null) {
             report.setMessage(
                 localStrings.getLocalString("update.file.user.keyfilenotfound",
-                "There is no physical file associated with file realm {0}", 
+                "There is no physical file associated with file realm {0}",
                 authRealmName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;                                            
+            return;
         }
         boolean exists = (new File(keyFile)).exists();
         if (!exists) {
@@ -214,17 +215,17 @@ public class UpdateFileUser implements AdminCommand, AdminCommandSecurity.Preaut
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-        
+
         // Now get all inputs ready. userid and groups are straightforward but
-        // password is tricky. It is stored in the file passwordfile passed 
-        // through the CLI options. It is stored under the name 
+        // password is tricky. It is stored in the file passwordfile passed
+        // through the CLI options. It is stored under the name
         // AS_ADMIN_USERPASSWORD. Fetch it from there.
         String password = userpassword; // fetchPassword(report);
         if (password == null && groups == null) {
             report.setMessage(localStrings.getLocalString(
                 "update.file.user.keyfilenotreadable", "None of password or groups have been specified for update,"
               + "Password for user {0} has to be specified"
-              + "through AS_ADMIN_USERPASSWORD property in the file specified " 
+              + "through AS_ADMIN_USERPASSWORD property in the file specified "
               + "in --passwordfile option", userName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
@@ -275,42 +276,11 @@ public class UpdateFileUser implements AdminCommand, AdminCommandSecurity.Preaut
         } catch (Exception e) {
             report.setMessage(
                 localStrings.getLocalString("update.file.user.userupdatefailed",
-                "Updating user {0} in file realm {1} failed", 
+                "Updating user {0} in file realm {1} failed",
                 userName, authRealmName) + "  " + e.getLocalizedMessage() );
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
-        }        
+        }
     }
-        
-    /* private String fetchPassword(ActionReport report) {
-        String password = null;
-        if (userpassword != null && passwordFile != null)
-            return password;
-        if (userpassword != null) 
-            password = userpassword;
-        if (passwordFile != null) {
-            File passwdFile = new File(passwordFile);
-            InputStream is = null;
-            try {
-                is = new BufferedInputStream(new FileInputStream(passwdFile));
-                Properties prop = new Properties();
-                prop.load(is);            
-                for (Enumeration e=prop.propertyNames(); e.hasMoreElements();) {
-                    String entry = (String)e.nextElement();
-                    if (entry.equals("AS_ADMIN_USERPASSWORD")) {                    
-                        password = prop.getProperty(entry);
-                        break;
-                    }
-                }
-            } catch(Exception e) {
-                report.setFailureCause(e);
-            } finally {
-                try {
-                    if (is != null) 
-                        is.close();
-                } catch(final Exception ignore){}
-            }        
-        } 
-        return password;
-    } */
+
 }

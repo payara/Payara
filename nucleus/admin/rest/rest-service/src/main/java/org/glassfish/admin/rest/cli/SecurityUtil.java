@@ -135,7 +135,7 @@ public class SecurityUtil {
         while (es.hasMoreElements()) {
             l.add(es.nextElement());
         }
-                return (String[])l.toArray(new String[l.size()]);
+                return l.toArray(new String[l.size()]);
 
     }
 
@@ -151,7 +151,7 @@ public class SecurityUtil {
 
     public String[] getPredefinedAuthRealmClassNames() {
         List<String> items = getRealmsManager().getPredefinedAuthRealmClassNames();
-        return (String[])items.toArray(new String[items.size()]);
+        return items.toArray(new String[items.size()]);
     }
 
     public String getDefaultRealmName() {
@@ -233,7 +233,7 @@ public class SecurityUtil {
             while (es.hasMoreElements()) {
                 l.add(es.nextElement());
             }
-                    return (String[])l.toArray(new String[l.size()]);
+                    return l.toArray(new String[l.size()]);
 
 
         } catch (Exception e) {
@@ -249,7 +249,7 @@ public class SecurityUtil {
             while (es.hasMoreElements()) {
                 l.add(es.nextElement());
             }
-        return (String[])l.toArray(new String[l.size()]);
+        return l.toArray(new String[l.size()]);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -266,7 +266,7 @@ public class SecurityUtil {
             while (es.hasMoreElements()) {
                 l.add(es.nextElement());
             }
-        return (String[])l.toArray(new String[l.size()]);
+        return l.toArray(new String[l.size()]);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -279,10 +279,10 @@ public class SecurityUtil {
         try {
             User user = getRealm(realmName).getUser(username);
             Map<String, Object> m = new HashMap<String, Object>();
-            Enumeration e = user.getAttributeNames();
+            Enumeration<String> e = user.getAttributeNames();
             List<String> attrNames = new ArrayList<String>();
             while (e.hasMoreElements()) {
-                attrNames.add((String)e.nextElement());
+                attrNames.add(e.nextElement());
             }
             for (String attrName : attrNames) {
                 m.put(attrName, user.getAttribute(attrName));
@@ -320,10 +320,10 @@ public class SecurityUtil {
         }
 
         List<Property> props = adminFileAuthRealm.getProperty();
-        
+
 
         Property keyfileProp = null;
-        
+
         for (Property prop : props) {
             if ("file".equals(prop.getName())) {
                 keyfileProp = prop;

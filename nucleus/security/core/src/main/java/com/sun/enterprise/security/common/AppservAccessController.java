@@ -51,12 +51,30 @@ import java.security.PrivilegedExceptionAction;
  * @author Shing Wai Chan
  */
 public final class AppservAccessController {
-    private static boolean isSecMgrOff = (System.getSecurityManager() == null);
+
+    private static boolean isSecMgrOff = System.getSecurityManager() == null;
 
     private AppservAccessController() {
     }
 
-    public static Object doPrivileged(PrivilegedAction action) {
+
+    public static <T> T privileged(PrivilegedAction<T> action) {
+        if (isSecMgrOff) {
+            return action.run();
+        }
+
+        return AccessController.doPrivileged(action);
+    }
+
+    public static Object privileged(Runnable action) {
+        if (isSecMgrOff) {
+            action.run();
+        }
+
+        return AccessController.doPrivileged( (PrivilegedAction<Object>) () -> {action.run(); return null;});
+    }
+
+    public static Object doPrivileged(PrivilegedAction<?> action) {
         if (isSecMgrOff) {
             return action.run();
         } else {
@@ -64,12 +82,12 @@ public final class AppservAccessController {
         }
     }
 
-    public static Object doPrivileged(PrivilegedExceptionAction action)
+    public static Object doPrivileged(PrivilegedExceptionAction<Object> action)
              throws PrivilegedActionException {
 
         if (isSecMgrOff) {
             try {
-                return action.run();       
+                return action.run();
             } catch(Exception e) {
                 throw new PrivilegedActionException(e);
             }
@@ -77,4 +95,6 @@ public final class AppservAccessController {
             return AccessController.doPrivileged(action);
         }
     }
+
+
 }

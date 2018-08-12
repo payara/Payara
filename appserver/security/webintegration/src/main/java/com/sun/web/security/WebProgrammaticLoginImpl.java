@@ -90,7 +90,7 @@ public class WebProgrammaticLoginImpl implements WebProgrammaticLogin {
      *
      * <P>
      * See bugs 4646134, 4688449 and other referenced bugs for more background.
-     * 
+     *
      * <P>
      * Note also that this login does not hook up into SSO.
      *
@@ -111,7 +111,7 @@ public class WebProgrammaticLoginImpl implements WebProgrammaticLogin {
 
         Request req = getUnwrappedCoyoteRequest(request);
         if (req == null) {
-            return Boolean.valueOf(false);
+            return false;
         }
 
         // Try to login - this will set up security context on success

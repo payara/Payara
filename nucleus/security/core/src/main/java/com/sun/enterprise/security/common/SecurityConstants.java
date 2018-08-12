@@ -46,14 +46,12 @@ package com.sun.enterprise.security.common;
  */
 public interface SecurityConstants {
 
-    //copied from appclient.security to avoid dependency
-    public static final int USERNAME_PASSWORD = 1;
-    public static final int CERTIFICATE = 2;
+    // copied from appclient.security to avoid dependency
+    int USERNAME_PASSWORD = 1;
+    int CERTIFICATE = 2;
     // harry - added for LoginContextDriver access
-    public static final int ALL = 3;
-    
-    public static final String CLIENT_JAAS_PASSWORD = "default";
-    public static final String CLIENT_JAAS_CERTIFICATE = "certificate";
+    int ALL = 3;
 
-    
+    String CLIENT_JAAS_PASSWORD = "default";
+    String CLIENT_JAAS_CERTIFICATE = "certificate";
 }

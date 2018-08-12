@@ -65,18 +65,17 @@ import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import com.sun.enterprise.security.integration.PermissionCreator;
 
 /**
- * Paser to parse permissions.xml packaged in a ear or in a standalone module
+ * Parser to parse <code>permissions.xml</code> packaged in a ear or in a standalone module
  */
 public class PermissionXMLParser {
 
     protected static final String PERMISSIONS_XML = "META-INF/permissions.xml";
     protected static final String RESTRICTED_PERMISSIONS_XML = "META-INF/restricted-permissions.xml";
 
-    protected XMLStreamReader parser = null;
+    protected XMLStreamReader parser;
 
-    PermissionCollection pc = new Permissions();
-
-    private PermissionCollection permissionCollectionToBeRestricted = null;
+    private PermissionCollection permissions = new Permissions();
+    private PermissionCollection permissionCollectionToBeRestricted;
 
     private static XMLInputFactory xmlInputFactory;
 
@@ -90,39 +89,24 @@ public class PermissionXMLParser {
         xmlInputFactory.setXMLResolver(new XMLResolver() {
             @Override
             public Object resolveEntity(String publicID, String systemID, String baseURI, String namespace) throws XMLStreamException {
-
                 return new ByteArrayInputStream(new byte[0]);
             }
         });
     }
 
-    // @LogMessageInfo(message = "This is an unexpected end of document", level = "WARNING")
-    // public static final String UNEXPECTED_END_IN_XMLDOCUMENT = "NCLS-DEPLOYMENT-00048";
+    public PermissionXMLParser(File permissionsXmlFile, PermissionCollection permissionCollectionToBeRestricted) throws XMLStreamException, FileNotFoundException {
 
-    public PermissionXMLParser(File permissionsXmlFile, PermissionCollection permissionCollectionToBeRestricted)
-            throws XMLStreamException, FileNotFoundException {
-
-        FileInputStream fi = null;
-        try {
+        try (FileInputStream inputStream = new FileInputStream(permissionsXmlFile)) {
             this.permissionCollectionToBeRestricted = permissionCollectionToBeRestricted;
-            fi = new FileInputStream(permissionsXmlFile);
-            init(fi);
-        } finally {
-            if (fi != null)
-                try {
-                    fi.close();
-                } catch (IOException e) {
-                }
+            init(inputStream);
+        } catch (IOException e) {
         }
 
     }
 
-    public PermissionXMLParser(InputStream input, PermissionCollection permissionCollectionToBeRestricted)
-            throws XMLStreamException, FileNotFoundException {
-
+    public PermissionXMLParser(InputStream input, PermissionCollection permissionCollectionToBeRestricted) throws XMLStreamException, FileNotFoundException {
         this.permissionCollectionToBeRestricted = permissionCollectionToBeRestricted;
         init(input);
-
     }
 
     protected static XMLInputFactory getXMLInputFactory() {
@@ -173,7 +157,6 @@ public class PermissionXMLParser {
     }
 
     protected void init(InputStream input) throws XMLStreamException {
-
         try {
             read(input);
         } finally {
@@ -193,10 +176,6 @@ public class PermissionXMLParser {
             if (event == START_ELEMENT) {
                 String localName = parser.getLocalName();
                 if (!name.equals(localName)) {
-                    // String msg = rb.getString(UNEXPECTED_ELEMENT_IN_XML);
-                    // msg = MessageFormat.format(msg, new Object[] { name,
-                    // localName });
-                    // throw new XMLStreamException(msg);
                     throw new XMLStreamException("Unexpected element with name " + name);
                 }
                 return;
@@ -208,9 +187,7 @@ public class PermissionXMLParser {
         while (true) {
             int event = parser.next();
             if (event == END_DOCUMENT) {
-                throw new XMLStreamException(
-                        // rb.getString(UNEXPECTED_END_IN_XMLDOCUMENT));
-                        "Unexpected element with name " + name);
+                throw new XMLStreamException("Unexpected element with name " + name);
             } else if (event == END_ELEMENT && name.equals(parser.getLocalName())) {
                 return;
             }
@@ -219,30 +196,22 @@ public class PermissionXMLParser {
 
     private void addPermission(String classname, String target, String actions) {
         try {
-            Permission pm = PermissionCreator.getInstance(classname, target, actions);
+            Permission permission = PermissionCreator.getInstance(classname, target, actions);
 
-            if (pm != null) {
-                if (permissionCollectionToBeRestricted != null && permissionCollectionToBeRestricted.implies(pm)) {
+            if (permission != null) {
+                if (permissionCollectionToBeRestricted != null && permissionCollectionToBeRestricted.implies(permission)) {
                     throw new SecurityException("Restricted Permission Declared - fail deployment!");
                 } else {
-                    pc.add(pm);
+                    permissions.add(permission);
                 }
             }
-        } catch (ClassNotFoundException e) {
-            throw new SecurityException(e);
-        } catch (NoSuchMethodException e) {
-            throw new SecurityException(e);
-        } catch (InstantiationException e) {
-            throw new SecurityException(e);
-        } catch (IllegalAccessException e) {
-            throw new SecurityException(e);
-        } catch (InvocationTargetException e) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new SecurityException(e);
         }
     }
 
     protected PermissionCollection getPermissions() {
-        return pc;
+        return permissions;
     }
 
 }

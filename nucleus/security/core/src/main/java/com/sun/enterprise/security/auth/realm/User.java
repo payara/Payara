@@ -48,19 +48,19 @@ import java.util.Enumeration;
  * All users are principals ... perhaps in the native OS, perhaps not.
  *
  * <P>
- * Users always have authentication information, which is used to validate a user's proferred credentials. Different
+ * Users always have authentication information, which is used to validate a user's preferred credentials. Different
  * kinds of realms use different kinds of authentication information. For example, realms could use X.509 public key
  * certificates, shared passphrases, encrypted passwords, smart cards, or biometric data to figure out if the user's
  * credentials are valid.
- * 
+ *
  * <P>
- * Users typically have attributes that identify privileges granted/possesed by the user.
+ * Users typically have attributes that identify privileges granted/possessed by the user.
  *
  * @author Harish Prabandham
  */
 
 public interface User extends Principal {
-    
+
     /**
      * Returns the realm with which this user is associated.
      */
@@ -77,5 +77,5 @@ public interface User extends Principal {
     /**
      * Returns an enumeration of the keys for the attributes supported for this user.
      */
-    Enumeration getAttributeNames();
+    Enumeration<String> getAttributeNames();
 }

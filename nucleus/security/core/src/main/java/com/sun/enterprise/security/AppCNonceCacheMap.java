@@ -41,12 +41,12 @@
 
 package com.sun.enterprise.security;
 
-import org.glassfish.security.common.CNonceCache;
 import java.util.HashMap;
-import java.util.Map;
 
-import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
+
+import org.glassfish.security.common.CNonceCache;
+import org.jvnet.hk2.annotations.Service;
 
 
 
@@ -57,5 +57,5 @@ import javax.inject.Singleton;
 @Service
 @Singleton
 public class AppCNonceCacheMap extends HashMap<String,CNonceCache> {
-    
+    private static final long serialVersionUID = 97138568364523013L;
 }

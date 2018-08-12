@@ -71,7 +71,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 /**
  * <p>
  * This LoginModule authenticates users with X509 certificates.
- * 
+ *
  * <p>
  * If testUser successfully authenticates itself, a <code>PrincipalImpl</code> with the testUser's username is added to
  * the Subject.
@@ -82,7 +82,6 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  *
  * @author Harpreet Singh (harpreet.singh@sun.com)
  */
-
 public class ClientCertificateLoginModule implements LoginModule {
 
     private final static Logger _logger = SecurityLoggerInfo.getLogger();
@@ -131,6 +130,7 @@ public class ClientCertificateLoginModule implements LoginModule {
      * @param options options specified in the login <code>Configuration</code> for this particular
      * <code>LoginModule</code>.
      */
+    @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map sharedState, Map options) {
 
         this.subject = subject;
@@ -152,6 +152,7 @@ public class ClientCertificateLoginModule implements LoginModule {
      *
      * @exception LoginException if this <code>LoginModule</code> is unable to perform the authentication.
      */
+    @Override
     public boolean login() throws LoginException {
 
         // prompt for a username and password
@@ -232,11 +233,12 @@ public class ClientCertificateLoginModule implements LoginModule {
      *
      * @return true if this LoginModule's own login and commit attempts succeeded, or false otherwise.
      */
+    @Override
     public boolean commit() throws LoginException {
         if (succeeded == false) {
             return false;
         }
-        
+
         // Add a Principal (authenticated identity) to the Subject
         // Assume the user we authenticated is the PrincipalImpl
         userPrincipal = new PrincipalImpl(alias);
@@ -281,11 +283,12 @@ public class ClientCertificateLoginModule implements LoginModule {
      *
      * @return false if this LoginModule's own login and/or commit attempts failed, and true otherwise.
      */
+    @Override
     public boolean abort() throws LoginException {
         if (succeeded == false) {
             return false;
         }
-        
+
         if (succeeded == true && commitSucceeded == false) {
             // Login succeeded but overall authentication failed
             succeeded = false;
@@ -296,7 +299,7 @@ public class ClientCertificateLoginModule implements LoginModule {
             // but someone else's commit failed
             logout();
         }
-        
+
         return true;
     }
 
@@ -312,6 +315,7 @@ public class ClientCertificateLoginModule implements LoginModule {
      *
      * @return true in all cases since this <code>LoginModule</code> should not be ignored.
      */
+    @Override
     public boolean logout() throws LoginException {
         // Unset the alias
         ssl = null;
@@ -321,7 +325,7 @@ public class ClientCertificateLoginModule implements LoginModule {
         commitSucceeded = false;
         alias = null;
         userPrincipal = null;
-        
+
         return true;
     }
 

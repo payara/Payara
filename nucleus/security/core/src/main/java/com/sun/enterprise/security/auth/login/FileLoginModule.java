@@ -44,6 +44,7 @@ import static java.util.logging.Level.FINE;
 
 import javax.security.auth.login.LoginException;
 
+import com.sun.enterprise.security.BasePasswordLoginModule;
 import com.sun.enterprise.security.auth.realm.file.FileRealm;
 
 /**
@@ -52,11 +53,10 @@ import com.sun.enterprise.security.auth.realm.file.FileRealm;
  * <P>
  * Provides a file-based implementation of a password login module. Processing is delegated to the FileRealm class.
  *
- * @see com.sun.enterprise.security.auth.login.PasswordLoginModule
  * @see com.sun.enterprise.security.auth.realm.file.FileRealm
  *
  */
-public class FileLoginModule extends PasswordLoginModule {
+public class FileLoginModule extends BasePasswordLoginModule {
 
     /**
      * Perform file authentication. Delegates to FileRealm.
@@ -64,16 +64,11 @@ public class FileLoginModule extends PasswordLoginModule {
      * @throws LoginException If login fails (JAAS login() behavior).
      *
      */
-    protected void authenticate() throws LoginException {
-        if (!(_currentRealm instanceof FileRealm)) {
-            throw new LoginException(sm.getString("filelm.badrealm"));
-        }
-        
-        FileRealm fileRealm = (FileRealm) _currentRealm;
+    @Override
+    protected void authenticateUser() throws LoginException {
+        String[] groups = getRealm(FileRealm.class, "filelm.badrealm").authenticate(_username, getPasswordChar());
 
-        String[] grpList = fileRealm.authenticate(_username, getPasswordChar());
-
-        if (grpList == null) { // JAAS behavior
+        if (groups == null) { // JAAS behavior
             throw new LoginException(sm.getString("filelm.faillogin", _username));
         }
 
@@ -81,6 +76,7 @@ public class FileLoginModule extends PasswordLoginModule {
             _logger.log(FINE, "File login succeeded for: " + _username);
         }
 
-        commitAuthentication(_username, getPasswordChar(), _currentRealm, grpList);
+        commitUserAuthentication(groups);
     }
+
 }

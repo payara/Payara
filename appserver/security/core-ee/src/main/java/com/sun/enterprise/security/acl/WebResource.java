@@ -70,27 +70,33 @@ public class WebResource extends Resource {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == this)
+        if (obj == this) {
             return true;
+        }
 
-        if ((obj == null) || (obj.getClass() != getClass()))
+        if (obj == null || obj.getClass() != getClass())
             return false;
 
-        Resource r = (Resource) obj;
+        Resource otherResource = (Resource) obj;
 
-        return getApplication().equals(r.getApplication()) && getMethod().equals(r.getMethod()) && getName().equals(r.getName());
+        return
+            getApplication().equals(otherResource.getApplication()) &&
+            getMethod().equals(otherResource.getMethod()) &&
+            getName().equals(otherResource.getName());
     }
 
     @Override
     public boolean implies(Resource resource) {
-        if ((resource == null) || (resource.getClass() != getClass()))
+        if (resource == null || resource.getClass() != getClass()) {
             return false;
+        }
 
         WebResource that = (WebResource) resource;
 
         // Application name is not an issue in implies .....
-        if (!getMethod().equals(that.getMethod()))
+        if (!getMethod().equals(that.getMethod())) {
             return false;
+        }
 
         if (this.wildcard) {
             if (that.wildcard)

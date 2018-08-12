@@ -40,16 +40,19 @@
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.login;
 
-import com.sun.enterprise.security.auth.login.PasswordLoginModule;
-import javax.security.auth.login.*;
+import static com.sun.enterprise.security.auth.realm.ldap.LDAPRealm.MODE_FIND_BIND;
+import static com.sun.enterprise.security.auth.realm.ldap.LDAPRealm.PARAM_MODE;
 
+import javax.security.auth.login.LoginException;
+
+import com.sun.enterprise.security.BasePasswordLoginModule;
 import com.sun.enterprise.security.auth.realm.ldap.LDAPRealm;
 
 /**
- * iAS JAAS LoginModule for an LDAP Realm.
+ * Payara JAAS LoginModule for an LDAP Realm.
  *
  * <P>
- * Refer to the LDAPRealm documentation for necessary and optional configuration parameters for the iAS LDAP login
+ * Refer to the LDAPRealm documentation for necessary and optional configuration parameters for the Payara LDAP login
  * support.
  *
  * <P>
@@ -72,20 +75,16 @@ import com.sun.enterprise.security.auth.realm.ldap.LDAPRealm;
  *
  *
  */
-public class LDAPLoginModule extends PasswordLoginModule {
-    
-    private LDAPRealm _ldapRealm;
+public class LDAPLoginModule extends BasePasswordLoginModule {
 
     /**
-     * Performs authentication for the current user.
+     * Perform LDAP authentication. Delegates to LDAPRealm.
      *
+     * @throws LoginException If login fails (JAAS login() behavior).
      */
-    protected void authenticate() throws LoginException {
-        if (!(_currentRealm instanceof LDAPRealm)) {
-            String msg = sm.getString("ldaplm.badrealm");
-            throw new LoginException(msg);
-        }
-        _ldapRealm = (LDAPRealm) _currentRealm;
+    @Override
+    protected void authenticateUser() throws LoginException {
+        LDAPRealm ldapRealm = getRealm(LDAPRealm.class, "ldaplm.badrealm");
 
         // Enforce that password cannot be empty.
         // ldap may grant login on empty password!
@@ -93,14 +92,14 @@ public class LDAPLoginModule extends PasswordLoginModule {
             throw new LoginException(sm.getString("ldaplm.emptypassword", _username));
         }
 
-        String mode = _currentRealm.getProperty(LDAPRealm.PARAM_MODE);
+        String mode = ldapRealm.getProperty(PARAM_MODE);
 
-        if (LDAPRealm.MODE_FIND_BIND.equals(mode)) {
-            String[] grpList = _ldapRealm.findAndBind(_username, getPasswordChar());
-            commitAuthentication(_username, getPasswordChar(), _currentRealm, grpList);
-        } else {
-            String msg = sm.getString("ldaplm.badmode", mode);
-            throw new LoginException(msg);
+        if (!MODE_FIND_BIND.equals(mode)) {
+            throw new LoginException(sm.getString("ldaplm.badmode", mode));
         }
+
+        String[] groups = ldapRealm.findAndBind(_username, getPasswordChar());
+
+        commitUserAuthentication(groups);
     }
 }

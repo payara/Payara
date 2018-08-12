@@ -109,17 +109,11 @@ public class GroupMapper {
         }
     }
 
-    /*
-     * public void traverse() { Iterator<String> it = groupMappingTable.keySet().iterator(); while(it.hasNext()) { String
-     * key = it.next(); System.out.println(); System.out.print( key + "<<<Is Mapped to>>>"); ArrayList<String> list = new
-     * ArrayList<String>(); getMappedGroups(key, list); if (list != null) { for (String str : list) { System.out.print(str +
-     * ", "); } } System.out.println(); } }
-     */
     /**
      * @param args the command line arguments
-     * 
-     *        public static void main(String[] args) { // TODO code application logic here GroupMapper mapper = new
-     *        GroupMapper(); mapper.parse(mappingStr); mapper.traverse(); }
+     *
+     * public static void main(String[] args) { // TODO code application logic here GroupMapper mapper =
+     * new GroupMapper(); mapper.parse(mappingStr); mapper.traverse(); }
      */
 
     private void getMappedGroups(String group, String str, ArrayList<String> result) {
