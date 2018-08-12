@@ -130,6 +130,7 @@
                                     fish.payara.nucleus.notification.domain,
                                     fish.payara.nucleus.notification.service,
                                     fish.payara.cdi.jsr107.implementation,
+                                    io.opentracing,
                                     javax.inject,
                                     javax.enterprise.util,
                                     javax.security.enterprise.credential,

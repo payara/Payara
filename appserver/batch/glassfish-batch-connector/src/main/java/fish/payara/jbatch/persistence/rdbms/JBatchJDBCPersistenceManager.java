@@ -328,21 +328,21 @@ public class JBatchJDBCPersistenceManager implements
 	 **/
 	protected void checkTables() throws SQLException {
 		setCreateDerbyStringsMap(tableNames);
-		createDerbyTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
 				createDerbyStrings.get(DERBY_CREATE_TABLE_CHECKPOINTDATA));
 
-		createDerbyTableNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
 				createDerbyStrings.get(DERBY_CREATE_TABLE_JOBINSTANCEDATA));
 
-		createDerbyTableNotExists(tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
 				createDerbyStrings
 						.get(DERBY_CREATE_TABLE_EXECUTIONINSTANCEDATA));
-		createDerbyTableNotExists(
+		createTableIfNotExists(
 				tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY),
 				createDerbyStrings.get(DERBY_CREATE_TABLE_STEPINSTANCEDATA));
-		createDerbyTableNotExists(tableNames.get(JOB_STATUS_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(JOB_STATUS_TABLE_KEY),
 				createDerbyStrings.get(DERBY_CREATE_TABLE_JOBSTATUS));
-		createDerbyTableNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
 				createDerbyStrings.get(DERBY_CREATE_TABLE_STEPSTATUS));
 
 	}
@@ -365,33 +365,53 @@ public class JBatchJDBCPersistenceManager implements
          }
      
 	/**
-	 * Create the Derby tables
+	 *  Create the jbatch tables if they do not exist
 	 **/
-	protected void createDerbyTableNotExists(String tableName, String createTableStatement) throws SQLException {
-		logger.entering(CLASSNAME, "createIfNotExists", new Object[] { tableName, createTableStatement });
+	protected void createTableIfNotExists(String tableName, String createTableStatement) throws SQLException {
+		logger.entering(CLASSNAME, "createTableIfNotExists", new Object[] { tableName, createTableStatement });
 		
 		try (Connection connection = getConnection()) {
-			try (ResultSet resultSet = connection.getMetaData().getTables(null, schema, tableName, null)) {
-    			if (!resultSet.next()) {
-    				logger.log(INFO, tableName + " table does not exists. Trying to create it.");
-    				try (PreparedStatement statement = connection.prepareStatement(createTableStatement)) {
-    				    statement.executeUpdate();
-    				}
-    			    }
+                    if (!checkIfTableExists(dataSource, tableName, schema)) {
+			logger.log(INFO, tableName + " table does not exists. Trying to create it.");
+                            try (PreparedStatement statement = connection.prepareStatement(createTableStatement)) {
+                                statement.executeUpdate();
+                            }
 		        }
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
 			throw e;
-		}
+		} finally {
+                    logger.exiting(CLASSNAME, "createTableIfNotExists");
+                }	
+        }
+        
+         public boolean checkIfTableExists(DataSource dSource, String tableName, String schemaName) {
+                boolean result = true;
+                dataSource = dSource;
 
-		logger.exiting(CLASSNAME, "createIfNotExists");
-	}
+                try (Connection connection = dataSource.getConnection()) {
+                    schema = schemaName;
+
+                    if (!isSchemaValid()) {
+                        setDefaultSchema();
+                    }
+                    try (ResultSet resultSet = connection.getMetaData().getTables(null, schema, tableName, null)) {
+                        if (!resultSet.next()) {
+                            result = false;
+                        }
+                    }
+                } catch (SQLException ex) {
+                    logger.severe(ex.getLocalizedMessage());
+                }
+
+                return result;
+        }
 
 	/**
 	 * Retrieve the number of rows in the resultset. This method is used to
 	 * check if a table exists in a given schema
 	 **/
-
+	
 	public int getTableRowCount(ResultSet resultSet) throws SQLException {
 		int rowcount = 0;
 
@@ -486,18 +506,18 @@ public class JBatchJDBCPersistenceManager implements
 	 * @param connection
 	 * @throws SQLException
 	 */
-	protected void setSchemaOnConnection(Connection connection) throws SQLException {
-		logger.finest("Entering " + CLASSNAME + ".setSchemaOnConnection()");
+        protected void setSchemaOnConnection(Connection connection) throws SQLException {
+                logger.finest("Entering " + CLASSNAME + ".setSchemaOnConnection()");
 
-		if (!(connection.getMetaData().getDatabaseProductName().contains("Oracle"))) {
-			try (PreparedStatement preparedStatement = connection.prepareStatement("SET SCHEMA ?")) {
-			    preparedStatement.setString(1, schema);
-	            preparedStatement.executeUpdate();
-			}
-		}
-
-		logger.finest("Exiting " + CLASSNAME + ".setSchemaOnConnection()");
-	}
+                if (!(connection.getMetaData().getDatabaseProductName().contains("Oracle"))) {
+                    try (PreparedStatement preparedStatement = connection.prepareStatement("SET SCHEMA ?")) {
+                        preparedStatement.setString(1, schema);
+                        preparedStatement.executeUpdate();
+                    } finally {
+                        logger.finest("Exiting " + CLASSNAME + ".setSchemaOnConnection()");
+                    }
+                }
+        }
 
 	/**
 	 * select data from DB table

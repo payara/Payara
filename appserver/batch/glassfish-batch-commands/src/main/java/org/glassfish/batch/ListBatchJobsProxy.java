@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.batch;
 
@@ -53,6 +53,9 @@ import org.jvnet.hk2.annotations.Service;
 
 import java.util.Properties;
 import javax.validation.constraints.Min;
+import static org.glassfish.batch.BatchConstants.LIST_BATCH_JOBS;
+import static org.glassfish.batch.BatchConstants.LIST_JOBS_COUNT;
+import static org.glassfish.batch.BatchConstants.SIMPLE_MODE;
 
 /**
  * Command to list batch jobs info
@@ -107,14 +110,14 @@ public class ListBatchJobsProxy
     protected void postInvoke(AdminCommandContext context, ActionReport subReport) {
         Properties subProperties = subReport.getExtraProperties();
         Properties extraProps = context.getActionReport().getExtraProperties();
-        if (subProperties.get("simpleMode") != null) {
-            extraProps.put("simpleMode", subProperties.get("simpleMode"));
+        if (subProperties.get(SIMPLE_MODE) != null) {
+            extraProps.put(SIMPLE_MODE, subProperties.get(SIMPLE_MODE));
         }
-        if (subProperties.get("listBatchJobs") != null) {
-            extraProps.put("listBatchJobs", subProperties.get("listBatchJobs"));
+        if (subProperties.get(LIST_BATCH_JOBS) != null) {
+            extraProps.put(LIST_BATCH_JOBS, subProperties.get(LIST_BATCH_JOBS));
         }
-        if (subProperties.get("listJobsCount") != null) {
-            extraProps.put("listJobsCount", subProperties.get("listJobsCount"));
+        if (subProperties.get(LIST_JOBS_COUNT) != null) {
+            extraProps.put(LIST_JOBS_COUNT, subProperties.get(LIST_JOBS_COUNT));
         }
     }
 }

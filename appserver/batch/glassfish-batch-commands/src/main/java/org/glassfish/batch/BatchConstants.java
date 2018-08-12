@@ -1,6 +1,7 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,43 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.asadmin.recorder;
-
-import org.glassfish.api.admin.config.ConfigExtension;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
+package org.glassfish.batch;
 
 /**
  *
- * @author Andrew Pielage
+ * @author Susan Rai
  */
-@Configured
-public interface AsadminRecorderConfiguration extends ConfigBeanProxy, ConfigExtension
-{
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    public String isEnabled();
-    public void setEnabled(Boolean enabled);
-    
-    @Attribute(defaultValue = "true", dataType = Boolean.class)
-    public String filterCommands();
-    public void setFilterCommands(Boolean filterCommands);
-    
-    @Attribute(defaultValue = "${com.sun.aas.instanceRoot}/asadmin-commands.txt")
-    public String getOutputLocation();
-    public void setOutputLocation(String outputLocation);
-    
-    @Attribute(defaultValue = "version,_(.*),list(.*),get(.*),(.*)-list-services,uptime,"
-            + "enable-asadmin-recorder,disable-asadmin-recorder,"
-            + "set-asadmin-recorder-configuration,asadmin-recorder-enabled")
-    public String getFilteredCommands();
-    public void setFilteredCommands(String filteredCommands);
-    
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    public String prependEnabled();
-    public void setPrependEnabled(Boolean prependEnabled);
-    
-    @Attribute(defaultValue = "")
-    public String getPrependedOptions();
-    public void setPrependedOptions(String prependedOptions);
+public final class BatchConstants {
+
+    public static final String SIMPLE_MODE = "simpleMode";
+    public static final String LIST_BATCH_JOBS = "listBatchJobs";
+    public static final String LIST_JOBS_COUNT = "listJobsCount";
+    public static final String LIST_BATCH_JOBS_STEPS = "listBatchJobSteps";
+    public static final String LIST_BATCH_JOBS_EXECUTIONS = "listBatchJobExecutions";
+
 }

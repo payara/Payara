@@ -43,7 +43,8 @@ import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
 import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
@@ -51,9 +52,13 @@ import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 import io.opentracing.tag.Tags;
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
@@ -130,7 +135,8 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
             SpanBuilder spanBuilder = tracer.buildSpan(requestContext.getMethod())
                     .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
                     .withTag(Tags.HTTP_METHOD.getKey(), requestContext.getMethod())
-                    .withTag(Tags.HTTP_URL.getKey(), requestContext.getUri().toURL().toString());
+                    .withTag(Tags.HTTP_URL.getKey(), requestContext.getUri().toURL().toString())
+                    .withTag(Tags.COMPONENT.getKey(), "jaxrs");
 
             // Get the propagated span context from the request if present
             // This is required to account for asynchronous client requests
@@ -140,19 +146,21 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
             // If there is a propagated span context, set it as a parent of the new span
             if (parentSpanContext != null) {
                 spanBuilder.asChildOf(parentSpanContext);
+                
+                parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, new MultivaluedMapToTextMap(requestContext.getHeaders()));
+                if (parentSpanContext != null) {
+                    spanBuilder.asChildOf(parentSpanContext);
+                }
             }
 
             // Start the span and mark it as active
-            ActiveSpan activeSpan = spanBuilder.startActive();
+            Span activeSpan = spanBuilder.startActive(true).span();
 
-            // Don't inject if using in-built tracer as we don't support it yet
-            if (!(tracer instanceof fish.payara.opentracing.tracer.Tracer)) {
                 // Inject the active span context for propagation
                 tracer.inject(
                         activeSpan.context(),
                         Format.Builtin.HTTP_HEADERS,
                         new MultivaluedMapToTextMap(requestContext.getHeaders()));
-            }
         }
     }
 
@@ -162,9 +170,11 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
         // If request tracing is enabled, and there's a trace actually in progress, add info about method
         if (requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()) {
             // Get the active span from the application's tracer instance
-            try (ActiveSpan activeSpan = openTracing.getTracer(openTracing.getApplicationName(
+            try (Scope activeScope = openTracing.getTracer(openTracing.getApplicationName(
                     serviceLocator.getService(InvocationManager.class)))
-                    .activeSpan()) {
+                    .scopeManager().active()) {
+                
+                Span activeSpan = activeScope.span();
                 // Get the response status and add it to the active span
                 StatusType statusInfo = responseContext.getStatusInfo();
                 activeSpan.setTag(Tags.HTTP_STATUS.getKey(), statusInfo.getStatusCode());
@@ -197,8 +207,8 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
 
         @Override
         public Iterator<Map.Entry<String, String>> iterator() {
-            // Not needed as we're not iterating over the map
-            throw new UnsupportedOperationException("Not supported yet.");
+            return new MultiValuedMapStringIterator(map.entrySet());
+            
         }
 
         @Override
@@ -206,6 +216,41 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
             map.add(key, value);
         }
 
+    }
+    
+    private class MultiValuedMapStringIterator implements Iterator<Map.Entry<String, String>> {
+
+        private final Iterator<Map.Entry<String, List<Object>>> mapIterator;
+
+        private Map.Entry<String, List<Object>> mapEntry;
+        private Iterator<Object> mapEntryIterator;
+        
+        public MultiValuedMapStringIterator(Set<Map.Entry<String, List<Object>>> entrySet){
+            mapIterator = entrySet.iterator();
+        }
+        
+        @Override
+        public boolean hasNext() {
+            // True if the MapEntry (value) is not equal to null and has another value, or if there is another key
+            return ((mapEntryIterator != null && mapEntryIterator.hasNext()) || mapIterator.hasNext());
+        }
+
+        @Override
+        public Map.Entry<String, String> next() {
+            if (mapEntry == null || (!mapEntryIterator.hasNext() && mapIterator.hasNext())) {
+                mapEntry = mapIterator.next();
+                mapEntryIterator = mapEntry.getValue().iterator();
+            }
+
+            // Return either the next map entry with toString, or an entry with no value if there isn't one
+            if (mapEntryIterator.hasNext()) {
+                return new AbstractMap.SimpleImmutableEntry<>(mapEntry.getKey(), mapEntryIterator.next().toString());
+            } else {
+                return new AbstractMap.SimpleImmutableEntry<>(mapEntry.getKey(), null);
+            }
+        }
+        
+        
     }
 
 }

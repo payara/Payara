@@ -41,32 +41,58 @@ package fish.payara.opentracing.tracer;
 
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.notification.requesttracing.RequestTraceSpan.SpanContextRelationshipType;
-import fish.payara.opentracing.span.ActiveSpanSource;
-import io.opentracing.ActiveSpan;
-import io.opentracing.BaseSpan;
+import fish.payara.notification.requesttracing.RequestTraceSpanContext;
+
+import io.opentracing.Scope;
+import io.opentracing.ScopeManager;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.propagation.Format;
+import io.opentracing.propagation.TextMap;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.UncheckedIOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.UUID;
+
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Implementation of the OpenTracing Tracer class.
- * 
+ *
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
-public class Tracer extends ActiveSpanSource implements io.opentracing.Tracer {
+public class Tracer implements io.opentracing.Tracer {
 
     private final String applicationName;
+    private final ScopeManager scopeManager;
+    
+    private static final String TRACEID_KEY = "traceid";
+    private static final String SPANID_KEY = "spanid";
     
     /**
      * Constructor that registers this Tracer to an application.
-     * 
+     *
      * @param applicationName The application to register this tracer to
      */
     public Tracer(String applicationName) {
         this.applicationName = applicationName;
+        scopeManager = new fish.payara.opentracing.ScopeManager();
     }
-    
+
     @Override
     public SpanBuilder buildSpan(String operationName) {
         return new SpanBuilder(operationName);
@@ -74,14 +100,156 @@ public class Tracer extends ActiveSpanSource implements io.opentracing.Tracer {
 
     @Override
     public <C> void inject(SpanContext spanContext, Format<C> format, C carrier) {
-        // To Do
-        throw new UnsupportedOperationException("Not supported yet."); 
+        
+        Iterable<Map.Entry<String, String>> baggageItems = spanContext.baggageItems();
+        RequestTraceSpanContext payaraSpanContext = (RequestTraceSpanContext) spanContext;
+            
+        if (carrier instanceof TextMap) {
+            TextMap map = (TextMap) carrier;
+            
+            if (format.equals(Format.Builtin.HTTP_HEADERS)) {          
+                for (Map.Entry<String, String> baggage : baggageItems) {
+                    map.put(encodeURLString(baggage.getKey()), encodeURLString(baggage.getValue()));
+                }
+                map.put(TRACEID_KEY, encodeURLString(payaraSpanContext.getTraceId().toString()));
+                map.put(SPANID_KEY, encodeURLString(payaraSpanContext.getSpanId().toString()));
+            } else if (format.equals(Format.Builtin.TEXT_MAP)) {
+                for (Map.Entry<String, String> baggage : baggageItems) {
+                    map.put(baggage.getKey(), baggage.getValue());
+                }
+                map.put(TRACEID_KEY, payaraSpanContext.getTraceId().toString());
+                map.put(SPANID_KEY, payaraSpanContext.getSpanId().toString());
+            } else {
+                throw new InvalidCarrierFormatException(format, carrier);
+            }
+
+        } else if (carrier instanceof ByteBuffer) {
+            
+            ByteBuffer buffer = (ByteBuffer) carrier;
+            if (format.equals(Format.Builtin.BINARY)) {
+                ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
+                try {
+                    ObjectOutputStream objectWriter = new ObjectOutputStream(bytesOut);
+                    objectWriter.writeObject(spanContext);
+                    objectWriter.flush();
+                    buffer.put(bytesOut.toByteArray());
+                } catch (IOException ex) {
+                    Logger.getLogger(Tracer.class.getName()).log(Level.WARNING, null, ex);
+                    throw new UncheckedIOException(ex);
+                }                
+                
+            } else {
+                throw new InvalidCarrierFormatException(format, carrier);
+            }
+        } else {
+            throw new InvalidCarrierFormatException(format, carrier);
+        }
     }
 
     @Override
     public <C> SpanContext extract(Format<C> format, C carrier) {
-        // To Do
-        throw new UnsupportedOperationException("Not supported yet."); 
+        boolean traceIDRecieved = false;
+        
+        if (carrier instanceof TextMap) {
+
+            TextMap map = (TextMap) carrier;
+            Map<String,String> baggageItems = new HashMap<>();
+            Iterator<Map.Entry<String, String>> allEntries = map.iterator();
+            
+            UUID traceId = null;
+            UUID spanId = null;
+
+            if (format.equals(Format.Builtin.HTTP_HEADERS)) {
+                while (allEntries.hasNext()) {
+                    Entry<String, String> entry = allEntries.next();
+                    switch (entry.getKey()) {
+                        case TRACEID_KEY:
+                            traceId = UUID.fromString(decodeURLString(entry.getValue()));
+                            traceIDRecieved = true;
+                            break;
+                        case SPANID_KEY:
+                            spanId = UUID.fromString(decodeURLString(entry.getValue()));
+                            break;
+                        default:
+                            baggageItems.put(decodeURLString(entry.getKey()), decodeURLString(entry.getValue()));
+                            break;
+                    }
+                }
+            
+            } else if (format.equals(Format.Builtin.TEXT_MAP)){
+                while (allEntries.hasNext()) {
+                    Entry<String, String> entry = allEntries.next();
+                    switch (entry.getKey()) {
+                        case TRACEID_KEY:
+                            traceId = UUID.fromString(entry.getValue());
+                            traceIDRecieved = true;
+                            break;
+                        case SPANID_KEY:
+                            spanId = UUID.fromString(entry.getValue());
+                            break;
+                        default:
+                            baggageItems.put(entry.getKey(), entry.getValue());
+                            break;
+                    }
+                }
+            } else {
+                throw new InvalidCarrierFormatException(format, carrier);
+            }
+            if (traceIDRecieved) {
+                if (spanId == null){
+                    throw new IllegalArgumentException("No SpanId recieved");
+                }
+                return new RequestTraceSpanContext(traceId, spanId);
+            } else {
+                return null; //Did not recieve a SpanContext
+            }
+        } else if (carrier instanceof ByteBuffer){
+            ByteBuffer buffer = (ByteBuffer) carrier;
+            if (format.equals(Format.Builtin.BINARY)){
+                try {
+                    ByteArrayInputStream inputStream = new ByteArrayInputStream(buffer.array());
+                    ObjectInputStream objectStream = new ObjectInputStream(inputStream);
+                    return (SpanContext) objectStream.readObject();
+                } catch (IOException | ClassNotFoundException | ClassCastException ex) {
+                    Logger.getLogger(Tracer.class.getName()).log(Level.FINER, null, ex);
+                    throw new IllegalArgumentException(ex); //Serialised state is invalid
+                }
+            } else {
+                throw new InvalidCarrierFormatException(format, carrier);
+            }
+        }
+
+        throw new InvalidCarrierFormatException(format, carrier);
+    }
+
+    @Override
+    public ScopeManager scopeManager() {
+        return scopeManager;
+    }
+
+    @Override
+    public Span activeSpan() {
+        Scope activeScope = scopeManager().active();
+        if (activeScope != null) {
+            return activeScope.span();
+        }
+        return null;
+    }
+    
+    private String decodeURLString(String toDecode) {
+        try {
+            return URLDecoder.decode(toDecode, StandardCharsets.UTF_8.displayName());
+        } catch (UnsupportedEncodingException ex) {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+    
+    private String encodeURLString(String toEncode) {
+        try {
+            return URLEncoder.encode(toEncode, StandardCharsets.UTF_8.displayName());
+        } catch (UnsupportedEncodingException ex) {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
     /**
@@ -95,7 +263,7 @@ public class Tracer extends ActiveSpanSource implements io.opentracing.Tracer {
 
         /**
          * Constructor that gives the Span an operation name.
-         * 
+         *
          * @param operationName The name to give the Span.
          */
         public SpanBuilder(String operationName) {
@@ -106,22 +274,20 @@ public class Tracer extends ActiveSpanSource implements io.opentracing.Tracer {
 
         @Override
         public SpanBuilder asChildOf(SpanContext parentSpanContext) {
-            span.addSpanReference(((fish.payara.opentracing.span.Span.SpanContext) parentSpanContext),
+            span.addSpanReference(((RequestTraceSpanContext) parentSpanContext),
                     RequestTraceSpan.SpanContextRelationshipType.ChildOf);
             return this;
         }
 
         @Override
-        public SpanBuilder asChildOf(BaseSpan<?> bs) {
-            span.addSpanReference((fish.payara.opentracing.span.Span.SpanContext) bs.context(), 
-                    SpanContextRelationshipType.ChildOf);
+        public SpanBuilder addReference(String referenceType, SpanContext referencedContext) {
+            span.addSpanReference((RequestTraceSpanContext) referencedContext, SpanContextRelationshipType.valueOf(referenceType));
             return this;
         }
-        
+
         @Override
-        public SpanBuilder addReference(String referenceType, SpanContext referencedContext) {
-            span.addSpanReference((fish.payara.opentracing.span.Span.SpanContext) referencedContext,
-                    SpanContextRelationshipType.valueOf(referenceType));
+        public SpanBuilder asChildOf(Span parentSpan) {
+            asChildOf(parentSpan.context());
             return this;
         }
 
@@ -156,18 +322,25 @@ public class Tracer extends ActiveSpanSource implements io.opentracing.Tracer {
         }
 
         @Override
-        public ActiveSpan startActive() {
-            return makeActive(startManual());
+        public Scope startActive(boolean bln) {
+            Scope origin = scopeManager().active();
+            if (origin != null) {
+                Span parent = origin.span();
+                asChildOf(parent);
+            }
+            origin = scopeManager.activate(span, bln);
+            return origin;
+            
         }
-        
+
         @Override
         public Span startManual() {
             // If we shouldn't ignore the currently active span, set it as this span's parent
             if (!ignoreActiveSpan) {
-                fish.payara.opentracing.span.ActiveSpan activeSpan = (fish.payara.opentracing.span.ActiveSpan) activeSpan();
-                
+                fish.payara.opentracing.span.Span activeSpan = (fish.payara.opentracing.span.Span) activeSpan();
+
                 if (activeSpan != null) {
-                    span.addSpanReference(activeSpan.getWrappedSpan().getSpanContext(), SpanContextRelationshipType.ChildOf);
+                    span.addSpanReference(activeSpan.getSpanContext(), SpanContextRelationshipType.ChildOf);
                 }
             }
 

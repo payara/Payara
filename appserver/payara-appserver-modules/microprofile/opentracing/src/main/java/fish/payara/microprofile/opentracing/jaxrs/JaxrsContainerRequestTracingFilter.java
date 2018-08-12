@@ -42,7 +42,8 @@ package fish.payara.microprofile.opentracing.jaxrs;
 import fish.payara.microprofile.opentracing.cdi.OpenTracingCdiUtils;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
@@ -59,6 +60,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
+import javax.annotation.Priority;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -79,6 +81,7 @@ import org.glassfish.internal.api.Globals;
  * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
+@Priority(500)
 public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     private static final Logger logger = Logger.getLogger(JaxrsContainerRequestTracingFilter.class.getName());
@@ -128,29 +131,30 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                     Traced.class, "value", resourceInfo, boolean.class)
                     .orElse(tracedAnnotation.value())) {
                 // Get the application's tracer instance
-                Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
-                        serviceLocator.getService(InvocationManager.class)));
+                Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(serviceLocator.getService(InvocationManager.class)));
                 
                 // Create a Span and instrument it with details about the request
                 SpanBuilder spanBuilder = tracer.buildSpan(determineOperationName(requestContext, tracedAnnotation))
                         .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
                         .withTag(Tags.HTTP_METHOD.getKey(), requestContext.getMethod())
-                        .withTag(Tags.HTTP_URL.getKey(), requestContext.getUriInfo().getRequestUri().toURL().toString());
+                        .withTag(Tags.HTTP_URL.getKey(), requestContext.getUriInfo().getRequestUri().toURL().toString())
+                        .withTag(Tags.COMPONENT.getKey(), "jaxrs");
 
-                // Don't extract a context if using in-built tracer as we don't support it yet
-                if (!(tracer instanceof fish.payara.opentracing.tracer.Tracer)) {
+                SpanContext spanContext = null;
+                try {
                     // Extract the context from the tracer if there is one
-                    SpanContext spanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, new MultivaluedMapToTextMap(
-                            requestContext.getHeaders()));
+                    spanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, new MultivaluedMapToTextMap(requestContext.getHeaders()));
+                } catch (IllegalArgumentException e){
+                    logger.log(Level.WARNING, e.getMessage());
+                }
 
-                    // If there was a context injected into the tracer, add it as a parent of the new span
-                    if (spanContext != null) {
-                        spanBuilder.asChildOf(spanContext);
-                    }
+                // If there was a context injected into the tracer, add it as a parent of the new span
+                if (spanContext != null) {
+                    spanBuilder.asChildOf(spanContext);
                 }
 
                 // Start the span and continue on to the targeted method
-                spanBuilder.startActive();
+                spanBuilder.startActive(true);
             }
         }
     }
@@ -186,9 +190,15 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                 // should trace the method...
                 if (tracedAnnotation == null || (boolean) OpenTracingCdiUtils.getConfigOverrideValue(
                         Traced.class, "value", resourceInfo, boolean.class).orElse(tracedAnnotation.value())) {
-                    // Get the active span from the application's tracer - this *should* never be null
-                    try (ActiveSpan activeSpan = openTracing.getTracer(openTracing.getApplicationName(
-                        serviceLocator.getService(InvocationManager.class))).activeSpan()) {
+                    // Get the active scope and span from the application's tracer - this *should* never be null
+                    try (Scope activeScope = openTracing.getTracer(openTracing.getApplicationName(
+                        serviceLocator.getService(InvocationManager.class))).scopeManager().active()) {
+                        Span activeSpan = activeScope.span();
+                        
+                        // Get the application's tracer instance
+                        //Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(serviceLocator.getService(InvocationManager.class)));
+                        //tracer.inject(activeSpan.context(), Format.Builtin.HTTP_HEADERS, new MultivaluedMapToTextMap(responseContext.getStringHeaders()));
+                        
                         // Get and add the response status to the active span
                         Response.StatusType statusInfo = responseContext.getStatusInfo();
                         activeSpan.setTag(Tags.HTTP_STATUS.getKey(), statusInfo.getStatusCode());

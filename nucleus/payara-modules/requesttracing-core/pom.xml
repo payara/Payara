@@ -136,5 +136,11 @@
             <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-api</artifactId>
+            <version>${opentracing.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
