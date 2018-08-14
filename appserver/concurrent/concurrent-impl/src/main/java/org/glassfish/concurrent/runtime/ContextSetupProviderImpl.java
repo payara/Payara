@@ -66,17 +66,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
-import fish.payara.notification.requesttracing.EventType;
 import fish.payara.notification.requesttracing.RequestTraceSpanContext;
 import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.propagation.Format;
-import java.util.HashMap;
 import org.glassfish.internal.api.Globals;
 
 public class ContextSetupProviderImpl implements ContextSetupProvider {
@@ -253,7 +249,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         
         SpanContext spanContext = tracer.extract(Format.Builtin.TEXT_MAP, new MapToTextMap(handle.getSpanContextMap()));
         
-        if (spanContext != null && spanContext instanceof RequestTraceSpanContext) {
+        if (spanContext != null) {
             // Start a trace in the request tracing system
             SpanBuilder builder = tracer.buildSpan("executeConcurrentContext")
                     .asChildOf(spanContext)
@@ -269,11 +265,15 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             builder.withTag("Thread Name", Thread.currentThread().getName());
             
             // Check for the presence of a propagated parent operation name
-            String operationName = ((RequestTraceSpanContext) spanContext).getBaggageItems().get("operation.name");
-            if (operationName != null) {
-                builder.withTag("Parent Operation Name", operationName);
+            try {
+                String operationName = ((RequestTraceSpanContext) spanContext).getBaggageItems().get("operation.name");
+                if (operationName != null) {
+                    builder.withTag("Parent Operation Name", operationName);
+                }
+            } catch (ClassCastException cce) {
+                logger.log(Level.FINE, "ClassCastException caught converting Span Context", cce);
             }
-
+            
             builder.startActive(true);
         }
     }

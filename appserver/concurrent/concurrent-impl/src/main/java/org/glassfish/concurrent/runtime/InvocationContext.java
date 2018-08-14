@@ -107,7 +107,10 @@ public class InvocationContext implements ContextHandle {
                     try {
                         ((RequestTraceSpan) activeSpan).setTraceId(requestTracing.getConversationID());
                     } catch (ClassCastException cce) {
-                        Logger.getLogger(InvocationContext.class).log(Level.FINE, "Caught ClassCastException", cce);
+                        Logger.getLogger(InvocationContext.class).log(
+                                Level.FINE, 
+                                "ClassCastException caught converting Span", 
+                                cce);
                     }
                     
                     spanContext = activeSpan.context();
