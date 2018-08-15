@@ -122,7 +122,15 @@ public class InvocationContext implements ContextHandle {
                             requestTracing.getStartingTraceID());
                 }
                 
-                tracer.inject(spanContext, Format.Builtin.TEXT_MAP, new MapToTextMap(spanContextMap = new HashMap()));
+                // Check to see if we're using the mock tracer to prevent ClassCastExceptions
+                try {
+                    tracer.inject(spanContext, Format.Builtin.TEXT_MAP, new MapToTextMap(spanContextMap = new HashMap()));
+                } catch (ClassCastException cce) {
+                    Logger.getLogger(InvocationContext.class).log(
+                            Level.FINE, 
+                            "ClassCastException caught injecting SpanContext", 
+                            cce);
+                }
             }   
         }    
     }
