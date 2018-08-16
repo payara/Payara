@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor.jvm;
 
@@ -59,11 +60,11 @@ import org.glassfish.gmbal.ManagedObject;
 @Description( "JVM Compilation Statistics" )
 public class JVMCompilationStatsProvider {
 
-    private CompilationMXBean compBean = ManagementFactory.getCompilationMXBean();
+    private final CompilationMXBean compBean = ManagementFactory.getCompilationMXBean();
 
-    private StringStatisticImpl compilerName = new StringStatisticImpl("Name", "String",
+    private final StringStatisticImpl compilerName = new StringStatisticImpl("Name", "String",
                 "Name of the Just-in-time (JIT) compiler" );
-    private CountStatisticImpl totalCompilationTime = new CountStatisticImpl(
+    private final CountStatisticImpl totalCompilationTime = new CountStatisticImpl(
             "TotalCompilationTime", CountStatisticImpl.UNIT_MILLISECOND,
                 "Approximate accumlated elapsed time (in milliseconds) spent in compilation" );
 

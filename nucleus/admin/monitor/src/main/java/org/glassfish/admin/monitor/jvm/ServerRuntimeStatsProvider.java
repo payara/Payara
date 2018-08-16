@@ -42,11 +42,6 @@ package org.glassfish.admin.monitor.jvm;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.util.List;
-import org.glassfish.external.statistics.CountStatistic;
-import org.glassfish.external.statistics.impl.CountStatisticImpl;
-import org.glassfish.external.statistics.StringStatistic;
-import org.glassfish.external.statistics.impl.StringStatisticImpl;
 import org.glassfish.gmbal.AMXMetadata;
 import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;

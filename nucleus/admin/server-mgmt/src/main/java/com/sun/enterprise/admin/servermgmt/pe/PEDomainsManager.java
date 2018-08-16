@@ -86,19 +86,7 @@ public class PEDomainsManager extends RepositoryManager
             throw new DomainException(ex);
         }
     }
-
-    /*
-    public void validateAdminUserAndPassword(DomainConfig domainConfig) 
-        throws DomainException
-    {
-        try {
-            validateAdminUserAndPassword(domainConfig, getDomainUser(domainConfig),
-                getDomainPasswordClear(domainConfig));
-        } catch (RepositoryException ex) {
-            throw new DomainException(ex);
-        }
-    }
-    */
+    
     @Override
     public void validateMasterPassword(DomainConfig domainConfig) 
         throws DomainException
@@ -110,8 +98,6 @@ public class PEDomainsManager extends RepositoryManager
         }
     }
     
-    /**
-     */
     protected void createJBIInstance(String instanceName, 
                    DomainConfig domainConfig) throws DomainException
     {        
@@ -243,12 +229,15 @@ public class PEDomainsManager extends RepositoryManager
     
     protected static boolean saveMasterPassword(DomainConfig domainConfig) {
         Boolean b = (Boolean)domainConfig.get(DomainConfig.K_SAVE_MASTER_PASSWORD);
-        return b.booleanValue();
+        return b;
     }
     
     /**
      * Changes the master password for the domain
+     * @param config
+     * @throws DomainException
      */    
+    @Override
     public void changeMasterPassword(DomainConfig config) throws DomainException
     {                                      
         try {

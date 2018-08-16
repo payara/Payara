@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor.jvm;
 
@@ -59,16 +60,16 @@ import org.glassfish.gmbal.ManagedObject;
 @Description( "JVM Operating System Statistics" )
 public class JVMOSStatsProvider {
 
-    private OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+    private final OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
 
-    private StringStatisticImpl arch = new StringStatisticImpl("Architecture", "String",
+    private final StringStatisticImpl arch = new StringStatisticImpl("Architecture", "String",
                 "Operating system architecture" );
-    private CountStatisticImpl availableProcessors = new CountStatisticImpl(
+    private final CountStatisticImpl availableProcessors = new CountStatisticImpl(
             "AvailableProcessors", CountStatisticImpl.UNIT_COUNT,
                 "Number of processors available to the Java virtual machine" );
-    private StringStatisticImpl osName = new StringStatisticImpl("Name", "String",
+    private final StringStatisticImpl osName = new StringStatisticImpl("Name", "String",
                 "Operating system name" );
-    private StringStatisticImpl osVersion = new StringStatisticImpl("Version", "String",
+    private final StringStatisticImpl osVersion = new StringStatisticImpl("Version", "String",
                 "operating system version" );
     //private CountStatisticImpl sysLoadAverage = new CountStatisticImpl(
     //        "SystemLoadAverage", CountStatisticImpl.UNIT_COUNT,

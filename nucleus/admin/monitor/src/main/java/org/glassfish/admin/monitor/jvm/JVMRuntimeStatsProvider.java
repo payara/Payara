@@ -60,33 +60,33 @@ import org.glassfish.gmbal.ManagedObject;
 @Description( "JVM Runtime Statistics" )
 public class JVMRuntimeStatsProvider {
     
-    private RuntimeMXBean rtBean = ManagementFactory.getRuntimeMXBean();
+    private final RuntimeMXBean rtBean = ManagementFactory.getRuntimeMXBean();
 
-    private StringStatisticImpl bootClassPath = new StringStatisticImpl("BootClassPath", "String",
+    private final StringStatisticImpl bootClassPath = new StringStatisticImpl("BootClassPath", "String",
                 "Boot class path that is used by the bootstrap class loader to search for class files" );
-    private StringStatisticImpl classPath = new StringStatisticImpl("ClassPath", "String",
+    private final StringStatisticImpl classPath = new StringStatisticImpl("ClassPath", "String",
                 "Java class path that is used by the system class loader to search for class files" );
-    private StringStatisticImpl inputArguments = new StringStatisticImpl("InputArguments", "String",
+    private final StringStatisticImpl inputArguments = new StringStatisticImpl("InputArguments", "String",
                 "Input arguments passed to the Java virtual machine which does not include the arguments to the main method" );
-    private StringStatisticImpl libraryPath = new StringStatisticImpl("LibraryPath", "String",
+    private final StringStatisticImpl libraryPath = new StringStatisticImpl("LibraryPath", "String",
                 "Java library path" );
-    private StringStatisticImpl mgmtSpecVersion = new StringStatisticImpl("ManagementSpecVersion", "String",
+    private final StringStatisticImpl mgmtSpecVersion = new StringStatisticImpl("ManagementSpecVersion", "String",
                 "Version of the specification for the management interface implemented by the running Java virtual machine" );
-    private StringStatisticImpl runtimeName = new StringStatisticImpl("Name", "String",
+    private final StringStatisticImpl runtimeName = new StringStatisticImpl("Name", "String",
                 "Name representing the running Java virtual machine" );
-    private StringStatisticImpl specName = new StringStatisticImpl("SpecName", "String",
+    private final StringStatisticImpl specName = new StringStatisticImpl("SpecName", "String",
                 "Java virtual machine specification name" );
-    private StringStatisticImpl specVendor = new StringStatisticImpl("SpecVendor", "String",
+    private final StringStatisticImpl specVendor = new StringStatisticImpl("SpecVendor", "String",
                 "Java virtual machine specification vendor" );
-    private StringStatisticImpl specVersion = new StringStatisticImpl("SpecVersion", "String",
+    private final StringStatisticImpl specVersion = new StringStatisticImpl("SpecVersion", "String",
                 "Java virtual machine specification version" );
     private CountStatisticImpl uptime = new CountStatisticImpl("Uptime", CountStatisticImpl.UNIT_MILLISECOND,
             "Uptime of the Java virtual machine in milliseconds");
-    private StringStatisticImpl vmName = new StringStatisticImpl("VmName", "String",
+    private final StringStatisticImpl vmName = new StringStatisticImpl("VmName", "String",
                 "Java virtual machine implementation name" );
-    private StringStatisticImpl vmVendor = new StringStatisticImpl("VmVendor", "String",
+    private final StringStatisticImpl vmVendor = new StringStatisticImpl("VmVendor", "String",
                 "Java virtual machine implementation vendor" );
-    private StringStatisticImpl vmVersion = new StringStatisticImpl("VmVersion", "String",
+    private final StringStatisticImpl vmVersion = new StringStatisticImpl("VmVersion", "String",
                 "Java virtual machine implementation version" );
 
     @ManagedAttribute(id="bootclasspath-current")
@@ -107,7 +107,7 @@ public class JVMRuntimeStatsProvider {
     @Description( "input arguments passed to the Java virtual machine which does not include the arguments to the main method" )
     public StringStatistic getInputArguments() {
         List<String> inputList = rtBean.getInputArguments();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (String arg : inputList) {
             sb.append(arg);
             sb.append(", ");

@@ -37,12 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor.jvm;
 
-import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
 import org.glassfish.external.statistics.CountStatistic;
 import org.glassfish.external.statistics.StringStatistic;
 import org.glassfish.external.statistics.impl.CountStatisticImpl;
@@ -61,39 +60,39 @@ import org.glassfish.gmbal.ManagedObject;
 @Description( "JVM Thread Info Statistics" )
 public class JVMThreadInfoStatsProvider {
     
-    private ThreadInfo threadInfo;
+    private final ThreadInfo threadInfo;
     
-    private CountStatisticImpl blockedCount = new CountStatisticImpl(
+    private final CountStatisticImpl blockedCount = new CountStatisticImpl(
             "BlockedCount", StatisticImpl.UNIT_COUNT,
             "Returns the total number of times that the thread associated with this ThreadInfo blocked to enter or reenter a monitor" );
-    private CountStatisticImpl blockedTime = new CountStatisticImpl(
+    private final CountStatisticImpl blockedTime = new CountStatisticImpl(
             "BlockedTime", StatisticImpl.UNIT_MILLISECOND,
                 "Returns the approximate accumulated elapsed time (in milliseconds) that the thread associated with this ThreadInfo has blocked to enter or reenter a monitor since thread contention monitoring is enabled" );
-    private StringStatisticImpl lockName = new StringStatisticImpl(
+    private final StringStatisticImpl lockName = new StringStatisticImpl(
             "LockName", "String",
                 "Returns the string representation of an object for which the thread associated with this ThreadInfo is blocked waiting" );
-    private CountStatisticImpl lockOwnerId = new CountStatisticImpl(
+    private final CountStatisticImpl lockOwnerId = new CountStatisticImpl(
             "LockOwnerId", "String",
                 "Returns the ID of the thread which owns the object for which the thread associated with this ThreadInfo is blocked waiting" );
-    private StringStatisticImpl lockOwnerName = new StringStatisticImpl(
+    private final StringStatisticImpl lockOwnerName = new StringStatisticImpl(
             "LockOwnerName", "String",
                 "Returns the name of the thread which owns the object for which the thread associated with this ThreadInfo is blocked waiting" );
-    private StringStatisticImpl stackTrace = new StringStatisticImpl(
+    private final StringStatisticImpl stackTrace = new StringStatisticImpl(
             "StackTrace", "String",
                 "Returns the stack trace of the thread associated with this ThreadInfo" );
-    private CountStatisticImpl threadId = new CountStatisticImpl(
+    private final CountStatisticImpl threadId = new CountStatisticImpl(
             "ThreadId", "String",
                 "Returns the ID of the thread associated with this ThreadInfo" );
-    private StringStatisticImpl threadName = new StringStatisticImpl(
+    private final StringStatisticImpl threadName = new StringStatisticImpl(
             "ThreadName", "String",
                 "Returns the name of the thread associated with this ThreadInfo" );
-    private StringStatisticImpl threadState = new StringStatisticImpl(
+    private final StringStatisticImpl threadState = new StringStatisticImpl(
             "ThreadState", "String",
                 "Returns the state of the thread associated with this ThreadInfo" );
-    private CountStatisticImpl waitedCount = new CountStatisticImpl(
+    private final CountStatisticImpl waitedCount = new CountStatisticImpl(
             "WaitingCount", StatisticImpl.UNIT_COUNT,
                 "Returns the total number of times that the thread associated with this ThreadInfo waited for notification" );
-    private CountStatisticImpl waitedTime = new CountStatisticImpl(
+    private final CountStatisticImpl waitedTime = new CountStatisticImpl(
             "WaitingTime", StatisticImpl.UNIT_MILLISECOND,
                 "Returns the approximate accumulated elapsed time (in milliseconds) that the thread associated with this ThreadInfo has waited for notification since thread contention monitoring is enabled" );
 
@@ -150,7 +149,7 @@ public class JVMThreadInfoStatsProvider {
     @Description( "Returns the stack trace of the thread associated with this ThreadInfo" )
     public StringStatistic getStackTrace() {
         StackTraceElement[] elements = threadInfo.getStackTrace();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (StackTraceElement ste : elements) {
             sb.append(ste.toString());
             sb.append(',');

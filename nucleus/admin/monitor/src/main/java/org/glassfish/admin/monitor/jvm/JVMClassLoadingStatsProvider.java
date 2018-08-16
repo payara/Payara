@@ -57,13 +57,13 @@ import org.glassfish.gmbal.ManagedObject;
 @Description( "JVM Class Loading Statistics" )
 public class JVMClassLoadingStatsProvider {
 
-    private ClassLoadingMXBean clBean = ManagementFactory.getClassLoadingMXBean();
+    private final ClassLoadingMXBean clBean = ManagementFactory.getClassLoadingMXBean();
 
-    private CountStatisticImpl loadedClassCount = new CountStatisticImpl("LoadedClassCount", CountStatisticImpl.UNIT_COUNT,
+    private final CountStatisticImpl loadedClassCount = new CountStatisticImpl("LoadedClassCount", CountStatisticImpl.UNIT_COUNT,
             "Number of classes currently loaded in the Java virtual machine");
-    private CountStatisticImpl totalLoadedClassCount = new CountStatisticImpl("TotalLoadedClassCount", CountStatisticImpl.UNIT_COUNT,
+    private final CountStatisticImpl totalLoadedClassCount = new CountStatisticImpl("TotalLoadedClassCount", CountStatisticImpl.UNIT_COUNT,
             "Total number of classes that have been loaded since the Java virtual machine has started execution");
-    private CountStatisticImpl unloadedClassCount = new CountStatisticImpl("UnLoadedClassCount", CountStatisticImpl.UNIT_COUNT,
+    private final CountStatisticImpl unloadedClassCount = new CountStatisticImpl("UnLoadedClassCount", CountStatisticImpl.UNIT_COUNT,
             "Total number of classes unloaded since the Java virtual machine has started execution");
 
     @ManagedAttribute(id="loadedclass-count")

@@ -49,6 +49,11 @@ import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
 
+/**
+ * JVM Memory Statistics"
+ * 
+ * This the backing class for the JVM memory MBean
+ */
 /* jvm.memory */
 // v2 mbean: com.sun.appserv:name=memory,type=memory,category=monitor,server=server
 // v3 mbean:
@@ -56,33 +61,33 @@ import org.glassfish.gmbal.ManagedObject;
 @ManagedObject
 @Description( "JVM Memory Statistics" )
 public class JVMMemoryStatsProvider {
-    private MemoryMXBean memBean = ManagementFactory.getMemoryMXBean();
+    private final MemoryMXBean memBean = ManagementFactory.getMemoryMXBean();
 
-    private CountStatisticImpl committedHeap = new CountStatisticImpl(
+    private final CountStatisticImpl committedHeap = new CountStatisticImpl(
             "CommittedHeapSize", "bytes",
                 "Amount of memory in bytes that is committed for the Java virtual machine to use" );
-    private CountStatisticImpl initHeap = new CountStatisticImpl(
+    private final CountStatisticImpl initHeap = new CountStatisticImpl(
             "InitialHeapSize", "bytes",
                 "Amount of memory in bytes that the Java virtual machine initially requests from the operating system for memory management" );
-    private CountStatisticImpl maxHeap = new CountStatisticImpl(
+    private final CountStatisticImpl maxHeap = new CountStatisticImpl(
             "MaxHeapSize", "bytes",
                 "Maximum amount of memory in bytes that can be used for memory management" );
-    private CountStatisticImpl usedHeap = new CountStatisticImpl(
+    private final CountStatisticImpl usedHeap = new CountStatisticImpl(
             "UsedHeapSize", "bytes",
                 "Amount of used memory in bytes" );
-    private CountStatisticImpl committedNonHeap = new CountStatisticImpl(
+    private final CountStatisticImpl committedNonHeap = new CountStatisticImpl(
             "CommittedNonHeapSize", "bytes",
                 "Amount of memory in bytes that is committed for the Java virtual machine to use" );
-    private CountStatisticImpl initNonHeap = new CountStatisticImpl(
+    private final CountStatisticImpl initNonHeap = new CountStatisticImpl(
             "InitialNonHeapSize", "bytes",
                 "Amount of memory in bytes that the Java virtual machine initially requests from the operating system for memory management" );
-    private CountStatisticImpl maxNonHeap = new CountStatisticImpl(
+    private final CountStatisticImpl maxNonHeap = new CountStatisticImpl(
             "MaxNonHeapSize", "bytes",
                 "Maximum amount of memory in bytes that can be used for memory management" );
-    private CountStatisticImpl usedNonHeap = new CountStatisticImpl(
+    private final CountStatisticImpl usedNonHeap = new CountStatisticImpl(
             "UsedNonHeapSize", "bytes",
                 "Amount of used memory in bytes" );
-    private CountStatisticImpl objectPendingFinalizationCount = new CountStatisticImpl(
+    private final CountStatisticImpl objectPendingFinalizationCount = new CountStatisticImpl(
             "ObjectsPendingFinalization", CountStatisticImpl.UNIT_COUNT,
                 "Approximate number of objects for which finalization is pending" );
 

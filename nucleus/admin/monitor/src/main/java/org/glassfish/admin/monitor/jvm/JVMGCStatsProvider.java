@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor.jvm;
 
@@ -50,6 +51,12 @@ import org.glassfish.gmbal.AMXMetadata;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
 
+/**
+ * JVM Garbage Collectors Statistics
+ * 
+ * MBean for statistic on the garbage collector.
+ * The MBean produced from this is {@code com.sun.appserv:name=Copy,type=garbage-collector,category=monitor,server=server}.
+ */
 /* jvm.garbage-collectors */
 // v2 mbean: com.sun.appserv:name=Copy,type=garbage-collector,category=monitor,server=server
 // v3 mbean:
@@ -58,14 +65,14 @@ import org.glassfish.gmbal.ManagedObject;
 @Description( "JVM Garbage Collectors Statistics" )
 public class JVMGCStatsProvider {
 
-    private List<GarbageCollectorMXBean> gcBeanList = ManagementFactory.getGarbageCollectorMXBeans();
+    private final List<GarbageCollectorMXBean> gcBeanList = ManagementFactory.getGarbageCollectorMXBeans();
     private String gcName = null;
 
-    private CountStatisticImpl collectionCount = new CountStatisticImpl(
+    private final CountStatisticImpl collectionCount = new CountStatisticImpl(
             "CollectionCount", CountStatisticImpl.UNIT_COUNT,
                 "Total number of collections that have occurred" );
 
-    private CountStatisticImpl collectionTimeCount = new CountStatisticImpl(
+    private final CountStatisticImpl collectionTimeCount = new CountStatisticImpl(
             "CollectionTime", CountStatisticImpl.UNIT_MILLISECOND,
                 "Approximate accumulated collection elapsed time in milliseconds" );
 
@@ -90,7 +97,6 @@ public class JVMGCStatsProvider {
     @Description( "approximate accumulated collection elapsed time in milliseconds" )
     public CountStatistic getCollectionTime() {
         long times = -1;
-        int i = 0;
         for (GarbageCollectorMXBean gcBean : gcBeanList) {
             if (gcBean.getName().equals(gcName)) {
                 times = gcBean.getCollectionTime();
