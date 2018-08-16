@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.session;
 
@@ -659,11 +659,20 @@ public abstract class PersistentManagerBase
      * aren't too many active sessions, or if there is no limit,
      * a session is created or retrieved from the recycled pool.
      *
+     * @return the new session
      * @exception IllegalStateException if a new session cannot be
      *  instantiated for any reason
      */
+    @Override
     public Session createSession() {
-
+        if (((maxActiveSessions >= 0) && (sessions.size() >= maxActiveSessions))) {
+            if (store == null){
+                //too many active sessions and no store
+                throw new IllegalStateException(rb.getString(LogFacade.CREATE_SESSION_EXCEPTION));
+            }
+            //swap out active sessions to store
+            processMaxActiveSwaps();
+        }
         return (super.createSession());
 
     }
@@ -686,8 +695,16 @@ public abstract class PersistentManagerBase
      * @return the new session, or <code>null</code> if a session with the
      * requested id already exists
      */
+    @Override
     public Session createSession(String sessionId) {
-
+        if (((maxActiveSessions >= 0) && (sessions.size() >= maxActiveSessions))) {
+            if (store == null){
+                //too many active sessions and no store
+                throw new IllegalStateException(rb.getString(LogFacade.CREATE_SESSION_EXCEPTION));
+            }
+            //swap out active sessions to store
+            processMaxActiveSwaps();
+        }
         return (super.createSession(sessionId));
 
     }
@@ -1336,11 +1353,11 @@ public abstract class PersistentManagerBase
         Session sessions[] = findSessions();
 
         // FIXME: Smarter algorithm (LRU)
-        if (getMaxActiveSessions() > sessions.length)
+        if (getMaxActiveSessions() >= sessions.length)
             return;
 
         if(log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, LogFacade.TOO_MANY_ACTIVE_SESSION, Integer.valueOf(sessions.length));
+            log.log(Level.FINE, LogFacade.TOO_MANY_ACTIVE_SESSION, sessions.length);
         }
         int toswap = sessions.length - getMaxActiveSessions();
         long timeNow = System.currentTimeMillis();
