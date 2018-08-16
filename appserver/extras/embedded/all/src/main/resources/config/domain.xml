@@ -134,7 +134,6 @@
       </notification-service-configuration>
     <hazelcast-config-specific-configuration></hazelcast-config-specific-configuration>
     <monitoring-service-configuration></monitoring-service-configuration>
-    <microprofile-metrics-configuration></microprofile-metrics-configuration>
        <diagnostic-service />
       <security-service>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
