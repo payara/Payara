@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.servermgmt;
 
 /**
@@ -49,7 +51,7 @@ package com.sun.enterprise.admin.servermgmt;
 public class NodeKeystoreManager extends KeystoreManager {
 
     public NodeKeystoreManager(){
-
+        // public constuctor
     }
 
     public void encryptKeystore(RepositoryConfig config, String oldPassword, String newPassword) throws RepositoryException {

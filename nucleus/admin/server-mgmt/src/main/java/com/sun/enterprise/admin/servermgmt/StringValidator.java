@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt;
 
@@ -50,7 +51,7 @@ public class StringValidator extends Validator
     /**
      * i18n strings manager object
      */
-    private static final StringManager strMgr = 
+    private static final StringManager STRING_MANAGER = 
         StringManager.getManager(StringValidator.class);
 
     /**
@@ -63,19 +64,20 @@ public class StringValidator extends Validator
     }
 
     /**
-     * Validates the given value for the given entry. This method first invokes
-     * its superclass's validate method and then checks additional string 
-     * validations such as 0 length.
+     * Validates the given value for the given entry.This method first invokes its superclass's validate method
+     * and then checks additional string validations such as 0 length.
+     *
+     * @param str
      * @throws InvalidConfigException
      */
+    @Override
     public void validate(Object str) throws InvalidConfigException
     {
         super.validate(str);
         int length = ((String)str).length();
         if (length == 0)
         {
-            throw new InvalidConfigException(
-                strMgr.getString("validator.invalid_value", getName(), str));
+            throw new InvalidConfigException(STRING_MANAGER.getString("validator.invalid_value", getName(), str));
         }
     }
 }

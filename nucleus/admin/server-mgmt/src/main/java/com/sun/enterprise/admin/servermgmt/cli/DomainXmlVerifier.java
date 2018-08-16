@@ -63,13 +63,13 @@ import java.util.Set;
  * 
  * @author Nandini Ektare
  */
+@SuppressWarnings("CallToPrintStackTrace")
 public class DomainXmlVerifier {
     
     private Domain domain;
     public boolean error;
     PrintStream _out;
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(DomainXmlVerifier.class);
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(DomainXmlVerifier.class);
 
     public DomainXmlVerifier(Domain domain) throws Exception {
         this(domain, System.out);
@@ -99,7 +99,7 @@ public class DomainXmlVerifier {
         try {
             checkUnique(Dom.unwrap(domain));
             if (!error)
-               _out.println(strings.get("VerifySuccess"));
+               _out.println(STRINGS.get("VerifySuccess"));
         } catch(Exception e) {
             error = true;
             e.printStackTrace();
@@ -130,7 +130,7 @@ public class DomainXmlVerifier {
     }
     
     private void output(Result result) {
-        _out.println(strings.get("VerifyError", result.result()));
+        _out.println(STRINGS.get("VerifyError", result.result()));
     }
 
     private void checkDuplicate(Collection <? extends Dom> beans) {
@@ -145,18 +145,14 @@ public class DomainXmlVerifier {
             keys.add(key);
         }
 
-        WeakHashMap<String, Class<ConfigBeanProxy>> errorKeyBeanMap = 
-                new WeakHashMap<String, Class<ConfigBeanProxy>>();
+        WeakHashMap<String, Class<ConfigBeanProxy>> errorKeyBeanMap = new WeakHashMap<String, Class<ConfigBeanProxy>>();
         String[] strKeys = keys.toArray(new String[beans.size()]);
         for (int i = 0; i < strKeys.length; i++) {
-            boolean foundDuplicate = false;
             for (int j = i + 1; j < strKeys.length; j++) {
                 // If the keys are same and if the indexes don't match
                 // we have a duplicate. So output that error
                 if ( (strKeys[i].equals(strKeys[j]))) {
-                    foundDuplicate = true;
-                    errorKeyBeanMap.put(strKeys[i],
-                        ((Dom)keyBeanMap.get(strKeys[i])).getProxyType());
+                    errorKeyBeanMap.put(strKeys[i], ((Dom)keyBeanMap.get(strKeys[i])).getProxyType());
                     error = true;
                     break;
                 }
@@ -164,7 +160,7 @@ public class DomainXmlVerifier {
         }
 
         for (Map.Entry e : errorKeyBeanMap.entrySet()) {
-            Result result = new Result(strings.get("VerifyDupKey", e.getKey(), e.getValue()));
+            Result result = new Result(STRINGS.get("VerifyDupKey", e.getKey(), e.getValue()));
             output(result);
         }
     }    

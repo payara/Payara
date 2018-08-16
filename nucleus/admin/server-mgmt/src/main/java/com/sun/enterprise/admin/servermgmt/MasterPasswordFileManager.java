@@ -37,14 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright [2016] [Payara Foundation]
-
-/*
- * RepositoryManager.java
- *
- * Created on August 19, 2003, 2:29 PM
- */
+// Portions Copyright [2016-2018] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt;
 
@@ -65,6 +58,7 @@ import java.io.File;
  * creation, deletion, listing, and starting and stopping.
  *
  * @author  kebbs
+ * @since August 19, 2003, 2:29 PM
  */
 public class MasterPasswordFileManager extends KeystoreManager {              
 
@@ -72,8 +66,7 @@ public class MasterPasswordFileManager extends KeystoreManager {
     private static final String ENCODED_CHARSET = "UTF-8";
     private static final int SALT_SIZE = 8;
     
-    private static final StringManager _strMgr = 
-        StringManager.getManager(MasterPasswordFileManager.class);                  
+    private static final StringManager STRING_MANAGER = StringManager.getManager(MasterPasswordFileManager.class);                  
 
     /** Creates a new instance of RepositoryManager */
     public MasterPasswordFileManager() {
@@ -82,10 +75,9 @@ public class MasterPasswordFileManager extends KeystoreManager {
 
     /**
      *
-     * @return The password protecting the master password keywtore
+     * @return The password protecting the master password keystore
      */    
-    private char[] getMasterPasswordPassword()
-            throws RepositoryException 
+    private char[] getMasterPasswordPassword() throws RepositoryException 
     {
         //XXX fixed String
         return MASTER_PASSWORD_ALIAS.toCharArray();
@@ -112,12 +104,11 @@ public class MasterPasswordFileManager extends KeystoreManager {
         final PEFileLayout layout = getFileLayout(config);
         final File pwdFile = layout.getMasterPasswordFile();                     
         try {                    
-            PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(), 
-                getMasterPasswordPassword());
+            PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(), getMasterPasswordPassword());
             p.setPasswordForAlias(MASTER_PASSWORD_ALIAS, masterPassword.getBytes());
             FileProtectionUtility.chmod0600(pwdFile);
         } catch (Exception ex) {                        
-            throw new RepositoryException(_strMgr.getString("masterPasswordFileNotCreated", pwdFile),
+            throw new RepositoryException(STRING_MANAGER.getString("masterPasswordFileNotCreated", pwdFile),
                 ex);
         } 
     }
@@ -139,7 +130,7 @@ public class MasterPasswordFileManager extends KeystoreManager {
                     getMasterPasswordPassword());
                 return p.getPasswordForAlias(MASTER_PASSWORD_ALIAS);
             } catch (Exception ex) {            
-                throw new RepositoryException(_strMgr.getString("masterPasswordFileNotRead", pwdFile),
+                throw new RepositoryException(STRING_MANAGER.getString("masterPasswordFileNotRead", pwdFile),
                     ex);
             } 
         } else {
@@ -166,7 +157,7 @@ public class MasterPasswordFileManager extends KeystoreManager {
     /**
      * Changes the master password in the master password file
      * @param saveMasterPassword
-     * @param config
+     * @param pwdFile
      * @param newPassword
      * @throws RepositoryException
      */
@@ -181,7 +172,7 @@ public class MasterPasswordFileManager extends KeystoreManager {
                  p.setPasswordForAlias(MASTER_PASSWORD_ALIAS, newPassword.getBytes());
                  FileProtectionUtility.chmod0600(pwdFile);
              } catch (Exception ex) {                        
-                 throw new RepositoryException(_strMgr.getString("masterPasswordFileNotCreated", pwdFile),
+                 throw new RepositoryException(STRING_MANAGER.getString("masterPasswordFileNotCreated", pwdFile),
                      ex);
              } 
         }         

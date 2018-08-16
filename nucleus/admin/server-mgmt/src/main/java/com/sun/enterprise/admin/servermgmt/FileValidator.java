@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt;
 
@@ -59,13 +60,12 @@ public class FileValidator extends Validator
     /**
      * The valid constraint set.
      */
-    public static final String validConstraints = "drwx";
+    public static final String VALID_CONSTRAINTS = "drwx";
 
     /**
      * i18n strings manager object
      */
-    private static final StringManager strMgr = 
-        StringManager.getManager(FileValidator.class);
+    private static final StringManager STRING_MANAGER = StringManager.getManager(FileValidator.class);
 
     /**
      * The current constraint set.
@@ -99,7 +99,9 @@ public class FileValidator extends Validator
 
     /**
      * Sets the current constraint set to the given set if it is a valid 
-     * constriant set.
+     * constraint set.
+     * @param constraints
+     * @return 
      */
     public String setConstraints(String constraints)
     {
@@ -115,6 +117,7 @@ public class FileValidator extends Validator
      * @param str Must be the absolute path of the File that will be validated.
      * @throws InvalidConfigException
      */
+    @Override
     public void validate(Object str) throws InvalidConfigException
     {
         super.validate(str);
@@ -139,7 +142,7 @@ public class FileValidator extends Validator
                     if (!f.canRead())
                     {
                         throw new InvalidConfigException(
-                            strMgr.getString("fileValidator.no_read", 
+                            STRING_MANAGER.getString("fileValidator.no_read", 
                                              f.getAbsolutePath()));
                     }
                     break;
@@ -147,7 +150,7 @@ public class FileValidator extends Validator
                     if (!f.canWrite())
                     {
                         throw new InvalidConfigException(
-                            strMgr.getString("fileValidator.no_write", 
+                            STRING_MANAGER.getString("fileValidator.no_write", 
                                              f.getAbsolutePath()));
                     }
                     break;
@@ -155,7 +158,7 @@ public class FileValidator extends Validator
                     if (!f.isDirectory())
                     {
                         throw new InvalidConfigException(
-                            strMgr.getString("fileValidator.not_a_dir", 
+                            STRING_MANAGER.getString("fileValidator.not_a_dir", 
                                              f.getAbsolutePath()));
                     }
                     break;

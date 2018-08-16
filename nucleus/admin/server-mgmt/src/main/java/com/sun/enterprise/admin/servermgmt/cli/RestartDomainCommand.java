@@ -41,7 +41,6 @@
 package com.sun.enterprise.admin.servermgmt.cli;
 
 import com.sun.enterprise.admin.cli.CLICommand;
-import java.io.*;
 import java.util.*;
 import org.glassfish.api.Param;
 
@@ -80,11 +79,11 @@ public class RestartDomainCommand extends StopDomainCommand {
 
     @Inject
     private ServiceLocator habitat;
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(RestartDomainCommand.class);
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(RestartDomainCommand.class);
 
     /**
      * Execute the restart-domain command.
+     * @throws CommandException if something goes wrong
      */
     @Override
     protected void doCommand()
@@ -106,18 +105,19 @@ public class RestartDomainCommand extends StopDomainCommand {
 
         waitForRestart(oldServerPid);
 
-        logger.info(strings.get("restartDomain.success"));
+        logger.info(STRINGS.get("restartDomain.success"));
     }
 
     /**
      * If the server isn't running, try to start it.
+     * @throws CommandException
      */
     @Override
     protected int dasNotRunning() throws CommandException {
         if (!isLocal())
             throw new CommandException(
                 Strings.get("restart.dasNotRunningNoRestart"));
-        logger.warning(strings.get("restart.dasNotRunning"));
+        logger.warning(STRINGS.get("restart.dasNotRunning"));
         CLICommand cmd = habitat.getService(CLICommand.class, "start-domain");
         /*
          * Collect the arguments that also apply to start-domain.

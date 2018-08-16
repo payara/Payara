@@ -37,12 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
-/*
- * RepositoryConfig.java
- *
- * Created on August 19, 2003, 1:59 PM
- */
 package com.sun.enterprise.admin.servermgmt;
 
 import java.util.HashMap;
@@ -94,6 +90,7 @@ import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
  * stored under the K_CONFIG_ROOT key.
  *
  * @author kebbs
+ * @since August 19, 2003, 1:59 PM
  */
 public class RepositoryConfig extends HashMap<String, Object> {
     public static final String K_INSTALL_ROOT = "install.root";
@@ -111,6 +108,10 @@ public class RepositoryConfig extends HashMap<String, Object> {
     /**
      * Creates a new instance of RepositoryConfig The K_INSTALL_ROOT and
      * K_CONFIG_ROOT attributes are implicitly set
+     * @param repositoryName
+     * @param repositoryRoot
+     * @param instanceName
+     * @param configName
      */
     public RepositoryConfig(String repositoryName, String repositoryRoot, String instanceName,
             String configName) {
@@ -119,12 +120,8 @@ public class RepositoryConfig extends HashMap<String, Object> {
         _repositoryRoot = repositoryRoot;
         _configurationName = configName;
         final Map<String, String> envProperties = getEnvProps();
-        put(K_INSTALL_ROOT, getFilePath(
-                envProperties.get(SystemPropertyConstants.INSTALL_ROOT_PROPERTY)));
-        //SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
-        put(K_CONFIG_ROOT, getFilePath(
-                envProperties.get(SystemPropertyConstants.INSTALL_ROOT_PROPERTY)));
-        //SystemPropertyConstants.CONFIG_ROOT_PROPERTY));
+        put(K_INSTALL_ROOT, getFilePath(envProperties.get(SystemPropertyConstants.INSTALL_ROOT_PROPERTY)));
+        put(K_CONFIG_ROOT, getFilePath(envProperties.get(SystemPropertyConstants.INSTALL_ROOT_PROPERTY)));
         put(K_REFRESH_CONFIG_CONTEXT, true);
         /*
          * Since the changes for the startup, we have the problem of refreshing
@@ -148,9 +145,10 @@ public class RepositoryConfig extends HashMap<String, Object> {
 
     /**
      * Creates a new instance of RepositoryConfig defined using the system
-     * property com.sun.aas.instanceRoot. It is assumed that this system
+     * property com.sun.aas.instanceRoot.It is assumed that this system 
      * property is a directory of the form:
-     * <repositoryRootDirectory>/<repositoryName>/<instanceName>
+     * &lt;repositoryRootDirectory&gt;/&lt;repositoryName&gt;/&lt;instanceName&gt;
+     * @param instanceRootString
      */
     public RepositoryConfig(String instanceRootString) {
         final File instanceRoot = new File(instanceRootString);
@@ -160,12 +158,11 @@ public class RepositoryConfig extends HashMap<String, Object> {
         _repositoryRoot = FileUtils.makeForwardSlashes(repositoryDir.getParentFile().getAbsolutePath());
         _configurationName = null;
         final Map<String, String> envProperties = getEnvProps();
-        put(K_INSTALL_ROOT,
-                envProperties.get(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
-        put(K_CONFIG_ROOT,
-                getFilePath(envProperties.get(SystemPropertyConstants.CONFIG_ROOT_PROPERTY)));
+        put(K_INSTALL_ROOT, envProperties.get(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
+        put(K_CONFIG_ROOT, getFilePath(envProperties.get(SystemPropertyConstants.CONFIG_ROOT_PROPERTY)));
     }
 
+    @Override
     public String toString() {
         return ("repositoryRoot " + _repositoryRoot + " repositoryName " + _repositoryName
                 + " instanceName " + _instanceName + " configurationName " + _configurationName);

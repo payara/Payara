@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -66,8 +66,7 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
     @Param(name = "savemasterpassword", optional = true, defaultValue = "false")
     protected boolean savemp;
 
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(ChangeMasterPasswordCommandDAS.class);
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(ChangeMasterPasswordCommandDAS.class);
 
     @Override
     protected void validate()
@@ -83,19 +82,12 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
     }
 
     @Override
-    public int execute(String... argv)
-                    throws CommandException {
-        // This will parse the args and then call executeCommand
-        return super.execute(argv);
-    }
-
-    @Override
     protected int executeCommand() throws CommandException {
 
         try {
             HostAndPort adminAddress = getAdminAddress();
             if (isRunning(adminAddress.getHost(), adminAddress.getPort()))
-                throw new CommandException(strings.get("domain.is.running",
+                throw new CommandException(STRINGS.get("domain.is.running",
                                                     getDomainName(), getDomainRootDir()));
             DomainConfig domainConfig = new DomainConfig(getDomainName(),
                 getDomainsDir().getAbsolutePath());
@@ -104,23 +96,23 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
             if (mp == null) {
                 mp = passwords.get("AS_ADMIN_MASTERPASSWORD");
                 if (mp == null) {
-                    char[] mpCharArr = super.readPassword(strings.get("current.mp"));
+                    char[] mpCharArr = super.readPassword(STRINGS.get("current.mp"));
                     mp = mpCharArr != null ? new String(mpCharArr) : null;
                 }
             }
-            if (mp == null)     throw new CommandException(strings.get("no.console"));
+            if (mp == null)     throw new CommandException(STRINGS.get("no.console"));
             if (!super.verifyMasterPassword(mp))
-                throw new CommandException(strings.get("incorrect.mp"));
-            char[] nmpCharArr = getPassword("newmasterpassword", strings.get("new.mp"),
-                    strings.get("new.mp.again"), true);
+                throw new CommandException(STRINGS.get("incorrect.mp"));
+            char[] nmpCharArr = getPassword("newmasterpassword", STRINGS.get("new.mp"),
+                    STRINGS.get("new.mp.again"), true);
             String nmp = nmpCharArr != null ? new String(nmpCharArr) : null;
             if (nmp == null)
-                throw new CommandException(strings.get("no.console"));
+                throw new CommandException(STRINGS.get("no.console"));
             
             // if password is less than 6 characters then the domain can become corrupt
             // FIXES GLASSFISH-21017
             if (nmp.length() < 6) {
-                throw new CommandException(strings.get("password.too.short"));
+                throw new CommandException(STRINGS.get("password.too.short"));
             }
             
             domainConfig.put(DomainConfig.K_MASTER_PASSWORD, mp);

@@ -37,13 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] Payara Foundation and/or Affiliates
+// Portions Copyright [2017-2018] Payara Foundation and/or Affiliates
+
 package com.sun.enterprise.admin.servermgmt.cli;
 
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.Environment;
-import com.sun.enterprise.admin.cli.ProgramOptions;
-import com.sun.enterprise.util.OS;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -88,9 +87,8 @@ public class StartServerHelper {
     private final int debugPort;
     private final boolean isDebugSuspend;
     // only set when actively trouble-shooting or investigating...
-    private final static boolean DEBUG_MESSAGES_ON = false;
-    private static final LocalStringsImpl strings
-            = new LocalStringsImpl(StartServerHelper.class);
+    private static final  boolean DEBUG_MESSAGES_ON = false;
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(StartServerHelper.class);
 
     public StartServerHelper(Logger logger0, boolean terse0,
             ServerDirs serverDirs0, GFLauncher launcher0,
@@ -116,7 +114,7 @@ public class StartServerHelper {
         isDebugSuspend = launcher.isDebugSuspend();
 
         if (isDebugSuspend && debugPort >= 0) {
-            logger.info(strings.get("ServerStart.DebuggerSuspendedMessage", "" + debugPort));
+            logger.info(STRINGS.get("ServerStart.DebuggerSuspendedMessage", "" + debugPort));
         }
     }
 
@@ -125,7 +123,7 @@ public class StartServerHelper {
         long startWait = System.currentTimeMillis();
         if (!terse) {
             // use stdout because logger always appends a newline
-            System.out.print(strings.get("WaitServer", serverOrDomainName) + " ");
+            System.out.print(STRINGS.get("WaitServer", serverOrDomainName) + " ");
         }
 
         boolean alive = false;
@@ -135,7 +133,7 @@ public class StartServerHelper {
         while (!timedOut(startWait)) {
             if (pidFile != null) {
                 if (logger.isLoggable(Level.FINER)) {
-                    logger.finer("Check for pid file: " + pidFile);
+                    logger.log(Level.FINER, "Check for pid file: {0}", pidFile);
                 }
                 if (pidFile.exists()) {
                     alive = true;
@@ -169,11 +167,9 @@ public class StartServerHelper {
                 ProcessStreamDrainer psd = launcher.getProcessStreamDrainer();
                 String output = psd.getOutErrString();
                 if (ok(output)) {
-                    throw new CommandException(strings.get("serverDiedOutput",
-                            sname, exitCode, output));
+                    throw new CommandException(STRINGS.get("serverDiedOutput", sname, exitCode, output));
                 } else {
-                    throw new CommandException(strings.get("serverDied",
-                            sname, exitCode));
+                    throw new CommandException(STRINGS.get("serverDied", sname, exitCode));
                 }
             } catch (GFLauncherException ex) {
                 // should never happen
@@ -200,10 +196,10 @@ public class StartServerHelper {
             String msg;
             String time = "" + (WAIT_FOR_DAS_TIME_MS / 1000);
             if (info.isDomain()) {
-                msg = strings.get("serverNoStart", strings.get("DAS"),
+                msg = STRINGS.get("serverNoStart", STRINGS.get("DAS"),
                         info.getDomainName(), time);
             } else {
-                msg = strings.get("serverNoStart", strings.get("INSTANCE"),
+                msg = STRINGS.get("serverNoStart", STRINGS.get("INSTANCE"),
                         info.getInstanceName(), time);
             }
 
@@ -215,13 +211,14 @@ public class StartServerHelper {
      * Run a series of commands to prepare for a launch.
      *
      * @return false if there was a problem.
+     * @throws CommandException
      */
     public boolean prepareForLaunch() throws CommandException {
 
         waitForParentToDie();
         setSecurity();
 
-        if (checkPorts() == false) {
+        if (!checkPorts()) {
             return false;
         }
         deletePidFile();
@@ -243,7 +240,7 @@ public class StartServerHelper {
         String adminPortString = "-1";
 
         try {
-            if (addresses != null && addresses.size() > 0) {
+            if (addresses != null && !addresses.isEmpty()) {
                 adminPort = addresses.get(0).getPort();
             }
             // To avoid having the logger do this: port = 4,848
@@ -254,7 +251,7 @@ public class StartServerHelper {
             //ignore
         }
 
-        logger.info(strings.get(
+        logger.info(STRINGS.get(
                 "ServerStart.SuccessMessage",
                 info.isDomain() ? "domain " : "instance",
                 serverDirs.getServerName(),
@@ -263,7 +260,7 @@ public class StartServerHelper {
                 adminPortString));
 
         if (debugPort >= 0) {
-            logger.info(strings.get("ServerStart.DebuggerMessage", "" + debugPort));
+            logger.info(STRINGS.get("ServerStart.DebuggerMessage", "" + debugPort));
         }
     }
 
@@ -324,7 +321,7 @@ public class StartServerHelper {
         // it returns a String for logging --- if desired
         for (HostAndPort addr : adminAddresses) {
             if (!NetUtils.isPortFree(addr.getHost(), addr.getPort())) {
-                return strings.get("ServerRunning",
+                return STRINGS.get("ServerRunning",
                         Integer.toString(addr.getPort()));
             }
         }
@@ -356,7 +353,7 @@ public class StartServerHelper {
                     new ParentDeathWaiterPureJava();
                     return;
                 }
-                if (b.booleanValue() == false) {
+                if (!b) {
                     debugMessage("Parent process (" + pid + ") is dead.");
                     return;
                 }
@@ -370,8 +367,7 @@ public class StartServerHelper {
         }
 
         // abnormal return path
-        throw new CommandException(
-                strings.get("deathwait_timeout", CLIConstants.DEATH_TIMEOUT_MS));
+        throw new CommandException(STRINGS.get("deathwait_timeout", CLIConstants.DEATH_TIMEOUT_MS));
     }
 
     private static boolean timedOut(long startTime) {
@@ -432,7 +428,7 @@ public class StartServerHelper {
 
             if (!success) {
                 throw new CommandException(
-                        strings.get("deathwait_timeout", CLIConstants.DEATH_TIMEOUT_MS));
+                        STRINGS.get("deathwait_timeout", CLIConstants.DEATH_TIMEOUT_MS));
             }
         }
         boolean success = false;

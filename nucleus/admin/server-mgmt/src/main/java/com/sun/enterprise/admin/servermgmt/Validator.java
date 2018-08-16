@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt;
 
@@ -51,8 +52,7 @@ public class Validator
     /**
      * i18n strings manager object
      */
-    private static final StringManager strMgr = 
-        StringManager.getManager(Validator.class);
+    private static final StringManager STRING_MANAGER = StringManager.getManager(Validator.class);
 
     /**
      * The accepted type of an entry.
@@ -78,6 +78,7 @@ public class Validator
 
     /**
      * Returns the name of the entry.
+     * @return name
      */
     public String getName()
     {
@@ -88,20 +89,20 @@ public class Validator
      * Checks the validity of the given value for the entry. This method does
      * basic checks such as null ness & type.
      * @param obj
-     * @Throws InvalidConfigException
+     * @throws InvalidConfigException
      */
     public void validate(Object obj) throws InvalidConfigException
     {
         if (obj == null)
         {
             throw new InvalidConfigException(
-                strMgr.getString("validator.invalid_value", getName(), null));
+                STRING_MANAGER.getString("validator.invalid_value", getName(), null));
         }
         Class c = obj.getClass();
         if (!type.isAssignableFrom(c))
         {
             throw new InvalidConfigException(
-                strMgr.getString("validator.invalid_type", 
+                STRING_MANAGER.getString("validator.invalid_type", 
                     getName(), type.getName(), c.getName()));
         }
     }
