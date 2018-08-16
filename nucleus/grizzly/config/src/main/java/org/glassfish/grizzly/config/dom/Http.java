@@ -100,7 +100,7 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     String SCHEME_PATTERN = "http|https";
 
     // HTTP2 properties
-    boolean HTTP2_ENABLED = true;
+    boolean HTTP2_ENABLED = false;
     int HTTP2_MAX_CONCURRENT_STREAMS = 100;
     int HTTP2_INITIAL_WINDOW_SIZE_IN_BYTES = 64 * 1024 - 1;
     int HTTP2_MAX_FRAME_PAYLOAD_SIZE_IN_BYTES = (1 << 24) - 1;
