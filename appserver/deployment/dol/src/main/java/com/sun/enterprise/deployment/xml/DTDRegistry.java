@@ -298,7 +298,7 @@ public final class DTDRegistry {
     // Payara DTDs
     
     public static final String PAYARA_WEBAPP_4_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Server 4 Servlet 3.0//EN";
-    public static final String PAYARA_WEBAPP_4_DTD_SYSTEM_ID = "https://raw.githubusercontent.com/payara/Payara/master/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara-web-app_4.dtd";
+    public static final String PAYARA_WEBAPP_4_DTD_SYSTEM_ID = "https://docs.payara.fish/schemas/payara-web-app_4.dtd";
     
 }
 
