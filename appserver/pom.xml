@@ -213,7 +213,7 @@
 
          <!-- Microprofile version properties -->
          <microprofile-fault-tolerance.version>1.0.payara-p1</microprofile-fault-tolerance.version>
-         <microprofile-jwt-auth.version>1.0.payara-p1</microprofile-jwt-auth.version>
+         <microprofile-jwt-auth.version>1.1.payara-p1</microprofile-jwt-auth.version>
          <microprofile-healthcheck.version>1.0.payara-p1</microprofile-healthcheck.version>
          <microprofile-metrics.version>1.1.payara-p1</microprofile-metrics.version>
          <microprofile-rest-client.version>1.1-payara-p1</microprofile-rest-client.version>

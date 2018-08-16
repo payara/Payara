@@ -39,15 +39,14 @@
  */
 package fish.payara.microprofile.jwtauth.cdi;
 
-import static org.eclipse.microprofile.jwt.Claims.UNKNOWN;
-
+import fish.payara.microprofile.jwtauth.eesecurity.JWTAuthenticationMechanism;
+import fish.payara.microprofile.jwtauth.eesecurity.SignedJWTIdentityStore;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.SessionScoped;
@@ -64,12 +63,12 @@ import javax.enterprise.inject.spi.ProcessBean;
 import javax.enterprise.inject.spi.ProcessInjectionTarget;
 import javax.enterprise.inject.spi.ProcessManagedBean;
 import javax.enterprise.inject.spi.ProcessSessionBean;
-
 import org.eclipse.microprofile.auth.LoginConfig;
 import org.eclipse.microprofile.jwt.Claim;
-
-import fish.payara.microprofile.jwtauth.eesecurity.JWTAuthenticationMechanism;
-import fish.payara.microprofile.jwtauth.eesecurity.SignedJWTIdentityStore;
+import static org.eclipse.microprofile.jwt.Claims.UNKNOWN;
+import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY;
+import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY_LOCATION;
+import org.glassfish.jersey.MPConfig;
 
 /**
  * This CDI extension installs the {@link JWTAuthenticationMechanism} and related {@link SignedJWTIdentityStore}
@@ -157,6 +156,14 @@ public class CdiExtension implements Extension {
                         "Claim value " + claim.value() + " should be equal to claim standard " + claim.standard().name() +
                         " or one of those should be left at their default value");
                 }
+
+                if (MPConfig.getOptionalValue(VERIFIER_PUBLIC_KEY).isPresent()
+                        && MPConfig.getOptionalValue(VERIFIER_PUBLIC_KEY_LOCATION).isPresent()) {
+                    throw new DeploymentException(
+                            "Both properties mp.jwt.verify.publickey and mp.jwt.verify.publickey.location must not be defined"
+                    );
+                }
+
             }
         }
     }
