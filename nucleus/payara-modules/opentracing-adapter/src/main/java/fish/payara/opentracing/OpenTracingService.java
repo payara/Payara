@@ -42,12 +42,11 @@ package fish.payara.opentracing;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import io.opentracing.Tracer;
 import io.opentracing.mock.MockTracer;
-import io.opentracing.util.ThreadLocalActiveSpanSource;
+import io.opentracing.util.ThreadLocalScopeManager;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.interceptor.InvocationContext;
 import org.glassfish.api.event.EventListener;
@@ -65,8 +64,6 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "opentracing-service")
 public class OpenTracingService implements EventListener {
-
-    private static final Logger logger = Logger.getLogger(OpenTracingService.class.getCanonicalName());
 
     // The tracer instances
     private static final Map<String, Tracer> tracers = new ConcurrentHashMap<>();
@@ -101,48 +98,7 @@ public class OpenTracingService implements EventListener {
         if (tracer == null) {
             // Check which type of Tracer to create
             if (Boolean.getBoolean("USE_OPENTRACING_MOCK_TRACER")) {
-                tracer = new MockTracer(new ThreadLocalActiveSpanSource(), MockTracer.Propagator.TEXT_MAP);
-            } else {
-                tracer = new fish.payara.opentracing.tracer.Tracer(applicationName);
-            }
-            
-            // Register the tracer instance to the application
-            tracers.put(applicationName, tracer);
-        }
-
-        return tracer;
-    }
-    
-    /**
-     * Gets the tracer instance for the given application, or creates one if there isn't one. Also checks for the 
-     * presence of tracers registered to an app matching the individual parts of the component name to account
-     * for asynchronous threads from Jersey.
-     * 
-     * @param applicationName The name of the application to get or create the Tracer for
-     * @param traceStartedOnAsynchronousThread True if a trace was started on this thread explicitly for this
-     * @return The Tracer instance for the given application
-     */
-    public synchronized Tracer getTracer(String applicationName, boolean traceStartedOnAsynchronousThread) {
-        // Get the tracer if there is one
-        Tracer tracer = tracers.get(applicationName);
-       
-        if (tracer == null && traceStartedOnAsynchronousThread) {
-            String[] applicationNameComponents = applicationName.split("_/");
-            
-            for (String applicationNameComponent : applicationNameComponents) {
-                tracer = tracers.get(applicationNameComponent);
-                
-                if (tracer != null) {
-                    break;
-                }
-            }
-        }
-        
-        // If we still haven't found a tracer, create one
-        if (tracer == null) {
-            // Check which type of Tracer to create
-            if (Boolean.getBoolean("USE_OPENTRACING_MOCK_TRACER")) {
-                tracer = new MockTracer(new ThreadLocalActiveSpanSource(), MockTracer.Propagator.TEXT_MAP);
+                tracer = new MockTracer(new ThreadLocalScopeManager(), MockTracer.Propagator.TEXT_MAP);
             } else {
                 tracer = new fish.payara.opentracing.tracer.Tracer(applicationName);
             }
