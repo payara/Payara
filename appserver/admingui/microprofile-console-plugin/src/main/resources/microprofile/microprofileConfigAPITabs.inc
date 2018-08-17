@@ -53,7 +53,7 @@
              toolTip="$resource{i18n_microprofile.microprofile.configuration.configPropertyTab} Tab" >
         <!command
           setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigPropertyTab");
-          gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/propertyConfiguration.jsf?configName=#{configName}");
+          gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/propertyConfiguration.jsf?source=domain&configName=#{configName}");
         />
     </sun:tab>
     <sun:tab id="microProfileConfigSecretsDirectoryTab" immediate="$boolean{true}" 

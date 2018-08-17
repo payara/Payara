@@ -45,8 +45,10 @@ import org.glassfish.api.admingui.ConsoleProvider;
 import org.jvnet.hk2.annotations.Service;
 
 /**
+ *  <p>	This is a noop file just to help test out the {@link ConsoleProvider}
+ *	and <code>ConsolePluginService</code> files.</p>
  *
- * @author Susan Rai
+ *  @author Susan Rai
  */
 @Service
 public class MicroProfilePlugin implements ConsoleProvider {

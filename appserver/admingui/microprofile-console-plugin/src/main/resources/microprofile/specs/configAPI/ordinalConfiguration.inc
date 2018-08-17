@@ -47,9 +47,9 @@
                         onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) 
                         submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                       <!command
+                        gf.updateEntity(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}" attrs="#{pageSession.microprofileConfigMap}");
                         prepareSuccessfulMsg();
-                        gf.restRequest(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/set-config-ordinal" 
-                        method="POST" attrs="#{pageSession.valueMap}");
+                        gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configConfiguration.jsf?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}&configName=#{pageSession.encodedConfigName}");
                     /> 
             </sun:button>
         </sun:panelGroup>
@@ -58,17 +58,58 @@
    <sun:propertySheet id="propertySheet">
 #include "/common/shared/configNameSection.inc"
   <sun:propertySheetSection id="ordinalProps">
-        <sun:property id="ordinalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                      label="$resource{i18n_microprofile.config.ordinal.configuration.ordinal}"  
-                      helpText="$resource{i18n_microprofile.config.ordinal.configuration.ordinalHelp}">
+        <sun:property id="applicationOrdinalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.config.ordinal.configuration.application}">
               <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
-                           text="#{pageSession.valueMap['ordinal']}"/>
+                           text="#{pageSession.microprofileConfigMap['applicationOrdinality']}"/>
         </sun:property>
-        <sun:property id="sourceProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                      label="$resource{i18n_microprofile.config.ordinal.configuration.source}"  
-                      helpText="$resource{i18n_microprofile.config.ordinal.configuration.sourceHelp}">
-            <sun:dropDown id="sourceNames" selected="#{pageSession.valueMap['source']}" 
-                          labels={"application", "cluster", "config", "domain", "jndi", "module", "password", "secret", "server"} />
+
+        <sun:property id="clusterOrdinalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.config.ordinal.configuration.cluster}">
+              <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
+                           text="#{pageSession.microprofileConfigMap['clusterOrdinality']}"/>
+        </sun:property>
+
+        <sun:property id="configOrdinalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                       label="$resource{i18n_microprofile.config.ordinal.configuration.config}"> 
+              <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
+                           text="#{pageSession.microprofileConfigMap['configOrdinality']}"/>
+        </sun:property>
+       
+        <sun:property id="domainOrdinalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.config.ordinal.configuration.domain}">
+              <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
+                           text="#{pageSession.microprofileConfigMap['domainOrdinality']}"/>
+        </sun:property>
+    
+        <sun:property id="jndiOrdinalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.config.ordinal.configuration.jndi}"> 
+              <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
+                           text="#{pageSession.microprofileConfigMap['jndiOrdinality']}"/>
+        </sun:property>
+    
+        <sun:property id="moduleOrdinalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.config.ordinal.configuration.module}"> 
+              <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
+                           text="#{pageSession.microprofileConfigMap['moduleOrdinality']}"/>
+        </sun:property>
+    
+        <sun:property id="passwordOrdinalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.config.ordinal.configuration.password}">
+              <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
+                           text="#{pageSession.microprofileConfigMap['passwordOrdinality']}"/>
+        </sun:property>
+    
+        <sun:property id="secretDirectoryOrdinalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.config.ordinal.configuration.secretDirectory}"> 
+              <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
+                           text="#{pageSession.microprofileConfigMap['secretDirOrdinality']}"/>
+        </sun:property>
+
+        <sun:property id="serverOrdinalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.config.ordinal.configuration.server}">
+              <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
+                           text="#{pageSession.microprofileConfigMap['serverOrdinality']}"/>
         </sun:property>
     </sun:propertySheetSection>
    </sun:propertySheet>

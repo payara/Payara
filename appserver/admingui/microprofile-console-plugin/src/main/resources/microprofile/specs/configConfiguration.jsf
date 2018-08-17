@@ -51,15 +51,11 @@
     <!beforeCreate
         setSessionAttribute(key="microprofileTabs" value="microprofileConfigTab");
         setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigOrdinalTab");
-        getRequestValue(key="configName" value="#{pageSession.configName}");
-        setPageSessionAttribute(key="MICROPROFILE_CONFIG_URL", 
-                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/microprofile-config");
-        gf.restRequest(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/get-config-ordinal?target=#{pageSession.configName}"  
-                method="GET" result="#{requestScope.resp}");
-        
-        setPageSessionAttribute(key="valueMap", 
-                value="#{requestScope.resp.data.extraProperties.configConfiguration}");
-        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}");
+        setPageSessionAttribute(key="MICROPROFILE_CONFIG_URL", value="#{pageSession.parentUrl}/microprofile-config");
+        gf.getEntityAttrs(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}", valueMap="#{pageSession.microprofileConfigMap}");
     />
 </event>
        

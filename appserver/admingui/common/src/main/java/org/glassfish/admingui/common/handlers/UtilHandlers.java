@@ -404,6 +404,30 @@ public class UtilHandlers {
         handlerCtx.setOutputValue("result", list);
     }
 
+      /**
+     * <p> Get an element form a <code>List</code></p> using the index number provided
+     * <p> Input list: "list" -- Type: <code>java.util.List</code>
+     * <p> Input index: "index" -- Type: <code>java.lang.Integer</code>
+     *
+     * @param handlerCtx The HandlerContext
+     */
+    @Handler(id="listGet",
+    	input={
+            @HandlerInput(name="list", type=List.class),
+            @HandlerInput(name="index", type=Integer.class, required=true)
+        },
+        output={
+            @HandlerOutput(name="result", type=Object.class)}
+    )
+    public static void listGet(HandlerContext handlerCtx) {
+        List list = (List) handlerCtx.getInputValue("list");
+        int index = (Integer) handlerCtx.getInputValue("index");
+
+        if (list != null && index >= 0 && index < list.size()) {       
+            handlerCtx.setOutputValue("result", list.get(index));
+        }
+        
+    }
 
     /**
      * <p> sort a <code>List</code></p>
