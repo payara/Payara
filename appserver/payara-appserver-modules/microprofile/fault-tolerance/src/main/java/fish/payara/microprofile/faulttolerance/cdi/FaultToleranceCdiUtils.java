@@ -204,7 +204,14 @@ public class FaultToleranceCdiUtils {
                             + "/" + parameterName, parameterType);
 
                     if (!value.isPresent()) {
-                        logger.log(Level.FINER, "No config overrides.");
+                        logger.log(Level.FINER, "No config override for annotated class, checking for global override.");
+                        value = config.getOptionalValue(annotationName + "/" + parameterName, parameterType);
+                        
+                        if (value.isPresent()) {
+                            logger.log(Level.FINER, "Global override found.");
+                        } else {
+                            logger.log(Level.FINER, "No config overrides.");
+                        }
                     }
                 }
             }
