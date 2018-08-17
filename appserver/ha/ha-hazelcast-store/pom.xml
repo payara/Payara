@@ -88,13 +88,11 @@
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>web-ha</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>fish.payara.payara-modules</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
         </dependency>
     </dependencies>
     

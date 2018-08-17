@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.batch;
 
@@ -60,6 +60,7 @@ import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
 import java.util.*;
 import java.util.logging.Level;
+import static org.glassfish.batch.BatchConstants.LIST_BATCH_JOBS_STEPS;
 
 /**
  * Command to list batch jobs info
@@ -107,7 +108,7 @@ public class ListBatchJobSteps
 
         ColumnFormatter columnFormatter = new ColumnFormatter(getDisplayHeaders());
         List<Map<String, Object>> jobExecutions = new ArrayList<>();
-        extraProps.put("listBatchJobSteps", jobExecutions);
+        extraProps.put(LIST_BATCH_JOBS_STEPS, jobExecutions);
         for (StepExecution je : findStepExecutions()) {
             try {
                 jobExecutions.add(handleJob(je, columnFormatter));

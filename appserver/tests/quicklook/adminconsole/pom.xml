@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -47,7 +48,6 @@
     <artifactId>adminconsole</artifactId>
     <version>4.1-SNAPSHOT</version>
     <name>Admin Console Quicklook Tests</name>
-    <packaging>jar</packaging>
     <parent>
         <groupId>org.glassfish</groupId>
         <artifactId>pom</artifactId>
@@ -97,7 +97,6 @@
                         <groupId>commons-httpclient</groupId>
                         <artifactId>commons-httpclient</artifactId>
                         <version>3.1</version>
-                        <scope>compile</scope>
                     </dependency>
                     <dependency>
                         <groupId>com.sun.jsftemplating</groupId>
@@ -118,7 +117,6 @@
             <groupId>commons-httpclient</groupId>
             <artifactId>commons-httpclient</artifactId>
             <version>3.1</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.common</groupId>

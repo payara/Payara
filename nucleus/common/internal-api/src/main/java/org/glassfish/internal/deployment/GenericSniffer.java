@@ -328,7 +328,7 @@ public abstract class GenericSniffer implements Sniffer {
      * default implementation to return a list of the deployment descriptors
      * that might appear in the type of Java EE application which the sniffer
      * recognizes.  For example, the WebSniffer implementation of this method
-     * returns WEB-INF/web.xml, WEB-INF/glassfish-web.xml and 
+     * returns WEB-INF/web.xml, WEB-INF/glassfish-web.xml, WEB-INF/payara-web.xml and 
      * WEB-INF/sun-web.xml.
      * 
      * @return list of paths in the archive where deployment configuration

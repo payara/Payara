@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -63,12 +64,6 @@ import org.jvnet.hk2.config.TransactionFailure;
 /**
  *
  */
-
-/* @XmlType(name = "", propOrder = {
-    "description",
-    "property"
-}) */
-
 @Configured
 public interface Engine extends ConfigBeanProxy, PropertyBag {
 
@@ -85,8 +80,8 @@ public interface Engine extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the sniffer property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setSniffer(String value) throws PropertyVetoException;
 
@@ -102,8 +97,8 @@ public interface Engine extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the description property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setDescription(String value) throws PropertyVetoException;
 
@@ -134,17 +129,19 @@ public interface Engine extends ConfigBeanProxy, PropertyBag {
             throws TransactionFailure;
 
     /**
-    	Properties as per {@link PropertyBag}
+     * Properties as per {@link PropertyBag}
+     * @return 
      */
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 
     // TODO: remove this once hk2/config supports non-list @Element("*").
     class Duck {
         public static ApplicationConfig getApplicationConfig(Engine instance) {
-            return (instance.getApplicationConfigs().size() == 0) ? null :
+            return (instance.getApplicationConfigs().isEmpty()) ? null :
                     instance.getApplicationConfigs().get(0);
         }
 
@@ -157,6 +154,7 @@ public interface Engine extends ConfigBeanProxy, PropertyBag {
                 final Engine instance, final Class<T> configType) throws TransactionFailure {
             return (T) ConfigSupport.apply(new SingleConfigCode<Engine>() {
 
+                @Override
                 public Object run(Engine e) throws PropertyVetoException, TransactionFailure {
                     T newChild = e.createChild(configType);
                     e.getApplicationConfigs().add(newChild);

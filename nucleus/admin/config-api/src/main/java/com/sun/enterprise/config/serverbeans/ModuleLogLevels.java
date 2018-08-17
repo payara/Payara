@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 package com.sun.enterprise.config.serverbeans;
 
 import org.jvnet.hk2.config.Attribute;
@@ -45,7 +45,6 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.DuckTyped;
-
 
 import java.beans.PropertyVetoException;
 import java.util.*;
@@ -56,542 +55,505 @@ import org.jvnet.hk2.config.types.PropertyBag;
 
 import org.glassfish.quality.ToDo;
 
-
 /**
  *
  */
-
-/* @XmlType(name = "", propOrder = {
-    "property"
-}) */
-
 @Configured
 public interface ModuleLogLevels extends ConfigBeanProxy, PropertyBag {
 
     /**
      * Gets the value of the root property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getRoot();
 
     /**
      * Sets the value of the root property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setRoot(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the server property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getServer();
 
     /**
      * Sets the value of the server property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setServer(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the ejbContainer property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getEjbContainer();
 
     /**
      * Sets the value of the ejbContainer property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setEjbContainer(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the cmpContainer property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getCmpContainer();
 
     /**
      * Sets the value of the cmpContainer property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setCmpContainer(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the mdbContainer property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getMdbContainer();
 
     /**
      * Sets the value of the mdbContainer property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setMdbContainer(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the webContainer property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getWebContainer();
 
     /**
      * Sets the value of the webContainer property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setWebContainer(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the classloader property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getClassloader();
 
     /**
      * Sets the value of the classloader property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setClassloader(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the configuration property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getConfiguration();
 
     /**
      * Sets the value of the configuration property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setConfiguration(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the naming property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getNaming();
 
     /**
      * Sets the value of the naming property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setNaming(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the security property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getSecurity();
 
     /**
      * Sets the value of the security property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setSecurity(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the jts property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getJts();
 
     /**
      * Sets the value of the jts property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setJts(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the jta property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getJta();
 
     /**
      * Sets the value of the jta property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setJta(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the admin property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getAdmin();
 
     /**
      * Sets the value of the admin property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setAdmin(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the deployment property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getDeployment();
 
     /**
      * Sets the value of the deployment property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setDeployment(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the verifier property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getVerifier();
 
     /**
      * Sets the value of the verifier property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setVerifier(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the jaxr property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getJaxr();
 
     /**
      * Sets the value of the jaxr property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setJaxr(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the jaxrpc property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getJaxrpc();
 
     /**
      * Sets the value of the jaxrpc property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setJaxrpc(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the saaj property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getSaaj();
 
     /**
      * Sets the value of the saaj property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setSaaj(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the corba property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getCorba();
 
     /**
      * Sets the value of the corba property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setCorba(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the javamail property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getJavamail();
 
     /**
      * Sets the value of the javamail property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setJavamail(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the jms property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getJms();
 
     /**
      * Sets the value of the jms property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setJms(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the connector property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getConnector();
 
     /**
      * Sets the value of the connector property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setConnector(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the jdo property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getJdo();
 
     /**
      * Sets the value of the jdo property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setJdo(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the cmp property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getCmp();
 
     /**
      * Sets the value of the cmp property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setCmp(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the util property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getUtil();
 
     /**
      * Sets the value of the util property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setUtil(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the resourceAdapter property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getResourceAdapter();
 
     /**
      * Sets the value of the resourceAdapter property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setResourceAdapter(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the synchronization property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getSynchronization();
 
     /**
      * Sets the value of the synchronization property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setSynchronization(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the nodeAgent property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getNodeAgent();
 
     /**
      * Sets the value of the nodeAgent property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setNodeAgent(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the selfManagement property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getSelfManagement();
 
     /**
      * Sets the value of the selfManagement property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setSelfManagement(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the groupManagementService property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getGroupManagementService();
 
     /**
      * Sets the value of the groupManagementService property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setGroupManagementService(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the managementEvent property.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
-    @Attribute (defaultValue="INFO")
+    @Attribute(defaultValue = "INFO")
     public String getManagementEvent();
 
     /**
      * Sets the value of the managementEvent property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setManagementEvent(String value) throws PropertyVetoException;
 
@@ -602,9 +564,10 @@ public interface ModuleLogLevels extends ConfigBeanProxy, PropertyBag {
     public Map<String, String> getAllLogLevels();
 
     public class Duck {
+
         public static Map<String, String> getAllLogLevels(ModuleLogLevels me) {
 
-            Map<String,String> moduleLevels = new HashMap<String, String>();
+            Map<String, String> moduleLevels = new HashMap<String, String>();
             moduleLevels.put("root", me.getRoot());
             moduleLevels.put("server", me.getServer());
             moduleLevels.put("ejb-container", me.getEjbContainer());
@@ -642,10 +605,11 @@ public interface ModuleLogLevels extends ConfigBeanProxy, PropertyBag {
     }
 
     /**
-    	Properties as per {@link PropertyBag}
+     * Properties as per {@link PropertyBag}
      */
-    @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
-    @PropertiesDesc(props={})
+    @ToDo(priority = ToDo.Priority.IMPORTANT, details = "Provide PropertyDesc for legal props")
+    @PropertiesDesc(props = {})
     @Element
+    @Override
     List<Property> getProperty();
 }

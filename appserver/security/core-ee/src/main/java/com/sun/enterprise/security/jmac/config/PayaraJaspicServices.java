@@ -1,23 +1,23 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://github.com/payara/Payara/blob/master/LICENSE.txt
- * See the License for the specific
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at packager/legal/LICENSE.txt.
  *
  * GPL Classpath Exception:
- * The Payara Foundation designates this particular file as subject to the "Classpath"
- * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * Oracle designates this particular file as subject to the "Classpath"
+ * exception as provided by Oracle in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,29 +37,39 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.microprofile.config.converters;
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jmac.config;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
-import javax.annotation.Priority;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.config.spi.Converter;
+import java.util.Map;
+
+import javax.security.auth.callback.CallbackHandler;
+
+import com.sun.enterprise.security.jmac.AuthMessagePolicy;
+import com.sun.jaspic.services.JaspicServices;
 
 /**
- *
- * @author Steve Millidge (Payara Foundation)
+ * This is based Helper class for 196 Configuration.
  */
-@Priority(1)
-public class LocalDateConverter implements Converter<LocalDate> {
+public abstract class PayaraJaspicServices extends JaspicServices {
 
-    @Override
-    public LocalDate convert(String value) {
-        if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
-        try {
-            return LocalDate.parse(value);
-        }catch (DateTimeParseException nfe) {
-            throw new IllegalArgumentException(nfe);
+    /**
+     * Get the default callback handler
+     */
+    public CallbackHandler getCallbackHandler() {
+        CallbackHandler callbackHandler = AuthMessagePolicy.getDefaultCallbackHandler();
+
+        if (callbackHandler instanceof CallbackHandlerConfig) {
+            ((CallbackHandlerConfig) callbackHandler).setHandlerContext(getHandlerContext(map));
         }
+
+        return callbackHandler;
     }
-    
+
+    /**
+     * This method is invoked by the constructor and should be overridden by a subclass.
+     */
+    protected HandlerContext getHandlerContext(Map<String, ?> map) {
+        return null;
+    }
+
 }

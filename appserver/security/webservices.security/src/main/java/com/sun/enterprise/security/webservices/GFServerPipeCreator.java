@@ -81,7 +81,7 @@ public class GFServerPipeCreator extends org.glassfish.webservices.ServerPipeCre
     @Override
     public Pipe createSecurityPipe(PolicyMap map, SEIModel sei, WSDLPort port, WSEndpoint owner, Pipe tail) {
 
-        HashMap props = new HashMap();
+        HashMap<String, Object> props = new HashMap<>();
 
         props.put(PipeConstants.POLICY, map);
         props.put(PipeConstants.SEI_MODEL, sei);

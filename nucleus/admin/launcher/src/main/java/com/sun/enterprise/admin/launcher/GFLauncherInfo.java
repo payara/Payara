@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation]
 
 package com.sun.enterprise.admin.launcher;
 
@@ -295,8 +295,6 @@ public class GFLauncherInfo {
         Map<String, String> map = getArgs();
         Set<String> keys = map.keySet();
         List<String> argList = new ArrayList<String>();
-        
-        int i = 0;
 
         for (String key : keys) {
             argList.add(key);
@@ -470,12 +468,10 @@ public class GFLauncherInfo {
             throw new GFLauncherException("noInstallDir", installDir);
         }
 
-        // check user-supplied args
-        if (domainParentDir != null) {
-            // if the arg was given -- then it MUST point to a real dir
-            if (!GFLauncherUtils.safeIsDirectory(domainParentDir)) {
-                throw new GFLauncherException("noDomainParentDir", domainParentDir);
-            }
+        // check user-supplied args 
+        // AND if the arg was given -- then it MUST point to a real dir
+        if (domainParentDir != null && !GFLauncherUtils.safeIsDirectory(domainParentDir)) {
+            throw new GFLauncherException("noDomainParentDir", domainParentDir);
         }
 
         setupServerDirs();
@@ -548,6 +544,7 @@ public class GFLauncherInfo {
 
         File[] files = domainParentDir.listFiles(new FileFilter() {
 
+            @Override
             public boolean accept(File f) {
                 return GFLauncherUtils.safeIsDirectory(f);
             }
@@ -614,8 +611,6 @@ public class GFLauncherInfo {
     private File domainParentDir;
     private File domainRootDir;
     private File instanceRootDir;
-    //private File nodeAgentDir;
-    //private File nodeAgentsDir;
     private File configDir;
     private File configFile; // domain.xml
     private String domainName;
@@ -629,9 +624,9 @@ public class GFLauncherInfo {
     private File postbootCommandsFile;
     private File prebootCommandsFile;
     // BUG TODO get the def. domains dir from asenv 3/14/2008
-    private final static String DEFAULT_DOMAIN_PARENT_DIR = "domains";
-    private final static String CONFIG_DIR = "config";
-    private final static String CONFIG_FILENAME = "domain.xml";
+    private static final String DEFAULT_DOMAIN_PARENT_DIR = "domains";
+    private static final String CONFIG_DIR = "config";
+    private static final String CONFIG_FILENAME = "domain.xml";
     //password tokens -- could be multiple -- launcher should *just* write them onto stdin of server
     final List<String> securityTokens = new ArrayList<String>(); // note: it's package private
 
@@ -639,7 +634,7 @@ public class GFLauncherInfo {
         return verbose || watchdog;
     }
 
-    final private static class ThreeStateBoolean {
+    private static final class ThreeStateBoolean {
 
         ThreeStateBoolean(Boolean b) {
             this.b = b;
@@ -648,10 +643,10 @@ public class GFLauncherInfo {
             return b == null;
         }
         boolean isTrue() {
-            return !isNull() && b.booleanValue();
+            return !isNull() && b;
         }
         boolean isFalse() {
-            return !isNull() && !b.booleanValue();
+            return !isNull() && !b;
         }
         
         Boolean b;

@@ -199,7 +199,6 @@
             <groupId>org.glassfish.main.transaction</groupId>
             <artifactId>jta</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
         </dependency>
     </dependencies>
 </project>

@@ -12,7 +12,9 @@ Information about the open source project is on the [GitHub project page](https:
 
 **Full Payara Server 5 and Payara Micro documentation:** https://payara.gitbooks.io/payara-server/content/ 
 
-Payara Server 5 is a drop in replacement for GlassFish Server Open Source with the peace of mind of quarterly releases containing enhancements, bug fixes and patches including patches to dependent libraries, as required, including Tyrus, Eclipse Link, Jersey and others. Our vision is to optimise Payara Server and make it the best server for production Java applications with responsive 24/7 dedicated incident and software support from the best middleware engineers in the industry.
+Payara Server 5 is an open source, cloud-native middleware platform (drop in replacement for GlassFish Server Open Source) supporting reliable and secure deployments of Java EE (Jakarta EE) applications on premise, in the cloud, or hybrid environments. Monthly releases, bug fixes and a 10-year support lifecycle optimizes Payara Server for production deployments. Payara Server is aggressively compatible with common ecosystem components and ensures future compliance with Jakarta EE. Patches include patches to dependent libraries, as required, including Tyrus, Eclipse Link, Jersey and others. 
+
+Payara Server is built and supported by a team of DevOps engineers dedicated to continued development and maintenance of the open source software, and committed to collaboration with the community to ensure Payara Server is the best option for production Java EE applications. Payara Support is available with responsive 24/7 dedicated incident and software support from the best middleware engineers in the industry.
 
 We have added full JCache support, enhanced JBatch functionality, replaced Shoal with Hazelcast for session clustering and are driving development of Payara Micro. A completely new way of running WAR applications on top of an embedded GlassFish core, Payara Micro is ideally suited to cloud and microservice architectures with elastic clustering and no installation. Payara Micro can run WAR applications simply, using:
 
@@ -24,9 +26,9 @@ In summary Payara Server provides:
 
 * Fully Supported Server derived from GlassFish 5.x Open Source Edition
 * Drop in Replacement for GlassFish Open Source Edition
-* Microprofile 1.2 api support
+* Microprofile 1.3 api support
 * Supports deployment of JavaEE 8 applications
-* Production Enhancements including JCache, JBatch, and Hazelcast session clustering.
+* Production Enhancements including JCache, JBatch, and Hazelcast session clustering
 * Payara Micro for cloud and microservice deployments
 * Always Open Source dual licensed CDDL/GPL
 * Supported by dedicated engineers 24/7
@@ -34,7 +36,7 @@ In summary Payara Server provides:
 * Optimised for production and operations
 * Quarterly Patch Releases / Bug Fixes
 
-We take GlassFish, support it, add fixes, add enhancements and we release it as open source Payara Server.
+We take GlassFish, support it, add fixes, add customer-requested enhancements and we release it as open source Payara Server.
 
 ## Supported JDKs and OSs
 

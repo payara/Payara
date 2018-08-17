@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.launcher;
 
@@ -47,6 +48,14 @@ import java.util.*;
  * @author bnevins
  */
 class RespawnInfo {
+    
+    private final String      classname;
+    private final String      classpath;
+    private final String[]    args;
+
+    private static final String PREFIX = "-asadmin-";
+    private static final String SEPARATOR = ",,,";
+    
     RespawnInfo(String cn, String cp, String[] a) {
         classname = cn;
         classpath = cp;
@@ -82,7 +91,7 @@ class RespawnInfo {
             if(i != 0)
                 argLine.append(SEPARATOR);
 
-            if(arg.indexOf(SEPARATOR) >= 0) {
+            if(arg.contains(SEPARATOR)) {
                 // this should not happen.  Only the ultra-paranoid programmer would
                 // bother checking for it.  I guess that's me!
                 throw new GFLauncherException("respawninfo.illegalToken", arg, SEPARATOR);
@@ -97,10 +106,4 @@ class RespawnInfo {
         return s != null && s.length() > 0;
     }
 
-    private String      classname;
-    private String      classpath;
-    private String[]    args;
-
-    private static final String PREFIX = "-asadmin-";
-    private static final String SEPARATOR = ",,,";
 }

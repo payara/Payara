@@ -62,7 +62,6 @@
         <!-- See parent POM -->
     </developers>
 
-    <packaging>jar</packaging>
     <build>
         <plugins>
             <plugin>

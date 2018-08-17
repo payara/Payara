@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -95,6 +96,7 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
      * Sets the value of the id property.
      *
      * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setId(String value) throws PropertyVetoException;
 
@@ -114,6 +116,7 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
      * Sets the value of the httpListeners property.
      *
      * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     @Deprecated
     void setHttpListeners(String value) throws PropertyVetoException;
@@ -130,6 +133,7 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
      * Sets the value of the httpListeners property.
      *
      * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setNetworkListeners(String value) throws PropertyVetoException;
 
@@ -147,6 +151,7 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
      * Sets the value of the defaultWebModule property.
      *
      * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setDefaultWebModule(String value) throws PropertyVetoException;
 
@@ -166,6 +171,7 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
      * Sets the value of the hosts property.
      *
      * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setHosts(String value) throws PropertyVetoException;
 
@@ -187,6 +193,7 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
      * Sets the value of the state property.
      *
      * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setState(String value) throws PropertyVetoException;
 
@@ -205,6 +212,7 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
      * Sets the value of the docroot property.
      *
      * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setDocroot(String value) throws PropertyVetoException;
 
@@ -220,6 +228,7 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
      * Sets the value of the accesslog property.
      *
      * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setAccessLog(String value) throws PropertyVetoException;
 
@@ -236,6 +245,7 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
      * Sets the value of the sso-enabled property.
      *
      * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setSsoEnabled(String value) throws PropertyVetoException;
 
@@ -252,6 +262,7 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
      * Sets the value of the access logging enabled property.
      *
      * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setAccessLoggingEnabled(String value) throws PropertyVetoException;
 
@@ -270,6 +281,7 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
      * Sets the value of the logFile property.
      *
      * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setLogFile(String value) throws PropertyVetoException;
 
@@ -285,6 +297,7 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
      * Sets the value of the httpAccessLog property.
      *
      * @param value allowed object is {@link HttpAccessLog }
+     * @throws PropertyVetoException
      */
     void setHttpAccessLog(HttpAccessLog value) throws PropertyVetoException;
 
@@ -506,6 +519,7 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
         }
     )
     @Element
+    @Override
     List<Property> getProperty();
 
 }

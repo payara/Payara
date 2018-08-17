@@ -37,11 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018]Payara Foundation and/or affiliates
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.glassfish.flashlight.statistics.impl;
 
 import org.glassfish.flashlight.statistics.*;
@@ -65,12 +62,12 @@ public class CounterImpl extends AbstractTreeNode implements Counter {
     public static final long DEFAULT_MIN_BOUND = DEFAULT_VALUE;
     /** DEFAULT_VALUE of any statistic is 0 */
     protected static final String NEWLINE = System.getProperty("line.separator");
-    private AtomicLong count = new AtomicLong(0);
+    private final AtomicLong count = new AtomicLong(0);
     long max = 0;
     long min = 0;
-    private AtomicLong lastSampleTime = new AtomicLong();
-    private String DESCRIPTION = "Counter CountStatistic";
-    private String UNIT = java.lang.Long.class.toString();
+    private final AtomicLong lastSampleTime = new AtomicLong();
+    private static final String DESCRIPTION = "Counter CountStatistic";
+    private static final String UNIT = java.lang.Long.class.toString();
 
     private long startTime = 0;
 
@@ -78,10 +75,12 @@ public class CounterImpl extends AbstractTreeNode implements Counter {
         startTime = System.currentTimeMillis();
     }
 
+    @Override
     public long getCount() {
         return count.get();
     }
 
+    @Override
     public void setCount(long count) {
         if (count > max) {
             max = count;
@@ -92,6 +91,7 @@ public class CounterImpl extends AbstractTreeNode implements Counter {
     }
     // TBD: remove reference to getSampleTime -> extremely inefficient implementation
     // Will have to be replaced by Timer implemenation
+    @Override
     public void increment() {
         long cnt = this.count.incrementAndGet();
         if (cnt > max) {
@@ -102,6 +102,7 @@ public class CounterImpl extends AbstractTreeNode implements Counter {
     }
 
     //automatically add the increment to cnt
+    @Override
     public void  increment(long delta) {
         long cnt = this.count.addAndGet(delta);
         if(cnt > max) {
@@ -110,6 +111,7 @@ public class CounterImpl extends AbstractTreeNode implements Counter {
         this.lastSampleTime.set(getSampleTime());
     }
     
+    @Override
     public void decrement() {
         long cnt = this.count.decrementAndGet();
         if (cnt < min) {
@@ -117,6 +119,7 @@ public class CounterImpl extends AbstractTreeNode implements Counter {
         }
     }
 
+    @Override
     public void setReset(boolean reset) {
         if (reset) {
             this.count.set(0);
@@ -128,18 +131,22 @@ public class CounterImpl extends AbstractTreeNode implements Counter {
         return getCount();
     }
 
+    @Override
     public String getUnit() {
-        return this.UNIT;
+        return UNIT;
     }
 
+    @Override
     public String getDescription() {
-        return this.DESCRIPTION;
+        return DESCRIPTION;
     }
 
+    @Override
     public long getStartTime() {
         return this.startTime;
     }
 
+    @Override
     public long getLastSampleTime() {
         return this.lastSampleTime.longValue();
     }
