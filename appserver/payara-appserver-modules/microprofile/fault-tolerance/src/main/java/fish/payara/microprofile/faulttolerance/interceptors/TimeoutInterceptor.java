@@ -151,8 +151,9 @@ public class TimeoutInterceptor {
         long value = (Long) FaultToleranceCdiUtils.getOverrideValue(
                 config, Timeout.class, "value", invocationContext, Long.class)
                 .orElse(timeout.value());
+        // Look for a String and cast to ChronoUnit - Use the Common Sense Convertor
         ChronoUnit unit = (ChronoUnit) FaultToleranceCdiUtils.getOverrideValue(
-                config, Timeout.class, "unit", invocationContext, ChronoUnit.class)
+                config, Timeout.class, "unit", invocationContext, String.class)
                 .orElse(timeout.unit());
 
         Future timeoutFuture = null;
