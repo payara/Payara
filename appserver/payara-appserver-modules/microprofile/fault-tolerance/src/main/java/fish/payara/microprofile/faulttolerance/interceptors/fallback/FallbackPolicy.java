@@ -85,7 +85,7 @@ public class FallbackPolicy {
      * @return The result of the executed fallback method
      * @throws Exception If the fallback method itself fails.
      */
-    public Object fallback(InvocationContext invocationContext) throws Exception {
+    public Object fallback(InvocationContext invocationContext, Throwable exception) throws Exception {
         Object fallbackInvocationContext = null;
         
         FaultToleranceService faultToleranceService = 
@@ -106,7 +106,7 @@ public class FallbackPolicy {
                 logger.log(Level.FINE, "Using fallback class: {0}", fallbackClass.getName());
 
                 ExecutionContext executionContext = new FaultToleranceExecutionContext(invocationContext.getMethod(), 
-                        invocationContext.getParameters());
+                        invocationContext.getParameters(), exception);
 
                 fallbackInvocationContext = fallbackClass
                         .getDeclaredMethod(FALLBACK_HANDLER_METHOD_NAME, ExecutionContext.class)
@@ -126,10 +126,12 @@ public class FallbackPolicy {
 
         private final Method method;
         private final Object[] parameters;
+        private final Throwable failure;
         
-        public FaultToleranceExecutionContext(Method method, Object[] parameters) {
+        public FaultToleranceExecutionContext(Method method, Object[] parameters, Throwable failure) {
             this.method = method;
             this.parameters = parameters;
+            this.failure = failure;
         }
         
         @Override
@@ -140,6 +142,11 @@ public class FallbackPolicy {
         @Override
         public Object[] getParameters() {
             return parameters;
+        }
+
+        @Override
+        public Throwable getFailure() {
+            return failure;
         }
     }
 }

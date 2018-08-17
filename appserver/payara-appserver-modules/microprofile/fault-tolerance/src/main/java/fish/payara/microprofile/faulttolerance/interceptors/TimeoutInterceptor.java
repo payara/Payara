@@ -121,7 +121,7 @@ public class TimeoutInterceptor {
                     logger.log(Level.FINE, "Fallback annotation found on method, and no Retry annotation - "
                             + "falling back from Timeout");
                     FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
-                    proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
+                    proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
                 } else {
                     throw ex;
                 }
@@ -156,19 +156,22 @@ public class TimeoutInterceptor {
                 .orElse(timeout.unit());
 
         Future timeoutFuture = null;
-        ThreadLocal<Boolean> timedOut = new ThreadLocal<>();
-        timedOut.set(false);
         long timeoutMillis = Duration.of(value, unit).toMillis();
         long timeoutTime = System.currentTimeMillis() + timeoutMillis;
         
         try {
-            timeoutFuture = startTimeout(timeoutMillis, timedOut);
+            timeoutFuture = startTimeout(timeoutMillis);
             proceededInvocationContext = invocationContext.proceed();
             stopTimeout(timeoutFuture);
 
-            if (System.currentTimeMillis() > timeoutTime || timedOut.get()) {
+            if (System.currentTimeMillis() > timeoutTime) {
                 logger.log(Level.FINE, "Execution timed out");
                 throw new TimeoutException();
+            }
+        } catch (InterruptedException ie) {
+            if (System.currentTimeMillis() > timeoutTime) {
+                logger.log(Level.FINE, "Execution timed out");
+                throw new TimeoutException(ie);
             }
         } catch (Exception ex) {
             stopTimeout(timeoutFuture);
@@ -185,12 +188,11 @@ public class TimeoutInterceptor {
      * @return A future that can be cancelled if the method execution completes before the interrupt happens
      * @throws NamingException If the configured ManagedScheduledExecutorService could not be found
      */
-    private Future startTimeout(long timeoutMillis, ThreadLocal<Boolean> timedOut) throws NamingException {
+    private Future startTimeout(long timeoutMillis) throws NamingException {
         final Thread thread = Thread.currentThread();
         
         Runnable timeoutTask = () -> {
             thread.interrupt();
-            timedOut.set(true);
         };
 
         FaultToleranceService faultToleranceService = Globals.getDefaultBaseServiceLocator()

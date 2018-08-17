@@ -125,7 +125,7 @@ public class CircuitBreakerInterceptor implements Serializable {
                     logger.log(Level.FINE, "Fallback annotation found on method, and no Retry annotation - "
                             + "falling back from CircuitBreaker");
                     FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
-                    proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
+                    proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
                 } else {
                     throw ex;
                 }
@@ -207,7 +207,7 @@ public class CircuitBreakerInterceptor implements Serializable {
                 // If closed, attempt to proceed the invocation context
                 try {
                     logger.log(Level.FINER, "Proceeding CircuitBreaker context");
-                    proceededInvocationContext = invocationContext.proceed();
+                    proceededInvocationContext = invocationContext.proceed(); 
                 } catch (Exception ex) {
                     logger.log(Level.FINE, "Exception executing CircuitBreaker context");
                     
@@ -216,29 +216,27 @@ public class CircuitBreakerInterceptor implements Serializable {
                         logger.log(Level.FINE, "Caught exception is included in CircuitBreaker failOn, "
                                 + "recording failure against CircuitBreaker");
                         // Add a failure result to the queue
-                        circuitBreakerState.recordClosedResult(Boolean.FALSE);
-
-                        // Calculate the failure threshold
-                        long failureThreshold = Math.round(requestVolumeThreshold * failureRatio);
-
-                        // If we're over the failure threshold, open the circuit
-                        if (circuitBreakerState.isOverFailureThreshold(failureThreshold)) {
-                            logger.log(Level.FINE, "CircuitBreaker is over failure threshold {0}, opening circuit",
-                                    failureThreshold);
-                            
-                            circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.OPEN);
-
-                            // Kick off a thread that will half-open the circuit after the specified delay
-                            scheduleHalfOpen(delayMillis, circuitBreakerState);
-                        }
+                        circuitBreakerState.recordClosedResult(Boolean.FALSE); 
+                        
+                        // Calculate the failure ratio, and if we're over it, open the circuit
+                        breakCircuitIfRequired(
+                                Math.round(requestVolumeThreshold * failureRatio), 
+                                circuitBreakerState, 
+                                delayMillis);
                     }
                     
                     // Finally, propagate the error upwards
                     throw ex;
                 }
                 
-                // If everything is bon, just add a success value
+                // If everything is bon, add a success value
                 circuitBreakerState.recordClosedResult(Boolean.TRUE);
+                
+                // Calculate the failure ratio, and if we're over it, open the circuit
+                breakCircuitIfRequired(
+                        Math.round(requestVolumeThreshold * failureRatio), 
+                        circuitBreakerState, 
+                        delayMillis);
                 break;
             case HALF_OPEN:
                 // If half-open, attempt to proceed the invocation context
@@ -343,5 +341,19 @@ public class CircuitBreakerInterceptor implements Serializable {
         }
      
         return shouldFail;
+    }
+    
+    private void breakCircuitIfRequired(long failureThreshold, CircuitBreakerState circuitBreakerState, 
+            long delayMillis) throws NamingException {
+        // If we're over the failure threshold, open the circuit
+        if (circuitBreakerState.isOverFailureThreshold(failureThreshold)) {
+            logger.log(Level.FINE, "CircuitBreaker is over failure threshold {0}, opening circuit",
+                    failureThreshold);
+
+            circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.OPEN);
+
+            // Kick off a thread that will half-open the circuit after the specified delay
+            scheduleHalfOpen(delayMillis, circuitBreakerState);
+        }
     }
 }

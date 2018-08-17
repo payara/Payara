@@ -112,7 +112,7 @@ public class RetryInterceptor {
             if (fallback != null) {
                 logger.log(Level.FINE, "Fallback annotation found on method - falling back from Retry");
                 FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
-                proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
+                proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
             } else {
                 throw ex;
             }

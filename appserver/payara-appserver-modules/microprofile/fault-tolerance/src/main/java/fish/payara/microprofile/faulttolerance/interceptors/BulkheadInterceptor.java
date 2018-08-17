@@ -126,7 +126,7 @@ public class BulkheadInterceptor implements Serializable {
                     logger.log(Level.FINE, "Fallback annotation found on method, and no Retry annotation - "
                             + "falling back from Bulkhead");
                     FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
-                    proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
+                    proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
                 } else {
                     logger.log(Level.FINE, "Fallback annotation not found on method, propagating error upwards.", ex);
                     throw ex;

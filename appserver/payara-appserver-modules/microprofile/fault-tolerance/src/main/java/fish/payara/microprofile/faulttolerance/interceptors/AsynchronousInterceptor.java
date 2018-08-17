@@ -123,7 +123,7 @@ public class AsynchronousInterceptor implements Serializable {
             if (fallback != null) {
                 logger.log(Level.FINE, "Fallback annotation found on method - falling back from Asynchronous");
                 FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
-                proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
+                proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
             } else {
                 throw ex;
             }
@@ -195,7 +195,7 @@ public class AsynchronousInterceptor implements Serializable {
                 }
             } catch (InterruptedException | ExecutionException | TimeoutException ex) {
                 if (ex.getCause() instanceof FaultToleranceException) {
-                    throw (FaultToleranceException) ex.getCause();
+                    throw new ExecutionException(ex.getCause());
                 } else {
                     throw ex;
                 }
