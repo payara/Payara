@@ -40,16 +40,6 @@
 package fish.payara.microprofile.openapi.impl;
 
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
-import fish.payara.microprofile.openapi.api.OpenAPIBuildException;
-import fish.payara.microprofile.openapi.impl.admin.OpenApiServiceConfiguration;
-import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
-import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
-import fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor;
-import fish.payara.microprofile.openapi.impl.processor.BaseProcessor;
-import fish.payara.microprofile.openapi.impl.processor.FileProcessor;
-import fish.payara.microprofile.openapi.impl.processor.FilterProcessor;
-import fish.payara.microprofile.openapi.impl.processor.ModelReaderProcessor;
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.beans.PropertyChangeEvent;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -114,9 +104,6 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
     @Inject
     private OpenApiServiceConfiguration config;
-
-    @Inject
-    private PayaraExecutorService executor;
 
     @Inject
     private ServerEnvironment environment;
