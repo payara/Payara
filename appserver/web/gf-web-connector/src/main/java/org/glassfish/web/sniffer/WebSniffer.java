@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.web.sniffer;
 
@@ -136,6 +137,7 @@ public class WebSniffer  extends GenericSniffer {
         result.add("WEB-INF/web.xml");
         result.add("WEB-INF/sun-web.xml");
         result.add("WEB-INF/glassfish-web.xml");
+        result.add("WEB-IND/payara-web.xml");
         result.add("WEB-INF/weblogic.xml");
         return result;
     }
