@@ -50,85 +50,40 @@ import org.eclipse.microprofile.config.spi.Converter;
  * @author steve
  */
 public class CommonSenseConverter implements Converter<Object> {
+
+    private Method conversionMethod;
+    private Constructor constructor;
     
-    private Class clazz;
+    public CommonSenseConverter(Method method) {
+        conversionMethod = method;
+    }
     
-    public CommonSenseConverter(Class clazz) {
-        this.clazz = clazz;
+    public CommonSenseConverter(Constructor method) {
+        constructor = method;
     }
 
     @Override
     public Object convert(String value) {
         if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
         Object result = null;
-        result = convertViaConstructor(value);
-        if (result == null) {
-            result = convertViaValueOf(value);
+
+        if (conversionMethod != null) {
+            try {
+                result = conversionMethod.invoke(null, value);
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                // possible result
+            }
+        } else if (constructor != null) {
+            try {
+                result = constructor.newInstance(value);
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                // possible result
+            }
         }
         if (result == null) {
-            result = convertViaCharSequence(value);
-        }
-        if (result == null) {
-            result = convertViaOf(value);
-        }
-        
-        if (result == null) {
-            throw new IllegalArgumentException("Unable to convert value to type " + this.clazz.getCanonicalName());
-        }
-        return result;
-    }
-    
-    private Object convertViaConstructor(String propertyValue) {
-        Object result = null;
-        try {
-            // need to do common sense reflected conversion
-            Constructor method = clazz.getConstructor(String.class);
-            result = method.newInstance(propertyValue);
-            
-        } catch (NoSuchMethodException | SecurityException |InstantiationException | IllegalAccessException | InvocationTargetException ex) {
-            // do nothing as this is normal
+            throw new IllegalArgumentException("Unable to convert value to type  for value " + value);
         }
         return result;
     }
 
-    private Object convertViaValueOf(String propertyValue) {
-        Object result = null;
-        try {
-            // need to do common sense reflected conversion
-            Method method = clazz.getMethod("valueOf", String.class);
-            result = method.invoke(null, propertyValue);
-            
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            // do nothing as this is normal
-        }
-        return result;
-    }
-    
-    
-    private Object convertViaOf(String propertyValue) {
-        Object result = null;
-        try {
-            // need to do common sense reflected conversion
-            Method method = clazz.getMethod("of", String.class);
-            result = method.invoke(null, propertyValue);
-            
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            // do nothing as this is normal
-        }
-        return result;
-    }
-
-    private Object convertViaCharSequence(String propertyValue) {
-        Object result = null;
-        try {
-            // need to do common sense reflected conversion
-            Method method = clazz.getMethod("parse", CharSequence.class);
-            result = method.invoke(null, propertyValue);
-            
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            // do nothing as this is normal
-        }
-        return result;
-    }
-    
 }
