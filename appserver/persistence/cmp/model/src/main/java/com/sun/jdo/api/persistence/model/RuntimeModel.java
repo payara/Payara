@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portion Copyright [2018] Payara Foundation and/or affiliates
 
 /*
  * RuntimeModel.java
@@ -56,6 +57,7 @@ import java.security.PrivilegedAction;
 import org.netbeans.modules.dbschema.SchemaElement;
 import com.sun.jdo.api.persistence.model.mapping.MappingClassElement;
 import com.sun.jdo.spi.persistence.utility.*;
+import org.glassfish.common.util.StringHelper;
 import org.glassfish.persistence.common.I18NHelper;
 
 /** 

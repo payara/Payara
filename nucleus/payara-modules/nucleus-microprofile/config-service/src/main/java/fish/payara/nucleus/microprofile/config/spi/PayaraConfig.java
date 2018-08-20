@@ -41,6 +41,8 @@ package fish.payara.nucleus.microprofile.config.spi;
 
 import fish.payara.nucleus.microprofile.config.converters.CommonSenseConverter;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -53,6 +55,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.Converter;
@@ -200,39 +204,69 @@ public class PayaraConfig implements Config {
             }
         }
         
+        if (converter == null) {
+            // see if a common sense converter can be created
+            boolean commonSense = true;
+            try {
+                Method m = propertyType.getMethod("of", String.class);
+                converter = (Converter<T>) new CommonSenseConverter(m);
+                converters.put(propertyType, converter);
+                return converter;
+            } catch (NoSuchMethodException | SecurityException ex) {
+                try {
+                    Method m = propertyType.getMethod("valueOf",String.class);
+                    converter = (Converter<T>) new CommonSenseConverter(m);
+                    converters.put(propertyType, converter);
+                    return converter;
+                } catch (NoSuchMethodException | SecurityException ex1) {
+                    try {
+                        Constructor c = propertyType.getConstructor(String.class);
+                        converter = (Converter<T>) new CommonSenseConverter(c);
+                        converters.put(propertyType, converter);
+                        return converter;
+                    } catch (NoSuchMethodException | SecurityException ex2) {
+                        try {
+                            Method m = propertyType.getMethod("parse", CharSequence.class);
+                            converter = (Converter<T>) new CommonSenseConverter(m);
+                            converters.put(propertyType, converter);
+                            return converter;
+                        } catch (NoSuchMethodException | SecurityException ex3) {
+                            commonSense = false;
+                        }
+                    }
+                }
+            }
+        }
+        if (converter == null) {
+            throw new IllegalArgumentException("Unable to convert value to type " + propertyType.getCanonicalName());
+        }
         return converter;
     }
     
-    private <T> T convertString(String value, Class<T>  propertyType) {
-        // find a converter
-        Converter<T> converter = getConverter(propertyType);
-        if (converter == null) {
-            // OK try common sense convertor
-            if (propertyType.isArray()) {
-                // find converter for the array type
-                Class componentClazz = propertyType.getComponentType();
-                converter = getConverter(componentClazz);
-                if (converter != null) {
-                    // array convert
-                    String keys[] = splitValue(value);
-                    Object arrayResult = Array.newInstance(componentClazz, keys.length);
-                    for (int i=0; i < keys.length; i++) {
-                        Array.set(arrayResult, i, converter.convert(keys[i]));
-                    }
-                    return (T) arrayResult;
-                }
+    private <T> T convertString(String value, Class<T> propertyType) {
+
+        // if it is an array convert arrays
+        if (propertyType.isArray()) {
+            // find converter for the array type
+            Class componentClazz = propertyType.getComponentType();
+            Converter converter = getConverter(componentClazz);
+
+            // array convert
+            String keys[] = splitValue(value);
+            Object arrayResult = Array.newInstance(componentClazz, keys.length);
+            for (int i = 0; i < keys.length; i++) {
+                Array.set(arrayResult, i, converter.convert(keys[i]));
             }
-            
-            CommonSenseConverter conv = new CommonSenseConverter(propertyType);
-            Object result = conv.convert(value);
-            if (result != null) {
-                converters.put(propertyType, conv);
-                return (T) result;
+            return (T) arrayResult;
+        } else {
+
+            // find a converter
+            Converter<T> converter = getConverter(propertyType);
+            if (converter == null) {
+                throw new IllegalArgumentException("No converter for class " + propertyType);
             }
-            throw new IllegalArgumentException("No converter for class " + propertyType);
+            return converter.convert(value);
         }
-        
-        return converter.convert(value);       
     }
     
     private String[] splitValue(String value) {

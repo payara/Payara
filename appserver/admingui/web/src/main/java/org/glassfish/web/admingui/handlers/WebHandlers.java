@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
@@ -94,19 +95,25 @@ public class WebHandlers {
 
     @Handler(id="py.resolveDynamicPort",
         input={
-            @HandlerInput(name = "listenerName", type = String.class, required = true)
+            @HandlerInput(name = "listenerName", type = String.class, required = true),
+            @HandlerInput(name = "configName", type = String.class, required = false, defaultValue = "server-config")
         }, output={
             @HandlerOutput(name="result", type=String.class)
         })
     public static void resolveDynamicPort(HandlerContext handlerCtx) {
         String listenerName = (String) handlerCtx.getInputValue("listenerName");
+        String configName = (String) handlerCtx.getInputValue("configName");
 
         GrizzlyService grizzlyService = GuiUtil.getHabitat().getService(GrizzlyService.class);
-        Config config = GuiUtil.getHabitat().getService(Config.class);
+        Domain domain = GuiUtil.getHabitat().getService(Domain.class);
+        Config config = domain.getConfigNamed(configName);
         NetworkListener listener = config.getNetworkConfig().getNetworkListener(listenerName);
 
-        if (listener != null) {
+        // if DAS
+        if (listener != null && configName.equals("server-config")) {
             handlerCtx.setOutputValue("result", grizzlyService.getRealPort(listener));
+        } else if (listener != null) {
+            handlerCtx.setOutputValue("result", listener.getPort());
         }
     }
 

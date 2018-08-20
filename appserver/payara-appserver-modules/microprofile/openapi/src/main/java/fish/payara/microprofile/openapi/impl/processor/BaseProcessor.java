@@ -39,20 +39,19 @@
  */
 package fish.payara.microprofile.openapi.impl.processor;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.normaliseUrl;
-
-import java.util.Map.Entry;
-import java.util.Set;
-
-import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.eclipse.microprofile.openapi.models.Operation;
-import org.eclipse.microprofile.openapi.models.PathItem;
-
 import fish.payara.microprofile.openapi.api.processor.OASProcessor;
 import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
 import fish.payara.microprofile.openapi.impl.model.PathItemImpl;
 import fish.payara.microprofile.openapi.impl.model.info.InfoImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.normaliseUrl;
+import java.net.URL;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import org.eclipse.microprofile.openapi.models.Operation;
+import org.eclipse.microprofile.openapi.models.PathItem;
 
 /**
  * A processor to apply any configuration options to the model, and fill any
@@ -60,10 +59,10 @@ import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
  */
 public class BaseProcessor implements OASProcessor {
 
-    private final String applicationPath;
+    private final List<URL> baseURLs;
 
-    public BaseProcessor(String applicationPath) {
-        this.applicationPath = applicationPath;
+    public BaseProcessor(List<URL> baseURLs) {
+        this.baseURLs = baseURLs;
     }
 
     @Override
@@ -89,9 +88,12 @@ public class BaseProcessor implements OASProcessor {
 
         // Add the default server if there are none
         if (api.getServers().isEmpty()) {
-            api.addServer(new ServerImpl()
-                    .url("http://localhost:8080" + applicationPath)
-                    .description("Default Server."));
+            for (URL baseURL : baseURLs) {
+                api.addServer(new ServerImpl()
+                        .url(baseURL.toString())
+                        .description("Default Server.")
+                );
+            }
         }
 
         // Add the path servers

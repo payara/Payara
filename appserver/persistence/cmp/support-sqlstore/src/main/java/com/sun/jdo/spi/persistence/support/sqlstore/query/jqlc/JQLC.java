@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portion Copyright [2018] Payara Foundation and/or affiliates
 
 /*
  * JQLC.java
@@ -57,7 +58,7 @@ import org.glassfish.persistence.common.I18NHelper;
 import com.sun.jdo.api.persistence.support.JDOQueryException;
 import com.sun.jdo.api.persistence.support.JDOUnsupportedOptionException;
 import com.sun.jdo.api.persistence.support.JDOFatalInternalException;
-import com.sun.jdo.spi.persistence.utility.StringHelper;
+import org.glassfish.common.util.StringHelper;
 import com.sun.jdo.spi.persistence.support.sqlstore.PersistenceManager;
 import com.sun.jdo.spi.persistence.support.sqlstore.RetrieveDesc;
 import com.sun.jdo.spi.persistence.support.sqlstore.ExtentCollection;

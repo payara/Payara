@@ -107,7 +107,7 @@
 
         <!-- JPA -->
         <javax-persistence-api.version>2.2.0</javax-persistence-api.version>
-        <eclipselink.version>2.7.2.payara-p1</eclipselink.version>
+        <eclipselink.version>2.7.3</eclipselink.version>
 
         <!-- JTA -->
         <javax.transaction-api.version>1.2.1</javax.transaction-api.version>
@@ -190,8 +190,7 @@
 
         <jsf-ext.version>0.2</jsf-ext.version>
         <jsftemplating.version>2.1.2</jsftemplating.version>
-        <woodstock.version>4.0.2.10.payara-p11</woodstock.version>
-
+        <woodstock.version>4.0.2.10.payara-p12</woodstock.version>
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
 
@@ -206,14 +205,12 @@
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
 
         <wsdl4j.version>1.6.2</wsdl4j.version>
-        <jboss.logging.version>3.3.0.Final</jboss.logging.version>
-
 
         <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
 
          <!-- Microprofile version properties -->
          <microprofile-fault-tolerance.version>1.0.payara-p1</microprofile-fault-tolerance.version>
-         <microprofile-jwt-auth.version>1.0.payara-p1</microprofile-jwt-auth.version>
+         <microprofile-jwt-auth.version>1.1.payara-p1</microprofile-jwt-auth.version>
          <microprofile-healthcheck.version>1.0.payara-p1</microprofile-healthcheck.version>
          <microprofile-metrics.version>1.1.payara-p1</microprofile-metrics.version>
          <microprofile-rest-client.version>1.1-payara-p1</microprofile-rest-client.version>

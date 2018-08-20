@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portion Copyright [2018] Payara Foundation and/or affiliates
 
 /*
  * IOJavaClassWriter.java
@@ -49,7 +50,7 @@ package com.sun.jdo.spi.persistence.utility.generator.io;
 import java.util.*;
 import java.lang.reflect.Modifier;
 
-import com.sun.jdo.spi.persistence.utility.StringHelper;
+import org.glassfish.common.util.StringHelper;
 import com.sun.jdo.spi.persistence.utility.generator.JavaClassWriter;
 
 /**

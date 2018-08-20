@@ -51,7 +51,7 @@ import org.jvnet.hk2.config.Configured;
 /**
  *
  * @author jonathan coustick
- * @since 4.1.2.172
+ * @since 4.1.2.182
  */
 @Configured
 public interface MetricsHealthCheckConfiguration extends ConfigBeanProxy, ConfigExtension {
@@ -65,7 +65,6 @@ public interface MetricsHealthCheckConfiguration extends ConfigBeanProxy, Config
     String getEnabled();
 
     void setEnabled(String value) throws PropertyVetoException;
-    
     
     @Attribute(defaultValue = "health")
     String getEndpoint();

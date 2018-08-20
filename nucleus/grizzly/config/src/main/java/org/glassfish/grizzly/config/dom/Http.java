@@ -109,7 +109,7 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     float HTTP2_CLEAN_PERCENTAGE = 0.5f;
     int HTTP2_CLEAN_FREQUENCY_CHECK = 50;
     boolean HTTP2_DISABLE_CIPHER_CHECK = false;
-    boolean HTTP2_PUSH_ENABLED = true;
+    boolean HTTP2_PUSH_ENABLED = false;
 
     @Attribute(defaultValue = DEFAULT_ADAPTER)
     String getAdapter();
