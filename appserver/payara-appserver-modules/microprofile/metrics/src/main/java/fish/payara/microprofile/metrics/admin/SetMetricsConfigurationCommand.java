@@ -120,7 +120,7 @@ public class SetMetricsConfigurationCommand implements AdminCommand {
                     }
                 }
                 if (secure != null) {
-                    metricsConfigurationProxy.setSecure(String.valueOf(secure));
+                    metricsConfigurationProxy.setSecureMetrics(String.valueOf(secure));
                     if (dynamic != null) {
                         if (dynamic) {
                             metricsService.resetMetricsSecureProperty();

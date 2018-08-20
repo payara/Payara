@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -40,21 +40,19 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.microprofile.healthcheck.config;
+package fish.payara.microprofile.healthcheck.admin;
 
-import javax.inject.Inject;
 import com.sun.enterprise.config.serverbeans.Config;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.sun.enterprise.util.ColumnFormatter;
+import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
@@ -62,83 +60,62 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
-import org.glassfish.internal.config.UnprocessedConfigListener;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
-import org.jvnet.hk2.config.UnprocessedChangeEvent;
-import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 /**
  *
- * @author jonathan coustick
- * @since 4.1.2.172
+ * @author Susan Rai
  */
+@Service(name = "get-microprofile-healthcheck-configuration")
+@PerLookup
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
-@Service(name = "set-microprofile-healthcheck-configuration")
-@CommandLock(CommandLock.LockType.NONE)
-@PerLookup
-@I18n("set-microprofile-healthcheck-configuration")
 @RestEndpoints({
     @RestEndpoint(configBean = MetricsHealthCheckConfiguration.class,
-            opType = RestEndpoint.OpType.POST,
-            description = "Configures Microprofile HealthCheck")
+            opType = RestEndpoint.OpType.GET,
+            path = "get-microprofile-healthcheck-configuration",
+            description = "Gets the Microprofile Health Check Configuration")
 })
-public class SetMPHealthCheckConfiguration implements AdminCommand {
+public class GetMPHealthCheckConfiguration implements AdminCommand {
 
-    private static final Logger LOGGER = Logger.getLogger("MP-HealthCheck");
-
-    @Param(name = "enabled", optional = true)
-    private Boolean enabled;
-
-    @Param(name = "endpoint", optional = true)
-    private String endpoint;
-
-    @Param(name = "target", optional = true, defaultValue = "server")
-    private String target;
-
-    @Inject
-    ServiceLocator habitat;
+    private final String OUTPUT_HEADERS[] = {"Enabled", "EndPoint"};
 
     @Inject
     private Target targetUtil;
 
-    @Inject
-    UnprocessedConfigListener unprocessedListener;
+    @Param(optional = true, defaultValue = "server-config")
+    private String target;
 
     @Override
     public void execute(AdminCommandContext context) {
-        ActionReport actionReport = context.getActionReport();
-
         Config targetConfig = targetUtil.getConfig(target);
-        MetricsHealthCheckConfiguration config = targetConfig.getExtensionByType(MetricsHealthCheckConfiguration.class);
 
-        try {
-            ConfigSupport.apply(new SingleConfigCode<MetricsHealthCheckConfiguration>() {
-                @Override
-                public Object run(final MetricsHealthCheckConfiguration configProxy) throws PropertyVetoException, TransactionFailure {
-                    if (enabled != null) {
-                        configProxy.setEnabled(enabled.toString());
-                    }
-                    if (endpoint != null) {
-                        configProxy.setEndpoint(endpoint);
-                    }
-                    actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                    return configProxy;
-                }
-            }, config);
-
-            actionReport.setMessage("Restart server for change to take effect");
-            //unprocessedListener.unprocessedTransactedEvents(Arrays.asList(new UnprocessedChangeEvent(new PropertyChangeEvent(config, ""))));
-        } catch (TransactionFailure ex) {
-            LOGGER.log(Level.WARNING, "Exception during command set-amx-enabled: {0}", ex.getCause().getMessage());
-            actionReport.setMessage(ex.getCause().getMessage());
-            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        if (targetConfig == null) {
+            context.getActionReport().setMessage("No such config name: " + targetUtil);
+            context.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
         }
+
+        MetricsHealthCheckConfiguration healthCheckConfiguration = targetConfig
+                .getExtensionByType(MetricsHealthCheckConfiguration.class);
+
+        ColumnFormatter columnFormatter = new ColumnFormatter(OUTPUT_HEADERS);
+        Object[] outputValues = {
+            healthCheckConfiguration.getEnabled(),
+            healthCheckConfiguration.getEndpoint()
+        };
+        columnFormatter.addRow(outputValues);
+
+        context.getActionReport().appendMessage(columnFormatter.toString());
+
+        Map<String, Object> extraPropertiesMap = new HashMap<>();
+        extraPropertiesMap.put("enabled", healthCheckConfiguration.getEnabled());
+        extraPropertiesMap.put("endpoint", healthCheckConfiguration.getEndpoint());
+
+        Properties extraProperties = new Properties();
+        extraProperties.put("microprofileHealthCheckConfiguration", extraPropertiesMap);
+        context.getActionReport().setExtraProperties(extraProperties);
     }
 
 }

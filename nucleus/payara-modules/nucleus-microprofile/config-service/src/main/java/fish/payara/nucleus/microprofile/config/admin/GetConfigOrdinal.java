@@ -41,6 +41,9 @@ package fish.payara.nucleus.microprofile.config.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.Param;
@@ -48,12 +51,13 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
 
 /**
  * asAdmin command to the get the ordinal for one of the built in Config Sources
@@ -64,11 +68,11 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name = "get-config-ordinal") // the name of the service is the asadmin command name
 @PerLookup // this means one instance is created every time the command is run
 @ExecuteOn(RuntimeType.DAS)
-@TargetType()
-@RestEndpoints({ // creates a REST endpoint needed for integration with the admin interface
-
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER,
+    CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({ // creates a REST endpoint needed for integration with the admin interface   
     @RestEndpoint(configBean = MicroprofileConfigConfiguration.class,
-            opType = RestEndpoint.OpType.POST, // must be POST as it is doing an update
+            opType = RestEndpoint.OpType.GET,
             path = "get-config-ordinal",
             description = "Gets the Ordinal of a builtin Config Source")
 })
@@ -122,13 +126,21 @@ public class GetConfigOrdinal implements AdminCommand {
                     result = Integer.parseInt(serviceConfig.getSecretDirOrdinality());
                     break;
                 }
-                case "password" : {
+                case "password": {
                     result = Integer.parseInt(serviceConfig.getPasswordOrdinality());
                     break;
                 }
 
             }
-            context.getActionReport().setMessage(result.toString());
+            context.getActionReport().setMessage(source + " : " + result.toString());
+
+            Map<String, Object> extraPropertiesMap = new HashMap<>();
+            extraPropertiesMap.put("source", source);
+            extraPropertiesMap.put("ordinal", result);
+
+            Properties extraProperties = new Properties();
+            extraProperties.put("configConfiguration", extraPropertiesMap);
+            context.getActionReport().setExtraProperties(extraProperties);
         } else {
             context.getActionReport().failure(Logger.getLogger(SetConfigOrdinal.class.getName()), "No configuration with name " + target);
         }
