@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portion Copyright [2018] Payara Foundation and/or affiliates
 
 /*
  * ModelVetoException.java
@@ -49,7 +50,7 @@ package com.sun.jdo.api.persistence.model;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
-import com.sun.jdo.spi.persistence.utility.StringHelper;
+import org.glassfish.common.util.StringHelper;
 
 /** 
  *

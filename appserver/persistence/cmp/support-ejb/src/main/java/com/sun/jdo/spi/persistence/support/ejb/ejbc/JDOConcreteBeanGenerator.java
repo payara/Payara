@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portion Copyright [2018] Payara Foundation and/or affiliates
 
 /*
  * JDOConcreteBeanGenerator.java
@@ -63,7 +64,7 @@ import com.sun.jdo.spi.persistence.support.ejb.model.util.NameMapper;
 import com.sun.jdo.spi.persistence.support.ejb.ejbqlc.JDOQLElements;
 
 import org.glassfish.persistence.common.I18NHelper;
-import com.sun.jdo.spi.persistence.utility.StringHelper;
+import org.glassfish.common.util.StringHelper;
 import com.sun.jdo.spi.persistence.utility.generator.*;
 import com.sun.jdo.spi.persistence.utility.generator.io.*;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;

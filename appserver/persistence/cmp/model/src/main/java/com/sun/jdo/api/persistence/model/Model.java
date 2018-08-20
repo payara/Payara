@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portion Copyright [2018] Payara Foundation and/or affiliates
 
 /*
  * Model.java
@@ -63,6 +64,7 @@ import com.sun.jdo.api.persistence.model.mapping.MappingFieldElement;
 import com.sun.jdo.api.persistence.model.mapping.impl.MappingClassElementImpl;
 import com.sun.jdo.spi.persistence.utility.*;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
+import org.glassfish.common.util.StringHelper;
 import org.glassfish.persistence.common.I18NHelper;
 
 /* TODO:
