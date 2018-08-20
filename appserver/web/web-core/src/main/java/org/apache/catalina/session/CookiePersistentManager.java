@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.session;
 
@@ -157,7 +158,7 @@ public class CookiePersistentManager extends StandardManager {
 
     /*
      * Parses the given string into a session, and returns it.
-     * 
+     *
      * The given string is supposed to contain a session encoded using toCookie().
      */
     private Session parseSession(String value, String sessionId) throws IOException {
