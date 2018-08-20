@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
 
 <console-config id="full">
     <integration-point
@@ -196,7 +196,7 @@
     <integration-point
         id="batch"
         type="org.glassfish.admingui:navNode"
-        priority="400"
+        priority="150"
         parentId="#{configNameId}"
         content="pluginTreeNodeBatch.jsf"
     />
@@ -204,7 +204,7 @@
     <integration-point
         id="batchLink"
         type="org.glassfish.admingui:configuration"
-        priority="400"
+        priority="150"
         parentId="propSheetSection"
         content="batchConfigLink.jsf"
     />
