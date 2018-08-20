@@ -37,13 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.batch;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -51,14 +49,10 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import static org.glassfish.batch.BatchConstants.LIST_BATCH_JOBS_EXECUTIONS;
 
 /**
  * Command to list batch jobs info
@@ -89,20 +83,6 @@ public class ListBatchJobExecutionsProxy
     @Param(primary = true, optional = true)
     String instanceId;
 
-//    @Override
-//    protected boolean preInvoke(AdminCommandContext context) {
-//        if (executionId != null && !isLongNumber(executionId)) {
-//            context.getActionReport().setMessage("Execution ID must be a number");
-//            return false;
-//        }
-//        if (instanceId != null && !isLongNumber(instanceId)) {
-//            context.getActionReport().setMessage("Instance ID must be a number");
-//            return false;
-//        }
-//
-//        return true;
-//    }
-
     @Override
     protected String getCommandName() {
         return "_ListBatchJobExecutions";
@@ -132,8 +112,8 @@ public class ListBatchJobExecutionsProxy
     protected void postInvoke(AdminCommandContext context, ActionReport subReport) {
         Properties subProperties = subReport.getExtraProperties();
         Properties extraProps = context.getActionReport().getExtraProperties();
-        if (subProperties.get("listBatchJobExecutions") != null)
-            extraProps.put("listBatchJobExecutions", subProperties.get("listBatchJobExecutions"));
+        if (subProperties.get(LIST_BATCH_JOBS_EXECUTIONS) != null)
+            extraProps.put(LIST_BATCH_JOBS_EXECUTIONS, subProperties.get(LIST_BATCH_JOBS_EXECUTIONS));
     }
 
 }

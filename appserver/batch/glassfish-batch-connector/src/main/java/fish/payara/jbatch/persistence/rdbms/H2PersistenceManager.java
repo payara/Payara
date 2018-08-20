@@ -184,50 +184,58 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
     @Override
     protected void checkTables() throws SQLException {
         setCreateH2StringsMap(tableNames);
-        createH2TableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
+        createTableIfNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
                 createH2Strings.get(H2_CREATE_TABLE_CHECKPOINTDATA));
 
-        createH2TableNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
+        createTableIfNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
                 createH2Strings.get(H2_CREATE_TABLE_JOBINSTANCEDATA));
 
-        createH2TableNotExists(tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
+        createTableIfNotExists(tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
                 createH2Strings
                         .get(H2_CREATE_TABLE_EXECUTIONINSTANCEDATA));
-        createH2TableNotExists(
+        createTableIfNotExists(
                 tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY),
                 createH2Strings.get(H2_CREATE_TABLE_STEPINSTANCEDATA));
-        createH2TableNotExists(tableNames.get(JOB_STATUS_TABLE_KEY),
+        createTableIfNotExists(tableNames.get(JOB_STATUS_TABLE_KEY),
                 createH2Strings.get(H2_CREATE_TABLE_JOBSTATUS));
-        createH2TableNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
+        createTableIfNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
                 createH2Strings.get(H2_CREATE_TABLE_STEPSTATUS));
 
     }
 
     /**
-     * Create the H2 tables
      *
+     * Note: H2 has a configuration setting DATABASE_TO_UPPER which is set to
+     * true per default. So any table name is converted to upper case which is
+     * why you need to query for the table in upper case (or set
+     * DATABASE_TO_UPPER to false).
+     *
+     * @param dSource
      * @param tableName
-     * @param createTableStatement
-     * @throws java.sql.SQLException
+     * @param schemaName
      */
-    protected void createH2TableNotExists(String tableName, String createTableStatement) throws SQLException {
-        logger.entering(CLASSNAME, "createIfNotExists", new Object[]{tableName, createTableStatement});
+    @Override
+    public boolean checkIfTableExists(DataSource dSource, String tableName, String schemaName) {
+        boolean result = true;
+        dataSource = dSource;
 
-        try (Connection connection = getConnection()) {
-            try (ResultSet resultSet = connection.getMetaData().getTables(null, schema, tableName, null)) {
+        try (Connection connection = dataSource.getConnection()) {
+            schema = schemaName;
+
+            if (!isSchemaValid()) {
+                setDefaultSchema();
+            }
+
+            try (ResultSet resultSet = connection.getMetaData().getTables(null, schema, tableName.toUpperCase(), null)) {
                 if (!resultSet.next()) {
-                    logger.log(INFO, "{0} table does not exists. Trying to create it.", tableName);
-                    try (PreparedStatement statement = connection.prepareStatement(createTableStatement)) {
-                        statement.executeUpdate();
-                    }
+                    result = false;
                 }
             }
         } catch (SQLException e) {
             logger.severe(e.getLocalizedMessage());
-            throw e;
         }
-
-        logger.exiting(CLASSNAME, "createIfNotExists");
+        
+        return result;
     }
 
     /**
@@ -242,8 +250,9 @@ public class H2PersistenceManager extends JBatchJDBCPersistenceManager implement
         logger.log(Level.FINEST, "Entering {0}.setSchemaOnConnection()", CLASSNAME);
         try (PreparedStatement preparedStatement = connection.prepareStatement("SET SCHEMA " + schema)) {
             preparedStatement.executeUpdate();
-        }
-        logger.log(Level.FINEST, "Exiting {0}.setSchemaOnConnection()", CLASSNAME);
+        } finally {
+            logger.log(Level.FINEST, "Exiting {0}.setSchemaOnConnection()", CLASSNAME);
+        }  
     }
    
     @Override
