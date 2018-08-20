@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.common;
 
 /**
@@ -46,7 +46,7 @@ package com.sun.enterprise.security.common;
  */
 public interface SecurityConstants {
 
-    // copied from appclient.security to avoid dependency
+    // Copied from appclient.security to avoid dependency
     int USERNAME_PASSWORD = 1;
     int CERTIFICATE = 2;
     // harry - added for LoginContextDriver access

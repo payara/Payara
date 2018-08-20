@@ -37,8 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
+
+import static com.sun.enterprise.security.SecurityLoggerInfo.noPwdCredentialProvidedError;
+import static com.sun.enterprise.security.SecurityLoggerInfo.privateSubjectCredentialsError;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 
 import java.security.Principal;
 import java.util.Arrays;
@@ -60,24 +66,24 @@ import org.glassfish.security.common.PrincipalImpl;
 import com.sun.enterprise.security.auth.login.LoginCallbackHandler;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.enterprise.security.auth.realm.Realm;
-import com.sun.enterprise.security.auth.realm.ldap.LDAPRealm;
 import com.sun.enterprise.util.i18n.StringManager;
 
 /**
  * Abstract base class for password-based login modules.
  *
  * <P>
- * Most login modules receive a username and password from the client (possibly through HTTP BASIC
- * auth, or FORM, or other mechanism) and then make (or delegate) an authentication decision based
- * on this data. This class provides common methods for such password-based login modules.
+ * Most login modules receive a username and password from the client (possibly through HTTP BASIC auth, or FORM, or
+ * other mechanism) and then make (or delegate) an authentication decision based on this data. This class provides
+ * common methods for such password-based login modules.
  *
  * <P>
- * Subclasses need to implement the authenticateUser() method and later call
- * commitUserAuthentication().
+ * Subclasses need to implement the authenticateUser() method and later call commitUserAuthentication().
  *
  */
-
 public abstract class BasePasswordLoginModule implements LoginModule {
+    
+    protected static final Logger _logger = SecurityLoggerInfo.getLogger();
+    protected static final StringManager sm = StringManager.getManager(LoginCallbackHandler.class);
 
     // The _subject, _sharedState and _options satisfy LoginModule and are
     // shared across sub-classes
@@ -85,21 +91,15 @@ public abstract class BasePasswordLoginModule implements LoginModule {
     protected Map _sharedState;
     protected Map _options;
     protected String _username;
-    @Deprecated
     protected String _password;
     protected char[] _passwd;
     protected Realm _currentRealm;
 
     // the authentication status
-    protected boolean _succeeded = false;
-    protected boolean _commitSucceeded = false;
+    protected boolean _succeeded;
+    protected boolean _commitSucceeded;
     protected PrincipalImpl _userPrincipal;
-    protected String[] _groupsList = null;
-
-    protected static final Logger _logger = SecurityLoggerInfo.getLogger();
-
-    protected final static StringManager sm = StringManager.getManager(LoginCallbackHandler.class);
-    private LoginModule userDefinedLoginModule = null;
+    protected String[] _groupsList;
 
     /**
      * Initialize this login module.
@@ -115,8 +115,9 @@ public abstract class BasePasswordLoginModule implements LoginModule {
         _subject = subject;
         _sharedState = sharedState;
         _options = options;
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "Login module initialized: " + this.getClass().toString());
+        
+        if (_logger.isLoggable(FINE)) {
+            _logger.log(FINE, "Login module initialized: " + this.getClass().toString());
         }
     }
 
@@ -124,10 +125,10 @@ public abstract class BasePasswordLoginModule implements LoginModule {
      * Perform login.
      *
      * <P>
-     * The callback handler is used to obtain authentication info for the subject and a login is
-     * attempted. This PasswordLoginModule expects to find a PasswordCredential in the private
-     * credentials of the Subject. If not present the login fails. The callback handler is ignored as it
-     * is not really relevant on the server side. Finally, the authenticateUser() method is invoked.
+     * The callback handler is used to obtain authentication info for the subject and a login is attempted. This
+     * PasswordLoginModule expects to find a PasswordCredential in the private credentials of the Subject. If not present
+     * the login fails. The callback handler is ignored as it is not really relevant on the server side. Finally, the
+     * authenticateUser() method is invoked.
      *
      * @returns true if login succeeds, otherwise an exception is thrown.
      * @throws LoginException Thrown if login failed, or on other problems.
@@ -140,9 +141,8 @@ public abstract class BasePasswordLoginModule implements LoginModule {
 
         // Delegate the actual authentication to subclass.
         authenticateUser();
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "JAAS login complete.");
-        }
+        _logger.fine("JAAS login complete.");
+        
         return true;
     }
 
@@ -150,8 +150,8 @@ public abstract class BasePasswordLoginModule implements LoginModule {
      * Commit the authentication.
      *
      * <P>
-     * Commit is called after all necessary login modules have succeeded. It adds (if not present) a
-     * PrincipalImpl principal and a LocalCredentials public credential to the Subject.
+     * Commit is called after all necessary login modules have succeeded. It adds (if not present) a PrincipalImpl principal
+     * and a LocalCredentials public credential to the Subject.
      *
      * @throws LoginException If commit fails.
      *
@@ -164,30 +164,32 @@ public abstract class BasePasswordLoginModule implements LoginModule {
 
         // Add a Principal (authenticated identity) to the Subject
         // Assume the user we authenticated is the PrincipalImpl [RI]
-        String realm_name = _currentRealm.getName();
+        String realmName = _currentRealm.getName();
         PrincipalGroupFactory factory = Globals.getDefaultHabitat().getService(PrincipalGroupFactory.class);
-        if (factory != null)
-            _userPrincipal = factory.getPrincipalInstance(getUsername(), realm_name);
-        else
+        if (factory != null) {
+            _userPrincipal = factory.getPrincipalInstance(getUsername(), realmName);
+        } else {
             _userPrincipal = new PrincipalImpl(getUsername());
-
-        Set<Principal> principalSet = _subject.getPrincipals();
-        if (!principalSet.contains(_userPrincipal)) {
-            principalSet.add(_userPrincipal);
         }
-        /*
-         * populate the group in the subject and clean out the slate at the same time
-         */
+
+        Set<Principal> principals = _subject.getPrincipals();
+        if (!principals.contains(_userPrincipal)) {
+            principals.add(_userPrincipal);
+        }
+        
+        // populate the group in the subject and clean out the slate at the same time
+        
         for (int i = 0; i < _groupsList.length; i++) {
             if (_groupsList[i] != null) {
-                Group g;
-                if (factory != null)
-                    g = factory.getGroupInstance(_groupsList[i], realm_name);
-                else
-                    g = new Group(_groupsList[i]);
+                Group group;
+                if (factory != null) {
+                    group = factory.getGroupInstance(_groupsList[i], realmName);
+                } else {
+                    group = new Group(_groupsList[i]);
+                }
 
-                if (!principalSet.contains(g)) {
-                    principalSet.add(g);
+                if (!principals.contains(group)) {
+                    principals.add(group);
                 }
 
                 // cleaning the slate
@@ -201,9 +203,9 @@ public abstract class BasePasswordLoginModule implements LoginModule {
         setPassword(null);
         setPasswordChar(null);
         _commitSucceeded = true;
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "JAAS authentication committed.");
-        }
+        
+        _logger.fine("JAAS authentication committed.");
+        
         return true;
     }
 
@@ -213,13 +215,13 @@ public abstract class BasePasswordLoginModule implements LoginModule {
      */
     @Override
     final public boolean abort() throws LoginException {
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "JAAS authentication aborted.");
-        }
+        _logger.fine("JAAS authentication aborted.");
 
         if (_succeeded == false) {
             return false;
-        } else if (_succeeded == true && _commitSucceeded == false) {
+        }
+        
+        if (_succeeded == true && _commitSucceeded == false) {
             // login succeeded but overall authentication failed
             _succeeded = false;
             setUsername(null);
@@ -235,6 +237,7 @@ public abstract class BasePasswordLoginModule implements LoginModule {
             // but someone else's commit failed
             logout();
         }
+        
         return true;
     }
 
@@ -244,8 +247,8 @@ public abstract class BasePasswordLoginModule implements LoginModule {
      */
     @Override
     final public boolean logout() throws LoginException {
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "JAAS logout for: " + _subject.toString());
+        if (_logger.isLoggable(FINE)) {
+            _logger.log(FINE, "JAAS logout for: " + _subject.toString());
         }
 
         _subject.getPrincipals().clear();
@@ -257,12 +260,14 @@ public abstract class BasePasswordLoginModule implements LoginModule {
         setUsername(null);
         setPassword(null);
         _userPrincipal = null;
+        
         if (_groupsList != null) {
             for (int i = 0; i < _groupsList.length; i++) {
                 _groupsList[i] = null;
             }
             _groupsList = null;
         }
+        
         return true;
     }
 
@@ -272,8 +277,8 @@ public abstract class BasePasswordLoginModule implements LoginModule {
      * This is a convenience method which can be used by subclasses
      *
      * <P>
-     * Note that this method is called after the authentication has succeeded. If authentication failed
-     * do not call this method.
+     * Note that this method is called after the authentication has succeeded. If authentication failed do not call this
+     * method.
      *
      * Global instance field succeeded is set to true by this method.
      *
@@ -288,10 +293,10 @@ public abstract class BasePasswordLoginModule implements LoginModule {
     }
 
     /**
-     * @return the subject being authenticated. use case: A custom login module could overwrite commit()
-     * method, and call getSubject() to get subject being authenticated inside its commit(). Custom
-     * principal then can be added to subject. By doing this,custom principal will be stored in calling
-     * thread's security context and participate in following Appserver's authorization.
+     * @return the subject being authenticated. use case: A custom login module could overwrite commit() method, and call
+     * getSubject() to get subject being authenticated inside its commit(). Custom principal then can be added to subject.
+     * By doing this,custom principal will be stored in calling thread's security context and participate in following
+     * Appserver's authorization.
      *
      */
     public Subject getSubject() {
@@ -304,38 +309,36 @@ public abstract class BasePasswordLoginModule implements LoginModule {
      * @throws javax.security.auth.login.LoginException
      */
     final public void extractCredentials() throws LoginException {
-
         if (_subject == null) {
             String msg = sm.getString("pwdlm.noinfo");
-            _logger.log(Level.SEVERE, msg);
+            _logger.log(SEVERE, msg);
             throw new LoginException(msg);
         }
 
-        PasswordCredential pwdCred = null;
+        PasswordCredential passwordCredential = null;
 
         try {
-            Iterator i = _subject.getPrivateCredentials().iterator();
-            while (i.hasNext() && pwdCred == null) {
-                Object privCred = i.next();
-                if (privCred instanceof PasswordCredential) {
-                    pwdCred = (PasswordCredential) privCred;
+            Iterator<Object> privateCredentials = _subject.getPrivateCredentials().iterator();
+            while (privateCredentials.hasNext() && passwordCredential == null) {
+                Object privateCredential = privateCredentials.next();
+                if (privateCredential instanceof PasswordCredential) {
+                    passwordCredential = (PasswordCredential) privateCredential;
                 }
             }
         } catch (Exception e) {
-            _logger.log(Level.WARNING, SecurityLoggerInfo.privateSubjectCredentialsError, e.toString());
+            _logger.log(WARNING, privateSubjectCredentialsError, e.toString());
         }
 
-        if (pwdCred == null) {
-            _logger.log(Level.SEVERE, SecurityLoggerInfo.noPwdCredentialProvidedError);
-            String msg = sm.getString("pwdlm.nocreds");
-            throw new LoginException(msg);
+        if (passwordCredential == null) {
+            _logger.log(SEVERE, noPwdCredentialProvidedError);
+            throw new LoginException(sm.getString("pwdlm.nocreds"));
         }
 
         // Need to obtain the requested realm to get parameters.
 
         String realm = null;
         try {
-            realm = pwdCred.getRealm();
+            realm = passwordCredential.getRealm();
             _currentRealm = Realm.getInstance(realm);
 
         } catch (Exception e) {
@@ -346,9 +349,9 @@ public abstract class BasePasswordLoginModule implements LoginModule {
 
         // Get username and password data from credential (ignore callback)
 
-        setUsername(pwdCred.getUser());
-        setPasswordChar(pwdCred.getPassword());
-        setPassword(new String(pwdCred.getPassword()));
+        setUsername(passwordCredential.getUser());
+        setPasswordChar(passwordCredential.getPassword());
+        setPassword(new String(passwordCredential.getPassword()));
     }
 
     /**
@@ -362,13 +365,11 @@ public abstract class BasePasswordLoginModule implements LoginModule {
     protected abstract void authenticateUser() throws LoginException;
 
     public void setLoginModuleForAuthentication(LoginModule userDefinedLoginModule) {
-        this.userDefinedLoginModule = userDefinedLoginModule;
     }
 
     /**
-     * @return the username sent by container - is made available to the custom login module using the
-     * protected _username field. Use Case: A custom login module could use the username to validate
-     * against a realm of users
+     * @return the username sent by container - is made available to the custom login module using the protected _username
+     * field. Use Case: A custom login module could use the username to validate against a realm of users
      */
 
     public String getUsername() {
@@ -376,8 +377,8 @@ public abstract class BasePasswordLoginModule implements LoginModule {
     }
 
     /**
-     * Used for setting the username obtained from the container internally, to be made available to the
-     * custom login module implementation
+     * Used for setting the username obtained from the container internally, to be made available to the custom login module
+     * implementation
      *
      * @param username
      */
@@ -388,7 +389,6 @@ public abstract class BasePasswordLoginModule implements LoginModule {
     /**
      * Deprecated - password is preferred to be a char[]
      */
-    @Deprecated
     public String getPassword() {
         return _password;
     }
@@ -396,16 +396,14 @@ public abstract class BasePasswordLoginModule implements LoginModule {
     /**
      * Deprecated - password is preferred to be a char[]
      */
-    @Deprecated
     private void setPassword(String password) {
         this._password = password;
     }
 
     /**
-     * @return the password sent by container - is made available to the custom login module using the
-     * protected _password field. Use Case: A custom login module could use the password to validate
-     * against a custom realm of usernames and passwords Password is preferred to be a char[] instead of
-     * a string
+     * @return the password sent by container - is made available to the custom login module using the protected _password
+     * field. Use Case: A custom login module could use the password to validate against a custom realm of usernames and
+     * passwords Password is preferred to be a char[] instead of a string
      */
 
     public char[] getPasswordChar() {
@@ -413,8 +411,8 @@ public abstract class BasePasswordLoginModule implements LoginModule {
     }
 
     /**
-     * Used for setting the password obtained from the container internally, to be made available to the
-     * custom login module implementation Password is preferred to be a char[] instead of a string
+     * Used for setting the password obtained from the container internally, to be made available to the custom login module
+     * implementation Password is preferred to be a char[] instead of a string
      *
      * @param password
      */
@@ -423,35 +421,35 @@ public abstract class BasePasswordLoginModule implements LoginModule {
     }
 
     /**
-     * @return the currentRealm - for backward compatability
+     * @return the currentRealm - for backward compatibility
      */
     public Realm getCurrentRealm() {
         return _currentRealm;
     }
 
     /**
-     * @return the succeeded state - for backward compatability
+     * @return the succeeded state - for backward compatibility
      */
     public boolean isSucceeded() {
         return _succeeded;
     }
 
     /**
-     * @return the commitsucceeded state - for backward compatability
+     * @return the commitsucceeded state - for backward compatibility
      */
     public boolean isCommitSucceeded() {
         return _commitSucceeded;
     }
 
     /**
-     * @return the UserPrincipal - for backward compatability
+     * @return the UserPrincipal - for backward compatibility
      */
     public PrincipalImpl getUserPrincipal() {
         return _userPrincipal;
     }
 
     /**
-     * @return the groupList - for backward compatability
+     * @return the groupList - for backward compatibility
      */
     public String[] getGroupsList() {
         return Arrays.copyOf(_groupsList, _groupsList.length);

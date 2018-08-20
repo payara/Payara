@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 /*
  * AuditModule.java
  *
@@ -58,8 +58,8 @@ public abstract class BaseAuditModule {
     protected Properties props;
 
     /**
-     * Method is invoked at server startup, during AuditModule initialization. If method returns without
-     * any exception then S1AS assumes that the module is ready to serve any requests.
+     * Method is invoked at server startup, during AuditModule initialization. If method returns without any exception then
+     * Payara assumes that the module is ready to serve any requests.
      *
      * @param props the properties for the AuditModule. These properties are defined in the domain.xml
      */

@@ -91,11 +91,6 @@ public class HttpRequestWrapper implements HttpRequest, ServletRequest {
         httpRequest.addCookie(cookie);
     }
 
-    /*
-     * Delegate to HttpServletResponse public void addHeader(String name, String value) { httpRequest.addHeader(name,
-     * value); }
-     */
-
     @Override
     public void addHeader(String name, String value) {
         httpRequest.addHeader(name, value);

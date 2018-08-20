@@ -37,12 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
-import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
-import com.sun.enterprise.security.PrincipalGroupFactory;
-import com.sun.enterprise.security.PrincipalGroupFactory;
+import static java.util.logging.Level.FINE;
+
 import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
@@ -51,6 +50,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -61,58 +61,62 @@ import javax.security.auth.x500.X500Principal;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.security.common.Group;
 
+import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
+
 /**
  * Abstract base class for certificate-based login modules.
  *
- * <P>Subclasses need to implement the authenticateUser() method and later
- * call commitUserAuthentication().
+ * <P>
+ * Subclasses need to implement the authenticateUser() method and later call commitUserAuthentication().
  *
  */
 public abstract class BaseCertificateLoginModule implements LoginModule {
 
     private Subject subject;
+
     /**
      * State shared with other login modules.
      */
     protected Map<String, ?> _sharedState;
+
     /**
      * Options configured for this LoginModule.
      */
     protected Map<String, ?> _options;
+
     /**
      * System Logger.
      */
-    protected static final Logger _logger =
-            SecurityLoggerInfo.getLogger();
+    protected static final Logger _logger = SecurityLoggerInfo.getLogger();
     private CallbackHandler callbackHandler;
-    private boolean success = false;
-    private String[] groups = null;
-    private boolean commitsuccess = false;
-    private X509Certificate[] certs = null;
+    
+    private boolean success;
+    private boolean commitsuccess;
+    
+    private X509Certificate[] certs;
     private X500Principal x500Principal;
-    private String appName = null;
+    private String[] groups;
+    private String appName;
 
-    public final void initialize(Subject subject, CallbackHandler callbackHandler
-            , Map<String, ?> sharedState, Map<String, ?> options) {
+    public final void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
         this.subject = subject;
         this._sharedState = sharedState;
         this._options = options;
         this.callbackHandler = callbackHandler;
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "Login module initialized: {0}"
-                    , this.getClass().toString());
+        
+        if (_logger.isLoggable(FINE)) {
+            _logger.log(FINE, "Login module initialized: {0}", this.getClass().toString());
         }
     }
 
     public final boolean login() throws LoginException {
-        //Extract the certificates from the subject.
+        // Extract the certificates from the subject.
         extractCredentials();
 
         // Delegate the actual authentication to subclass.
         authenticateUser();
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "JAAS login complete.");
-        }
+        _logger.fine("JAAS login complete.");
+        
         return true;
     }
 
@@ -120,11 +124,12 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
         if (!success) {
             return false;
         }
+        
         Set<Principal> principalSet = subject.getPrincipals();
         for (int i = 0; i < groups.length; i++) {
             if (groups[i] != null) {
-                Group g = Globals.getDefaultHabitat().<PrincipalGroupFactory>getService(PrincipalGroupFactory.class).
-                        getGroupInstance(groups[i], CertificateRealm.AUTH_TYPE);
+                Group g = Globals.getDefaultHabitat().<PrincipalGroupFactory>getService(PrincipalGroupFactory.class)
+                        .getGroupInstance(groups[i], CertificateRealm.AUTH_TYPE);
                 principalSet.add(g);
             }
             groups[i] = null;
@@ -138,13 +143,13 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
     }
 
     final public boolean abort() throws LoginException {
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "JAAS authentication aborted.");
-        }
+        _logger.fine("JAAS authentication aborted.");
 
         if (!success) {
             return false;
-        } else if (success && !commitsuccess) {
+        }
+        
+        if (success && !commitsuccess) {
             // login succeeded but overall authentication failed
             success = false;
             for (int i = 0; i < groups.length; i++) {
@@ -163,13 +168,14 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
             // but someone else's commit failed
             logout();
         }
+        
         return true;
 
     }
 
     final public boolean logout() throws LoginException {
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "JAAS logout for: {0}", subject.toString());
+        if (_logger.isLoggable(FINE)) {
+            _logger.log(FINE, "JAAS logout for: {0}", subject.toString());
         }
 
         subject.getPrincipals().clear();
@@ -202,11 +208,13 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
             success = false;
             throw new LoginException("No Certificate Credential found.");
         }
+        
         List certCred = itr.next();
         if (certCred == null || certCred.isEmpty()) {
             success = false;
             throw new LoginException("No Certificate(s) found.");
         }
+        
         try {
             certs = (X509Certificate[]) certCred.toArray(new X509Certificate[certCred.size()]);
         } catch (Exception ex) {
@@ -217,7 +225,7 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
         // Callback to get the application name.
         CertificateRealm.AppContextCallback appContext = new CertificateRealm.AppContextCallback();
         try {
-            callbackHandler.handle(new Callback[]{appContext});
+            callbackHandler.handle(new Callback[] { appContext });
             appName = appContext.getModuleID();
         } catch (Exception ex) {
         }
@@ -225,16 +233,16 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
 
     /**
      *
-     * <P>This is a convenience method which can be used by subclasses
+     * <P>
+     * This is a convenience method which can be used by subclasses
      *
-     * <P>Note that this method is called after the authentication
-     * has succeeded. If authentication failed do not call this method.
+     * <P>
+     * Note that this method is called after the authentication has succeeded. If authentication failed do not call this
+     * method.
      *
-     * This method sets the authentication status to success if the
-     * groups parameter is non-null.
+     * This method sets the authentication status to success if the groups parameter is non-null.
      *
-     * @param groups String array of group memberships for user (could be
-     *     empty).
+     * @param groups String array of group memberships for user (could be empty).
      */
     protected final void commitUserAuthentication(final String[] groups) {
         this.groups = groups;
@@ -244,10 +252,11 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
     /**
      * Perform authentication decision.
      *
-     * Method returns silently on success and returns a LoginException
-     * on failure.
+     * Method returns silently on success and returns a LoginException on failure.
      *
-     * <p>Must be overridden to add custom functionality.
+     * <p>
+     * Must be overridden to add custom functionality.
+     * 
      * @throws LoginException on authentication failure.
      *
      */
@@ -256,8 +265,8 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
     /**
      * Get the application name.
      *
-     * <p> This may be useful when a single LoginModule has to handle
-     * multiple applications that use certificates.
+     * <p>
+     * This may be useful when a single LoginModule has to handle multiple applications that use certificates.
      *
      * @return the application name. Non-null only for web container.
      */
@@ -275,15 +284,12 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
     }
 
     /**
-     * Returns the subject (subject distinguished name) value from the
-     * first certificate, in the client certificate chain, as an
-     * <code>X500Principal</code>. If the subject value is empty, then
-     * the <code>getName()</code> method of the returned
-     * <code>X500Principal</code> object returns an empty string ("").
+     * Returns the subject (subject distinguished name) value from the first certificate, in the client certificate chain,
+     * as an <code>X500Principal</code>. If the subject value is empty, then the <code>getName()</code> method of the
+     * returned <code>X500Principal</code> object returns an empty string ("").
      *
-     * @return an <code>X500Principal</code> representing the subject
-     *		distinguished name from thr first certificate, in the
-     *          client certificate chain;
+     * @return an <code>X500Principal</code> representing the subject distinguished name from thr first certificate, in the
+     * client certificate chain;
      */
     protected X500Principal getX500Principal() {
         return x500Principal;

@@ -64,8 +64,15 @@ import com.sun.enterprise.security.auth.realm.file.FileRealm;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.security.auth.realm.BadRealmException;
+import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.util.SystemPropertyConstants;
+
+import static org.glassfish.config.support.CommandTarget.CLUSTER;
+import static org.glassfish.config.support.CommandTarget.CONFIG;
+import static org.glassfish.config.support.CommandTarget.DAS;
+import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
+
 import java.beans.PropertyVetoException;
 import java.io.File;
 import org.glassfish.api.admin.*;
@@ -90,11 +97,11 @@ import org.jvnet.hk2.config.TransactionFailure;
 @PerLookup
 @I18n("create.file.user")
 @ExecuteOn({ RuntimeType.ALL })
-@TargetType({ CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG })
+@TargetType({ DAS, STANDALONE_INSTANCE, CLUSTER, CONFIG })
 @RestEndpoints({
         @RestEndpoint(configBean = AuthRealm.class, opType = RestEndpoint.OpType.POST, path = "create-user", description = "Create", params = {
                 @RestParam(name = "authrealmname", value = "$parent") }) })
-public class CreateFileUser implements /* UndoableCommand */ AdminCommand, AdminCommandSecurity.Preauthorization {
+public class CreateFileUser implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateFileUser.class);
 
@@ -125,12 +132,9 @@ public class CreateFileUser implements /* UndoableCommand */ AdminCommand, Admin
     private RealmsManager realmsManager;
 
     @Inject
-    private ServerEnvironment se;
-
-    @Inject
     private AdminService adminService;
 
-    private SecureAdmin secureAdmin = null;
+    private SecureAdmin secureAdmin;
 
     @AccessRequired.To("update")
     private AuthRealm fileAuthRealm;
@@ -143,10 +147,11 @@ public class CreateFileUser implements /* UndoableCommand */ AdminCommand, Admin
         if (config == null) {
             return false;
         }
+        
         securityService = config.getSecurityService();
         fileAuthRealm = CLIUtil.findRealm(securityService, authRealmName);
         if (fileAuthRealm == null) {
-            final ActionReport report = context.getActionReport();
+            ActionReport report = context.getActionReport();
             report.setMessage(
                     localStrings.getLocalString("create.file.user.filerealmnotfound", "File realm {0} does not exist", authRealmName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -179,12 +184,14 @@ public class CreateFileUser implements /* UndoableCommand */ AdminCommand, Admin
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-        // ensure we have the file associated with the authrealm
+        
+        // Ensure we have the file associated with the authrealm
         String keyFile = null;
         for (Property fileProp : fileAuthRealm.getProperty()) {
             if (fileProp.getName().equals("file"))
                 keyFile = fileProp.getValue();
         }
+        
         final String kf = keyFile;
         if (keyFile == null) {
             report.setMessage(localStrings.getLocalString("create.file.user.keyfilenotfound",
@@ -192,6 +199,7 @@ public class CreateFileUser implements /* UndoableCommand */ AdminCommand, Admin
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
+        
         boolean exists = (new File(kf)).exists();
         if (!exists) {
             report.setMessage(localStrings.getLocalString("file.realm.keyfilenonexistent",
@@ -224,6 +232,7 @@ public class CreateFileUser implements /* UndoableCommand */ AdminCommand, Admin
                 return;
             }
         }
+        
         // now adding user
         try {
             // even though create-file-user is not an update to the security-service
@@ -236,11 +245,12 @@ public class CreateFileUser implements /* UndoableCommand */ AdminCommand, Admin
                         realmsManager.createRealms(config);
                         // If the (shared) keyfile is updated by an external process, load the users first
                         refreshRealm(config.getName(), authRealmName);
-                        final FileRealm fr = (FileRealm) realmsManager.getFromLoadedRealms(config.getName(), authRealmName);
+                        
+                        FileRealm fileRealm = (FileRealm) realmsManager.getFromLoadedRealms(config.getName(), authRealmName);
                         CreateFileUser.handleAdminGroup(authRealmName, groups);
                         String[] groups1 = groups.toArray(new String[groups.size()]);
-                        fr.addUser(userName, password.toCharArray(), groups1);
-                        fr.persist();
+                        fileRealm.addUser(userName, password.toCharArray(), groups1);
+                        fileRealm.persist();
                         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                     } catch (Exception e) {
                         String localalizedErrorMsg = (e.getLocalizedMessage() == null) ? "" : e.getLocalizedMessage();
@@ -261,17 +271,6 @@ public class CreateFileUser implements /* UndoableCommand */ AdminCommand, Admin
         }
     }
 
-    /*
-     * private String fetchPassword(ActionReport report) { String password = null; if (userpassword != null && passwordFile
-     * != null) return password; if (userpassword != null) password = userpassword; if (passwordFile != null) { File
-     * passwdFile = new File(passwordFile); InputStream is = null; try { is = new BufferedInputStream(new
-     * FileInputStream(passwdFile)); Properties prop = new Properties(); prop.load(is); for (Enumeration
-     * e=prop.propertyNames(); e.hasMoreElements();) { String entry = (String)e.nextElement(); if
-     * (entry.equals("AS_ADMIN_USERPASSWORD")) { password = prop.getProperty(entry); break; } } } catch(Exception e) {
-     * report.setFailureCause(e); } finally { try { if (is != null) is.close(); } catch(final Exception ignore){} } } return
-     * password; }
-     */
-
     public static void refreshRealm(String configName, String realmName) {
         if (realmName != null && realmName.length() > 0) {
             try {
@@ -280,36 +279,19 @@ public class CreateFileUser implements /* UndoableCommand */ AdminCommand, Admin
                 if (realm != null) {
                     realm.refresh(configName);
                 }
-            } catch (com.sun.enterprise.security.auth.realm.NoSuchRealmException nre) {
-                // _logger.fine("Realm: "+realmName+" is not configured");
-            } catch (com.sun.enterprise.security.auth.realm.BadRealmException bre) {
+            } catch (NoSuchRealmException | BadRealmException nre) {
                 // _logger.fine("Realm: "+realmName+" is not configured");
             }
         }
     }
 
-    static void handleAdminGroup(String lr, List<String> lg) {
-        String fr = "admin-realm"; // this should be a constant defined at a central place -- the name of realm for admin
-        String fg = "asadmin"; // this should be a constant defined at a central place -- fixed name of admin group
-        if (fr.equals(lr) && lg != null) {
-            lg.clear(); // basically, we are ignoring the group specified on command line when it's admin realm
-            lg.add(fg);
+    static void handleAdminGroup(String authRealmName, List<String> groups) {
+        String adminRealm = "admin-realm"; // this should be a constant defined at a central place -- the name of realm for admin
+        String adminGroup = "asadmin"; // this should be a constant defined at a central place -- fixed name of admin group
+        
+        if (adminRealm.equals(authRealmName) && groups != null) {
+            groups.clear(); // basically, we are ignoring the group specified on command line when it's admin realm
+            groups.add(adminGroup);
         }
     }
-
-    // @Override
-    // public ActionReport prepare(ParameterMap parameters) {
-    // //TODO: is there a way to check if in a Cluster some
-    // //instances are down
-    //// com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-    //// if (cluster!=null) {
-    //// List<Server> servers = cluster.getInstances();
-    //// }
-    // final ActionReport report = new ActionReport();
-    // }
-    //
-    // @Override
-    // public void undo(ParameterMap parameters) {
-    // throw new UnsupportedOperationException("Not supported yet.");
-    // }
 }

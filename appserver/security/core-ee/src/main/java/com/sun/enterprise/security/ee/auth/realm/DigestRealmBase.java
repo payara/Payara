@@ -37,22 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ee.auth.realm;
 
-import com.sun.enterprise.security.auth.digest.impl.DigestProcessor;
-import com.sun.enterprise.security.auth.digest.api.Password;
-import com.sun.enterprise.security.BaseRealm;
-import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
-import com.sun.enterprise.security.auth.digest.api.Key;
-
+import static com.sun.enterprise.security.auth.digest.api.Constants.A1;
+import static com.sun.enterprise.security.auth.digest.api.Constants.RESPONSE;
 import static java.util.logging.Level.SEVERE;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.logging.Level;
-import static com.sun.enterprise.security.auth.digest.api.Constants.*;
+
+import com.sun.enterprise.security.BaseRealm;
+import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
+import com.sun.enterprise.security.auth.digest.api.Key;
+import com.sun.enterprise.security.auth.digest.api.Password;
+import com.sun.enterprise.security.auth.digest.impl.DigestProcessor;
 
 /**
  * Base class for all realms wanting to support Digest based authentication.
@@ -61,16 +62,15 @@ import static com.sun.enterprise.security.auth.digest.api.Constants.*;
  */
 public abstract class DigestRealmBase extends BaseRealm implements DigestRealm {
 
-    protected  boolean validate(final Password passwd, DigestAlgorithmParameter[] params) {
+    protected boolean validate(final Password passwd, DigestAlgorithmParameter[] params) {
         try {
             return new DigestValidatorImpl().validate(passwd, params);
         } catch (NoSuchAlgorithmException ex) {
-            _logger.log(SEVERE,"invalid.digest.algo",ex);
+            _logger.log(SEVERE, "invalid.digest.algo", ex);
         }
 
         return false;
     }
-
 
     private static class DigestValidatorImpl extends DigestProcessor {
 
@@ -79,15 +79,10 @@ public abstract class DigestRealmBase extends BaseRealm implements DigestRealm {
         private DigestAlgorithmParameter key;
         private String algorithm = "MD5";
 
-
-        DigestValidatorImpl() {
-
-        }
-
         @Override
         protected final boolean validate(Password passwd, DigestAlgorithmParameter[] params) throws NoSuchAlgorithmException {
 
-             for (int i = 0; i < params.length; i++) {
+            for (int i = 0; i < params.length; i++) {
                 DigestAlgorithmParameter dap = params[i];
                 if (A1.equals(dap.getName()) && (dap instanceof Key)) {
                     key = dap;
@@ -102,18 +97,16 @@ public abstract class DigestRealmBase extends BaseRealm implements DigestRealm {
             try {
                 byte[] p1 = valueOf(key);
                 byte[] p2 = valueOf(data);
-                java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 bos.write(p1);
                 bos.write(":".getBytes());
                 bos.write(p2);
 
-                MessageDigest md = MessageDigest.getInstance(algorithm);
-                byte[] derivedKey = null;
-                byte[] dk = md.digest(bos.toByteArray());
-                String tmp = encode(dk);
-                derivedKey = tmp.getBytes();
+                byte[] derivedKey = encode(MessageDigest.getInstance(algorithm).digest(bos.toByteArray())).getBytes();
                 byte[] suppliedKey = clientResponse.getValue();
+                
                 boolean result = true;
+                
                 if (derivedKey.length == suppliedKey.length) {
                     for (int i = 0; i < derivedKey.length; i++) {
                         if (!(derivedKey[i] == suppliedKey[i])) {
@@ -124,9 +117,10 @@ public abstract class DigestRealmBase extends BaseRealm implements DigestRealm {
                 } else {
                     result = false;
                 }
+                
                 return result;
             } catch (IOException ex) {
-               _logger.log(Level.SEVERE,"digest.error", new Object[] {ex.getMessage()});
+                _logger.log(SEVERE, "digest.error", new Object[] { ex.getMessage() });
             }
 
             return false;

@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 import java.util.HashMap;
@@ -48,14 +47,12 @@ import javax.inject.Singleton;
 import org.glassfish.security.common.CNonceCache;
 import org.jvnet.hk2.annotations.Service;
 
-
-
 /**
  *
  * @author vbkumarjayanti
  */
 @Service
 @Singleton
-public class AppCNonceCacheMap extends HashMap<String,CNonceCache> {
+public class AppCNonceCacheMap extends HashMap<String, CNonceCache> {
     private static final long serialVersionUID = 97138568364523013L;
 }

@@ -47,7 +47,6 @@
 package com.sun.enterprise.security.jmac.callback;
 
 import static com.sun.enterprise.security.SecurityContext.getDefaultCallerPrincipal;
-import static com.sun.enterprise.security.auth.login.LoginContextDriver.jaspicAddRealmGroupsToSubject;
 import static com.sun.enterprise.security.common.AppservAccessController.privileged;
 import static java.util.Arrays.stream;
 import static java.util.logging.Level.FINE;
@@ -91,15 +90,14 @@ import javax.security.auth.message.callback.TrustStoreCallback;
 import javax.security.auth.x500.X500Principal;
 
 import org.glassfish.internal.api.Globals;
-//V3:Commented import com.sun.enterprise.Switch;
 import org.glassfish.security.common.Group;
 import org.glassfish.security.common.MasterPassword;
 import org.glassfish.security.common.PrincipalImpl;
 
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.SecurityServicesUtil;
+import com.sun.enterprise.security.auth.JaspicToJaasBridge;
 import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
-import com.sun.enterprise.security.auth.login.LoginContextDriver;
 import com.sun.enterprise.security.auth.login.common.LoginException;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import com.sun.enterprise.security.common.AppservAccessController;
@@ -222,7 +220,7 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
      * WebPrincipal) as the caller principal, and copy all the other principals into the subject....
      *
      * It is assumed that the input WebPrincipal is coming from a SAM, and that it was created either by
-     * the SAM (as described below) or by calls to the LoginContextDriver made by an Authenticator.
+     * the SAM (as described below) or by calls to the JaspicToJaasBridge made by an Authenticator.
      *
      * A WebPrincipal constructed by the RealmAdapter will include a DPC; other constructions may not;
      * this method interprets the absence of a DPC as evidence that the resulting WebPrincipal was not
@@ -233,7 +231,7 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
      * A. handling of CPCB by CBH:
      *
      * 1. handling of CPC by CBH modifies subject a. constructs principalImpl if called by name b. uses
-     * LoginContextDriver to add group principals for name c. puts principal in principal set, and DPC
+     * JaspicToJaasBridge to add group principals for name c. puts principal in principal set, and DPC
      * in public credentials
      *
      * B. construction of WebPrincipal by RealmAdapter (occurs after SAM uses CBH to set other than an
@@ -406,11 +404,11 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
 
         if (isCertRealm) {
             if (principal instanceof X500Principal) {
-                LoginContextDriver.jaspicX500Login(subject, (X500Principal) principal);
+                JaspicToJaasBridge.jaasX500Login(subject, (X500Principal) principal);
             }
         } else {
             if (!principal.equals(getDefaultCallerPrincipal())) {
-                jaspicAddRealmGroupsToSubject(subject, principal.getName(), realmName);
+                JaspicToJaasBridge.addRealmGroupsToSubject(subject, principal.getName(), realmName);
             }
         }
 
@@ -461,7 +459,7 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
                 realmName = handlerContext.getRealmName();
             }
 
-            LoginContextDriver.jaspicValidateUsernamePassword(pwdCallback.getSubject(), username, passwd, realmName);
+            JaspicToJaasBridge.validateUsernamePasswordByJaas(pwdCallback.getSubject(), username, passwd, realmName);
 
             _logger.log(FINE, "JASPIC: authentication succeeded for user = ", username);
 

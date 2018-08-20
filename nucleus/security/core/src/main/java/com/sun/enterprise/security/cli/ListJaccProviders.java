@@ -37,30 +37,41 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.cli;
 
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Configs;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.JaccProvider;
-import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import java.util.List;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.config.support.TargetType;
+import static com.sun.enterprise.util.SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
+import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
+import static org.glassfish.config.support.CommandTarget.CLUSTER;
+import static org.glassfish.config.support.CommandTarget.CLUSTERED_INSTANCE;
+import static org.glassfish.config.support.CommandTarget.CONFIG;
+import static org.glassfish.config.support.CommandTarget.DAS;
+import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 
-
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandSecurity;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.JaccProvider;
+import com.sun.enterprise.config.serverbeans.SecurityService;
+import com.sun.enterprise.util.SystemPropertyConstants;
 
 /**
  *Usage: list-jacc-providers
@@ -73,8 +84,7 @@ import org.glassfish.hk2.api.PerLookup;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.jacc.provider")
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.DAS,CommandTarget.CLUSTERED_INSTANCE,
-CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
+@TargetType({ DAS, CLUSTERED_INSTANCE, STANDALONE_INSTANCE, CLUSTER, CONFIG })
 @RestEndpoints({
     @RestEndpoint(configBean=SecurityService.class,
         opType=RestEndpoint.OpType.GET, 
@@ -83,18 +93,12 @@ CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
 })
 public class ListJaccProviders implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
-    final private static LocalStringManagerImpl localStrings =
-        new LocalStringManagerImpl(DeleteJaccProvider.class);
-
-    @Param(name = "target", primary=true, optional = true, defaultValue =
-    SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
+    @Param(name = "target", primary = true, optional = true, defaultValue = DEFAULT_SERVER_INSTANCE_NAME)
     private String target;
 
-    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    private Config config;
-
     @Inject
-    private Configs configs;
+    @Named(DEFAULT_INSTANCE_NAME)
+    private Config config;
 
     @Inject
     private Domain domain;
@@ -104,29 +108,28 @@ public class ListJaccProviders implements AdminCommand, AdminCommandSecurity.Pre
 
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
-        final ActionReport report = context.getActionReport();
+        ActionReport report = context.getActionReport();
+        
         config = CLIUtil.chooseConfig(domain, target, report);
         if (config == null) {
             return false;
         }
+        
         securityService = config.getSecurityService();
         return true;
     }
-    
-    
-    
+
     @Override
     public void execute(AdminCommandContext context) {
-        final ActionReport report = context.getActionReport();
-        
-        List<JaccProvider> jaccProviders = securityService.getJaccProvider();
-        JaccProvider jprov = null;
-        for (JaccProvider jaccProv : jaccProviders) {
-            ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-            part.setMessage(jaccProv.getName());
-        }
-        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+        ActionReport report = context.getActionReport();
 
+        for (JaccProvider jaccProvider : securityService.getJaccProvider()) {
+            report.getTopMessagePart()
+                  .addChild()
+                  .setMessage(jaccProvider.getName());
+        }
+        
+        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.common;
 
 import java.security.AccessController;
@@ -72,6 +72,14 @@ public final class AppservAccessController {
         }
 
         return AccessController.doPrivileged( (PrivilegedAction<Object>) () -> {action.run(); return null;});
+    }
+    
+    public static Object privilegedAlways(Runnable action) {
+        return AccessController.doPrivileged( (PrivilegedAction<Object>) () -> {action.run(); return null;});
+    }
+    
+    public static <T> T privilegedAlways(PrivilegedAction<T> action) {
+        return AccessController.doPrivileged(action);
     }
 
     public static Object doPrivileged(PrivilegedAction<?> action) {

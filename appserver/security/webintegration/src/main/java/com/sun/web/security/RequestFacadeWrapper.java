@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.web.security;
 
 import java.io.BufferedReader;
@@ -52,7 +53,7 @@ import javax.servlet.http.*;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.RequestFacade;
 
-class RequestFacadeWrapper extends RequestFacade implements HttpServletRequest {
+class RequestFacadeWrapper extends RequestFacade {
 
     private final HttpServletRequest servletRequest;
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm.jdbc;
 
 import static java.lang.Character.toLowerCase;
@@ -144,12 +144,9 @@ public final class JDBCRealm extends DigestRealmBase {
      * Initialize a realm with some properties. This can be used when instantiating realms from their descriptions. This
      * method may only be called a single time.
      *
-     * @param props
-     *            Initialization parameters used by this realm.
-     * @exception BadRealmException
-     *                If the configuration parameters identify a corrupt realm.
-     * @exception NoSuchRealmException
-     *                If the configuration parameters specify a realm which doesn't exist.
+     * @param props Initialization parameters used by this realm.
+     * @exception BadRealmException If the configuration parameters identify a corrupt realm.
+     * @exception NoSuchRealmException If the configuration parameters specify a realm which doesn't exist.
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -170,9 +167,8 @@ public final class JDBCRealm extends DigestRealmBase {
         String groupNameColumn = props.getProperty(PARAM_GROUP_NAME_COLUMN);
         String groupTableUserNameColumn = props.getProperty(PARAM_GROUP_TABLE_USER_NAME_COLUMN, userNameColumn);
 
-        cr = (ActiveDescriptor<ConnectorRuntime>)
-                Util.getDefaultHabitat()
-                    .getBestDescriptor(BuilderHelper.createContractFilter(ConnectorRuntime.class.getName()));
+        cr = (ActiveDescriptor<ConnectorRuntime>) Util.getDefaultHabitat()
+                .getBestDescriptor(BuilderHelper.createContractFilter(ConnectorRuntime.class.getName()));
 
         if (jaasCtx == null) {
             throw new BadRealmException(sm.getString("realm.missingprop", JAAS_CONTEXT_PARAM, "JDBCRealm"));
@@ -232,9 +228,9 @@ public final class JDBCRealm extends DigestRealmBase {
         }
 
         if (_logger.isLoggable(Level.FINEST)) {
-            _logger.finest("JDBCRealm : " + JAAS_CONTEXT_PARAM + "= " + jaasCtx + ", " + PARAM_DATASOURCE_JNDI + " = " + dsJndi
-                    + ", " + PARAM_DB_USER + " = " + dbUser + ", " + PARAM_DIGEST_ALGORITHM + " = " + digestAlgorithm + ", "
-                    + PARAM_ENCODING + " = " + encoding + ", " + PARAM_CHARSET + " = " + charset);
+            _logger.finest("JDBCRealm : " + JAAS_CONTEXT_PARAM + "= " + jaasCtx + ", " + PARAM_DATASOURCE_JNDI + " = " + dsJndi + ", "
+                    + PARAM_DB_USER + " = " + dbUser + ", " + PARAM_DIGEST_ALGORITHM + " = " + digestAlgorithm + ", " + PARAM_ENCODING
+                    + " = " + encoding + ", " + PARAM_CHARSET + " = " + charset);
         }
 
         groupCache = new HashMap<String, Vector<String>>();
@@ -256,12 +252,10 @@ public final class JDBCRealm extends DigestRealmBase {
      * Returns the name of all the groups that this user belongs to. It loads the result from groupCache first. This is
      * called from web path group verification, though it should not be.
      *
-     * @param username
-     *            Name of the user in this realm whose group listing is needed.
+     * @param username Name of the user in this realm whose group listing is needed.
      * @return Enumeration of group names (strings).
-     * @exception InvalidOperationException
-     *                thrown if the realm does not support this operation - e.g. Certificate realm does not support this
-     *                operation.
+     * @exception InvalidOperationException thrown if the realm does not support this operation - e.g. Certificate realm
+     * does not support this operation.
      */
     @Override
     public Enumeration<String> getGroupNames(String username) throws InvalidOperationException, NoSuchUserException {
@@ -295,10 +289,8 @@ public final class JDBCRealm extends DigestRealmBase {
     /**
      * Invoke the native authentication call.
      *
-     * @param username
-     *            User to authenticate.
-     * @param password
-     *            Given password.
+     * @param username User to authenticate.
+     * @param password Given password.
      * @returns true of false, indicating authentication status.
      *
      */
@@ -378,10 +370,8 @@ public final class JDBCRealm extends DigestRealmBase {
     /**
      * Test if a user is valid
      *
-     * @param user
-     *            user's identifier
-     * @param userPassword
-     *            user's password
+     * @param user user's identifier
+     * @param userPassword user's password
      * @return true if valid
      */
     private boolean isUserValid(String user, char[] userPassword) {
@@ -484,8 +474,7 @@ public final class JDBCRealm extends DigestRealmBase {
     /**
      * Delegate method for retreiving users groups
      *
-     * @param user
-     *            user's identifier
+     * @param user user's identifier
      * @return array of group key
      */
     private String[] findGroups(String user) {

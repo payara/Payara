@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ee.auth.login;
 
 import static java.util.logging.Level.FINEST;
@@ -53,8 +53,8 @@ import com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm;
  * This class implement a JDBC Login module for Payara.
  *
  * <p>
- * The work is derived from Sun's sample JDBC login module. Enhancements have been done to use
- * the very latest features.
+ * The work is derived from Sun's sample JDBC login module. 
+ * Enhancements have been done to use the very latest features.
  *
  * @author Jean-Baptiste Bugeaud
  */
