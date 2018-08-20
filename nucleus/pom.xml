@@ -147,7 +147,8 @@
                 <enabled>true</enabled>
             </releases>
             <snapshots>
-                <enabled>true</enabled>
+                <!-- Enable this to allow downloading Eclipse MicroProfile Snapshot builds -->
+                <enabled>false</enabled>
             </snapshots>
         </repository>
 
