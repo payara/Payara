@@ -1,16 +1,41 @@
 /*
- * Copyright (c) 2016 Payara Foundation. All rights reserved.
- 
- * The contents of this file are subject to the terms of the Common Development
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
- 
+ *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
  */
 
 package fish.payara.jbatch.persistence.rdbms;
@@ -33,6 +58,8 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY;
 
 /**
  * 
@@ -59,8 +86,9 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 		this.batchConfig = batchConfig;
 
 		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
-
 		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
+                prefix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_PREFIX_PROPERTY, "");
+	        suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
 		
 		try {
 			Context ctx = new InitialContext();
@@ -77,7 +105,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 		// Load the table names and queries shared between different database
 		// types
 
-		tableNames = getSharedTableMap(batchConfig);
+		tableNames = getSharedTableMap();
 
 		try {
 			queryStrings = getSharedQueryMap(batchConfig);
@@ -85,11 +113,6 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 			// TODO Auto-generated catch block
 			throw new BatchContainerServiceException(e1);
 		}
-
-		// put the create table strings into a hashmap
-	//	createTableStrings = setCreateTableMap(batchConfig);
-
-		createDB2Strings = setCreateDB2StringsMap(batchConfig);
 
 		logger.config("JNDI name = " + jndiName);
 
@@ -100,10 +123,10 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 
 		
 		try {
-			if (!isDB2SchemaValid()) {
+			if (!isSchemaValid()) {
 				setDefaultSchema();
 			}
-			checkDB2Tables();
+			checkTables();
 
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
@@ -118,7 +141,8 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 	 * @return
 	 * @throws SQLException
 	 */
-	private boolean isDB2SchemaValid() throws SQLException {
+        @Override
+	protected boolean isSchemaValid() throws SQLException {
 
 		boolean result = false;
 		Connection conn = null;
@@ -155,10 +179,11 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 	 * Check the relevant db2 tables exist in the relevant schema
 	 * @throws SQLException
 	 */
-	private void checkDB2Tables() throws SQLException {
-
+        @Override
+	protected void checkTables() throws SQLException {
+                
 		logger.entering(CLASSNAME, "checkDB2Tables");
-
+                setCreateDB2StringsMap(tableNames);
 		createDB2TableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
 				createDB2Strings.get(DB2_CREATE_TABLE_CHECKPOINTDATA));
 
@@ -202,7 +227,6 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 					ResultSet.CONCUR_READ_ONLY);
 			String query = "select name from sysibm.systables where name ="
 					+ "\'" + tableName.toUpperCase() + "\'" + "and type = 'T'";
-			;
 			rs = stmt.executeQuery(query);
 
 			int rowcount = getTableRowCount(rs);
@@ -230,8 +254,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 	 * Method invoked to insert the DB2 create table strings into a hashmap
 	 **/
 
-	protected Map<String, String> setCreateDB2StringsMap(
-			IBatchConfig batchConfig) {
+	private Map<String, String> setCreateDB2StringsMap(Map<String, String> tableNames) {
 		createDB2Strings = new HashMap<>();
 		createDB2Strings.put(DB2_CREATE_TABLE_CHECKPOINTDATA, "CREATE TABLE "
 				+ tableNames.get(CHECKPOINT_TABLE_KEY)
@@ -240,7 +263,8 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 				.put(DB2_CREATE_TABLE_JOBINSTANCEDATA,
 						"CREATE TABLE "
 								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
-								+ " (jobinstanceid BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) CONSTRAINT JOBINSTANCE_PK PRIMARY KEY,name VARCHAR(512), apptag VARCHAR(512))");
+								+ " (jobinstanceid BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) CONSTRAINT JOBINSTANCE_PK PRIMARY KEY,"
+                                                                        + "name VARCHAR(512), apptag VARCHAR(512))");
 
 		createDB2Strings
 				.put(DB2_CREATE_TABLE_EXECUTIONINSTANCEDATA,

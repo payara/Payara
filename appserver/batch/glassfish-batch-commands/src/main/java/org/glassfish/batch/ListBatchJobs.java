@@ -44,6 +44,17 @@ package org.glassfish.batch;
 import com.ibm.jbatch.spi.TaggedJobExecution;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
+import fish.payara.jbatch.persistence.rdbms.DB2PersistenceManager;
+import fish.payara.jbatch.persistence.rdbms.H2PersistenceManager;
+import fish.payara.jbatch.persistence.rdbms.JBatchJDBCPersistenceManager;
+import fish.payara.jbatch.persistence.rdbms.MySqlPersistenceManager;
+import fish.payara.jbatch.persistence.rdbms.OraclePersistenceManager;
+import fish.payara.jbatch.persistence.rdbms.PostgresPersistenceManager;
+import fish.payara.jbatch.persistence.rdbms.SQLServerPersistenceManager;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
@@ -54,9 +65,16 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.batch.operations.*;
 import javax.batch.runtime.JobExecution;
-import javax.batch.runtime.JobInstance;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+import javax.validation.constraints.Min;
+import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
+import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
 
 /**
  * Command to list batch jobs info
@@ -73,13 +91,13 @@ import java.util.logging.Level;
 @ExecuteOn(value = {RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
-        @RestEndpoint(configBean = Domain.class,
-                opType = RestEndpoint.OpType.GET,
-                path = "_ListBatchJobs",
-                description = "_List Batch Jobs")
+    @RestEndpoint(configBean = Domain.class,
+            opType = RestEndpoint.OpType.GET,
+            path = "_ListBatchJobs",
+            description = "_List Batch Jobs")
 })
 public class ListBatchJobs
-    extends AbstractLongListCommand {
+        extends AbstractLongListCommand {
 
 
     private static final String JOB_NAME = "jobName";
@@ -99,46 +117,282 @@ public class ListBatchJobs
     private static final String START_TIME = "startTime";
 
     private static final String END_TIME = "endTime";
+    
+    private static final String GET_JOB_NAMES_QUERY = "SELECT DISTINCT name FROM JOBINSTANCEDATA";
 
     @Param(primary = true, optional = true)
     String jobName;
+    
+    @Min(value = 0, message = "Offset value needs to be greter than 0")
+    @Param(name = "offset", optional = true, defaultValue = "0")
+    String offSetValue;
 
+    @Min(value = 0, message = "Limit value needs to be greter than 0")
+    @Param(name = "limit", optional = true, defaultValue = "2000")
+    String limitValue;
+
+    @Inject
+    BatchRuntimeHelper batchRuntimeHelper;
+
+    @Inject
+    BatchRuntimeConfiguration batchRuntimeConfiguration;
+
+    private DataSource dataSource;
+    
     @Override
     protected void executeCommand(AdminCommandContext context, Properties extraProps)
-        throws Exception {
+            throws Exception {
 
-        ColumnFormatter columnFormatter = new ColumnFormatter(getDisplayHeaders());
-        if (isSimpleMode()) {
-            extraProps.put("simpleMode", true);
-            extraProps.put("listBatchJobs", findSimpleJobInfo(columnFormatter));
-        } else {
-            extraProps.put("simpleMode", false);
-            List<Map<String, Object>> jobExecutions = new ArrayList<>();
-            extraProps.put("listBatchJobs", jobExecutions);
+        String dataSourceName = batchRuntimeHelper.getDataSourceLookupName();
+        InitialContext ctx = new InitialContext();
+        Object object = ctx.lookup(dataSourceName);
+        //check whether the referenced JNDI entry is a DataSource
+        if (object instanceof DataSource) {
+            dataSource = DataSource.class.cast(object);
+            createTables();
             
-            Map<String, Integer> jobInstanceCount = null;
-            if (Arrays.asList(getOutputHeaders()).contains(INSTANCE_COUNT)) {
-                jobInstanceCount = getJobInstanceCount();
-            }
-            
-            for (JobExecution jobExecution : findJobExecutions()) {
-                try {
-                    if (glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) jobExecution).getTagName()))
-                       jobExecutions.add(handleJob(jobExecution, columnFormatter, jobInstanceCount));
-                } catch (Exception ex) {
-                    logger.log(Level.WARNING, "Exception while getting jobExecution details: " + ex);
-                    logger.log(Level.FINE, "Exception while getting jobExecution details ", ex);
+            ColumnFormatter columnFormatter = new ColumnFormatter(getDisplayHeaders());
+            if (isSimpleMode()) {
+                extraProps.put("simpleMode", true);
+                Map<String, Integer> jobsInstanceCount = new HashMap<>();
+                
+                if (jobName != null) {
+                    jobsInstanceCount.put(jobName, getJobInstanceCount(jobName));
+                } else {
+                    // Get all aviable Job Names
+                    List<String> jobNames = executeQuery(GET_JOB_NAMES_QUERY, "name");
+
+                    for (String jobName : jobNames) {
+                        jobsInstanceCount.put(jobName, getJobInstanceCount(jobName));
+                    }
+                }
+                
+                extraProps.put("listBatchJobs", findSimpleJobInfo(jobsInstanceCount, columnFormatter));
+            } else {
+                extraProps.put("simpleMode", false);
+                Map<String, Object> map = new HashMap<>();
+                map.put("allJobsCount", getAllJobInstanceCount());
+                extraProps.put("listJobsCount", map);
+                List<Map<String, Object>> jobExecutions = new ArrayList<>();
+                extraProps.put("listBatchJobs", jobExecutions);
+                Map<String, Integer> jobsInstanceCount = new HashMap<>();
+
+                if (Arrays.asList(getOutputHeaders()).contains(INSTANCE_COUNT)) {
+                    // Get all aviable Job Names
+                    List<String> jobNames = executeQuery(GET_JOB_NAMES_QUERY, "name");
+
+                    for (String jobName : jobNames) {
+                        jobsInstanceCount.put(jobName, getJobInstanceCount(jobName));
+                    }
+                }
+
+                List<Long> jobInstanceIDs = getJobInstanceIDs();
+                JobOperator jobOperator = AbstractListCommand.getJobOperatorFromBatchRuntime();
+                
+                for (Long jobExecution : jobInstanceIDs) {
+                    try {
+                        if (glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) jobOperator.getJobExecution(jobExecution)).getTagName())) {
+                            jobExecutions.add(handleJob(jobOperator.getJobExecution(jobExecution), columnFormatter, jobsInstanceCount));
+                        }
+                    } catch (Exception ex) {
+                        logger.log(Level.WARNING, "Exception while getting jobExecution details: " + ex);
+                        logger.log(Level.FINE, "Exception while getting jobExecution details ", ex);
+                    }
                 }
             }
+            
+            context.getActionReport().setMessage(columnFormatter.toString());
         }
-        context.getActionReport().setMessage(columnFormatter.toString());
+    }
+
+    private void createTables(){
+          try (Connection connection = dataSource.getConnection()) {
+            String database = connection.getMetaData().getDatabaseProductName();
+            
+            if (database.contains("Derby")) {
+                JBatchJDBCPersistenceManager jBatchJDBCPersistenceManager = new JBatchJDBCPersistenceManager();
+                jBatchJDBCPersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
+            } else if (database.contains("H2")) {
+                H2PersistenceManager h2PersistenceManager = new H2PersistenceManager();
+                h2PersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
+            } else if (database.contains("MySQL")) {
+                MySqlPersistenceManager mySqlPersistenceManager = new MySqlPersistenceManager();
+                mySqlPersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
+            } else if (database.contains("Oracle")) {
+                OraclePersistenceManager oraclePersistenceManager = new OraclePersistenceManager();
+                oraclePersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
+            } else if (database.contains("PostgreSQL")) {
+                PostgresPersistenceManager postgresPersistenceManager = new PostgresPersistenceManager();
+                postgresPersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
+            } else if (database.contains("DB2")) {
+                DB2PersistenceManager dB2PersistenceManager = new DB2PersistenceManager();
+                dB2PersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
+            } else if (database.contains("Microsoft SQL Server")) {
+                SQLServerPersistenceManager sQLServerPersistenceManager = new SQLServerPersistenceManager();
+                sQLServerPersistenceManager.createTables(dataSource, batchRuntimeConfiguration);
+            }
+        } catch (SQLException ex) {
+             logger.severe(ex.getLocalizedMessage());
+        }
+    }
+    
+    private int getJobInstanceCount(String jobName) {
+        int jobInstanceCount = 0;
+        
+        try (Connection connection = dataSource.getConnection()) {
+            String query = "SELECT COUNT(jobinstanceid) AS jobinstancecount FROM JOBINSTANCEDATA WHERE NAME ='" + jobName + "'";
+            try (Statement statement = connection.createStatement()) {
+                try (ResultSet resultSet = statement.executeQuery(query)) {
+                    resultSet.next();
+                    jobInstanceCount = resultSet.getInt("jobinstancecount");
+                }
+            }
+        } catch (SQLException ex) {
+            logger.severe(ex.getLocalizedMessage());
+        }
+        
+        return jobInstanceCount;
+    }
+    
+       private int getAllJobInstanceCount() {
+        int allJobInstanceCount = 0;
+        
+        try (Connection connection = dataSource.getConnection()) {
+            String query = "SELECT COUNT(jobinstanceid) AS jobinstancecount FROM JOBINSTANCEDATA";
+            try (Statement statement = connection.createStatement()) {
+                try (ResultSet resultSet = statement.executeQuery(query)) {
+                    resultSet.next();
+                    allJobInstanceCount = resultSet.getInt("jobinstancecount");
+                }
+            }
+        } catch (SQLException ex) {
+            logger.severe(ex.getLocalizedMessage());
+        }
+        
+        return allJobInstanceCount;
+    }
+    
+    private List<Long> getJobInstanceIDs() {
+        List<Long> result = new ArrayList<>();
+                
+        try (Connection connection = dataSource.getConnection()) {
+            String database = connection.getMetaData().getDatabaseProductName();
+            String query;
+            String columnID = "jobinstanceid";
+
+            if (database.contains("Derby") || database.contains("DB2")) {
+                if (jobName != null) {
+                    query = "SELECT jobinstanceid "
+                            + "FROM JOBINSTANCEDATA "
+                            + "WHERE NAME ='" + jobName + "' "
+                            + "ORDER BY jobinstanceid "
+                            + "DESC FETCH FIRST " + limitValue + " ROWS ONLY";
+                } else {
+                    query = "SELECT jobinstanceid "
+                            + "FROM JOBINSTANCEDATA "
+                            + "ORDER BY jobinstanceid DESC "
+                            + "OFFSET " + offSetValue + " "
+                            + "ROWS FETCH FIRST " + limitValue + " ROWS ONLY";
+                }
+
+
+            } else if (database.contains("Oracle")) {
+                if (jobName != null) {
+                    query = "SELECT jobinstanceid "
+                            + "FROM ("
+                            + "      SELECT jobinstanceid "
+                            + "      FROM JOBINSTANCEDATA "
+                            + "      WHERE NAME ='" + jobName + "'"
+                            + ") "
+                            + "WHERE ROWNUM <=" + limitValue + " "
+                            + "ORDER BY jobinstanceid DESC";
+                } else {
+                    int offset = Integer.parseInt(offSetValue);       
+                    int limit = Integer.parseInt(limitValue);
+                    int rowSize = offset + limit;
+                    query = "SELECT jobinstanceid "
+                            + "FROM ("
+                            + "      SELECT ROWNUM numofrows, tables.*"
+                            + "      FROM("
+                            + "           SELECT jobinstanceid"
+                            + "           FROM JOBINSTANCEDATA"
+                            + "           ORDER BY jobinstanceid DESC"
+                            + "      ) tables"
+                            + "     WHERE ROWNUM <= " + rowSize  
+                            + ")"
+                            + "WHERE numofrows > " + offset;
+                }                  
+            } else if (database.contains("Microsoft SQL Server")) {
+                if (jobName != null) {
+                    query = "SELECT TOP " + limitValue + " "
+                            + "jobinstanceid FROM JOBINSTANCEDATA "
+                            + "WHERE NAME ='" + jobName + "' "
+                            + "ORDER BY jobinstanceid DESC";
+                } else {
+                    query = "SELECT TOP " + limitValue + " jobinstanceid "
+                            + "FROM ("
+                            + "      SELECT jobinstanceid, ROW_NUMBER()"
+                            + "      OVER ("
+                            + "            ORDER BY jobinstanceid DESC"
+                            + "            ) as RowNum "
+                            + "       FROM JOBINSTANCEDATA"
+                            + "      ) AS MyDerivedTable "
+                            + "WHERE MyDerivedTable.RowNum > " + offSetValue;
+                }
+            } else {
+                if (jobName != null) {
+                    query = "SELECT jobinstanceid "
+                            + "FROM JOBINSTANCEDATA "
+                            + "WHERE NAME ='" + jobName + "' "
+                            + "ORDER BY jobinstanceid "
+                            + "DESC LIMIT " + limitValue;
+                } else {
+                    query = "SELECT jobinstanceid "
+                            + "FROM JOBINSTANCEDATA "
+                            + "ORDER BY jobinstanceid "
+                            + "DESC LIMIT " + limitValue 
+                            + " OFFSET " + offSetValue;
+                }
+            }
+
+            try (Statement statement = connection.createStatement()) {
+                try (ResultSet resultSet = statement.executeQuery(query)) {
+                    while (resultSet.next()) {
+                        result.add(resultSet.getLong(columnID));
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(ListBatchJobs.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return result;
+    }
+    
+    private List<String> executeQuery(String query, String columnID) throws NamingException {
+        List<String> result = new ArrayList<>();
+
+        try (Connection connection = dataSource.getConnection()) {
+
+            try (Statement statement = connection.createStatement()) {
+                try (ResultSet resultSet = statement.executeQuery(query)) {
+                    while (resultSet.next()) {
+                        result.add(resultSet.getString(columnID));
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            logger.severe(ex.getLocalizedMessage());
+        }
+        
+        return result;
     }
 
     @Override
     protected final String[] getAllHeaders() {
         return new String[]{
-                JOB_NAME, APP_NAME, INSTANCE_COUNT, INSTANCE_ID, EXECUTION_ID, BATCH_STATUS,
-                START_TIME, END_TIME, EXIT_STATUS
+            JOB_NAME, APP_NAME, INSTANCE_COUNT, INSTANCE_ID, EXECUTION_ID, BATCH_STATUS,
+            START_TIME, END_TIME, EXIT_STATUS
         };
     }
 
@@ -157,112 +411,62 @@ public class ListBatchJobs
         return getOutputHeaders().length == 2;
     }
 
-    private Map<String, Integer> findSimpleJobInfo(ColumnFormatter columnFormatter) {
-
-        Map<String, Integer> jobToInstanceCountMap = getJobInstanceCount();
-
+    private Map<String, Integer> findSimpleJobInfo(Map<String, Integer> jobToInstanceCountMap, ColumnFormatter columnFormatter) {
         for (Map.Entry<String, Integer> e : jobToInstanceCountMap.entrySet()) {
             columnFormatter.addRow(new Object[]{e.getKey(), e.getValue()});
         }
         return jobToInstanceCountMap;
     }
 
-    private Map<String, Integer> getJobInstanceCount()
-            throws JobSecurityException, NoSuchJobException {
-
-        Map<String, Integer> jobInstanceCount = new HashMap<>();
-        List<JobExecution> jobExecutions = findJobExecutions();
-        for (JobExecution jobExecution : jobExecutions) {
-            if (glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) jobExecution).getTagName())) {
-                String jobName = jobExecution.getJobName();
-                int count = 0;
-                if (jobInstanceCount.containsKey(jobName)) {
-                    count = jobInstanceCount.get(jobName);
-                }
-                jobInstanceCount.put(jobName, count + 1);
-            }
-        }
-        return jobInstanceCount;
-    }
-
-    private List<JobExecution> findJobExecutions()
-        throws JobSecurityException, NoSuchJobException, NoSuchJobInstanceException {
-        List<JobExecution> jobExecutions = new ArrayList<>();
-
-        JobOperator jobOperator = AbstractListCommand.getJobOperatorFromBatchRuntime();
-        if (jobName != null) {
-            List<JobInstance> exe = jobOperator.getJobInstances(jobName, 0, Integer.MAX_VALUE - 1);
-            if (exe != null) {
-                for (JobInstance ji : exe) {
-                    jobExecutions.addAll(jobOperator.getJobExecutions(ji));
-                }
-            }
-        } else {
-            Set<String> jobNames = jobOperator.getJobNames();
-            if (jobNames != null) {
-                for (String jn : jobOperator.getJobNames()) {
-                    List<JobInstance> exe = jobOperator.getJobInstances(jn, 0, Integer.MAX_VALUE - 1);
-                    if (exe != null) {
-                        for (JobInstance ji : exe) {
-                            jobExecutions.addAll(jobOperator.getJobExecutions(ji));
-                        }
-                    }
-                }
-            }
-        }
-
-        return jobExecutions;
-    }
-
-    private Map<String, Object> handleJob(JobExecution jobExexution, ColumnFormatter columnFormatter, Map<String, Integer>  instanceCount)
-        throws  JobSecurityException, NoSuchJobException, NoSuchJobExecutionException {
+    private Map<String, Object> handleJob(JobExecution jobExecution, ColumnFormatter columnFormatter, Map<String, Integer>  jobInstanceCount)
+            throws JobSecurityException, NoSuchJobException, NoSuchJobExecutionException {
         Map<String, Object> jobInfo = new HashMap<>();
 
-        String[] cfData = new String[getOutputHeaders().length];
+        String[] columnFormatterData = new String[getOutputHeaders().length];
         JobOperator jobOperator = AbstractListCommand.getJobOperatorFromBatchRuntime();
         for (int index = 0; index < getOutputHeaders().length; index++) {
             Object data = null;
             switch (getOutputHeaders()[index]) {
                 case JOB_NAME:
-                    data = "" + jobExexution.getJobName();
+                    data = "" + jobExecution.getJobName();
                     break;
                 case APP_NAME:
                     try {
-                        String appName = "" + ((TaggedJobExecution) jobExexution).getTagName();
+                        String appName = "" + ((TaggedJobExecution) jobExecution).getTagName();
                         int semi = appName.indexOf(':');
-                        data = appName.substring(semi+1);
+                        data = appName.substring(semi + 1);
                     } catch (Exception ex) {
                         logger.log(Level.FINE, "Error while calling ((TaggedJobExecution) je).getTagName() ", ex);
                         data = ex.toString();
                     }
                     break;
                 case INSTANCE_COUNT:
-                    data = instanceCount != null ? instanceCount.get(jobExexution.getJobName()) : "";
+                    data = jobInstanceCount.size() > 0 ? jobInstanceCount.get(jobExecution.getJobName()) : "";
                     break;
                 case INSTANCE_ID:
-                    data = jobOperator.getJobInstance(jobExexution.getExecutionId()).getInstanceId();
+                    data = jobOperator.getJobInstance(jobExecution.getExecutionId()).getInstanceId();
                     break;
                 case EXECUTION_ID:
-                    data = jobExexution.getExecutionId();
+                    data = jobExecution.getExecutionId();
                     break;
                 case BATCH_STATUS:
-                    data = jobExexution.getBatchStatus() != null ? jobExexution.getBatchStatus() : "";
+                    data = jobExecution.getBatchStatus() != null ? jobExecution.getBatchStatus() : "";
                     break;
                 case EXIT_STATUS:
-                    data = jobExexution.getExitStatus() != null ? jobExexution.getExitStatus() : "";
+                    data = jobExecution.getExitStatus() != null ? jobExecution.getExitStatus() : "";
                     break;
                 case START_TIME:
-                    if (jobExexution.getStartTime() != null) {
-                        data = jobExexution.getStartTime().getTime();
-                        cfData[index] = jobExexution.getStartTime().toString();
+                    if (jobExecution.getStartTime() != null) {
+                        data = jobExecution.getStartTime().getTime();
+                        columnFormatterData[index] = jobExecution.getStartTime().toString();
                     } else {
                         data = "";
                     }
                     break;
                 case END_TIME:
-                    if (jobExexution.getEndTime() != null) {
-                        data = jobExexution.getEndTime().getTime();
-                        cfData[index] = jobExexution.getEndTime().toString();
+                    if (jobExecution.getEndTime() != null) {
+                        data = jobExecution.getEndTime().getTime();
+                        columnFormatterData[index] = jobExecution.getEndTime().toString();
                     } else {
                         data = "";
                     }
@@ -271,10 +475,11 @@ public class ListBatchJobs
                     throw new IllegalArgumentException("Unknown header: " + getOutputHeaders()[index]);
             }
             jobInfo.put(getOutputHeaders()[index], data);
-            if (cfData[index] == null)
-                cfData[index] = data.toString();
+            if (columnFormatterData[index] == null) {
+                columnFormatterData[index] = data.toString();
+            }
         }
-        columnFormatter.addRow(cfData);
+        columnFormatter.addRow(columnFormatterData);
 
         return jobInfo;
     }
