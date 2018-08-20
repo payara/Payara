@@ -1123,3 +1123,13 @@ a.WizStpLnk_sun4:hover {
 }
 /*---*/
 
+/* MicroProfile Config Tabs */
+div[id*=microprofileConfigTabs] .Tab1Div_sun4 {
+      background:#335462;	
+}
+
+a[id*=microProfileConfigPropertyTab],
+a[id*=microProfileConfigOrdinalTab],
+a[id*=microProfileConfigSecretsDirectoryTab] {
+	color:#ffffff !important;
+}
