@@ -183,16 +183,25 @@ public class FaultToleranceCdiUtils {
             if (!value.isPresent()) {
                 logger.log(Level.FINER, "No config override for annotated method, checking if the method is "
                         + "annotated directly...");
-                // If the method is annotated directly, check for a global override and return
+                // If the method is annotated directly, check for a class or global level override and return
                 if (invocationContext.getMethod().getAnnotation(annotationClass) != null) {
-                    logger.log(Level.FINER, "Method is annotated directly, checking for global override.");
-                    value = config.getOptionalValue(annotationName + "/" + parameterName, parameterType);
+                    logger.log(Level.FINER, "Method is annotated directly, checking for class-level override.");
+                    value = config.getOptionalValue(annotatedClassCanonicalName + "/" + annotationName 
+                            + "/" + parameterName, parameterType);
                     
                     if (value.isPresent()) {
-                        logger.log(Level.FINER, "Global override found.");
+                        logger.log(Level.FINER, "Class-level override found.");
                     } else {
-                        logger.log(Level.FINER, "No config overrides.");
+                        logger.log(Level.FINER, "No class-level override found, checking for global override.");
+                        value = config.getOptionalValue(annotationName + "/" + parameterName, parameterType);
+
+                        if (value.isPresent()) {
+                            logger.log(Level.FINER, "Global override found.");
+                        } else {
+                            logger.log(Level.FINER, "No config overrides.");
+                        }
                     }
+                    
                     return value;
                 }
                 

@@ -100,9 +100,13 @@ public class AsynchronousInterceptor implements Serializable {
         }
         
         try {
+            String appName = faultToleranceService.getApplicationName(invocationManager, invocationContext);
+            
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled
-            if (faultToleranceService.isFaultToleranceEnabled(faultToleranceService.getApplicationName(
-                    invocationManager, invocationContext), config)) {                
+            if (faultToleranceService.isFaultToleranceEnabled(appName, config)
+                    && ((Boolean) FaultToleranceCdiUtils.getOverrideValue(
+                            config, Asynchronous.class, "enabled", invocationContext, Boolean.class)
+                            .orElse(Boolean.TRUE))) {
                 Callable callable = () -> {
                     return invocationContext.proceed();
                 };
@@ -120,7 +124,9 @@ public class AsynchronousInterceptor implements Serializable {
             Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
             
             // If the method was annotated with Fallback, attempt it, otherwise just propagate the exception upwards
-            if (fallback != null) {
+            if (fallback != null && ((Boolean) FaultToleranceCdiUtils.getOverrideValue(
+                    config, Fallback.class, "enabled", invocationContext, Boolean.class)
+                    .orElse(Boolean.TRUE))) {
                 logger.log(Level.FINE, "Fallback annotation found on method - falling back from Asynchronous");
                 FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
                 proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);

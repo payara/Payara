@@ -97,8 +97,13 @@ public class TimeoutInterceptor {
         }
         
         try {
-            if (faultToleranceService.isFaultToleranceEnabled(faultToleranceService.getApplicationName(
-                    invocationManager, invocationContext), config)) {
+            String appName = faultToleranceService.getApplicationName(invocationManager, invocationContext);
+            
+            // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled
+            if (faultToleranceService.isFaultToleranceEnabled(appName, config)
+                    && ((Boolean) FaultToleranceCdiUtils.getOverrideValue(
+                            config, Timeout.class, "enabled", invocationContext, Boolean.class)
+                            .orElse(Boolean.TRUE))) {
                 logger.log(Level.FINER, "Proceeding invocation with timeout semantics");
                 proceededInvocationContext = timeout(invocationContext);
             } else {
@@ -117,7 +122,9 @@ public class TimeoutInterceptor {
                 Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, 
                         invocationContext);
 
-                if (fallback != null) {
+                if (fallback != null && ((Boolean) FaultToleranceCdiUtils.getOverrideValue(
+                        config, Fallback.class, "enabled", invocationContext, Boolean.class)
+                        .orElse(Boolean.TRUE))) {
                     logger.log(Level.FINE, "Fallback annotation found on method, and no Retry annotation - "
                             + "falling back from Timeout");
                     FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);

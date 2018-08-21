@@ -99,10 +99,16 @@ public class CircuitBreakerInterceptor implements Serializable {
             logger.log(Level.INFO, "No config could be found", ex);
         }
         
-        // Attempt to proceed the invocation with CircuitBreaker semantics if Fault Tolerance is enabled
+        // Attempt to proceed the invocation with CircuitBreaker semantics if Fault Tolerance is enabled, and if
+        // this particular method hasn't been excluded
         try {
-            if (faultToleranceService.isFaultToleranceEnabled(faultToleranceService.getApplicationName(
-                    invocationManager, invocationContext), config)) {
+            String appName = faultToleranceService.getApplicationName(invocationManager, invocationContext);
+            
+            // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled
+            if (faultToleranceService.isFaultToleranceEnabled(appName, config)
+                    && ((Boolean) FaultToleranceCdiUtils.getOverrideValue(
+                            config, CircuitBreaker.class, "enabled", invocationContext, Boolean.class)
+                            .orElse(Boolean.TRUE))) {
                 logger.log(Level.FINER, "Proceeding invocation with circuitbreaker semantics");
                 proceededInvocationContext = circuitBreak(invocationContext);
             } else {
@@ -121,7 +127,9 @@ public class CircuitBreakerInterceptor implements Serializable {
             } else {
                 Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
 
-                if (fallback != null) {
+                if (fallback != null && ((Boolean) FaultToleranceCdiUtils.getOverrideValue(
+                        config, Fallback.class, "enabled", invocationContext, Boolean.class)
+                        .orElse(Boolean.TRUE))) {
                     logger.log(Level.FINE, "Fallback annotation found on method, and no Retry annotation - "
                             + "falling back from CircuitBreaker");
                     FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
