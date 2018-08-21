@@ -67,6 +67,7 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
@@ -488,6 +489,20 @@ public class FaultToleranceService implements EventListener {
             if (appName == null) {
                 appName = invocationManager.getCurrentInvocation().getComponentId();
 
+                // If we've found a component name, check if there's an application registered with the same name
+                if (appName != null) {
+                    ApplicationRegistry applicationRegistry = habitat.getService(ApplicationRegistry.class);
+
+                    // If it's not directly in the registry, it's possible due to how the componentId is constructed
+                    if (applicationRegistry.get(appName) == null) {
+                        String[] componentIds = appName.split("_/");
+                        
+                        // The application name should be the first component
+                        appName = componentIds[0];
+                    }
+                }
+                
+                // If we still don't have a name - just construct it from the method signature
                 if (appName == null) {
                     appName = getFullMethodSignature(invocationContext.getMethod());
                 }
