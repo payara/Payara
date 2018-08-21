@@ -173,7 +173,7 @@ public class CircuitBreakerInterceptor implements Serializable {
         }
         
         long delay = (Long) FaultToleranceCdiUtils.getOverrideValue(
-                config, CircuitBreaker.class, "value", invocationContext, Long.class)
+                config, CircuitBreaker.class, "delay", invocationContext, Long.class)
                 .orElse(circuitBreaker.delay());
         // Look for a String and cast to ChronoUnit - Use the Common Sense Convertor
         ChronoUnit delayUnit = (ChronoUnit) FaultToleranceCdiUtils.getOverrideValue(
