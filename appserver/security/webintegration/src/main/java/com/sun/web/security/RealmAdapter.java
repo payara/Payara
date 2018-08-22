@@ -66,6 +66,7 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.security.AccessController;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.cert.X509Certificate;
@@ -107,8 +108,6 @@ import org.glassfish.grizzly.config.dom.NetworkListeners;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.security.common.CNonceCache;
-import org.glassfish.security.common.NonceInfo;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.deployment.Application;
@@ -119,13 +118,13 @@ import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.security.AppCNonceCacheMap;
 import com.sun.enterprise.security.CNonceCacheFactory;
 import com.sun.enterprise.security.SecurityContext;
+import com.sun.enterprise.security.auth.WebAndEjbToJaasBridge;
 import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
 import com.sun.enterprise.security.auth.digest.api.Key;
+import com.sun.enterprise.security.auth.digest.impl.CNonceValidator;
 import com.sun.enterprise.security.auth.digest.impl.DigestParameterGenerator;
 import com.sun.enterprise.security.auth.digest.impl.HttpAlgorithmParameterImpl;
-import com.sun.enterprise.security.auth.digest.impl.NestedDigestAlgoParamImpl;
 import com.sun.enterprise.security.auth.login.DigestCredentials;
-import com.sun.enterprise.security.auth.login.LoginContextDriver;
 import com.sun.enterprise.security.authorize.PolicyContextHandlerImpl;
 import com.sun.enterprise.security.integration.RealmInitializer;
 import com.sun.enterprise.security.web.integration.WebPrincipal;
@@ -213,11 +212,10 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     @Inject
     private RequestTracingService requestTracing;
 
-    private CNonceCacheFactory cNonceCacheFactory;
-    private CNonceCache cnonces;
-    private AppCNonceCacheMap haCNonceCacheMap;
+    
     private NetworkListeners nwListeners;
     private JaspicRealm jaspicRealm;
+    private CNonceValidator cNonceValidator;
 
     /**
      * ThreadLocal object to keep track of the reentrancy status of each thread. It contains a byte[] object whose single
@@ -266,6 +264,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
         moduleID = webDescriptor.getModuleID();
         jaspicRealm = new JaspicRealm(realmName, isSystemApp, webDescriptor, requestTracing);
+        cNonceValidator = new CNonceValidator(webDescriptor, appCNonceCacheMapProvider, cNonceCacheFactoryProvider);
     }
 
     /**
@@ -564,7 +563,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             logger.fine("usename = " + username);
         }
 
-        if (authenticate(username, password, null)) {
+        if (authenticate(username, password, null, null)) {
             return new WebPrincipal(username, password, SecurityContext.getCurrent());
         }
 
@@ -572,127 +571,40 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     }
 
     /**
+     * Authenticates and sets the SecurityContext in the TLS.
+     * 
      * This HttpServletRequest authenticate variant is primarily used by the DigestAuthenticator
      */
     @Override
     public Principal authenticate(HttpServletRequest httpServletRequest) {
+        DigestAlgorithmParameter[] params;
+        String username;
+        
         try {
-            DigestAlgorithmParameter[] params = DigestParameterGenerator.getInstance(HTTP_DIGEST)
-                    .generateParameters(
-                            new HttpAlgorithmParameterImpl(httpServletRequest));
-            Key key = null;
-
-            if (cnonces == null) {
-                String appName = webDescriptor.getApplication().getAppName();
-
-                synchronized (this) {
-                    if (haCNonceCacheMap == null) {
-                        haCNonceCacheMap = appCNonceCacheMapProvider.get();
-                    }
-
-                    if (haCNonceCacheMap != null) {
-                        // get the initialized HA CNonceCache
-                        cnonces = haCNonceCacheMap.get(appName);
-                    }
-
-                    if (cnonces == null) {
-                        if (cNonceCacheFactory == null) {
-                            cNonceCacheFactory = cNonceCacheFactoryProvider.get();
-                        }
-
-                        // create a Non-HA CNonce Cache
-                        cnonces = cNonceCacheFactory.createCNonceCache(webDescriptor.getApplication().getAppName(), null, null, null);
-                    }
-                }
-            }
-
-            String nc = null;
-            String cnonce = null;
-
-            for (DigestAlgorithmParameter p : params) {
-                if (p instanceof NestedDigestAlgoParamImpl) {
-                    NestedDigestAlgoParamImpl np = (NestedDigestAlgoParamImpl) p;
-                    DigestAlgorithmParameter[] nps = (DigestAlgorithmParameter[]) np.getNestedParams();
-                    for (DigestAlgorithmParameter p1 : nps) {
-                        if ("cnonce".equals(p1.getName())) {
-                            cnonce = new String(p1.getValue());
-                        } else if ("nc".equals(p1.getName())) {
-                            nc = new String(p1.getValue());
-                        }
-                        if (cnonce != null && nc != null) {
-                            break;
-                        }
-                    }
-                    if (cnonce != null && nc != null) {
-                        break;
-                    }
-                }
-                if ("cnonce".equals(p.getName())) {
-                    cnonce = new String(p.getValue());
-                } else if ("nc".equals(p.getName())) {
-                    nc = new String(p.getValue());
-                }
-            }
-
-            long count;
-            long currentTime = System.currentTimeMillis();
-            try {
-                count = Long.parseLong(nc, 16);
-            } catch (NumberFormatException nfe) {
-                throw new RuntimeException(nfe);
-            }
-
-            NonceInfo info;
-            synchronized (cnonces) {
-                info = cnonces.get(cnonce);
-            }
-
-            if (info == null) {
-                info = new NonceInfo();
-            } else {
-                if (count <= info.getCount()) {
-                    throw new RuntimeException("Invalid Request : Possible Replay Attack detected ?");
-                }
-            }
-
-            info.setCount(count);
-            info.setTimestamp(currentTime);
-            synchronized (cnonces) {
-                cnonces.put(cnonce, info);
-            }
-
-            for (int i = 0; i < params.length; i++) {
-                DigestAlgorithmParameter dap = params[i];
-                if (A1.equals(dap.getName()) && (dap instanceof Key)) {
-                    key = (Key) dap;
-                    break;
-                }
-            }
-
-            if (key != null) {
-                DigestCredentials creds = new DigestCredentials(realmName, key.getUsername(), params);
-                LoginContextDriver.login(creds);
-
-                return new WebPrincipal(creds.getUserName(), (char[]) null, SecurityContext.getCurrent());
-            }
-
-            throw new RuntimeException("No key found in parameters");
-
+            params = getDigestParameters(httpServletRequest);
+            username = getDigestKey(params).getUsername();
         } catch (Exception le) {
             if (logger.isLoggable(WARNING)) {
                 logger.log(WARNING, "web.login.failed", le.toString());
             }
+            return null;
+        }
+        
+        if (authenticate(username, null, null, params)) {
+            return new WebPrincipal(username, (char[]) null, SecurityContext.getCurrent());
         }
 
         return null;
     }
 
     /**
+     * Authenticates and sets the SecurityContext in the TLS.
+     * 
      * This HttpServletRequest authenticate variant is primarily used by the SSLAuthenticator
      */
     @Override
     public Principal authenticate(X509Certificate certs[]) {
-        if (authenticate(null, null, certs)) {
+        if (authenticate(null, null, certs, null)) {
             return new WebPrincipal(certs, SecurityContext.getCurrent());
         }
 
@@ -835,10 +747,10 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      */
     public boolean authenticate(WebPrincipal principal) {
         if (principal.isUsingCertificate()) {
-            return authenticate(null, null, principal.getCertificates());
+            return authenticate(null, null, principal.getCertificates(), null);
         }
 
-        return authenticate(principal.getName(), principal.getPassword(), null);
+        return authenticate(principal.getName(), principal.getPassword(), null, null);
     }
 
     /**
@@ -1002,18 +914,24 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      * @param password the password.
      * @param certs Certificate Array.
      */
-    private boolean authenticate(String username, char[] password, X509Certificate[] certs) {
+    private boolean authenticate(String username, char[] password, X509Certificate[] certs, DigestAlgorithmParameter[] digestParams) {
         try {
             if (certs != null) {
 
                 // Certificate credential used to authenticate
 
-                LoginContextDriver.doX500Login(createSubjectWithCerts(certs), moduleID);
-            } else {
+                WebAndEjbToJaasBridge.doX500Login(createSubjectWithCerts(certs), moduleID);
+            } else if (digestParams != null) {
+                
+                // Digest parameters used to authenticate
+                
+                WebAndEjbToJaasBridge.login(new DigestCredentials(realmName, username, digestParams));
+            }
+            else {
 
                 // Username/password credential used to authenticate
 
-                LoginContextDriver.login(username, password, realmName);
+                WebAndEjbToJaasBridge.login(username, password, realmName);
             }
 
             if (logger.isLoggable(FINE)) {
@@ -1109,7 +1027,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     }
 
     private void loginForRunAs(String principal) {
-        LoginContextDriver.loginPrincipal(principal, realmName);
+        WebAndEjbToJaasBridge.loginPrincipal(principal, realmName);
     }
 
     private SecurityContext getSecurityContext() {
@@ -1486,6 +1404,23 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     @Override
     public void postConstruct() {
         nwListeners = networkConfig.getNetworkListeners();
+    }
+    
+    private DigestAlgorithmParameter[] getDigestParameters(HttpServletRequest request) throws InvalidAlgorithmParameterException {
+        return cNonceValidator.validateCnonce(
+            DigestParameterGenerator
+                .getInstance(HTTP_DIGEST)
+                .generateParameters(new HttpAlgorithmParameterImpl(request)));
+    }
+    
+    private Key getDigestKey(DigestAlgorithmParameter[] params) {
+        for (DigestAlgorithmParameter dap : params) {
+            if (A1.equals(dap.getName()) && dap instanceof Key) {
+                return (Key) dap;
+            }
+        }
+        
+        throw new RuntimeException("No key found in parameters");
     }
 
     private boolean hasRequestPrincipal(HttpRequest request) {

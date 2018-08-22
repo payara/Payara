@@ -41,7 +41,9 @@
 package com.sun.enterprise.common.iiop.security;
 
 import java.io.IOException;
+
 import org.jvnet.hk2.annotations.Contract;
+
 import sun.security.util.ObjectIdentifier;
 
 /**
@@ -50,13 +52,13 @@ import sun.security.util.ObjectIdentifier;
  */
 @Contract
 public interface GSSUtilsContract {
-    
-    public String dumpHex(byte[] octets);
 
-    public byte[] importName(ObjectIdentifier oid, byte[] externalName)
-	throws IOException;
-    public byte[] createExportedName(ObjectIdentifier oid, byte[] extName)
-	throws IOException;
-    public ObjectIdentifier GSSUP_MECH_OID();
-    
+    String dumpHex(byte[] octets);
+
+    byte[] importName(ObjectIdentifier oid, byte[] externalName) throws IOException;
+
+    byte[] createExportedName(ObjectIdentifier oid, byte[] extName) throws IOException;
+
+    ObjectIdentifier GSSUP_MECH_OID();
+
 }

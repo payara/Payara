@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.security.application;
 
 import org.glassfish.external.probe.provider.annotations.Probe;
@@ -48,50 +48,43 @@ import org.glassfish.external.probe.provider.annotations.ProbeProvider;
  *
  * @author nithyasubramanian
  */
-@ProbeProvider(moduleProviderName="glassfish",moduleName="security", probeProviderName="ejb")
+@ProbeProvider(moduleProviderName = "glassfish", moduleName = "security", probeProviderName = "ejb")
 public class EjbSecurityProbeProvider {
-    
-    @Probe(name="securityManagerCreationEvent")
-    public void securityManagerCreationEvent(
-            @ProbeParam("appName") String appName){}
 
-    @Probe(name="securityManagerCreationStartedEvent")
-    public void securityManagerCreationStartedEvent(
-            @ProbeParam("appName") String appName){}
+    @Probe(name = "securityManagerCreationEvent")
+    public void securityManagerCreationEvent(@ProbeParam("appName") String appName) {
+    }
 
-    @Probe(name="securityManagerCreationEndedEvent")
-    public void securityManagerCreationEndedEvent(
-            @ProbeParam("appName") String appName){}
-    
-    @Probe(name="securityManagerDestructionEvent")
-    public void securityManagerDestructionEvent(
-            @ProbeParam("appName") String appName
-            ) {}
+    @Probe(name = "securityManagerCreationStartedEvent")
+    public void securityManagerCreationStartedEvent(@ProbeParam("appName") String appName) {
+    }
 
-    @Probe(name="securityManagerDestructionStartedEvent")
-    public void securityManagerDestructionStartedEvent(
-            @ProbeParam("appName") String appName
-            ) {}
+    @Probe(name = "securityManagerCreationEndedEvent")
+    public void securityManagerCreationEndedEvent(@ProbeParam("appName") String appName) {
+    }
 
-    @Probe(name="securityManagerDestructionEndedEvent")
-    public void securityManagerDestructionEndedEvent(
-            @ProbeParam("appName") String appName
-            ) {}
-   
-    
-    @Probe(name="policyDestructionEvent")
-    public void policyDestructionEvent(
-            @ProbeParam("contextId") String contextId
-            ) {}
+    @Probe(name = "securityManagerDestructionEvent")
+    public void securityManagerDestructionEvent(@ProbeParam("appName") String appName) {
+    }
 
-    @Probe(name="policyDestructionStartedEvent")
-    public void policyDestructionStartedEvent(
-            @ProbeParam("appName") String appName
-            ) {}
+    @Probe(name = "securityManagerDestructionStartedEvent")
+    public void securityManagerDestructionStartedEvent(@ProbeParam("appName") String appName) {
+    }
 
-    @Probe(name="policyDestructionEndedEvent")
-    public void policyDestructionEndedEvent(
-            @ProbeParam("appName") String appName
-            ) {}
-    
+    @Probe(name = "securityManagerDestructionEndedEvent")
+    public void securityManagerDestructionEndedEvent(@ProbeParam("appName") String appName) {
+    }
+
+    @Probe(name = "policyDestructionEvent")
+    public void policyDestructionEvent(@ProbeParam("contextId") String contextId) {
+    }
+
+    @Probe(name = "policyDestructionStartedEvent")
+    public void policyDestructionStartedEvent(@ProbeParam("appName") String appName) {
+    }
+
+    @Probe(name = "policyDestructionEndedEvent")
+    public void policyDestructionEndedEvent(@ProbeParam("appName") String appName) {
+    }
+
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.digest.impl;
 
 import com.sun.enterprise.security.auth.digest.api.Key;
@@ -45,13 +45,13 @@ import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
 
 /**
  *
- *  @author K.Venugopal@sun.com
+ * @author K.Venugopal@sun.com
  */
 public class KeyDigestAlgoParamImpl implements DigestAlgorithmParameter, Key {
 
     private String userName;
     private String realmName;
-    private String algorithm = null;
+    private String algorithm;
     private String name = "A1";
     private static byte[] delimeter = ":".getBytes();
 

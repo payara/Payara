@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * SecurityRoleMapperFactoryGen.java
  *
  * Created on September 23, 2009, 12:34 PM
  */
-
 package com.sun.enterprise.security;
 
 import java.lang.ref.WeakReference;
@@ -62,6 +62,7 @@ public class SecurityRoleMapperFactoryGen {
         if (securityRoleMapperFactory.get() == null) {
             securityRoleMapperFactory = new WeakReference<SecurityRoleMapperFactory>(Globals.get(SecurityRoleMapperFactory.class));
         }
+        
         return securityRoleMapperFactory.get();
     }
 
@@ -69,6 +70,7 @@ public class SecurityRoleMapperFactoryGen {
         if (securityRoleMapperFactory.get() != null) {
             return securityRoleMapperFactory.get();
         }
+        
         return _getSecurityRoleMapperFactory();
     }
 }

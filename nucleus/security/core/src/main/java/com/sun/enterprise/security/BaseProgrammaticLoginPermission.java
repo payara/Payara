@@ -37,27 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 import java.security.BasicPermission;
 
-
 /**
  * Permission for using programmatic login.
  *
- * <P>This permission is used by ProgrammaticLogin to verify whether
- * the invoking code has been granted the use of this interface.
+ * <P>
+ * This permission is used by ProgrammaticLogin to verify whether the invoking code has been granted the use of this
+ * interface.
  *
- * <P>The name of this permission is the name of the method being invoked.
+ * <P>
+ * The name of this permission is the name of the method being invoked.
  *
  */
-public class BaseProgrammaticLoginPermission extends BasicPermission
-{
-    public BaseProgrammaticLoginPermission(String name)
-    {
+public class BaseProgrammaticLoginPermission extends BasicPermission {
+
+    private static final long serialVersionUID = 2245433932787671669L;
+
+    public BaseProgrammaticLoginPermission(String name) {
         super(name);
     }
-
 
 }

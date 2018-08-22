@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 /*
  * AuditModule.java
  *
@@ -47,34 +47,36 @@
 package com.sun.enterprise.security;
 
 import java.util.Properties;
+
 /**
- * Base class that should be extended by all classes that wish to provide their
- * own Audit support.
- * @author  Harpreet Singh
+ * Base class that should be extended by all classes that wish to provide their own Audit support.
+ *
+ * @author Harpreet Singh
  * @version
  */
 public abstract class BaseAuditModule {
-    protected Properties props = null;
-    /** 
-     * Method is invoked at server startup, during AuditModule initialization.
-     * If method returns without any exception then S1AS assumes that the module
-     * is ready to serve any requests.
-     * @param props the properties for the AuditModule. These properties are
-     * defined in the domain.xml
+    protected Properties props;
+
+    /**
+     * Method is invoked at server startup, during AuditModule initialization. If method returns without any exception then
+     * Payara assumes that the module is ready to serve any requests.
+     *
+     * @param props the properties for the AuditModule. These properties are defined in the domain.xml
      */
     public void init(Properties props) {
         this.props = props;
     }
-    
+
     /**
      * Invoked post authentication request for a user in a given realm
+     *
      * @param user username for whom the authentication request was made
      * @param realm the realm name under which the user is authenticated.
      * @param success the status of the authentication
      */
     public void authentication(String user, String realm, boolean success) {
     }
-    
+
     /**
      * Invoked upon completion of the server startup
      */

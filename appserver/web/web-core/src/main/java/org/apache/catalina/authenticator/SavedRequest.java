@@ -55,9 +55,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.authenticator;
-
 
 import javax.servlet.http.Cookie;
 import java.util.ArrayList;
@@ -68,25 +67,19 @@ import java.util.Locale;
 import org.glassfish.grizzly.http.util.ByteChunk;
 
 /**
- * Object that saves the critical information from a request so that
- * form-based authentication can reproduce it once the user has been
- * authenticated.
+ * Object that saves the critical information from a request so that form-based authentication can reproduce it once the
+ * user has been authenticated.
  * <p>
- * <b>IMPLEMENTATION NOTE</b> - It is assumed that this object is accessed
- * only from the context of a single thread, so no synchronization around
- * internal collection classes is performed.
+ * <b>IMPLEMENTATION NOTE</b> - It is assumed that this object is accessed only from the context of a single thread, so
+ * no synchronization around internal collection classes is performed.
  * <p>
- * <b>FIXME</b> - Currently, this object has no mechanism to save or
- * restore the data content of the request, although it does save
- * request parameters so that a POST transaction can be faithfully
- * duplicated.
+ * <b>FIXME</b> - Currently, this object has no mechanism to save or restore the data content of the request, although
+ * it does save request parameters so that a POST transaction can be faithfully duplicated.
  *
  * @author Craig R. McClanahan
  * @version $Revision: 1.2 $ $Date: 2005/12/08 01:27:28 $
  */
-
 public final class SavedRequest {
-
 
     /**
      * The set of Cookies associated with this Request.
@@ -101,15 +94,11 @@ public final class SavedRequest {
         return (cookies.iterator());
     }
 
-
     /**
-     * The set of Headers associated with this Request.  Each key is a header
-     * name, while the value is a ArrayList containing one or more actual
-     * values for this header.  The values are returned as an Iterator when
-     * you ask for them.
+     * The set of Headers associated with this Request. Each key is a header name, while the value is a ArrayList containing
+     * one or more actual values for this header. The values are returned as an Iterator when you ask for them.
      */
-    private HashMap<String, ArrayList<String>> headers =
-        new HashMap<String, ArrayList<String>>();
+    private HashMap<String, ArrayList<String>> headers = new HashMap<String, ArrayList<String>>();
 
     public void addHeader(String name, String value) {
         ArrayList<String> values = (ArrayList<String>) headers.get(name);
@@ -132,7 +121,6 @@ public final class SavedRequest {
             return (values.iterator());
     }
 
-
     /**
      * The set of Locales associated with this Request.
      */
@@ -145,7 +133,6 @@ public final class SavedRequest {
     public Iterator<Locale> getLocales() {
         return (locales.iterator());
     }
-
 
     /**
      * The request method used on this Request.
@@ -160,15 +147,11 @@ public final class SavedRequest {
         this.method = method;
     }
 
-
-
     /**
-     * The set of request parameters associated with this Request.  Each
-     * entry is keyed by the parameter name, pointing at a String array of
-     * the corresponding values.
+     * The set of request parameters associated with this Request. Each entry is keyed by the parameter name, pointing at a
+     * String array of the corresponding values.
      */
-    private HashMap<String, String[]> parameters =
-        new HashMap<String, String[]>();
+    private HashMap<String, String[]> parameters = new HashMap<String, String[]>();
 
     public void addParameter(String name, String values[]) {
         parameters.put(name, values);
@@ -182,7 +165,6 @@ public final class SavedRequest {
         return parameters.get(name);
     }
 
-
     /**
      * The query string associated with this Request.
      */
@@ -195,7 +177,6 @@ public final class SavedRequest {
     public void setQueryString(String queryString) {
         this.queryString = queryString;
     }
-
 
     /**
      * The request URI associated with this Request.
