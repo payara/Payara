@@ -100,8 +100,8 @@ public class RetryInterceptor {
             
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled
             if (faultToleranceService.isFaultToleranceEnabled(appName, config)
-                    && ((Boolean) FaultToleranceCdiUtils.getOverrideValue(
-                            config, Retry.class, "enabled", invocationContext, Boolean.class)
+                    && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
+                            config, Retry.class, invocationContext, Boolean.class)
                             .orElse(Boolean.TRUE))) {
                 logger.log(Level.FINER, "Proceeding invocation with retry semantics");
                 proceededInvocationContext = retry(invocationContext);
@@ -114,8 +114,8 @@ public class RetryInterceptor {
         } catch (Exception ex) {
             Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
             
-            if (fallback != null && ((Boolean) FaultToleranceCdiUtils.getOverrideValue(
-                    config, Fallback.class, "enabled", invocationContext, Boolean.class)
+            if (fallback != null && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
+                    config, Fallback.class, invocationContext, Boolean.class)
                     .orElse(Boolean.TRUE))) {
                 logger.log(Level.FINE, "Fallback annotation found on method - falling back from Retry");
                 FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);

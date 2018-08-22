@@ -69,7 +69,7 @@ public class FaultToleranceCdiUtils {
     public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, 
             InvocationContext invocationContext) {
         A annotation = null;
-        Class<?> annotatedClass = invocationContext.getMethod().getDeclaringClass();
+        Class<?> annotatedClass = getAnnotatedMethodClass(invocationContext, annotationClass);
         
         logger.log(Level.FINER, "Attempting to get annotation {0} from {1}", 
                 new String[]{annotationClass.getSimpleName(), invocationContext.getMethod().getName()});
@@ -171,7 +171,8 @@ public class FaultToleranceCdiUtils {
         // Get the annotation, method, and class names
         String annotationName = annotationClass.getSimpleName();
         String annotatedMethodName = invocationContext.getMethod().getName();
-        String annotatedClassCanonicalName = invocationContext.getMethod().getDeclaringClass().getCanonicalName();
+        String annotatedClassCanonicalName = getAnnotatedMethodClassCanonicalName(
+                getAnnotatedMethodClass(invocationContext, annotationClass));
         
         // Check if there's a config override
         if (config != null) {
@@ -184,13 +185,14 @@ public class FaultToleranceCdiUtils {
             if (!value.isPresent()) {
                 logger.log(Level.FINER, "No config override for annotated method, checking if the method is "
                         + "annotated directly...");
-                // If the method is annotated directly, check for a class or global level override and return
+                // If the method is annotated directly, check for a global level override and return
                 if (invocationContext.getMethod().getAnnotation(annotationClass) != null) {
-                    value = checkAnnotatedMethodForOverrides(annotatedClassCanonicalName, annotationName, parameterName, 
-                            parameterType, config);
+                    logger.log(Level.FINER, "Method is annotated directly, checking for global override...");
+                    // The only thing that should override a method-level annotation is a method or global-level config
+                    return checkForGlobalLevelOverride(annotationName, parameterName, parameterType, config);
                 }
                 
-                // If there wasn't a config override for the method, check if there's one for the class
+                // If the method wasn't annotated directly, check if there's an override for the class
                 if (!value.isPresent()) {
                     value = checkForClassLevelOverride(annotatedClassCanonicalName, annotationName, parameterName, 
                             parameterType, config);
@@ -208,6 +210,52 @@ public class FaultToleranceCdiUtils {
         return value;
     }
     
+    public static <A extends Annotation> Optional getEnabledOverrideValue(Config config, Class<A> annotationClass,
+            InvocationContext invocationContext, Class parameterType) {
+        Optional value = Optional.empty();
+        
+        // Get the annotation, method, and class names
+        String annotationName = annotationClass.getSimpleName();
+        String annotatedMethodName = invocationContext.getMethod().getName();
+        String annotatedClassCanonicalName = getAnnotatedMethodClassCanonicalName(
+                getAnnotatedMethodClass(invocationContext, annotationClass));
+        
+        // Check if there's a config override
+        if (config != null) {
+            logger.log(Level.FINER, "Getting config override for annotated method...");
+            
+            // Check if there's a config override for this specific method
+            value = config.getOptionalValue(annotatedClassCanonicalName + "/" 
+                    + annotatedMethodName + "/" + annotationName + "/" + "enabled", parameterType);
+            
+            if (!value.isPresent()) {
+                logger.log(Level.FINER, "No config override for annotated method, checking if the method is "
+                        + "annotated directly...");
+                // If the method is annotated directly, check for a cless or global-level override
+                if (invocationContext.getMethod().getAnnotation(annotationClass) != null) {
+                    logger.log(Level.FINER, "Method is annotated directly, checking for class or global override...");
+                    checkForMethodLevelOverride(annotatedClassCanonicalName, annotationName, "enabled", 
+                            parameterType, config);
+                }
+                
+                // If the method wasn't annotated directly, check if there's an override for the class
+                if (!value.isPresent()) {
+                    value = checkForClassLevelOverride(annotatedClassCanonicalName, annotationName, "enabled", 
+                            parameterType, config);
+                    
+                    // If there wasn't a config override for the class, check if there's a global one
+                    if (!value.isPresent()) {
+                        value = checkForGlobalLevelOverride(annotationName, "enabled", parameterType, config);
+                    }
+                }
+            }
+        } else {
+            logger.log(Level.FINE, "No config to get override parameters from.");
+        }
+        
+        return value;
+    }
+    
     private static void logOverride(Optional value, String level) {
         if (value.isPresent()) {
             logger.log(Level.FINER, "{0} override found.", level);
@@ -215,17 +263,16 @@ public class FaultToleranceCdiUtils {
             logger.log(Level.FINER, "No config overrides.");
         }
     }
- 
-    private static Optional checkAnnotatedMethodForOverrides(String annotatedClassCanonicalName, String annotationName,
+    
+    private static Optional checkForMethodLevelOverride(String annotatedClassCanonicalName, String annotationName, 
             String parameterName, Class parameterType, Config config) {
-        logger.log(Level.FINER, "Method is annotated directly, checking for class-level override.");
         Optional value = checkForClassLevelOverride(annotatedClassCanonicalName, annotationName, parameterName, 
                 parameterType, config);
         
         if (!value.isPresent()) {
-            value = checkForGlobalLevelOverride(annotationName, parameterName, parameterType, config);
+            checkForGlobalLevelOverride(annotationName, parameterName, parameterType, config);
         }
-                    
+        
         return value;
     }
     
@@ -247,5 +294,36 @@ public class FaultToleranceCdiUtils {
         logOverride(value, "Global");
         
         return value;
+    }
+    
+    /**
+     * Returns either the CDI Proxy class (for cases where a class extends another without overriding the target method), 
+     * or the actual declaring class if the annotation isn't present on the proxy class.
+     * @param <A> The class of the annotation
+     * @param invocationContext The context of the method invocation
+     * @param annotationClass The class of the annotation
+     * @return 
+     */
+    public static <A extends Annotation> Class getAnnotatedMethodClass(InvocationContext invocationContext, 
+            Class<A> annotationClass) {
+        Class targetClass = invocationContext.getTarget().getClass();
+        
+        if (targetClass.isAnnotationPresent(annotationClass)) {
+            return targetClass;
+        } else {
+            return invocationContext.getMethod().getDeclaringClass();
+        }
+    }
+    
+    public static <A extends Annotation> String getAnnotatedMethodClassCanonicalName(Class annotatedClass) {
+        String canonicalClassName = annotatedClass.getCanonicalName();
+        
+        // If the class was a proxy from Weld, cut away the appended gubbins
+        // Author Note: There's probably a better way of doing this...
+        if (canonicalClassName.contains("$Proxy$_$$_WeldSubclass")) {
+            return canonicalClassName.split("\\$Proxy\\$_\\$\\$_WeldSubclass")[0];
+        } else {
+            return canonicalClassName;
+        }
     }
 }

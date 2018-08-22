@@ -102,8 +102,8 @@ public class BulkheadInterceptor implements Serializable {
             
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled
             if (faultToleranceService.isFaultToleranceEnabled(appName, config)
-                    && ((Boolean) FaultToleranceCdiUtils.getOverrideValue(
-                            config, Bulkhead.class, "enabled", invocationContext, Boolean.class)
+                    && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
+                            config, Bulkhead.class, invocationContext, Boolean.class)
                             .orElse(Boolean.TRUE))) {
                 logger.log(Level.FINER, "Proceeding invocation with bulkhead semantics");
                 proceededInvocationContext = bulkhead(invocationContext);
@@ -125,8 +125,8 @@ public class BulkheadInterceptor implements Serializable {
                         invocationContext);
 
                 // If the method was annotated with Fallback, attempt it, otherwise just propagate the exception upwards
-                if (fallback != null && ((Boolean) FaultToleranceCdiUtils.getOverrideValue(
-                        config, Fallback.class, "enabled", invocationContext, Boolean.class)
+                if (fallback != null && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
+                        config, Fallback.class, invocationContext, Boolean.class)
                         .orElse(Boolean.TRUE))) {
                     logger.log(Level.FINE, "Fallback annotation found on method, and no Retry annotation - "
                             + "falling back from Bulkhead");

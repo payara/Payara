@@ -99,7 +99,8 @@ public class FallbackPolicy {
             if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
                 logger.log(Level.FINE, "Using fallback method: {0}", fallbackMethod);
 
-                fallbackInvocationContext = invocationContext.getMethod().getDeclaringClass()
+                fallbackInvocationContext = FaultToleranceCdiUtils
+                        .getAnnotatedMethodClass(invocationContext, Fallback.class)
                         .getDeclaredMethod(fallbackMethod, invocationContext.getMethod().getParameterTypes())
                         .invoke(invocationContext.getTarget(), invocationContext.getParameters());
             } else {
