@@ -287,7 +287,7 @@
                 <jdk>1.8</jdk>
             </activation>
             <properties>
-                <version.jersey>2.25.1.payara-p3</version.jersey>
+                <version.jersey>2.25.1.payara-p4</version.jersey>
             </properties>
         </profile>
     </profiles>

@@ -1239,7 +1239,7 @@
                 <jdk>1.8</jdk>
             </activation>
             <properties>
-                <jersey.version>2.25.1.payara-p3</jersey.version>
+                <jersey.version>2.25.1.payara-p4</jersey.version>
             </properties>
         </profile>
         <profile>
