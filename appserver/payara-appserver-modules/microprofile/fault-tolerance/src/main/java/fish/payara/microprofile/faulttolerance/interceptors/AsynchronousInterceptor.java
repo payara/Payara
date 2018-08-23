@@ -102,10 +102,11 @@ public class AsynchronousInterceptor implements Serializable {
         try {
             String appName = faultToleranceService.getApplicationName(invocationManager, invocationContext);
             
-            // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled
+            // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled for 
+            // this method
             if (faultToleranceService.isFaultToleranceEnabled(appName, config)
                     && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
-                            config, Asynchronous.class, invocationContext, Boolean.class)
+                            config, Asynchronous.class, invocationContext)
                             .orElse(Boolean.TRUE))) {
                 Callable callable = () -> {
                     return invocationContext.proceed();
@@ -123,9 +124,10 @@ public class AsynchronousInterceptor implements Serializable {
             // We should only get here if executing synchronously, as the exception wouldn't get thrown in this thread
             Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
             
-            // If the method was annotated with Fallback, attempt it, otherwise just propagate the exception upwards
+            // If the method was annotated with Fallback and the annotation is enabled, attempt it, otherwise just 
+            // propagate the exception upwards
             if (fallback != null && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
-                    config, Fallback.class, invocationContext, Boolean.class)
+                    config, Fallback.class, invocationContext)
                     .orElse(Boolean.TRUE))) {
                 logger.log(Level.FINE, "Fallback annotation found on method - falling back from Asynchronous");
                 FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);

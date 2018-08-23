@@ -210,8 +210,18 @@ public class FaultToleranceCdiUtils {
         return value;
     }
     
+    /**
+     * Gets overriding config enabled parameter value if it's present from an invocation context. 
+     * This follows a different priority logic than other parameter overrides.
+     * 
+     * @param <A> The annotation type
+     * @param config The config to get the overriding enabled value from
+     * @param annotationClass The annotation class
+     * @param invocationContext The context of the invoking request
+     * @return 
+     */
     public static <A extends Annotation> Optional getEnabledOverrideValue(Config config, Class<A> annotationClass,
-            InvocationContext invocationContext, Class parameterType) {
+            InvocationContext invocationContext) {
         Optional value = Optional.empty();
         
         // Get the annotation, method, and class names
@@ -226,7 +236,7 @@ public class FaultToleranceCdiUtils {
             
             // Check if there's a config override for this specific method
             value = config.getOptionalValue(annotatedClassCanonicalName + "/" 
-                    + annotatedMethodName + "/" + annotationName + "/" + "enabled", parameterType);
+                    + annotatedMethodName + "/" + annotationName + "/" + "enabled", Boolean.class);
             
             if (!value.isPresent()) {
                 logger.log(Level.FINER, "No config override for annotated method, checking if the method is "
@@ -234,18 +244,17 @@ public class FaultToleranceCdiUtils {
                 // If the method is annotated directly, check for a cless or global-level override
                 if (invocationContext.getMethod().getAnnotation(annotationClass) != null) {
                     logger.log(Level.FINER, "Method is annotated directly, checking for class or global override...");
-                    checkForMethodLevelOverride(annotatedClassCanonicalName, annotationName, "enabled", 
-                            parameterType, config);
+                    checkAnnotatedMethodForEnabledOverride(annotatedClassCanonicalName, annotationName, config);
                 }
                 
                 // If the method wasn't annotated directly, check if there's an override for the class
                 if (!value.isPresent()) {
                     value = checkForClassLevelOverride(annotatedClassCanonicalName, annotationName, "enabled", 
-                            parameterType, config);
+                            Boolean.class, config);
                     
                     // If there wasn't a config override for the class, check if there's a global one
                     if (!value.isPresent()) {
-                        value = checkForGlobalLevelOverride(annotationName, "enabled", parameterType, config);
+                        value = checkForGlobalLevelOverride(annotationName, "enabled", Boolean.class, config);
                     }
                 }
             }
@@ -256,6 +265,11 @@ public class FaultToleranceCdiUtils {
         return value;
     }
     
+    /**
+     * Helper method that logs whether an override was found.
+     * @param value The Optional value to check if an override was found for
+     * @param level A String denoting the level of override you were checking for
+     */
     private static void logOverride(Optional value, String level) {
         if (value.isPresent()) {
             logger.log(Level.FINER, "{0} override found.", level);
@@ -264,18 +278,35 @@ public class FaultToleranceCdiUtils {
         }
     }
     
-    private static Optional checkForMethodLevelOverride(String annotatedClassCanonicalName, String annotationName, 
-            String parameterName, Class parameterType, Config config) {
-        Optional value = checkForClassLevelOverride(annotatedClassCanonicalName, annotationName, parameterName, 
-                parameterType, config);
+    /**
+     * Helper method that checks if a directly annotated method has a class or global-level override for the enabled 
+     * parameter. This gets its own method as the enabled parameter has a different override priority.
+     * @param annotatedClassCanonicalName The canonical name of the annotated class
+     * @param annotationName The name of the annotation
+     * @param config The config to get the overriding enabled value from
+     * @return An overriding enabled value if there is one
+     */
+    private static Optional checkAnnotatedMethodForEnabledOverride(String annotatedClassCanonicalName, 
+            String annotationName, Config config) {
+        Optional value = checkForClassLevelOverride(annotatedClassCanonicalName, annotationName, "enabled", 
+                Boolean.class, config);
         
         if (!value.isPresent()) {
-            checkForGlobalLevelOverride(annotationName, parameterName, parameterType, config);
+            checkForGlobalLevelOverride(annotationName,  "enabled", Boolean.class, config);
         }
         
         return value;
     }
     
+    /**
+     * Helper method that checks if there is an override for a parameter at the class level.
+     * @param annotatedClassCanonicalName The canonical name of the annotated class
+     * @param annotationName The name of the annotation
+     * @param parameterName The name of the parameter
+     * @param parameterType The parameter class
+     * @param config The config to get the overriding value from
+     * @return An overriding value for the provided parameter if there is one
+     */
     private static Optional checkForClassLevelOverride(String annotatedClassCanonicalName, String annotationName, 
             String parameterName, Class parameterType, Config config) {
         logger.log(Level.FINER, "No config override for annotated method, getting config override for the "
@@ -287,6 +318,14 @@ public class FaultToleranceCdiUtils {
         return value;
     }
     
+    /**
+     * Helper method that checks if there is an override for a parameter at the global level.
+     * @param annotationName The name of the annotation
+     * @param parameterName The name of the parameter
+     * @param parameterType The parameter class
+     * @param config The config to get the overriding value from
+     * @return 
+     */
     private static Optional checkForGlobalLevelOverride(String annotationName, String parameterName, Class parameterType, 
             Config config) {
         logger.log(Level.FINER, "No config override for annotated class, checking for global override.");
@@ -302,7 +341,7 @@ public class FaultToleranceCdiUtils {
      * @param <A> The class of the annotation
      * @param invocationContext The context of the method invocation
      * @param annotationClass The class of the annotation
-     * @return 
+     * @return  The class of the annotated method
      */
     public static <A extends Annotation> Class getAnnotatedMethodClass(InvocationContext invocationContext, 
             Class<A> annotationClass) {
@@ -315,6 +354,13 @@ public class FaultToleranceCdiUtils {
         }
     }
     
+    /**
+     * Helper method that gets the canonical name of an annotated class. This is used to strip out any Weld proxy
+     * naming that gets appended to the real class name.
+     * @param <A> The class of the annotation
+     * @param annotatedClass The class of the annotation
+     * @return The canonical name of the annotated method's class
+     */
     public static <A extends Annotation> String getAnnotatedMethodClassCanonicalName(Class annotatedClass) {
         String canonicalClassName = annotatedClass.getCanonicalName();
         

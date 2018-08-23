@@ -99,15 +99,14 @@ public class CircuitBreakerInterceptor implements Serializable {
             logger.log(Level.INFO, "No config could be found", ex);
         }
         
-        // Attempt to proceed the invocation with CircuitBreaker semantics if Fault Tolerance is enabled, and if
-        // this particular method hasn't been excluded
+        // Attempt to proceed the invocation with CircuitBreaker semantics if Fault Tolerance is enabled for this method
         try {
             String appName = faultToleranceService.getApplicationName(invocationManager, invocationContext);
             
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled
             if (faultToleranceService.isFaultToleranceEnabled(appName, config)
                     && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
-                            config, CircuitBreaker.class, invocationContext, Boolean.class)
+                            config, CircuitBreaker.class, invocationContext)
                             .orElse(Boolean.TRUE))) {
                 logger.log(Level.FINER, "Proceeding invocation with circuitbreaker semantics");
                 proceededInvocationContext = circuitBreak(invocationContext);
@@ -127,8 +126,9 @@ public class CircuitBreakerInterceptor implements Serializable {
             } else {
                 Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
 
+                // Only fall back if the annotation hasn't been disabled
                 if (fallback != null && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
-                        config, Fallback.class, invocationContext, Boolean.class)
+                        config, Fallback.class, invocationContext)
                         .orElse(Boolean.TRUE))) {
                     logger.log(Level.FINE, "Fallback annotation found on method, and no Retry annotation - "
                             + "falling back from CircuitBreaker");
