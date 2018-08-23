@@ -53,6 +53,7 @@ import org.eclipse.microprofile.faulttolerance.ExecutionContext;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
 import javax.enterprise.inject.spi.CDI;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 
@@ -93,7 +94,11 @@ public class FallbackPolicy {
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
                 .getService(InvocationManager.class);
         faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("executeFallbackMethod"),
-                invocationManager, invocationContext);    
+                invocationManager, invocationContext);
+        
+        MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
+        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
+                Fallback.class);
         
         try {
             if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
@@ -103,6 +108,7 @@ public class FallbackPolicy {
                         .getAnnotatedMethodClass(invocationContext, Fallback.class)
                         .getDeclaredMethod(fallbackMethod, invocationContext.getMethod().getParameterTypes())
                         .invoke(invocationContext.getTarget(), invocationContext.getParameters());
+                metricRegistry.counter("ft." + fullMethodSignature + ".fallback.calls.total").inc();
             } else {
                 logger.log(Level.FINE, "Using fallback class: {0}", fallbackClass.getName());
 
@@ -112,7 +118,13 @@ public class FallbackPolicy {
                 fallbackInvocationContext = fallbackClass
                         .getDeclaredMethod(FALLBACK_HANDLER_METHOD_NAME, ExecutionContext.class)
                         .invoke(CDI.current().select(fallbackClass).get(), executionContext);
+                metricRegistry.counter("ft." + fullMethodSignature + ".fallback.calls.total").inc();
             }
+        } catch (Exception ex) {
+            // Increment the failure counter metric
+            metricRegistry.counter("ft." + fullMethodSignature + ".invocations.failed.total").inc();
+            
+            throw ex;
         } finally {
             faultToleranceService.endFaultToleranceSpan();
         }

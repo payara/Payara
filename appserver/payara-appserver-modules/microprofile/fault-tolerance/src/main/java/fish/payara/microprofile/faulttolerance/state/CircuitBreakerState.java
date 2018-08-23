@@ -59,6 +59,7 @@ public class CircuitBreakerState {
     private final BlockingQueue<Boolean> closedResultsQueue;
     private volatile int halfOpenSuccessfulResultsCounter;
     private volatile CircuitState circuitState = CircuitState.CLOSED;
+    private volatile long timer = System.nanoTime();
     
     public CircuitBreakerState(int requestVolumeThreshold) {
         closedResultsQueue = new LinkedBlockingQueue<>(requestVolumeThreshold);
@@ -75,7 +76,7 @@ public class CircuitBreakerState {
     
     /**
      * Sets the CircuitBreaker state to the provided enum value.
-     * @param circuitState The state to set the CIrcuitBreaker to.
+     * @param circuitState The state to set the CircuitBreaker to.
      */
     public void setCircuitState(CircuitState circuitState) {
         this.circuitState = circuitState;
@@ -148,5 +149,13 @@ public class CircuitBreakerState {
         }
         
         return over;
+    }
+    
+    public long getTimer() {
+        return timer;
+    }
+    
+    public void resetTimer() {
+        timer = System.nanoTime();
     }
 }

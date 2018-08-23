@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import javax.annotation.Priority;
 import javax.enterprise.concurrent.ManagedScheduledExecutorService;
 import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
@@ -59,10 +60,13 @@ import javax.interceptor.InvocationContext;
 import javax.naming.NamingException;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.faulttolerance.Bulkhead;
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.faulttolerance.exceptions.TimeoutException;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 
@@ -132,6 +136,12 @@ public class TimeoutInterceptor {
                     FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
                     proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
                 } else {
+                    // Increment the failure counter metric
+                    MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
+                    String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
+                            Fallback.class);
+                    metricRegistry.counter("ft." + fullMethodSignature + ".invocations.failed.total").inc();
+                    
                     throw ex;
                 }
             }
@@ -149,6 +159,17 @@ public class TimeoutInterceptor {
     private Object timeout(InvocationContext invocationContext) throws Exception {
         Object proceededInvocationContext = null;
         Timeout timeout = FaultToleranceCdiUtils.getAnnotation(beanManager, Timeout.class, invocationContext);
+        
+        MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
+        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
+                Timeout.class);
+        
+        // Only increment the invocations metric if the Retry, Bulkhead, and CircuitBreaker annotations aren't present
+        if (FaultToleranceCdiUtils.getAnnotation(beanManager, Bulkhead.class, invocationContext) == null
+                && FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext) == null
+                && FaultToleranceCdiUtils.getAnnotation(beanManager, CircuitBreaker.class, invocationContext) == null) {
+            metricRegistry.counter("ft." + fullMethodSignature + ".invocations.total").inc();
+        }
         
         Config config = null;
         try {
@@ -168,6 +189,7 @@ public class TimeoutInterceptor {
         Future timeoutFuture = null;
         long timeoutMillis = Duration.of(value, unit).toMillis();
         long timeoutTime = System.currentTimeMillis() + timeoutMillis;
+        long executionStartTime = System.nanoTime();
         
         try {
             timeoutFuture = startTimeout(timeoutMillis);
@@ -175,11 +197,23 @@ public class TimeoutInterceptor {
             stopTimeout(timeoutFuture);
 
             if (System.currentTimeMillis() > timeoutTime) {
+                // Record the timeout for MP Metrics
+                metricRegistry.counter("ft." + fullMethodSignature + ".timeout.callsTimedOut.total").inc();
+                
                 logger.log(Level.FINE, "Execution timed out");
                 throw new TimeoutException();
             }
+            
+            // Record the execution time for MP Metrics
+            metricRegistry.histogram("ft." + fullMethodSignature + ".timeout.executionDuration").update(
+                    System.nanoTime() - executionStartTime);
+            // Record the successfuly completion for MP Metrics
+            metricRegistry.counter("ft." + fullMethodSignature + ".timeout.callsNotTimedOut.total").inc();
         } catch (InterruptedException ie) {
             if (System.currentTimeMillis() > timeoutTime) {
+                // Record the timeout for MP Metrics
+                metricRegistry.counter("ft." + fullMethodSignature + ".timeout.callsTimedOut.total").inc();
+                
                 logger.log(Level.FINE, "Execution timed out");
                 throw new TimeoutException(ie);
             }

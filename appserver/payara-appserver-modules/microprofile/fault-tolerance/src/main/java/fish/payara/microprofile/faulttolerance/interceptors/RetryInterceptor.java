@@ -58,10 +58,12 @@ import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 
 import fish.payara.notification.requesttracing.RequestTraceSpan;
+import javax.enterprise.inject.spi.CDI;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 
@@ -123,6 +125,12 @@ public class RetryInterceptor {
                 FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
                 proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
             } else {
+                // Increment the failure counter metric
+                MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
+                String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
+                        Fallback.class);
+                metricRegistry.counter("ft." + fullMethodSignature + ".invocations.failed.total").inc();
+                
                 throw ex;
             }
         }
@@ -146,8 +154,16 @@ public class RetryInterceptor {
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
                 .getService(InvocationManager.class);
         
+        MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
+        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
+                Retry.class);
+        
+        // Increment the invocations metric
+        metricRegistry.counter("ft." + fullMethodSignature + ".invocations.total").inc();
+        
         try {
             proceededInvocationContext = invocationContext.proceed();
+            metricRegistry.counter("ft." + fullMethodSignature + ".retry.callsSucceededNotRetried.total").inc();
         } catch (Exception ex) {
             Config config = null;
             try {
@@ -243,8 +259,11 @@ public class RetryInterceptor {
                     while (System.currentTimeMillis() < timeoutTime) {
                         try {
                             proceededInvocationContext = invocationContext.proceed();
+                            metricRegistry.counter("ft." + fullMethodSignature + ".retry.callsSucceededRetried.total")
+                                    .inc();
                             break;
                         } catch (Exception caughtException) {
+                            metricRegistry.counter("ft." + fullMethodSignature + ".retry.retries.total").inc();
                             retryException = caughtException;
                             if (!shouldRetry(retryOn, abortOn, caughtException)) {
                                 break;
@@ -266,8 +285,11 @@ public class RetryInterceptor {
                     while (true) {
                         try {
                             proceededInvocationContext = invocationContext.proceed();
+                            metricRegistry.counter("ft." + fullMethodSignature + ".retry.callsSucceededRetried.total")
+                                    .inc();
                             break;
                         } catch (Exception caughtException) {
+                            metricRegistry.counter("ft." + fullMethodSignature + ".retry.retries.total").inc();
                             retryException = caughtException;
                             if (!shouldRetry(retryOn, abortOn, caughtException)) {
                                 break;
@@ -291,8 +313,11 @@ public class RetryInterceptor {
                     while (maxRetries > 0 && System.currentTimeMillis() < timeoutTime) {
                         try {
                             proceededInvocationContext = invocationContext.proceed();
+                            metricRegistry.counter("ft." + fullMethodSignature + ".retry.callsSucceededRetried.total")
+                                    .inc();
                             break;
                         } catch (Exception caughtException) {
+                            metricRegistry.counter("ft." + fullMethodSignature + ".retry.retries.total").inc();
                             retryException = caughtException;
                             if (!shouldRetry(retryOn, abortOn, caughtException)) {
                                 break;
@@ -316,8 +341,11 @@ public class RetryInterceptor {
                     while (maxRetries > 0) {
                         try {
                             proceededInvocationContext = invocationContext.proceed();
+                            metricRegistry.counter("ft." + fullMethodSignature + ".retry.callsSucceededRetried.total")
+                                    .inc();
                             break;
                         } catch (Exception caughtException) {
+                            metricRegistry.counter("ft." + fullMethodSignature + ".retry.retries.total").inc();
                             retryException = caughtException;
                             if (!shouldRetry(retryOn, abortOn, caughtException)) {
                                 break;
@@ -342,6 +370,7 @@ public class RetryInterceptor {
             }
 
             if (proceededInvocationContext == null) {
+                metricRegistry.counter("ft." + fullMethodSignature + ".retry.callsFailed.total").inc();
                 throw retryException;
             }
         }

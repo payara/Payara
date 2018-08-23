@@ -372,4 +372,17 @@ public class FaultToleranceCdiUtils {
             return canonicalClassName;
         }
     }
+    
+    /**
+     * Gets the full method signature from an invocation context, stripping out any Weld proxy name gubbins.
+     * @param <A> The class of the annotation
+     * @param invocationContext The context of the method invocation
+     * @param annotationClass The class of the annotation
+     * @return 
+     */
+    public static <A extends Annotation> String getFullAnnotatedMethodSignature(InvocationContext invocationContext,
+            Class<A> annotationClass) {
+        return getAnnotatedMethodClassCanonicalName(getAnnotatedMethodClass(invocationContext, annotationClass)) + "." 
+                + invocationContext.getMethod().getName();
+    }
 }
