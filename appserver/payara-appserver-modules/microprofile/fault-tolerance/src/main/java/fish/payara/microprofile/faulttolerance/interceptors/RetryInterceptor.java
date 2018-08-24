@@ -90,6 +90,10 @@ public class RetryInterceptor {
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
                 .getService(InvocationManager.class);
         
+        MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
+        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
+                Retry.class);
+        
         Config config = null;
         try {
             config = ConfigProvider.getConfig();
@@ -106,6 +110,9 @@ public class RetryInterceptor {
                     && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
                             config, Retry.class, invocationContext)
                             .orElse(Boolean.TRUE))) {
+                // Increment the invocations metric
+                metricRegistry.counter("ft." + fullMethodSignature + ".invocations.total").inc();
+                
                 logger.log(Level.FINER, "Proceeding invocation with retry semantics");
                 proceededInvocationContext = retry(invocationContext);
             } else {
@@ -126,9 +133,6 @@ public class RetryInterceptor {
                 proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
             } else {
                 // Increment the failure counter metric
-                MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
-                String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
-                        Fallback.class);
                 metricRegistry.counter("ft." + fullMethodSignature + ".invocations.failed.total").inc();
                 
                 throw ex;
@@ -157,9 +161,6 @@ public class RetryInterceptor {
         MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
         String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
                 Retry.class);
-        
-        // Increment the invocations metric
-        metricRegistry.counter("ft." + fullMethodSignature + ".invocations.total").inc();
         
         try {
             proceededInvocationContext = invocationContext.proceed();
@@ -252,18 +253,22 @@ public class RetryInterceptor {
             
             faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("retryMethod"), invocationManager,
                     invocationContext);
+            
+            boolean succeeded = false;
+            
             try {
                 if (maxRetries == -1 && maxDuration > 0) {
                     logger.log(Level.FINER, "Retrying until maxDuration is breached.");
 
                     while (System.currentTimeMillis() < timeoutTime) {
+                        metricRegistry.counter("ft." + fullMethodSignature + ".retry.retries.total").inc();
                         try {
                             proceededInvocationContext = invocationContext.proceed();
+                            succeeded = true;
                             metricRegistry.counter("ft." + fullMethodSignature + ".retry.callsSucceededRetried.total")
                                     .inc();
                             break;
                         } catch (Exception caughtException) {
-                            metricRegistry.counter("ft." + fullMethodSignature + ".retry.retries.total").inc();
                             retryException = caughtException;
                             if (!shouldRetry(retryOn, abortOn, caughtException)) {
                                 break;
@@ -283,13 +288,14 @@ public class RetryInterceptor {
                 } else if (maxRetries == -1 && maxDuration == 0) {
                     logger.log(Level.INFO, "Retrying potentially forever!");
                     while (true) {
+                        metricRegistry.counter("ft." + fullMethodSignature + ".retry.retries.total").inc();
                         try {
                             proceededInvocationContext = invocationContext.proceed();
                             metricRegistry.counter("ft." + fullMethodSignature + ".retry.callsSucceededRetried.total")
                                     .inc();
+                            succeeded = true;
                             break;
                         } catch (Exception caughtException) {
-                            metricRegistry.counter("ft." + fullMethodSignature + ".retry.retries.total").inc();
                             retryException = caughtException;
                             if (!shouldRetry(retryOn, abortOn, caughtException)) {
                                 break;
@@ -311,13 +317,14 @@ public class RetryInterceptor {
                             "Retrying as long as maxDuration ({0}ms) isn''t breached, and no more than {1} times", 
                             new Object[]{Duration.of(maxDuration, durationUnit).toMillis(), maxRetries});
                     while (maxRetries > 0 && System.currentTimeMillis() < timeoutTime) {
+                        metricRegistry.counter("ft." + fullMethodSignature + ".retry.retries.total").inc();
                         try {
                             proceededInvocationContext = invocationContext.proceed();
                             metricRegistry.counter("ft." + fullMethodSignature + ".retry.callsSucceededRetried.total")
                                     .inc();
+                            succeeded = true;
                             break;
                         } catch (Exception caughtException) {
-                            metricRegistry.counter("ft." + fullMethodSignature + ".retry.retries.total").inc();
                             retryException = caughtException;
                             if (!shouldRetry(retryOn, abortOn, caughtException)) {
                                 break;
@@ -339,13 +346,14 @@ public class RetryInterceptor {
                 } else {
                     logger.log(Level.INFO, "Retrying no more than {0} times", maxRetries);
                     while (maxRetries > 0) {
+                        metricRegistry.counter("ft." + fullMethodSignature + ".retry.retries.total").inc();
                         try {
                             proceededInvocationContext = invocationContext.proceed();
                             metricRegistry.counter("ft." + fullMethodSignature + ".retry.callsSucceededRetried.total")
                                     .inc();
+                            succeeded = true;
                             break;
                         } catch (Exception caughtException) {
-                            metricRegistry.counter("ft." + fullMethodSignature + ".retry.retries.total").inc();
                             retryException = caughtException;
                             if (!shouldRetry(retryOn, abortOn, caughtException)) {
                                 break;
@@ -369,7 +377,7 @@ public class RetryInterceptor {
                 faultToleranceService.endFaultToleranceSpan();
             }
 
-            if (proceededInvocationContext == null) {
+            if (!succeeded) {
                 metricRegistry.counter("ft." + fullMethodSignature + ".retry.callsFailed.total").inc();
                 throw retryException;
             }

@@ -93,6 +93,10 @@ public class TimeoutInterceptor {
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
                 .getService(InvocationManager.class);
         
+        MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
+        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
+                Timeout.class);
+        
         Config config = null;
         try {
             config = ConfigProvider.getConfig();
@@ -109,6 +113,14 @@ public class TimeoutInterceptor {
                     && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
                             config, Timeout.class, invocationContext)
                             .orElse(Boolean.TRUE))) {
+                // Only increment the invocations metric if the Retry, Bulkhead, and CircuitBreaker annotations aren't present
+                if (FaultToleranceCdiUtils.getAnnotation(beanManager, Bulkhead.class, invocationContext) == null
+                        && FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext) == null
+                        && FaultToleranceCdiUtils.getAnnotation(
+                                beanManager, CircuitBreaker.class, invocationContext) == null) {
+                    metricRegistry.counter("ft." + fullMethodSignature + ".invocations.total").inc();
+                }
+                
                 logger.log(Level.FINER, "Proceeding invocation with timeout semantics");
                 proceededInvocationContext = timeout(invocationContext);
             } else {
@@ -137,9 +149,6 @@ public class TimeoutInterceptor {
                     proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
                 } else {
                     // Increment the failure counter metric
-                    MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
-                    String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
-                            Fallback.class);
                     metricRegistry.counter("ft." + fullMethodSignature + ".invocations.failed.total").inc();
                     
                     throw ex;
@@ -163,13 +172,6 @@ public class TimeoutInterceptor {
         MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
         String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
                 Timeout.class);
-        
-        // Only increment the invocations metric if the Retry, Bulkhead, and CircuitBreaker annotations aren't present
-        if (FaultToleranceCdiUtils.getAnnotation(beanManager, Bulkhead.class, invocationContext) == null
-                && FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext) == null
-                && FaultToleranceCdiUtils.getAnnotation(beanManager, CircuitBreaker.class, invocationContext) == null) {
-            metricRegistry.counter("ft." + fullMethodSignature + ".invocations.total").inc();
-        }
         
         Config config = null;
         try {
@@ -218,6 +220,15 @@ public class TimeoutInterceptor {
                 throw new TimeoutException(ie);
             }
         } catch (Exception ex) {
+            // Deal with cases where someone has caught the thread.interrupt() and thrown the exception as something else
+            if (ex.getCause() instanceof InterruptedException && System.currentTimeMillis() > timeoutTime) {
+                // Record the timeout for MP Metrics
+                metricRegistry.counter("ft." + fullMethodSignature + ".timeout.callsTimedOut.total").inc();
+                
+                logger.log(Level.FINE, "Execution timed out");
+                throw new TimeoutException(ex);
+            }
+            
             stopTimeout(timeoutFuture);
             throw ex;
         }

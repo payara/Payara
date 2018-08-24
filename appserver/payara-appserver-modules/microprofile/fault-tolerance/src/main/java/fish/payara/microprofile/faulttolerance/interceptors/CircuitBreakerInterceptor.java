@@ -96,6 +96,10 @@ public class CircuitBreakerInterceptor implements Serializable {
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
                 .getService(InvocationManager.class);
         
+        MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
+        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
+                CircuitBreaker.class);
+        
         Config config = null;
         try {
             config = ConfigProvider.getConfig();
@@ -112,6 +116,12 @@ public class CircuitBreakerInterceptor implements Serializable {
                     && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
                             config, CircuitBreaker.class, invocationContext)
                             .orElse(Boolean.TRUE))) {
+                // Only increment the invocations metric if the Retry and Bulkhead annotations aren't present
+                if (FaultToleranceCdiUtils.getAnnotation(beanManager, Bulkhead.class, invocationContext) == null
+                        && FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext) == null) {
+                    metricRegistry.counter("ft." + fullMethodSignature + ".invocations.total").inc();
+                }
+                
                 logger.log(Level.FINER, "Proceeding invocation with circuitbreaker semantics");
                 proceededInvocationContext = circuitBreak(invocationContext);
             } else {
@@ -140,9 +150,6 @@ public class CircuitBreakerInterceptor implements Serializable {
                     proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
                 } else {
                     // Increment the failure counter metric
-                    MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
-                    String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
-                            Fallback.class);
                     metricRegistry.counter("ft." + fullMethodSignature + ".invocations.failed.total").inc();
                     
                     throw ex;
@@ -164,12 +171,6 @@ public class CircuitBreakerInterceptor implements Serializable {
         MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
         String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
                 CircuitBreaker.class);
-        
-        // Only increment the invocations metric if the Retry and Bulkhead annotations aren't present
-        if (FaultToleranceCdiUtils.getAnnotation(beanManager, Bulkhead.class, invocationContext) == null
-                && FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext) == null) {
-            metricRegistry.counter("ft." + fullMethodSignature + ".invocations.total").inc();
-        }
         
         Config config = null;
         try {
@@ -229,10 +230,10 @@ public class CircuitBreakerInterceptor implements Serializable {
                 .get("ft." + fullMethodSignature + ".circuitbreaker.open.total");
 
         Gauge<Long> halfOpenTimeGauge = metricRegistry.getGauges()
-                .get("ft." + fullMethodSignature + ".circuitbreaker.open.total");
+                .get("ft." + fullMethodSignature + ".circuitbreaker.halfOpen.total");
 
         Gauge<Long> closedTimeGauge = metricRegistry.getGauges()
-                .get("ft." + fullMethodSignature + ".circuitbreaker.open.total");
+                .get("ft." + fullMethodSignature + ".circuitbreaker.closed.total");
 
         registerGaugesIfNecessary(openTimeGauge, halfOpenTimeGauge, closedTimeGauge, metricRegistry, circuitBreakerState, 
                 fullMethodSignature);
@@ -304,10 +305,9 @@ public class CircuitBreakerInterceptor implements Serializable {
                         metricRegistry.counter("ft." + fullMethodSignature + ".circuitbreaker.callsFailed.total").inc();
                         
                         // Open the circuit again, and reset the half-open result counter
-                        updateCircuitState(circuitBreakerState, CircuitBreakerState.CircuitState.OPEN, metricRegistry, 
-                                fullMethodSignature);
+                        updateCircuitState(circuitBreakerState, CircuitBreakerState.CircuitState.OPEN);
                         circuitBreakerState.resetHalfOpenSuccessfulResultCounter();
-                        scheduleHalfOpen(delayMillis, circuitBreakerState, metricRegistry, fullMethodSignature);
+                        scheduleHalfOpen(delayMillis, circuitBreakerState);
                     }
                     
                     throw ex;
@@ -324,8 +324,7 @@ public class CircuitBreakerInterceptor implements Serializable {
                     logger.log(Level.FINE, "Number of consecutive successful CircuitBreaker executions is above "
                             + "threshold {0}, closing circuit", successThreshold);
                     
-                    updateCircuitState(circuitBreakerState, CircuitBreakerState.CircuitState.CLOSED, 
-                            metricRegistry, fullMethodSignature);
+                    updateCircuitState(circuitBreakerState, CircuitBreakerState.CircuitState.CLOSED);
                     
                     // Reset the counter for when we next need to use it
                     circuitBreakerState.resetHalfOpenSuccessfulResultCounter();
@@ -346,11 +345,9 @@ public class CircuitBreakerInterceptor implements Serializable {
      * @param circuitBreakerState The CircuitBreakerState to set the state of
      * @throws NamingException If the ManagedScheduledExecutor couldn't be found
      */
-    private void scheduleHalfOpen(long delayMillis, CircuitBreakerState circuitBreakerState, 
-            MetricRegistry metricRegistry, String fullMethodSignature) throws NamingException {
+    private void scheduleHalfOpen(long delayMillis, CircuitBreakerState circuitBreakerState) throws NamingException {
         Runnable halfOpen = () -> {
-            updateCircuitState(circuitBreakerState, CircuitBreakerState.CircuitState.HALF_OPEN, metricRegistry, 
-                    fullMethodSignature);
+            updateCircuitState(circuitBreakerState, CircuitBreakerState.CircuitState.HALF_OPEN);
             logger.log(Level.FINE, "Setting CircuitBreaker state to half open");
         };
 
@@ -408,66 +405,31 @@ public class CircuitBreakerInterceptor implements Serializable {
                     failureThreshold);
 
             // Update the circuit state and metric timers
-            updateCircuitState(circuitBreakerState, CircuitBreakerState.CircuitState.OPEN, metricRegistry, 
-                    fullMethodSignature);
+            updateCircuitState(circuitBreakerState, CircuitBreakerState.CircuitState.OPEN);
             
             // Update the opened metric counter
             metricRegistry.counter("ft." + fullMethodSignature + ".circuitbreaker.opened.total").inc();
 
             // Kick off a thread that will half-open the circuit after the specified delay
-            scheduleHalfOpen(delayMillis, circuitBreakerState, metricRegistry, fullMethodSignature);
+            scheduleHalfOpen(delayMillis, circuitBreakerState);
         }
     }
     
     private void updateCircuitState(CircuitBreakerState circuitBreakerState, 
-            CircuitBreakerState.CircuitState circuitState, MetricRegistry metricRegistry, String fullMethodSignature) {
-        switch (circuitBreakerState.getCircuitState()) {
-            case OPEN:
-                getTimeOpen(metricRegistry, circuitBreakerState, fullMethodSignature);
-                break;
-            case HALF_OPEN:
-                getTimeHalfOpen(metricRegistry, circuitBreakerState, fullMethodSignature);
-                break;
-            case CLOSED:
-                getTimeClosed(metricRegistry, circuitBreakerState, fullMethodSignature);
-                break;
-        }
-        
+            CircuitBreakerState.CircuitState circuitState) {
         circuitBreakerState.setCircuitState(circuitState);
-        circuitBreakerState.resetTimer();
     }
     
-    private Long getTimeOpen(MetricRegistry metricRegistry, CircuitBreakerState circuitBreakerState, 
-            String fullMethodSignature) {
-        if (circuitBreakerState.getCircuitState().equals(CircuitBreakerState.CircuitState.OPEN)) {
-            return (System.nanoTime() - circuitBreakerState.getTimer()) + (Long) metricRegistry.getGauges()
-                    .get("ft." + fullMethodSignature + ".circuitbreaker.open.total").getValue();
-        } else {
-            return (Long) metricRegistry.getGauges().get("ft." + fullMethodSignature + ".circuitbreaker.open.total")
-                    .getValue();
-        }
+    private Long getTimeOpen(CircuitBreakerState circuitBreakerState) {
+        return circuitBreakerState.updateAndGetOpenTime(System.nanoTime());
     }
     
-    private Long getTimeHalfOpen(MetricRegistry metricRegistry, CircuitBreakerState circuitBreakerState, 
-            String fullMethodSignature) {
-        if (circuitBreakerState.getCircuitState().equals(CircuitBreakerState.CircuitState.HALF_OPEN)) {
-            return (System.nanoTime() - circuitBreakerState.getTimer()) + (Long) metricRegistry.getGauges()
-                    .get("ft." + fullMethodSignature + ".circuitbreaker.halfOpen.total").getValue();
-        } else {
-            return (Long) metricRegistry.getGauges().get("ft." + fullMethodSignature + ".circuitbreaker.halfOpen.total")
-                    .getValue();
-        }
+    private Long getTimeHalfOpen(CircuitBreakerState circuitBreakerState) {
+        return circuitBreakerState.updateAndGetHalfOpenTime(System.nanoTime());
     }
     
-    private Long getTimeClosed(MetricRegistry metricRegistry, CircuitBreakerState circuitBreakerState, 
-            String fullMethodSignature) {
-        if (circuitBreakerState.getCircuitState().equals(CircuitBreakerState.CircuitState.CLOSED)) {
-            return (System.nanoTime() - circuitBreakerState.getTimer()) + (Long) metricRegistry.getGauges()
-                    .get("ft." + fullMethodSignature + ".circuitbreaker.closed.total").getValue();
-        } else {
-            return (Long) metricRegistry.getGauges().get("ft." + fullMethodSignature + ".circuitbreaker.closed.total")
-                    .getValue();
-        }
+    private Long getTimeClosed(CircuitBreakerState circuitBreakerState) {
+        return circuitBreakerState.updateAndGetClosedTime(System.nanoTime());
     }
     
     private void registerGaugesIfNecessary(Gauge openTimeGauge, Gauge halfOpenTimeGauge, Gauge closedTimeGauge,
@@ -475,23 +437,23 @@ public class CircuitBreakerInterceptor implements Serializable {
         
         // Register a open time gauge if there isn't one
         if (openTimeGauge == null) {
-            openTimeGauge = () -> getTimeOpen(metricRegistry, circuitBreakerState, fullMethodSignature);
+            openTimeGauge = () -> getTimeOpen(circuitBreakerState);
 
             metricRegistry.register("ft." + fullMethodSignature + ".circuitbreaker.open.total", openTimeGauge);
         }
         
         // Register a open time gauge if there isn't one
         if (halfOpenTimeGauge == null) {
-            halfOpenTimeGauge = () -> getTimeHalfOpen(metricRegistry, circuitBreakerState, fullMethodSignature);
+            halfOpenTimeGauge = () -> getTimeHalfOpen(circuitBreakerState);
 
-            metricRegistry.register("ft." + fullMethodSignature + ".circuitbreaker.open.total", halfOpenTimeGauge);
+            metricRegistry.register("ft." + fullMethodSignature + ".circuitbreaker.halfOpen.total", halfOpenTimeGauge);
         }
         
         // Register a open time gauge if there isn't one
         if (closedTimeGauge == null) {
-            closedTimeGauge = () -> getTimeClosed(metricRegistry, circuitBreakerState, fullMethodSignature);
+            closedTimeGauge = () -> getTimeClosed(circuitBreakerState);
 
-            metricRegistry.register("ft." + fullMethodSignature + ".circuitbreaker.open.total", closedTimeGauge);
+            metricRegistry.register("ft." + fullMethodSignature + ".circuitbreaker.closed.total", closedTimeGauge);
         }
     }
 }

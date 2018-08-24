@@ -42,7 +42,6 @@ package fish.payara.microprofile.faulttolerance.interceptors;
 import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPolicy;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
-//import fish.payara.microprofile.metrics.impl.GaugeImpl;
 import java.io.Serializable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -93,6 +92,10 @@ public class BulkheadInterceptor implements Serializable {
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
                 .getService(InvocationManager.class);
         
+        MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
+        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
+                Bulkhead.class);
+        
         Config config = null;
         
         try {
@@ -110,6 +113,11 @@ public class BulkheadInterceptor implements Serializable {
                     && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
                             config, Bulkhead.class, invocationContext)
                             .orElse(Boolean.TRUE))) {
+                // Only increment the invocations metric if the Retry annotation isn't present
+                if (FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext) == null) {
+                    metricRegistry.counter("ft." + fullMethodSignature + ".invocations.total").inc();
+                }
+                
                 logger.log(Level.FINER, "Proceeding invocation with bulkhead semantics");
                 proceededInvocationContext = bulkhead(invocationContext);
             } else {
@@ -142,9 +150,6 @@ public class BulkheadInterceptor implements Serializable {
                     logger.log(Level.FINE, "Fallback annotation not found on method, propagating error upwards.", ex);
                     
                     // Increment the failure counter metric
-                    MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
-                    String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
-                            Fallback.class);
                     metricRegistry.counter("ft." + fullMethodSignature + ".invocations.failed.total").inc();
                     
                     throw ex;
@@ -193,16 +198,11 @@ public class BulkheadInterceptor implements Serializable {
         String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
                 Bulkhead.class);
         
-        // Only increment the invocations metric if the Retry annotation isn't present
-        if (FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext) == null) {
-            metricRegistry.counter("ft." + fullMethodSignature + ".invocations.total").inc();
-        }
-        
         Semaphore bulkheadExecutionSemaphore = faultToleranceService.getBulkheadExecutionSemaphore(appName,
                 invocationContext.getMethod(), value);
         
         Gauge<Long> concurrentExecutionsGauge = metricRegistry.getGauges()
-                .get("ft." + fullMethodSignature + ".bulkhead.waitingQueue.population");
+                .get("ft." + fullMethodSignature + ".bulkhead.concurrentExecutions");
         
         // Register a bulkhead concurrent executions metric if there isn't one
         if (concurrentExecutionsGauge == null) {
@@ -227,19 +227,16 @@ public class BulkheadInterceptor implements Serializable {
                 metricRegistry.register("ft." + fullMethodSignature + ".bulkhead.waitingQueue.population", 
                         waitingQueueGauge);
             }
-                
+            
+            // Start measuring the queue duration for MP Metrics
+            long queueStartTime = System.nanoTime();
+            
             // Check if there are any free permits for concurrent execution
             if (!bulkheadExecutionSemaphore.tryAcquire(0, TimeUnit.SECONDS)) {
                 logger.log(Level.FINER, "Attempting to acquire bulkhead queue semaphore.");
                 // If there aren't any free permits, see if there are any free queue permits
                 if (bulkheadExecutionQueueSemaphore.tryAcquire(0, TimeUnit.SECONDS)) {
                     logger.log(Level.FINER, "Acquired bulkhead queue semaphore.");
-                    
-                    // Update the bulkhead queueing metric
-//                    waitingQueueGauge.
-                    
-                    // Start measuring the queue duration for MP Metrics
-                    long queueStartTime = System.nanoTime();
                     
                     // If there is a free queue permit, queue for an executor permit
                     try {
@@ -252,7 +249,7 @@ public class BulkheadInterceptor implements Serializable {
                             // Make sure we end the trace right here
                             faultToleranceService.endFaultToleranceSpan();
                             
-                            // Record the execution time for MP Metrics
+                            // Record the queue time for MP Metrics
                             metricRegistry.histogram("ft." + fullMethodSignature + ".bulkhead.waiting.duration").update(
                                     System.nanoTime() - queueStartTime);
                         }
@@ -308,6 +305,10 @@ public class BulkheadInterceptor implements Serializable {
             } else {
                 // Incremement the MP Metrics callsAccepted counter
                 metricRegistry.counter("ft." + fullMethodSignature + ".bulkhead.callsAccepted.total").inc();
+                
+                // Record the queue time for MP Metrics
+                metricRegistry.histogram("ft." + fullMethodSignature + ".bulkhead.waiting.duration").update(
+                        System.nanoTime() - queueStartTime);
                 
                 // Start measuring the execution duration for MP Metrics
                 long executionStartTime = System.nanoTime();
