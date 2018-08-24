@@ -305,7 +305,7 @@ public class CircuitBreakerInterceptor implements Serializable {
                         metricRegistry.counter("ft." + fullMethodSignature + ".circuitbreaker.callsFailed.total").inc();
                         
                         // Open the circuit again, and reset the half-open result counter
-                        updateCircuitState(circuitBreakerState, CircuitBreakerState.CircuitState.OPEN);
+                        circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.OPEN);
                         circuitBreakerState.resetHalfOpenSuccessfulResultCounter();
                         scheduleHalfOpen(delayMillis, circuitBreakerState);
                     }
@@ -324,7 +324,7 @@ public class CircuitBreakerInterceptor implements Serializable {
                     logger.log(Level.FINE, "Number of consecutive successful CircuitBreaker executions is above "
                             + "threshold {0}, closing circuit", successThreshold);
                     
-                    updateCircuitState(circuitBreakerState, CircuitBreakerState.CircuitState.CLOSED);
+                    circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.CLOSED);
                     
                     // Reset the counter for when we next need to use it
                     circuitBreakerState.resetHalfOpenSuccessfulResultCounter();
@@ -347,7 +347,7 @@ public class CircuitBreakerInterceptor implements Serializable {
      */
     private void scheduleHalfOpen(long delayMillis, CircuitBreakerState circuitBreakerState) throws NamingException {
         Runnable halfOpen = () -> {
-            updateCircuitState(circuitBreakerState, CircuitBreakerState.CircuitState.HALF_OPEN);
+            circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.HALF_OPEN);
             logger.log(Level.FINE, "Setting CircuitBreaker state to half open");
         };
 
@@ -405,7 +405,7 @@ public class CircuitBreakerInterceptor implements Serializable {
                     failureThreshold);
 
             // Update the circuit state and metric timers
-            updateCircuitState(circuitBreakerState, CircuitBreakerState.CircuitState.OPEN);
+            circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.OPEN);
             
             // Update the opened metric counter
             metricRegistry.counter("ft." + fullMethodSignature + ".circuitbreaker.opened.total").inc();
@@ -413,11 +413,6 @@ public class CircuitBreakerInterceptor implements Serializable {
             // Kick off a thread that will half-open the circuit after the specified delay
             scheduleHalfOpen(delayMillis, circuitBreakerState);
         }
-    }
-    
-    private void updateCircuitState(CircuitBreakerState circuitBreakerState, 
-            CircuitBreakerState.CircuitState circuitState) {
-        circuitBreakerState.setCircuitState(circuitState);
     }
     
     private Long getTimeOpen(CircuitBreakerState circuitBreakerState) {
