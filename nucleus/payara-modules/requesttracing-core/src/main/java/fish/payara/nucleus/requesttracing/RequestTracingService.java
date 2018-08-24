@@ -148,7 +148,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
     @Inject
     private HazelcastCore hazelcast;
 
-    private final ScheduledExecutorService ScheduledExecutorService = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
     private RequestTracingExecutionOptions executionOptions = new RequestTracingExecutionOptions();
 
@@ -247,7 +247,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
                     // if not use timeout value as period
                     long period = executionOptions.getTraceStoreTimeout() > TimeUtil.CLEANUP_TASK_FIVE_MIN_PERIOD
                             ? TimeUtil.CLEANUP_TASK_FIVE_MIN_PERIOD : executionOptions.getTraceStoreTimeout();
-                    ScheduledExecutorService.scheduleAtFixedRate(new RequestTraceStoreCleanupTask(
+                    scheduledExecutorService.scheduleAtFixedRate(new RequestTraceStoreCleanupTask(
                             executionOptions.getTraceStoreTimeout(), historicRequestTraceStore),
                             0, period, TimeUnit.SECONDS);
                 }
@@ -264,7 +264,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
                 // if not use timeout value as period
                 long period = executionOptions.getTraceStoreTimeout() > TimeUtil.CLEANUP_TASK_FIVE_MIN_PERIOD
                         ? TimeUtil.CLEANUP_TASK_FIVE_MIN_PERIOD : executionOptions.getTraceStoreTimeout();
-                ScheduledExecutorService.scheduleAtFixedRate(new RequestTraceStoreCleanupTask(
+                scheduledExecutorService.scheduleAtFixedRate(new RequestTraceStoreCleanupTask(
                         executionOptions.getTraceStoreTimeout(), requestTraceStore),
                         0, period, TimeUnit.SECONDS);
             }
@@ -327,7 +327,9 @@ public class RequestTracingService implements EventListener, ConfigListener {
     }
 
     /**
-     * Returns true if a trace has started and not yet completed
+     * Returns true if a trace has started and not yet completed. NOTE: This only applies to traces started using the
+     * request tracing service; traces started using OpenTracing *MAY* not be picked up by this (for example, 
+     * if you're using the OpenTracing MockTracer instead of the in-built one).
      *
      * @return
      */
@@ -460,7 +462,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
                 }
             };
 
-            ScheduledExecutorService.submit(addTask);
+            scheduledExecutorService.submit(addTask);
 
             for (NotifierExecutionOptions notifierExecutionOptions : executionOptions.getNotifierExecutionOptionsList().values()) {
                 if (notifierExecutionOptions.isEnabled()) {

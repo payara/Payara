@@ -100,32 +100,34 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
     // Before method invocation
     @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
-        // ***** Request Tracing Service Instrumentation *****
-        // If request tracing is enabled, and there's a trace actually in progress, add the propagation headers
-        if (requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()) {
-            // Check that we aren't overwriting a header
-            if (!requestContext.getHeaders().containsKey(PropagationHeaders.PROPAGATED_TRACE_ID)) {
-                requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_TRACE_ID,
-                        requestTracing.getConversationID());
-            }
+        if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+            // ***** Request Tracing Service Instrumentation *****
+            // If there is a trace in progress, add the propagation headers with the relevant details
+            if (requestTracing.isTraceInProgress()) {
+                // Check that we aren't overwriting a header
+                if (!requestContext.getHeaders().containsKey(PropagationHeaders.PROPAGATED_TRACE_ID)) {
+                    requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_TRACE_ID,
+                            requestTracing.getConversationID());
+                }
 
-            // Check that we aren't overwriting a header
-            if (!requestContext.getHeaders().containsKey(PropagationHeaders.PROPAGATED_PARENT_ID)) {
-                requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_PARENT_ID,
-                        requestTracing.getStartingTraceID());
-            }
+                // Check that we aren't overwriting a header
+                if (!requestContext.getHeaders().containsKey(PropagationHeaders.PROPAGATED_PARENT_ID)) {
+                    requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_PARENT_ID,
+                            requestTracing.getStartingTraceID());
+                }
 
-            // Check that we aren't overwriting a relationship type
-            if (!requestContext.getHeaders().containsKey(PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE)) {
-                if (requestContext.getMethod().equals("POST")) {
-                    requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE,
-                            RequestTraceSpan.SpanContextRelationshipType.FollowsFrom);
-                } else {
-                    requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE,
-                            RequestTraceSpan.SpanContextRelationshipType.ChildOf);
+                // Check that we aren't overwriting a relationship type
+                if (!requestContext.getHeaders().containsKey(PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE)) {
+                    if (requestContext.getMethod().equals("POST")) {
+                        requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE,
+                                RequestTraceSpan.SpanContextRelationshipType.FollowsFrom);
+                    } else {
+                        requestContext.getHeaders().add(PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE,
+                                RequestTraceSpan.SpanContextRelationshipType.ChildOf);
+                    }
                 }
             }
-
+            
             // ***** OpenTracing Instrumentation *****
             // Get or create the tracer instance for this application
             Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
@@ -142,25 +144,25 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
             // This is required to account for asynchronous client requests
             SpanContext parentSpanContext = (SpanContext) requestContext.getProperty(
                     PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT);
-
+            if (parentSpanContext != null) {
+                spanBuilder.asChildOf(parentSpanContext); 
+            }
+            
             // If there is a propagated span context, set it as a parent of the new span
+            parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, 
+                    new MultivaluedMapToTextMap(requestContext.getHeaders()));
             if (parentSpanContext != null) {
                 spanBuilder.asChildOf(parentSpanContext);
-                
-                parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, new MultivaluedMapToTextMap(requestContext.getHeaders()));
-                if (parentSpanContext != null) {
-                    spanBuilder.asChildOf(parentSpanContext);
-                }
             }
 
             // Start the span and mark it as active
             Span activeSpan = spanBuilder.startActive(true).span();
 
-                // Inject the active span context for propagation
-                tracer.inject(
-                        activeSpan.context(),
-                        Format.Builtin.HTTP_HEADERS,
-                        new MultivaluedMapToTextMap(requestContext.getHeaders()));
+            // Inject the active span context for propagation
+            tracer.inject(
+                    activeSpan.context(),
+                    Format.Builtin.HTTP_HEADERS,
+                    new MultivaluedMapToTextMap(requestContext.getHeaders()));
         }
     }
 
@@ -168,7 +170,7 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
     @Override
     public void filter(ClientRequestContext requestContext, ClientResponseContext responseContext) throws IOException {
         // If request tracing is enabled, and there's a trace actually in progress, add info about method
-        if (requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress()) {
+        if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
             // Get the active span from the application's tracer instance
             try (Scope activeScope = openTracing.getTracer(openTracing.getApplicationName(
                     serviceLocator.getService(InvocationManager.class)))
