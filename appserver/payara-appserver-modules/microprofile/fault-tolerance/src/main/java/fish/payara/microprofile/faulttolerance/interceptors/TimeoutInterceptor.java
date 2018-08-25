@@ -118,7 +118,8 @@ public class TimeoutInterceptor {
                         && FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext) == null
                         && FaultToleranceCdiUtils.getAnnotation(
                                 beanManager, CircuitBreaker.class, invocationContext) == null) {
-                    metricRegistry.counter("ft." + fullMethodSignature + ".invocations.total").inc();
+                    faultToleranceService.incrementCounterMetric(metricRegistry, 
+                            "ft." + fullMethodSignature + ".invocations.total", appName, config);
                 }
                 
                 logger.log(Level.FINER, "Proceeding invocation with timeout semantics");
@@ -149,7 +150,10 @@ public class TimeoutInterceptor {
                     proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
                 } else {
                     // Increment the failure counter metric
-                    metricRegistry.counter("ft." + fullMethodSignature + ".invocations.failed.total").inc();
+                    faultToleranceService.incrementCounterMetric(metricRegistry, 
+                            "ft." + fullMethodSignature + ".invocations.failed.total", 
+                            faultToleranceService.getApplicationName(invocationManager, invocationContext), 
+                            config);
                     
                     throw ex;
                 }
@@ -167,11 +171,17 @@ public class TimeoutInterceptor {
      */
     private Object timeout(InvocationContext invocationContext) throws Exception {
         Object proceededInvocationContext = null;
+        
+        FaultToleranceService faultToleranceService = 
+                Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
         Timeout timeout = FaultToleranceCdiUtils.getAnnotation(beanManager, Timeout.class, invocationContext);
         
         MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
         String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
                 Timeout.class);
+        String appName = faultToleranceService.getApplicationName(
+                Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class), 
+                invocationContext);
         
         Config config = null;
         try {
@@ -200,38 +210,48 @@ public class TimeoutInterceptor {
 
             if (System.currentTimeMillis() > timeoutTime) {
                 // Record the timeout for MP Metrics
-                metricRegistry.counter("ft." + fullMethodSignature + ".timeout.callsTimedOut.total").inc();
+                faultToleranceService.incrementCounterMetric(metricRegistry, 
+                        "ft." + fullMethodSignature + ".timeout.callsTimedOut.total", appName, config);
                 
                 logger.log(Level.FINE, "Execution timed out");
                 throw new TimeoutException();
             }
             
             // Record the execution time for MP Metrics
-            metricRegistry.histogram("ft." + fullMethodSignature + ".timeout.executionDuration").update(
-                    System.nanoTime() - executionStartTime);
+            faultToleranceService.updateHistogramMetric(metricRegistry, 
+                    "ft." + fullMethodSignature + ".timeout.executionDuration", 
+                    System.nanoTime() - executionStartTime,
+                    appName, config);
             // Record the successfuly completion for MP Metrics
-            metricRegistry.counter("ft." + fullMethodSignature + ".timeout.callsNotTimedOut.total").inc();
+            faultToleranceService.incrementCounterMetric(metricRegistry, 
+                    "ft." + fullMethodSignature + ".timeout.callsNotTimedOut.total", appName, config);
         } catch (InterruptedException ie) {
             // Record the execution time for MP Metrics
-            metricRegistry.histogram("ft." + fullMethodSignature + ".timeout.executionDuration").update(
-                    System.nanoTime() - executionStartTime);
+            faultToleranceService.updateHistogramMetric(metricRegistry, 
+                    "ft." + fullMethodSignature + ".timeout.executionDuration", 
+                    System.nanoTime() - executionStartTime,
+                    appName, config);
             
             if (System.currentTimeMillis() > timeoutTime) {
                 // Record the timeout for MP Metrics
-                metricRegistry.counter("ft." + fullMethodSignature + ".timeout.callsTimedOut.total").inc();
+                faultToleranceService.incrementCounterMetric(metricRegistry, 
+                        "ft." + fullMethodSignature + ".timeout.callsTimedOut.total", appName, config);
                 
                 logger.log(Level.FINE, "Execution timed out");
                 throw new TimeoutException(ie);
             }
         } catch (Exception ex) {
             // Record the execution time for MP Metrics
-            metricRegistry.histogram("ft." + fullMethodSignature + ".timeout.executionDuration").update(
-                    System.nanoTime() - executionStartTime);
+            faultToleranceService.updateHistogramMetric(metricRegistry, 
+                    "ft." + fullMethodSignature + ".timeout.executionDuration", 
+                    System.nanoTime() - executionStartTime,
+                    appName, config);
             
             // Deal with cases where someone has caught the thread.interrupt() and thrown the exception as something else
             if (ex.getCause() instanceof InterruptedException && System.currentTimeMillis() > timeoutTime) {
                 // Record the timeout for MP Metrics
-                metricRegistry.counter("ft." + fullMethodSignature + ".timeout.callsTimedOut.total").inc();
+                faultToleranceService.incrementCounterMetric(metricRegistry, 
+                        "ft." + fullMethodSignature + ".timeout.callsTimedOut.total", appName, config);
                 
                 logger.log(Level.FINE, "Execution timed out");
                 throw new TimeoutException(ex);

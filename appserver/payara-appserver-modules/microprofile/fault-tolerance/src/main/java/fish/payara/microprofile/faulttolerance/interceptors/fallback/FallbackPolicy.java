@@ -53,6 +53,7 @@ import org.eclipse.microprofile.faulttolerance.ExecutionContext;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
 import javax.enterprise.inject.spi.CDI;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
@@ -99,6 +100,14 @@ public class FallbackPolicy {
         MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
         String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
                 Fallback.class);
+        String appName = faultToleranceService.getApplicationName(invocationManager, invocationContext);
+        
+        Config config = null;
+        try {
+            config = ConfigProvider.getConfig();
+        } catch (IllegalArgumentException ex) {
+            logger.log(Level.INFO, "No config could be found", ex);
+        }
         
         try {
             if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
@@ -108,7 +117,8 @@ public class FallbackPolicy {
                         .getAnnotatedMethodClass(invocationContext, Fallback.class)
                         .getDeclaredMethod(fallbackMethod, invocationContext.getMethod().getParameterTypes())
                         .invoke(invocationContext.getTarget(), invocationContext.getParameters());
-                metricRegistry.counter("ft." + fullMethodSignature + ".fallback.calls.total").inc();
+                faultToleranceService.incrementCounterMetric(metricRegistry, 
+                        "ft." + fullMethodSignature + ".fallback.calls.total", appName, config);
             } else {
                 logger.log(Level.FINE, "Using fallback class: {0}", fallbackClass.getName());
 
@@ -118,11 +128,13 @@ public class FallbackPolicy {
                 fallbackInvocationContext = fallbackClass
                         .getDeclaredMethod(FALLBACK_HANDLER_METHOD_NAME, ExecutionContext.class)
                         .invoke(CDI.current().select(fallbackClass).get(), executionContext);
-                metricRegistry.counter("ft." + fullMethodSignature + ".fallback.calls.total").inc();
+                faultToleranceService.incrementCounterMetric(metricRegistry, 
+                        "ft." + fullMethodSignature + ".fallback.calls.total", appName, config);
             }
         } catch (Exception ex) {
             // Increment the failure counter metric
-            metricRegistry.counter("ft." + fullMethodSignature + ".invocations.failed.total").inc();
+            faultToleranceService.incrementCounterMetric(metricRegistry, 
+                    "ft." + fullMethodSignature + ".invocations.failed.total", appName, config);
             
             throw ex;
         } finally {
