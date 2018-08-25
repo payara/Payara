@@ -212,6 +212,10 @@ public class TimeoutInterceptor {
             // Record the successfuly completion for MP Metrics
             metricRegistry.counter("ft." + fullMethodSignature + ".timeout.callsNotTimedOut.total").inc();
         } catch (InterruptedException ie) {
+            // Record the execution time for MP Metrics
+            metricRegistry.histogram("ft." + fullMethodSignature + ".timeout.executionDuration").update(
+                    System.nanoTime() - executionStartTime);
+            
             if (System.currentTimeMillis() > timeoutTime) {
                 // Record the timeout for MP Metrics
                 metricRegistry.counter("ft." + fullMethodSignature + ".timeout.callsTimedOut.total").inc();
@@ -220,6 +224,10 @@ public class TimeoutInterceptor {
                 throw new TimeoutException(ie);
             }
         } catch (Exception ex) {
+            // Record the execution time for MP Metrics
+            metricRegistry.histogram("ft." + fullMethodSignature + ".timeout.executionDuration").update(
+                    System.nanoTime() - executionStartTime);
+            
             // Deal with cases where someone has caught the thread.interrupt() and thrown the exception as something else
             if (ex.getCause() instanceof InterruptedException && System.currentTimeMillis() > timeoutTime) {
                 // Record the timeout for MP Metrics
