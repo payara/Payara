@@ -58,10 +58,12 @@ import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 
 import fish.payara.notification.requesttracing.RequestTraceSpan;
+import javax.enterprise.inject.spi.CDI;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 
@@ -88,16 +90,30 @@ public class RetryInterceptor {
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
                 .getService(InvocationManager.class);
         
+        MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
+        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
+                Retry.class);
+        
         Config config = null;
         try {
             config = ConfigProvider.getConfig();
-        } catch (IllegalArgumentException ex) {
-            logger.log(Level.INFO, "No config could be found", ex);
+        } catch (IllegalArgumentException iae) {
+            logger.log(Level.INFO, "No config could be found", iae);
         }
         
         try {
-            if (faultToleranceService.isFaultToleranceEnabled(faultToleranceService.getApplicationName(
-                    invocationManager, invocationContext), config)) {
+            String appName = faultToleranceService.getApplicationName(invocationManager, invocationContext);
+            
+            // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled for this
+            // method
+            if (faultToleranceService.isFaultToleranceEnabled(appName, config)
+                    && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
+                            config, Retry.class, invocationContext)
+                            .orElse(Boolean.TRUE))) {
+                // Increment the invocations metric
+                faultToleranceService.incrementCounterMetric(metricRegistry, 
+                        "ft." + fullMethodSignature + ".invocations.total", appName, config);
+                
                 logger.log(Level.FINER, "Proceeding invocation with retry semantics");
                 proceededInvocationContext = retry(invocationContext);
             } else {
@@ -109,11 +125,20 @@ public class RetryInterceptor {
         } catch (Exception ex) {
             Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
             
-            if (fallback != null) {
+            // Only fall back if the annotation hasn't been disabled
+            if (fallback != null && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
+                    config, Fallback.class, invocationContext)
+                    .orElse(Boolean.TRUE))) {
                 logger.log(Level.FINE, "Fallback annotation found on method - falling back from Retry");
                 FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
-                proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
+                proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
             } else {
+                // Increment the failure counter metric
+                faultToleranceService.incrementCounterMetric(metricRegistry, 
+                        "ft." + fullMethodSignature + ".invocations.failed.total", 
+                        faultToleranceService.getApplicationName(invocationManager, invocationContext), 
+                        config);
+                
                 throw ex;
             }
         }
@@ -137,16 +162,23 @@ public class RetryInterceptor {
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
                 .getService(InvocationManager.class);
         
+        MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
+        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
+                Retry.class);
+        String appName = faultToleranceService.getApplicationName(invocationManager, invocationContext);
+        
+        Config config = null;
+        try {
+            config = ConfigProvider.getConfig();
+        } catch (IllegalArgumentException iae) {
+            logger.log(Level.INFO, "No config could be found", iae);
+        }
+        
         try {
             proceededInvocationContext = invocationContext.proceed();
+            faultToleranceService.incrementCounterMetric(metricRegistry, 
+                    "ft." + fullMethodSignature + ".retry.callsSucceededNotRetried.total", appName, config);
         } catch (Exception ex) {
-            Config config = null;
-            try {
-                config = ConfigProvider.getConfig();
-            } catch (IllegalArgumentException iae) {
-                logger.log(Level.INFO, "No config could be found", ex);
-            }
-
             Class<? extends Throwable>[] retryOn = retry.retryOn();
             try {
                 String retryOnString = ((String) FaultToleranceCdiUtils.getOverrideValue(
@@ -200,20 +232,23 @@ public class RetryInterceptor {
             long delay = (Long) FaultToleranceCdiUtils.getOverrideValue(
                 config, Retry.class, "delay", invocationContext, Long.class)
                 .orElse(retry.delay());
+            // Look for a String and cast to ChronoUnit - Use the Common Sense Convertor
             ChronoUnit delayUnit = (ChronoUnit) FaultToleranceCdiUtils.getOverrideValue(
-                config, Retry.class, "delayUnit", invocationContext, ChronoUnit.class)
+                config, Retry.class, "delayUnit", invocationContext, String.class)
                 .orElse(retry.delayUnit());
             long maxDuration = (Long) FaultToleranceCdiUtils.getOverrideValue(
                 config, Retry.class, "maxDuration", invocationContext, Long.class)
                 .orElse(retry.maxDuration());
+            // Look for a String and cast to ChronoUnit - Use the Common Sense Convertor
             ChronoUnit durationUnit = (ChronoUnit) FaultToleranceCdiUtils.getOverrideValue(
-                config, Retry.class, "durationUnit", invocationContext, ChronoUnit.class)
+                config, Retry.class, "durationUnit", invocationContext, String.class)
                 .orElse(retry.durationUnit());
             long jitter = (Long) FaultToleranceCdiUtils.getOverrideValue(
                 config, Retry.class, "jitter", invocationContext, Long.class)
                 .orElse(retry.jitter());
+            // Look for a String and cast to ChronoUnit - Use the Common Sense Convertor
             ChronoUnit jitterDelayUnit = (ChronoUnit) FaultToleranceCdiUtils.getOverrideValue(
-                config, Retry.class, "jitterDelayUnit", invocationContext, ChronoUnit.class)
+                config, Retry.class, "jitterDelayUnit", invocationContext, String.class)
                 .orElse(retry.jitterDelayUnit());
             
             long delayMillis = Duration.of(delay, delayUnit).toMillis();
@@ -224,13 +259,21 @@ public class RetryInterceptor {
             
             faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("retryMethod"), invocationManager,
                     invocationContext);
+            
+            boolean succeeded = false;
+            
             try {
                 if (maxRetries == -1 && maxDuration > 0) {
                     logger.log(Level.FINER, "Retrying until maxDuration is breached.");
 
                     while (System.currentTimeMillis() < timeoutTime) {
+                        faultToleranceService.incrementCounterMetric(metricRegistry, 
+                                "ft." + fullMethodSignature + ".retry.retries.total", appName, config);
                         try {
                             proceededInvocationContext = invocationContext.proceed();
+                            succeeded = true;
+                            faultToleranceService.incrementCounterMetric(metricRegistry, 
+                                    "ft." + fullMethodSignature + ".retry.callsSucceededRetried.total", appName, config);
                             break;
                         } catch (Exception caughtException) {
                             retryException = caughtException;
@@ -252,8 +295,13 @@ public class RetryInterceptor {
                 } else if (maxRetries == -1 && maxDuration == 0) {
                     logger.log(Level.INFO, "Retrying potentially forever!");
                     while (true) {
+                        faultToleranceService.incrementCounterMetric(metricRegistry, 
+                                "ft." + fullMethodSignature + ".retry.retries.total", appName, config);
                         try {
                             proceededInvocationContext = invocationContext.proceed();
+                            faultToleranceService.incrementCounterMetric(metricRegistry, 
+                                    "ft." + fullMethodSignature + ".retry.callsSucceededRetried.total", appName, config);
+                            succeeded = true;
                             break;
                         } catch (Exception caughtException) {
                             retryException = caughtException;
@@ -277,8 +325,13 @@ public class RetryInterceptor {
                             "Retrying as long as maxDuration ({0}ms) isn''t breached, and no more than {1} times", 
                             new Object[]{Duration.of(maxDuration, durationUnit).toMillis(), maxRetries});
                     while (maxRetries > 0 && System.currentTimeMillis() < timeoutTime) {
+                        faultToleranceService.incrementCounterMetric(metricRegistry, 
+                                "ft." + fullMethodSignature + ".retry.retries.total", appName, config);
                         try {
                             proceededInvocationContext = invocationContext.proceed();
+                            faultToleranceService.incrementCounterMetric(metricRegistry, 
+                                    "ft." + fullMethodSignature + ".retry.callsSucceededRetried.total", appName, config);
+                            succeeded = true;
                             break;
                         } catch (Exception caughtException) {
                             retryException = caughtException;
@@ -302,8 +355,13 @@ public class RetryInterceptor {
                 } else {
                     logger.log(Level.INFO, "Retrying no more than {0} times", maxRetries);
                     while (maxRetries > 0) {
+                        faultToleranceService.incrementCounterMetric(metricRegistry, 
+                                "ft." + fullMethodSignature + ".retry.retries.total", appName, config);
                         try {
                             proceededInvocationContext = invocationContext.proceed();
+                            faultToleranceService.incrementCounterMetric(metricRegistry, 
+                                    "ft." + fullMethodSignature + ".retry.callsSucceededRetried.total", appName, config);
+                            succeeded = true;
                             break;
                         } catch (Exception caughtException) {
                             retryException = caughtException;
@@ -329,7 +387,9 @@ public class RetryInterceptor {
                 faultToleranceService.endFaultToleranceSpan();
             }
 
-            if (proceededInvocationContext == null) {
+            if (!succeeded) {
+                faultToleranceService.incrementCounterMetric(metricRegistry, 
+                        "ft." + fullMethodSignature + ".retry.callsFailed.total", appName, config);
                 throw retryException;
             }
         }
