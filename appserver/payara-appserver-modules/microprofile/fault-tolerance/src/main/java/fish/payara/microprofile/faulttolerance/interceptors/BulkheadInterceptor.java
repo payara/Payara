@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Priority;
 import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
@@ -61,6 +62,8 @@ import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.exceptions.BulkheadException;
+import org.eclipse.microprofile.metrics.Gauge;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 
@@ -88,6 +91,10 @@ public class BulkheadInterceptor implements Serializable {
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
                 .getService(InvocationManager.class);
         
+        MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
+        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
+                Bulkhead.class);
+        
         Config config = null;
         
         try {
@@ -99,8 +106,21 @@ public class BulkheadInterceptor implements Serializable {
         try {
             String appName = faultToleranceService.getApplicationName(invocationManager, invocationContext);
             
-            // Attempt to proceed the InvocationContext with Bulkhead semantics if Fault Tolerance is enabled
-            if (faultToleranceService.isFaultToleranceEnabled(appName, config)) {
+            // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled for this
+            // method
+            if (faultToleranceService.isFaultToleranceEnabled(appName, config)
+                    && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
+                            config, Bulkhead.class, invocationContext)
+                            .orElse(Boolean.TRUE))) {
+                if (faultToleranceService.isFaultToleranceMetricsEnabled(appName, config)) {
+                    // Only increment the invocations metric if the Retry annotation isn't present
+                    if (FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext) == null) {
+                        faultToleranceService.incrementCounterMetric(metricRegistry, 
+                                "ft." + fullMethodSignature + ".invocations.total", appName, config);
+                    }
+                }
+                
+                
                 logger.log(Level.FINER, "Proceeding invocation with bulkhead semantics");
                 proceededInvocationContext = bulkhead(invocationContext);
             } else {
@@ -120,14 +140,24 @@ public class BulkheadInterceptor implements Serializable {
                 Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, 
                         invocationContext);
 
-                // If the method was annotated with Fallback, attempt it, otherwise just propagate the exception upwards
-                if (fallback != null) {
+                // If the method was annotated with Fallback and the annotation is enabled, attempt it, otherwise just 
+                // propagate the exception upwards
+                if (fallback != null && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
+                        config, Fallback.class, invocationContext)
+                        .orElse(Boolean.TRUE))) {
                     logger.log(Level.FINE, "Fallback annotation found on method, and no Retry annotation - "
                             + "falling back from Bulkhead");
                     FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
-                    proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
+                    proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
                 } else {
                     logger.log(Level.FINE, "Fallback annotation not found on method, propagating error upwards.", ex);
+                    
+                    // Increment the failure counter metric
+                    faultToleranceService.incrementCounterMetric(metricRegistry, 
+                                "ft." + fullMethodSignature + ".invocations.failed.total", 
+                                faultToleranceService.getApplicationName(invocationManager, invocationContext), 
+                                config);
+                    
                     throw ex;
                 }
             }
@@ -156,7 +186,7 @@ public class BulkheadInterceptor implements Serializable {
         } catch (IllegalArgumentException ex) {
             logger.log(Level.INFO, "No config could be found", ex);
         }
-
+        
         int value = (Integer) FaultToleranceCdiUtils.getOverrideValue(
                 config, Bulkhead.class, "value", invocationContext, Integer.class)
                 .orElse(bulkhead.value());
@@ -169,13 +199,47 @@ public class BulkheadInterceptor implements Serializable {
         
         String appName = faultToleranceService.getApplicationName(invocationManager, invocationContext);
         
+        
+        MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
+        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
+                Bulkhead.class);
+        
         Semaphore bulkheadExecutionSemaphore = faultToleranceService.getBulkheadExecutionSemaphore(appName,
                 invocationContext.getMethod(), value);
         
+        if (faultToleranceService.isFaultToleranceMetricsEnabled(appName, config)) {
+            Gauge<Long> concurrentExecutionsGauge = metricRegistry.getGauges()
+                    .get("ft." + fullMethodSignature + ".bulkhead.concurrentExecutions");
+
+            // Register a bulkhead concurrent executions metric if there isn't one
+            if (concurrentExecutionsGauge == null) {
+                concurrentExecutionsGauge = () -> getConcurrentExecutionsCount(value, bulkheadExecutionSemaphore);
+
+                metricRegistry.register("ft." + fullMethodSignature + ".bulkhead.concurrentExecutions", 
+                        concurrentExecutionsGauge);
+            }
+        }
+               
         // If the Asynchronous annotation is present, use threadpool style, otherwise use semaphore style
         if (FaultToleranceCdiUtils.getAnnotation(beanManager, Asynchronous.class, invocationContext) != null) {
             Semaphore bulkheadExecutionQueueSemaphore = faultToleranceService.getBulkheadExecutionQueueSemaphore(
                     appName, invocationContext.getMethod(), waitingTaskQueue);
+
+            if (faultToleranceService.isFaultToleranceMetricsEnabled(appName, config)) {
+                Gauge<Long> waitingQueueGauge = metricRegistry.getGauges()
+                        .get("ft." + fullMethodSignature + ".bulkhead.waitingQueue.population");
+        
+                // Register a bulkhead queue metric if there isn't one
+                if (waitingQueueGauge == null) {
+                    waitingQueueGauge = () -> getWaitingQueueCount(waitingTaskQueue, bulkheadExecutionQueueSemaphore);
+
+                    metricRegistry.register("ft." + fullMethodSignature + ".bulkhead.waitingQueue.population", 
+                            waitingQueueGauge);
+                }
+            }
+            
+            // Start measuring the queue duration for MP Metrics
+            long queueStartTime = System.nanoTime();
             
             // Check if there are any free permits for concurrent execution
             if (!bulkheadExecutionSemaphore.tryAcquire(0, TimeUnit.SECONDS)) {
@@ -194,12 +258,25 @@ public class BulkheadInterceptor implements Serializable {
                         } finally {
                             // Make sure we end the trace right here
                             faultToleranceService.endFaultToleranceSpan();
+                            
+                            // Record the queue time for MP Metrics
+                            faultToleranceService.updateHistogramMetric(metricRegistry, 
+                                    "ft." + fullMethodSignature + ".bulkhead.waiting.duration", 
+                                    System.nanoTime() - queueStartTime,
+                                    appName, config);
                         }
                         
                         logger.log(Level.FINER, "Acquired bulkhead queue semaphore.");
                         
                         // Release the queue permit
                         bulkheadExecutionQueueSemaphore.release();
+                        
+                        // Incremement the MP Metrics callsAccepted counter
+                        faultToleranceService.incrementCounterMetric(metricRegistry, 
+                                "ft." + fullMethodSignature + ".bulkhead.callsAccepted.total", appName, config);
+                        
+                        // Start measuring the execution duration for MP Metrics
+                        long executionStartTime = System.nanoTime();
                         
                         // Proceed the invocation and wait for the response
                         try {
@@ -212,20 +289,53 @@ public class BulkheadInterceptor implements Serializable {
                             bulkheadExecutionSemaphore.release();
                             bulkheadExecutionQueueSemaphore.release();
                             
+                            // Record the execution time for MP Metrics              
+                            faultToleranceService.updateHistogramMetric(metricRegistry, 
+                                    "ft." + fullMethodSignature + ".bulkhead.executionDuration", 
+                                    System.nanoTime() - executionStartTime,
+                                    appName, config);
+                            
                             // Let the exception propagate further up - we just want to release the semaphores
                             throw ex;
                         }
-
+                        
+                        // Record the execution time for MP Metrics
+                        faultToleranceService.updateHistogramMetric(metricRegistry, 
+                                    "ft." + fullMethodSignature + ".bulkhead.executionDuration", 
+                                    System.nanoTime() - executionStartTime,
+                                    appName, config);
+                        
                         // Release the execution permit
                         bulkheadExecutionSemaphore.release();
                     } catch (InterruptedException ex) {
+                        // Incremement the MP Metrics callsRejected counter
+                        faultToleranceService.incrementCounterMetric(metricRegistry, 
+                                "ft." + fullMethodSignature + ".bulkhead.callsRejected.total", appName, config);
+                        
                         logger.log(Level.INFO, "Interrupted acquiring bulkhead semaphore", ex);
                         throw new BulkheadException(ex);
                     }
                 } else {
+                    // Incremement the MP Metrics callsRejected counter
+                    faultToleranceService.incrementCounterMetric(metricRegistry, 
+                            "ft." + fullMethodSignature + ".bulkhead.callsRejected.total", appName, config);
+                    
                     throw new BulkheadException("No free work or queue permits.");
                 }
             } else {
+                // Incremement the MP Metrics callsAccepted counter
+                faultToleranceService.incrementCounterMetric(metricRegistry, 
+                            "ft." + fullMethodSignature + ".bulkhead.callsAccepted.total", appName, config);
+                
+                // Record the queue time for MP Metrics
+                faultToleranceService.updateHistogramMetric(metricRegistry, 
+                        "ft." + fullMethodSignature + ".bulkhead.waiting.duration", 
+                        System.nanoTime() - queueStartTime,
+                        appName, config);
+                
+                // Start measuring the execution duration for MP Metrics
+                long executionStartTime = System.nanoTime();
+                
                 // Proceed the invocation and wait for the response
                 try {
                     logger.log(Level.FINER, "Proceeding bulkhead context");
@@ -235,17 +345,36 @@ public class BulkheadInterceptor implements Serializable {
 
                     // Generic catch, as we need to release the semaphore permits
                     bulkheadExecutionSemaphore.release();
-
+                    
+                    // Record the execution time for MP Metrics
+                    faultToleranceService.updateHistogramMetric(metricRegistry, 
+                            "ft." + fullMethodSignature + ".bulkhead.executionDuration", 
+                            System.nanoTime() - executionStartTime,
+                            appName, config);
+                    
                     // Let the exception propagate further up - we just want to release the semaphores
                     throw ex;
                 }
-                    
+                
+                // Record the execution time for MP Metrics
+                faultToleranceService.updateHistogramMetric(metricRegistry, 
+                        "ft." + fullMethodSignature + ".bulkhead.executionDuration", 
+                        System.nanoTime() - executionStartTime,
+                        appName, config);
+                
                 // Release the permit
                 bulkheadExecutionSemaphore.release();
             }
         } else {
             // Try to get an execution permit
             if (bulkheadExecutionSemaphore.tryAcquire(0, TimeUnit.SECONDS)) {
+                // Incremement the MP Metrics callsAccepted counter
+                faultToleranceService.incrementCounterMetric(metricRegistry, 
+                        "ft." + fullMethodSignature + ".bulkhead.callsAccepted.total", appName, config);
+                
+                // Start measuring the execution duration for MP Metrics
+                long executionStartTime = System.nanoTime();
+                
                 // Proceed the invocation and wait for the response
                 try {
                     logger.log(Level.FINER, "Proceeding bulkhead context");
@@ -256,13 +385,29 @@ public class BulkheadInterceptor implements Serializable {
                     // Generic catch, as we need to release the semaphore permits
                     bulkheadExecutionSemaphore.release();
 
+                    // Record the execution time for MP Metrics
+                    faultToleranceService.updateHistogramMetric(metricRegistry, 
+                            "ft." + fullMethodSignature + ".bulkhead.executionDuration", 
+                            System.nanoTime() - executionStartTime,
+                            appName, config);
+                    
                     // Let the exception propagate further up - we just want to release the semaphores
                     throw ex;
                 }
                 
+                // Record the execution time for MP Metrics
+                faultToleranceService.updateHistogramMetric(metricRegistry, 
+                        "ft." + fullMethodSignature + ".bulkhead.executionDuration", 
+                        System.nanoTime() - executionStartTime,
+                        appName, config);
+                
                 // Release the permit
                 bulkheadExecutionSemaphore.release();
             } else {
+                // Incremement the MP Metrics callsRejected counter
+                faultToleranceService.incrementCounterMetric(metricRegistry, 
+                        "ft." + fullMethodSignature + ".bulkhead.callsRejected.total", appName, config);
+                
                 throw new BulkheadException("No free work permits.");
             }
         }
@@ -270,5 +415,11 @@ public class BulkheadInterceptor implements Serializable {
         return proceededInvocationContext;
     }
     
+    private Long getConcurrentExecutionsCount(int bulkheadValue, Semaphore bulkheadExecutionSemaphore) {
+        return ((Number) (bulkheadValue - bulkheadExecutionSemaphore.availablePermits())).longValue();
+    }
     
+    private Long getWaitingQueueCount(int waitingTaskQueue, Semaphore bulkheadExecutionQueueSemaphore) {
+        return ((Number) (waitingTaskQueue - bulkheadExecutionQueueSemaphore.availablePermits())).longValue();
+    }
 }
