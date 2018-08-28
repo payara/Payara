@@ -41,14 +41,16 @@
 package com.sun.enterprise.security.ee.auth.login;
 
 import static com.sun.enterprise.security.common.AppservAccessController.privilegedAlways;
+import static com.sun.enterprise.security.common.SecurityConstants.USERNAME_PASSWORD;
+import static com.sun.logging.LogDomains.SECURITY_LOGGER;
 import static java.security.AccessController.doPrivileged;
 import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.security.auth.callback.CallbackHandler;
@@ -64,7 +66,6 @@ import com.sun.enterprise.security.UsernamePasswordStore;
 import com.sun.enterprise.security.auth.WebAndEjbToJaasBridge;
 import com.sun.enterprise.security.auth.login.LoginCallbackHandler;
 import com.sun.enterprise.security.auth.login.LoginContextDriver;
-import com.sun.enterprise.security.common.SecurityConstants;
 import com.sun.enterprise.security.common.Util;
 import com.sun.enterprise.security.web.integration.WebProgrammaticLogin;
 import com.sun.logging.LogDomains;
@@ -79,7 +80,7 @@ import com.sun.logging.LogDomains;
  *
  * <P>
  * This allows applications to programmatically handle authentication. The use of this mechanism is not recommended
- * since it bypasses the standard J2EE mechanisms and places all burden on the application developer.
+ * since it bypasses the standard Java EE mechanisms and places all burden on the application developer.
  *
  * <P>
  * Invoking this method requires the permission ProgrammaticLoginPermission with the method name being invoked.
@@ -88,12 +89,13 @@ import com.sun.logging.LogDomains;
  * There are two forms of the login method, one which includes the HTTP request and response objects for use by servlets
  * and one which can be used by EJBs.
  *
- * 
+ *
  */
 @Service
 @PerLookup
 public class ProgrammaticLogin {
-    private static final Logger logger = LogDomains.getLogger(ProgrammaticLogin.class, LogDomains.SECURITY_LOGGER);
+
+    private static final Logger logger = LogDomains.getLogger(ProgrammaticLogin.class, SECURITY_LOGGER);
 
     private static ProgrammaticLoginPermission plLogin = new ProgrammaticLoginPermission("login");
     private static ProgrammaticLoginPermission plLogout = new ProgrammaticLoginPermission("logout");
@@ -104,6 +106,66 @@ public class ProgrammaticLogin {
     public ProgrammaticLogin() {
         if (SecurityServicesUtil.getInstance() != null) {
             resolveWebProgrammaticLogin();
+        }
+    }
+
+
+
+    // ############################## EJB login methods ###############################
+
+
+    /**
+     * Attempt to login for EJB (either as client to login for a remote server, or on the server itself)
+     *
+     * <P>
+     * Upon successful return from this method the SecurityContext will be set in the name of the given user as its Subject.
+     *
+     * <p>
+     * On the client side, the actual login will not occur until we actually access a resource requiring a login. A
+     * java.rmi.AccessException with COBRA NO_PERMISSION will occur when actual login is failed.
+     *
+     * <p>
+     * This method is intented primarily for EJBs wishing to do programmatic login. If servlet code used this method the
+     * established identity will be propagated to EJB calls but will not be used for web container manager authorization. In
+     * general servlets should use the servlet-specific version of login instead.
+     *
+     * <p>
+     * Note: Use of the char[] as password is encouraged
+     *
+     * @param user User name.
+     * @param password Password for user.
+     * @return Boolean containing true or false to indicate success or failure of login.
+     */
+    public Boolean login(String user, String password) {
+        return login(user, password.toCharArray());
+    }
+
+    /**
+     * Attempt to login for EJB (either client or server)
+     *
+     * <P>
+     * Upon successful return from this method the SecurityContext will be set in the name of the given user as its Subject.
+     *
+     * <p>
+     * On client side, the actual login will not occur until we actually access a resource requiring a login. And a
+     * java.rmi.AccessException with COBRA NO_PERMISSION will occur when actual login is failed.
+     *
+     * <P>
+     * This method is intented primarily for EJBs wishing to do programmatic login. If servlet code used this method the
+     * established identity will be propagated to EJB calls but will not be used for web container manager authorization. In
+     * general servlets should use the servlet-specific version of login instead.
+     *
+     * @param user User name.
+     * @param password Password for user.
+     * @return Boolean containing true or false to indicate success or failure of login.
+     */
+    public Boolean login(String user, char[] password) {
+        // call login with realm-name = null and request for errors = false
+        try {
+            return login(user, password, null, false);
+        } catch (Exception e) {
+            // sanity checking, will never come here
+            return false;
         }
     }
 
@@ -138,104 +200,115 @@ public class ProgrammaticLogin {
      * @return Boolean containing true or false to indicate success or failure of login.
      * @throws Exception any exception encountered during Login.
      */
-    public Boolean login(final String user, final char[] password, final String realm, boolean errors) throws Exception {
+    public Boolean login(String user, char[] password, String realm, boolean errors) throws Exception {
         Boolean authenticated = null;
-        // check permission to login
+
         try {
 
-            // exception thrown on failure
+            // Check permission to login. An exception is thrown on failure
             checkLoginPermission(user);
 
-            // try to login. doPrivileged is used since application code does
-            // not have permissions to process the jaas login.
+            // Try to login. doPrivileged is used since application code may not have permissions to process the JAAS login.
             authenticated = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
-                public java.lang.Boolean run() {
-                    // if realm is null, LCD will log into the default realm
-                    if (((SecurityServicesUtil.getInstance() != null) && SecurityServicesUtil.getInstance().isServer())
-                            || Util.isEmbeddedServer()) {
+                @Override
+                public Boolean run() {
+                    if (isServer()) {
+
+                        // Login from Server
+
+                        // Note: If realm is null, WebAndEjbToJaasBridge will log into the default realm
                         WebAndEjbToJaasBridge.login(user, password, realm);
                     } else {
-                        int type = SecurityConstants.USERNAME_PASSWORD;
 
-                        // should not set realm here
-                        // Bugfix# 6387278. The UsernamePasswordStore
-                        // abstracts the thread-local/global details
-                        UsernamePasswordStore.set(user, password);
+                        // Login from Client
 
-                        try {
-                            LoginContextDriver.doClientLogin(type, handler);
-                        } finally {
-                            // For security, if thread-local no need to
-                            // save the username/password state
-                            UsernamePasswordStore.resetThreadLocalOnly();
-                        }
+                        executeWithCredentials(user, password, () -> LoginContextDriver.doClientLogin(USERNAME_PASSWORD, handler));
                     }
-                    return Boolean.valueOf(true);
+
+                    return true;
                 }
             });
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "prog.login.failed", e);
-            if (errors == true) { // propagate the exception ahead
-                throw e;
-            } else {
-                authenticated = Boolean.valueOf(false);
-            }
+            logger.log(SEVERE, "prog.login.failed", e);
+            throwOrFalse(e, errors);
         }
+
         return authenticated;
     }
 
-    /*
-     * Use of the char[] as password is encouraged
-     */
-    @Deprecated
-    public Boolean login(final String user, final String password) {
-        return login(user, password.toCharArray());
-    }
-
     /**
-     * Attempt to login.
+     * Attempt to logout for EJB.
      *
-     * <P>
-     * Upon successful return from this method the SecurityContext will be set in the name of the given user as its Subject.
+     * @returns Boolean containing true or false to indicate success or failure of logout.
      *
-     * <p>
-     * On client side, the actual login will not occur until we actually access a resource requiring a login. And a
-     * java.rmi.AccessException with COBRA NO_PERMISSION will occur when actual login is failed.
-     *
-     * <P>
-     * This method is intented primarily for EJBs wishing to do programmatic login. If servlet code used this method the
-     * established identity will be propagated to EJB calls but will not be used for web container manager authorization. In
-     * general servlets should use the servlet-specific version of login instead.
-     *
-     * @param user User name.
-     * @param password Password for user.
-     * @return Boolean containing true or false to indicate success or failure of login.
      */
-    public Boolean login(final String user, final char[] password) {
-        // call login with realm-name = null and request for errors = false
+    public Boolean logout() {
         try {
-            return login(user, password, null, false);
+            return logout(false);
         } catch (Exception e) {
-            // sanity checking, will never come here
+            // sanity check will never come here
             return false;
         }
     }
 
-    /*
-     * Use of the char[] as password is encouraged
+    /**
+     * Attempt to logout for EJB.
+     *
+     * @param errors, errors = true, the method will propagate the exceptions encountered while logging out, errors=false
+     * will return a Boolean value of false indicating failure of logout
+     * @return Boolean containing true or false to indicate success or failure of logout.
+     * @throws Exception encountered while logging out, if errors==false
+     *
      */
-    public Boolean login(String user, String password, String realm, HttpServletRequest request, HttpServletResponse response,
-            boolean errors) throws Exception {
-        return login(user, password.toCharArray(), realm, request, response, errors);
+    public Boolean logout(boolean errors) throws Exception {
+        Boolean loggedout = null;
+        // Check logout permission
+        try {
+            checkLogoutPermission();
+
+            AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                @Override
+                public java.lang.Object run() {
+                    if (SecurityServicesUtil.getInstance() != null && SecurityServicesUtil.getInstance().isServer()) {
+                        WebAndEjbToJaasBridge.logout();
+                    } else {
+                        // Reset the username/password state on logout
+                        UsernamePasswordStore.reset();
+
+                        LoginContextDriver.doClientLogout();
+
+                        // If a user try to access a protected resource after here
+                        // then it will prompt for password in appclient or
+                        // just fail in the standalone client.
+                    }
+
+                    return null;
+                }
+            });
+            loggedout = true;
+        } catch (Exception e) {
+            logger.log(WARNING, "prog.logout.failed", e);
+            loggedout = throwOrFalse(e, errors);
+        }
+
+        return loggedout;
     }
 
+
+
+    // ############################## Servlet login methods ###############################
+
+
     /**
-     * Attempt to login. This method is specific to servlets (and JSPs).
+     * Attempt to login. This method is specific to the Servlet container.
      *
      * <P>
      * Upon successful return from this method the SecurityContext will be set in the name of the given user as its Subject.
      * In addition, the principal stored in the request is set to the user name. If a session is available, its principal is
      * also set to the user provided.
+     *
+     * <p>
+     * Note: Use of the char[] as password is encouraged
      *
      * @returns Boolean containing true or false to indicate success or failure of login.
      * @param realm
@@ -247,21 +320,8 @@ public class ProgrammaticLogin {
      * @throws Exception any exceptions encountered during login
      * @return Boolean indicating true for successful login and false otherwise
      */
-    public Boolean login(String user, char[] password, String realm, HttpServletRequest request, HttpServletResponse response, boolean errors) throws Exception {
-        try {
-            // Check permission to login
-            checkLoginPermission(user);
-            
-            // Try to login. privilegedAlways is used since application code does
-            // not have permissions to process the jaas login.
-            return privilegedAlways(() -> webProgrammaticLogin.login(user, password, realm, request, response));
-        } catch (Exception e) {
-            if (errors != true) {
-                return false;
-            } else {
-                throw e;
-            }
-        }
+    public Boolean login(String user, String password, String realm, HttpServletRequest request, HttpServletResponse response, boolean errors) throws Exception {
+        return login(user, password.toCharArray(), realm, request, response, errors);
     }
 
     /*
@@ -272,7 +332,7 @@ public class ProgrammaticLogin {
     }
 
     /**
-     * Attempt to login. This method is specific to servlets (and JSPs).
+     * Attempt to login. This method is specific to Servlets (and JSPs).
      *
      * <P>
      * Upon successful return from this method the SecurityContext will be set in the name of the given user as its Subject.
@@ -297,61 +357,34 @@ public class ProgrammaticLogin {
     }
 
     /**
-     * Attempt to logout.
-     * 
-     * @returns Boolean containing true or false to indicate success or failure of logout.
+     * Attempt to login. This method is specific to servlets (and JSPs).
      *
-     */
-    public Boolean logout() {
-        try {
-            return logout(false);
-        } catch (Exception e) {
-            // sanity check will never come here
-            return false;
-        }
-    }
-
-    /**
-     * Attempt to logout.
-     * 
-     * @param errors, errors = true, the method will propagate the exceptions encountered while logging out, errors=false
-     * will return a Boolean value of false indicating failure of logout
-     * @return Boolean containing true or false to indicate success or failure of logout.
-     * @throws Exception encountered while logging out, if errors==false
+     * <P>
+     * Upon successful return from this method the SecurityContext will be set in the name of the given user as its Subject.
+     * In addition, the principal stored in the request is set to the user name. If a session is available, its principal is
+     * also set to the user provided.
      *
+     * @returns Boolean containing true or false to indicate success or failure of login.
+     * @param realm
+     * @param errors
+     * @param user User name.
+     * @param password Password for user.
+     * @param request HTTP request object provided by caller application. It should be an instance of HttpRequestFacade.
+     * @param response HTTP response object provided by called application. It should be an instance of HttpServletResponse.
+     * @throws Exception any exceptions encountered during login
+     * @return Boolean indicating true for successful login and false otherwise
      */
-    public Boolean logout(boolean errors) throws Exception {
-        Boolean loggedout = null;
-        // check logout permission
+    public Boolean login(String user, char[] password, String realm, HttpServletRequest request, HttpServletResponse response, boolean errors) throws Exception {
         try {
-            checkLogoutPermission();
-            
-            AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                public java.lang.Object run() {
-                    if (SecurityServicesUtil.getInstance() != null && SecurityServicesUtil.getInstance().isServer()) {
-                        WebAndEjbToJaasBridge.logout();
-                    } else {
-                        // Reset the username/password state on logout
-                        UsernamePasswordStore.reset();
+            // Check permission to login
+            checkLoginPermission(user);
 
-                        LoginContextDriver.doClientLogout();
-                        // If user try to access a protected resource after here
-                        // then it will prompt for password in appclient or
-                        // just fail in standalone client.
-                    }
-                    return null;
-                }
-            });
-            loggedout = true;
+            // Try to login. privilegedAlways is used since application code does
+            // not have permissions to process the jaas login.
+            return privilegedAlways(() -> webProgrammaticLogin.login(user, password, realm, request, response));
         } catch (Exception e) {
-            logger.log(WARNING, "prog.logout.failed", e);
-            if (errors) {
-                throw e;
-            } else {
-                loggedout = false;
-            }
+            return throwOrFalse(e, errors);
         }
-        return loggedout;
     }
 
     /**
@@ -371,7 +404,7 @@ public class ProgrammaticLogin {
 
     /**
      * Attempt to logout. Also removes principal from request (and session if available).
-     * 
+     *
      * @param errors, errors = true, the method will propagate the exceptions encountered while logging out, errors=false
      * will return a Boolean value of false indicating failure of logout
      *
@@ -382,18 +415,41 @@ public class ProgrammaticLogin {
         try {
             // check logout permission
             checkLogoutPermission();
-            
+
             return doPrivileged(new PrivilegedExceptionAction<Boolean>() {
+                @Override
                 public Boolean run() throws Exception {
                     return webProgrammaticLogin.logout(request, response);
                 }
             });
         } catch (Exception e) {
-            if (errors) {
-                throw e;
-            } else {
-                return false;
-            }
+            return throwOrFalse(e, errors);
+        }
+    }
+
+
+
+
+
+    // ############################## Private methods ###############################
+
+
+    private void executeWithCredentials(String user, char[] password, Runnable action) {
+
+        // Store the username and password in a global place (in TLS or a global instance variable). A
+        // JAAS login module (such as ClientPasswordLoginModule) that is assumed to be configured can pick it up
+        // from there. This is perhaps somewhat unorthodox, as normally you'd assume those come in via a callback.
+        //
+        // Note: Should not set realm here. See Bugfix# 6387278.
+        // The UsernamePasswordStore abstracts the thread-local/global details
+        UsernamePasswordStore.set(user, password);
+
+        try {
+            action.run();
+        } finally {
+            // If thread-local (TLS storage) happened to be used, there's no need to
+            // keep the username/password state there at this point, so clean it out.
+            UsernamePasswordStore.resetThreadLocalOnly();
         }
     }
 
@@ -406,7 +462,7 @@ public class ProgrammaticLogin {
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, "ProgrammaticLogin.login() called for user: " + user);
             }
-            
+
             SecurityManager securityManager = System.getSecurityManager();
             if (securityManager != null) {
                 securityManager.checkPermission(plLogin);
@@ -425,7 +481,7 @@ public class ProgrammaticLogin {
     private void checkLogoutPermission() throws Exception {
         try {
             logger.log(FINE, "ProgrammaticLogin.logout() called.");
-            
+
             SecurityManager securityManager = System.getSecurityManager();
             if (securityManager != null) {
                 securityManager.checkPermission(plLogout);
@@ -439,6 +495,18 @@ public class ProgrammaticLogin {
 
     private void resolveWebProgrammaticLogin() {
         webProgrammaticLogin = SecurityServicesUtil.getInstance().getHabitat().getService(WebProgrammaticLogin.class);
+    }
+
+    private boolean isServer() {
+        return(((SecurityServicesUtil.getInstance() != null) && SecurityServicesUtil.getInstance().isServer()) || Util.isEmbeddedServer());
+    }
+
+    private boolean throwOrFalse(Exception e, boolean errors) throws Exception {
+        if (errors) {
+            throw e;
+        }
+
+        return false;
     }
 
 }
