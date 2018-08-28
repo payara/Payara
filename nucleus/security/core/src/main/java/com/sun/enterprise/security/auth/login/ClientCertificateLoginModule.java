@@ -48,7 +48,6 @@ import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.security.auth.Subject;
@@ -73,40 +72,36 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  * This LoginModule authenticates users with X509 certificates.
  *
  * <p>
- * If testUser successfully authenticates itself, a <code>PrincipalImpl</code> with the testUser's username is added to
- * the Subject.
+ * If testUser successfully authenticates itself, a <code>PrincipalImpl</code> with the testUser's
+ * username is added to the Subject.
  *
  * <p>
- * This LoginModule recognizes the debug option. If set to true in the login Configuration, debug messages will be
- * output to the output stream, System.out.
+ * This LoginModule recognizes the debug option. If set to true in the login Configuration, debug
+ * messages will be output to the output stream, System.out.
  *
  * @author Harpreet Singh (harpreet.singh@sun.com)
  */
 public class ClientCertificateLoginModule implements LoginModule {
 
     private final static Logger _logger = SecurityLoggerInfo.getLogger();
-
     private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ClientCertificateLoginModule.class);
 
     private static KeyStore keyStore;
 
-    // initial state
+    // Initial state
     private Subject subject;
     private CallbackHandler callbackHandler;
-    private Map sharedState;
-    private Map options;
 
-    // configurable option
-    private boolean debug = false; // default
+    // Configurable option
+    private boolean debug;
 
-    // the authentication status
-    private boolean succeeded = false;
-    private boolean commitSucceeded = false;
+    // The authentication status
+    private boolean succeeded;
+    private boolean commitSucceeded;
 
     private String alias;
     private X509Certificate certificate;
 
-    // testUser's PrincipalImpl
     private PrincipalImpl userPrincipal;
 
     private AppClientSSL ssl;
@@ -120,25 +115,22 @@ public class ClientCertificateLoginModule implements LoginModule {
      * @param subject the <code>Subject</code> to be authenticated.
      * <p>
      *
-     * @param callbackHandler a <code>CallbackHandler</code> for communicating with the end user (prompting for usernames
-     * and passwords, for example).
+     * @param callbackHandler a <code>CallbackHandler</code> for communicating with the end user
+     * (prompting for usernames and passwords, for example).
      * <p>
      *
-     * @param sharedState shared <code>LoginModule</code> state.
+     * @param sharedState shared <code>LoginModule</code> state. (unused)
      * <p>
      *
      * @param options options specified in the login <code>Configuration</code> for this particular
-     * <code>LoginModule</code>.
+     * <code>LoginModule</code>. Only used for the "debug" option.
      */
     @Override
-    public void initialize(Subject subject, CallbackHandler callbackHandler, Map sharedState, Map options) {
-
+    public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
         this.subject = subject;
         this.callbackHandler = callbackHandler;
-        this.sharedState = sharedState;
-        this.options = options;
 
-        // initialize any configured options
+        // Initialize any configured options
         debug = "true".equalsIgnoreCase((String) options.get("debug"));
         sslUtils = Globals.getDefaultHabitat().getService(SSLUtils.class);
     }
@@ -150,60 +142,58 @@ public class ClientCertificateLoginModule implements LoginModule {
      *
      * @return true in all cases since this <code>LoginModule</code> should not be ignored.
      *
-     * @exception LoginException if this <code>LoginModule</code> is unable to perform the authentication.
+     * @exception LoginException if this <code>LoginModule</code> is unable to perform the
+     * authentication.
      */
     @Override
     public boolean login() throws LoginException {
 
-        // prompt for a username and password
+        // Prompt for a username and password
         if (callbackHandler == null) {
             throw new LoginException("Error: no CallbackHandler available " + "to garner authentication information from the user");
         }
 
         try {
-            String[] as = new String[keyStore.size()];
-            String[] aliasString = new String[keyStore.size()];
-            Enumeration aliases = keyStore.aliases();
+            String[] certificateNames = new String[keyStore.size()];
+            String[] aliasNames = new String[keyStore.size()];
+
+            Enumeration<String> aliases = keyStore.aliases();
             for (int i = 0; i < keyStore.size(); i++) {
-                aliasString[i] = (String) aliases.nextElement();
-                as[i] = ((X509Certificate) keyStore.getCertificate(aliasString[i])).getSubjectDN().getName();
+                aliasNames[i] = aliases.nextElement();
+                certificateNames[i] = ((X509Certificate) keyStore.getCertificate(aliasNames[i])).getSubjectDN().getName();
             }
 
-            Callback[] callbacks = new Callback[1];
-            callbacks[0] = new ChoiceCallback(localStrings.getLocalString("login.certificate", "Choose from list of certificates: "), as, 0,
-                    false);
+            Callback[] callbacks = new Callback[] {createChoiceCallback(certificateNames)};
 
             callbackHandler.handle(callbacks);
 
-            int[] idx = ((ChoiceCallback) callbacks[0]).getSelectedIndexes();
+            int[] selectedIndexes = ((ChoiceCallback) callbacks[0]).getSelectedIndexes();
 
-            if (idx == null) {
+            if (selectedIndexes == null) {
                 throw new LoginException("No certificate selected!");
-            } else if (idx[0] == -1) {
+            } else if (selectedIndexes[0] == -1) {
                 throw new LoginException("Incorrect keystore password");
             }
-            // print debugging information
-            if (debug) {
-                if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.FINE, "\t\t[ClientCertificateLoginModule] " + "user entered certificate: ");
-                    for (int i = 0; i < idx.length; i++) {
-                        _logger.log(Level.FINE, aliasString[idx[i]]);
-                    }
+
+            // Print debugging information
+            if (debug && _logger.isLoggable(FINE)) {
+                _logger.log(FINE, "\t\t[ClientCertificateLoginModule] " + "user entered certificate: ");
+                for (int i = 0; i < selectedIndexes.length; i++) {
+                    _logger.log(FINE, aliasNames[selectedIndexes[i]]);
                 }
             }
 
-            // the authenticate method previously picked out the
-            // wrong alias.
-            // since we allow only 1 choice the first element in idx
+            // The authenticate method previously picked out the wrong alias.
+            // Since we allow only 1 choice the first element in idx
             // idx[0] should have the selected index.
-            this.alias = aliasString[idx[0]];
+            alias = aliasNames[selectedIndexes[0]];
             certificate = (X509Certificate) keyStore.getCertificate(alias);
-            // the authenticate should always return a true.
-            if (debug) {
-                if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.FINE, "\t\t[ClientCertificateLoginModule] " + "authentication succeeded");
-                }
+
+            // The authenticate should always return a true.
+            if (debug && _logger.isLoggable(FINE)) {
+                _logger.log(FINE, "\t\t[ClientCertificateLoginModule] " + "authentication succeeded");
             }
+
             succeeded = true;
             return true;
         } catch (IOException ioe) {
@@ -218,14 +208,15 @@ public class ClientCertificateLoginModule implements LoginModule {
 
     /**
      * <p>
-     * This method is called if the LoginContext's overall authentication succeeded (the relevant REQUIRED, REQUISITE,
-     * SUFFICIENT and OPTIONAL LoginModules succeeded).
+     * This method is called if the LoginContext's overall authentication succeeded (the relevant
+     * REQUIRED, REQUISITE, SUFFICIENT and OPTIONAL LoginModules succeeded).
      *
      * <p>
-     * If this LoginModule's own authentication attempt succeeded (checked by retrieving the private state saved by the
-     * <code>login</code> method), then this method associates a <code>PrincipalImpl</code> with the <code>Subject</code>
-     * located in the <code>LoginModule</code>. If this LoginModule's own authentication attempted failed, then this method
-     * removes any state that was originally saved.
+     * If this LoginModule's own authentication attempt succeeded (checked by retrieving the private
+     * state saved by the <code>login</code> method), then this method associates a
+     * <code>PrincipalImpl</code> with the <code>Subject</code> located in the <code>LoginModule</code>.
+     * If this LoginModule's own authentication attempted failed, then this method removes any state
+     * that was originally saved.
      *
      * <p>
      *
@@ -256,10 +247,9 @@ public class ClientCertificateLoginModule implements LoginModule {
         ssl.setCertNickname(this.alias);
         sslUtils.setAppclientSsl(ssl);
 
-        String realm = CERT_REALMNAME;
         X509Certificate[] certChain = new X509Certificate[1];
         certChain[0] = certificate;
-        X509CertificateCredential pc = new X509CertificateCredential(certChain, alias, realm);
+        X509CertificateCredential pc = new X509CertificateCredential(certChain, alias, CERT_REALMNAME);
         if (!subject.getPrivateCredentials().contains(pc)) {
             subject.getPrivateCredentials().add(pc);
         }
@@ -270,12 +260,13 @@ public class ClientCertificateLoginModule implements LoginModule {
 
     /**
      * <p>
-     * This method is called if the LoginContext's overall authentication failed. (the relevant REQUIRED, REQUISITE,
-     * SUFFICIENT and OPTIONAL LoginModules did not succeed).
+     * This method is called if the LoginContext's overall authentication failed. (the relevant
+     * REQUIRED, REQUISITE, SUFFICIENT and OPTIONAL LoginModules did not succeed).
      *
      * <p>
-     * If this LoginModule's own authentication attempt succeeded (checked by retrieving the private state saved by the
-     * <code>login</code> and <code>commit</code> methods), then this method cleans up any state that was originally saved.
+     * If this LoginModule's own authentication attempt succeeded (checked by retrieving the private
+     * state saved by the <code>login</code> and <code>commit</code> methods), then this method cleans
+     * up any state that was originally saved.
      *
      * <p>
      *
@@ -307,7 +298,8 @@ public class ClientCertificateLoginModule implements LoginModule {
      * Logout the user.
      *
      * <p>
-     * This method removes the <code>PrincipalImpl</code> that was added by the <code>commit</code> method.
+     * This method removes the <code>PrincipalImpl</code> that was added by the <code>commit</code>
+     * method.
      *
      * <p>
      *
@@ -331,5 +323,9 @@ public class ClientCertificateLoginModule implements LoginModule {
 
     public static void setKeyStore(KeyStore keyStore) {
         ClientCertificateLoginModule.keyStore = keyStore;
+    }
+
+    private Callback createChoiceCallback(String[] choices) {
+        return new ChoiceCallback(localStrings.getLocalString("login.certificate", "Choose from list of certificates: "), choices, 0, false);
     }
 }

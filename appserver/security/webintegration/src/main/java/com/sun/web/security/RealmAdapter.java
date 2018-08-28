@@ -212,7 +212,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     @Inject
     private RequestTracingService requestTracing;
 
-    
+
     private NetworkListeners nwListeners;
     private JaspicRealm jaspicRealm;
     private CNonceValidator cNonceValidator;
@@ -572,14 +572,14 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
     /**
      * Authenticates and sets the SecurityContext in the TLS.
-     * 
+     *
      * This HttpServletRequest authenticate variant is primarily used by the DigestAuthenticator
      */
     @Override
     public Principal authenticate(HttpServletRequest httpServletRequest) {
         DigestAlgorithmParameter[] params;
         String username;
-        
+
         try {
             params = getDigestParameters(httpServletRequest);
             username = getDigestKey(params).getUsername();
@@ -589,7 +589,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             }
             return null;
         }
-        
+
         if (authenticate(username, null, null, params)) {
             return new WebPrincipal(username, (char[]) null, SecurityContext.getCurrent());
         }
@@ -599,7 +599,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
     /**
      * Authenticates and sets the SecurityContext in the TLS.
-     * 
+     *
      * This HttpServletRequest authenticate variant is primarily used by the SSLAuthenticator
      */
     @Override
@@ -617,8 +617,8 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      *
      * @param request Request we are processing
      * @param response Response we are creating
-     * @param constraint Security constraint we are enforcing
-     * @param The Context to which client of this class is attached.
+     * @param constraints Security constraint we are enforcing
+     * @param context The Context to which client of this class is attached.
      *
      * @exception IOException if an input/output error occurs
      */
@@ -922,9 +922,9 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
                 WebAndEjbToJaasBridge.doX500Login(createSubjectWithCerts(certs), moduleID);
             } else if (digestParams != null) {
-                
+
                 // Digest parameters used to authenticate
-                
+
                 WebAndEjbToJaasBridge.login(new DigestCredentials(realmName, username, digestParams));
             }
             else {
@@ -1405,21 +1405,21 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     public void postConstruct() {
         nwListeners = networkConfig.getNetworkListeners();
     }
-    
+
     private DigestAlgorithmParameter[] getDigestParameters(HttpServletRequest request) throws InvalidAlgorithmParameterException {
         return cNonceValidator.validateCnonce(
             DigestParameterGenerator
                 .getInstance(HTTP_DIGEST)
                 .generateParameters(new HttpAlgorithmParameterImpl(request)));
     }
-    
+
     private Key getDigestKey(DigestAlgorithmParameter[] params) {
         for (DigestAlgorithmParameter dap : params) {
             if (A1.equals(dap.getName()) && dap instanceof Key) {
                 return (Key) dap;
             }
         }
-        
+
         throw new RuntimeException("No key found in parameters");
     }
 
