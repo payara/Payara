@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.util;
 
@@ -410,16 +410,19 @@ public class DOLUtils {
     // present in the current archive */
     private static List<ConfigurationDeploymentDescriptorFile> sortConfigurationDDFiles(List<ConfigurationDeploymentDescriptorFile> ddFiles, ArchiveType archiveType, ReadableArchive archive) {
         ConfigurationDeploymentDescriptorFile wlsConfDD = null;
+        ConfigurationDeploymentDescriptorFile payaraConfDD = null;
         ConfigurationDeploymentDescriptorFile gfConfDD = null;
         ConfigurationDeploymentDescriptorFile sunConfDD = null;
         for (ConfigurationDeploymentDescriptorFile ddFile : ddFiles) {
             ddFile.setArchiveType(archiveType);
             String ddPath = ddFile.getDeploymentDescriptorPath();
-            if (ddPath.indexOf(DescriptorConstants.WLS) != -1) {
+            if (ddPath.contains(DescriptorConstants.WLS)) {
                 wlsConfDD = ddFile;
-            } else if (ddPath.indexOf(DescriptorConstants.GF_PREFIX) != -1) {
+            } else if (ddPath.contains(DescriptorConstants.PAYARA_PREFIX)){
+                payaraConfDD = ddFile;
+            } else if (ddPath.contains(DescriptorConstants.GF_PREFIX)) {
                 gfConfDD = ddFile;
-            } else if (ddPath.indexOf(DescriptorConstants.S1AS_PREFIX) != -1) {
+            } else if (ddPath.contains(DescriptorConstants.S1AS_PREFIX)) {
                 sunConfDD = ddFile;
             }
         }
@@ -432,8 +435,10 @@ public class DOLUtils {
         if (runtimeAltDDFile != null && runtimeAltDDFile.exists() && runtimeAltDDFile.isFile()) {
             String runtimeAltDDPath = runtimeAltDDFile.getPath();
             validateRuntimeAltDDPath(runtimeAltDDPath);
-            if (runtimeAltDDPath.indexOf(
-                DescriptorConstants.GF_PREFIX) != -1 && gfConfDD != null) {
+            if (runtimeAltDDPath.contains(DescriptorConstants.PAYARA_PREFIX) && payaraConfDD != null) {
+                sortedConfDDFiles.add(payaraConfDD);
+                return sortedConfDDFiles;
+            } else if (runtimeAltDDPath.contains(DescriptorConstants.GF_PREFIX) && gfConfDD != null) {
                 sortedConfDDFiles.add(gfConfDD);
                 return sortedConfDDFiles;
             }
@@ -441,10 +446,13 @@ public class DOLUtils {
 
         // sort the deployment descriptor files by precedence order 
         // when they are present in the same archive
-
+        
         if (Boolean.valueOf(System.getProperty(GFDD_OVER_WLSDD))) {
             // if this property set, it means we need to make GF deployment
-            // descriptors higher precedence 
+            // descriptors higher precedence then weblogic
+            if (payaraConfDD != null){
+                sortedConfDDFiles.add(payaraConfDD);
+            }
             if (gfConfDD != null) {
                 sortedConfDDFiles.add(gfConfDD);
             }
@@ -457,10 +465,16 @@ public class DOLUtils {
             if (gfConfDD != null) {
                 sortedConfDDFiles.add(gfConfDD);
             }
+            if (payaraConfDD != null){
+                sortedConfDDFiles.add(payaraConfDD);
+            }
         } else  {
             // the default will be WLS DD has higher precedence
             if (wlsConfDD != null) { 
                 sortedConfDDFiles.add(wlsConfDD);
+            }
+            if (payaraConfDD != null){
+                sortedConfDDFiles.add(payaraConfDD);
             }
             if (gfConfDD != null) {
                 sortedConfDDFiles.add(gfConfDD);
@@ -479,7 +493,7 @@ public class DOLUtils {
      * @param runtimeAltDDPath 
      */
     public static void validateRuntimeAltDDPath(String runtimeAltDDPath) {
-        if (runtimeAltDDPath.indexOf(DescriptorConstants.GF_PREFIX) == -1) { 
+        if (!runtimeAltDDPath.contains(DescriptorConstants.GF_PREFIX) && !runtimeAltDDPath.contains(DescriptorConstants.PAYARA_PREFIX)) { 
             String msg = localStrings.getLocalString(
                 "enterprise.deployment.util.unsupportedruntimealtdd", "Unsupported external runtime alternate deployment descriptor [{0}].", new Object[] {runtimeAltDDPath});
             throw new IllegalArgumentException(msg);
@@ -496,8 +510,7 @@ public class DOLUtils {
      * @return 
      * @throws java.io.IOException */
     public static List<ConfigurationDeploymentDescriptorFile> processConfigurationDDFiles(List<ConfigurationDeploymentDescriptorFile> ddFiles, ReadableArchive archive, ArchiveType archiveType) throws IOException {
-        File runtimeAltDDFile = archive.getArchiveMetaData(
-            DeploymentProperties.RUNTIME_ALT_DD, File.class);
+        File runtimeAltDDFile = archive.getArchiveMetaData(DeploymentProperties.RUNTIME_ALT_DD, File.class);
         if (runtimeAltDDFile != null && runtimeAltDDFile.exists() && runtimeAltDDFile.isFile()) {
             // if there are external runtime alternate deployment descriptor 
             // specified, the config DD files are already processed
@@ -528,17 +541,17 @@ public class DOLUtils {
         List<ConfigurationDeploymentDescriptorFile> archivistConfDDFiles = archivist.getConfigurationDDFiles();
         for (ConfigurationDeploymentDescriptorFile ddFile : sortConfigurationDDFiles(archivistConfDDFiles, archivist.getModuleType(), embeddedArchive)) {        
             String ddPath = ddFile.getDeploymentDescriptorPath();
-            if (ddPath.indexOf(DescriptorConstants.WLS) != -1 && 
-                appArchive.exists(DescriptorConstants.WLS + altDDPath)) {
+            if (ddPath.contains(DescriptorConstants.WLS) && appArchive.exists(DescriptorConstants.WLS + altDDPath)) {
                 // TODO: need to revisit this for WLS alt-dd pattern
                 confDD = ddFile;
                 altRuntimeDDPath = DescriptorConstants.WLS + altDDPath;
-            } else if (ddPath.indexOf(DescriptorConstants.GF_PREFIX) != -1 &&
-                appArchive.exists(DescriptorConstants.GF_PREFIX + altDDPath)) {
+            } else if (ddPath.contains(DescriptorConstants.PAYARA_PREFIX) && appArchive.exists(DescriptorConstants.PAYARA_PREFIX + altDDPath)) {
+                confDD = ddFile;
+                altRuntimeDDPath = DescriptorConstants.PAYARA_PREFIX + altDDPath;
+            } else if (ddPath.contains(DescriptorConstants.GF_PREFIX) && appArchive.exists(DescriptorConstants.GF_PREFIX + altDDPath)) {
                 confDD = ddFile;
                 altRuntimeDDPath = DescriptorConstants.GF_PREFIX + altDDPath;
-            } else if (ddPath.indexOf(DescriptorConstants.S1AS_PREFIX) != -1 
-                && appArchive.exists(DescriptorConstants.S1AS_PREFIX + altDDPath)){
+            } else if (ddPath.contains(DescriptorConstants.S1AS_PREFIX) && appArchive.exists(DescriptorConstants.S1AS_PREFIX + altDDPath)){
                 confDD = ddFile;
                 altRuntimeDDPath = DescriptorConstants.S1AS_PREFIX + altDDPath;
             }
@@ -769,7 +782,7 @@ public class DOLUtils {
         if (SCHEMA_LOCATION_TAG.equals(element.getCompleteName())) {
             // we need to keep all the non j2ee/javaee schemaLocation tags
             StringTokenizer st = new StringTokenizer(value);
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             while (st.hasMoreElements()) {
                 String namespace = (String) st.nextElement();
 		String schema;
