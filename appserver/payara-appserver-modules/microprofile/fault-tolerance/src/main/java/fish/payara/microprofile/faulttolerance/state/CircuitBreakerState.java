@@ -59,6 +59,10 @@ public class CircuitBreakerState {
     private final BlockingQueue<Boolean> closedResultsQueue;
     private volatile int halfOpenSuccessfulResultsCounter;
     private volatile CircuitState circuitState = CircuitState.CLOSED;
+    private volatile long timer = System.nanoTime();
+    private volatile long closedTime = 0;
+    private volatile long openTime = 0;
+    private volatile long halfOpenTime = 0;
     
     public CircuitBreakerState(int requestVolumeThreshold) {
         closedResultsQueue = new LinkedBlockingQueue<>(requestVolumeThreshold);
@@ -75,9 +79,22 @@ public class CircuitBreakerState {
     
     /**
      * Sets the CircuitBreaker state to the provided enum value.
-     * @param circuitState The state to set the CIrcuitBreaker to.
+     * @param circuitState The state to set the CircuitBreaker to.
      */
     public void setCircuitState(CircuitState circuitState) {
+        switch (this.circuitState) {
+            case OPEN:
+                updateOpenTime(System.nanoTime());
+                break;
+            case HALF_OPEN:
+                updateHalfOpenTime(System.nanoTime());
+                break;
+            case CLOSED:
+                updateClosedTime(System.nanoTime());
+                break;
+        }
+        
+        resetTimer();
         this.circuitState = circuitState;
     }
     
@@ -148,5 +165,45 @@ public class CircuitBreakerState {
         }
         
         return over;
+    }
+    
+    private void resetTimer() {
+        timer = System.nanoTime();
+    }
+    
+    public long updateAndGetClosedTime(long nanoseconds) {     
+        if (circuitState.equals(CircuitState.CLOSED)) {
+            updateClosedTime(nanoseconds);
+        }
+
+        return closedTime;
+    }
+    
+    private void updateClosedTime(long nanoseconds) {
+        closedTime =+ (nanoseconds - timer);
+    }
+    
+    public long updateAndGetOpenTime(long nanoseconds) {
+        if (circuitState.equals(CircuitState.OPEN)) {
+            updateOpenTime(nanoseconds);
+        }
+        
+        return openTime;
+    }
+    
+    private void updateOpenTime(long nanoseconds) {
+        openTime =+ (nanoseconds - timer);
+    }
+    
+    public long updateAndGetHalfOpenTime(long nanoseconds) {
+        if (circuitState.equals(CircuitState.HALF_OPEN)) {
+            updateHalfOpenTime(nanoseconds);
+        }
+        
+        return halfOpenTime;
+    }
+    
+    private void updateHalfOpenTime(long nanoseconds) {
+        halfOpenTime =+ (nanoseconds - timer);
     }
 }

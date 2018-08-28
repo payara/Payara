@@ -178,7 +178,7 @@
         <yubico-validation-client2.version>3.0.2.payara-p1</yubico-validation-client2.version>
 
          <!-- Microprofile version properties -->
-        <microprofile-fault-tolerance.version>1.0</microprofile-fault-tolerance.version>
+        <microprofile-fault-tolerance.version>1.1.1</microprofile-fault-tolerance.version>
         <microprofile-jwt-auth.version>1.1</microprofile-jwt-auth.version>
         <microprofile-healthcheck.version>1.0</microprofile-healthcheck.version>
         <microprofile-metrics.version>1.1</microprofile-metrics.version>
