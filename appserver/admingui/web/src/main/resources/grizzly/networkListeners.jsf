@@ -116,7 +116,7 @@
         gf.getNetworkListeners(configName="#{pageSession.configName}", result="#{requestScope.listOfRows}");
 
         foreach (var="listener" list="#{requestScope.listOfRows}") {
-            py.resolveDynamicPort(listenerName="#{listener.name}" result="#{listener.port}");
+            py.resolveDynamicPort(listenerName="#{listener.name}", configName="#{pageSession.configName}", result="#{listener.port}");
         }
 
         createMap(result="#{pageSession.valueMap}");
