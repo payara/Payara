@@ -70,7 +70,7 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name = "get-microprofile-healthcheck-configuration")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = MetricsHealthCheckConfiguration.class,
             opType = RestEndpoint.OpType.GET,
