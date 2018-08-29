@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -81,8 +82,7 @@ public interface MessageSecurityConfig extends ConfigBeanProxy  {
      * able to perform authentication processing at the message layer defined
      * by the value of the auth-layer attribute.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute(key=true)
     @NotNull
@@ -91,8 +91,8 @@ public interface MessageSecurityConfig extends ConfigBeanProxy  {
     /**
      * Sets the value of the authLayer property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setAuthLayer(String value) throws PropertyVetoException;
 
@@ -106,8 +106,7 @@ public interface MessageSecurityConfig extends ConfigBeanProxy  {
      * the container will only invoke a provider of the type (at the layer)
      * for those applications for which a specific provider has been bound.   
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute
     @Pattern(regexp=NAME_REGEX)
@@ -116,8 +115,8 @@ public interface MessageSecurityConfig extends ConfigBeanProxy  {
     /**
      * Sets the value of the defaultProvider property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setDefaultProvider(String value) throws PropertyVetoException;
 
@@ -127,8 +126,7 @@ public interface MessageSecurityConfig extends ConfigBeanProxy  {
      * Used to identify the client provider to be invoked for any application
      * for which a specific client provider has not been bound
      * 
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute
     @Pattern(regexp=NAME_REGEX)
@@ -137,8 +135,8 @@ public interface MessageSecurityConfig extends ConfigBeanProxy  {
     /**
      * Sets the value of the defaultClientProvider property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setDefaultClientProvider(String value) throws PropertyVetoException;
 
@@ -161,6 +159,7 @@ public interface MessageSecurityConfig extends ConfigBeanProxy  {
      * <p/>
      * Objects of the following type(s) are allowed in the list
      * {@link ProviderConfig }
+     * @return 
      */
     @Element(required=true)
     public List<ProviderConfig> getProviderConfig();

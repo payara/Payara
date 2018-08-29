@@ -37,11 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.glassfish.flashlight.statistics.impl;
 
 import org.glassfish.flashlight.statistics.TimeStatsNanos;
@@ -58,9 +55,9 @@ import org.glassfish.hk2.api.PerLookup;
 public class TimeStatsNanosImpl extends TimeStatsAbstractImpl
         implements TimeStatsNanos {
 
-    private String NAME = "timeStatsNanos";
-    private String DESCRIPTION = "TimeStatistic Nano";
-    private String UNIT = "Nano seconds";
+    private static final String NAME = "timeStatsNanos";
+    private static final String DESCRIPTION = "TimeStatistic Nano";
+    private static final String UNIT = "Nano seconds";
 
     public TimeStatsNanosImpl() {
         super.setName(NAME);
@@ -82,14 +79,17 @@ public class TimeStatsNanosImpl extends TimeStatsAbstractImpl
         return getTime();
     }
 
+    @Override
     public String getUnit() {
-        return this.UNIT;
+        return UNIT;
     }
 
+    @Override
     public String getDescription() {
-        return this.DESCRIPTION;
+        return DESCRIPTION;
     }
 
+    @Override
     public String toString() {
         return "Statistic " + getClass().getName() + NEWLINE +
                 "Name: " + getName() + NEWLINE +

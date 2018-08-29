@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans.customvalidators;
 
@@ -49,23 +50,22 @@ import org.jvnet.hk2.config.types.Property;
  *
  * @author Nandini Ektare
  */
-public class FileRealmPropertyCheckValidator
-    implements ConstraintValidator<FileRealmPropertyCheck, AuthRealm> {
+public class FileRealmPropertyCheckValidator implements ConstraintValidator<FileRealmPropertyCheck, AuthRealm> {
 
-    private static final String FILE_REALM =
-        "com.sun.enterprise.security.auth.realm.file.FileRealm";
+    private static final String FILE_REALM = "com.sun.enterprise.security.auth.realm.file.FileRealm";
 
+    @Override
     public void initialize(final FileRealmPropertyCheck fqcn) {
     }
 
-    public boolean isValid(final AuthRealm realm,
-        final ConstraintValidatorContext constraintValidatorContext) {
+    @Override
+    public boolean isValid(final AuthRealm realm, final ConstraintValidatorContext constraintValidatorContext) {
 
         if (realm.getClassname().equals(FILE_REALM)) {
-            Property jaas_context = realm.getProperty("jaas-context");
+            Property jaasContext = realm.getProperty("jaas-context");
             Property file = realm.getProperty("file");
 
-            if (jaas_context == null || jaas_context.getName().equals(""))
+            if (jaasContext == null || jaasContext.getName().equals(""))
                 return false;
 
             if (file == null || file.getName().equals(""))

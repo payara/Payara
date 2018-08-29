@@ -144,8 +144,8 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     private Long rotationTimeLimitValue;
     private boolean compressionOnRotation;
     private boolean multiLineMode;
-    private String gffileHandlerFormatter = "";
-    private String currentgffileHandlerFormatter = "";
+    private String fileHandlerFormatter = "";
+    private String currentFileHandlerFormatter = "";
 
     // Initially the LogRotation will be off until the domain.xml value is read.
     private int limitForFileRotation = 0;
@@ -263,9 +263,9 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         }
 
         if (odlFormatter > 0) {
-            currentgffileHandlerFormatter = "com.sun.enterprise.server.logging.ODLLogFormatter";
+            currentFileHandlerFormatter = "com.sun.enterprise.server.logging.ODLLogFormatter";
         } else if (uniformLogFormatter > 0) {
-            currentgffileHandlerFormatter = "com.sun.enterprise.server.logging.UniformLogFormatter";
+            currentFileHandlerFormatter = "com.sun.enterprise.server.logging.UniformLogFormatter";
         }
 
         // start the Queue consumer thread.
@@ -330,12 +330,12 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
 
         // Below snapshot of the code is used to rotate server.log file on startup. It is used to avoid different format
         // log messages logged under same server.log file.
-        gffileHandlerFormatter = formatterName;
+        fileHandlerFormatter = formatterName;
         if (mustRotate) {
             rotate();
-        } else if (gffileHandlerFormatter != null
-                && !gffileHandlerFormatter
-                        .equals(currentgffileHandlerFormatter)) {
+        } else if (fileHandlerFormatter != null
+                && !fileHandlerFormatter
+                        .equals(currentFileHandlerFormatter)) {
             rotate();
         }
         excludeFields = manager.getProperty(LogManagerService.EXCLUDE_FIELDS_PROPERTY);
@@ -1084,21 +1084,21 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         this.multiLineMode = multiLineMode;
         // Rotate log file to avoid different log format to be displayed in same log file
         rotate();
-        configureLogFormatter(gffileHandlerFormatter, excludeFields, multiLineMode);
+        configureLogFormatter(fileHandlerFormatter, excludeFields, multiLineMode);
     }
 
-    public synchronized void setGffileHandlerFormatter(String gffileHandlerFormatter) {
-        this.gffileHandlerFormatter = gffileHandlerFormatter;
+    public synchronized void setFileHandlerFormatter(String fileHandlerFormatter) {
+        this.fileHandlerFormatter = fileHandlerFormatter;
         // Rotate log file to avoid different log format to be displayed in same log file
         rotate();
-        configureLogFormatter(gffileHandlerFormatter, excludeFields, multiLineMode);
+        configureLogFormatter(fileHandlerFormatter, excludeFields, multiLineMode);
     }
 
     public synchronized void setExcludeFields(String excludeFields) {
         this.excludeFields = excludeFields;
         // Rotate log file to avoid different log format to be displayed in same log file
         rotate();
-        configureLogFormatter(gffileHandlerFormatter, excludeFields, multiLineMode);
+        configureLogFormatter(fileHandlerFormatter, excludeFields, multiLineMode);
     }
 
     public synchronized void setRotationLimitAttrValue(Integer rotationLimitAttrValue) {

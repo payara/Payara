@@ -40,13 +40,12 @@
 
 package org.glassfish.flashlight.statistics;
 
-import org.glassfish.flashlight.datatree.TreeNode;
 import org.jvnet.hk2.annotations.Contract;
 import org.glassfish.external.statistics.RangeStatistic;
+
 /**
  * @author Harpreet SIngh
  */
-
 @Contract
 public interface Average extends RangeStatistic{
 

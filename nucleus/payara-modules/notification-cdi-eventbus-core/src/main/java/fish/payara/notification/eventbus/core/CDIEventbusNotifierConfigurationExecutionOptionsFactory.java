@@ -53,7 +53,7 @@ import java.io.UnsupportedEncodingException;
  */
 @Service
 @RunLevel(StartupRunLevel.VAL)
-public class CDIEventbusNotifierConfigurationExecutionOptionsFactory
+public class  CDIEventbusNotifierConfigurationExecutionOptionsFactory
         extends NotifierConfigurationExecutionOptionsFactory<CDIEventbusNotifierConfiguration, CDIEventbusNotifierConfigurationExecutionOptions> {
 
     @PostConstruct
@@ -67,6 +67,7 @@ public class CDIEventbusNotifierConfigurationExecutionOptionsFactory
 
         executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
         executionOptions.setLoopBack(Boolean.parseBoolean(notifierConfiguration.getLoopBack()));
+        executionOptions.setNoisy(Boolean.parseBoolean(notifierConfiguration.getNoisy()));
 
         return executionOptions;
     }

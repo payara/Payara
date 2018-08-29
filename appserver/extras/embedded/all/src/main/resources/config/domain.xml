@@ -102,7 +102,7 @@
       <payara-executor-service-configuration/>
       <http-service>
         <access-log/>
-        <virtual-server id="server" network-listeners="http-listener-1,http-listener-2"/>
+        <virtual-server id="server" network-listeners="http-listener,https-listener"/>
         <virtual-server id="__asadmin" network-listeners="admin-listener"/>
       </http-service>
       <iiop-service>
@@ -134,7 +134,6 @@
       </notification-service-configuration>
     <hazelcast-config-specific-configuration></hazelcast-config-specific-configuration>
     <monitoring-service-configuration></monitoring-service-configuration>
-    <microprofile-metrics-configuration></microprofile-metrics-configuration>
        <diagnostic-service />
       <security-service>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">

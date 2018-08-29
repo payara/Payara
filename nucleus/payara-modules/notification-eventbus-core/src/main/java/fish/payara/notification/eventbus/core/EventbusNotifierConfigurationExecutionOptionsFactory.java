@@ -66,6 +66,7 @@ public class EventbusNotifierConfigurationExecutionOptionsFactory
         EventbusNotifierConfigurationExecutionOptions executionOptions = new EventbusNotifierConfigurationExecutionOptions();
 
         executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
+        executionOptions.setNoisy(Boolean.parseBoolean(notifierConfiguration.getNoisy()));
         executionOptions.setTopicName(notifierConfiguration.getTopicName());
 
         return executionOptions;

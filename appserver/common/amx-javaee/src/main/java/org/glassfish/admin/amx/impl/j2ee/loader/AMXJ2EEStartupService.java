@@ -83,7 +83,6 @@ import org.glassfish.internal.api.PostStartupRunLevel;
  * triggered is not yet clear.
  */
 @Service
-@RunLevel(mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING, value=PostStartupRunLevel.VAL)
 public final class AMXJ2EEStartupService implements org.glassfish.hk2.api.PostConstruct, org.glassfish.hk2.api.PreDestroy, AMXLoader, ConfigListener {
 
     @Inject

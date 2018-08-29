@@ -37,18 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support.datatypes;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.DataType;
 import org.jvnet.hk2.config.ValidationException;
 
-/** Represents a network port on a machine. It's modeled as a functional class.
+/** Represents a network port on a machine. It's modelled as a functional class.
  * @author &#2325;&#2375;&#2342;&#2366;&#2352 (km@dev.java.net)
  */
 @Service
@@ -60,6 +57,7 @@ public final class Port implements DataType {
      * @throws org.jvnet.hk2.config.ValidationException if the value does not represent
      * integer value.
      */
+    @Override
     public void validate(String value) throws ValidationException {
         if (value == null)
             throw new ValidationException("null value is not of type Port");

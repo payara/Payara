@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.admin.launcher;
 
@@ -52,33 +52,45 @@ import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 /**
- * A POL (plain old logger).
+ * A POL (plain old LOGGER).
  *
  * @author bnevins
  */
 public class GFLauncherLogger {
+    
+        private GFLauncherLogger() {
+    }
+    // The resourceBundle name to be used for the module's log messages
+    @LogMessagesResourceBundle
+    public static final String SHARED_LOGMESSAGE_RESOURCE = "com.sun.enterprise.admin.launcher.LogMessages";
+    @LoggerInfo(subsystem = "Launcher", description = "Launcher Logger", publish = true)
+    public static final String LOGGER_NAME = "javax.enterprise.launcher";
+    private static final Logger LOGGER;
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(GFLauncherLogger.class);
+    private static FileHandler logfileHandler;
+    
     // use LocalStrings for < INFO level...
 
     public static void warning(String msg, Object... objs) {
-        logger.log(Level.WARNING, msg, objs);
+        LOGGER.log(Level.WARNING, msg, objs);
     }
 
     public static void info(String msg, Object... objs) {
-        logger.log(Level.INFO, msg, objs);
+        LOGGER.log(Level.INFO, msg, objs);
     }
 
     public static void severe(String msg, Object... objs) {
-        logger.log(Level.SEVERE, msg, objs);
+        LOGGER.log(Level.SEVERE, msg, objs);
     }
 
     public static void fine(String msg, Object... objs) {
-        if(logger.isLoggable(Level.FINE))
-            logger.fine(strings.get(msg, objs));
+        if(LOGGER.isLoggable(Level.FINE))
+            LOGGER.fine(STRINGS.get(msg, objs));
     }
 
     /////////////////////////  non-public below  //////////////////////////////
     static synchronized void setConsoleLevel(Level level) {
-        for (Handler h : logger.getHandlers()) {
+        for (Handler h : LOGGER.getHandlers()) {
             if (ConsoleHandler.class.isAssignableFrom(h.getClass())) {
                 h.setLevel(level);
             }
@@ -86,15 +98,15 @@ public class GFLauncherLogger {
     }
 
     /**
-     * IMPORTANT! The server's logfile is added to the *local* logger. But it is
-     * never removed. The files are kept open by the logger. One really bad
+     * IMPORTANT! The server's logfile is added to the *local* LOGGER. But it is
+     * never removed. The files are kept open by the LOGGER. One really bad
      * result is that Windows will not be able to delete that server after
      * stopping it. Solution: remove the file handler when done.
      *
      * @param logFile The logfile
      * @throws GFLauncherException if the info object has not been setup
      */
-    static synchronized void addLogFileHandler(String logFile, GFLauncherInfo info) throws GFLauncherException {
+    static synchronized void addLogFileHandler(String logFile) {
         try {
             if (logFile == null || logfileHandler != null) {
                 return;
@@ -102,7 +114,7 @@ public class GFLauncherLogger {
             logfileHandler = new FileHandler(logFile, true);
             logfileHandler.setFormatter(new ODLLogFormatter());
             logfileHandler.setLevel(Level.INFO);
-            logger.addHandler(logfileHandler);
+            LOGGER.addHandler(logfileHandler);
         }
         catch (IOException e) {
             // should be seen in verbose and watchdog modes for debugging
@@ -113,22 +125,11 @@ public class GFLauncherLogger {
 
     static synchronized void removeLogFileHandler() {
         if (logfileHandler != null) {
-            logger.removeHandler(logfileHandler);
+            LOGGER.removeHandler(logfileHandler);
             logfileHandler.close();
             logfileHandler = null;
         }
     }
-
-    private GFLauncherLogger() {
-    }
-    // The resourceBundle name to be used for the module's log messages
-    @LogMessagesResourceBundle
-    public static final String SHARED_LOGMESSAGE_RESOURCE = "com.sun.enterprise.admin.launcher.LogMessages";
-    @LoggerInfo(subsystem = "Launcher", description = "Launcher Logger", publish = true)
-    public static final String LOGGER_NAME = "javax.enterprise.launcher";
-    private final static Logger logger;
-    private final static LocalStringsImpl strings = new LocalStringsImpl(GFLauncherLogger.class);
-    private static FileHandler logfileHandler;
 
     static {
         /*
@@ -138,10 +139,10 @@ public class GFLauncherLogger {
          * interfere with subsequent use of the Logger by
          * asadmin.
          */
-        logger = Logger.getLogger(LOGGER_NAME, SHARED_LOGMESSAGE_RESOURCE);
-        logger.setLevel(Level.INFO);
-        logger.setUseParentHandlers(false);
-        logger.addHandler(new ConsoleHandler());
+        LOGGER = Logger.getLogger(LOGGER_NAME, SHARED_LOGMESSAGE_RESOURCE);
+        LOGGER.setLevel(Level.INFO);
+        LOGGER.setUseParentHandlers(false);
+        LOGGER.addHandler(new ConsoleHandler());
     }
 
     @LogMessageInfo(
@@ -177,8 +178,7 @@ public class GFLauncherLogger {
     "Will copy glassfish/lib/templates/server.policy file to domain before upgrading.",
     comment = "Upgrade Information",
     level = "INFO")
-
-    public static final String copy_server_policy = "NCLS-GFLAUNCHER-00004";
+    public static final String COPY_SERVER_POLICY = "NCLS-GFLAUNCHER-00004";
 
     @LogMessageInfo(
             message =

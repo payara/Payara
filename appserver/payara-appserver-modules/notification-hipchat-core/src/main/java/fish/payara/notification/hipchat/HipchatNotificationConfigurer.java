@@ -76,7 +76,9 @@ public class HipchatNotificationConfigurer extends BaseNotificationConfigurer<Hi
         if(this.enabled != null) {
             configuration.enabled(this.enabled);
         }
-
+        if(this.noisy != null) {
+            configuration.noisy(this.noisy);
+        }
         if(!Strings.isNullOrEmpty(roomName)) {
             configuration.setRoomName(roomName);
         }

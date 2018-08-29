@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -57,17 +58,9 @@ import org.glassfish.api.admin.RestRedirect;
 
 import org.glassfish.quality.ToDo;
 
-import javax.validation.constraints.NotNull;
-
 /**
  * Java Runtime environment configuration
  */
-
-/* @XmlType(name = "", propOrder = {
-    "profiler",
-    "jvmOptionsOrProperty"
-}) */
-
 @Configured
 @RestRedirects({
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-profiler"),
@@ -79,7 +72,7 @@ public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
      * Gets the value of the javaHome property.
      *
      * Specifies the installation directory for Java runtime. 
-     * JDK 1.4 or higher is supported.
+     * JDK 7 or higher is supported.
      * 
      * @return possible object is
      *         {@link String }
@@ -90,8 +83,8 @@ public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
     /**
      * Sets the value of the javaHome property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setJavaHome(String value) throws PropertyVetoException;
 
@@ -129,8 +122,8 @@ public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
     /**
      * Sets the value of the debugOptions property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setDebugOptions(String value) throws PropertyVetoException;
 
@@ -148,8 +141,8 @@ public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
     /**
      * Sets the value of the rmicOptions property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setRmicOptions(String value) throws PropertyVetoException;
 
@@ -167,8 +160,8 @@ public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
     /**
      * Sets the value of the javacOptions property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setJavacOptions(String value) throws PropertyVetoException;
 
@@ -186,8 +179,8 @@ public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
      *
      * A java classpath string that is prefixed to server-classpath
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setClasspathPrefix(String value) throws PropertyVetoException;
 
@@ -205,8 +198,8 @@ public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
     /**
      * Sets the value of the classpathSuffix property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setClasspathSuffix(String value) throws PropertyVetoException;
 
@@ -228,8 +221,8 @@ public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
     /**
      * Sets the value of the serverClasspath property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setServerClasspath(String value) throws PropertyVetoException;
 
@@ -248,8 +241,8 @@ public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
     /**
      * Sets the value of the systemClasspath property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setSystemClasspath(String value) throws PropertyVetoException;
 
@@ -273,8 +266,8 @@ public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
     /**
      * Sets the value of the nativeLibraryPathPrefix property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setNativeLibraryPathPrefix(String value) throws PropertyVetoException;
 
@@ -293,8 +286,8 @@ public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
     /**
      * Sets the value of the nativeLibraryPathSuffix property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setNativeLibraryPathSuffix(String value) throws PropertyVetoException;
 
@@ -315,8 +308,8 @@ public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
     /**
      * Sets the value of the bytecodePreprocessors property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setBytecodePreprocessors(String value) throws PropertyVetoException;
 
@@ -337,8 +330,8 @@ public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
     /**
      * Sets the value of the envClasspathIgnored property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setEnvClasspathIgnored(String value) throws PropertyVetoException;
 
@@ -354,17 +347,19 @@ public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
     /**
      * Sets the value of the profiler property.
      *
-     * @param value allowed object is
-     *              {@link Profiler }
+     * @param value allowed object is {@link Profiler }
+     * @throws PropertyVetoException
      */
     void setProfiler(Profiler value) throws PropertyVetoException;
     
     /**
-    	Properties as per {@link PropertyBag}
+     * Properties as per {@link PropertyBag}
+     * @return 
      */
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 
      /**

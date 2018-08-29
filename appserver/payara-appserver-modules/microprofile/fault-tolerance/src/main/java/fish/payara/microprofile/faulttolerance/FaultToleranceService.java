@@ -59,6 +59,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+import org.eclipse.microprofile.metrics.Gauge;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -67,6 +69,7 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
@@ -81,6 +84,7 @@ import org.jvnet.hk2.annotations.Service;
 public class FaultToleranceService implements EventListener {
     
     public static final String FAULT_TOLERANCE_ENABLED_PROPERTY = "MP_Fault_Tolerance_NonFallback_Enabled";
+    public static final String METRICS_ENABLED_PROPERTY = "MP_Fault_Tolerance_Metrics_Enabled";
     public static final String FALLBACK_HANDLER_METHOD_NAME = "handle";
     
     private static final Logger logger = Logger.getLogger(FaultToleranceService.class.getName());
@@ -100,12 +104,14 @@ public class FaultToleranceService implements EventListener {
     Events events;
     
     private final Map<String, Boolean> enabledMap;
+    private final Map<String, Boolean> metricsEnabledMap;
     private final Map<String, Map<String, Semaphore>> bulkheadExecutionSemaphores;
     private final Map<String, Map<String, Semaphore>> bulkheadExecutionQueueSemaphores;
     private final Map<String, Map<String, CircuitBreakerState>> circuitBreakerStates;
     
     public FaultToleranceService() {
         enabledMap = new ConcurrentHashMap<>();
+        metricsEnabledMap = new ConcurrentHashMap<>();
         bulkheadExecutionSemaphores  = new ConcurrentHashMap<>();
         bulkheadExecutionQueueSemaphores = new ConcurrentHashMap<>();
         circuitBreakerStates = new ConcurrentHashMap<>();
@@ -146,7 +152,20 @@ public class FaultToleranceService implements EventListener {
             setFaultToleranceEnabled(applicationName, config);
             return enabledMap.get(applicationName);
         }
-        
+    }
+    
+    public Boolean isFaultToleranceMetricsEnabled(String applicationName, Config config) {
+        try {
+            if (metricsEnabledMap.containsKey(applicationName)) {
+                return metricsEnabledMap.get(applicationName);
+            } else {
+                setFaultToleranceMetricsEnabled(applicationName, config);
+                return metricsEnabledMap.get(applicationName);
+            }
+        } catch (NullPointerException npe) {
+            setFaultToleranceMetricsEnabled(applicationName, config);
+            return metricsEnabledMap.get(applicationName);
+        }
     }
     
     /**
@@ -179,6 +198,27 @@ public class FaultToleranceService implements EventListener {
                 logger.log(Level.FINE, "No config found, so enabling fault tolerance for application: {0}",
                         applicationName);
                 enabledMap.put(applicationName, Boolean.TRUE);
+            }
+        }
+    }
+    
+    /**
+     * Helper method that sets the enabled status for a given application.
+     * @param applicationName The name of the application to register
+     * @param config The config to check for override values from
+     */
+    private synchronized void setFaultToleranceMetricsEnabled(String applicationName, Config config) {
+        // Double lock as multiple methods can get inside the calling if at the same time
+        logger.log(Level.FINER, "Checking double lock to see if something else has added the application");
+        if (!metricsEnabledMap.containsKey(applicationName)) {
+            if (config != null) {
+                // Set the enabled value to the override value from the config, or true if it isn't configured
+                metricsEnabledMap.put(applicationName, 
+                        config.getOptionalValue(METRICS_ENABLED_PROPERTY, Boolean.class).orElse(Boolean.TRUE));
+            } else {
+                logger.log(Level.FINE, "No config found, so enabling fault tolerance metrics for application: {0}",
+                        applicationName);
+                metricsEnabledMap.put(applicationName, Boolean.TRUE);
             }
         }
     }
@@ -452,6 +492,7 @@ public class FaultToleranceService implements EventListener {
      */
     private void deregisterApplication(String applicationName) {
         enabledMap.remove(applicationName);
+        metricsEnabledMap.remove(applicationName);
         deregisterCircuitBreaker(applicationName);
         deregisterBulkhead(applicationName);
     }
@@ -488,6 +529,20 @@ public class FaultToleranceService implements EventListener {
             if (appName == null) {
                 appName = invocationManager.getCurrentInvocation().getComponentId();
 
+                // If we've found a component name, check if there's an application registered with the same name
+                if (appName != null) {
+                    ApplicationRegistry applicationRegistry = habitat.getService(ApplicationRegistry.class);
+
+                    // If it's not directly in the registry, it's possible due to how the componentId is constructed
+                    if (applicationRegistry.get(appName) == null) {
+                        String[] componentIds = appName.split("_/");
+                        
+                        // The application name should be the first component
+                        appName = componentIds[0];
+                    }
+                }
+                
+                // If we still don't have a name - just construct it from the method signature
                 if (appName == null) {
                     appName = getFullMethodSignature(invocationContext.getMethod());
                 }
@@ -531,5 +586,26 @@ public class FaultToleranceService implements EventListener {
         span.addSpanTag("Module Name", invocationManager.getCurrentInvocation().getModuleName());
         span.addSpanTag("Class Name", invocationContext.getMethod().getDeclaringClass().getName());
         span.addSpanTag("Method Name", invocationContext.getMethod().getName());
+    }
+    
+    public void incrementCounterMetric(MetricRegistry metricRegistry, String metricName, String applicationName, 
+            Config config) {
+        if (isFaultToleranceMetricsEnabled(applicationName, config)) {
+            metricRegistry.counter(metricName).inc();
+        }
+    }
+    
+    public void updateHistogramMetric(MetricRegistry metricRegistry, String metricName, int value,
+            String applicationName, Config config) {
+        if (isFaultToleranceMetricsEnabled(applicationName, config)) {
+            metricRegistry.histogram(metricName).update(value);
+        }
+    }
+    
+    public void updateHistogramMetric(MetricRegistry metricRegistry, String metricName, long value,
+            String applicationName, Config config) {
+        if (isFaultToleranceMetricsEnabled(applicationName, config)) {
+            metricRegistry.histogram(metricName).update(value);
+        }
     }
 }

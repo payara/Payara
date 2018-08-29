@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -47,7 +48,6 @@ import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.glassfish.api.admin.config.PropertiesDesc;
@@ -60,13 +60,9 @@ import org.glassfish.quality.ToDo;
 import javax.validation.constraints.Min;
 
 /**
- *
+ * 
+ * 
  */
-
-/* @XmlType(name = "", propOrder = {
-    "property"
-}) */
-
 @Configured
 public interface DiagnosticService extends ConfigBeanProxy, PropertyBag {
 
@@ -84,8 +80,8 @@ public interface DiagnosticService extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the computeChecksum property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setComputeChecksum(String value) throws PropertyVetoException;
 
@@ -95,8 +91,7 @@ public interface DiagnosticService extends ConfigBeanProxy, PropertyBag {
      * A boolean attribute which indicates whether output of verify-config
      * asadmin command is included in the diagnostic report.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute (defaultValue="true",dataType=Boolean.class)
     String getVerifyConfig();
@@ -104,8 +99,8 @@ public interface DiagnosticService extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the verifyConfig property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setVerifyConfig(String value) throws PropertyVetoException;
 
@@ -124,8 +119,8 @@ public interface DiagnosticService extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the captureInstallLog property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws java.beans.PropertyVetoException
      */
     void setCaptureInstallLog(String value) throws PropertyVetoException;
 
@@ -134,8 +129,7 @@ public interface DiagnosticService extends ConfigBeanProxy, PropertyBag {
      * Boolean attribute which specifies whether OS level information is
      * collected as part of diagnostic report.        
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute (defaultValue="true",dataType=Boolean.class)
     String getCaptureSystemInfo();
@@ -143,8 +137,8 @@ public interface DiagnosticService extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the captureSystemInfo property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setCaptureSystemInfo(String value) throws PropertyVetoException;
 
@@ -153,8 +147,7 @@ public interface DiagnosticService extends ConfigBeanProxy, PropertyBag {
      *
      * Boolean attribute to indicate if HADB related information is collected.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute (defaultValue="true",dataType=Boolean.class)
     String getCaptureHadbInfo();
@@ -162,8 +155,8 @@ public interface DiagnosticService extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the captureHadbInfo property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setCaptureHadbInfo(String value) throws PropertyVetoException;
 
@@ -174,8 +167,7 @@ public interface DiagnosticService extends ConfigBeanProxy, PropertyBag {
      * text are captured as part of diagnostic report. If Deployment descriptors
      * contain any confidential information, it's recommended to set it to false
      * 
-     * @return possible object is
-     *         {@link String }
+     * @return possible object   {@link String }
      */
     @Attribute (defaultValue="true",dataType=Boolean.class)
     String getCaptureAppDd();
@@ -183,8 +175,8 @@ public interface DiagnosticService extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the captureAppDd property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setCaptureAppDd(String value) throws PropertyVetoException;
 
@@ -197,8 +189,7 @@ public interface DiagnosticService extends ConfigBeanProxy, PropertyBag {
      * captured as part of the diagnostic report.If set to OFF, log contents
      * will not be captured as part of diagnostic report.
      *
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute (defaultValue="INFO")
     String getMinLogLevel();
@@ -206,8 +197,8 @@ public interface DiagnosticService extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the minLogLevel property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setMinLogLevel(String value) throws PropertyVetoException;
 
@@ -217,8 +208,7 @@ public interface DiagnosticService extends ConfigBeanProxy, PropertyBag {
      * Max no. of log entries being captured as part of diagnostic  report.
      * A non negative value.
      * 
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute (defaultValue="500")
     @Min(value=0)
@@ -227,17 +217,19 @@ public interface DiagnosticService extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the maxLogEntries property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setMaxLogEntries(String value) throws PropertyVetoException;
     
     /**
     	Properties as per {@link PropertyBag}
+     * @return 
      */
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
     
     @Element("*")

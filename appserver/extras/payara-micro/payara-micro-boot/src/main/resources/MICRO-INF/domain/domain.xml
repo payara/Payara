@@ -101,7 +101,6 @@ Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
         	<log-notifier></log-notifier>
         	<eventbus-notifier></eventbus-notifier>
             </monitoring-service-configuration>
-            <microprofile-metrics-configuration></microprofile-metrics-configuration>
             <security-service activate-default-principal-to-role-mapping="true" jacc="simple">
                 <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
                     <property value="${com.sun.aas.instanceRoot}/config/admin-keyfile" name="file" />
@@ -158,6 +157,7 @@ Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
             <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" >
             </transaction-service>
             <hazelcast-runtime-configuration enabled="true" multicastGroup="224.2.2.4" multicastPort="2904" generate-names="true"></hazelcast-runtime-configuration>
+            <java-config></java-config>
             <phone-home-runtime-configuration></phone-home-runtime-configuration>
             <request-tracing-service-configuration>
                 <log-notifier enabled="true"></log-notifier>

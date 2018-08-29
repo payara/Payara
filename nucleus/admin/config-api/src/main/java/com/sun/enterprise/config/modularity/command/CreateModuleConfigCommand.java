@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.modularity.command;
 
@@ -98,17 +99,17 @@ import java.util.logging.Logger;
 @I18n("create.module.config")
 public final class CreateModuleConfigCommand extends AbstractConfigModularityCommand implements AdminCommand, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
     
-    private final Logger LOG = getLogger();
+    private static final Logger LOG = getLogger();
     
-    final private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(CreateModuleConfigCommand.class);
 
     @Inject
     private ConfigModularityUtils configModularityUtils;
 
     @Inject
-    private Domain domain
-            ;
+    private Domain domain;
+    
     @Inject
     StartupContext startupContext;
 
@@ -317,14 +318,17 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
 
     @Override
     public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
+        final List<String> actions = Arrays.asList("read", "create", "delete");
+        
         Class configBeanType = null;
         if (serviceName == null && isAll) {
             List<AccessRequired.AccessCheck> l = new ArrayList<AccessRequired.AccessCheck>();
             List<Class> clzs = configModularityUtils.getAnnotatedConfigBeans(CustomConfiguration.class);
+            
             for (Class clz : clzs) {
                 List<ConfigBeanDefaultValue> configBeanDefaultValueList =
                         configModularityUtils.getDefaultConfigurations(clz, configModularityUtils.getRuntimeTypePrefix(startupContext));
-                l.addAll(getAccessChecksForDefaultValue(configBeanDefaultValueList, target, Arrays.asList("read", "create", "delete")));
+                l.addAll(getAccessChecksForDefaultValue(configBeanDefaultValueList, target, actions));
             }
             return l;
         } else if (serviceName == null) {
@@ -343,10 +347,10 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
             }
 
             if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
-                return getAccessChecksForConfigBean(config.getExtensionByType(configBeanType), target, Arrays.asList("read", "create", "delete"));
+                return getAccessChecksForConfigBean(config.getExtensionByType(configBeanType), target, actions);
             }
             if (configBeanType.isAssignableFrom(DomainExtension.class)) {
-                return getAccessChecksForConfigBean(domain.getExtensionByType(configBeanType), target, Arrays.asList("read", "create", "delete"));
+                return getAccessChecksForConfigBean(domain.getExtensionByType(configBeanType), target, actions);
             }
             //TODO check if this is right course of action
             return Collections.emptyList();

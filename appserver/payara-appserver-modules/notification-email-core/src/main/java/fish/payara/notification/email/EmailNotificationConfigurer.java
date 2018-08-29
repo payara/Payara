@@ -80,7 +80,9 @@ public class EmailNotificationConfigurer extends BaseNotificationConfigurer<Emai
         if(this.enabled != null) {
             configuration.enabled(this.enabled);
         }
-
+        if(this.noisy != null) {
+            configuration.noisy(this.noisy);
+        }
         if(!Strings.isNullOrEmpty(jndiName)) {
             configuration.setJndiName(jndiName);
         }

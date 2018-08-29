@@ -37,11 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.glassfish.flashlight.statistics.impl;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -75,9 +72,9 @@ public class AverageImpl extends AbstractTreeNode implements Average {
     private long startTime = 0;
     private AtomicLong lastSampleTime = new AtomicLong(0);
     
-    private String NAME = "average";
-    private String DESCRIPTION = "Average RangeStatistic";
-    private String UNIT = java.lang.Long.class.toString();
+    private static final String NAME = "average";
+    private static final String DESCRIPTION = "Average RangeStatistic";
+    private static final String UNIT = java.lang.Long.class.toString();
     
     public AverageImpl() {
         super.name = NAME;
@@ -169,12 +166,12 @@ public class AverageImpl extends AbstractTreeNode implements Average {
 
     @Override
     public String getUnit() {
-        return this.UNIT;
+        return UNIT;
     }
 
     @Override
     public String getDescription() {
-        return this.DESCRIPTION;
+        return DESCRIPTION;
     }
 
     @Override

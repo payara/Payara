@@ -41,7 +41,7 @@ package fish.payara.requesttracing.jaxrs.client.decorators;
 
 import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
 import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Span;
 import java.util.Locale;
 import javax.ws.rs.client.AsyncInvoker;
 import javax.ws.rs.client.Entity;
@@ -106,7 +106,7 @@ public class JaxrsInvocationBuilderDecorator implements Invocation.Builder {
         OpenTracingService openTracing = serviceLocator.getService(OpenTracingService.class);
         
         // Get the currently active span if present
-        ActiveSpan activeSpan = openTracing.getTracer(openTracing.getApplicationName(
+        Span activeSpan = openTracing.getTracer(openTracing.getApplicationName(
                 serviceLocator.getService(InvocationManager.class))).activeSpan();
         
         // If there is an active span, add its context to the request as a property so it can be picked up by the filter
@@ -172,6 +172,7 @@ public class JaxrsInvocationBuilderDecorator implements Invocation.Builder {
     public Invocation.Builder property(String name, Object value) {
         return this.invocationBuilder.property(name, value);
     }
+
 
     @Override
     public Response get() {

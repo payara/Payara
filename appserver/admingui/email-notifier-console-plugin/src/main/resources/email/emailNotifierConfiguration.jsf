@@ -52,11 +52,14 @@ holder.
                 method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.notifierConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "noisy"});
         
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
         }
+        if (#{pageSession.valueMap['noisy']}=true) {
+			setPageSessionAttribute(key="noisy", value="true");
+		}	
         setPageSessionAttribute(key="dynamic", value="true");
     /> 
 </event>
@@ -69,6 +72,7 @@ holder.
             <!command
                 mapCopy(source="#{pageSession.valueMap}" dest="#{pageSession.attrsMap}");
                 mapRemove(map="#{pageSession.attrsMap}" key="enabled");
+				mapRemove(map="#{pageSession.attrsMap}" key="noisy");
                 mapRemove(map="#{pageSession.attrsMap}" key="dynamic");
                 gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/test-email-notifier-configuration?target=#{pageSession.configName}" method="GET" 
                     attrs="#{pageSession.attrsMap}" result="#{requestScope.result}");
@@ -83,6 +87,7 @@ holder.
                         onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                     <!command
                         mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+						mapPut(map="#{pageSession.valueMap}" key="noisy" value="#{pageSession.noisy}");
                         mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                         prepareSuccessfulMsg();
                         gf.updateEntity(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/notification-email-configure" 
@@ -100,6 +105,11 @@ holder.
                           label="$resource{i18nemn.notifier.email.configuration.enabledLabel}"  
                           helpText="$resource{i18nemn.notifier.email.configuration.enabledLabelHelpText}">
                 <sun:checkbox id="enabledProp" selected="#{pageSession.enabledSelected}" selectedValue="true" />
+            </sun:property>
+            <sun:property id="noisy" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                          label="$resource{i18nn.notification.configuration.notifier.noisyLabel}"  
+                          helpText="$resource{i18nn.notification.configuration.notifier.noisyLabelHelpText}">
+                <sun:checkbox id="noisy" selected="#{pageSession.noisy}" selectedValue="true" />
             </sun:property>
             <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                           label="$resource{i18nn.notification.configuration.dynamic}"  

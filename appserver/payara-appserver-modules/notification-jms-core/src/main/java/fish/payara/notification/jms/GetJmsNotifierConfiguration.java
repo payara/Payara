@@ -69,17 +69,18 @@ public class GetJmsNotifierConfiguration extends BaseGetNotifierConfiguration<Jm
 
     @Override
     protected String listConfiguration(JmsNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "Context Factory Class", "Connection Factory Name", "Queue Name", "URL", "Username", "Password"};
+        String headers[] = {"Enabled", "Noisy", "Context Factory Class", "Connection Factory Name", "Queue Name", "URL", "Username", "Password"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[7];
+        Object values[] = new Object[8];
 
         values[0] = configuration.getEnabled();
-        values[1] = configuration.getContextFactoryClass();
-        values[2] = configuration.getConnectionFactoryName();
-        values[3] = configuration.getQueueName();
-        values[4] = configuration.getUrl();
-        values[5] = configuration.getUsername();
-        values[6] = configuration.getPassword();
+        values[1] = configuration.getNoisy();
+        values[2] = configuration.getContextFactoryClass();
+        values[3] = configuration.getConnectionFactoryName();
+        values[4] = configuration.getQueueName();
+        values[5] = configuration.getUrl();
+        values[6] = configuration.getUsername();
+        values[7] = configuration.getPassword();
 
         columnFormatter.addRow(values);
         return columnFormatter.toString();
@@ -87,16 +88,19 @@ public class GetJmsNotifierConfiguration extends BaseGetNotifierConfiguration<Jm
 
     @Override
     protected Map<String, Object> getNotifierConfiguration(JmsNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(7);
+        Map<String, Object> map = new HashMap<>(8);
 
         if (configuration != null) {
             map.put("enabled", configuration.getEnabled());
+            map.put("noisy", configuration.getNoisy());
             map.put("contextFactoryClass", configuration.getContextFactoryClass());
             map.put("connectionFactoryName", configuration.getConnectionFactoryName());
             map.put("queueName", configuration.getQueueName());
             map.put("url", configuration.getUrl());
             map.put("username", configuration.getUsername());
             map.put("password", configuration.getPassword());
+        } else {
+            map.put("noisy", Boolean.TRUE.toString());
         }
 
         return map;

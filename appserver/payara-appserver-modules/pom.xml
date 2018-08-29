@@ -83,7 +83,9 @@
             <modules>
                 <module>microprofile</module>
                 <module>security-oauth2</module>
+                <module>yubikey-authentication</module>
             </modules>
         </profile>
     </profiles>
 </project>
+

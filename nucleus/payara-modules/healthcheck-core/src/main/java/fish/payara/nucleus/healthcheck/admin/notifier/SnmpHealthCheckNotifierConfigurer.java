@@ -72,5 +72,10 @@ public class SnmpHealthCheckNotifierConfigurer extends BaseHealthCheckNotifierCo
         if(this.enabled != null) {
             notifier.enabled(enabled);
         }
+        if (this.noisy != null) {
+            notifier.noisy(noisy);
+        } else {
+            notifier.noisy(getNotifierNoisy("get-snmp-notifier-configuration"));
+        }
     }
 }
