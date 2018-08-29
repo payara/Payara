@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -51,11 +51,11 @@ import org.jvnet.hk2.config.Configured;
 @Configured(name = "microprofile-fault-tolerance-configuration")
 public interface FaultToleranceServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
 
-    @Attribute(defaultValue = "", dataType = String.class)
+    @Attribute(defaultValue = "concurrent/__defaultManagedExecutorService", dataType = String.class)
     public String getManagedExecutorService();
     public void setManagedExecutorService(String managedExecutorServiceName);
     
-    @Attribute(defaultValue = "", dataType = String.class)
+    @Attribute(defaultValue = "concurrent/__defaultManagedScheduledExecutorService", dataType = String.class)
     public String getManagedScheduledExecutorService();
     public void setManagedScheduledExecutorService(String managedScheduledExecutorServiceName);
 }

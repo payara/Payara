@@ -68,8 +68,8 @@ public interface MetricsServiceConfiguration extends ConfigBeanProxy, ConfigExte
      * @return
      */
     @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getSecure();
-    void setSecure(String value) throws PropertyVetoException;
+    String getSecureMetrics();
+    void setSecureMetrics(String value) throws PropertyVetoException;
     
     /**
      * Boolean value determining if the service is dynamic or not.
