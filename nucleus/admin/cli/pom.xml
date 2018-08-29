@@ -129,11 +129,12 @@
                    <executions>
                        <execution>
                            <id>unpack</id>
-                           <phase>process-classes</phase>
+                           <phase>prepare-package</phase>
                            <goals>
                              <goal>unpack</goal>
                            </goals>
                            <configuration>
+                               <outputDirectory>${project.build.outputDirectory}</outputDirectory>
                                <artifactItems>
                                    <artifactItem>
                                        <groupId>org.glassfish.docs.man</groupId>
@@ -141,7 +142,6 @@
                                        <version>${v3-docs.version}</version>
                                        <type>zip</type>
                                        <overWrite>false</overWrite>
-                                       <outputDirectory>${project.build.outputDirectory}</outputDirectory>
                                    </artifactItem>
                                 </artifactItems>
                            </configuration>
@@ -190,5 +190,9 @@
             <artifactId>simple-glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-     </dependencies>
+        <dependency>
+            <groupId>jline</groupId>
+            <artifactId>jline</artifactId>
+        </dependency>
+    </dependencies>
 </project>
