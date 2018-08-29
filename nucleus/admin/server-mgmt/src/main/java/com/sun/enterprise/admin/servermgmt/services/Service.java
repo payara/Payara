@@ -37,8 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.services;
+
 import com.sun.enterprise.util.io.ServerDirs;
 import java.util.Map;
 
@@ -52,15 +54,15 @@ import java.util.Map;
  */
  public interface Service {
     
-    /** get the dirs with this thread-safe immutable guaranteed object.
-     * It saves a LOT of error checking...
+    /** 
+     * Get the dirs with this thread-safe immutable guaranteed object.It saves a LOT of error checking...
      * You should set the variable in the constructor.  You are not allowed
      * to change it later
-     * @param dirs
+     * @return 
      */
     ServerDirs  getServerDirs();
     
-     int getTimeoutSeconds();
+    int getTimeoutSeconds();
     /** Sets timeout in seconds before the master boot restarter should
      * give up starting this service.
      * @param number a non-negative integer representing timeout. A value of zero implies infinite timeout.
@@ -73,7 +75,7 @@ import java.util.Map;
      String getServiceProperties();
     
     /** Sets the additional service properties that are specific to it.
-     * @param must be a colon separated String, if not null. No effect, if null is passed.
+     * @param cds must be a colon separated String, if not null. No effect, if null is passed.
      */
      void setServiceProperties(final String cds);
     
@@ -94,22 +96,28 @@ import java.util.Map;
      * @return tokens and values as a Map<String, String>.
      */
      Map<String, String> tokensAndValues();
-    /** Returns the absolute location of the manifest file as service understands it.
-     * It takes into account the name, type and configuration location of the 
-     * service. It is expected that these are set before calling this method.
+     
+    /** 
+     *  Returns the absolute location of the manifest file as service understands it.
+     * It takes into account the name, type and configuration location of the service.
+     * It is expected that these are set before calling this method.
      * If the <b> Fully Qualified Service Name </b> is invalid, a RuntimeException results.
+     * @return 
      */
      String getManifestFilePath();
-    /** Returns the absolute location of the template for the given service.
+     
+    /** 
+     * Returns the absolute location of the template for the given service.
      * The type of the service must be set before calling this method, otherwise
      * a runtime exception results.
+     * @return
      */
      String getManifestFileTemplatePath();
+     
     /** Creates an arbitrary service, specified by certain parameters. The implementations
      * should dictate the mappings in the parameters received. The creation of service is
      * either successful or not. In other words, the implementations must retain the original
      * state of the operating platform if the service creation is not successful completely.
-     * @param params a Map between Strings that represents the name value pairs required to create the service
      * @throws RuntimeException if there is any error is creation of service
      */
      void createService();

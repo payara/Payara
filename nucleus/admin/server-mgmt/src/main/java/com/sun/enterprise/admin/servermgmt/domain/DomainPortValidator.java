@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.admin.servermgmt.domain;
 
 import java.util.Properties;
@@ -47,101 +48,95 @@ import java.util.logging.Logger;
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
 import com.sun.enterprise.admin.servermgmt.DomainException;
 import com.sun.enterprise.admin.servermgmt.SLogger;
-import com.sun.enterprise.admin.servermgmt.domain.SubstitutableTokens;
 import com.sun.enterprise.config.util.PortConstants;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.net.NetUtils;
 
+/**
+ * Checks that port is free and that the current user has permission to use it
+ */
 public class DomainPortValidator {
 
     /* These properties are public interfaces, handle with care */
-    private static final Logger _logger = SLogger.getLogger();
-    private static final LocalStringsImpl _strings = new LocalStringsImpl(DomainPortValidator.class);
+    private static final Logger LOGGER = SLogger.getLogger();
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(DomainPortValidator.class);
 
     public static final int PORT_MAX_VAL = 65535;
 
-    private DomainConfig _domainConfig;
-    private Properties _defaultProps;
+    private final DomainConfig domainConfig;
+    private final Properties defaultProps;
 
     DomainPortValidator(DomainConfig domainConfig, Properties defaultProps) { 
-        _domainConfig = domainConfig;
-        _defaultProps = defaultProps;
+        this.domainConfig = domainConfig;
+        this.defaultProps = defaultProps;
     }
 
     /**
-     * Validate's the port. If custom port value is not given then it retrieves
+     * Validates the port. If custom port value is not given then it retrieves
      * its default value. If the port is already been occupied then it picks
      * randomly available port value.
      *
      * @throws DomainException If any exception occurs in validation.
      */
     public void validateAndSetPorts() throws DomainException {
-        Properties domainProperties = _domainConfig.getDomainProperties();
+        Properties domainProperties = domainConfig.getDomainProperties();
         try {
             // Validate and gets the port values.
             final Integer adminPortInt = getPort(domainProperties,
                     DomainConfig.K_ADMIN_PORT,
-                    (String)_domainConfig.get(DomainConfig.K_ADMIN_PORT),
-                    _defaultProps.getProperty(SubstitutableTokens.ADMIN_PORT_TOKEN_NAME),
+                    (String)domainConfig.get(DomainConfig.K_ADMIN_PORT),
+                    defaultProps.getProperty(SubstitutableTokens.ADMIN_PORT_TOKEN_NAME),
                     "Admin");
-            _domainConfig.add(DomainConfig.K_ADMIN_PORT, adminPortInt);
+            domainConfig.add(DomainConfig.K_ADMIN_PORT, adminPortInt);
 
             final Integer instancePortInt = getPort(domainProperties,
                     DomainConfig.K_INSTANCE_PORT,
-                    (String)_domainConfig.get(DomainConfig.K_INSTANCE_PORT),
-                    _defaultProps.getProperty(SubstitutableTokens.HTTP_PORT_TOKEN_NAME),
+                    (String)domainConfig.get(DomainConfig.K_INSTANCE_PORT),
+                    defaultProps.getProperty(SubstitutableTokens.HTTP_PORT_TOKEN_NAME),
                     "HTTP Instance");
-            _domainConfig.add(DomainConfig.K_INSTANCE_PORT, instancePortInt);
+            domainConfig.add(DomainConfig.K_INSTANCE_PORT, instancePortInt);
 
             final Integer jmsPort = getPort(domainProperties,
                     DomainConfig.K_JMS_PORT, null,
-                    _defaultProps.getProperty(SubstitutableTokens.JMS_PROVIDER_PORT_TOKEN_NAME),
-                    "JMS");
-            _domainConfig.add(DomainConfig.K_JMS_PORT, jmsPort);
+                    defaultProps.getProperty(SubstitutableTokens.JMS_PROVIDER_PORT_TOKEN_NAME), "JMS");
+            domainConfig.add(DomainConfig.K_JMS_PORT, jmsPort);
             domainProperties.setProperty(PortConstants.JMS, jmsPort.toString());
 
             final Integer orbPort = getPort(domainProperties,
                     DomainConfig.K_ORB_LISTENER_PORT,
                     null,
-                    _defaultProps.getProperty(SubstitutableTokens.ORB_LISTENER_PORT_TOKEN_NAME),
-                    "IIOP");
-            _domainConfig.add(DomainConfig.K_ORB_LISTENER_PORT, orbPort);
+                    defaultProps.getProperty(SubstitutableTokens.ORB_LISTENER_PORT_TOKEN_NAME), "IIOP");
+            domainConfig.add(DomainConfig.K_ORB_LISTENER_PORT, orbPort);
 
             final Integer httpSSLPort = getPort(domainProperties,
                     DomainConfig.K_HTTP_SSL_PORT, null,
-                    _defaultProps.getProperty(SubstitutableTokens.HTTP_SSL_PORT_TOKEN_NAME),
-                    "HTTP_SSL");
-            _domainConfig.add(DomainConfig.K_HTTP_SSL_PORT, httpSSLPort);
+                    defaultProps.getProperty(SubstitutableTokens.HTTP_SSL_PORT_TOKEN_NAME), "HTTP_SSL");
+            domainConfig.add(DomainConfig.K_HTTP_SSL_PORT, httpSSLPort);
 
             final Integer iiopSSLPort = getPort(domainProperties,
                     DomainConfig.K_IIOP_SSL_PORT, null,
-                    _defaultProps.getProperty(SubstitutableTokens.ORB_SSL_PORT_TOKEN_NAME),
-                    "IIOP_SSL");
-            _domainConfig.add(DomainConfig.K_IIOP_SSL_PORT, iiopSSLPort);
+                    defaultProps.getProperty(SubstitutableTokens.ORB_SSL_PORT_TOKEN_NAME), "IIOP_SSL");
+            domainConfig.add(DomainConfig.K_IIOP_SSL_PORT, iiopSSLPort);
 
             final Integer iiopMutualAuthPort = getPort(domainProperties,
                     DomainConfig.K_IIOP_MUTUALAUTH_PORT, null,
-                    _defaultProps.getProperty(SubstitutableTokens.ORB_MUTUALAUTH_PORT_TOKEN_NAME),
-                    "IIOP_MUTUALAUTH");
-            _domainConfig.add(DomainConfig.K_IIOP_MUTUALAUTH_PORT, iiopMutualAuthPort);
+                    defaultProps.getProperty(SubstitutableTokens.ORB_MUTUALAUTH_PORT_TOKEN_NAME), "IIOP_MUTUALAUTH");
+            domainConfig.add(DomainConfig.K_IIOP_MUTUALAUTH_PORT, iiopMutualAuthPort);
 
             final Integer jmxPort = getPort(domainProperties,
                     DomainConfig.K_JMX_PORT, null,
-                    _defaultProps.getProperty(SubstitutableTokens.JMX_SYSTEM_CONNECTOR_PORT_TOKEN_NAME),
-                    "JMX_ADMIN");
-            _domainConfig.add(DomainConfig.K_JMX_PORT, jmxPort);
+                    defaultProps.getProperty(SubstitutableTokens.JMX_SYSTEM_CONNECTOR_PORT_TOKEN_NAME), "JMX_ADMIN");
+            domainConfig.add(DomainConfig.K_JMX_PORT, jmxPort);
 
             final Integer osgiShellTelnetPort = getPort(domainProperties,
                     DomainConfig.K_OSGI_SHELL_TELNET_PORT, null,
-                    _defaultProps.getProperty(SubstitutableTokens.OSGI_SHELL_TELNET_PORT_TOKEN_NAME),
-                    "OSGI_SHELL");
-            _domainConfig.add(DomainConfig.K_OSGI_SHELL_TELNET_PORT, osgiShellTelnetPort);
+                    defaultProps.getProperty(SubstitutableTokens.OSGI_SHELL_TELNET_PORT_TOKEN_NAME), "OSGI_SHELL");
+            domainConfig.add(DomainConfig.K_OSGI_SHELL_TELNET_PORT, osgiShellTelnetPort);
 
             final Integer javaDebuggerPort = getPort(domainProperties,
                     DomainConfig.K_JAVA_DEBUGGER_PORT, null,
-                    _defaultProps.getProperty(SubstitutableTokens.JAVA_DEBUGGER_PORT_TOKEN_NAME),
-                    "JAVA_DEBUGGER");
-            _domainConfig.add(DomainConfig.K_JAVA_DEBUGGER_PORT, javaDebuggerPort);
+                    defaultProps.getProperty(SubstitutableTokens.JAVA_DEBUGGER_PORT_TOKEN_NAME), "JAVA_DEBUGGER");
+            domainConfig.add(DomainConfig.K_JAVA_DEBUGGER_PORT, javaDebuggerPort);
 
             checkPortPrivilege(new Integer[]{
                     adminPortInt, instancePortInt, jmsPort, orbPort, httpSSLPort,
@@ -194,42 +189,42 @@ public class DomainPortValidator {
             port = convertPortStr(defaultPort);
             defaultPortUsed = true;
         }
-        Boolean checkPorts = (Boolean)_domainConfig.get(DomainConfig.K_VALIDATE_PORTS);
+        Boolean checkPorts = (Boolean)domainConfig.get(DomainConfig.K_VALIDATE_PORTS);
         if (checkPorts && !NetUtils.isPortFree(port)) {
             int newport = NetUtils.getFreePort();
             if (portNotSpecified) {
                 if (defaultPortUsed) {
-                    _logger.log(Level.INFO, SLogger.DEFAULT_PORT_IN_USE,
+                    LOGGER.log(Level.INFO, SLogger.DEFAULT_PORT_IN_USE,
                             new Object[] {name, defaultPort, Integer.toString(newport)});
                 }
                 else {
-                    _logger.log(Level.INFO, SLogger.PORT_NOT_SPECIFIED,
+                    LOGGER.log(Level.INFO, SLogger.PORT_NOT_SPECIFIED,
                             new Object[] {name, Integer.toString(newport)});
                 }
             }
             else if (invalidPortSpecified) {
-                _logger.log(Level.INFO, SLogger.INVALID_PORT_RANGE,
+                LOGGER.log(Level.INFO, SLogger.INVALID_PORT_RANGE,
                         new Object[] {name, Integer.toString(newport)});
             }
             else {
-                _logger.log(Level.INFO, SLogger.PORT_IN_USE,
+                LOGGER.log(Level.INFO, SLogger.PORT_IN_USE,
                         new Object[] {name, Integer.toString(port), Integer.toString(newport)});
             }
             port = newport;
         }
         else if (defaultPortUsed) {
-            _logger.log(Level.INFO, SLogger.USING_DEFAULT_PORT,
+            LOGGER.log(Level.INFO, SLogger.USING_DEFAULT_PORT,
                     new Object[] {name, Integer.toString(port)});
         }
         else {
-            _logger.log(Level.INFO, SLogger.USING_PORT,
+            LOGGER.log(Level.INFO, SLogger.USING_PORT,
                     new Object[] {name, Integer.toString(port)});
         }
 
         if (properties != null) {
             properties.remove(key);
         }
-        return Integer.valueOf(port);
+        return port;
     }
 
     /**
@@ -243,10 +238,8 @@ public class DomainPortValidator {
             throws DomainException {
         try {
             return Integer.parseInt(port);
-        }
-        catch (Exception e) {
-            throw new DomainException(
-                    _strings.get("InvalidPortNumber", port));
+        } catch (NumberFormatException e) {
+            throw new DomainException(STRINGS.get("InvalidPortNumber", port));
         }
     }
 
@@ -256,9 +249,8 @@ public class DomainPortValidator {
      */
     private void checkPortPrivilege(final Integer[] ports) {
         for (Integer port : ports) {
-            final int p = port.intValue();
-            if (p < 1024) {
-                _logger.warning(_strings.get("PortPrivilege"));
+            if (port < 1024) {
+                LOGGER.warning(STRINGS.get("PortPrivilege"));
                 // display this message only once.
                 // so break once this message is displayed.
                 break;

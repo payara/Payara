@@ -37,24 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.pe;
 
-//import com.sun.enterprise.admin.servermgmt.launch.LaunchConstants;
 import com.sun.enterprise.admin.servermgmt.*;
 import com.sun.enterprise.admin.util.TokenValueSet;
 import com.sun.enterprise.util.i18n.StringManager;
 import java.io.File;
 import java.util.BitSet;
 
-public class PEDomainsManager extends RepositoryManager 
-    implements DomainsManager
-{
+public class PEDomainsManager extends RepositoryManager implements DomainsManager {
+
     /**
      * i18n strings manager object
      */
-    private static final StringManager strMgr = 
-        StringManager.getManager(PEDomainsManager.class);
+    private static final StringManager STRINGS_MANAGER = StringManager.getManager(PEDomainsManager.class);
     
     /* These properties are public interfaces, handle with care */
     public static final String PROFILEPROPERTY_DOMAINXML_STYLESHEETS = "domain.xml.style-sheets";
@@ -169,16 +167,12 @@ public class PEDomainsManager extends RepositoryManager
         }
         catch (Exception e)
         {
-            throw new DomainException(
-                strMgr.getString("startServNotCreated"), e);
+            throw new DomainException(STRINGS_MANAGER.getString("startServNotCreated"), e);
         }
     }
 
-    void createStopServ(DomainConfig domainConfig, 
-        TokenValueSet  tokens) throws DomainException
-    {
-        try
-        {
+    void createStopServ(DomainConfig domainConfig, TokenValueSet  tokens) throws DomainException {
+        try {
             final PEFileLayout  layout = getFileLayout(domainConfig);
             final File stopServTemplate = layout.getStopServTemplate();
             final File stopServ = layout.getStopServ();
@@ -186,26 +180,20 @@ public class PEDomainsManager extends RepositoryManager
             //final File killServ = layout.getKillServTemplate();
             //generateFromTemplate(new TokenValueSet(), 
 		//layout.getKillServTemplate(), layout.getKillServ());
-        }
-        catch (Exception e)
-        {
-            throw new DomainException(
-                strMgr.getString("stopServNotCreated"), e);
+        } catch (Exception e) {
+            throw new DomainException(STRINGS_MANAGER.getString("stopServNotCreated"), e);
         }
     } 
 
-    protected File getDomainDir(DomainConfig domainConfig)
-    {
+    protected File getDomainDir(DomainConfig domainConfig) {
         return getRepositoryDir(domainConfig);
     }
 
-    protected File getDomainRoot(DomainConfig domainConfig)
-    {
+    protected File getDomainRoot(DomainConfig domainConfig) {
         return getRepositoryRootDir(domainConfig);
     }
 
-    String getDefaultInstance()
-    {
+    String getDefaultInstance() {
         return PEFileLayout.DEFAULT_INSTANCE_NAME;
     }
      
@@ -215,8 +203,7 @@ public class PEDomainsManager extends RepositoryManager
      *  it, null otherwise
     */
 
-    protected static String getDomainUser(DomainConfig domainConfig) 
-    {
+    protected static String getDomainUser(DomainConfig domainConfig) {
         return ( (String) domainConfig.get(DomainConfig.K_USER) );
     }
     
@@ -266,13 +253,14 @@ public class PEDomainsManager extends RepositoryManager
             changeMasterPasswordInMasterPasswordFile(config, newPass, saveMasterPassword(config));
         } catch (Exception ex) {
             throw new DomainException(
-                strMgr.getString("masterPasswordNotChanged"), ex);
+                STRINGS_MANAGER.getString("masterPasswordNotChanged"), ex);
         }
     }
+    
     @Override
     public String[] getExtraPasswordOptions(DomainConfig config)
         throws DomainException
     {
-        return null;
+        return new String[0];
     }
 }

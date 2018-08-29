@@ -57,7 +57,7 @@ import com.sun.enterprise.util.i18n.StringManager;
 
 public class DomainSecurity extends MasterPasswordFileManager {
 
-    private static final StringManager _strMgr = StringManager.getManager(DomainSecurity.class);
+    private static final StringManager STRING_MANAGER = StringManager.getManager(DomainSecurity.class);
 
     /**
      * Modifies the contents of given keyfile with administrator's user-name and password. Uses the FileRealm classes that
@@ -84,7 +84,7 @@ public class DomainSecurity extends MasterPasswordFileManager {
         try {
             new PasswordAdapter(passwordFile.getAbsolutePath(), password.toCharArray()).writeStore();
         } catch (Exception ex) {
-            throw new RepositoryException(_strMgr.getString("passwordAliasKeystoreNotCreated", passwordFile), ex);
+            throw new RepositoryException(STRING_MANAGER.getString("passwordAliasKeystoreNotCreated", passwordFile), ex);
         }
     }
 

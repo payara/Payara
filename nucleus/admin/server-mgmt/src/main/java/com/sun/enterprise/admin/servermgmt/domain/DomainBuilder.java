@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.domain;
 
@@ -75,28 +76,29 @@ import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
+import java.io.IOException;
 
 /**
  * Domain builder class.
  */
 public class DomainBuilder {
 
-    private static final Logger _logger = SLogger.getLogger();
-    private static final LocalStringsImpl _strings = new LocalStringsImpl(DomainBuilder.class);
+    private static final Logger LOGGER = SLogger.getLogger();
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(DomainBuilder.class);
 
     /** The default stringsubs configuration file name. */
-    private final static String STRINGSUBS_FILE = "stringsubs.xml";
+    private static final String STRINGSUBS_FILE = "stringsubs.xml";
     /** The filename contains basic template information. */
-    private final static String TEMPLATE_INFO_XML = "template-info.xml";
-    private final static String META_DIR_NAME = "META-INF";
-    private final static String DEFAULT_TEMPLATE_RELATIVE_PATH = "common" + File.separator + "templates" + File.separator + "gf";
+    private static final String TEMPLATE_INFO_XML = "template-info.xml";
+    private static final String META_DIR_NAME = "META-INF";
+    private static final String DEFAULT_TEMPLATE_RELATIVE_PATH = "common" + File.separator + "templates" + File.separator + "gf";
 
-    private DomainConfig _domainConfig;
-    private JarFile _templateJar;
-    private DomainTemplate _domainTempalte;
-    private Properties _defaultPortValues = new Properties();
-    private byte[] _keystoreBytes = null;
-    private Set<String> _extractedEntries = new HashSet<String>();
+    private final DomainConfig domainConfig;
+    private JarFile templateJar;
+    private DomainTemplate domainTemplate;
+    private final Properties defaultPortValues = new Properties();
+    private byte[]  keystoreBytes = null;
+    private final Set<String> _extractedEntries = new HashSet<String>();
 
     /**
      * Create's a {@link DomainBuilder} object by initializing and loading the template jar.
@@ -105,7 +107,7 @@ public class DomainBuilder {
      * @throws DomainException If any error occurs during initialization.
      */
     public DomainBuilder(DomainConfig domainConfig) throws DomainException {
-        _domainConfig = domainConfig;
+        this.domainConfig = domainConfig;
         initialize();
     }
 
@@ -116,11 +118,11 @@ public class DomainBuilder {
      */
     // TODO : localization of index.html
     private void initialize() throws DomainException {
-        String templateJarPath = (String)_domainConfig.get(DomainConfig.K_TEMPLATE_NAME);
+        String templateJarPath = (String) domainConfig.get(DomainConfig.K_TEMPLATE_NAME);
         if (templateJarPath == null || templateJarPath.isEmpty()) {
             String defaultTemplateName = Version.getDefaultDomainTemplate();
             if (defaultTemplateName == null || defaultTemplateName.isEmpty()) {
-                throw new DomainException(_strings.get("missingDefaultTemplateName"));
+                throw new DomainException(STRINGS.get("missingDefaultTemplateName"));
             }
             Map<String, String> envProperties = new ASenvPropertyReader().getProps();
             templateJarPath = envProperties.get(SystemPropertyConstants.INSTALL_ROOT_PROPERTY) + File.separator
@@ -128,48 +130,48 @@ public class DomainBuilder {
         }
         File template = new File(templateJarPath);
         if (!template.exists() || !template.getName().endsWith(".jar")) {
-            throw new DomainException(_strings.get("invalidTemplateJar", template.getAbsolutePath()));
+            throw new DomainException(STRINGS.get("invalidTemplateJar", template.getAbsolutePath()));
         }
         try {
-            _templateJar = new JarFile(new File(templateJarPath));
-            JarEntry je = _templateJar.getJarEntry("config/" + DomainConstants.DOMAIN_XML_FILE);
+            templateJar = new JarFile(new File(templateJarPath));
+            JarEntry je = templateJar.getJarEntry("config/" + DomainConstants.DOMAIN_XML_FILE);
             if (je == null) {
-                throw new DomainException(_strings.get("missingMandatoryFile", DomainConstants.DOMAIN_XML_FILE));
+                throw new DomainException(STRINGS.get("missingMandatoryFile", DomainConstants.DOMAIN_XML_FILE));
             }
             // Loads template-info.xml
-            je = _templateJar.getJarEntry(TEMPLATE_INFO_XML);
+            je = templateJar.getJarEntry(TEMPLATE_INFO_XML);
             if (je == null) {
-                throw new DomainException(_strings.get("missingMandatoryFile", TEMPLATE_INFO_XML));
+                throw new DomainException(STRINGS.get("missingMandatoryFile", TEMPLATE_INFO_XML));
             }
-            TemplateInfoHolder templateInfoHolder = new TemplateInfoHolder(_templateJar.getInputStream(je), templateJarPath);
+            TemplateInfoHolder templateInfoHolder = new TemplateInfoHolder(templateJar.getInputStream(je), templateJarPath);
             _extractedEntries.add(TEMPLATE_INFO_XML);
 
             // Loads string substitution XML.
-            je = _templateJar.getJarEntry(STRINGSUBS_FILE);
+            je = templateJar.getJarEntry(STRINGSUBS_FILE);
             StringSubstitutor stringSubstitutor = null;
             if (je != null) {
-                stringSubstitutor = StringSubstitutionFactory.createStringSubstitutor(_templateJar.getInputStream(je));
+                stringSubstitutor = StringSubstitutionFactory.createStringSubstitutor(templateJar.getInputStream(je));
                 List<Property> defaultStringSubsProps = stringSubstitutor.getDefaultProperties(PropertyType.PORT);
                 for (Property prop : defaultStringSubsProps) {
-                    _defaultPortValues.setProperty(prop.getKey(), prop.getValue());
+                    defaultPortValues.setProperty(prop.getKey(), prop.getValue());
                 }
                 _extractedEntries.add(je.getName());
             } else {
-                _logger.log(Level.WARNING, SLogger.MISSING_FILE, STRINGSUBS_FILE);
+                LOGGER.log(Level.WARNING, SLogger.MISSING_FILE, STRINGSUBS_FILE);
             }
-            _domainTempalte = new DomainTemplate(templateInfoHolder, stringSubstitutor, templateJarPath);
+            domainTemplate = new DomainTemplate(templateInfoHolder, stringSubstitutor, templateJarPath);
 
             // Loads default self signed certificate.
-            je = _templateJar.getJarEntry("config/" + DomainConstants.KEYSTORE_FILE);
+            je = templateJar.getJarEntry("config/" + DomainConstants.KEYSTORE_FILE);
             if (je != null) {
-                _keystoreBytes = new byte[(int)je.getSize()];
+                keystoreBytes = new byte[(int)je.getSize()];
                 InputStream in = null;
                 int count = 0;
                 try {
-                    in = _templateJar.getInputStream(je);
-                    count = in.read(_keystoreBytes);
-                    if (count < _keystoreBytes.length) {
-                        throw new DomainException(_strings.get("loadingFailure", je.getName()));
+                    in = templateJar.getInputStream(je);
+                    count = in.read(keystoreBytes);
+                    if (count < keystoreBytes.length) {
+                        throw new DomainException(STRINGS.get("loadingFailure", je.getName()));
                     }
                 } finally {
                     if (in != null) {
@@ -178,12 +180,12 @@ public class DomainBuilder {
                 }
                 _extractedEntries.add(je.getName());
             }
-            File parentDomainDir = FileUtils.safeGetCanonicalFile(new File(_domainConfig.getRepositoryRoot()));
+            File parentDomainDir = FileUtils.safeGetCanonicalFile(new File(domainConfig.getRepositoryRoot()));
             createDirectory(parentDomainDir);
         } catch (Exception e) {
             throw new DomainException(e);
         }
-    };
+    }
 
     /**
      * Validate's the template. 
@@ -194,14 +196,14 @@ public class DomainBuilder {
         try	 {
             // Sanity check on the repository.
             RepositoryManager repoManager = new RepositoryManager();
-            repoManager.checkRepository(_domainConfig, false);
+            repoManager.checkRepository(domainConfig, false);
 
             // Validate the port values.
-            DomainPortValidator portValidator = new DomainPortValidator(_domainConfig, _defaultPortValues);
+            DomainPortValidator portValidator = new DomainPortValidator(domainConfig, defaultPortValues);
             portValidator.validateAndSetPorts();
 
             // Validate other domain config parameters.
-            new PEDomainConfigValidator().validate(_domainConfig);
+            new PEDomainConfigValidator().validate(domainConfig);
 
         } catch (Exception ex) {
             throw new DomainException(ex);
@@ -217,14 +219,14 @@ public class DomainBuilder {
     public void run() throws RepositoryException, DomainException {
 
         // Create domain directories.
-        File domainDir = FileUtils.safeGetCanonicalFile(new File(_domainConfig.getRepositoryRoot(),
-                _domainConfig.getDomainName()));
+        File domainDir = FileUtils.safeGetCanonicalFile(new File(domainConfig.getRepositoryRoot(),
+                domainConfig.getDomainName()));
         createDirectory(domainDir);
         try {
             // Extract other jar entries
             byte[] buffer = new byte[10000];
-            for (Enumeration<JarEntry> entry = _templateJar.entries(); entry.hasMoreElements();) {
-                JarEntry jarEntry = (JarEntry)entry.nextElement();
+            for (Enumeration<JarEntry> entry = templateJar.entries(); entry.hasMoreElements();) {
+                JarEntry jarEntry = entry.nextElement();
                 String entryName = jarEntry.getName();
                 if (entryName.startsWith(META_DIR_NAME)) {
                     // Skipping the extraction of jar meta data.
@@ -235,17 +237,15 @@ public class DomainBuilder {
                 }
                 if (jarEntry.isDirectory()) {
                     File dir = new File(domainDir, jarEntry.getName());
-                    if (!dir.exists()) {
-                        if (!dir.mkdir()) {
-                            _logger.log(Level.WARNING, SLogger.DIR_CREATION_ERROR, dir.getName()); 
-                        }
+                    if (!dir.exists() && !dir.mkdir()) {
+                            LOGGER.log(Level.WARNING, SLogger.DIR_CREATION_ERROR, dir.getName());
                     }
                     continue;
                 }
                 InputStream in = null;
                 BufferedOutputStream outputStream = null;
                 try {
-                    in = _templateJar.getInputStream(jarEntry);
+                    in = templateJar.getInputStream(jarEntry);
                     outputStream = new BufferedOutputStream(new FileOutputStream(new File(domainDir.getAbsolutePath(),
                             jarEntry.getName())));
                     int i = 0;
@@ -269,45 +269,16 @@ public class DomainBuilder {
             }
 
             File configDir = new File(domainDir, DomainConstants.CONFIG_DIR);
-            String user =  (String) _domainConfig.get(DomainConfig.K_USER);
-            String password = (String) _domainConfig.get(DomainConfig.K_PASSWORD);
-            String[] adminUserGroups = ((String) _domainConfig.get(DomainConfig.K_INITIAL_ADMIN_USER_GROUPS)).split(",");
-            String masterPassword = (String) _domainConfig.get(DomainConfig.K_MASTER_PASSWORD);
-            Boolean saveMasterPassword = (Boolean)_domainConfig.get(DomainConfig.K_SAVE_MASTER_PASSWORD);
-
-            // Process domain security.
-            DomainSecurity domainSecurity = new DomainSecurity();
-            domainSecurity.processAdminKeyFile(new File(configDir, DomainConstants.ADMIN_KEY_FILE), user, password,
-                    adminUserGroups);
-            try {
-                domainSecurity.createSSLCertificateDatabase(configDir, _domainConfig, masterPassword);
-            } catch (Exception e) {
-                String msg = _strings.getString("SomeProblemWithKeytool", e.getMessage());
-                System.err.println(msg);
-                FileOutputStream fos = null;
-                try {
-                    File keystoreFile = new File(configDir, DomainConstants.KEYSTORE_FILE);
-                    fos = new FileOutputStream(keystoreFile);
-                    fos.write(_keystoreBytes);
-                } catch (Exception ex) {
-                    getLogger().log(Level.SEVERE, UNHANDLED_EXCEPTION, ex);
-                } finally {
-                    if (fos != null)
-                        fos.close();
-                }
-            }
-            domainSecurity.changeMasterPasswordInMasterPasswordFile(new File(configDir, DomainConstants.MASTERPASSWORD_FILE), masterPassword, 
-                    saveMasterPassword);
-            domainSecurity.createPasswordAliasKeystore(new File(configDir, DomainConstants.DOMAIN_PASSWORD_FILE), masterPassword);
+            DomainSecurity domainSecurity =processDomainSecurity(configDir);
 
             // Add customized tokens in domain.xml.
-            CustomTokenClient tokenClient = new CustomTokenClient(_domainConfig);
+            CustomTokenClient tokenClient = new CustomTokenClient(domainConfig);
             Map<String, String> generatedTokens = tokenClient.getSubstitutableTokens();
 
             // Perform string substitution.
-            if (_domainTempalte.hasStringsubs()) {
-                StringSubstitutor substitutor = _domainTempalte.getStringSubs();
-                Map<String, String> lookUpMap = SubstitutableTokens.getSubstitutableTokens(_domainConfig);
+            if (domainTemplate.hasStringsubs()) {
+                StringSubstitutor substitutor = domainTemplate.getStringSubs();
+                Map<String, String> lookUpMap = SubstitutableTokens.getSubstitutableTokens(domainConfig);
                 lookUpMap.putAll(generatedTokens);
                 substitutor.setAttributePreprocessor(new AttributePreprocessorImpl(lookUpMap));
                 substitutor.substituteAll();
@@ -321,12 +292,12 @@ public class DomainBuilder {
                 }
                 domainSecurity.changeMode("-R g-rwx,o-rwx ", configDir);
             } catch (Exception e) {
-                throw new DomainException(_strings.get("setPermissionError"), e);
+                throw new DomainException(STRINGS.get("setPermissionError"), e);
             }
 
             // Generate domain-info.xml
             DomainInfoManager domainInfoManager = new DomainInfoManager();
-            domainInfoManager.process(_domainTempalte, domainDir);
+            domainInfoManager.process(domainTemplate, domainDir);
         } catch (DomainException de) {
             //roll-back
             FileUtils.liquidate(domainDir);
@@ -347,11 +318,49 @@ public class DomainBuilder {
         if (!dir.exists()) {
             try {
                 if (!dir.mkdirs()) {
-                    throw new RepositoryException(_strings.get("directoryCreationError",	 dir));
+                    throw new RepositoryException(STRINGS.get("directoryCreationError",	 dir));
                 }
             } catch (Exception e) {
-                throw new RepositoryException(_strings.get("directoryCreationError", dir), e);
+                throw new RepositoryException(STRINGS.get("directoryCreationError", dir), e);
             }
         }
+    }
+    
+    /**
+     * Sets up security for the new domain
+     */
+    private DomainSecurity processDomainSecurity(File configDir) throws IOException, RepositoryException {
+        String user = (String) domainConfig.get(DomainConfig.K_USER);
+        String password = (String) domainConfig.get(DomainConfig.K_PASSWORD);
+        String[] adminUserGroups = ((String) domainConfig.get(DomainConfig.K_INITIAL_ADMIN_USER_GROUPS)).split(",");
+        String masterPassword = (String) domainConfig.get(DomainConfig.K_MASTER_PASSWORD);
+        Boolean saveMasterPassword = (Boolean) domainConfig.get(DomainConfig.K_SAVE_MASTER_PASSWORD);
+
+        // Process domain security.
+        DomainSecurity domainSecurity = new DomainSecurity();
+        domainSecurity.processAdminKeyFile(new File(configDir, DomainConstants.ADMIN_KEY_FILE), user, password, adminUserGroups);
+        try {
+            domainSecurity.createSSLCertificateDatabase(configDir, domainConfig, masterPassword);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, STRINGS.getString("SomeProblemWithKeytool", e.getMessage()));
+            FileOutputStream fos = null;
+            try {
+                File keystoreFile = new File(configDir, DomainConstants.KEYSTORE_FILE);
+                fos = new FileOutputStream(keystoreFile);
+                fos.write(keystoreBytes);
+            } catch (Exception ex) {
+                getLogger().log(Level.SEVERE, UNHANDLED_EXCEPTION, ex);
+            } finally {
+                if (fos != null) {
+                    fos.close();
+                }
+            }
+        }
+        domainSecurity.changeMasterPasswordInMasterPasswordFile(new File(configDir, DomainConstants.MASTERPASSWORD_FILE), masterPassword,
+                saveMasterPassword);
+        domainSecurity.createPasswordAliasKeystore(new File(configDir, DomainConstants.DOMAIN_PASSWORD_FILE), masterPassword);
+
+        return domainSecurity;
+        
     }
 }
