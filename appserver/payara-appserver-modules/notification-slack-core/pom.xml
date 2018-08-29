@@ -45,7 +45,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>5.183-SNAPSHOT</version>
+        <version>5.183</version>
     </parent>
     <groupId>fish.payara.appserver</groupId>
     <artifactId>notification-slack-core</artifactId>
