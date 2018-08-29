@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2018] Payara Foundation and/or affiliates -->
 
 <!-- Portions Copyright [2018] Payara Foundation and/or affiliates -->
 
@@ -254,9 +255,9 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.fusesource.jansi</groupId>
-            <artifactId>jansi</artifactId>
-            <version>${jansi.version}</version>
+            <groupId>jline</groupId>
+            <artifactId>jline</artifactId>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

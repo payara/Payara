@@ -61,6 +61,9 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import java.util.logging.Level;
 
 import javax.inject.Inject;
+import jline.console.ConsoleReader;
+import jline.console.completer.Completer;
+import jline.console.completer.StringsCompleter;
 
 /**
  * A scaled-down implementation of multi-mode command.
@@ -85,6 +88,8 @@ public class MultimodeCommand extends CLICommand {
     private String encoding;
     private boolean echo;       // saved echo flag
     private static final LocalStringsImpl strings = new LocalStringsImpl(MultimodeCommand.class);
+    
+    private static final String ASADMIN = "asadmin";
 
     /**
      * The validate method validates that the type and quantity of parameters
@@ -130,28 +135,41 @@ public class MultimodeCommand extends CLICommand {
 
     @Override
     protected int executeCommand() throws CommandException, CommandValidationException {
-        BufferedReader reader = null;
+        ConsoleReader reader = null;
         programOpts.setEcho(echo);       // restore echo flag, saved in validate
         try {
             if (file == null) {
                 System.out.println(strings.get("multimodeIntro"));
-                if (encoding != null) {
-                    reader = new BufferedReader(new InputStreamReader(System.in, encoding));
-                } else {
-                    reader = new BufferedReader(new InputStreamReader(System.in));
-                }
-            }
-            else {
+                reader = new ConsoleReader(ASADMIN, System.in, System.out, null, encoding);
+            } else {
                 printPrompt = false;
                 if (!file.canRead()) {
                     throw new CommandException("File: " + file + " can not be read");
                 }
-                if (encoding != null) {
-                    reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), encoding));
-                } else {
-                    reader = new BufferedReader(new FileReader(file));
-                }
+                OutputStream out = new OutputStream() {
+
+                    @Override
+                    public void write(int b) throws IOException {
+                        return;
+                    }
+
+                    @Override
+                    public void write(byte[] b) throws IOException {
+                        return;
+                    }
+
+                    @Override
+                    public void write(byte[] b, int off, int len) throws IOException {
+                        return;
+                    }
+                };
+
+                reader = new ConsoleReader(ASADMIN, new FileInputStream(file), out, null, encoding);
             }
+            
+            reader.setBellEnabled(false);
+            reader.addCompleter(getAllCommandsCompleter());
+            
             return executeCommands(reader);
         }
         catch (IOException e) {
@@ -162,7 +180,7 @@ public class MultimodeCommand extends CLICommand {
                 if (file != null && reader != null)
                     reader.close();
             }
-            catch (IOException e) {
+            catch (Exception e) {
                 // ignore it
             }
         }
@@ -185,8 +203,8 @@ public class MultimodeCommand extends CLICommand {
      *
      * @return the exit code of the last command executed
      */
-    private int executeCommands(BufferedReader reader) throws CommandException, CommandValidationException, IOException {
-        String line;
+    private int executeCommands(ConsoleReader reader) throws CommandException, CommandValidationException, IOException {
+        String line = null;
         int rc = 0;
 
         /*
@@ -198,10 +216,11 @@ public class MultimodeCommand extends CLICommand {
         String prompt = programOpts.getCommandName() + "> ";
         for (;;) {
             if (printPrompt) {
-                System.out.print(prompt);
-                System.out.flush();
+                line = reader.readLine(prompt);
+            } else {
+                line = reader.readLine();
             }
-            if ((line = reader.readLine()) == null) {
+            if (line == null) {
                 if (printPrompt)
                     System.out.println();
                 break;
@@ -324,5 +343,10 @@ public class MultimodeCommand extends CLICommand {
             args.add(t.nextToken());
         }
         return args.toArray(new String[args.size()]);
+    }
+    
+    private Completer getAllCommandsCompleter(){
+        return new StringsCompleter(CLIUtil.getAllCommands(container, programOpts, env));
+        
     }
 }
