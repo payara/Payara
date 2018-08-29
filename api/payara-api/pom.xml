@@ -117,10 +117,12 @@
                             <instructions>
                                 <Import-Package>
                                     fish.payara.cdi.jsr107.implementation,
+                                    io.opentracing,
                                     javax.inject,
                                     javax.enterprise.util,
                                     javax.security.enterprise.credential,
-                                    javax.security.enterprise.identitystore
+                                    javax.security.enterprise.identitystore,
+                                    javax.security.jacc
                                 </Import-Package>
                                 <Export-Package>
                                     fish.payara.cdi.auth.roles,
@@ -206,10 +208,8 @@
                             <source>1.7</source>
                             <target>1.7</target>
                             <excludes>
-                                <exclude>fish/payara/security/annotation/OAuth2AuthenticationDefinition.java</exclude>
-                                <exclude>fish/payara/security/oauth2/api/OAuthIdentityStore.java</exclude>
-                                <exclude>fish/payara/security/oauth2/api/OAuth2State.java</exclude>
-                                <exclude>fish/payara/security/oauth2/api/OAuth2AccessToken.java</exclude>
+                                <exclude>fish/payara/security/annotations/*.java</exclude>
+                                <exclude>fish/payara/security/oauth2/api/*.java</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
@@ -228,6 +228,7 @@
                                     <instructions>
                                         <Import-Package>
                                             fish.payara.cdi.jsr107.implementation,
+                                            io.opentracing,
                                             javax.inject,
                                             javax.enterprise.util,
                                             javax.security.jacc
@@ -312,10 +313,12 @@
                                     <instructions>
                                         <Import-Package>
                                             fish.payara.cdi.jsr107.implementation,
+                                            io.opentracing,
                                             javax.inject,
                                             javax.enterprise.util,
                                             javax.security.enterprise.credential,
                                             javax.security.enterprise.identitystore,
+                                            javax.security.enterprise.authentication.mechanism.http,
                                             javax.security.jacc
                                         </Import-Package>
                                         <Export-Package>

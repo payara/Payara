@@ -10,6 +10,7 @@ appserver/packager/pkg_conf.py
 target/
 *~
 *.iml
+nbactions.xml
 .idea
 gfbuild.log
 /nucleus/payara-modules/requesttracing-core/nbproject/
@@ -17,3 +18,5 @@ nb-configuration.xml
 /nucleus/payara-modules/nucleus-microprofile/config-service/nbproject/
 appserver/extras/arquillian-containers/payara-common/dependency-reduced-pom.xml
 /appserver/tests/quicklook/cluster/clustersetup/nbproject/
+/nucleus/payara-modules/service-exemplar/nbproject/
+/nucleus/admin/server-mgmt/nbproject/

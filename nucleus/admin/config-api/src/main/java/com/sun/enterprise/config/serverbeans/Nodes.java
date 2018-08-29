@@ -93,7 +93,7 @@ public interface Nodes extends ConfigBeanProxy {
     public List<Node> getNode();
     
     /**
-     * Return the default local node, localhost-<domain_name>, or null if no such node exists.
+     * Return the default local node, localhost-&lt;domain_name&gt;, or null if no such node exists.
      *
      * @return          the Node object, or null if no such node
      */
@@ -111,7 +111,6 @@ public interface Nodes extends ConfigBeanProxy {
 
     /**
      * Can we create a node?
-     * @param node
      * @return true if node creation is allowed, else false
      */
     @DuckTyped

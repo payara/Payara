@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
@@ -65,7 +66,7 @@ import com.sun.appserv.server.util.Version;
  */
 public class GlassFishDocument extends DomDocument<GlassFishConfigBean> {
 
-    Logger logger = ConfigApiLoggerInfo.getLogger();
+    Logger LOGGER = ConfigApiLoggerInfo.getLogger();
 
     public GlassFishDocument(final ServiceLocator habitat, final ExecutorService executor) {
         super(habitat);
@@ -76,6 +77,7 @@ public class GlassFishDocument extends DomDocument<GlassFishConfigBean> {
         final DomDocument doc = this;
         
         habitat.<Transactions>getService(Transactions.class).addTransactionsListener(new TransactionListener() {
+            @Override
             public void transactionCommited(List<PropertyChangeEvent> changes) {
                 if (!isGlassFishDocumentChanged(changes)) {
                     return;
@@ -89,11 +91,9 @@ public class GlassFishDocument extends DomDocument<GlassFishConfigBean> {
                         }
                         pers.save(doc);
                     } catch (IOException e) {
-                        logger.log(Level.SEVERE, 
-                        	ConfigApiLoggerInfo.glassFishDocumentIOException,e);
+                        LOGGER.log(Level.SEVERE, ConfigApiLoggerInfo.glassFishDocumentIOException,e);
                     } catch (XMLStreamException e) {
-                        logger.log(Level.SEVERE, 
-                        	ConfigApiLoggerInfo.glassFishDocumentXmlException,e);
+                        LOGGER.log(Level.SEVERE, ConfigApiLoggerInfo.glassFishDocumentXmlException,e);
                     }
                 }
             }
@@ -110,6 +110,7 @@ public class GlassFishDocument extends DomDocument<GlassFishConfigBean> {
                 return false;
             }
 
+            @Override
             public void unprocessedTransactedEvents(List<UnprocessedChangeEvents> changes) {
 
             }

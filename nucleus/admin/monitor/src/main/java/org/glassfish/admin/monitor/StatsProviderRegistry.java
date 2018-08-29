@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor;
 
@@ -50,19 +51,17 @@ import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderInfo;
 
 public class StatsProviderRegistry {
-    private Map<String, List<StatsProviderRegistryElement>>
-                        configToRegistryElementMap = new HashMap();
-    private Map<Object, StatsProviderRegistryElement>
-                        statsProviderToRegistryElementMap = new HashMap();
+    private final Map<String, List<StatsProviderRegistryElement>> configToRegistryElementMap = new HashMap();
+    private final Map<Object, StatsProviderRegistryElement> statsProviderToRegistryElementMap = new HashMap();
     private boolean isAMXReady = false;
     private boolean isMBeanEnabled = true;
     
-    static final String[] defaultConfigLevels = new String[] {"LOW","HIGH"};
+    static final String[] DEFAULT_CONFIG_LEVELS = new String[] {"LOW","HIGH"};
     public static final Map<String, Integer> configLevelsMap = new ConcurrentHashMap();
 
     public StatsProviderRegistry(MonitoringRuntimeDataRegistry mrdr) {
-        for (int i = 0; i < defaultConfigLevels.length; i++) {
-            configLevelsMap.put(defaultConfigLevels[i].toUpperCase(Locale.ENGLISH), i);
+        for (int i = 0; i < DEFAULT_CONFIG_LEVELS.length; i++) {
+            configLevelsMap.put(DEFAULT_CONFIG_LEVELS[i].toUpperCase(Locale.ENGLISH), i);
         }
     }
 
@@ -71,11 +70,10 @@ public class StatsProviderRegistry {
 
         if (configLevelStr == null) {
             // Pick the highest in the configLevels
-            spInfo.setConfigLevel(defaultConfigLevels[defaultConfigLevels.length-1]);
+            spInfo.setConfigLevel(DEFAULT_CONFIG_LEVELS[DEFAULT_CONFIG_LEVELS.length-1]);
         }
 
-        StatsProviderRegistryElement spre =
-                    new StatsProviderRegistryElement(spInfo);
+        StatsProviderRegistryElement spre = new StatsProviderRegistryElement(spInfo);
         initialize(spre, spInfo.getConfigElement(), spInfo.getStatsProvider());
     }
 
@@ -234,9 +232,7 @@ public class StatsProviderRegistry {
 
         public boolean isEnableAllowed(String userConfigLevelStr) {
             Integer userConfigLevel = StatsProviderRegistry.configLevelsMap.get(userConfigLevelStr.toUpperCase(Locale.ENGLISH));
-            if ((userConfigLevel != null) && (userConfigLevel >= configLevel))
-                return true;
-            return false;
+            return (userConfigLevel != null) && (userConfigLevel >= configLevel);
         }
 
         public void setParentTreeNodePath(String completePathName) {
@@ -257,13 +253,13 @@ public class StatsProviderRegistry {
             return this.resetMethod;
         }
 
+        @Override
         public String toString() {
-            String str = "    configStr = " + configStr + "\n" +
+            return "    configStr = " + configStr + "\n" +
                          "    statsProvider = " + statsProvider.getClass().getName() + "\n" +
                          "    PluginPoint = " + pp + "\n" +
                          "    handles = " + ((handles==null)?"null":"not null") + "\n" +
                          "    parentTreeNodePath = " + parentTreeNodePath;
-            return str;
         }
     }
 }

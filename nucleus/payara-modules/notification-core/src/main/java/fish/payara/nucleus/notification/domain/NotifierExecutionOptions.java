@@ -13,6 +13,8 @@
  */
 package fish.payara.nucleus.notification.domain;
 
+import java.util.logging.Level;
+
 import fish.payara.nucleus.notification.configuration.NotifierType;
 
 /**
@@ -24,6 +26,7 @@ public abstract class NotifierExecutionOptions {
 
     private NotifierType notifierType;
     private boolean enabled;
+    private boolean noisy;
 
     protected NotifierExecutionOptions(NotifierType notifierType) {
         this.notifierType = notifierType;
@@ -38,11 +41,23 @@ public abstract class NotifierExecutionOptions {
     }
 
     public boolean isEnabled() {
-        return enabled;
+        return isEnabled(Level.INFO);
+    }
+
+    public boolean isEnabled(Level level) {
+        return Level.FINE.equals(level) ? enabled && noisy : enabled;
     }
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public boolean isNoisy() {
+        return noisy;
+    }
+
+    public void setNoisy(boolean noisy) {
+        this.noisy = noisy;
     }
 
     @Override
@@ -50,6 +65,7 @@ public abstract class NotifierExecutionOptions {
         return "NotificationExecutionOptions{" +
                 "notifierType=" + notifierType +
                 ", enabled=" + enabled +
+                ", noisy=" + noisy +
                 '}';
     }
 

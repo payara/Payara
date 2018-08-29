@@ -37,16 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.Utility;
-import java.io.*;
 import java.io.InputStream;
-import java.net.*;
 import java.net.URL;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -83,6 +84,17 @@ class DomainXmlPreParser {
             super(s);
         }
     }
+    
+    private XMLStreamReader reader;
+    private List<ClusterData> clusters = new LinkedList<ClusterData>();
+    private List<String> configNames = new LinkedList<String>();
+    private ClusterData cluster;
+    private String instanceName;
+    private String serverConfigRef;
+    private boolean valid = false;
+    
+    private static final boolean DEBUG = Boolean.parseBoolean(Utility.getEnvOrProp("AS_DEBUG"));
+    private static final Logger LOGGER = Logger.getLogger("org.glassfish.config.support");
 
     DomainXmlPreParser(URL domainXml, XMLInputFactory xif, String instanceNameIn) throws DomainXmlPreParserException {
         if (domainXml == null || xif == null || !StringUtils.ok(instanceNameIn))
@@ -97,29 +109,26 @@ class DomainXmlPreParser {
             parse();
             postProcess();
             validate();
-        }
-        catch (DomainXmlPreParserException e) {
+        } catch (DomainXmlPreParserException e) {
             throw e;
-        }
-        catch (Exception e2) {
+        } catch (Exception e2) {
             throw new DomainXmlPreParserException(e2);
-        }
-        finally {
+        } finally {
             cleanup(in);
         }
     }
 
     final String getClusterName() {
-        if(!valid)
+        if(!valid) {
             return null;
-
+        }
         return cluster.name;
     }
 
     final List<String> getServerNames() {
-        if(!valid)
+        if(!valid) {
             return null;
-
+        }
         return cluster.serverRefs;
     }
 
@@ -176,18 +185,18 @@ class DomainXmlPreParser {
 
     private void validate() throws DomainXmlPreParserException {
         // 1. confirm that the server was located
-        if (serverConfigRef == null)
-            throw new DomainXmlPreParserException(
-                    Strings.get("dxpp.serverNotFound", instanceName));
+        if (serverConfigRef == null) {
+            throw new DomainXmlPreParserException(Strings.get("dxpp.serverNotFound", instanceName));
+        }
+        
         // 2. config-ref of server matches config-ref of cluster
-        if (!serverConfigRef.equals(cluster.configRef))
-            throw new DomainXmlPreParserException(
-                    Strings.get("dxpp.configrefnotmatch", instanceName, cluster.name));
-
-        if(!configNames.contains(serverConfigRef))
-            throw new DomainXmlPreParserException(
-                    Strings.get("dxpp.confignotfound", instanceName, serverConfigRef));
-
+        if (!serverConfigRef.equals(cluster.configRef)) {
+            throw new DomainXmlPreParserException(Strings.get("dxpp.configrefnotmatch", instanceName, cluster.name));
+        }
+        
+        if(!configNames.contains(serverConfigRef)){
+            throw new DomainXmlPreParserException(Strings.get("dxpp.confignotfound", instanceName, serverConfigRef));
+        }
 
 
         valid = true;
@@ -199,14 +208,18 @@ class DomainXmlPreParser {
         if (!StringUtils.ok(name))
             return;
 
-        if (name.equals(SERVERS)) {
-            handleServers();
-        }
-        else if (name.equals(CLUSTERS)) {
-            handleClusters();
-        }
-        else if (name.equals(CONFIGS)) {
-            handleConfigs();
+        switch (name) {
+            case SERVERS:
+                handleServers();
+                break;
+            case CLUSTERS:
+                handleClusters();
+                break;
+            case CONFIGS:
+                handleConfigs();
+                break;
+            default:
+                break;
         }
     }
 
@@ -270,16 +283,18 @@ class DomainXmlPreParser {
     }
 
     private boolean skipToStartButNotPast(String startName, String stopName) throws XMLStreamException {
-        if (!StringUtils.ok(startName) || !StringUtils.ok(stopName))
+        if (!StringUtils.ok(startName) || !StringUtils.ok(stopName)) {
             throw new IllegalArgumentException();
-
+        }
         while (reader.hasNext()) {
             reader.next();
             // getLocalName() will throw an exception in many states.  Be careful!!
-            if (reader.isStartElement() && startName.equals(reader.getLocalName()))
+            if (reader.isStartElement() && startName.equals(reader.getLocalName())) {
                 return true;
-            if (reader.isEndElement() && stopName.equals(reader.getLocalName()))
+            }
+            if (reader.isEndElement() && stopName.equals(reader.getLocalName())) {
                 return false;
+            }
         }
         return false;
     }
@@ -292,19 +307,10 @@ class DomainXmlPreParser {
         return reader.getAttributeValue(null, CONFIG_REF);
     }
 
-    private static void printf(String s) {
-        if (debug)
-            System.out.println(s);
+    private static void printf(String message) {
+        if (DEBUG)
+            LOGGER.log(Level.INFO, message);
     }
-    private XMLStreamReader reader;
-    private List<ClusterData> clusters = new LinkedList<ClusterData>();
-    private List<String> configNames = new LinkedList<String>();
-    private ClusterData cluster;
-    private String instanceName;
-    private String serverConfigRef;
-    private boolean valid = false;
-    private final static boolean debug = Boolean.parseBoolean(Utility.getEnvOrProp("AS_DEBUG"));
-
 
     private static class ClusterData {
 

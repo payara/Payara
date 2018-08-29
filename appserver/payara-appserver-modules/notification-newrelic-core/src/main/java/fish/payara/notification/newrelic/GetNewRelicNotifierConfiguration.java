@@ -68,13 +68,14 @@ public class GetNewRelicNotifierConfiguration extends BaseGetNotifierConfigurati
 
     @Override
     protected String listConfiguration(NewRelicNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "Key", "Account Id"};
+        String headers[] = {"Enabled", "Noisy", "Key", "Account Id"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[3];
+        Object values[] = new Object[4];
 
         values[0] = configuration.getEnabled();
-        values[1] = configuration.getKey();
-        values[2] = configuration.getAccountId();
+        values[1] = configuration.getNoisy();
+        values[2] = configuration.getKey();
+        values[3] = configuration.getAccountId();
 
         columnFormatter.addRow(values);
         return columnFormatter.toString();
@@ -82,13 +83,16 @@ public class GetNewRelicNotifierConfiguration extends BaseGetNotifierConfigurati
     
     @Override
     protected Map<String, Object> getNotifierConfiguration(NewRelicNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(3);
+        Map<String, Object> map = new HashMap<>(4);
 
         if (configuration != null) {
             map.put("enabled", configuration.getEnabled());
+            map.put("noisy", configuration.getNoisy());
             map.put("key", configuration.getKey());
             map.put("accountId", configuration.getAccountId());
-        }
+        } else {
+            map.put("noisy", Boolean.TRUE.toString());
+       }
 
         return map;
     }

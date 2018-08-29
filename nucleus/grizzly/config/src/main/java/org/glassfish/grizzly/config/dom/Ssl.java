@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.grizzly.config.dom;
 
@@ -312,5 +313,21 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     String getHandshakeTimeoutMillis();
 
     void setHandshakeTimeoutMillis(String timeoutMillis);
+    
+    /**
+     * How long before TLS sessions expire from the cache
+     * @return 
+     */
+    @Attribute(dataType=Integer.class)
+    String getTlsSessionTimeout();
+    void setTlsSessionTimeout(String timeout);
+    
+    /**
+     * How large the TLS session cache can get
+     * @return 
+     */
+    @Attribute(dataType=Integer.class)
+    String getTlsSessionCacheSize();
+    void setTlsSessionCacheSize(String size);
 
 }

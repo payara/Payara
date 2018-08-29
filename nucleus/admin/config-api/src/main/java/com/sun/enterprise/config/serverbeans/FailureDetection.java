@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -79,8 +80,8 @@ public interface FailureDetection extends ConfigBeanProxy {
     /**
      * Sets the value of the maxMissedHeartbeats property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setMaxMissedHeartbeats(String value) throws PropertyVetoException;
 
@@ -101,14 +102,15 @@ public interface FailureDetection extends ConfigBeanProxy {
      * Sets the value of heartbeatFrequencyInMillis property.
      * <p/>
      * @param value allowed is {@link String }
+     * @throws PropertyVetoException
      */
     void setHeartbeatFrequencyInMillis(String value) throws PropertyVetoException;
 
     /**
      * Sets the value of the verifyFailureWaittimeInMillis property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setVerifyFailureWaittimeInMillis(String value) throws PropertyVetoException;
 
@@ -131,12 +133,14 @@ public interface FailureDetection extends ConfigBeanProxy {
      * sets the value of the verifyFailureConnectTimeoutInMillis.
      * <p/>
      * @param value allowed object is {@link String}
+     * @throws PropertyVetoException
      * @since glassfish v3.1
      */
     void setVerifyFailureConnectTimeoutInMillis(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the verifyFailureConnectTimeoutInMillis.
+     * @return 
      * @since glassfish v3.1
      */
     @Attribute(defaultValue = "10000")

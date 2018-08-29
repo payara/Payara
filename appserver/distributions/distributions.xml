@@ -40,8 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] [Payara Foundation] -->
-
+<!-- Portions Copyright [2016-2018] Payara Foundation and/or affiliates -->
 
 <project name="GlassFish Distributions (IPS) Creation" basedir=".">
     <property name="image.root" value="target/local_image"/>
@@ -242,11 +241,6 @@
         <attribute name="deleteIncludes" />
         <attribute name="zipBaseDir" default="@{image.dir}"/>
         <sequential>
-
-            <copy file="@{image.dir}/${install.dir.name}/pkg/lib/pkg-bootstub.sh" tofile="@{image.dir}/${install.dir.name}/bin/updatetool"/>
-            <copy file="@{image.dir}/${install.dir.name}/pkg/lib/pkg-bootstub.bat" tofile="@{image.dir}/${install.dir.name}/bin/updatetool.bat"/>
-            <copy file="@{image.dir}/${install.dir.name}/pkg/lib/pkg-bootstub.sh" tofile="@{image.dir}/${install.dir.name}/bin/pkg"/>
-            <copy file="@{image.dir}/${install.dir.name}/pkg/lib/pkg-bootstub.bat" tofile="@{image.dir}/${install.dir.name}/bin/pkg.bat"/>    
 
             <chmod file="@{image.dir}/${install.dir.name}/bin/*" perm="ugo+rx"/>
             <chmod file="@{image.dir}/${install.dir.name}/glassfish/bin/*" perm="ugo+rx"/>

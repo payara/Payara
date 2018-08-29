@@ -100,9 +100,14 @@ public class AsynchronousInterceptor implements Serializable {
         }
         
         try {
-            // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled
-            if (faultToleranceService.isFaultToleranceEnabled(faultToleranceService.getApplicationName(
-                    invocationManager, invocationContext), config)) {                
+            String appName = faultToleranceService.getApplicationName(invocationManager, invocationContext);
+            
+            // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled for 
+            // this method
+            if (faultToleranceService.isFaultToleranceEnabled(appName, config)
+                    && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
+                            config, Asynchronous.class, invocationContext)
+                            .orElse(Boolean.TRUE))) {
                 Callable callable = () -> {
                     return invocationContext.proceed();
                 };
@@ -119,11 +124,14 @@ public class AsynchronousInterceptor implements Serializable {
             // We should only get here if executing synchronously, as the exception wouldn't get thrown in this thread
             Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
             
-            // If the method was annotated with Fallback, attempt it, otherwise just propagate the exception upwards
-            if (fallback != null) {
+            // If the method was annotated with Fallback and the annotation is enabled, attempt it, otherwise just 
+            // propagate the exception upwards
+            if (fallback != null && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
+                    config, Fallback.class, invocationContext)
+                    .orElse(Boolean.TRUE))) {
                 logger.log(Level.FINE, "Fallback annotation found on method - falling back from Asynchronous");
                 FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
-                proceededInvocationContext = fallbackPolicy.fallback(invocationContext);
+                proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
             } else {
                 throw ex;
             }
@@ -195,7 +203,7 @@ public class AsynchronousInterceptor implements Serializable {
                 }
             } catch (InterruptedException | ExecutionException | TimeoutException ex) {
                 if (ex.getCause() instanceof FaultToleranceException) {
-                    throw (FaultToleranceException) ex.getCause();
+                    throw new ExecutionException(ex.getCause());
                 } else {
                     throw ex;
                 }

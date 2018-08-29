@@ -331,7 +331,7 @@ public class WebModule extends PwcWebModule implements Context {
     }
 
     /**
-     * Sets the parameter encoding (i18n) info from web.xml and sun-web.xml and glassfish-web.xml.
+     * Sets the parameter encoding (i18n) info from web.xml, sun-web.xml, glassfish-web.xml and payara-web.xml.
      */
     public void setI18nInfo() {
 

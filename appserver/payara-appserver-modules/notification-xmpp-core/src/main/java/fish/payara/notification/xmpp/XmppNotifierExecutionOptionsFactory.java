@@ -64,6 +64,7 @@ public class XmppNotifierExecutionOptionsFactory extends NotifierExecutionOption
     public NotifierExecutionOptions build(XmppNotifier notifier) {
         XmppNotifierExecutionOptions executionOptions = new XmppNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
+        executionOptions.setNoisy(Boolean.parseBoolean(notifier.getNoisy()));
         return executionOptions;
     }
 }

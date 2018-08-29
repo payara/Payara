@@ -37,7 +37,8 @@
 * only if the new code is made subject to such option by the copyright
 * holder.
 */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation]
+
 package com.sun.enterprise.config.serverbeans;
 
 import org.glassfish.api.Param;
@@ -61,8 +62,7 @@ public interface ManagedJobConfig extends DomainExtension, PropertyBag, Payload 
 
     /**
      * Gets the value of inMemoryRetentionPeriod property
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute(defaultValue="1h")
     @Pattern(regexp = "[1-9]\\d*([hms]|[HMS])" , message = "{invalid.time.period.specified}"
@@ -72,8 +72,8 @@ public interface ManagedJobConfig extends DomainExtension, PropertyBag, Payload 
     /**
      * Sets the value of the inMemoryRetentionPeriod property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     @Param(name = "inmemoryretentionperiod", optional=true)
     void setInMemoryRetentionPeriod(String value) throws PropertyVetoException;
@@ -90,8 +90,8 @@ public interface ManagedJobConfig extends DomainExtension, PropertyBag, Payload 
     /**
      * Sets the value of the jobRetentionPeriod property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     @Param(name = "jobretentionperiod", optional=true)
     void setJobRetentionPeriod(String value) throws PropertyVetoException;
@@ -108,15 +108,14 @@ public interface ManagedJobConfig extends DomainExtension, PropertyBag, Payload 
     /**
      * Sets the value of the persistingenabled property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setPersistingEnabled(boolean value) throws PropertyVetoException;
 
     /**
      * Gets the value of pollInterval property
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute(defaultValue="20m")
     @Pattern(regexp = "[1-9]\\d*([hms]|[HMS])" , message = "{invalid.time.period.specified}"
@@ -126,8 +125,8 @@ public interface ManagedJobConfig extends DomainExtension, PropertyBag, Payload 
     /**
      * Sets the value of the pollInterval property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     @Param(name = "pollinterval", optional=true)
     void setPollInterval(String value) throws PropertyVetoException;
@@ -146,12 +145,9 @@ public interface ManagedJobConfig extends DomainExtension, PropertyBag, Payload 
      *
      * @param value allowed object is
      *              {@link String }
+     * @throws PropertyVetoException
      */
     @Param(name = "initialdelay", optional=true)
     void setInitialDelay(String value) throws PropertyVetoException;
-
-
-
-
 
 }

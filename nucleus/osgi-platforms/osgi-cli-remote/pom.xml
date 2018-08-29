@@ -53,7 +53,7 @@
     <packaging>glassfish-jar</packaging>
 
     <name>Admin CLI bridge command to the OSGi Shell</name>
-    <description>${project.name}}</description>
+    <description>${project.name}</description>
     <developers>
         <developer>
             <name>Ancoron Luciferis</name>

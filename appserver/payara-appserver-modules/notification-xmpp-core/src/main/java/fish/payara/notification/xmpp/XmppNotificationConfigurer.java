@@ -91,7 +91,9 @@ public class XmppNotificationConfigurer extends BaseNotificationConfigurer<XmppN
         if(this.enabled != null) {
             configuration.enabled(this.enabled);
         }
-
+        if(this.noisy != null) {
+            configuration.noisy(this.noisy);
+        }
         if(!Strings.isNullOrEmpty(hostName)) {
             configuration.host(hostName);
         }

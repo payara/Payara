@@ -40,8 +40,6 @@
 
 package org.glassfish.config.support;
 
-import org.glassfish.config.support.TypedChangeEvent;
-
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeSupport;
 
@@ -59,6 +57,7 @@ public class TypedVetoableChangeSupport extends VetoableChangeSupport {
         source = sourceBean;
     }
 
+    @Override
     public void fireVetoableChange(String propertyName, Object oldValue, Object newValue)
         throws PropertyVetoException {
 

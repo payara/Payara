@@ -37,12 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
-
-import org.glassfish.api.I18n;
-import org.jvnet.hk2.config.GenerateServiceFromMethod;
-import org.jvnet.hk2.config.GeneratedServiceName;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -63,28 +60,33 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Target(ElementType.METHOD)
 public @interface ListingColumn {
+    
     /** 
      * Determines the order of the columns from left to right. The "key" attribute
      * is assigned order value 0. Higher order values are for columns further
      * to the right. 
+     * @return 
      */
     int order() default GenericListCommand.ColumnInfo.NONKEY_ORDER;
     
     /**
      * Returns the header for the column.  The calculate dvalue is the method
      * name converted to XML form, e.g., getSomeAttr is SOME-ATTR
+     * @return 
      */
     String header() default ""; 
      
     /**
      * Determines whether a column should be excluded from the output. The default
      * is false. 
+     * @return 
      */
     boolean exclude() default false;
     
     /** 
      * Determines whether a column should be included in the --long output by
      * default.  The default is true.
+     * @return 
      */
     boolean inLongByDefault() default true;
 }

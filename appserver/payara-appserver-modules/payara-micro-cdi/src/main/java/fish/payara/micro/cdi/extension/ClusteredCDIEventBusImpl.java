@@ -146,8 +146,11 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
                 public void run() {
                     ClassLoader oldCL = Utility.getClassLoader();
                     try {
-                        Utility.setContextClassLoader(ctxUtil.getInvocationClassLoader());
-
+                        ClassLoader invocationClassLoader = ctxUtil.getInvocationClassLoader();
+                        if (invocationClassLoader != null) { // null in case of an event from server such as CDI notifier
+                            Utility.setContextClassLoader(invocationClassLoader);
+                        }
+                        
                         // create the set of qualifiers for the event
                         // first add Inbound qualifier with the correct properties
                         Set<Annotation> qualifiers = new HashSet<>();

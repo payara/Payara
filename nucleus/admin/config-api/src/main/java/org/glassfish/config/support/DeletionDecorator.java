@@ -71,6 +71,8 @@ public interface DeletionDecorator<T extends ConfigBeanProxy, U extends ConfigBe
      * @param context the command context to lead to the element deletion
      * @param parent the parent instance the element was removed from
      * @param child the deleted instance
+     * @throws TransactionFailure
+     * @throws PropertyVetoException
      */
     public void decorate(AdminCommandContext context, T parent, U child) throws TransactionFailure, PropertyVetoException;
 

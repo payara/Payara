@@ -80,7 +80,7 @@ public interface HealthCheckServiceConfiguration extends ConfigBeanProxy, Config
     List<Notifier> getNotifierList();
 
     @DuckTyped
-    <T extends Notifier> T getNotifierByType(Class type);
+    <T extends Notifier> T getNotifierByType(Class<T> type);
 
     class Duck {
         public static <T extends Checker> T getCheckerByType(HealthCheckServiceConfiguration config, Class<T> type) {

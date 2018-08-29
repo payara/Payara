@@ -304,7 +304,7 @@ public class SetMonitoringConfiguration implements AdminCommand {
      */
     private MonitoredAttribute parseToMonitoredAttribute(String input, MonitoredAttribute monitoredAttribute) throws PropertyVetoException {
         // Negative lookbehind - find space characters not preceeded by \
-        String[] attributeTokens = input.split("(?<!\\\\) ");
+        String[] attributeTokens = input.split("(?=objectName ?=)|(?=attributeName ?=)|(?=description ?=)");
         String attributeName = null;
         String objectName = null;
         String description = null;
@@ -325,13 +325,13 @@ public class SetMonitoringConfiguration implements AdminCommand {
             }
             switch (param[0]) {
                 case "attributeName": case "name":
-                    attributeName = (param.length == 2) ? param[1] : null;
+                   attributeName = param[1].trim();
                     break;
                 case "objectName": case "value":
-                    objectName = (param.length == 2) ? param[1] : null;
+                    objectName = param[1].trim();
                     break;
                 case "description":
-                    description = (param.length == 2) ? param[1] : null;
+                    description = param[1].trim();
                     break;
                 default:
                     throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(

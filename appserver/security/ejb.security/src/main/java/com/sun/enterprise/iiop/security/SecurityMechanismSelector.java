@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.iiop.security;
 
@@ -104,6 +105,7 @@ import org.glassfish.hk2.api.PostConstruct;
 import javax.inject.Singleton;
 
 import javax.inject.Inject;
+import org.glassfish.enterprise.iiop.impl.GlassFishORBManager;
 
 /** 
  * This class is responsible for making various decisions for selecting
@@ -274,7 +276,12 @@ public final class SecurityMechanismSelector implements PostConstruct {
             if(isSet(targetRequires, EstablishTrustInClient.value)) {
                 type = "SSL_MUTUALAUTH";
                 ctx.setSSLClientAuthenticationOccurred(true);
-            } 
+            }
+
+            if (ssl.addresses.length == 0 && GlassFishORBManager.disableSSLCheck()) {
+                return null;
+            }
+
             short sslport = ssl.addresses[0].port;
             int ssl_port = Utility.shortToInt(sslport);
             String host_name = ssl.addresses[0].host_name;
@@ -297,6 +304,11 @@ public final class SecurityMechanismSelector implements PostConstruct {
                 }
 
                 ctx.setSSLUsed(true);
+
+                if (ssl.addresses.length == 0 && GlassFishORBManager.disableSSLCheck()) {
+                    return null;
+                }
+
                 short sslport = ssl.addresses[0].port;
                 String host_name = ssl.addresses[0].host_name;
                 int ssl_port = Utility.shortToInt(sslport);
@@ -406,6 +418,9 @@ public final class SecurityMechanismSelector implements PostConstruct {
                     type, host_name, ssl_port);
                 socketInfos.add(sInfo);
             }
+            if (GlassFishORBManager.disableSSLCheck() && socketInfos.isEmpty()) {
+                return null;
+            }
             return socketInfos;
         } else if (isSet(targetSupports, Integrity.value) || 
                     isSet(targetSupports, Confidentiality.value) ||
@@ -432,7 +447,10 @@ public final class SecurityMechanismSelector implements PostConstruct {
                         "SSL", host_name, ssl_port);
                     socketInfos.add(sInfo);
                 }
-                return socketInfos;                
+                if (GlassFishORBManager.disableSSLCheck() && socketInfos.isEmpty()) {
+                    return null;
+                }
+                return socketInfos;
             } else {
                 return null;
             }
@@ -1396,13 +1414,15 @@ as_context_mech
                 checkSkipped = true;
                 continue;
             }
-            if (! evaluate_client_conformance_ssl(iorDesc, ssl_used, certchain)){
-		if(_logger.isLoggable(Level.FINE)) {
-		    _logger.log(Level.FINE,
-				"SecurityMechanismSelector.evaluate_client_conformance: evaluate_client_conformance_ssl");
-		}
-                checkSkipped = false;
-                continue;
+            if (!GlassFishORBManager.disableSSLCheck()) {
+                if (!evaluate_client_conformance_ssl(iorDesc, ssl_used, certchain)) {
+                    if (_logger.isLoggable(Level.FINE)) {
+                        _logger.log(Level.FINE,
+                                "SecurityMechanismSelector.evaluate_client_conformance: evaluate_client_conformance_ssl");
+                    }
+                    checkSkipped = false;
+                    continue;
+                }
             }
             String realmName = "default";
             if(ejbDesc != null && ejbDesc.getApplication() != null) {

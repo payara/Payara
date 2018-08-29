@@ -37,23 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.batch;
 
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.config.support.TargetType;
-import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
-import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import java.util.Properties;

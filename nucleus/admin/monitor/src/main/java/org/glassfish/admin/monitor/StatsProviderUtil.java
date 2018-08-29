@@ -37,14 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor;
 
-import org.glassfish.api.monitoring.ContainerMonitoring;
 import org.glassfish.flashlight.client.ProbeClientMethodHandle;
 
 import java.util.Collection;
-import java.util.logging.Level;
 
 public class StatsProviderUtil {
 
@@ -65,6 +64,9 @@ public class StatsProviderUtil {
     }
 
     public static Boolean isMonitoringEnabled(String configElement) {
-        return spmd == null ? Boolean.FALSE : spmd.getEnabledValue(configElement);
+        if (spmd == null ){
+            return false;
+        }
+        return spmd.getEnabledValue(configElement);
     }
 }

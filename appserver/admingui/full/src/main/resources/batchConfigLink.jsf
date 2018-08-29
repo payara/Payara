@@ -20,7 +20,7 @@
 <sun:property>
     <sun:hyperlink 
         toolTip="$resource{i18nf.tree.batch}"
-        url="/full/batch.jsf?config=#{configName}"
+        url="/full/batch.jsf?configName=#{configName}"
         >
         <sun:image url="/resource/images/batch.png" />
         <sun:staticText text="$resource{i18nf.tree.batch}" />

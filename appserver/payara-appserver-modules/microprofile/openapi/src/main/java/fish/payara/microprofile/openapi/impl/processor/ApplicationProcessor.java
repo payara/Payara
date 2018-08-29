@@ -288,7 +288,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitProduces(Produces produces, AnnotatedElement element, ApiContext context) {
-        if (element instanceof Method) {
+        if (element instanceof Method && context.getWorkingOperation() != null) {
             for (org.eclipse.microprofile.openapi.models.responses.APIResponse response : context.getWorkingOperation()
                     .getResponses().values()) {
 
@@ -423,7 +423,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                 Map<String, org.eclipse.microprofile.openapi.models.media.Schema> fields = new LinkedHashMap<>();
                 for (Field field : Class.class.cast(element).getDeclaredFields()) {
                     if (!Modifier.isTransient(field.getModifiers())) {
-                        fields.put(field.getName(), createSchema(context, field.getType()));
+                        fields.put(field.getName(), createSchema(context, element, field.getType()));
                     }
                 }
                 newSchema.setProperties(fields);
@@ -881,6 +881,21 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         return schema;
     }
 
+    private org.eclipse.microprofile.openapi.models.media.Schema createSchema(ApiContext context, 
+            AnnotatedElement annotatedElement, Class<?> type) {
+        SchemaType schemaType = ModelUtils.getSchemaType(type);
+
+        // If the annotated element is the same type as the reference class, return a null schema
+        if (schemaType == SchemaType.OBJECT && type.equals(annotatedElement)) {
+            org.eclipse.microprofile.openapi.models.media.Schema schema = new SchemaImpl();
+            schema.setType(null);
+            schema.setItems(null);
+            return schema;
+        } else {
+            return createSchema(context, type);
+        }  
+    }
+    
     /**
      * Replace the object in the referee with a reference, and create the reference
      * in the API.
@@ -899,6 +914,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         // If the object is a Java EE object type
         if (referenceClass.getName().startsWith("javax.")) {
+            return false;
+        }
+
+        // Check the class exists in the application
+        if (!classes.contains(referenceClass)) {
             return false;
         }
 

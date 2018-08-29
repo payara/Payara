@@ -64,6 +64,7 @@ public class DatadogNotifierExecutionOptionsFactory extends NotifierExecutionOpt
     public NotifierExecutionOptions build(DatadogNotifier notifier) {
         DatadogNotifierExecutionOptions executionOptions = new DatadogNotifierExecutionOptions();
         executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
+        executionOptions.setNoisy(Boolean.parseBoolean(notifier.getNoisy()));
         return executionOptions;
     }
 }
