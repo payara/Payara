@@ -180,7 +180,7 @@ public class MultimodeCommand extends CLICommand {
                 if (file != null && reader != null)
                     reader.close();
             }
-            catch (IOException e) {
+            catch (Exception e) {
                 // ignore it
             }
         }
