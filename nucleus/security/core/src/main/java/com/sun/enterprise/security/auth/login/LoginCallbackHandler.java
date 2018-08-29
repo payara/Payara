@@ -60,14 +60,15 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  * ThreadLocal cancelStatus.
  */
 public class LoginCallbackHandler implements CallbackHandler {
-    
-    private boolean isGUI;
+
     private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LoginCallbackHandler.class);
+
+    private boolean isGUI;
     protected ThreadLocal<Boolean> cancelStatus = new ThreadLocal<Boolean>();
 
     /**
      * Check whether the authentication was cancelled by the user.
-     * 
+     *
      * @return boolean indicating whether the authentication was cancelled.
      */
     public boolean getCancelStatus() {
@@ -88,13 +89,15 @@ public class LoginCallbackHandler implements CallbackHandler {
     /**
      * This is the callback method called when authentication data is required. It either pops up a dialog box to request
      * authentication data or use text input.
-     * 
+     *
      * @param the callback object instances supported by the login module.
      */
+    @Override
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         if (isGUI) {
             String user = localStrings.getLocalString("login.user", "user");
             new GUILoginDialog(user, callbacks);
+
             for (int i = 0; i < callbacks.length; i++) {
                 if (callbacks[i] instanceof NameCallback) {
                     cancelStatus.set(((NameCallback) callbacks[i]).getName() == null);

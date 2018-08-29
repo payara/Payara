@@ -597,10 +597,7 @@ public class JaspicRealm {
             if (messageInfo != null) {
 
                 // JSR 196 is enabled for this application
-                ServerAuthContext serverAuthContext = (ServerAuthContext) messageInfo.getMap().get(SERVER_AUTH_CONTEXT);
-                if (messageInfo != null) {
-                    return new SimpleImmutableEntry<>(messageInfo, serverAuthContext);
-                }
+                return new SimpleImmutableEntry<>(messageInfo, (ServerAuthContext) messageInfo.getMap().get(SERVER_AUTH_CONTEXT));
             }
         }
 
