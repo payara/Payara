@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.stringsubs.impl;
 
@@ -72,30 +73,27 @@ public class SmallFileSubstitutionHandler extends FileSubstitutionHandler {
     @Override
     public Reader getReader() {
         try {
-            if (_reader == null) {
-                char[] buffer = new char[(int)_inputFile.length()];
+            if (reader == null) {
+                char[] buffer = new char[(int)inputFile.length()];
                 int count = 0;
-                try {
-                    _reader = new InputStreamReader(new FileInputStream(_inputFile));
-                    count = _reader.read(buffer);
-                } finally {
-                    _reader.close();
+                try (InputStreamReader newReader = new InputStreamReader(new FileInputStream(inputFile))) {
+                    count = newReader.read(buffer);
                 }
-                _reader = new CharArrayReader(buffer, 0, count);
+                reader = new CharArrayReader(buffer, 0, count);
             }
         } catch (IOException e) {
-            _logger.log(Level.WARNING, _strings.get("invalidFileLocation", _inputFile.getAbsolutePath()), e);
+            LOGGER.log(Level.WARNING, _strings.get("invalidFileLocation", inputFile.getAbsolutePath()), e);
         }
-        return _reader;
+        return reader;
     }
 
     @Override
     public Writer getWriter() {
         try {
-            _writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(_inputFile)));
+            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(inputFile)));
         } catch (FileNotFoundException e) {
-            _logger.log(Level.WARNING, _strings.get("invalidFileLocation", _inputFile.getAbsolutePath()), e);
+            LOGGER.log(Level.WARNING, _strings.get("invalidFileLocation", inputFile.getAbsolutePath()), e);
         }
-        return _writer;
+        return writer;
     }
 }

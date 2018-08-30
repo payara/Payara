@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.stringsubs;
 
@@ -49,6 +50,8 @@ public class StringSubstitutionException extends Exception {
     /**
      * Constructs a new exception with the specified detail message and cause.
      *
+     * @param msg the detail message
+     * @param cause the cause
      * @see Exception#Exception(String, Throwable)
      */
     public StringSubstitutionException(String msg, Throwable cause) {
@@ -58,6 +61,7 @@ public class StringSubstitutionException extends Exception {
     /**
      * Constructs a new exception with the specified cause
      *
+     * @param cause The wrapped cause. This can be null.
      * @see Exception#Exception(Throwable)
      */
     public StringSubstitutionException(Throwable cause) {
@@ -67,6 +71,7 @@ public class StringSubstitutionException extends Exception {
     /**
      * Constructs a new exception with the specified detail message.
      *
+     * @param msg the details message
      * @see Exception#Exception(String)
      */
     public StringSubstitutionException(String msg) {

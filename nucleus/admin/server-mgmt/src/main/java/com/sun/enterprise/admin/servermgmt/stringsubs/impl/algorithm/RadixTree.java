@@ -55,17 +55,17 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  */
 class RadixTree {
 
-    private static final Logger _logger = SLogger.getLogger();
-    private static final LocalStringsImpl _strings = new LocalStringsImpl(RadixTree.class);
+    private static final Logger LOGGER = SLogger.getLogger();
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(RadixTree.class);
     // Reference to root node.
-    private RadixTreeNode _rootNode;
+    private final RadixTreeNode rootNode;
 
     /**
      * Construct {@link RadixTree} with default root node.
      */
     public RadixTree() {
         // Creating root node.
-        _rootNode = new RadixTreeNode("", null);
+        rootNode = new RadixTreeNode("", null);
     }
 
     /**
@@ -89,43 +89,23 @@ class RadixTree {
      */
     public void insert(String key, String value) {
         if (key == null || key.isEmpty()) {
-            throw new IllegalArgumentException(_strings.get("errorInEmptyNullKeyInstertion"));
+            throw new IllegalArgumentException(STRINGS.get("errorInEmptyNullKeyInstertion"));
         }
-        char[] inputChars = key.toCharArray();
         int noOfMatchedChars = 0;
-        RadixTreeNode node = _rootNode;
+        RadixTreeNode node = rootNode;
         RadixTreeNode newNode = null;
-        int keyLength = inputChars.length;
-        OUTER_LOOP : while (noOfMatchedChars < keyLength) {
+        int keyLength = key.length();
+        while (noOfMatchedChars < keyLength) {
             String nodeKey = node.getKey();
-            int i = 0;
-            int maxLoop = nodeKey.length() > (keyLength - noOfMatchedChars) ? keyLength - noOfMatchedChars :
-                nodeKey.length();
-            for (; i < maxLoop ; i++) {
-                if (nodeKey.charAt(i) != inputChars[noOfMatchedChars]) {
-                    // e.g new key/value : successive/successive
-                    // before, 
-                    // |-node (key: successful, value: successful)
-                    // | |-node_childs...
-                    //after...
-                    // |-newNode (key: success, value: "")
-                    // | |-node (key: ful, value: successful)
-                    // | | |-node_childs...
-                    // | |-secondNewNode (key: ive, value: successive)
-                    newNode = new RadixTreeNode(nodeKey.substring(0, i), null);
-                    RadixTreeNode parentNode = node.getParentNode();
-                    parentNode.removeChildNode(node);
-                    parentNode.addChildNode(newNode);
-                    node.setKey(nodeKey.substring(i));
-                    newNode.addChildNode(node);
-                    newNode.addChildNode(new RadixTreeNode(key.substring(noOfMatchedChars), value));
-                    break OUTER_LOOP;
-                }
-                noOfMatchedChars++;
+            Integer i = 0;
+            
+            newNode = buildNodeLongKey(i, node, noOfMatchedChars, key, value);
+            if (newNode != null) {
+                break;
             }
 
             // If the given key is smaller than the matched node key
-            if (nodeKey.length() > maxLoop) {
+            if (nodeKey.length() > (keyLength - noOfMatchedChars)) {
                 // e.g new key/value : acid/acid
                 // before, 
                 // |-node (key: acidic, value: acidic)
@@ -145,13 +125,13 @@ class RadixTree {
 
             if (noOfMatchedChars == keyLength) {
                 if (node.getValue() != null && !node.getValue().isEmpty()) {
-                    _logger.log(Level.INFO, SLogger.CHANGE_IN_VALUE, new Object[] {node.getValue(), value});
+                    LOGGER.log(Level.INFO, SLogger.CHANGE_IN_VALUE, new Object[] {node.getValue(), value});
                 }
                 node.setValue(value);
                 break;
             }
 
-            RadixTreeNode matchedNode = node.getChildNode(inputChars[noOfMatchedChars]);
+            RadixTreeNode matchedNode = node.getChildNode(key.charAt(noOfMatchedChars));
             // Add as a child node if no match found.
             if (matchedNode == null) {
                 node.addChildNode(new RadixTreeNode(key.substring(noOfMatchedChars), value));
@@ -160,13 +140,47 @@ class RadixTree {
             node = matchedNode;
         } 
     }
+    
+    private RadixTreeNode buildNodeLongKey(Integer i, RadixTreeNode node, Integer noOfMatchedChars,
+            String key, String value) {
+        char[] inputChars = key.toCharArray();
+        String nodeKey = node.getKey();
+        Integer maxLoop = nodeKey.length() > (key.length() - noOfMatchedChars) ? key.length() - noOfMatchedChars : nodeKey.length();
+        
+        for (; i < maxLoop ; i++) {
+                if (nodeKey.charAt(i) != inputChars[noOfMatchedChars]) {
+                    // e.g new key/value : successive/successive
+                    // before, 
+                    // |-node (key: successful, value: successful)
+                    // | |-node_childs...
+                    //after...
+                    // |-newNode (key: success, value: "")
+                    // | |-node (key: ful, value: successful)
+                    // | | |-node_childs...
+                    // | |-secondNewNode (key: ive, value: successive)
+                    RadixTreeNode newNode = new RadixTreeNode(nodeKey.substring(0, i), null);
+                    RadixTreeNode parentNode = node.getParentNode();
+                    parentNode.removeChildNode(node);
+                    parentNode.addChildNode(newNode);
+                    node.setKey(nodeKey.substring(i));
+                    newNode.addChildNode(node);
+                    newNode.addChildNode(new RadixTreeNode(key.substring(noOfMatchedChars), value));
+                    return newNode;
+                }
+                noOfMatchedChars++;
+            }
+        
+        return null;
+    }
 
+    
+    
     /**
      * Return's the root node helps to traverse the tree.
      * 
      * @return Root node of tree.
      */
     RadixTreeNode getRootNode() {
-        return _rootNode;
+        return rootNode;
     }
 }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.stringsubs.impl;
 
@@ -79,17 +80,17 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  * String substitution for the given string-subs.xml.
  */
 public class StringSubstitutionEngine implements StringSubstitutor {
-    private static final Logger _logger = SLogger.getLogger();
+    private static final Logger LOGGER = SLogger.getLogger();
     
-    private static final LocalStringsImpl _strings = new LocalStringsImpl(StringSubstitutionEngine.class);
-    private InputStream _configInputStream = null;
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(StringSubstitutionEngine.class);
+    private InputStream configInputStream = null;
 
     //Root of JAXB parsed string-subs configuration
-    private StringsubsDefinition _root = null;
-    private Map<String, Pair> _changePairsMap = null;
-    Map<String, Property> _defaultProperties = null;
-    private SubstitutableFactory _substitutableFactory = new SubstituableFactoryImpl();
-    private AttributePreprocessor _attrPreprocessor = new AttributePreprocessorImpl();
+    private StringsubsDefinition root = null;
+    private Map<String, Pair> changePairsMap = null;
+    Map<String, Property> defaultProperties = null;
+    private SubstitutableFactory substitutableFactory = new SubstituableFactoryImpl();
+    private AttributePreprocessor attrPreprocessor = new AttributePreprocessorImpl();
 
     /**
      * Constructs {@link StringSubstitutionEngine} based on the given string-subs
@@ -103,18 +104,18 @@ public class StringSubstitutionEngine implements StringSubstitutor {
         if (inputStream == null) {
             throw new StringSubstitutionException("InputStream is null");
         }
-        _configInputStream = inputStream;
-        _root =  StringSubstitutionParser.parse(_configInputStream);
+        configInputStream = inputStream;
+        root =  StringSubstitutionParser.parse(configInputStream);
     }
 
     @Override
     public void setAttributePreprocessor(AttributePreprocessor attributePreprocessor) {
-        _attrPreprocessor = attributePreprocessor;
+        attrPreprocessor = attributePreprocessor;
     }
 
     @Override
     public void setEntryFactory(SubstitutableFactory factory) {
-        _substitutableFactory = factory;
+        substitutableFactory = factory;
     }
 
     @Override
@@ -124,7 +125,7 @@ public class StringSubstitutionEngine implements StringSubstitutor {
 
     @Override
     public List<Property> getDefaultProperties(PropertyType type) {
-        Defaults defaults = _root.getDefaults();
+        Defaults defaults = root.getDefaults();
         if (defaults == null) {
             return Collections.emptyList();
         }
@@ -142,7 +143,7 @@ public class StringSubstitutionEngine implements StringSubstitutor {
 
     @Override
     public void substituteAll() throws StringSubstitutionException {
-        for (Component component : _root.getComponent()) {
+        for (Component component : root.getComponent()) {
             doSubstitution(component);
         }
     }
@@ -151,12 +152,12 @@ public class StringSubstitutionEngine implements StringSubstitutor {
     public void substituteComponents(List<String> components)
             throws StringSubstitutionException {
         if (!isValid(components)) {
-            throw new StringSubstitutionException(_strings.get("missingComponentIdentifiers"));
+            throw new StringSubstitutionException(STRINGS.get("missingComponentIdentifiers"));
         }
         for (String componentId : components) {
             Component component = findComponentById(componentId);
             if (component == null) {
-                _logger.log(Level.INFO, SLogger.MISSING_COMPONENT, componentId);
+                LOGGER.log(Level.INFO, SLogger.MISSING_COMPONENT, componentId);
                 continue;
             }
             doSubstitution(component);
@@ -167,12 +168,12 @@ public class StringSubstitutionEngine implements StringSubstitutor {
     public void substituteGroups(List<String> groups)
             throws StringSubstitutionException {
         if (!isValid(groups)) {
-            throw new StringSubstitutionException(_strings.get("missingGroupIdentifiers"));
+            throw new StringSubstitutionException(STRINGS.get("missingGroupIdentifiers"));
         }
         for (String groupId : groups) {
             Group group = findGroupById(groupId);
             if (group == null) {
-                _logger.log(Level.WARNING, SLogger.MISSING_GROUP, groupId);
+                LOGGER.log(Level.WARNING, SLogger.MISSING_GROUP, groupId);
                 continue;
             }
             doSubstitution(group);
@@ -181,7 +182,7 @@ public class StringSubstitutionEngine implements StringSubstitutor {
 
     @Override
     public StringsubsDefinition getStringSubsDefinition() {
-        return _root;
+        return root;
     }
 
     /**
@@ -213,15 +214,15 @@ public class StringSubstitutionEngine implements StringSubstitutor {
         List<? extends FileEntry> fileList = group.getFileEntry();
         List<? extends Archive> archiveList = group.getArchive();
         if (!isValid(fileList) && !isValid(archiveList)) {
-        	if (_logger.isLoggable(Level.FINER)) {
-        		_logger.log(Level.FINER, _strings.get("noSubstitutableGroupEntry", group.getId()));
+        	if (LOGGER.isLoggable(Level.FINER)) {
+        		LOGGER.log(Level.FINER, STRINGS.get("noSubstitutableGroupEntry", group.getId()));
         	}
             return;
         }
         List<? extends ChangePairRef> refList = group.getChangePairRef();
         if (!isValid(refList)) {
-        	if (_logger.isLoggable(Level.FINE)) {
-        		_logger.log(Level.FINE, _strings.get("noChangePairForGroup", group.getId()));
+        	if (LOGGER.isLoggable(Level.FINE)) {
+        		LOGGER.log(Level.FINE, STRINGS.get("noChangePairForGroup", group.getId()));
         	}
             return;
         }
@@ -242,32 +243,32 @@ public class StringSubstitutionEngine implements StringSubstitutor {
                 localMode = groupMode;
             }
 
-            Pair pair = _changePairsMap.get(name);
+            Pair pair = changePairsMap.get(name);
             if (pair == null) {
-                _logger.log(Level.INFO, SLogger.MISSING_CHANGE_PAIR, new Object[] {name, group.getId()});
+                LOGGER.log(Level.INFO, SLogger.MISSING_CHANGE_PAIR, new Object[] {name, group.getId()});
                 continue;
             }
             String beforeString = pair.getBefore();
             String afterString = pair.getAfter();
 
             if (localMode == null || localMode.length() == 0) {
-            	if (_logger.isLoggable(Level.FINEST)) {
-            		_logger.log(Level.FINEST, _strings.get("noModeValue", group.getId()));
+            	if (LOGGER.isLoggable(Level.FINEST)) {
+            		LOGGER.log(Level.FINEST, STRINGS.get("noModeValue", group.getId()));
             	}
             }
             else {
                 try {
                     afterString = ModeProcessor.processModeType(ModeType.fromValue(localMode), afterString);
                 } catch (Exception e) {
-                    _logger.log(Level.WARNING, SLogger.INVALID_MODE_TYPE, localMode);
+                    LOGGER.log(Level.WARNING, SLogger.INVALID_MODE_TYPE, localMode);
                 }
             }
             substitutionMap.put(beforeString, afterString);
         }
         SubstitutionAlgorithm algorithm = new SubstitutionAlgorithmFactory().getAlgorithm(substitutionMap);
         for (FileEntry fileEntry : fileList) {
-            fileEntry.setName(_attrPreprocessor.substitutePath(fileEntry.getName()));
-            List<? extends Substitutable> substituables = _substitutableFactory.getFileEntrySubstituables(fileEntry);
+            fileEntry.setName(attrPreprocessor.substitutePath(fileEntry.getName()));
+            List<? extends Substitutable> substituables = substitutableFactory.getFileEntrySubstituables(fileEntry);
             for (Substitutable substituable : substituables) {
                 algorithm.substitute(substituable);
                 substituable.finish();
@@ -279,8 +280,8 @@ public class StringSubstitutionEngine implements StringSubstitutor {
                 continue;
             }
             try {
-                archive.setName(_attrPreprocessor.substitutePath(archive.getName()));
-                List<? extends Substitutable> substituables = _substitutableFactory.getArchiveEntrySubstitutable(archive);
+                archive.setName(attrPreprocessor.substitutePath(archive.getName()));
+                List<? extends Substitutable> substituables = substitutableFactory.getArchiveEntrySubstitutable(archive);
                 if (!isValid(substituables)) {
                     continue;
                 }
@@ -289,7 +290,7 @@ public class StringSubstitutionEngine implements StringSubstitutor {
                     substituable.finish();
                 }
             } catch (Exception e) {
-            	LogHelper.log(_logger, Level.WARNING, SLogger.ERR_ARCHIVE_SUBSTITUTION, e, archive.getName());
+            	LogHelper.log(LOGGER, Level.WARNING, SLogger.ERR_ARCHIVE_SUBSTITUTION, e, archive.getName());
             }
         }
     }
@@ -301,30 +302,30 @@ public class StringSubstitutionEngine implements StringSubstitutor {
      *
      */
     private void buildChangePairsMap() {
-        if (_changePairsMap == null || _changePairsMap.isEmpty()) {
-            Defaults defaults = _root.getDefaults();    	
+        if (changePairsMap == null || changePairsMap.isEmpty()) {
+            Defaults defaults = root.getDefaults();    	
             if (defaults != null) {
                 List<Property> properties = defaults.getProperty();
                 if (!properties.isEmpty()) {
-                    _defaultProperties = new HashMap<String, Property>(properties.size(), 1);
+                    defaultProperties = new HashMap<String, Property>(properties.size(), 1);
                     for (Property prop : properties) {
-                        _defaultProperties.put(prop.getKey(), prop);
+                        defaultProperties.put(prop.getKey(), prop);
                     }
                 }
             }
-            List<? extends ChangePair> changePairList = _root.getChangePair();
-            _changePairsMap = new HashMap<String, Pair>(changePairList.size());
-            for (ChangePair pair : _root.getChangePair()) {
+            List<? extends ChangePair> changePairList = root.getChangePair();
+            changePairsMap = new HashMap<String, Pair>(changePairList.size());
+            for (ChangePair pair : root.getChangePair()) {
                 String id = pair.getId();
                 String beforeValue = pair.getBefore();
                 String afterValue = pair.getAfter();
                 if (id == null || beforeValue == null || afterValue == null) {
-                    _logger.log(Level.INFO,  SLogger.EMPTY_CHANGE_PAIR);
+                    LOGGER.log(Level.INFO,  SLogger.EMPTY_CHANGE_PAIR);
                     continue;
                 }
-                beforeValue = _attrPreprocessor.substituteBefore(beforeValue);
-                afterValue = _attrPreprocessor.substituteAfter(afterValue);
-                _changePairsMap.put(id, new Pair(beforeValue, afterValue));
+                beforeValue = attrPreprocessor.substituteBefore(beforeValue);
+                afterValue = attrPreprocessor.substituteAfter(afterValue);
+                changePairsMap.put(id, new Pair(beforeValue, afterValue));
             }
         }
     }
@@ -341,7 +342,7 @@ public class StringSubstitutionEngine implements StringSubstitutor {
             return null;
         }
 
-        List<? extends Group> groupList = _root.getGroup();
+        List<? extends Group> groupList = root.getGroup();
         if (!isValid(groupList)) {
             return null;
         }
@@ -366,7 +367,7 @@ public class StringSubstitutionEngine implements StringSubstitutor {
             return null;
         }
 
-        List<? extends Component> components = _root.getComponent();
+        List<? extends Component> components = root.getComponent();
         if (!isValid(components)) {
             return null;
         }
@@ -396,19 +397,20 @@ public class StringSubstitutionEngine implements StringSubstitutor {
      * Use to store before and after value of change-pair.
      */
     private static class Pair {
-        String _before, _after;
+        String before;
+        String after;
 
         Pair (String before, String after) {
-            _before = before;
-            _after = after;
+            this.before = before;
+            this.after = after;
         }
 
         public String getBefore() {
-            return _before;
+            return before;
         }
 
         public String getAfter() {
-            return _after;
+            return after;
         }
     }
 }

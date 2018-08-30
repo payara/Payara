@@ -68,11 +68,11 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  */
 public class StringSubstitutionParser {
 
-    private static final Logger _logger = SLogger.getLogger(); 
+    private static final Logger LOGGER = SLogger.getLogger(); 
             
-    private static final LocalStringsImpl _strings = new LocalStringsImpl(StringSubstitutionParser.class);
-    // Path where schema resides i.e Parent directory for schema. 
-    private final static String DEFAULT_SCHEMA = "xsd/schema/stringsubs.xsd";
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(StringSubstitutionParser.class);
+    /** Path where schema resides i.e Parent directory for schema.  */
+    private static final String DEFAULT_SCHEMA = "xsd/schema/stringsubs.xsd";
 
     /**
      * Parse the configuration stream against the string-subs schema.
@@ -86,7 +86,7 @@ public class StringSubstitutionParser {
             throws StringSubstitutionException {
         // If schema information is missing
         if(configStream == null) {
-            throw new StringSubstitutionException(_strings.get("invalidStream"));
+            throw new StringSubstitutionException(STRINGS.get("invalidStream"));
         }
         try {
             URL schemaUrl = StringSubstitutionParser.class.getClassLoader().getResource(DEFAULT_SCHEMA);
@@ -99,19 +99,15 @@ public class StringSubstitutionParser {
             SAXSource source = new SAXSource(is);
             Object obj = unmarshaller.unmarshal(source);
             return obj instanceof JAXBElement ? (StringsubsDefinition) ((JAXBElement) obj).getValue() : (StringsubsDefinition) obj;
-        } catch(SAXException se) {
-            throw new StringSubstitutionException(_strings.get("failedToParse", DEFAULT_SCHEMA), se);      
-        } catch(JAXBException jaxbe) {
-            throw new StringSubstitutionException(_strings.get("failedToParse", DEFAULT_SCHEMA), jaxbe);
+        } catch(SAXException | JAXBException se) {
+            throw new StringSubstitutionException(STRINGS.get("failedToParse", DEFAULT_SCHEMA), se);      
         } finally {
-            if(configStream != null) {
-                try {
-                    configStream.close();
-                    configStream = null;
-                } catch(IOException e) {
-                	if (_logger.isLoggable(Level.FINER)) {
-                		_logger.log(Level.FINER, _strings.get("errorInClosingStream"));
-                	}
+            try {
+                configStream.close();
+                configStream = null;
+            } catch (IOException e) {
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.log(Level.FINER, STRINGS.get("errorInClosingStream"));
                 }
             }
         }
