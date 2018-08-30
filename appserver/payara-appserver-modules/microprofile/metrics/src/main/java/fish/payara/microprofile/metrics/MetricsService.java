@@ -109,16 +109,11 @@ public class MetricsService implements EventListener {
     public void init() {
         events.register(this);
         metricsServiceConfiguration = serviceLocator.getService(MetricsServiceConfiguration.class);
-        //only start if metrics are enabled
+        //Only start if metrics are enabled
         if (isMetricsEnabled()) {
             
             PayaraExecutorService payaraExecutor = serviceLocator.getService(PayaraExecutorService.class, new Annotation[0]);
-            payaraExecutor.submit(new Runnable () {
-                @Override
-                public void run(){
-                    initMetadataConfig(getConfig(), false);
-                }
-            });
+            payaraExecutor.submit(() -> initMetadataConfig(getConfig(), false));
                     
         }
     }
