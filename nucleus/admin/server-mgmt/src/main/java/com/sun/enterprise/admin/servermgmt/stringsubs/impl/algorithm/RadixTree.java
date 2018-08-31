@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.stringsubs.impl.algorithm;
 
@@ -50,7 +51,7 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  * This class implements the operation of a radix tree. A radix tree
  * is a specialized set data structure based on the tree/trie that is
  * used to store a set of strings. The key for nodes of a radix tree
- * are labeled with one or more characters rather than only a single
+ * are labelled with one or more characters rather than only a single
  * characters.
  */
 class RadixTree {
@@ -91,21 +92,41 @@ class RadixTree {
         if (key == null || key.isEmpty()) {
             throw new IllegalArgumentException(STRINGS.get("errorInEmptyNullKeyInstertion"));
         }
+        char[] inputChars = key.toCharArray();
         int noOfMatchedChars = 0;
         RadixTreeNode node = rootNode;
         RadixTreeNode newNode = null;
-        int keyLength = key.length();
-        while (noOfMatchedChars < keyLength) {
+        int keyLength = inputChars.length;
+        OUTER_LOOP : while (noOfMatchedChars < keyLength) {
             String nodeKey = node.getKey();
-            Integer i = 0;
-            
-            newNode = buildNodeLongKey(i, node, noOfMatchedChars, key, value);
-            if (newNode != null) {
-                break;
+            int i = 0;
+            int maxLoop = nodeKey.length() > (keyLength - noOfMatchedChars) ? keyLength - noOfMatchedChars :
+                nodeKey.length();
+            for (; i < maxLoop ; i++) {
+                if (nodeKey.charAt(i) != inputChars[noOfMatchedChars]) {
+                    // e.g new key/value : successive/successive
+                    // before, 
+                    // |-node (key: successful, value: successful)
+                    // | |-node_childs...
+                    //after...
+                    // |-newNode (key: success, value: "")
+                    // | |-node (key: ful, value: successful)
+                    // | | |-node_childs...
+                    // | |-secondNewNode (key: ive, value: successive)
+                    newNode = new RadixTreeNode(nodeKey.substring(0, i), null);
+                    RadixTreeNode parentNode = node.getParentNode();
+                    parentNode.removeChildNode(node);
+                    parentNode.addChildNode(newNode);
+                    node.setKey(nodeKey.substring(i));
+                    newNode.addChildNode(node);
+                    newNode.addChildNode(new RadixTreeNode(key.substring(noOfMatchedChars), value));
+                    break OUTER_LOOP;
+            }
+                noOfMatchedChars++;
             }
 
             // If the given key is smaller than the matched node key
-            if (nodeKey.length() > (keyLength - noOfMatchedChars)) {
+            if (nodeKey.length() > maxLoop) {
                 // e.g new key/value : acid/acid
                 // before, 
                 // |-node (key: acidic, value: acidic)
@@ -131,7 +152,7 @@ class RadixTree {
                 break;
             }
 
-            RadixTreeNode matchedNode = node.getChildNode(key.charAt(noOfMatchedChars));
+            RadixTreeNode matchedNode = node.getChildNode(inputChars[noOfMatchedChars]);
             // Add as a child node if no match found.
             if (matchedNode == null) {
                 node.addChildNode(new RadixTreeNode(key.substring(noOfMatchedChars), value));
@@ -141,42 +162,8 @@ class RadixTree {
         } 
     }
     
-    private RadixTreeNode buildNodeLongKey(Integer i, RadixTreeNode node, Integer noOfMatchedChars,
-            String key, String value) {
-        char[] inputChars = key.toCharArray();
-        String nodeKey = node.getKey();
-        Integer maxLoop = nodeKey.length() > (key.length() - noOfMatchedChars) ? key.length() - noOfMatchedChars : nodeKey.length();
-        
-        for (; i < maxLoop ; i++) {
-                if (nodeKey.charAt(i) != inputChars[noOfMatchedChars]) {
-                    // e.g new key/value : successive/successive
-                    // before, 
-                    // |-node (key: successful, value: successful)
-                    // | |-node_childs...
-                    //after...
-                    // |-newNode (key: success, value: "")
-                    // | |-node (key: ful, value: successful)
-                    // | | |-node_childs...
-                    // | |-secondNewNode (key: ive, value: successive)
-                    RadixTreeNode newNode = new RadixTreeNode(nodeKey.substring(0, i), null);
-                    RadixTreeNode parentNode = node.getParentNode();
-                    parentNode.removeChildNode(node);
-                    parentNode.addChildNode(newNode);
-                    node.setKey(nodeKey.substring(i));
-                    newNode.addChildNode(node);
-                    newNode.addChildNode(new RadixTreeNode(key.substring(noOfMatchedChars), value));
-                    return newNode;
-                }
-                noOfMatchedChars++;
-            }
-        
-        return null;
-    }
-
-    
-    
     /**
-     * Return's the root node helps to traverse the tree.
+     * Returns the root node helps to traverse the tree.
      * 
      * @return Root node of tree.
      */
