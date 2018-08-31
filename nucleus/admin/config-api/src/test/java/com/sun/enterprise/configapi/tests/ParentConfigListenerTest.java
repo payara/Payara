@@ -37,16 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] Payara Foundation and/or affiliates
+
 
 package com.sun.enterprise.configapi.tests;
 
+import static org.junit.Assert.assertTrue;
+
+import java.beans.PropertyVetoException;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.Assert;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -55,8 +60,8 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.Transactions;
 
-import java.util.Collection;
 import java.util.List;
+import org.glassfish.tests.utils.ConfigApiTest;
 
 /**
  * This test will ensure that when a class is injected with a parent bean and a child
@@ -67,6 +72,7 @@ import java.util.List;
  */
 public class ParentConfigListenerTest extends ConfigApiTest {
 
+    private static final String LISTENER_NAME = "Funky-Listener";
     ServiceLocator habitat;
 
     public String getFileName() {
@@ -77,8 +83,23 @@ public class ParentConfigListenerTest extends ConfigApiTest {
     public void setup() {
         habitat = Utils.instance.getHabitat(this);
     }
-    
-    
+
+    @After
+    public void cleanUp() throws TransactionFailure{
+        ConfigSupport.apply(new SingleConfigCode<NetworkListeners>() {
+            @Override
+            public Object run(NetworkListeners param) throws PropertyVetoException, TransactionFailure {
+                final List<NetworkListener> list = param.getNetworkListener();
+                for (NetworkListener listener : list) {
+                    if (listener.getName().equals(LISTENER_NAME)) {
+                        list.remove(listener);
+                        break;
+                    }
+                }
+                return list;
+            }
+        }, habitat.getService(NetworkListenersContainer.class).httpService);
+    }
 
 
     @Test
@@ -89,7 +110,7 @@ public class ParentConfigListenerTest extends ConfigApiTest {
 
             public Object run(NetworkListeners param) throws TransactionFailure {
                 NetworkListener newListener = param.createChild(NetworkListener.class);
-                newListener.setName("Funky-Listener");
+                newListener.setName(LISTENER_NAME);
                 newListener.setPort("8078");
                 param.getNetworkListener().add(newListener);
                 return null;
@@ -103,7 +124,7 @@ public class ParentConfigListenerTest extends ConfigApiTest {
         // let's check that my newly added listener is available in the habitat.
         List<ServiceHandle<NetworkListener>> networkListeners = habitat.getAllServiceHandles(NetworkListener.class);
         boolean found = false;
-        
+
         for (ServiceHandle<NetworkListener> nlSH : networkListeners) {
             NetworkListener nl = (NetworkListener) nlSH.getService();
             if (nl.getName().equals("Funky-Listener")) {
@@ -111,9 +132,9 @@ public class ParentConfigListenerTest extends ConfigApiTest {
             }
         }
         Assert.assertTrue("Newly added listener not found", found);
-        
+
         // direct access.
-        NetworkListener nl = habitat.getService(NetworkListener.class, "Funky-Listener");
+        NetworkListener nl = habitat.getService(NetworkListener.class, LISTENER_NAME);
         Assert.assertTrue("Direct access to newly added listener failed", nl!=null);
         bean.removeListener(container);
     }
