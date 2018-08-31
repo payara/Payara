@@ -77,8 +77,8 @@ public class ParentConfigListenerTest extends ConfigApiTest {
     public void setup() {
         habitat = Utils.instance.getHabitat(this);
     }
-    
-    
+
+
 
 
     @Test
@@ -103,7 +103,7 @@ public class ParentConfigListenerTest extends ConfigApiTest {
         // let's check that my newly added listener is available in the habitat.
         List<ServiceHandle<NetworkListener>> networkListeners = habitat.getAllServiceHandles(NetworkListener.class);
         boolean found = false;
-        
+
         for (ServiceHandle<NetworkListener> nlSH : networkListeners) {
             NetworkListener nl = (NetworkListener) nlSH.getService();
             if (nl.getName().equals("Funky-Listener")) {
@@ -111,7 +111,7 @@ public class ParentConfigListenerTest extends ConfigApiTest {
             }
         }
         Assert.assertTrue("Newly added listener not found", found);
-        
+
         // direct access.
         NetworkListener nl = habitat.getService(NetworkListener.class, "Funky-Listener");
         Assert.assertTrue("Direct access to newly added listener failed", nl!=null);
