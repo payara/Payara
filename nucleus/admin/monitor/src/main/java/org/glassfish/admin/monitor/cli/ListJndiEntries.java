@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation]
+// Portions Copyright [2018] Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.monitor.cli;
 
@@ -80,23 +80,23 @@ import org.glassfish.api.admin.RestEndpoints;
 })
 public class ListJndiEntries implements AdminCommand {
 
-   final private static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(ListJndiEntries.class);
+   private static final LocalStringManagerImpl LOCALSTRINGS = new LocalStringManagerImpl(ListJndiEntries.class);
 
     @Param(name="context", optional = true)
     String contextName;
 
-    @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
+    @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
 
+   @Override
     public void execute(AdminCommandContext context) {
-        List<String> names = null;
+        List<String> names;
         final ActionReport report = context.getActionReport();
 
         try {
             names = getNames(contextName);
         } catch (NamingException e) {
-            report.setMessage(localStrings.getLocalString("list.jndi.entries.namingexception", "Naming Exception caught.")
+            report.setMessage(LOCALSTRINGS.getLocalString("list.jndi.entries.namingexception", "Naming Exception caught.")
                     + " " + e.getLocalizedMessage());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
@@ -107,7 +107,7 @@ public class ListJndiEntries implements AdminCommand {
             if (names.isEmpty()) {
                 final ActionReport.MessagePart part =
                         report.getTopMessagePart().addChild();
-                part.setMessage(localStrings.getLocalString(
+                part.setMessage(LOCALSTRINGS.getLocalString(
                         "list.jndi.entries.empty",
                         "Nothing to list."));
             } else {
@@ -119,7 +119,7 @@ public class ListJndiEntries implements AdminCommand {
             }
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         } catch (Exception e) {
-            report.setMessage(localStrings.getLocalString("" +
+            report.setMessage(LOCALSTRINGS.getLocalString("" +
                     "list.jndi.entries.fail",
                     "Unable to list jndi entries.") + " " +
                     e.getLocalizedMessage());
@@ -128,8 +128,7 @@ public class ListJndiEntries implements AdminCommand {
         }
     }
 
-    private List<String> getNames(String context)
-            throws NamingException {
+    private List<String> getNames(String context) throws NamingException {
         List<String> names = null;
         JndiNameLookupHelper helper = new JndiNameLookupHelper();
         names = helper.getJndiEntriesByContextPath(context);

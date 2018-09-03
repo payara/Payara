@@ -40,16 +40,17 @@
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm.solaris;
 
+import static java.util.logging.Level.FINE;
+
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.Vector;
-import java.util.logging.Level;
 
 import org.jvnet.hk2.annotations.Service;
 
+import com.sun.enterprise.security.BaseRealm;
 import com.sun.enterprise.security.auth.realm.BadRealmException;
-import com.sun.enterprise.security.auth.realm.IASRealm;
 import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
@@ -67,11 +68,11 @@ import com.sun.enterprise.security.auth.realm.NoSuchUserException;
  *
  */
 @Service
-public final class SolarisRealm extends IASRealm {
-    
+public final class SolarisRealm extends BaseRealm {
+
     // Descriptive string of the authentication type of this realm.
     public static final String AUTH_TYPE = "solaris";
-    
+
     public static final String OS_ARCH = "os.arch";
     public static final String SOL_SPARC_OS_ARCH = "sparc";
     public static final String SOL_X86_OS_ARCH = "x86";
@@ -91,29 +92,28 @@ public final class SolarisRealm extends IASRealm {
     }
 
     /**
-     * Initialize a realm with some properties. This can be used when instantiating realms from their descriptions. This
-     * method may only be called a single time.
+     * Initialize a realm with some properties. This can be used when instantiating realms from their
+     * descriptions. This method may only be called a single time.
      *
      * @param props Initialization parameters used by this realm.
      * @exception BadRealmException If the configuration parameters identify a corrupt realm.
-     * @exception NoSuchRealmException If the configuration parameters specify a realm which doesn't exist.
+     * @exception NoSuchRealmException If the configuration parameters specify a realm which doesn't
+     * exist.
      *
      */
+    @Override
     public synchronized void init(Properties props) throws BadRealmException, NoSuchRealmException {
         super.init(props);
-        String jaasCtx = props.getProperty(IASRealm.JAAS_CONTEXT_PARAM);
+        String jaasCtx = props.getProperty(JAAS_CONTEXT_PARAM);
         if (jaasCtx == null) {
-            if (_logger.isLoggable(Level.WARNING)) {
-                _logger.warning("realmconfig.noctx");
-            }
-            String msg = sm.getString("solarisrealm.nojaas");
-            throw new BadRealmException(msg);
+            _logger.warning("realmconfig.noctx");
+            throw new BadRealmException(sm.getString("solarisrealm.nojaas"));
         }
 
-        this.setProperty(IASRealm.JAAS_CONTEXT_PARAM, jaasCtx);
+        setProperty(JAAS_CONTEXT_PARAM, jaasCtx);
 
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.fine("SolarisRealm : " + IASRealm.JAAS_CONTEXT_PARAM + "=" + jaasCtx);
+        if (_logger.isLoggable(FINE)) {
+            _logger.fine("SolarisRealm : " + JAAS_CONTEXT_PARAM + "=" + jaasCtx);
         }
 
         groupCache = new HashMap();
@@ -121,24 +121,26 @@ public final class SolarisRealm extends IASRealm {
     }
 
     /**
-     * Returns a short (preferably less than fifteen characters) description of the kind of authentication which is
-     * supported by this realm.
+     * Returns a short (preferably less than fifteen characters) description of the kind of
+     * authentication which is supported by this realm.
      *
      * @return Description of the kind of authentication that is directly supported by this realm.
      */
+    @Override
     public String getAuthType() {
         return AUTH_TYPE;
     }
 
     /**
-     * Returns the name of all the groups that this user belongs to. This is called from web path role verification, though
-     * it should not be.
+     * Returns the name of all the groups that this user belongs to. This is called from web path role
+     * verification, though it should not be.
      *
      * @param username Name of the user in this realm whose group listing is needed.
      * @return Enumeration of group names (strings).
-     * @exception InvalidOperationException thrown if the realm does not support this operation - e.g. Certificate realm
-     *            does not support this operation.
+     * @exception InvalidOperationException thrown if the realm does not support this operation - e.g.
+     * Certificate realm does not support this operation.
      */
+    @Override
     public Enumeration getGroupNames(String username) throws InvalidOperationException, NoSuchUserException {
         Vector v = (Vector) groupCache.get(username);
         if (v == null) {
@@ -194,8 +196,8 @@ public final class SolarisRealm extends IASRealm {
      * Loads groups names for the given user by calling native method.
      *
      * <P>
-     * Group info is loaded when user authenticates, however in some cases (such as run-as) the group membership info is
-     * needed without an authentication event.
+     * Group info is loaded when user authenticates, however in some cases (such as run-as) the group
+     * membership info is needed without an authentication event.
      *
      */
     private Vector loadGroupNames(String username) {

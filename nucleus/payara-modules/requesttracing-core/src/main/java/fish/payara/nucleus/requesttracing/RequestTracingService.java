@@ -327,7 +327,9 @@ public class RequestTracingService implements EventListener, ConfigListener {
     }
 
     /**
-     * Returns true if a trace has started and not yet completed
+     * Returns true if a trace has started and not yet completed. NOTE: This only applies to traces started using the
+     * request tracing service; traces started using OpenTracing *MAY* not be picked up by this (for example, 
+     * if you're using the OpenTracing MockTracer instead of the in-built one).
      * @return 
      */
     public boolean isTraceInProgress() {

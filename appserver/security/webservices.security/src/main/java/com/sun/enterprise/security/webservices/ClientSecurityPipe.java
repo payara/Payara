@@ -40,6 +40,11 @@
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
+import static com.sun.enterprise.security.webservices.PipeConstants.SECURITY_PIPE;
+import static com.sun.enterprise.security.webservices.PipeConstants.SOAP_LAYER;
+import static com.sun.enterprise.security.webservices.PipeConstants.WSDL_MODEL;
+import static com.sun.enterprise.security.webservices.PipeConstants.WSDL_SERVICE;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -77,18 +82,18 @@ public class ClientSecurityPipe extends AbstractFilterPipeImpl implements Secure
 
     private static final String WSIT_CLIENT_AUTH_CONTEXT = "com.sun.xml.wss.provider.wsit.WSITClientAuthContext";
 
-    public ClientSecurityPipe(Map props, Pipe next) {
+    public ClientSecurityPipe(Map<String, Object> props, Pipe next) {
 
         super(next);
 
-        props.put(PipeConstants.SECURITY_PIPE, this);
+        props.put(SECURITY_PIPE, this);
 
-        WSDLPort wsdlModel = (WSDLPort) props.get(PipeConstants.WSDL_MODEL);
+        WSDLPort wsdlModel = (WSDLPort) props.get(WSDL_MODEL);
         if (wsdlModel != null) {
-            props.put(PipeConstants.WSDL_SERVICE, wsdlModel.getOwner().getName());
+            props.put(WSDL_SERVICE, wsdlModel.getOwner().getName());
         }
-        this.helper = new PipeHelper(PipeConstants.SOAP_LAYER, props, null);
-
+        
+        helper = new PipeHelper(SOAP_LAYER, props, null);
     }
 
     protected ClientSecurityPipe(ClientSecurityPipe that, PipeCloner cloner) {
@@ -243,8 +248,8 @@ public class ClientSecurityPipe extends AbstractFilterPipeImpl implements Secure
             Subject clientSubject = getClientSubject(packet);
 
             // put MessageInfo in properties map, since MessageInfo
-            // is not passed to getAuthContext, key idicates function
-            HashMap map = new HashMap();
+            // is not passed to getAuthContext, key indicates function
+            HashMap<String, Object> map = new HashMap<>();
             map.put(PipeConstants.SECURITY_TOKEN, info);
 
             helper.getSessionToken(map, info, clientSubject);

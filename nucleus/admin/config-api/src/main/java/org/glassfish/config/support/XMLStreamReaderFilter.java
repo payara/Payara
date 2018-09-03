@@ -137,7 +137,7 @@ abstract class XMLStreamReaderFilter extends StreamReaderDelegate {
             case XMLEvent.SPACE:
                 return "SPACE";
             default:
-                return "UNKNOWN_EVENT_TYPE, " + String.valueOf(eventType);
+                return "UNKNOWN_EVENT_TYPE, " + eventType;
         }
         
     }

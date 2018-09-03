@@ -44,14 +44,6 @@ import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.URL;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -87,22 +79,13 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.nucleus.microprofile.config.converters.BooleanConverter;
-import fish.payara.nucleus.microprofile.config.converters.ChronoUnitConverter;
 import fish.payara.nucleus.microprofile.config.converters.ClassConverter;
 import fish.payara.nucleus.microprofile.config.converters.DoubleConverter;
-import fish.payara.nucleus.microprofile.config.converters.DurationConverter;
 import fish.payara.nucleus.microprofile.config.converters.FloatConverter;
 import fish.payara.nucleus.microprofile.config.converters.InetAddressConverter;
-import fish.payara.nucleus.microprofile.config.converters.InstantConverter;
 import fish.payara.nucleus.microprofile.config.converters.IntegerConverter;
-import fish.payara.nucleus.microprofile.config.converters.LocalDateConverter;
-import fish.payara.nucleus.microprofile.config.converters.LocalDateTimeConverter;
-import fish.payara.nucleus.microprofile.config.converters.LocalTimeConverter;
 import fish.payara.nucleus.microprofile.config.converters.LongConverter;
-import fish.payara.nucleus.microprofile.config.converters.OffsetDateTimeConverter;
-import fish.payara.nucleus.microprofile.config.converters.OffsetTimeConverter;
 import fish.payara.nucleus.microprofile.config.converters.StringConverter;
-import fish.payara.nucleus.microprofile.config.converters.URLConverter;
 import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
@@ -216,7 +199,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         // fast check fails search the app registry 
         for (String name : applicationRegistry.getAllApplicationNames()) {
             ApplicationInfo testInfo = applicationRegistry.get(name);
-            if (testInfo.getClassLoaders().contains(loader)) {
+            if (testInfo.getClassLoaders().contains(loader) || testInfo.getAppClassLoader().equals(loader)) {
                 return testInfo;
             }
         }
@@ -396,16 +379,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         result.put(Long.class, new LongConverter());
         result.put(Float.class, new FloatConverter());
         result.put(Double.class, new DoubleConverter());
-        result.put(Duration.class, new DurationConverter());
-        result.put(LocalTime.class, new LocalTimeConverter());
-        result.put(LocalDate.class, new LocalDateConverter());
-        result.put(LocalDateTime.class, new LocalDateTimeConverter());
-        result.put(OffsetDateTime.class, new OffsetDateTimeConverter());
-        result.put(OffsetTime.class, new OffsetTimeConverter());
-        result.put(Instant.class, new InstantConverter());
-        result.put(URL.class, new URLConverter());
         result.put(InetAddress.class, new InetAddressConverter());
-        result.put(ChronoUnit.class, new ChronoUnitConverter());
         result.put(Class.class, new ClassConverter());
         result.put(String.class, new StringConverter());
         return result;

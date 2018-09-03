@@ -1,0 +1,3 @@
+fish.payara.security.openid.OpenIdExtension
+fish.payara.security.openid.azure.AzureOpenIdExtension
+fish.payara.security.openid.google.GoogleOpenIdExtension

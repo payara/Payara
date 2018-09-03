@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,9 @@ package fish.payara.nucleus.microprofile.config.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import javax.inject.Inject;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -48,6 +51,8 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Target;
@@ -61,12 +66,12 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "get-config-secrets-dir") // the name of the service is the asadmin command name
 @PerLookup // this means one instance is created every time the command is run
-@ExecuteOn()
-@TargetType()
-@RestEndpoints({ // creates a REST endpoint needed for integration with the admin interface
-    
+@ExecuteOn(RuntimeType.DAS)
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER,
+    CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({ // creates a REST endpoint needed for integration with the admin interface   
     @RestEndpoint(configBean = MicroprofileConfigConfiguration.class,
-            opType = RestEndpoint.OpType.POST, // must be POST as it is doing an update
+            opType = RestEndpoint.OpType.GET,
             path = "get-config-secrets-dir",
             description = "Gets the Secrets Directory for the Secrets Config Source")
 })
@@ -86,6 +91,12 @@ public class GetConfigSecretsDirectory implements AdminCommand {
         if (serviceConfig != null) {
             result = serviceConfig.getSecretDir();
         }
-        context.getActionReport().setMessage(result);
+        context.getActionReport().setMessage("Directory" + ": " + result);
+        Map<String, Object> extraPropertiesMap = new HashMap<>();
+        extraPropertiesMap.put("directory", result);
+
+        Properties extraProperties = new Properties();
+        extraProperties.put("secretsDirectoryConfiguration", extraPropertiesMap);
+        context.getActionReport().setExtraProperties(extraProperties);
     }
 }

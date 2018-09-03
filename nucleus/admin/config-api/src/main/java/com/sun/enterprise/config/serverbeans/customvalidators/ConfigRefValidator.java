@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans.customvalidators;
 
@@ -48,7 +49,6 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 
 import java.util.logging.Logger;
 import javax.validation.ConstraintValidator;
@@ -61,22 +61,22 @@ import org.glassfish.api.admin.config.Named;
 public class ConfigRefValidator
     implements ConstraintValidator<ConfigRefConstraint, Named>, Payload {
 
-    static final Logger logger = ConfigApiLoggerInfo.getLogger();
-    static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ConfigRefValidator.class);
+    static final Logger LOGGER = ConfigApiLoggerInfo.getLogger();
+    static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(ConfigRefValidator.class);
 
+    @Override
     public void initialize(final ConfigRefConstraint constraint) {       
     }
 
     @Override
-    public boolean isValid(final Named bean,
-        final ConstraintValidatorContext constraintValidatorContext) {
+    public boolean isValid(final Named bean, final ConstraintValidatorContext constraintValidatorContext) {
         if (bean == null) return true;
 
         Server server = null ;
         Cluster mycluster = null;
         String configRef = null;
         String serverName = null;
-        if (bean instanceof Server)  {
+        if (bean instanceof Server) {
             server = (Server)bean;
             configRef = server.getConfigRef();
             serverName = server.getName();
@@ -91,18 +91,18 @@ public class ConfigRefValidator
         
         // cannot use default-config
         if (configRef.equals(SystemPropertyConstants.TEMPLATE_CONFIG_NAME)) {
-            logger.warning(ConfigApiLoggerInfo.configRefDefaultconfig);
+            LOGGER.warning(ConfigApiLoggerInfo.configRefDefaultconfig);
            return false;
         }
         // cannot change config-ref of DAS
         if (server != null) {
             if (server.isDas() && !configRef.equals(SystemPropertyConstants.DAS_SERVER_CONFIG)) {
-                logger.warning(ConfigApiLoggerInfo.configRefDASconfig);
+                LOGGER.warning(ConfigApiLoggerInfo.configRefDASconfig);
                 return false;
             }
             // cannot use server-config if not DAS
             if (!server.isDas() && configRef.equals(SystemPropertyConstants.DAS_SERVER_CONFIG)) {
-                logger.warning(ConfigApiLoggerInfo.configRefServerconfig);
+                LOGGER.warning(ConfigApiLoggerInfo.configRefServerconfig);
                 return false;
             }
 
@@ -121,13 +121,13 @@ public class ConfigRefValidator
                         // the value of desired config-ref will be different than the current config-ref.
                         // During _register-instance, (create-local-instance --cluster c1 i1)
                         // cluster.getConfigRef().equals(configRef) will be true and not come here.
-                        logger.warning(ConfigApiLoggerInfo.configRefClusteredInstance);
+                        LOGGER.warning(ConfigApiLoggerInfo.configRefClusteredInstance);
                         return false;
                     }
                 }
                 // cannot use a non-existent config  (Only used by set.  _register-instance will fail earlier)
                 if (configs == null || configs.getConfigByName(configRef) == null) {
-                    logger.warning(ConfigApiLoggerInfo.configRefNonexistent);
+                    LOGGER.warning(ConfigApiLoggerInfo.configRefNonexistent);
                     return false;
                 }
             }

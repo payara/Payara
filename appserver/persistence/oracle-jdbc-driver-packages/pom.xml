@@ -40,17 +40,17 @@
     holder.
 
 -->
+<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.persistence</groupId>
         <artifactId>persistence</artifactId>
-        <version>5.183-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-oracle-jdbc-driver-packages</artifactId>
-    <packaging>jar</packaging>
     <name>GlassFish Oracle JDBC Packages</name>
     <description>This bundle extends System Bundle to provide access to additional classes available in oracle jdbc driver.</description>
     

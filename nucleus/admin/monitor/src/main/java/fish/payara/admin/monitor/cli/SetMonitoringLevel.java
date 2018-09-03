@@ -93,7 +93,7 @@ public class SetMonitoringLevel implements AdminCommand {
     String target;
 
     @Param(name = "module", optional = false)
-    private String moduleName;
+    private String moduleNames;
 
     @Param(name = "level", optional = false)
     private String moduleMonitoringLevel;
@@ -118,8 +118,8 @@ public class SetMonitoringLevel implements AdminCommand {
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
 
-        if (moduleName != null && moduleMonitoringLevel != null) {
-            List<String> moduleNameList = Arrays.asList(moduleName.split(","));
+        if (moduleNames != null && moduleMonitoringLevel != null) {
+            List<String> moduleNameList = Arrays.asList(moduleNames.split(","));
             List<String> moduleLevelList = Arrays.asList(moduleMonitoringLevel.split(","));
 
             if (moduleNameList.size() == moduleLevelList.size()) {
@@ -141,8 +141,7 @@ public class SetMonitoringLevel implements AdminCommand {
 
                                 }, monitoringService);
                             } catch (TransactionFailure ex) {
-                                logger.log(Level.WARNING, "Falied to execute the command " + "set-monitoring-level: "
-                                        + ex.getCause().getMessage());
+                                logger.log(Level.WARNING, "Failed to execute the command set-monitoring-level: {0}", ex.getCause().getMessage());
                                 actionReport.setMessage(ex.getCause().getMessage());
                                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
                             }

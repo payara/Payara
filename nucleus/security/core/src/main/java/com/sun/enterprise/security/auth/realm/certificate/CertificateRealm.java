@@ -55,11 +55,10 @@ import javax.security.auth.callback.Callback;
 import org.glassfish.security.common.Group;
 import org.jvnet.hk2.annotations.Service;
 
+import com.sun.enterprise.security.BaseRealm;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
-//import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.auth.realm.BadRealmException;
-import com.sun.enterprise.security.auth.realm.IASRealm;
 import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
@@ -94,7 +93,7 @@ import sun.security.x509.X500Name;
  *
  */
 @Service
-public final class CertificateRealm extends IASRealm {
+public final class CertificateRealm extends BaseRealm {
 
     // Descriptive string of the authentication type of this realm.
     public static final String AUTH_TYPE = "certificate";
@@ -109,6 +108,7 @@ public final class CertificateRealm extends IASRealm {
      * @exception NoSuchRealmException If the configuration parameters specify a realm which doesn't exist.
      *
      */
+    @Override
     protected void init(Properties props) throws BadRealmException, NoSuchRealmException {
         super.init(props);
 
@@ -119,11 +119,10 @@ public final class CertificateRealm extends IASRealm {
             }
         }
 
-        String jaasCtx = props.getProperty(IASRealm.JAAS_CONTEXT_PARAM);
+        String jaasCtx = props.getProperty(JAAS_CONTEXT_PARAM);
         if (jaasCtx != null) {
-            setProperty(IASRealm.JAAS_CONTEXT_PARAM, jaasCtx);
+            setProperty(JAAS_CONTEXT_PARAM, jaasCtx);
         }
-     
     }
 
     /**
@@ -132,6 +131,7 @@ public final class CertificateRealm extends IASRealm {
      *
      * @return Description of the kind of authentication that is directly supported by this realm.
      */
+    @Override
     public String getAuthType() {
         return AUTH_TYPE;
     }
@@ -169,14 +169,14 @@ public final class CertificateRealm extends IASRealm {
                 principalSet.add(new Group(groupName));
             }
         }
-        
+
         if (!subject.getPrincipals().isEmpty()) {
             subject.getPublicCredentials().add(new DistinguishedPrincipalCredential(x500name));
         }
 
         SecurityContext.setCurrent(new SecurityContext(name, subject));
     }
-    
+
     /**
      * Returns the name of all the groups that this user belongs to.
      *
@@ -186,9 +186,10 @@ public final class CertificateRealm extends IASRealm {
      *            does not support this operation.
      *
      */
-    public Enumeration getGroupNames(String username) throws NoSuchUserException, InvalidOperationException {
+    @Override
+    public Enumeration<String> getGroupNames(String username) throws NoSuchUserException, InvalidOperationException {
         // This is called during web container role check, not during
-        // EJB container role cheks... fix RI for consistency.
+        // EJB container role checks... fix RI for consistency.
 
         // Groups for cert users is empty by default unless some assign-groups
         // property has been specified (see init()).
@@ -202,7 +203,7 @@ public final class CertificateRealm extends IASRealm {
      * the application name information.
      */
     public final static class AppContextCallback implements Callback {
-        
+
         private String moduleID;
 
         /**
@@ -220,7 +221,7 @@ public final class CertificateRealm extends IASRealm {
         /**
          * Set the fully qualified module name. The module name consists of the application name (if not a singleton) followed
          * by a '#' and the name of the module.
-         * 
+         *
          */
         public void setModuleID(String moduleID) {
             this.moduleID = moduleID;

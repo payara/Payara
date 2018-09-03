@@ -95,7 +95,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
     private static final String ASADMIN_LISTENER = "admin-listener";
     private static final String ASADMIN_VIRTUAL_SERVER = "__asadmin";
 
-    static final Logger logger = ConfigApiLoggerInfo.getLogger();
+    private static final Logger LOGGER = ConfigApiLoggerInfo.getLogger();
     
     @Override
     public void postConstruct() {
@@ -112,12 +112,12 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
                     promoteVirtualServerProperties(currentConfig.getHttpService());
                 } else {
                     // this only happens during some unit tests
-                    logger.log(Level.WARNING, ConfigApiLoggerInfo.nullHttpService, new String[] { currentConfig.getName() });
+                    LOGGER.log(Level.WARNING, ConfigApiLoggerInfo.nullHttpService, new String[] { currentConfig.getName() });
                 }
                 promoteSystemProperties();
                 addAsadminProtocol(currentConfig.getNetworkConfig());
             } catch (TransactionFailure tf) {
-                logger.log(Level.SEVERE, ConfigApiLoggerInfo.failUpgradeDomain, tf);
+                LOGGER.log(Level.SEVERE, ConfigApiLoggerInfo.failUpgradeDomain, tf);
                 throw new RuntimeException(tf);
             }
         }
@@ -300,18 +300,25 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
                 final Iterator<Property> it = propertyList.iterator();
                 while (it.hasNext()) {
                     final Property property = it.next();
-                    if ("accessLoggingEnabled".equals(property.getName())) {
-                        param.setAccessLoggingEnabled(property.getValue());
-                        it.remove();
-                    } else if ("accessLogBufferSize".equals(property.getName())) {
-                        param.getAccessLog().setBufferSizeBytes(property.getValue());
-                        it.remove();
-                    } else if ("accessLogWriterInterval".equals(property.getName())) {
-                        param.getAccessLog().setWriteIntervalSeconds(property.getValue());
-                        it.remove();
-                    } else if ("sso-enabled".equals(property.getName())) {
-                        param.setSsoEnabled(property.getValue());
-                        it.remove();
+                    switch (property.getName()) {
+                        case "accessLoggingEnabled":
+                            param.setAccessLoggingEnabled(property.getValue());
+                            it.remove();
+                            break;
+                        case "accessLogBufferSize":
+                            param.getAccessLog().setBufferSizeBytes(property.getValue());
+                            it.remove();
+                            break;
+                        case "accessLogWriterInterval":
+                            param.getAccessLog().setWriteIntervalSeconds(property.getValue());
+                            it.remove();
+                            break;
+                        case "sso-enabled":
+                            param.setSsoEnabled(property.getValue());
+                            it.remove();
+                            break;
+                        default:
+                            break;
                     }
                 }
                 param.getProperty().clear();
@@ -362,15 +369,21 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
                     final Iterator<Property> it = propertyList.iterator();
                     while (it.hasNext()) {
                         final Property property = it.next();
-                        if ("docroot".equals(property.getName())) {
-                            param.setDocroot(property.getValue());
-                            it.remove();
-                        } else if ("accesslog".equals(property.getName())) {
-                            param.setAccessLog(property.getValue());
-                            it.remove();
-                        } else if ("sso-enabled".equals(property.getName())) {
-                            param.setSsoEnabled(property.getValue());
-                            it.remove();
+                        switch (property.getName()) {
+                            case "docroot":
+                                param.setDocroot(property.getValue());
+                                it.remove();
+                                break;
+                            case "accesslog":
+                                param.setAccessLog(property.getValue());
+                                it.remove();
+                                break;
+                            case "sso-enabled":
+                                param.setSsoEnabled(property.getValue());
+                                it.remove();
+                                break;
+                            default:
+                                break;
                         }
                     }
                     param.getProperty().clear();

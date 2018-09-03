@@ -37,10 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
-
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.web.ha;
-
 
 import com.sun.enterprise.config.serverbeans.AvailabilityService;
 import com.sun.enterprise.config.serverbeans.Config;
@@ -56,37 +54,38 @@ import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Implementations for high availability utils
+ * 
  * @author vbkumarjayanti
  */
 @Service
 @PerLookup
 public class HAUtilImpl implements HAUtil {
 
-    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Config config;
-    
+
     @Inject
     @Optional
     HazelcastCore hazelcast;
 
     @Override
     public String getClusterName() {
-        return (this.hazelcast != null) ?
-            hazelcast.getMemberGroup() : null;
+        return hazelcast != null ? hazelcast.getMemberGroup() : null;
     }
-    
+
     @Override
     public String getInstanceName() {
-         return (this.hazelcast != null) ?
-            hazelcast.getMemberName(): null;
+        return hazelcast != null ? hazelcast.getMemberName() : null;
     }
-    
+
     @Override
     public boolean isHAEnabled() {
-         AvailabilityService availabilityService = config.getAvailabilityService();
-         if (availabilityService != null && hazelcast != null && hazelcast.isEnabled()) {
-             return Boolean.valueOf(availabilityService.getAvailabilityEnabled());
-         }
-         return false;
+        AvailabilityService availabilityService = config.getAvailabilityService();
+        if (availabilityService != null && hazelcast != null && hazelcast.isEnabled()) {
+            return Boolean.valueOf(availabilityService.getAvailabilityEnabled());
+        }
+        
+        return false;
     }
 }

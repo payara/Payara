@@ -62,11 +62,10 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
 /**
- * 
+ *
  * Utility class to get declared permissions
  *
  */
-
 public class XMLPermissionsHandler {
 
     private static ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();

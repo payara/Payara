@@ -49,13 +49,12 @@
     <parent>
         <groupId>fish.payara.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>5.183-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>console-devtests</artifactId>
     <version>4.0</version>
-    <packaging>jar</packaging>
     <name>Admin Console Dev Tests</name>
     <description>This module contains the dev tests for the admin console</description>
 

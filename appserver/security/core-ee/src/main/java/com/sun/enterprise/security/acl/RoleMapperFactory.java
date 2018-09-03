@@ -40,14 +40,14 @@
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.acl;
 
-import org.glassfish.deployment.common.SecurityRoleMapperFactory;
-import org.glassfish.deployment.common.SecurityRoleMapper;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
+
+import org.glassfish.deployment.common.SecurityRoleMapper;
+import org.glassfish.deployment.common.SecurityRoleMapperFactory;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  *
@@ -56,54 +56,38 @@ import javax.inject.Singleton;
 @Service
 @Singleton
 public class RoleMapperFactory implements SecurityRoleMapperFactory {
-    private Map CONTEXT_TO_APPNAME = new HashMap();
-    private Hashtable ROLEMAPPER = new Hashtable();
 
-    /** Creates a new instance of RoleMapperFactory */
-    public RoleMapperFactory() {
-    }
+    private Map<String, String> CONTEXT_TO_APPNAME = new ConcurrentHashMap<>();
+    private Map<String, SecurityRoleMapper> ROLEMAPPER = new ConcurrentHashMap<>();
+
 
     /**
      * Returns a RoleMapper corresponding to the AppName.
-     * 
+     *
      * @param The Application Name of this RoleMapper.
      *
      */
     @Override
     public SecurityRoleMapper getRoleMapper(String appName) {
-        // if the appName is not appname but contextid for
-        // web apps then get the appname
+        // If the appName is not appname but contextid for web apps then get the appname
         String contextId = appName;
         String appname = getAppNameForContext(appName);
-        SecurityRoleMapper srm = null;
+
+        SecurityRoleMapper securityRoleMapper = null;
+
         if (appname != null)
-            srm = getRoleMapper(appname, this);
-        if (srm == null) {
-            srm = getRoleMapper(contextId, this);
+            securityRoleMapper = getRoleMapper(appname, this);
+
+        if (securityRoleMapper == null) {
+            securityRoleMapper = getRoleMapper(contextId, this);
         }
-        return srm;
+
+        return securityRoleMapper;
     }
-
-    /**
-     * remove the RoleMapping associated with this application
-     * 
-     * @param the application name for this RoleMapper
-     * 
-     * public void removeRoleMapper(String appName) { RoleMapper.removeRoleMapper(appName); }
-     */
-
-    /**
-     * Sets a new RoleMapper for a particular Application
-     * 
-     * @param the application name
-     * @param the new role mapper
-     * 
-     * public void setRoleMapper(String appName, SecurityRoleMapper rmap) { RoleMapper.setRoleMapper(appName, rmap); }
-     */
 
     @Override
     public String getAppNameForContext(String contextId) {
-        return (String) CONTEXT_TO_APPNAME.get(contextId);
+        return CONTEXT_TO_APPNAME.get(contextId);
     }
 
     @Override
@@ -118,28 +102,23 @@ public class RoleMapperFactory implements SecurityRoleMapperFactory {
 
     /**
      * Returns a RoleMapper corresponding to the AppName.
-     * 
+     *
      * @param appName Application Name of this RoleMapper.
      * @return SecurityRoleMapper for the application
      */
     public RoleMapper getRoleMapper(String appName, SecurityRoleMapperFactory fact) {
-        RoleMapper r = (RoleMapper) ROLEMAPPER.get(appName);
-        if (r == null) {
-            r = new RoleMapper(appName);
-            ROLEMAPPER.put(appName, r);
-        }
-        return r;
+        return (RoleMapper) ROLEMAPPER.computeIfAbsent(appName, e -> new RoleMapper(appName));
     }
 
     /**
      * Set a RoleMapper for the application
-     * 
+     *
      * @param appName Application or module name
-     * @param rmap <I>SecurityRoleMapper</I> for the application or the module
+     * @param securityRoleMapper <I>SecurityRoleMapper</I> for the application or the module
      */
     @Override
-    public void setRoleMapper(String appName, SecurityRoleMapper rmap) {
-        ROLEMAPPER.put(appName, rmap);
+    public void setRoleMapper(String appName, SecurityRoleMapper securityRoleMapper) {
+        ROLEMAPPER.put(appName, securityRoleMapper);
     }
 
     /**

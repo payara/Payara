@@ -67,6 +67,7 @@ public interface SystemPropertyBag extends ConfigBeanProxy {
      * </pre>
      * Objects of the following type(s) are allowed in the list
      * {@link SystemProperty }
+     * @return 
      */
     @Element("system-property")
     List<SystemProperty> getSystemProperty();
@@ -90,6 +91,8 @@ public interface SystemPropertyBag extends ConfigBeanProxy {
      * the default value.
      *
      * @param name the property name requested
+     * @param defaultValue
+     * @return 
      */
     @DuckTyped
     String getPropertyValue(String name, String defaultValue);

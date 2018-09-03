@@ -40,27 +40,27 @@
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.perms;
 
-import java.net.URL;
-import java.security.CodeSource;
-import java.security.Permission;
-import java.security.AllPermission;
-import java.security.PermissionCollection;
-import java.security.cert.Certificate;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
+import java.security.AllPermission;
+import java.security.CodeSource;
+import java.security.Permission;
+import java.security.PermissionCollection;
+import java.security.cert.Certificate;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.sun.logging.LogDomains;
 
 import sun.security.provider.PolicyFile;
 
 /**
- * 
+ *
  * Utility class to load the EE permissions, EE restrictions, and check restrictions for a given permission set
  *
  */
@@ -69,7 +69,7 @@ public class SMGlobalPolicyUtil {
     static Logger logger = Logger.getLogger(LogDomains.SECURITY_LOGGER);
 
     /**
-     * 
+     *
      * Java EE Component type supporting the use of declared permissions
      *
      */
@@ -171,7 +171,7 @@ public class SMGlobalPolicyUtil {
 
     /**
      * Get the default granted permissions of a specified component type
-     * 
+     *
      * @param type Java EE component type
      * @return the permission set granted to the specified component
      */
@@ -182,7 +182,7 @@ public class SMGlobalPolicyUtil {
 
     /**
      * Get the default granted permissions of a specified component type
-     * 
+     *
      * @param type Java EE component type such as ejb, war, rar, car, ear
      * @return
      */
@@ -193,7 +193,7 @@ public class SMGlobalPolicyUtil {
 
     /**
      * Get the restricted permission set of a specified component type on the server
-     * 
+     *
      * @param type Java EE component type
      * @return the restricted permission set of the specified component type on the server
      */
@@ -352,7 +352,7 @@ public class SMGlobalPolicyUtil {
 
     /**
      * Checks a permissions set against a restriction set
-     * 
+     *
      * @param declaredPC
      * @param restrictedPC
      * @return true for passed
@@ -390,7 +390,7 @@ public class SMGlobalPolicyUtil {
 
     /**
      * Check a permission set against a restriction of a component type
-     * 
+     *
      * @param declaredPC
      * @param type
      * @return

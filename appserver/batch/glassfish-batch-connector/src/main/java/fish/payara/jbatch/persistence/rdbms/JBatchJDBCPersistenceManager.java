@@ -99,6 +99,7 @@ import com.ibm.jbatch.spi.services.IBatchConfig;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.notification.requesttracing.RequestTraceSpanLog;
+import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
 
 /**
  * 
@@ -118,6 +119,8 @@ public class JBatchJDBCPersistenceManager implements
 
 	protected DataSource dataSource = null;
 	protected String jndiName = null;
+        protected String prefix = null;
+        protected String suffix = null;
 
 	protected String schema = "";
 
@@ -147,6 +150,8 @@ public class JBatchJDBCPersistenceManager implements
 
         schema = batchConfig.getDatabaseConfigurationBean().getSchema();
         jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
+        prefix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_PREFIX_PROPERTY, "");
+	suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
         
         logger.config("JNDI name = " + jndiName);
 
@@ -164,7 +169,7 @@ public class JBatchJDBCPersistenceManager implements
         }
 
         // Load the table names and queries shared between different database types
-        tableNames = getSharedTableMap(batchConfig);
+        tableNames = getSharedTableMap();
 
         try {
             queryStrings = getSharedQueryMap(batchConfig);
@@ -173,10 +178,10 @@ public class JBatchJDBCPersistenceManager implements
         }
 
         try {
-            if (!isDerbySchemaValid()) {
+            if (!isSchemaValid()) {
                 setDefaultSchema();
             }
-            checkDerbyTables();
+            checkTables();
 
         } catch (SQLException e) {
             logger.severe(e.getLocalizedMessage());
@@ -294,7 +299,7 @@ public class JBatchJDBCPersistenceManager implements
 	 * @return true if the schema exists, false otherwise.
 	 * @throws SQLException
 	 */
-	protected boolean isDerbySchemaValid() throws SQLException {
+	protected boolean isSchemaValid() throws SQLException {
 		logger.entering(CLASSNAME, "isDerbySchemaValid");
 		
 		try (Connection connection = getConnectionToDefaultSchema()) {
@@ -317,56 +322,96 @@ public class JBatchJDBCPersistenceManager implements
 
 	/**
 	 * Check if the derby jbatch tables exist, if not create them
+         * 
+         * @param tableNames
+         * @throws java.sql.SQLException
 	 **/
-	private void checkDerbyTables() throws SQLException {
-		setCreateDerbyStringsMap(batchConfig);
-		createDerbyTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
+	protected void checkTables() throws SQLException {
+		setCreateDerbyStringsMap(tableNames);
+		createTableIfNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
 				createDerbyStrings.get(DERBY_CREATE_TABLE_CHECKPOINTDATA));
 
-		createDerbyTableNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
 				createDerbyStrings.get(DERBY_CREATE_TABLE_JOBINSTANCEDATA));
 
-		createDerbyTableNotExists(tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
 				createDerbyStrings
 						.get(DERBY_CREATE_TABLE_EXECUTIONINSTANCEDATA));
-		createDerbyTableNotExists(
+		createTableIfNotExists(
 				tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY),
 				createDerbyStrings.get(DERBY_CREATE_TABLE_STEPINSTANCEDATA));
-		createDerbyTableNotExists(tableNames.get(JOB_STATUS_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(JOB_STATUS_TABLE_KEY),
 				createDerbyStrings.get(DERBY_CREATE_TABLE_JOBSTATUS));
-		createDerbyTableNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
+		createTableIfNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
 				createDerbyStrings.get(DERBY_CREATE_TABLE_STEPSTATUS));
 
 	}
 
+        public void createTables(DataSource dataSource, BatchRuntimeConfiguration batchRuntimeConfiguration){
+            this.dataSource = dataSource;
+            prefix = batchRuntimeConfiguration.getTablePrefix();
+            suffix = batchRuntimeConfiguration.getTableSuffix();
+            schema = batchRuntimeConfiguration.getSchemaName();
+            tableNames = getSharedTableMap();
+           
+            try {
+                if (!isSchemaValid()) {
+                    setDefaultSchema();
+                }
+                checkTables();
+            } catch (SQLException ex) {
+                logger.severe(ex.getLocalizedMessage());
+            }
+         }
+     
 	/**
-	 * Create the Derby tables
+	 *  Create the jbatch tables if they do not exist
 	 **/
-	protected void createDerbyTableNotExists(String tableName, String createTableStatement) throws SQLException {
-		logger.entering(CLASSNAME, "createIfNotExists", new Object[] { tableName, createTableStatement });
+	protected void createTableIfNotExists(String tableName, String createTableStatement) throws SQLException {
+		logger.entering(CLASSNAME, "createTableIfNotExists", new Object[] { tableName, createTableStatement });
 		
 		try (Connection connection = getConnection()) {
-			try (ResultSet resultSet = connection.getMetaData().getTables(null, schema, tableName, null)) {
-    			if (!resultSet.next()) {
-    				logger.log(INFO, tableName + " table does not exists. Trying to create it.");
-    				try (PreparedStatement statement = connection.prepareStatement(createTableStatement)) {
-    				    statement.executeUpdate();
-    				}
-    			}
-			}
+                    if (!checkIfTableExists(dataSource, tableName, schema)) {
+			logger.log(INFO, tableName + " table does not exists. Trying to create it.");
+                            try (PreparedStatement statement = connection.prepareStatement(createTableStatement)) {
+                                statement.executeUpdate();
+                            }
+		        }
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
 			throw e;
-		}
+		} finally {
+                    logger.exiting(CLASSNAME, "createTableIfNotExists");
+                }	
+        }
+        
+         public boolean checkIfTableExists(DataSource dSource, String tableName, String schemaName) {
+                boolean result = true;
+                dataSource = dSource;
 
-		logger.exiting(CLASSNAME, "createIfNotExists");
-	}
+                try (Connection connection = dataSource.getConnection()) {
+                    schema = schemaName;
+
+                    if (!isSchemaValid()) {
+                        setDefaultSchema();
+                    }
+                    try (ResultSet resultSet = connection.getMetaData().getTables(null, schema, tableName, null)) {
+                        if (!resultSet.next()) {
+                            result = false;
+                        }
+                    }
+                } catch (SQLException ex) {
+                    logger.severe(ex.getLocalizedMessage());
+                }
+
+                return result;
+        }
 
 	/**
 	 * Retrieve the number of rows in the resultset. This method is used to
 	 * check if a table exists in a given schema
 	 **/
-
+	
 	public int getTableRowCount(ResultSet resultSet) throws SQLException {
 		int rowcount = 0;
 
@@ -461,18 +506,18 @@ public class JBatchJDBCPersistenceManager implements
 	 * @param connection
 	 * @throws SQLException
 	 */
-	protected void setSchemaOnConnection(Connection connection) throws SQLException {
-		logger.finest("Entering " + CLASSNAME + ".setSchemaOnConnection()");
+        protected void setSchemaOnConnection(Connection connection) throws SQLException {
+                logger.finest("Entering " + CLASSNAME + ".setSchemaOnConnection()");
 
-		if (!(connection.getMetaData().getDatabaseProductName().contains("Oracle"))) {
-			try (PreparedStatement preparedStatement = connection.prepareStatement(queryStrings.get(Q_SET_SCHEMA))) {
-			    preparedStatement.setString(1, schema);
-	            preparedStatement.executeUpdate();
-			}
-		}
-
-		logger.finest("Exiting " + CLASSNAME + ".setSchemaOnConnection()");
-	}
+                if (!(connection.getMetaData().getDatabaseProductName().contains("Oracle"))) {
+                    try (PreparedStatement preparedStatement = connection.prepareStatement("SET SCHEMA ?")) {
+                        preparedStatement.setString(1, schema);
+                        preparedStatement.executeUpdate();
+                    } finally {
+                        logger.finest("Exiting " + CLASSNAME + ".setSchemaOnConnection()");
+                    }
+                }
+        }
 
 	/**
 	 * select data from DB table
@@ -2478,11 +2523,8 @@ public class JBatchJDBCPersistenceManager implements
 	 * the prefix and suffix to the table names
 	 **/
 
-	protected Map<String, String> getSharedTableMap(IBatchConfig batchConfig) {
-		String prefix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_PREFIX_PROPERTY, "");
-		String suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
-		
-		Map<String, String> result = new HashMap<String, String>(6);
+	protected Map<String, String> getSharedTableMap() {
+		Map<String, String> result = new HashMap<>(6);
 		result.put(JOB_INSTANCE_TABLE_KEY, prefix + "JOBINSTANCEDATA" + suffix);
 		result.put(EXECUTION_INSTANCE_TABLE_KEY, prefix	+ "EXECUTIONINSTANCEDATA" + suffix);
 		result.put(STEP_EXECUTION_INSTANCE_TABLE_KEY, prefix + "STEPEXECUTIONINSTANCEDATA" + suffix);
@@ -2744,8 +2786,7 @@ public class JBatchJDBCPersistenceManager implements
 	 * Method invoked to insert the Derby create table strings into a hashmap
 	 **/
 
-	protected Map<String, String> setCreateDerbyStringsMap(
-			IBatchConfig batchConfig) {
+	private Map<String, String> setCreateDerbyStringsMap(Map<String, String> tableNames) {
 		createDerbyStrings = new HashMap<>();
 		createDerbyStrings.put(DERBY_CREATE_TABLE_CHECKPOINTDATA,
 				"CREATE TABLE " + tableNames.get(CHECKPOINT_TABLE_KEY)

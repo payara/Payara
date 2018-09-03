@@ -40,6 +40,8 @@
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm.ldap;
 
+import static java.util.logging.Level.FINE;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,8 +69,8 @@ import javax.security.auth.login.LoginException;
 import org.glassfish.internal.api.RelativePathResolver;
 import org.jvnet.hk2.annotations.Service;
 
+import com.sun.enterprise.security.BaseRealm;
 import com.sun.enterprise.security.auth.realm.BadRealmException;
-import com.sun.enterprise.security.auth.realm.IASRealm;
 import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
@@ -107,13 +109,13 @@ import sun.security.x509.X500Name;
  *   <li>search-bind-password - The password of search-bind-dn.optional and no default value.
  *   <li>pool-size - The JNDI ldap connection pool size.
  * </ul>
- * 
+ *
  * @see com.sun.enterprise.security.auth.login.LDAPLoginModule
  *
  */
 @Service
-public final class LDAPRealm extends IASRealm {
-    
+public final class LDAPRealm extends BaseRealm {
+
     // Descriptive string of the authentication type of this realm.
     public static final String AUTH_TYPE = "ldap";
 
@@ -187,26 +189,26 @@ public final class LDAPRealm extends IASRealm {
      * @exception NoSuchRealmException If the configuration parameters specify a realm which doesn't exist.
      *
      */
+    @Override
     public synchronized void init(Properties props) throws BadRealmException, NoSuchRealmException {
         super.init(props);
-        
+
         String url = props.getProperty(PARAM_DIRURL);
         String dn = props.getProperty(PARAM_USERDN);
-        String jaasCtx = props.getProperty(IASRealm.JAAS_CONTEXT_PARAM);
+        String jaasCtx = props.getProperty(JAAS_CONTEXT_PARAM);
 
         if (url == null || dn == null || jaasCtx == null) {
             throw new BadRealmException(sm.getString("ldaprealm.badconfig", url, dn, jaasCtx));
         }
-        
+
         this.setProperty(PARAM_DIRURL, url);
         ldapBindProps.setProperty(Context.PROVIDER_URL, url);
         this.setProperty(PARAM_USERDN, dn);
-        this.setProperty(IASRealm.JAAS_CONTEXT_PARAM, jaasCtx);
+        this.setProperty(JAAS_CONTEXT_PARAM, jaasCtx);
 
         String mode = props.getProperty(PARAM_MODE, MODE_DEFAULT);
         if (!MODE_DEFAULT.equals(mode)) {
-            String msg = sm.getString("ldaprealm.badmode", mode);
-            throw new BadRealmException(msg);
+            throw new BadRealmException(sm.getString("ldaprealm.badmode", mode));
         }
         this.setProperty(PARAM_MODE, mode);
 
@@ -291,15 +293,13 @@ public final class LDAPRealm extends IASRealm {
             if (System.getProperty(SUN_JNDI_POOL_PROTOCOL) == null) {
                 System.setProperty(SUN_JNDI_POOL_PROTOCOL, DEFAULT_POOL_PROTOCOL);
             }
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "LDAPRealm : Using custom socket factory for SSL with pooling");
-            }
+            _logger.log(FINE, "LDAPRealm : Using custom socket factory for SSL with pooling");
         }
 
-        if (_logger.isLoggable(Level.FINE)) {
+        if (_logger.isLoggable(FINE)) {
             Properties tempProps = (Properties) ldapBindProps.clone();
             tempProps.remove(Context.SECURITY_CREDENTIALS);
-            _logger.log(Level.FINE, "LDAPRealm : " + tempProps);
+            _logger.log(FINE, "LDAPRealm : " + tempProps);
         }
 
         groupCache = new HashMap();
@@ -312,6 +312,7 @@ public final class LDAPRealm extends IASRealm {
      *
      * @return Description of the kind of authentication that is directly supported by this realm.
      */
+    @Override
     public String getAuthType() {
         return AUTH_TYPE;
     }
@@ -407,6 +408,7 @@ public final class LDAPRealm extends IASRealm {
      * @exception InvalidOperationException thrown if the realm does not support this operation - e.g. Certificate realm
      *            does not support this operation.
      */
+    @Override
     public Enumeration getGroupNames(String username) throws InvalidOperationException, NoSuchUserException {
         Vector v = (Vector) groupCache.get(username);
         if (v == null) {
@@ -721,7 +723,7 @@ public final class LDAPRealm extends IASRealm {
 
     /**
      * Escape special chars in search filter, according to RFC2254
-     * 
+     *
      * @param inName
      * @return
      */

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -73,8 +74,8 @@ public interface HttpService extends ConfigBeanProxy, PropertyBag, ConfigExtensi
     /**
      * Sets the value of the accessLog property.
      *
-     * @param value allowed object is
-     *              {@link AccessLog }
+     * @param value allowed object is {@link AccessLog }
+     * @throws PropertyVetoException
      */
     void setAccessLog(AccessLog value) throws PropertyVetoException;
 
@@ -97,6 +98,7 @@ public interface HttpService extends ConfigBeanProxy, PropertyBag, ConfigExtensi
      * <p/>
      * Objects of the following type(s) are allowed in the list
      * {@link VirtualServer }
+     * @return 
      */
     @Element(required=true)
     List<VirtualServer> getVirtualServer();
@@ -134,7 +136,7 @@ public interface HttpService extends ConfigBeanProxy, PropertyBag, ConfigExtensi
     void setSsoEnabled(String value);
 
     class Duck {
-        private static final Logger logger = ConfigApiLoggerInfo.getLogger();
+        private static final Logger LOGGER = ConfigApiLoggerInfo.getLogger();
 
         public static VirtualServer getVirtualServerByName(HttpService target, String name) {
             for (VirtualServer v : target.getVirtualServer()) {
@@ -184,7 +186,7 @@ public interface HttpService extends ConfigBeanProxy, PropertyBag, ConfigExtensi
                 }, param);
             } catch (TransactionFailure ex) {
                 // Will use the BG logging infrastrucre... And probably some exception type?
-                logger.log(Level.INFO, ConfigApiLoggerInfo.unableToCreateHttpServiceConfig, ex);
+                LOGGER.log(Level.INFO, ConfigApiLoggerInfo.unableToCreateHttpServiceConfig, ex);
             }
             return param.getExtensionByType(HttpService.class);
         }
@@ -282,5 +284,6 @@ public interface HttpService extends ConfigBeanProxy, PropertyBag, ConfigExtensi
             "do not define this property. Must be a valid IANA character set name")
 })
     @Element("property")
+    @Override
     List<Property> getProperty();
 }

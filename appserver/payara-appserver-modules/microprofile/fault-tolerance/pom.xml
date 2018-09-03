@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.microprofile</groupId>
         <artifactId>microprofile</artifactId>
-        <version>5.183-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.microprofile.fault-tolerance</groupId>
     <artifactId>microprofile-fault-tolerance</artifactId>
@@ -72,6 +72,11 @@
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
             <version>${microprofile-config.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.metrics</groupId>
+            <artifactId>microprofile-metrics-api</artifactId>
+            <version>${microprofile-metrics.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans.customvalidators;
 
@@ -51,39 +52,38 @@ import org.jvnet.hk2.config.types.Property;
  *
  * @author Nandini Ektare
  */
-public class JDBCRealmPropertyCheckValidator
-    implements ConstraintValidator<JDBCRealmPropertyCheck, AuthRealm> {
+public class JDBCRealmPropertyCheckValidator implements ConstraintValidator<JDBCRealmPropertyCheck, AuthRealm> {
 
-    private static final String JDBC_REALM =
-        "com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm";
-    private static final String DEFAULT_DIGEST_ALGORITHM = "MD5";
+    private static final String JDBC_REALM = "com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm";
 
+    @Override
     public void initialize(final JDBCRealmPropertyCheck fqcn) {
+        //do nothing
     }
 
-    public boolean isValid(final AuthRealm realm,
-        final ConstraintValidatorContext constraintValidatorContext) {
+    @Override
+    public boolean isValid(final AuthRealm realm, final ConstraintValidatorContext constraintValidatorContext) {
 
         if (realm.getClassname().equals(JDBC_REALM)) {
-            Property jaas_context = realm.getProperty("jaas-context");
-            Property ds_jndi = realm.getProperty("datasource-jndi");
-            Property user_table = realm.getProperty("user-table");
-            Property group_table = realm.getProperty("group-table");
-            Property user_name_col = realm.getProperty("user-name-column");
-            Property passwd_col = realm.getProperty("password-column");
-            Property grp_name_col = realm.getProperty("group-name-column");
-            Property digest_algo = realm.getProperty("digest-algorithm");
+            Property jaasContext = realm.getProperty("jaas-context");
+            Property dsJndi = realm.getProperty("datasource-jndi");
+            Property userTable = realm.getProperty("user-table");
+            Property groupTable = realm.getProperty("group-table");
+            Property userNameCol = realm.getProperty("user-name-column");
+            Property passwdCol = realm.getProperty("password-column");
+            Property grpNameCol = realm.getProperty("group-name-column");
+            Property digestAlgo = realm.getProperty("digest-algorithm");
 
-            if ((jaas_context == null) || (ds_jndi == null) ||
-                (user_table == null) || (group_table == null) ||
-                (user_name_col == null) || (passwd_col == null) ||
-                (grp_name_col == null)) {
+            if ((jaasContext == null) || (dsJndi == null) ||
+                (userTable == null) || (groupTable == null) ||
+                (userNameCol == null) || (passwdCol == null) ||
+                (grpNameCol == null)) {
                 
                 return false;
             }
             
-            if (digest_algo != null) {
-                String algoName = digest_algo.getValue();
+            if (digestAlgo != null) {
+                String algoName = digestAlgo.getValue();
 
                 if (!("none".equalsIgnoreCase(algoName))) {
                     try {

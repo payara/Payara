@@ -42,8 +42,9 @@ package fish.payara.opentracing.span;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.notification.requesttracing.RequestTraceSpanLog;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import io.opentracing.SpanContext;
+
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
@@ -133,8 +134,7 @@ public class Span extends RequestTraceSpan implements io.opentracing.Span {
     @Override
     public io.opentracing.Span log(long timestampMicroseconds, Map<String, ?> map) {
         // Create a RequestTracingSpanLog, add all of the map entries, and pass it through to the Request Tracing Service
-        RequestTraceSpanLog spanLog = new RequestTraceSpanLog(
-                convertTimestampMicrosToTimestampMillis(timestampMicroseconds));
+        RequestTraceSpanLog spanLog = new RequestTraceSpanLog(convertTimestampMicrosToTimestampMillis(timestampMicroseconds));
 
         for (Map.Entry<String, ?> entry : map.entrySet()) {
             spanLog.addLogEntry(entry.getKey(), String.valueOf(entry.getValue()));
@@ -163,20 +163,6 @@ public class Span extends RequestTraceSpan implements io.opentracing.Span {
         addSpanLog(spanLog);
 
         return this;
-    }
-
-    @Override
-    public io.opentracing.Span log(String key, Object value) {
-        Map<String, Object> map = new HashMap();
-        map.put(key, value);
-        return log(map);
-    }
-
-    @Override
-    public io.opentracing.Span log(long timestamp, String key, Object value) {
-        Map<String, Object> map = new HashMap();
-        map.put(key, value);
-        return log(timestamp, map);
     }
 
     @Override
@@ -248,16 +234,5 @@ public class Span extends RequestTraceSpan implements io.opentracing.Span {
             }
         }
     }
-    
-    /**
-     * Implementation of the OpenTracing SpanContext class, that extends from the Request Tracing Service.
-     */
-    public class SpanContext extends RequestTraceSpan.SpanContext implements io.opentracing.SpanContext {
 
-        @Override
-        public Iterable<Map.Entry<String, String>> baggageItems() {
-            return super.getBaggageItems().entrySet();
-        }
-
-    }
 }

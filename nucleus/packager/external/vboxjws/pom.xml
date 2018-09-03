@@ -46,12 +46,11 @@
     <parent>
         <groupId>org.glassfish.main.external</groupId>
         <artifactId>nucleus-external</artifactId>
-        <version>5.183-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>vboxjws</artifactId>
-    <packaging>jar</packaging>
     <name>virtualbox client SDK repackaged as module</name>
     <build>
         <plugins>

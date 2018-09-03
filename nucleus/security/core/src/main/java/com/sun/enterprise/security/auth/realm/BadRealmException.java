@@ -47,6 +47,9 @@ package com.sun.enterprise.security.auth.realm;
  * @author Harish Prabandham
  */
 public class BadRealmException extends Exception {
+
+    private static final long serialVersionUID = 1L;
+
     /**
      * Constructs the exception, with descriptive information.
      *

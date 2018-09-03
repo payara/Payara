@@ -55,11 +55,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016] [Payara Foundation] 
+// Portions Copyright [2016-2018] [Payara Foundation] 
 package org.apache.catalina.authenticator;
-
-import org.apache.catalina.LogFacade;
-import org.apache.catalina.Session;
 
 import java.security.Principal;
 import java.util.HashMap;
@@ -68,8 +65,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.Session;
-import org.apache.catalina.core.StandardServer;
 
 /**
  * A class representing entries in the cache of authenticated users.
@@ -95,9 +92,7 @@ public class SingleSignOnEntry {
 
     protected final AtomicLong version;
 
-    public SingleSignOnEntry(String id, long ver,
-                             Principal principal, String authType,
-                             String username, String realmName) {
+    public SingleSignOnEntry(String id, long ver, Principal principal, String authType, String username, String realmName) {
         super();
         this.id = id;
         this.version = new AtomicLong(ver);
@@ -109,8 +104,7 @@ public class SingleSignOnEntry {
     }
 
     /**
-     * Adds the given session to this SingleSignOnEntry if it does not
-     * already exist.
+     * Adds the given session to this SingleSignOnEntry if it does not already exist.
      *
      * @return true if the session was added, false otherwise
      */
@@ -127,32 +121,28 @@ public class SingleSignOnEntry {
         log.warning("session " + session.getId() + "found (and removed): " + removed);
     }
 
-
     /**
-     * Returns true if this SingleSignOnEntry does not have any sessions
-     * associated with it, and false otherwise.
+     * Returns true if this SingleSignOnEntry does not have any sessions associated with it, and false otherwise.
      *
-     * @return true if this SingleSignOnEntry does not have any sessions
-     * associated with it, and false otherwise
+     * @return true if this SingleSignOnEntry does not have any sessions associated with it, and false otherwise
      */
     public synchronized boolean isEmpty() {
         return sessions.isEmpty();
     }
-
 
     /**
      * Expires all sessions associated with this SingleSignOnEntry
      *
      */
     public synchronized void expireSessions() {
-        for (Session session: sessions.values()) {
+        for (Session session : sessions.values()) {
             if (log.isLoggable(Level.FINE)) {
                 log.log(Level.FINE, " Invalidating session " + session);
             }
 
             // Invalidate this session
             // if it is not already invalid(ated)
-            if(session.getIsValid() ) {
+            if (session.getIsValid()) {
                 session.expire();
             }
         }
@@ -173,8 +163,7 @@ public class SingleSignOnEntry {
     }
 
     /**
-     * Gets the name of the authentication type originally used to authenticate
-     * the user associated with the SSO.
+     * Gets the name of the authentication type originally used to authenticate the user associated with the SSO.
      *
      * @return "BASIC", "CLIENT_CERT", "DIGEST", "FORM" or "NONE"
      */
@@ -183,16 +172,14 @@ public class SingleSignOnEntry {
     }
 
     /**
-     * Gets the <code>Principal</code> that has been authenticated by
-     * the SSO.
+     * Gets the <code>Principal</code> that has been authenticated by the SSO.
      */
     public Principal getPrincipal() {
         return principal;
     }
 
     /**
-     * Gets the username provided by the user as part of the authentication
-     * process.
+     * Gets the username provided by the user as part of the authentication process.
      */
     public String getUsername() {
         return username;

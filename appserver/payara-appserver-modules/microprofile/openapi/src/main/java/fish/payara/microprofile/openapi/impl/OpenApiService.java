@@ -39,38 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl;
 
-import static java.util.stream.Collectors.toSet;
-
-import java.beans.PropertyChangeEvent;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.Enumeration;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-
-import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.Events;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.PreDestroy;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.data.ApplicationInfo;
-import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.Changed;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.ConfigListener;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.NotProcessed;
-import org.jvnet.hk2.config.UnprocessedChangeEvents;
-
+import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import fish.payara.microprofile.openapi.api.OpenAPIBuildException;
 import fish.payara.microprofile.openapi.impl.admin.OpenApiServiceConfiguration;
 import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
@@ -81,6 +50,46 @@ import fish.payara.microprofile.openapi.impl.processor.FileProcessor;
 import fish.payara.microprofile.openapi.impl.processor.FilterProcessor;
 import fish.payara.microprofile.openapi.impl.processor.ModelReaderProcessor;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import java.beans.PropertyChangeEvent;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import static java.util.logging.Level.WARNING;
+import java.util.logging.Logger;
+import static java.util.stream.Collectors.toSet;
+import javax.inject.Inject;
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
+import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.hk2.api.MultiException;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.ServerContext;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.Changed;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.NotProcessed;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 @Service(name = "microprofile-openapi-service")
 @RunLevel(StartupRunLevel.VAL)
@@ -98,6 +107,12 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
     @Inject
     private PayaraExecutorService executor;
+
+    @Inject
+    private ServerEnvironment environment;
+
+    @Inject
+    private ServiceLocator habitat;
 
     @Override
     public void postConstruct() {
@@ -264,13 +279,14 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
             try {
                 String contextRoot = getContextRoot(appInfo);
+                List<URL> baseURLs = getServerURL(contextRoot);
                 ReadableArchive archive = appInfo.getSource();
                 Set<Class<?>> classes = getClassesFromArchive(archive, appInfo.getAppClassLoader());
 
                 openapi = new ModelReaderProcessor().process(openapi, appConfig);
                 openapi = new FileProcessor(appInfo.getAppClassLoader()).process(openapi, appConfig);
                 openapi = new ApplicationProcessor(classes).process(openapi, appConfig);
-                openapi = new BaseProcessor(contextRoot).process(openapi, appConfig);
+                openapi = new BaseProcessor(baseURLs).process(openapi, appConfig);
                 openapi = new FilterProcessor().process(openapi, appConfig);
             } catch (Throwable t) {
                 throw new OpenAPIBuildException(t);
@@ -280,6 +296,67 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
             return openapi;
         }
 
+    }
+
+    private List<URL> getServerURL(String contextRoot) {
+        List<URL> result = new ArrayList<>();
+        ServerContext context = Globals.get(ServerContext.class);
+
+        String hostName;
+        try {
+            hostName = InetAddress.getLocalHost().getCanonicalHostName();
+        } catch (UnknownHostException ex) {
+            hostName = "localhost";
+        }
+
+        String instanceType = environment.getRuntimeType().toString();
+        List<Integer> httpPorts = new ArrayList<>();
+        List<Integer> httpsPorts = new ArrayList<>();
+        List<NetworkListener> networkListeners = context.getConfigBean().getConfig().getNetworkConfig().getNetworkListeners().getNetworkListener();
+        String adminListener = context.getConfigBean().getConfig().getAdminListener().getName();
+        networkListeners
+                .stream()
+                .filter(networkListener -> Boolean.parseBoolean(networkListener.getEnabled()))
+                .forEach(networkListener -> {
+
+            int port;
+            try {
+                // get the dynamic config port
+                port = habitat.getService(GrizzlyService.class).getRealPort(networkListener);
+            } catch (MultiException ex) {
+                LOGGER.log(WARNING, "Failed to get running Grizzly listener.", ex);
+                // get the port in the domain xml
+                port = Integer.parseInt(networkListener.getPort());
+            }
+
+            // Check if this listener is using HTTP or HTTPS
+            boolean securityEnabled = Boolean.parseBoolean(networkListener.findProtocol().getSecurityEnabled());
+            List<Integer> ports = securityEnabled ? httpPorts : httpsPorts;
+
+            // If this listener isn't the admin listener, it must be an HTTP/HTTPS listener
+            if (!networkListener.getName().equals(adminListener)) {
+                ports.add(port);
+            } else if (instanceType.equals("MICRO")) {
+                // micro instances can use the admin listener as both an admin and HTTP/HTTPS port
+                ports.add(port);
+            }
+                });
+
+        for (Integer httpPort : httpPorts) {
+            try {
+                result.add(new URL("http", hostName, httpPort, contextRoot));
+            } catch (MalformedURLException ex) {
+                // ignore
+            }
+        }
+        for (Integer httpsPort : httpsPorts) {
+            try {
+                result.add(new URL("https", hostName, httpsPort, contextRoot));
+            } catch (MalformedURLException ex) {
+                // ignore
+            }
+        }
+        return result;
     }
 
 }

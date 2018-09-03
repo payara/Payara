@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.launcher;
 
 import com.sun.enterprise.universal.glassfish.GFLauncherUtils;
@@ -51,8 +53,10 @@ import java.util.*;
  * @author Byron Nevins
  */
 public class Profiler {
+    
     Map<String, String> config;
     List<String> jvmOptions;
+    private final boolean enabled;
 
     Profiler(Map<String, String> config, List<String> jvmOptions, Map<String, String> sysProps) {
         this.config = config;
@@ -124,5 +128,5 @@ public class Profiler {
         }
         return list;
     }
-    private boolean enabled;
+    
 }

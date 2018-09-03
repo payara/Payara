@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common Development
@@ -45,12 +45,9 @@ holder.
     <parent>
         <groupId>org.glassfish.main.external</groupId>
         <artifactId>external</artifactId>
-        <version>5.183-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
     </parent>
-
     <artifactId>jcip-annotations-repackaged</artifactId>
-    <packaging>jar</packaging>
-
     <name>jcip-annotations repackaged</name>
     <description>Java Concurrency In Practice annotations (JCIP) repackaged as a module</description>
 
@@ -82,7 +79,6 @@ holder.
                                     <groupId>com.github.stephenc.jcip</groupId>
                                     <artifactId>jcip-annotations</artifactId>
                                     <version>${jcip-annotations.version}</version>
-                                    <type>jar</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
                                 </artifactItem>

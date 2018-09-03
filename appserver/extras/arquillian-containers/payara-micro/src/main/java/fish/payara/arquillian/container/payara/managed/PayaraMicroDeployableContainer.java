@@ -123,7 +123,7 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
     @Override
     public void setup(PayaraMicroContainerConfiguration configuration) {
         if (configuration == null) {
-            throw new IllegalArgumentException("configuration must not be null");
+            throw new IllegalArgumentException("Configuration must not be null.");
         }
 
         this.configuration = configuration;
@@ -131,7 +131,7 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
 
     @Override
     public ProtocolDescription getDefaultProtocol() {
-        return new ProtocolDescription("Servlet 3.0");
+        return new ProtocolDescription("Servlet 4.0");
     }
 
     @Override
@@ -142,7 +142,7 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
     @Override
     public ProtocolMetaData deploy(Archive<?> archive) throws DeploymentException {
         if (archive == null) {
-            throw new IllegalArgumentException("archive must not be null");
+            throw new IllegalArgumentException("Archive must not be null.");
         }
 
         try {
@@ -163,11 +163,12 @@ public class PayaraMicroDeployableContainer implements DeployableContainer<Payar
 
             // Create the list of commands to start Payara Micro
             List<String> cmd = new ArrayList<>(asList(
-                    "java", "-jar", configuration.getMicroJarFile().getAbsolutePath(),
+                    System.getProperty("java.home") + File.separator + "bin" + File.separator + "java",
+                    "-jar", configuration.getMicroJarFile().getAbsolutePath(),
                     "--deploy", deploymentFile.getAbsolutePath()
                     ));
 
-            // Start at a random port so multiple instances won't run in to eachother all the time
+            // Start at a random port so multiple instances won't run in to each other all the time
             if (configuration.isRandomHttpPort()) {
                 cmd.addAll(asList("--port", (8080 + new SecureRandom().nextInt(1000)) + ""));
             }

@@ -40,13 +40,14 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2018] Payara Foundation and/or affiliates -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.distributions</groupId>
         <artifactId>distributions</artifactId>
-        <version>5.183-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
     </parent>
     <artifactId>minnow</artifactId>
     <name>Glassfish Minnow Distribution</name>
@@ -118,13 +119,6 @@
             <type>pom</type>
             <optional>true</optional>
         </dependency>
-
-        <!-- temporary pkg-bootstrap content dependency -->
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>pkg-bootstrap-fragment</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>	
+        
     </dependencies>
 </project>

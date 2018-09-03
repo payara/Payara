@@ -40,28 +40,30 @@
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.web.security;
 
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.TrustManager;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.security.ssl.SSLUtils;
-//V3:Commented import com.sun.enterprise.ServerConfiguration;
-//V3:Commented import com.sun.web.server.*;
-//V3:Commented import com.sun.enterprise.server.J2EEServer;
-import com.sun.enterprise.security.ssl.J2EEKeyManager;
-
-import java.util.logging.*;
-import com.sun.logging.*;
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.X509KeyManager;
 
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.security.common.SharedSecureRandomImpl;
+
+//V3:Commented import com.sun.enterprise.ServerConfiguration;
+//V3:Commented import com.sun.web.server.*;
+//V3:Commented import com.sun.enterprise.server.J2EEServer;
+import com.sun.enterprise.security.ssl.J2EEKeyManager;
+import com.sun.enterprise.security.ssl.SSLUtils;
+import com.sun.logging.LogDomains;
 
 /**
  * SSL server socket factory.
@@ -70,25 +72,24 @@ import org.glassfish.security.common.SharedSecureRandomImpl;
  * @author Vivek Nagar
  * @author Harpreet Singh
  */
-// TODO: this should become a HK2 component
+// TODO: this should become an HK2 component
 public class SSLSocketFactory implements org.apache.catalina.net.ServerSocketFactory {
 
     static Logger _logger = LogDomains.getLogger(SSLSocketFactory.class, LogDomains.WEB_LOGGER);
 
     private static final boolean clientAuth = false;
 
-    private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SSLSocketFactory.class);
 
-    private SSLContext context = null;
-    private javax.net.ssl.SSLServerSocketFactory factory = null;
+    private SSLContext context;
+    private SSLServerSocketFactory factory;
     private String cipherSuites[];
 
-    private static KeyManager[] keyManagers = null;
-    private static TrustManager[] trustManagers = null;
+    private static KeyManager[] keyManagers;
+    private static TrustManager[] trustManagers;
 
     // XXX initStoresAtStartup may call more than once, should clean up later
     // copied from SSLUtils : V3 to break dependency of this SSLUtils on this Class.
-    private static boolean initialized = false;
+    private static boolean initialized ;
 
     /**
      * Create the SSL socket factory. Initialize the key managers and trust managers which are passed to the SSL context.
@@ -134,8 +135,6 @@ public class SSLSocketFactory implements org.apache.catalina.net.ServerSocketFac
      * @param socket the SSL server socket.
      */
     private void init(SSLServerSocket socket) {
-        // Some initialization goes here.....
-        // socket.setEnabledCipherSuites(cipherSuites);
         socket.setNeedClientAuth(clientAuth);
     }
 
@@ -165,11 +164,6 @@ public class SSLSocketFactory implements org.apache.catalina.net.ServerSocketFac
         return socket;
     }
 
-    // V3: to break dependency of SSLUtils on this class
-    // public static void setManagers(KeyManager[] kmgrs, TrustManager[] tmgrs) {
-    // keyManagers = kmgrs;
-    // trustManagers = tmgrs;
-    // }
     // V3: Copied from SSLUtils to break dependency of SSLUtils on this class
     public static synchronized void initStoresAtStartup() throws Exception {
         if (initialized) {

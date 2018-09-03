@@ -1,0 +1,242 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://github.com/payara/Payara/blob/master/LICENSE.txt
+    See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at glassfish/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    The Payara Foundation designates this particular file as subject to the "Classpath"
+    exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+-->
+
+<!initPage
+    setResourceBundle(key="i18n_microprofile" bundle="fish.payara.admingui.microprofile.Strings");
+/>
+<!composition template="/templates/default.layout"
+    guiTitle="$resource{i18n_microprofile.microprofile.specs.configuration.config.property.pageTitle}">
+
+<!define name="content">
+
+<event>
+    <!beforeCreate
+        getRequestValue(key="source" value=>$page{source} default="domain");
+        urlencode(value="#{pageSession.source}" encoding="UTF-8" result="#{pageSession.encodedSource}");
+        getRequestValue(key="sourceName" value="#{pageSession.sourceName}");
+        urlencode(value="#{pageSession.sourceName}" encoding="UTF-8" result="#{pageSession.encodedSourceName}");
+        setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigPropertyTab");
+        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
+        getRequestValue(key="moduleName" value="#{pageSession.moduleName}");
+        urlencode(value="#{pageSession.moduleName}" encoding="UTF-8" result="#{pageSession.encodedModuleName}");
+
+        setPageSessionAttribute(key="listLink" value="#{request.contextPath}/microprofile/microprofile/specs/configAPI/propertyConfiguration.jsf?source=#{pageSession.encodedSource}&sourceName=#{pageSession.encodedSourceName}&configName=#{pageSession.encodedConfigName}");
+        setPageSessionAttribute(key="parentPage", value="#{request.contextPath}/microprofile/microprofile/specs/configAPI/propertyConfiguration.jsf?source=#{pageSession.encodedSource}&sourceName=#{pageSession.encodedSourceName}&configName=#{pageSession.encodedConfigName}");
+        setPageSessionAttribute(key="selfPage", value="#{request.contextPath}/microprofile/microprofile/specs/configAPI/propertyConfiguration.jsf?source=#{pageSession.encodedSource}&sourceName=#{pageSession.encodedSourceName}&configName=#{pageSession.encodedConfigName}");
+        setPageSessionAttribute(key="thisPage", value="#{request.contextPath}/microprofile/microprofile/specs/configAPI/propertyConfiguration.jsf");
+
+        createMap(result="#{pageSession.sourceMap}");
+        mapPut(map="#{pageSession.sourceMap}" key="source" value="#{pageSession.source}");
+
+        createMap(result="#{pageSession.sourceNameMap}");
+        mapPut(map="#{pageSession.sourceNameMap}" key="sourceName" value="#{pageSession.sourceName}");
+        setPageSessionAttribute(key="isSourceNameMapEmpty", value="#{empty pageSession.sourceNameMap['sourceName']}");
+
+        setAttribute(key="zero" value="$int{0}");
+        setPageSessionAttribute(key="showModuleName", value="#{false}");
+        setPageSessionAttribute(key="showSourceName", value="#{true}");
+
+        if(#{pageSession.encodedSource}=domain) {
+            setPageSessionAttribute(key="showSourceName", value="#{false}");
+            setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}");
+        }
+
+        if(#{pageSession.encodedSource}=server) {
+            gf.listInstances(optionKeys={"standaloneonly"} optionValues={"false"}, instances="#{pageSession.sourceNameList}");
+            listAdd(list="#{pageSession.sourceNameList}" value="server");
+
+            if (#{pageSession.isSourceNameMapEmpty}){
+                listGet(list="#{pageSession.sourceNameList}" index="0" result="#{pageSession.instance}");
+                mapPut(map="#{pageSession.sourceNameMap}" key="sourceName" value="#{pageSession.instance}");
+            }
+            setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/servers/server/#{pageSession.sourceNameMap['sourceName']}");
+        }
+
+        if(#{pageSession.encodedSource}=application) {
+            gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/applications/application",
+                            result="#{pageSession.sourceNameList}");
+
+            if (#{pageSession.isSourceNameMapEmpty}){
+               setAttribute(key="sourceNamenListSize" value="#{pageSession.sourceNameList.size()}");
+                if (#{requestScope.sourceNamenListSize}>#{requestScope.zero}){
+                    listGet(list="#{pageSession.sourceNameList}" index="0" result="#{pageSession.application}");
+                    mapPut(map="#{pageSession.sourceNameMap}" key="sourceName" value="#{pageSession.application}");
+                    setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/applications/application/#{pageSession.sourceNameMap['sourceName']}");
+                }
+            }
+        }
+
+        if(#{pageSession.encodedSource}=config) {
+            gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config",
+                            result="#{pageSession.sourceNameList}");
+
+            if (#{pageSession.isSourceNameMapEmpty}){
+              setAttribute(key="sourceNamenListSize" value="#{pageSession.sourceNameList.size()}");
+                if (#{requestScope.sourceNamenListSize}>#{requestScope.zero}){
+                    listGet(list="#{pageSession.sourceNameList}" index="0" result="#{pageSession.config}");
+                    mapPut(map="#{pageSession.sourceNameMap}" key="sourceName" value="#{pageSession.config}");
+                }
+            }
+           setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.sourceNameMap['sourceName']}");
+        }
+
+        createMap(result="#{pageSession.moduleNameMap}");
+        mapPut(map="#{pageSession.moduleNameMap}" key="moduleName" value="#{pageSession.moduleName}");
+        setPageSessionAttribute(key="ismoduleNameMapEmpty", value="#{empty pageSession.moduleNameMap['moduleName']}");
+
+        if(#{pageSession.encodedSource}=module) {
+          gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/applications/application",
+                        result="#{pageSession.sourceNameList}");
+
+          if (#{pageSession.isSourceNameMapEmpty}){
+              setAttribute(key="sourceNamenListSize" value="#{pageSession.sourceNameList.size()}");
+              if (#{requestScope.sourceNamenListSize}>#{requestScope.zero}){
+                 listGet(list="#{pageSession.sourceNameList}" index="0" result="#{pageSession.application}");
+                 mapPut(map="#{pageSession.sourceNameMap}" key="sourceName" value="#{pageSession.application}");
+            }
+          }
+            setPageSessionAttribute(key="showModuleName", value="#{true}");
+            gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/applications/application/#{pageSession.sourceNameMap['sourceName']}/module",
+                            result="#{pageSession.moduleNameList}");
+
+            if (#{pageSession.ismoduleNameMapEmpty}){
+              setAttribute(key="moduleNamenListSize" value="#{pageSession.moduleNameList.size()}");
+                if (#{requestScope.moduleNamenListSize}>#{requestScope.zero}){
+                    listGet(list="#{pageSession.moduleNameList}" index="0" result="#{pageSession.module}");
+                    mapPut(map="#{pageSession.moduleNameMap}" key="moduleName" value="#{pageSession.module}");
+                    setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/applications/application/#{pageSession.sourceNameMap['sourceName']}/module/#{pageSession.moduleNameMap['moduleName']}");
+                }
+            }
+        }
+
+        setPageSessionAttribute(key="rest-api" value="true");
+        setPageSessionAttribute(key="edit" value="#{true}" );
+        setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
+        setPageSessionAttribute(key="showDefaultButton" value="#{false}" );
+
+        setPageSessionAttribute(key="isParentUrlEmpty", value="#{empty pageSession.parentUrl}");
+        if (!#{pageSession.isParentUrlEmpty}){
+            setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}");
+            gf.restRequest(endpoint="#{pageSession.selfUrl}/property", method="GET", result="#{requestScope.propTable}");
+            setPageSessionAttribute(key="tableList", value="#{requestScope.propTable.data.extraProperties.properties}");
+        }
+    />
+</event>
+
+<sun:form id="propertyForm">
+#include "/microprofile/microprofile/microprofileConfigTabs.inc"
+#include "/microprofile/microprofile/microprofileConfigAPITabs.inc"
+    <sun:title id="propertyContentPage" title="$resource{i18n_microprofile.microprofile.specs.configuration.config.property.pageTitle}"
+               helpText="$resource{i18n_microprofile.microprofile.specs.configuration.config.property.pageTitleHelpText}" >
+#include "/common/appServer/instancePropertiesButtons.jsf"
+    </sun:title>
+
+#include "/common/shared/alertMsg_1.inc"
+#include "/common/shared/configNameSection.inc"
+<sun:propertySheet id="propertySheet">
+<sun:propertySheetSection id="source">
+        <sun:property id="sourceProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                      label="Source">
+            <sun:dropDown id="sourceDropDown"
+                          labels={"domain","application","config","module","server"}
+                          selected="#{pageSession.sourceMap['source']}"
+                          submitForm="#{true}"
+                          immediate="#{true}"
+                          required="#{true}"
+                         >
+                <!command
+                    setAttribute(key="click" value="$this{component}");
+                    setAttribute(key="source" value="#{click.selected}");
+                    gf.navigate(page="#{pageSession.thisPage}");
+                />
+
+            </sun:dropDown>
+        </sun:property>
+
+        <sun:property id="sourceNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                      label="Source Name" rendered="#{pageSession.showSourceName}">
+            <sun:dropDown id="sourceNameDropDown"
+                          labels="$pageSession{sourceNameList}"
+                          selected="#{pageSession.sourceNameMap['sourceName']}"
+                          rendered="#{pageSession.showSourceName}"
+                          submitForm="#{true}"
+                          immediate="#{true}"
+                         >
+                 <!command
+                    setAttribute(key="click" value="$this{component}");
+                    setAttribute(key="sourceName" value="#{click.selected}");
+                    setAttribute(key="source" value="#{pageSession.sourceMap['source']}");
+                    gf.navigate(page="#{pageSession.thisPage}");
+                />
+            </sun:dropDown>
+        </sun:property>
+
+          <sun:property id="moduleNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                      label="Module Name" rendered="#{pageSession.showModuleName}">
+            <sun:dropDown id="moduleNameDropDown"
+                          labels="$pageSession{moduleNameList}"
+                          selected="#{pageSession.moduleNameMap['moduleName']}"
+                          rendered="#{pageSession.showModuleName}"
+                          submitForm="#{true}"
+                          immediate="#{true}"
+                         >
+                 <!command
+                    setAttribute(key="click" value="$this{component}");
+                    setAttribute(key="moduleName" value="#{click.selected}");
+                    setAttribute(key="source" value="#{pageSession.sourceMap['source']}");
+                    setAttribute(key="sourceName" value="#{pageSession.sourceNameMap['sourceName']}");
+                    gf.navigate(page="#{pageSession.thisPage}");
+                />
+            </sun:dropDown>
+        </sun:property>
+    </sun:propertySheetSection>
+ </sun:propertySheet>
+#include "/common/shared/propertyDescTable.inc"
+
+        <sun:title id="bottomTitle">
+#include "/common/appServer/instancePropertiesButtons.jsf"
+        </sun:title>
+      <sun:hidden id="helpKey" value="$resource{help_common.instanceProperties}"/>
+    </sun:form>
+#include "/common/shared/changeButtonsJS.inc"
+ </define>
+</composition>

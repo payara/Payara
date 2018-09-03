@@ -40,9 +40,8 @@
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jmac.callback;
 
-import java.security.Principal;
-import java.security.PrivilegedAction;
-import java.util.Set;
+import static com.sun.enterprise.security.common.AppservAccessController.privileged;
+import static java.util.Arrays.stream;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -50,42 +49,27 @@ import javax.security.auth.message.callback.GroupPrincipalCallback;
 
 import org.glassfish.security.common.Group;
 
-import com.sun.enterprise.security.common.AppservAccessController;
-
 /**
  *
  * @author vbkumarjayanti
  */
 public class ServerLoginCBHUtil {
 
-    private static void processGP(GroupPrincipalCallback gpCallback) {
-        Subject subject = gpCallback.getSubject();
-        String[] groups = gpCallback.getGroups();
-        
+    private static void processGP(GroupPrincipalCallback groupCallback) {
+        Subject subject = groupCallback.getSubject();
+        String[] groups = groupCallback.getGroups();
+
         if (groups != null && groups.length > 0) {
-            AppservAccessController.doPrivileged(new PrivilegedAction<Subject>() {
-                public Subject run() {
-                    for (String group : groups) {
-                        subject.getPrincipals().add(new Group(group));
-                    }
-                    return subject;
-                }
-            });
+            privileged(() -> stream(groups).forEach(group -> subject.getPrincipals().add(new Group(group))));
         } else if (groups == null) {
-            AppservAccessController.doPrivileged(new PrivilegedAction<Subject>() {
-                public Subject run() {
-                    Set<Principal> principalSet = subject.getPrincipals();
-                    principalSet.removeAll(subject.getPrincipals(Group.class));
-                    return subject;
-                }
-            });
+            privileged(() -> subject.getPrincipals().removeAll(subject.getPrincipals(Group.class)));
         }
     }
 
     // NOTE: this method is called by reflection from ServerLoginCallbackHandler
-    public static void processGroupPrincipal(Callback gpCallback) {
-        if (gpCallback instanceof GroupPrincipalCallback) {
-            processGP((GroupPrincipalCallback) gpCallback);
+    public static void processGroupPrincipal(Callback groupCallback) {
+        if (groupCallback instanceof GroupPrincipalCallback) {
+            processGP((GroupPrincipalCallback) groupCallback);
         }
     }
 

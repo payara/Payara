@@ -38,7 +38,6 @@
  * holder.
  */
 // Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
-
 package com.sun.enterprise.security.web.integration;
 
 import java.security.Principal;
@@ -54,13 +53,9 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
     private static final long serialVersionUID = 1L;
 
     private char[] password;
-
     private X509Certificate[] certs;
-
     private boolean useCertificate;
-
     private SecurityContext secCtx;
-
     private Principal customPrincipal;
 
     public WebPrincipal(Principal p, SecurityContext context) {
@@ -71,6 +66,10 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
         this.useCertificate = false;
         this.secCtx = context;
     }
+    
+    public WebPrincipal(String user, String password, SecurityContext context) {
+        this(user, password == null? null : password.toCharArray(), context);
+    }
 
     public WebPrincipal(String user, char[] pwd, SecurityContext context) {
         super(user);
@@ -80,12 +79,6 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
 
         this.useCertificate = false;
         this.secCtx = context;
-    }
-
-    @Deprecated
-    public WebPrincipal(String user, String password, SecurityContext context) {
-        this(user, password.toCharArray(), context);
-
     }
 
     public WebPrincipal(X509Certificate[] certs, SecurityContext context) {

@@ -56,7 +56,7 @@ public class PermsArchiveDelegate {
 
     /**
      * Get the application or module packaged permissions
-     * 
+     *
      * @param type the type of the module, this is used to check the configured restriction for the type
      * @param context the deployment context
      * @return the module or app declared permissions
@@ -66,74 +66,52 @@ public class PermsArchiveDelegate {
             throws SecurityException {
 
         try {
-            File base = new File(context.getSource().getURI());
+            PermissionCollection declaredPerms = new XMLPermissionsHandler(new File(context.getSource().getURI()), type).getAppDeclaredPermissions();
 
-            XMLPermissionsHandler pHdlr = new XMLPermissionsHandler(base, type);
-
-            PermissionCollection declaredPerms = pHdlr.getAppDeclaredPermissions();
-
-            // further process the permissions for file path adjustment
-            DeclaredPermissionsProcessor dpp = new DeclaredPermissionsProcessor(type, context, declaredPerms);
-
-            PermissionCollection revisedWarDeclaredPerms = dpp.getAdjustedDeclaredPermissions();
-
-            return revisedWarDeclaredPerms;
-        } catch (XMLStreamException e) {
-            throw new SecurityException(e);
-        } catch (SecurityException e) {
-            throw new SecurityException(e);
-        } catch (FileNotFoundException e) {
+            // Further process the permissions for file path adjustment
+            return new DeclaredPermissionsProcessor(type, context, declaredPerms).getAdjustedDeclaredPermissions();
+        } catch (XMLStreamException | SecurityException | FileNotFoundException e) {
             throw new SecurityException(e);
         }
-
     }
 
     /**
-     * Get the EE permissions for the spcified module type
-     * 
+     * Get the declared permissions and EE permissions, then add them to the classloader
+     *
+     * @param type module type
+     * @param context deployment context
+     * @param classloader throws AccessControlException if caller has no privilege
+     */
+    public static void processModuleDeclaredAndEEPemirssions(SMGlobalPolicyUtil.CommponentType type, DeploymentContext context, ClassLoader classloader) throws SecurityException {
+        if (System.getSecurityManager() != null) {
+
+            if (!(classloader instanceof DDPermissionsLoader)) {
+                return;
+            }
+
+            if (!(context instanceof ExtendedDeploymentContext)) {
+                return;
+            }
+
+            DDPermissionsLoader ddcl = (DDPermissionsLoader) classloader;
+
+            if (((ExtendedDeploymentContext) context).getParentContext() == null) {
+                ddcl.addDeclaredPermissions(getDeclaredPermissions(type, context));
+            }
+
+            ddcl.addEEPermissions(processEEPermissions(type, context));
+        }
+    }
+
+    /**
+     * Get the EE permissions for the specified module type
+     *
      * @param type module type
      * @param dc the deployment context
      * @return the ee permissions
      */
     public static PermissionCollection processEEPermissions(SMGlobalPolicyUtil.CommponentType type, DeploymentContext dc) {
-
-        ModuleEEPermissionsProcessor eePp = new ModuleEEPermissionsProcessor(type, dc);
-
-        PermissionCollection eePc = eePp.getAdjustedEEPermission();
-
-        return eePc;
-    }
-
-    /**
-     * Get the declared permissions and EE permissions, then add them to the classloader
-     * 
-     * @param type module type
-     * @param context deployment context
-     * @param classloader throws AccessControlException if caller has no privilege
-     */
-    public static void processModuleDeclaredAndEEPemirssions(SMGlobalPolicyUtil.CommponentType type, DeploymentContext context,
-            ClassLoader classloader) throws SecurityException {
-
-        if (System.getSecurityManager() != null) {
-
-            if (!(classloader instanceof DDPermissionsLoader))
-                return;
-
-            if (!(context instanceof ExtendedDeploymentContext))
-                return;
-
-            DDPermissionsLoader ddcl = (DDPermissionsLoader) classloader;
-
-            if (((ExtendedDeploymentContext) context).getParentContext() == null) {
-
-                PermissionCollection declPc = getDeclaredPermissions(type, context);
-                ddcl.addDeclaredPermissions(declPc);
-            }
-
-            PermissionCollection eePc = processEEPermissions(type, context);
-
-            ddcl.addEEPermissions(eePc);
-        }
+        return new ModuleEEPermissionsProcessor(type, dc).getAdjustedEEPermission();
     }
 
     public static class SetPermissionsAction implements PrivilegedExceptionAction<Object> {
@@ -150,7 +128,6 @@ public class PermsArchiveDelegate {
 
         @Override
         public Object run() throws SecurityException {
-
             processModuleDeclaredAndEEPemirssions(type, context, cloader);
             return null;
         }

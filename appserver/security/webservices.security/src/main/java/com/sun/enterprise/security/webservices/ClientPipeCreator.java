@@ -40,17 +40,27 @@
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
+import static com.sun.enterprise.security.webservices.PipeConstants.ASSEMBLER_CONTEXT;
+import static com.sun.enterprise.security.webservices.PipeConstants.BINDING;
+import static com.sun.enterprise.security.webservices.PipeConstants.CONTAINER;
+import static com.sun.enterprise.security.webservices.PipeConstants.ENDPOINT_ADDRESS;
+import static com.sun.enterprise.security.webservices.PipeConstants.NEXT_PIPE;
+import static com.sun.enterprise.security.webservices.PipeConstants.POLICY;
+import static com.sun.enterprise.security.webservices.PipeConstants.SERVICE;
+import static com.sun.enterprise.security.webservices.PipeConstants.SERVICE_REF;
+import static com.sun.enterprise.security.webservices.PipeConstants.WSDL_MODEL;
+
 import java.util.HashMap;
 
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.security.jmac.config.ConfigHelper.AuthConfigRegistrationWrapper;
+import com.sun.jaspic.services.AuthConfigRegistrationWrapper;
 import com.sun.xml.ws.api.pipe.ClientPipeAssemblerContext;
 import com.sun.xml.ws.api.pipe.Pipe;
 import com.sun.xml.ws.assembler.ClientPipelineHook;
 import com.sun.xml.ws.policy.PolicyMap;
 
 /**
- * This is used by WSClientContainer to return proper 196 security pipe to the
+ * This is used by WSClientContainer to return proper JASPIC 196 security pipe to the
  * StandAlonePipeAssembler and TangoPipeAssembler
  */
 public class ClientPipeCreator extends ClientPipelineHook {
@@ -66,19 +76,21 @@ public class ClientPipeCreator extends ClientPipelineHook {
 
     @Override
     public Pipe createSecurityPipe(PolicyMap map, ClientPipeAssemblerContext ctxt, Pipe tail) {
-        HashMap propBag = new HashMap();
-        propBag.put(PipeConstants.POLICY, map);
-        propBag.put(PipeConstants.WSDL_MODEL, ctxt.getWsdlModel());
-        propBag.put(PipeConstants.SERVICE, ctxt.getService());
-        propBag.put(PipeConstants.BINDING, ctxt.getBinding());
-        propBag.put(PipeConstants.ENDPOINT_ADDRESS, ctxt.getAddress());
+        HashMap<String, Object> props = new HashMap<>();
+        
+        props.put(POLICY, map);
+        props.put(WSDL_MODEL, ctxt.getWsdlModel());
+        props.put(SERVICE, ctxt.getService());
+        props.put(BINDING, ctxt.getBinding());
+        props.put(ENDPOINT_ADDRESS, ctxt.getAddress());
         if (svcRef != null) {
-            propBag.put(PipeConstants.SERVICE_REF, svcRef);
+            props.put(SERVICE_REF, svcRef);
         }
-        propBag.put(PipeConstants.NEXT_PIPE, tail);
-        propBag.put(PipeConstants.CONTAINER, ctxt.getContainer());
-        propBag.put(PipeConstants.ASSEMBLER_CONTEXT, ctxt);
-        ClientSecurityPipe ret = new ClientSecurityPipe(propBag, tail);
+        props.put(NEXT_PIPE, tail);
+        props.put(CONTAINER, ctxt.getContainer());
+        props.put(ASSEMBLER_CONTEXT, ctxt);
+        ClientSecurityPipe ret = new ClientSecurityPipe(props, tail);
+        
         AuthConfigRegistrationWrapper listenerWrapper = ClientPipeCloser.getInstance().lookupListenerWrapper(svcRef);
         // there is a 1-1 mapping between Service_Ref and a ListenerWrapper
         if (listenerWrapper != null) {
