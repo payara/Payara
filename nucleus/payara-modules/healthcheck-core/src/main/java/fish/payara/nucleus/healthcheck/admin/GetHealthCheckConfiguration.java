@@ -100,6 +100,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
     final static String thresholdDiagnosticsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Critical Threshold",
             "Warning Threshold", "Good Threshold"};
     final static String stuckThreadsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Threshold Time", "Threshold Unit"};
+    final static String MPHealthCheckHeaders[] = {"Name", "Enabled", "Time", "Unit", "ConnectTime", "Read Time"};
     final static String notifierHeaders[] = {"Name", "Notifier Enabled"};
     
     private final String garbageCollectorPropertyName = "garbageCollector";
@@ -139,6 +140,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         ColumnFormatter hoggingThreadsColumnFormatter = new ColumnFormatter(hoggingThreadsHeaders);
         ColumnFormatter stuckThreadsColumnFormatter = new ColumnFormatter(stuckThreadsHeaders);
         ColumnFormatter thresholdDiagnosticsColumnFormatter = new ColumnFormatter(thresholdDiagnosticsHeaders);
+        ColumnFormatter mpHealthCheckColumnFormatter = new ColumnFormatter(MPHealthCheckHeaders);
         ColumnFormatter notifiersColumnFormatter = new ColumnFormatter(notifierHeaders);
 
         HealthCheckServiceConfiguration configuration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
