@@ -71,6 +71,9 @@ public class Ssl2EnabledTest extends ConfigApiTest {
     public void sslEnabledTest() {
         for (final NetworkListener listener : config.getNetworkListeners()
             .getNetworkListener()) {
+            if(listener.findHttpProtocol() == null){
+                continue;
+            }
             Ssl ssl = listener.findHttpProtocol().getSsl();
             if (ssl!=null) {
                 try {
