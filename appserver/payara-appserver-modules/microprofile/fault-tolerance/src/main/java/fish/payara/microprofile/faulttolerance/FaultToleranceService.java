@@ -39,7 +39,6 @@
  */
 package fish.payara.microprofile.faulttolerance;
 
-import fish.payara.microprofile.faulttolerance.objects.FaultToleranceObject;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;

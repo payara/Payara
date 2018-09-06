@@ -37,12 +37,51 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.microprofile.faulttolerance.objects;
+package fish.payara.microprofile.faulttolerance;
+
+import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
 /**
  *
  * @author Andrew Pielage andrew.pielage@payara.fish
  */
-public class BulkheadSemaphore {
+public class FaultToleranceObject {
+    
+    private final boolean enabled;
+    private final boolean metricsEnabled;
+    private final Map<Object, Map<String, CircuitBreakerState>> circuitBreakerStates;
+    private final Map<Object, Map<String, Semaphore>> bulkheadExecutionSemaphores;
+    private final Map<Object, Map<String, Semaphore>> bulkheadExecutionQueueSemaphores;
+    
+    public FaultToleranceObject(Boolean enabled, Boolean metricsEnabled) {
+        this.enabled = enabled;
+        this.metricsEnabled = metricsEnabled;
+        circuitBreakerStates = new ConcurrentHashMap<>();
+        bulkheadExecutionSemaphores = new ConcurrentHashMap<>();
+        bulkheadExecutionQueueSemaphores = new ConcurrentHashMap<>();
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public boolean areMetricsEnabled() {
+        return metricsEnabled;
+    }
+
+    public Map<Object, Map<String, CircuitBreakerState>> getCircuitBreakerStates() {
+        return circuitBreakerStates;
+    }
+
+    public Map<Object, Map<String, Semaphore>> getBulkheadExecutionSemaphores() {
+        return bulkheadExecutionSemaphores;
+    }
+
+    public Map<Object, Map<String, Semaphore>> getBulkheadExecutionQueueSemaphores() {
+        return bulkheadExecutionQueueSemaphores;
+    }
     
 }
