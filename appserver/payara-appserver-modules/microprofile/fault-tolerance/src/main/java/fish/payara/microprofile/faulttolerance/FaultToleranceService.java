@@ -146,6 +146,14 @@ public class FaultToleranceService implements EventListener {
         }
     }
     
+    /**
+     * Checks whether fault tolerance metrics are enabled for a given application, setting its enabled value if it doesn't
+     * already have one.
+     * @param applicationName The application to check if Fault Tolerance metrics are enabled for.
+     * @param config The application config to check for any override values when setting the enabled status for an
+     * unregistered application.
+     * @return True if Fault Tolerance metrics are enabled for the given application name
+     */
     public Boolean areFaultToleranceMetricsEnabled(String applicationName, Config config) {
         if (faultToleranceObjects.containsKey(applicationName)) {
             return faultToleranceObjects.get(applicationName).areMetricsEnabled();
