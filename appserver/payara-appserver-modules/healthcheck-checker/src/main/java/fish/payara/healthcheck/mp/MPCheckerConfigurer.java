@@ -45,6 +45,7 @@ package fish.payara.healthcheck.mp;
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
+import fish.payara.nucleus.healthcheck.configuration.MPCheckerConfiguration;
 import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 import java.util.logging.Logger;

@@ -54,6 +54,7 @@ import javax.ws.rs.core.Response;
 
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
+import fish.payara.nucleus.healthcheck.configuration.MPCheckerConfiguration;
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
