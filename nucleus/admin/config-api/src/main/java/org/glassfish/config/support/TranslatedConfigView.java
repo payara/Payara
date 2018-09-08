@@ -58,6 +58,9 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.io.IOException;
 import java.security.PrivilegedAction;
+import java.util.Optional;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 
 /**
  * View that translate configured attributes containing properties like ${foo.bar}
@@ -73,6 +76,7 @@ public class TranslatedConfigView implements ConfigView {
 
     static final Pattern p = Pattern.compile("([^\\$]*)\\$\\{([^\\}]*)\\}([^\\$]*)");
     static final Pattern envP = Pattern.compile("([^\\$]*)\\$\\{ENV=([^\\}]*)\\}([^\\$]*)");
+    static final Pattern mpConfigP = Pattern.compile("([^\\$]*)\\$\\{MPCONFIG=([^\\}]*)\\}([^\\$]*)");
 
     private static final String ALIAS_TOKEN = "ALIAS";
     private static final int MAX_SUBSTITUTION_DEPTH = 100;
@@ -107,7 +111,28 @@ public class TranslatedConfigView implements ConfigView {
             }
             
             String origValue = stringValue;
+            
             int i = 0;            // Perform Environment variable substitution
+            Matcher m3 = mpConfigP.matcher(stringValue);
+
+            while (m3.find() && i < MAX_SUBSTITUTION_DEPTH) {
+                String matchValue = m3.group(2).trim();
+                Config config = ConfigProvider.getConfig();
+                Optional<String> newValue = config.getOptionalValue(matchValue,String.class);
+                if (newValue != null && newValue.isPresent()) {
+                    stringValue = m3.replaceFirst(Matcher.quoteReplacement(m3.group(1) + newValue.get() + m3.group(3)));
+                    m3.reset(stringValue);
+                } 
+                i++;     
+            }
+            if (i >= MAX_SUBSTITUTION_DEPTH) {
+                Logger.getAnonymousLogger().severe(Strings.get("TranslatedConfigView.badprop", i, origValue));
+            }  
+            
+            
+            
+            
+            i = 0;            // Perform Environment variable substitution
             Matcher m2 = envP.matcher(stringValue);
 
             while (m2.find() && i < MAX_SUBSTITUTION_DEPTH) {
