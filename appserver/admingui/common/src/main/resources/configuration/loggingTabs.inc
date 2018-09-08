@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
+
 <!-- common/configuration/loggingTabs.inc -->
 
 
@@ -55,6 +57,13 @@
 	<!command
             setSessionAttribute(key="loggingTabs" value="loggerLevels");
             gf.redirect(page="#{request.contextPath}/common/configuration/loggerLevels.jsf?configName=#{configName}");
+	/>
+    </sun:tab>
+
+    <sun:tab id="notificationLogging" immediate="true" text="$resource{i18nc.log.NotificationLogging}" toolTip="$resource{i18nc.log.NotificationLoggingTab}">
+	<!command
+            setSessionAttribute(key="loggingTabs" value="notificationLogging");
+            gf.redirect(page="#{request.contextPath}/common/configuration/payaraNotificationLogger.jsf?configName=#{configName}");
 	/>
     </sun:tab>
 </sun:tabSet>
