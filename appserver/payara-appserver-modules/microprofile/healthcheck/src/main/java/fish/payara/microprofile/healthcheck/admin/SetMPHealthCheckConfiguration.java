@@ -41,12 +41,10 @@ d *  See the License for the specific
  */
 package fish.payara.microprofile.healthcheck.admin;
 
-import javax.inject.Inject;
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
-import java.beans.PropertyVetoException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -65,7 +63,6 @@ import org.glassfish.internal.api.Target;
 import org.glassfish.internal.config.UnprocessedConfigListener;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 /**
@@ -94,6 +91,9 @@ public class SetMPHealthCheckConfiguration implements AdminCommand {
     @Param(name = "endpoint", optional = true)
     private String endpoint;
 
+    @Param(name = "virtualServers", optional = true)
+    private String virtualServers;
+
     @Param(name = "target", optional = true, defaultValue = "server")
     private String target;
 
@@ -114,26 +114,23 @@ public class SetMPHealthCheckConfiguration implements AdminCommand {
         MetricsHealthCheckConfiguration config = targetConfig.getExtensionByType(MetricsHealthCheckConfiguration.class);
 
         try {
-            ConfigSupport.apply(new SingleConfigCode<MetricsHealthCheckConfiguration>() {
-                @Override
-                public Object run(final MetricsHealthCheckConfiguration configProxy) throws PropertyVetoException, TransactionFailure {
-                    if (enabled != null) {
-                        configProxy.setEnabled(enabled.toString());
-                    }
-                    if (endpoint != null) {
-                        configProxy.setEndpoint(endpoint);
-                    }
-                    actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                    return configProxy;
+            ConfigSupport.apply(configProxy -> {
+                if (enabled != null) {
+                    configProxy.setEnabled(enabled.toString());
                 }
+                if (endpoint != null) {
+                    configProxy.setEndpoint(endpoint);
+                }
+                if (virtualServers != null) {
+                    configProxy.setVirtualServers(virtualServers);
+                }
+                actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                return configProxy;
             }, config);
 
             actionReport.setMessage("Restart server for change to take effect");
-            //unprocessedListener.unprocessedTransactedEvents(Arrays.asList(new UnprocessedChangeEvent(new PropertyChangeEvent(config, ""))));
         } catch (TransactionFailure ex) {
-            LOGGER.log(Level.WARNING, "Exception during command set-amx-enabled: {0}", ex.getCause().getMessage());
-            actionReport.setMessage(ex.getCause().getMessage());
-            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            actionReport.failure(LOGGER, "Failed to update HealthCheck configuration", ex);
         }
     }
 
