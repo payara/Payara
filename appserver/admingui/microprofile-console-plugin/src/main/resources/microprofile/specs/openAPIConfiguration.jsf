@@ -78,6 +78,8 @@
                         submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
             <!command
                 mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");;
+                convertArrayToCommaString(array="#{pageSession.virtualServersSelected}"  commaString="#{requestScope.virtualServersText}");
+                mapPut(map="#{pageSession.valueMap}" key="virtualServers" value="#{requestScope.virtualServersText}");
                 prepareSuccessfulMsg();
                 gf.updateEntity(endpoint="#{pageSession.MICROPROFILE_OPENAPI_URL}/set-openapi-configuration" 
                    attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
@@ -94,6 +96,23 @@
                       helpText="$resource{i18n_microprofile.openAPI.configuration.enabledHelp}">
             <sun:checkbox id="enabled" selected="#{pageSession.enabledSelected}" 
                           selectedValue="true" />
+        </sun:property>
+        <sun:property id="virtualServersProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                      label="$resource{i18n_microprofile.openAPI.configuration.virtualServers}"
+                      helpText="$resource{i18n_microprofile.openAPI.configuration.virtualServersHelp}" >
+            <sun:listbox id="virtualServers" selected="#{pageSession.virtualServersSelected}"
+                         immediate="#{true}" multiple="#{true}" rows="$int{4}"
+                         labels="$pageSession{virtualServersAvailable}" >
+                <!beforeCreate
+                    getVsForDeployment(result="#{pageSession.virtualServersList}");
+                    getListBoxOptions(
+                    availableList="#{pageSession.virtualServersList}",
+                    selectedCommaString="#{pageSession.valueMap['virtualServers']}",
+                    availableListResult="#{pageSession.virtualServersAvailable}",
+                    selectedOptions="#{pageSession.virtualServersSelected}"
+                    addEmptyFirstChoice="true");
+                    />
+            </sun:listbox>
         </sun:property>
     </sun:propertySheetSection>
    </sun:propertySheet>

@@ -106,8 +106,8 @@
                            text="#{pageSession.valueMap['endpoint']}"/>
         </sun:property>
         <sun:property id="virtualServersProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
-                     label="$resource{i18n_microprofile.metrics.configuration.virtualServers}"
-                     helpText="$resource{i18n_microprofile.metrics.configuration.virtualServersHelp}" >
+                     label="$resource{i18n_microprofile.healthCheck.configuration.virtualServers}"
+                     helpText="$resource{i18n_microprofile.healthCheck.configuration.virtualServersHelp}" >
             <sun:listbox id="virtualServers" selected="#{pageSession.virtualServersSelected}"
                          immediate="#{true}" multiple="#{true}" rows="$int{4}"
                          labels="$pageSession{virtualServersAvailable}" >
