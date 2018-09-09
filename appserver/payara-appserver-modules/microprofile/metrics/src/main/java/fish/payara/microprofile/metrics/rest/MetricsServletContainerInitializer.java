@@ -42,9 +42,6 @@ package fish.payara.microprofile.metrics.rest;
 
 import fish.payara.microprofile.metrics.admin.MetricsServiceConfiguration;
 import static java.util.Arrays.asList;
-import static fish.payara.microprofile.metrics.Constants.ENDPOINT_PATTERN;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.servlet.ServletContainerInitializer;
@@ -80,14 +77,8 @@ public class MetricsServletContainerInitializer implements ServletContainerIniti
             return;
         }
 
-        // Collect the url pattern for metrics handlers
-        List<String> urlPatternList = new ArrayList<>();
-        urlPatternList.add(ENDPOINT_PATTERN);
-
         // Register a servlet with url patterns of metrics handlers
-        if (!urlPatternList.isEmpty()) {
-            ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-metrics-resource", MetricsResource.class);
-            reg.addMapping(urlPatternList.toArray(new String[urlPatternList.size()]));
-        }
+        ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-metrics-resource", MetricsResource.class);
+        reg.addMapping("/" + configuration.getEndpoint());
     }
 }

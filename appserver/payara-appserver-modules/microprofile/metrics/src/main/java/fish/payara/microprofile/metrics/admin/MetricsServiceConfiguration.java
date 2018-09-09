@@ -81,6 +81,15 @@ public interface MetricsServiceConfiguration extends ConfigBeanProxy, ConfigExte
     void setDynamic(String value) throws PropertyVetoException;
 
     /**
+     * String value defines the endpoint of metrics service.
+     *
+     * @return
+     */
+    @Attribute(defaultValue = "metrics")
+    String getEndpoint();
+    void setEndpoint(String value) throws PropertyVetoException;
+
+    /**
      * String value defines the attached virtual servers.
      *
      * @return

@@ -96,9 +96,12 @@ public class SetMetricsConfigurationCommand implements AdminCommand {
     @Param(name = "dynamic", optional = true)
     private Boolean dynamic;
 
+    @Param(name = "endpoint", optional = true)
+    private String endpoint;
 
     @Param(name = "virtualServers", optional = true)
     private String virtualServers;
+
     @Param(optional = true, defaultValue = "server-config")
     private String target;
     
@@ -132,6 +135,10 @@ public class SetMetricsConfigurationCommand implements AdminCommand {
                     } else {
                         restart = true;
                     }
+                }
+                if (endpoint != null) {
+                    configProxy.setEndpoint(endpoint);
+                    restart = true;
                 }
                 if (virtualServers != null) {
                     configProxy.setVirtualServers(virtualServers);
