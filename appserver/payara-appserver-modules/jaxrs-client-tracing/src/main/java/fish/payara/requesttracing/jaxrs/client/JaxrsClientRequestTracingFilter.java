@@ -58,6 +58,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
@@ -80,7 +82,7 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
     private ServiceLocator serviceLocator;
     private RequestTracingService requestTracing;
     private OpenTracingService openTracing;
-
+    
     /**
      * Initialises the service variables.
      */
@@ -174,6 +176,14 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
             try (Scope activeScope = openTracing.getTracer(openTracing.getApplicationName(
                     serviceLocator.getService(InvocationManager.class)))
                     .scopeManager().active()) {
+                
+                if (activeScope == null) {
+                    // occurs when request tracing has been enabled between during method invocation
+                    //in this case nothing will be done, but log in case of other error
+                    Logger.getLogger(JaxrsClientRequestTracingFilter.class.getName()).log(Level.FINE,
+                            "activeScope in  opentracing request tracing filter was null for {0}", responseContext);
+                    return;
+                }
                 
                 Span activeSpan = activeScope.span();
                 // Get the response status and add it to the active span
