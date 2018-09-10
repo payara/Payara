@@ -110,7 +110,13 @@ public class MetricsService implements EventListener {
         metricsServiceConfiguration = serviceLocator.getService(MetricsServiceConfiguration.class);
         // Only start if metrics are enabled
         if (isMetricsEnabled()) {
-            Executors.newSingleThreadExecutor().submit(() -> initMetadataConfig(getConfig(), false));
+            Executors.newSingleThreadExecutor().submit(new Runnable(){ 
+                @Override
+                public void run(){
+                initMetadataConfig(getConfig(), false);
+                }
+            });
+            
         }
     }
 
