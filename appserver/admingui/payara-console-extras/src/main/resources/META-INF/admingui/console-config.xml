@@ -115,7 +115,7 @@
     <integration-point
         id="hazelcast"
         type="org.glassfish.admingui:navNode"
-        priority="210"
+        priority="260"
         parentId="#{configNameId}"
         content="pluginTreeNodeHazelcast.jsf"
     />
@@ -123,7 +123,7 @@
     <integration-point
         id="hazelcastLink"
         type="org.glassfish.admingui:configuration"
-        priority="210"
+        priority="260"
         parentId="propSheetSection"
         content="hazelcast/hazelcastConfigLink.jsf"
     />
