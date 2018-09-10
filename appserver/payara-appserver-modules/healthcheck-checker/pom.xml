@@ -84,8 +84,7 @@
         <dependency>
             <groupId>fish.payara.admingui</groupId>
             <artifactId>console-common</artifactId>
-            <version>5.182-SNAPSHOT</version>
-            <type>jar</type>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>javax</groupId>

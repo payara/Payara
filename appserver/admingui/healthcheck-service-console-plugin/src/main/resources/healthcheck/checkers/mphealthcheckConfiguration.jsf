@@ -41,7 +41,7 @@
     setResourceBundle(key="i18nhx" bundle="fish.payara.admingui.healthcheck.Strings");
 />
 <!composition template="/templates/default.layout"  
-        guiTitle="$resource{i18nhx.healthcheck.checker.configuration.mircroprofileHealthcheckChecker.pageTitle}">
+        guiTitle="$resource{i18nhx.healthcheck.checker.configuration.microprofileHealthcheckChecker.pageTitle}">
 
 <!define name="content">
 
@@ -69,8 +69,8 @@
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg_1.inc"
 #include "/healthcheck/healthcheck/healthcheckConfigTabs.inc
-    <sun:title id="propertyContentPage" title="$resource{i18nhx.healthcheck.checker.configuration.mircroprofileHealthcheckChecker.pageTitle}" 
-               helpText="$resource{i18nhx.healthcheck.checker.configuration.mircroprofileHealthcheckChecker.pageTitleHelpText}" >
+    <sun:title id="propertyContentPage" title="$resource{i18nhx.healthcheck.checker.configuration.microprofileHealthcheckChecker.pageTitle}" 
+               helpText="$resource{i18nhx.healthcheck.checker.configuration.microprofileHealthcheckChecker.pageTitleHelpText}" >
         <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
             <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
@@ -117,8 +117,8 @@
                           labels={"NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"} />
         </sun:property>
         <sun:property id="thresholdTimeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                      label="$resource{i18nhx.healthcheck.checker.configuration.mircroprofileHealthcheckChecker.timeoutLabel}"  
-                      helpText="$resource{i18nhx.healthcheck.checker.configuration.mircroprofileHealthcheckChecker.timeoutLabelHelpText}">
+                      label="$resource{i18nhx.healthcheck.checker.configuration.microprofileHealthcheckChecker.timeoutLabel}"  
+                      helpText="$resource{i18nhx.healthcheck.checker.configuration.microprofileHealthcheckChecker.timeoutLabelHelpText}">
             <sun:textField id="timeField" columns="$int{40}" maxLength="250" styleClass="integer"
                            text="#{pageSession.valueMap['timeout']}"/>
         </sun:property>
