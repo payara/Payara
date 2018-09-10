@@ -134,6 +134,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     private String TIME_MILLIS_KEY = "TimeMillis";
     private String MESSAGE_ID_KEY = "MessageID";
     private String LOG_MESSAGE_KEY = "LogMessage";
+    private String THROWABLE_KEY = "THROWABLE";
 
     private static final String RFC3339_DATE_FORMAT = 
             "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
@@ -171,6 +172,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             TIME_MILLIS_KEY = "_" + TIME_MILLIS_KEY;
             MESSAGE_ID_KEY = "_" + MESSAGE_ID_KEY;
             LOG_MESSAGE_KEY = "_" + LOG_MESSAGE_KEY;
+            THROWABLE_KEY = "_" + THROWABLE_KEY;
         }
     }
 
@@ -394,7 +396,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                         traceObject.add(EXCEPTION_KEY, throwable.getMessage());
                         traceObject.add(STACK_TRACE_KEY, logMessage);
                         logEvent.setMessage(logMessage);
-                        eventObject.add(LOG_MESSAGE_KEY, traceObject.build());
+                        eventObject.add(THROWABLE_KEY, traceObject.build());
                     }
                 } 
             } else {
@@ -429,7 +431,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                         traceObject.add(EXCEPTION_KEY, logMessageBuilder.toString());
                         traceObject.add(STACK_TRACE_KEY, logMessage);
                         logEvent.setMessage(logMessage);
-                        eventObject.add(LOG_MESSAGE_KEY, traceObject.build());
+                        eventObject.add(THROWABLE_KEY, traceObject.build());
                     }
                 } else {
                     logMessage = logMessageBuilder.toString();
