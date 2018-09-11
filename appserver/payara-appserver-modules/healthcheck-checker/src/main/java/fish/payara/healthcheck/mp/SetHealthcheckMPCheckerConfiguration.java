@@ -77,7 +77,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  * @author jonathan coustick
  * @since 5.184
  */
-@Service(name = "healthcheck-mp-configure")
+@Service(name = "set-healthcheck-mp-checker-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("healthcheck.mphealthecheck.configure")
