@@ -139,6 +139,7 @@ holder.
         <metadata>
             <name>gc.%s.count</name>
             <mbean>java.lang:type=GarbageCollector,name=%s/CollectionCount</mbean>
+            <dynamic>false</dynamic>
             <type>counter</type>
             <unit>none</unit>
             <displayName>Garbage Collection Count</displayName>
@@ -147,6 +148,7 @@ holder.
         <metadata>
             <name>gc.%s.time</name>
             <mbean>java.lang:type=GarbageCollector,name=%s/CollectionTime</mbean>
+            <dynamic>false</dynamic>
             <type>counter</type>
             <unit>milliseconds</unit>
             <displayName>Garbage Collection Time</displayName>
