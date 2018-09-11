@@ -131,6 +131,8 @@ public class MBeanMetadataHelper {
                     if (mBeanObjects.isEmpty()){
                         unresolvedMetadataList.add(metadata);
                         LOGGER.log(Level.INFO, "{0} does not correspond to any MBeans", metadata.getMBean());
+                    } else if (metadata.isDynamic()) {
+                        unresolvedMetadataList.add(metadata);
                     }
                     for (ObjectName objName : mBeanObjects) {
                         String dynamicValue = objName.getKeyPropertyList().get(dynamicKey);
