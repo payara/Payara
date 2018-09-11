@@ -182,7 +182,8 @@ public abstract class DomainConfigValidator extends Validator
     }
 
     /**
-     * @param key
+     * Gets the type of a specified key
+     * @param key the key for the domain config entry
      * @return Returns the accepted datatype for the key. The returned value is
      * the fully qualified class name of the datatype. If the key is invalid or 
      * does not belong to the valid domain config key set, "" is returned.

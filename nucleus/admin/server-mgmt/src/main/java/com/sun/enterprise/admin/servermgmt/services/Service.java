@@ -58,7 +58,7 @@ import java.util.Map;
      * Get the dirs with this thread-safe immutable guaranteed object.It saves a LOT of error checking...
      * You should set the variable in the constructor.  You are not allowed
      * to change it later
-     * @return 
+     * @return the dirs
      */
     ServerDirs  getServerDirs();
     
@@ -102,7 +102,7 @@ import java.util.Map;
      * It takes into account the name, type and configuration location of the service.
      * It is expected that these are set before calling this method.
      * If the <b> Fully Qualified Service Name </b> is invalid, a RuntimeException results.
-     * @return 
+     * @return the absolute file path
      */
      String getManifestFilePath();
      
@@ -110,7 +110,7 @@ import java.util.Map;
      * Returns the absolute location of the template for the given service.
      * The type of the service must be set before calling this method, otherwise
      * a runtime exception results.
-     * @return
+     * @return the absolute file path
      */
      String getManifestFileTemplatePath();
      

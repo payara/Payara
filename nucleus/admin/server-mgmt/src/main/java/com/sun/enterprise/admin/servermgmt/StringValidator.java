@@ -51,12 +51,11 @@ public class StringValidator extends Validator
     /**
      * i18n strings manager object
      */
-    private static final StringManager STRING_MANAGER = 
-        StringManager.getManager(StringValidator.class);
+    private static final StringManager STRING_MANAGER = StringManager.getManager(StringValidator.class);
 
     /**
      * Constructs new StringValidator object.
-     * @param name
+     * @param name Name of an entry that is used in case of validation errors. If the name is null "" is used instead.
      */
     public StringValidator(String name)
     {
@@ -67,7 +66,7 @@ public class StringValidator extends Validator
      * Validates the given value for the given entry.This method first invokes its superclass's validate method
      * and then checks additional string validations such as 0 length.
      *
-     * @param str
+     * @param str the value to validate
      * @throws InvalidConfigException
      */
     @Override

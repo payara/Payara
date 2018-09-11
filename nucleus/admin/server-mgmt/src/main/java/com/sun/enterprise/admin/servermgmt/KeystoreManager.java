@@ -263,11 +263,11 @@ public class KeystoreManager {
 
     /**
      * Copy certain certificates from the keystore into the truststore.
-     * @param keyStore
-     * @param trustStore
-     * @param config
-     * @param masterPassword
-     * @throws DomainException
+     * @param keyStore keystore to copy from
+     * @param trustStore the truststore to copy to
+     * @param config the domain's configuration
+     * @param masterPassword the master password for the truststore
+     * @throws DomainException if an error occured
      */
     protected void copyCertificates(File keyStore, File trustStore, DomainConfig config, String masterPassword) throws DomainException {
         try {
@@ -284,7 +284,7 @@ public class KeystoreManager {
      * 
      * @param trustStore the trust store to copy the certificates to.
      * @param masterPassword the password to the trust store.
-     * @throws RepositoryException
+     * @throws RepositoryException if an error occured a {@link RepositoryException} will wrap the original exception
      */
     protected void copyCertificatesFromJdk(File trustStore, String masterPassword) throws RepositoryException {
         // Gets the location of the JDK trust store.
@@ -631,9 +631,9 @@ public class KeystoreManager {
      * @param is the input stream containing the private key
      * @param algo the algorithm used for the private key
      * @return the RSA private key
-     * @exception java.io.UncheckedIOException
-     * @throws InvalidKeySpecException
-     * @throws NoSuchAlgorithmException
+     * @exception java.io.UncheckedIOException if there is an error with the {@link InputStream}
+     * @throws InvalidKeySpecException if the key used was not a valid with the algorithm
+     * @throws NoSuchAlgorithmException if no provider exists for the specified algorithm
      */
     public PrivateKey readPlainPKCS8PrivateKey(InputStream is, String algo)
             throws InvalidKeySpecException, NoSuchAlgorithmException {
@@ -739,9 +739,9 @@ public class KeystoreManager {
      * It is expected that the key / truststores may not exist. This is
      * due to the fact that the user may have deleted them and wishes to set up their own key/truststore
      *
-     * @param config
-     * @param oldPassword
-     * @param newPassword
+     * @param config the configuration with details of the truststore location and master password
+     * @param oldPassword the previous password
+     * @param newPassword the new password
      * @throws RepositoryException
      */
     protected void changeSSLCertificateDatabasePassword(RepositoryConfig config, String oldPassword, String newPassword)

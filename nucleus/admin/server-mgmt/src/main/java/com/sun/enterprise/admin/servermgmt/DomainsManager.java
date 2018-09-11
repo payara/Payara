@@ -102,6 +102,11 @@ public interface DomainsManager
     public void validateDomain(DomainConfig domainConfig, boolean domainExists)
         throws DomainException;
     
+    /**
+     * Checks that the master password in the config is valid for the keystore
+     * @param config the config to get the password from
+     * @throws DomainException if the password fails to open the keystore
+     */
     public void validateMasterPassword(DomainConfig config) throws DomainException;
         
 }   

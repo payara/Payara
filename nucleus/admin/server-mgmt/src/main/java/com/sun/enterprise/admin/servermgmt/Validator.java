@@ -77,8 +77,8 @@ public class Validator
     }
 
     /**
-     * Returns the name of the entry.
-     * @return name
+     * Returns the name of an entry that is used in case of validation error.
+     * @return name the name of the entry.
      */
     public String getName()
     {
@@ -88,7 +88,7 @@ public class Validator
     /**
      * Checks the validity of the given value for the entry. This method does
      * basic checks such as null ness & type.
-     * @param obj
+     * @param obj the object to check validation for
      * @throws InvalidConfigException
      */
     public void validate(Object obj) throws InvalidConfigException
@@ -102,8 +102,7 @@ public class Validator
         if (!type.isAssignableFrom(c))
         {
             throw new InvalidConfigException(
-                STRING_MANAGER.getString("validator.invalid_type", 
-                    getName(), type.getName(), c.getName()));
+                STRING_MANAGER.getString("validator.invalid_type", getName(), type.getName(), c.getName()));
         }
     }
 }

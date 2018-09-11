@@ -156,9 +156,10 @@ public class MasterPasswordFileManager extends KeystoreManager {
 
     /**
      * Changes the master password in the master password file
-     * @param saveMasterPassword
-     * @param pwdFile
-     * @param newPassword
+     * @param pwdFile the master password file
+     * @param newPassword the new password
+     * @param saveMasterPassword whether to save the new password. If this is false then
+     * the old file will simply be deleted
      * @throws RepositoryException
      */
     public void changeMasterPasswordInMasterPasswordFile(File pwdFile, String newPassword,

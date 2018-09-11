@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -110,7 +111,7 @@ public class RestartDomainCommand extends StopDomainCommand {
 
     /**
      * If the server isn't running, try to start it.
-     * @throws CommandException
+     * @throws CommandException if the server is remote or cannot be restarted
      */
     @Override
     protected int dasNotRunning() throws CommandException {

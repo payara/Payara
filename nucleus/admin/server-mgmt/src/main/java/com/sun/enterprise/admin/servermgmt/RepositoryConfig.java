@@ -51,44 +51,46 @@ import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 
 /**
- * This class represents a repository configuration. A repository can be either
- * a domain, a node agent, or a server instance. Configuration specific to each
+ * This class represents a repository configuration. 
+ * <p>
+ * A repository can be either a domain, a node agent, or a server instance. 
+ * Configuration specific to each
  * (DomainConfig, AgentConfig, InstanceConfig) is derived from this class. A
  * repository config consists of the following attributes:
+ * <ol>
+ * <li>repositoryName -- domain or node agent name (e.g. domain1 or agent1)</li>
  *
- * 1)repositoryName -- domain or node agent name (e.g. domain1 or agent1)
+ * <li>repositoryRoot -- the parent directory of the repository (e.g.
+ * $installDir/domains or $installDir/agents)</li>
  *
- * 2)repositoryRoot -- the parent directory of the repository (e.g.
- * $installDir/domains or $installDir/agents)
+ * <li>instanceName -- the optional server instance name (e.g. server1)</li>
  *
- * 3)instanceName -- the optional server instance name (e.g. server1)
- *
- * 4)configurationName -- the optional configuration name of the server instance
- * (e.g. default-config).
- *
+ * <li>configurationName -- the optional configuration name of the server instance
+ * (e.g. default-config).</li>
+ * </ol>
  * Using (repositoryName, repositoryRoot, instanceName, configurationName)
  * syntax. Here are the following permutations:
+ * <ol>
+ * <li>For a domain: (domainRootDirectory, domainName, null, null) e.g.
+ * ("/sun/appserver/domains", "domain1", null, null)</li>
  *
- * 1)For a domain: (domainRootDirectory, domainName, null, null) e.g.
- * ("/sun/appserver/domains", "domain1", null, null)
- *
- * 2)For a node agent: (agentRootDirectory, agentName, "agent", null) e.g
+ * <li>For a node agent: (agentRootDirectory, agentName, "agent", null) e.g
  * ("/sun/appserver/agents", "agent1", "agent", null). Note that the instance
- * name of a node agent is always the literal string "agent".
+ * name of a node agent is always the literal string "agent".</li>
  *
- * 3)For a server instance (agentRootDirectory, agentName, instanceName,
+ * <li>For a server instance (agentRootDirectory, agentName, instanceName,
  * configName) e.g. ("/sun/appserver/agents", "agent1", "server1",
- * "default-config")
- *
+ * "default-config")</li>
+ * </ol>
  * The RepositoryConfig class is an extensible HashMap that can contain any
  * attributes, but also relies on two system properties being set:
+ * <ol>
+ * <li>com.sun.aas.installRoot -- installation root directory stored under the
+ * K_INSTALL_ROOT key.</li>
  *
- * 1)com.sun.aas.installRoot -- installation root directory stored under the
- * K_INSTALL_ROOT key.
- *
- * 2)com.sun.aas.configRoot -- configuration root (for locating asenv.conf)
- * stored under the K_CONFIG_ROOT key.
- *
+ * <li>com.sun.aas.configRoot -- configuration root (for locating asenv.conf)
+ * stored under the K_CONFIG_ROOT key.</li>
+ * </ol>
  * @author kebbs
  * @since August 19, 2003, 1:59 PM
  */
@@ -96,29 +98,29 @@ public class RepositoryConfig extends HashMap<String, Object> {
     public static final String K_INSTALL_ROOT = "install.root";
     public static final String K_CONFIG_ROOT = "config.root";
     public static final String K_REFRESH_CONFIG_CONTEXT = "refresh.cc";
-    //Name of the domain or node agent. Cannot be null.
-    private String _repositoryName;
-    //Root directory where the domain or node agent resides. Cannot be null
-    private String _repositoryRoot;
-    //Name of the server instance. May be null
-    private String _instanceName;
-    //Name of the configuration. May be null
-    private String _configurationName;
+    /** Name of the domain or node agent. Cannot be null. */
+    private String repositoryName;
+    /** Root directory where the domain or node agent resides. Cannot be null */
+    private String repositoryRoot;
+    /** Name of the server instance. May be null */
+    private String instanceName;
+    /** Name of the configuration. May be null */
+    private String configurationName;
 
     /**
      * Creates a new instance of RepositoryConfig The K_INSTALL_ROOT and
      * K_CONFIG_ROOT attributes are implicitly set
-     * @param repositoryName
-     * @param repositoryRoot
-     * @param instanceName
-     * @param configName
+     * @param repositoryName Name of the domain or node agent. Cannot be null.
+     * @param repositoryRoot Root directory where the domain or node agent resides. Cannot be null
+     * @param instanceName Name of the server instance. May be null
+     * @param configName Name of the configuration. May be null
      */
     public RepositoryConfig(String repositoryName, String repositoryRoot, String instanceName,
             String configName) {
-        _instanceName = instanceName;
-        _repositoryName = repositoryName;
-        _repositoryRoot = repositoryRoot;
-        _configurationName = configName;
+        this.instanceName = instanceName;
+        this.repositoryName = repositoryName;
+        this.repositoryRoot = repositoryRoot;
+        configurationName = configName;
         final Map<String, String> envProperties = getEnvProps();
         put(K_INSTALL_ROOT, getFilePath(envProperties.get(SystemPropertyConstants.INSTALL_ROOT_PROPERTY)));
         put(K_CONFIG_ROOT, getFilePath(envProperties.get(SystemPropertyConstants.INSTALL_ROOT_PROPERTY)));
@@ -131,14 +133,29 @@ public class RepositoryConfig extends HashMap<String, Object> {
          */
     }
 
+    /**
+     * Creates a RepositoryConfig for a node agent
+     * @param repositoryName Name of the domain or node agent.
+     * @param repositoryRoot Root directory where the domain or node agent resides.
+     * @param instanceName  Name of the server instance.
+     */
     public RepositoryConfig(String repositoryName, String repositoryRoot, String instanceName) {
         this(repositoryName, repositoryRoot, instanceName, null);
     }
 
+    /**
+     * Creates a RepositoryConfig for a domain
+     * @param repositoryName Name of the domain or node agent.
+     * @param repositoryRoot Root directory where the domain or node agent resides.
+     */
     public RepositoryConfig(String repositoryName, String repositoryRoot) {
         this(repositoryName, repositoryRoot, null);
     }
 
+    /**
+     * Creates a RepositoryConfig based off the instance root property
+     * @see #RepositoryConfig(java.lang.String) 
+     */
     public RepositoryConfig() {
         this(System.getProperty(SystemPropertyConstants.INSTANCE_ROOT_PROPERTY));
     }
@@ -153,10 +170,10 @@ public class RepositoryConfig extends HashMap<String, Object> {
     public RepositoryConfig(String instanceRootString) {
         final File instanceRoot = new File(instanceRootString);
         final File repositoryDir = instanceRoot.getParentFile();
-        _instanceName = instanceRoot.getName();
-        _repositoryName = repositoryDir.getName();
-        _repositoryRoot = FileUtils.makeForwardSlashes(repositoryDir.getParentFile().getAbsolutePath());
-        _configurationName = null;
+        instanceName = instanceRoot.getName();
+        repositoryName = repositoryDir.getName();
+        repositoryRoot = FileUtils.makeForwardSlashes(repositoryDir.getParentFile().getAbsolutePath());
+        configurationName = null;
         final Map<String, String> envProperties = getEnvProps();
         put(K_INSTALL_ROOT, envProperties.get(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
         put(K_CONFIG_ROOT, getFilePath(envProperties.get(SystemPropertyConstants.CONFIG_ROOT_PROPERTY)));
@@ -164,8 +181,8 @@ public class RepositoryConfig extends HashMap<String, Object> {
 
     @Override
     public String toString() {
-        return ("repositoryRoot " + _repositoryRoot + " repositoryName " + _repositoryName
-                + " instanceName " + _instanceName + " configurationName " + _configurationName);
+        return ("repositoryRoot " + repositoryRoot + " repositoryName " + repositoryName
+                + " instanceName " + instanceName + " configurationName " + configurationName);
     }
 
     protected String getFilePath(String propertyName) {
@@ -174,11 +191,11 @@ public class RepositoryConfig extends HashMap<String, Object> {
     }
 
     public void setConfigurationName(String configurationName) {
-        _configurationName = configurationName;
+        this.configurationName = configurationName;
     }
 
     public String getConfigurationName() {
-        return _configurationName;
+        return configurationName;
     }
 
     public String getDisplayName() {
@@ -186,23 +203,23 @@ public class RepositoryConfig extends HashMap<String, Object> {
     }
 
     public void setInstanceName(String instanceName) {
-        _instanceName = instanceName;
+        this.instanceName = instanceName;
     }
 
     public String getInstanceName() {
-        return _instanceName;
+        return instanceName;
     }
 
     public String getRepositoryName() {
-        return _repositoryName;
+        return repositoryName;
     }
 
     protected void setRepositoryRoot(String repositoryRoot) {
-        _repositoryRoot = repositoryRoot;
+        this.repositoryRoot = repositoryRoot;
     }
 
     public String getRepositoryRoot() {
-        return _repositoryRoot;
+        return repositoryRoot;
     }
 
     public String getInstallRoot() {
@@ -214,7 +231,7 @@ public class RepositoryConfig extends HashMap<String, Object> {
     }
 
     public Boolean getRefreshConfigContext() {
-        return ((Boolean) get(K_REFRESH_CONFIG_CONTEXT));
+        return (Boolean) get(K_REFRESH_CONFIG_CONTEXT);
         //this will never be null, because constructor initializes it to false
     }
 

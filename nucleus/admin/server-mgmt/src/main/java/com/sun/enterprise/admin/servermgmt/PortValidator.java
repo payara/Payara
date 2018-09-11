@@ -55,7 +55,9 @@ public class PortValidator extends Validator {
     private static final StringManager STRING_MANAGER = StringManager.getManager(PortValidator.class);
 
     /** Creates a new instance of PortValidator
-     * @param name */
+     * @param name Name of an entry that is used in case of validation errors.
+     * If the name is null "" is used instead.
+     */
     public PortValidator(String name) {
         super(name, java.lang.Integer.class);
     }

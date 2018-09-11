@@ -76,7 +76,7 @@ public class FileValidator extends Validator
      * Constructs a new FileValidator object.
      * @param name The name of the entity that will be validated. This name is
      * used in the error message.
-     * @param constraints The constaint set that will be checked for any given
+     * @param constraints The constraint set that will be checked for any given
      * file during validation.
      */
     public FileValidator(String name, String constraints)
@@ -100,8 +100,9 @@ public class FileValidator extends Validator
     /**
      * Sets the current constraint set to the given set if it is a valid 
      * constraint set.
-     * @param constraints
-     * @return 
+     * @param constraints the file permission constraints, may be characters in the form 'drwx'
+     * @return the resulting constraints. If the given constrains was not valid, then the
+     * previous constraints will be returned.
      */
     public String setConstraints(String constraints)
     {

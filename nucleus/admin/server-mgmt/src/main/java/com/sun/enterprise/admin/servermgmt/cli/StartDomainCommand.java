@@ -225,8 +225,8 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
      * this command.The launcher is for a server of the specified type.
      * Sets the launcher and info fields.  
      * It has to be public because it is part of an interface
-     * @throws GFLauncherException
-     * @throws MiniXmlParserException
+     * @throws GFLauncherException if the launcher fails to setup
+     * @throws MiniXmlParserException if the domain.xml cannot be processed
      */
     @Override
     public void createLauncher()

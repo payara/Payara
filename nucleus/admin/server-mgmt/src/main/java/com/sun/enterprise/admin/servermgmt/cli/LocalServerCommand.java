@@ -117,7 +117,7 @@ public abstract class LocalServerCommand extends CLICommand {
      * Note that this method should be called only when you own the server that is available on an accessible
      * file system.
      *
-     * @param serverName
+     * @param serverName the server name
      * @return HostAndPort object with admin server address
      * @throws CommandException in case of parsing errors
      */
@@ -251,8 +251,7 @@ public abstract class LocalServerCommand extends CLICommand {
     /**
      * Get the master password, either from a password file or
      * by asking the user.
-     * @return 
-     * @throws CommandException
+     * @return the actual master password 
      */
     protected final String getMasterPassword() throws CommandException {
         // Sets the password into the launcher info.
@@ -281,8 +280,8 @@ public abstract class LocalServerCommand extends CLICommand {
     /**
      * See if the server is alive and is the one at the specified directory.
      *
-     * @param ourDir
-     * @param directoryKey
+     * @param ourDir the directory to check if the server is alive agains
+     * @param directoryKey the key for the directory
      * @return true if it's the DAS at this domain directory
      */
     protected final boolean isThisServer(File ourDir, String directoryKey) {
@@ -332,8 +331,8 @@ public abstract class LocalServerCommand extends CLICommand {
      * In such cases, we need to know if the domain is running and this method
      * provides a way to do that.
      *
-     * @param host
-     * @param port
+     * @param host the host to check
+     * @param port the port to check agains
      * @return boolean indicating whether the server is running
      */
     protected final boolean isRunning(String host, int port) {
@@ -483,7 +482,7 @@ public abstract class LocalServerCommand extends CLICommand {
     /**
      * Get uptime from the server.
      * @return uptime in milliseconds
-     * @throws CommandException
+     * @throws CommandException if the server is not running
      */
     protected final long getUptime() throws CommandException {
         RemoteCLICommand cmd = new RemoteCLICommand("uptime", programOpts, env);
@@ -502,8 +501,8 @@ public abstract class LocalServerCommand extends CLICommand {
      * As of March 2011 -- this only returns false if a passwordfile argument was given
      * when the server started -- but it is no longer available - i.e.the user
      * deleted it or made it unreadable.
-     * @return 
-     * @throws org.glassfish.api.admin.CommandException
+     * @return true if the server is restartable
+     * @throws CommandException
      */
     protected final boolean isRestartable() throws CommandException {
         // false negative is worse than false positive.

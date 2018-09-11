@@ -170,11 +170,6 @@ public class PEDomainsManager extends RepositoryManager implements DomainsManage
         } catch (Exception e) {
             throw new DomainException(STRINGS_MANAGER.getString("stopServNotCreated"), e);
         }
-        catch (Exception e)
-        {
-            throw new DomainException(
-                STRINGS_MANAGER.getString("stopServNotCreated"), e);
-    } 
     } 
 
     protected File getDomainDir(DomainConfig domainConfig) {

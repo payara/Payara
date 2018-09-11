@@ -70,8 +70,8 @@ public class DomainInfoManager {
     /**
      * Parses template information file and uses its information to create 
      * domain info file.
-     * @param domainTemplate
-     * @param domainDir
+     * @param domainTemplate the template to use
+     * @param domainDir the directory to create the domain in
      */
     public void process(DomainTemplate domainTemplate, File domainDir) {
         FileOutputStream outputStream = null;

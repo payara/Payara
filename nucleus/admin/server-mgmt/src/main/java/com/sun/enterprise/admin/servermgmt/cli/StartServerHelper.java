@@ -211,7 +211,8 @@ public class StartServerHelper {
      * Run a series of commands to prepare for a launch.
      *
      * @return false if there was a problem.
-     * @throws CommandException
+     * @throws CommandException If there was a timeout waiting for the parent to die
+     * or admin port to free up
      */
     public boolean prepareForLaunch() throws CommandException {
 

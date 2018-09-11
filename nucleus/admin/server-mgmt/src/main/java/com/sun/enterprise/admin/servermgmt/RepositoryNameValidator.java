@@ -85,8 +85,8 @@ public class RepositoryNameValidator extends StringValidator
     /**
      * Validates the given value for the given entry.This method first invokes
      * its superclass's validate method and then performs additional validations.
-     * @param str
-     * @throws InvalidConfigException
+     * @param str the string to validate 
+     * @throws InvalidConfigException if it is not a valid config
      */
     @Override
     public void validate(Object str) throws InvalidConfigException
@@ -109,8 +109,8 @@ public class RepositoryNameValidator extends StringValidator
     /**
      * Implementation copied from 
      * com.sun.enterprise.admin.verifier.tests.StaticTest
-     * @param name
-     * @throws InvalidConfigException
+     * @param name The name to validate
+     * @throws InvalidConfigException If it is not a valid name
      */
     public void checkValidXmlToken(String name) throws InvalidConfigException
     {

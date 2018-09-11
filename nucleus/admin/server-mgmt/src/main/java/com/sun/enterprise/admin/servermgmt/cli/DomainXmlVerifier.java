@@ -68,7 +68,7 @@ public class DomainXmlVerifier {
     
     private Domain domain;
     public boolean error;
-    PrintStream _out;
+    PrintStream out;
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(DomainXmlVerifier.class);
 
     public DomainXmlVerifier(Domain domain) throws Exception {
@@ -77,7 +77,7 @@ public class DomainXmlVerifier {
     
     public DomainXmlVerifier(Domain domain, PrintStream out) throws Exception {
         this.domain = domain;
-        _out = out;
+        this.out = out;
         error = false;
     }
 
@@ -99,7 +99,7 @@ public class DomainXmlVerifier {
         try {
             checkUnique(Dom.unwrap(domain));
             if (!error)
-               _out.println(STRINGS.get("VerifySuccess"));
+               out.println(STRINGS.get("VerifySuccess"));
         } catch(Exception e) {
             error = true;
             e.printStackTrace();
@@ -130,7 +130,7 @@ public class DomainXmlVerifier {
     }
     
     private void output(Result result) {
-        _out.println(STRINGS.get("VerifyError", result.result()));
+        out.println(STRINGS.get("VerifyError", result.result()));
     }
 
     private void checkDuplicate(Collection <? extends Dom> beans) {

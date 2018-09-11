@@ -43,6 +43,10 @@ package com.sun.enterprise.admin.servermgmt;
 
 import java.util.Properties;
 
+/**
+ * @deprecated since 184 as there are no known references to it
+ */
+@Deprecated
 public interface InstancesManager
 {    
     /**
@@ -102,7 +106,6 @@ public interface InstancesManager
      * @param commandLineArgs is additional commandline arguments that are to be appended
      *        to the processes commandline when it starts
      * @param envProps properties to be added to System
-     * @return 
      * @throws InstanceException
      */
     public Process startInstance(String[] interativeOptions, String[] commandLineArgs, Properties envProps) 
@@ -117,7 +120,6 @@ public interface InstancesManager
 
     /**
      * Lists all the instances.
-     * @return 
      * @throws InstanceException 
      */
     public String[] listInstances() 
@@ -125,7 +127,6 @@ public interface InstancesManager
 
     /**
      * Returns status of an instance.
-     * @return 
      * @throws InstanceException
      */
     public int getInstanceStatus()
@@ -142,8 +143,7 @@ public interface InstancesManager
     
     /**
      * Tries to stop the instance with the specified timeout.Returns true if success; false if failure
-     * @param timeout  
-     * @return   
+     * @param timeout   
      * @throws InstanceException  
      */    
     public boolean stopInstanceWithinTime(int timeout) 

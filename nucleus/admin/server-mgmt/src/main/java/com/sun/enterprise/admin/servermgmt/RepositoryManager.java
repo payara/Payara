@@ -204,9 +204,9 @@ public class RepositoryManager extends MasterPasswordFileManager {
     }
 
     protected static final String CERTUTIL_CMD = System.getProperty(SystemPropertyConstants.NSS_BIN_PROPERTY) + "/certutil";
-    protected static final String NEW_LINE = System.getProperty("line.separator");
+    protected static final String NEW_LINE = System.lineSeparator();
     private static final StringManager STRING_MANAGER = StringManager.getManager(RepositoryManager.class);
-    protected RepositoryManagerMessages _messages = null;
+    protected RepositoryManagerMessages messages = null;
     public static final String DEBUG = "Debug";
 
     /**
@@ -222,11 +222,11 @@ public class RepositoryManager extends MasterPasswordFileManager {
     }
 
     protected void setMessages(RepositoryManagerMessages messages) {
-        _messages = messages;
+        this.messages = messages;
     }
 
     protected RepositoryManagerMessages getMessages() {
-        return _messages;
+        return messages;
     }
 
     protected void generateFromTemplate(TokenValueSet tokens, File template, File destinationFile) throws IOException {
@@ -264,9 +264,9 @@ public class RepositoryManager extends MasterPasswordFileManager {
 
     /**
      * Sanity check on the repository.This is executed prior to create/delete/start/stop.
-     * @param config
-     * @param existingRepository
-     * @param checkRootDir
+     * @param config The base configuration
+     * @param existingRepository true if the domain or instance must exist, false if it must not
+     * @param checkRootDir whether to check if the root directory is read/writable
      * @throws RepositoryException
      */
     public void checkRepository(RepositoryConfig config, boolean existingRepository, boolean checkRootDir) throws RepositoryException {
@@ -333,8 +333,8 @@ public class RepositoryManager extends MasterPasswordFileManager {
 
     /**
      * Sets the permissions for the domain directory, its config directory, startserv/stopserv scripts etc.
-     * @param repositoryConfig
-     * @throws RepositoryException
+     * @param repositoryConfig the {@link RepositoryConfig} to set permissions for
+     * @throws RepositoryException if unable to set permissions
      */
     protected void setPermissions(RepositoryConfig repositoryConfig) throws RepositoryException {
         final PEFileLayout layout = getFileLayout(repositoryConfig);
@@ -348,8 +348,8 @@ public class RepositoryManager extends MasterPasswordFileManager {
 
     /**
      * Deletes the repository (domain, node agent, server instance).
-     * @param config
-     * @throws RepositoryException
+     * @param config the repository to delete
+     * @throws RepositoryException if it was unable to delete the repository
      */
     protected void deleteRepository(RepositoryConfig config) throws RepositoryException {
         deleteRepository(config, true);
@@ -360,9 +360,9 @@ public class RepositoryManager extends MasterPasswordFileManager {
      * If the deleteJMSProvider flag is set, we delete the jms instance.The jms instance is present
      * in the domain only and not when the repository corresponds to a server instance or node agent.
      *
-     * @param config
-     * @param deleteJMSProvider
-     * @throws com.sun.enterprise.admin.servermgmt.RepositoryException
+     * @param config the repository to delete
+     * @param deleteJMSProvider if the JMS provider should be deleted as well
+     * @throws RepositoryException if it failed to delete the repository
      */
     protected void deleteRepository(RepositoryConfig config, boolean deleteJMSProvider) throws RepositoryException {
         checkRepository(config, true);
@@ -400,8 +400,8 @@ public class RepositoryManager extends MasterPasswordFileManager {
 
     /**
      * Return all repositories (domains, node agents, server instances)
-     * @param config
-     * @return 
+     * @param config the configuration to look in
+     * @return an array of the filepaths of all repositories' root folders
      * @throws RepositoryException 
      */
     protected String[] listRepository(RepositoryConfig config) throws RepositoryException {
@@ -436,12 +436,11 @@ public class RepositoryManager extends MasterPasswordFileManager {
     /**
      * Return all repositories (domains, node agents, server instances) and their corresponding status (e.g.running or
      * stopped) in string form.
-     * @param config
-     * @param repository
-     * @return 
+     * @param config the base {@link RepositoryConfig}
+     * @param repository the domain or agent name
+     * @return The repository here corresponds to either the domain or node agent name
      */
     protected RepositoryConfig getConfigForRepositoryStatus(RepositoryConfig config, String repository) {
-        // The repository here corresponds to either the domain or node agent name
         return new RepositoryConfig(repository, config.getRepositoryRoot());
     }
 
@@ -449,9 +448,9 @@ public class RepositoryManager extends MasterPasswordFileManager {
      * We validate the master password by trying to open the password alias keystore. This means that the keystore must
      * already exist.
      *
-     * @param config
-     * @param password
-     * @throws RepositoryException
+     * @param config the {@link RepositoryConfig} to check against
+     * @param password the master password to validate
+     * @throws RepositoryException if the master password failed to validate
      */
     public void validateMasterPassword(RepositoryConfig config, String password) throws RepositoryException {
         final PEFileLayout layout = getFileLayout(config);
@@ -471,10 +470,10 @@ public class RepositoryManager extends MasterPasswordFileManager {
     /**
      * retrieve clear password from password alias keystore
      *
-     * @param config
-     * @param password
+     * @param config the {@link RepositoryConfig} which has the alias keystore
+     * @param password the master password
      * @param alias for which the clear text password would returns
-     * @return 
+     * @return the cleartext password
      * @throws RepositoryException
      */
     public String getClearPasswordForAlias(RepositoryConfig config, String password, String alias) throws RepositoryException {
@@ -492,7 +491,7 @@ public class RepositoryManager extends MasterPasswordFileManager {
     /**
      * Change the password protecting the password alias keystore
      *
-     * @param config
+     * @param config the config to find the keystore location from
      * @param oldPassword old password
      * @param newPassword new password
      * @throws RepositoryException
@@ -515,9 +514,9 @@ public class RepositoryManager extends MasterPasswordFileManager {
 
     /**
      * Create JBI instance.
-     * @param instanceName
-     * @param config
-     * @throws RepositoryException
+     * @param instanceName the name of the instance to create
+     * @param config the {@link RepositoryConfig} to create the JBI instance within
+     * @throws RepositoryException if an error occured creating the JBI instance
      */
     protected void createJBIInstance(String instanceName, RepositoryConfig config) throws RepositoryException {
         final PEFileLayout layout = getFileLayout(config);
@@ -557,7 +556,7 @@ public class RepositoryManager extends MasterPasswordFileManager {
      * This method is used to create httpsoapbc install root
      *
      * @param layout PEFileLayout
-     * @throws Exception
+     * @throws Exception if an error occured creating the file
      */
     public void createHttpBCInstallRoot(PEFileLayout layout) throws Exception {
 
@@ -571,7 +570,9 @@ public class RepositoryManager extends MasterPasswordFileManager {
      * This method is used to create Java EESE install root
      *
      * @param layout PEFileLayout
-     * @throws Exception
+     * @throws Exception {@link IllegalArgumentException} if source does not exist,
+     * {@link RuntimeException} if the a parent directory of the destination cannot be
+     * created or a {@link IOException} if there is an error creating the output file or coping it.
      */
     public void createJavaEESEInstallRoot(PEFileLayout layout) throws Exception {
         FileUtils.copy(layout.getJavaEESEArchiveSource(), layout.getJavaEESEArchiveDestination());
@@ -584,7 +585,7 @@ public class RepositoryManager extends MasterPasswordFileManager {
      * This method is used to create WSDLSL install root
      *
      * @param layout PEFileLayout
-     * @throws Exception
+     * @throws Exception if an error occured creating the file
      */
     public void createWSDLSLInstallRoot(PEFileLayout layout) throws Exception {
         FileUtils.copy(layout.getWSDLSLArchiveSource(), layout.getWSDLSLArchiveDestination());
@@ -596,10 +597,9 @@ public class RepositoryManager extends MasterPasswordFileManager {
 
     /**
      * Create MQ instance.
-     * @param config
-     * @throws RepositoryException
+     * @param config the {@link RepositoryConfig} to create the MQ instance within
      */
-    protected void createMQInstance(RepositoryConfig config) throws RepositoryException {
+    protected void createMQInstance(RepositoryConfig config) {
         final PEFileLayout layout = getFileLayout(config);
         final File broker = layout.getImqBrokerExecutable();
         final File mqVarHome = layout.getImqVarHome();
@@ -625,8 +625,8 @@ public class RepositoryManager extends MasterPasswordFileManager {
 
     /**
      * Create the timer database wal file.
-     * @param config
-     * @throws RepositoryException
+     * @param config the {@link RepositoryConfig} to get the file locations from
+     * @throws RepositoryException if an error occured creating the file
      */
     protected void createTimerWal(RepositoryConfig config) throws RepositoryException {
         final PEFileLayout layout = getFileLayout(config);
@@ -641,8 +641,8 @@ public class RepositoryManager extends MasterPasswordFileManager {
 
     /**
      * Create the timer database dbn file.
-     * @param config
-     * @throws RepositoryException
+     * @param config the {@link RepositoryConfig} 
+     * @throws RepositoryException if an error occurred creating the file
      */
     protected void createTimerDbn(RepositoryConfig config) throws RepositoryException {
         final PEFileLayout layout = getFileLayout(config);
@@ -655,14 +655,6 @@ public class RepositoryManager extends MasterPasswordFileManager {
         }
     }    
     
-    /**
-     * 
-     * @param user
-     * @param password
-     * @param masterPassword
-     * @param extraPasswords
-     * @return 
-     */
     protected String[] getInteractiveOptions(String user, String password, String masterPassword, HashMap<Object, Object> extraPasswords) {
         int numKeys = extraPasswords == null ? 0 : extraPasswords.size();
         String[] options = new String[3 + numKeys];

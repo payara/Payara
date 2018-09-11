@@ -99,8 +99,8 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
 
     /**
      * Require the user to actually type the passwords unless they are in the file specified by the --passwordfile option.
-     * @throws CommandException
-     * @throws CommandValidationException
+     * @throws CommandException {@inheritDoc}
+     * @throws CommandValidationException {@inheritDoc}
      */
     @Override
     protected void validate() throws CommandException, CommandValidationException {
@@ -162,7 +162,7 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
     /**
      * Execute the remote command using the parameters we've collected.
      * @return 0 for success
-     * @throws CommandException
+     * @throws CommandException if the remote command failed
      */
     @Override
     protected int executeCommand() throws CommandException {

@@ -57,8 +57,8 @@ public interface StartServerCommand {
 
     /**
      * Create a launcher for the whatever type of server "we" are.
-     * @throws GFLauncherException
-     * @throws MiniXmlParserException
+     * @throws GFLauncherException if there is an error creating the launcher
+     * @throws MiniXmlParserException if there is an error reading the domain.xml
      */
     void createLauncher() throws GFLauncherException, MiniXmlParserException;
     List<String> getLauncherArgs();
