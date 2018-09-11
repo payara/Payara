@@ -85,18 +85,6 @@ public class PEDomainsManager extends RepositoryManager implements DomainsManage
         }
     }
 
-    /*
-    public void validateAdminUserAndPassword(DomainConfig domainConfig) 
-        throws DomainException
-    {
-        try {
-            validateAdminUserAndPassword(domainConfig, getDomainUser(domainConfig),
-                getDomainPasswordClear(domainConfig));
-        } catch (RepositoryException ex) {
-            throw new DomainException(ex);
-        }
-    }
-    */
     @Override
     public void validateMasterPassword(DomainConfig domainConfig) 
         throws DomainException
@@ -108,8 +96,6 @@ public class PEDomainsManager extends RepositoryManager implements DomainsManage
         }
     }
     
-    /**
-     */
     protected void createJBIInstance(String instanceName, 
                    DomainConfig domainConfig) throws DomainException
     {        
@@ -164,15 +150,16 @@ public class PEDomainsManager extends RepositoryManager implements DomainsManage
             final File startServTemplate = layout.getStartServTemplate();
             final File startServ = layout.getStartServ();
             generateFromTemplate(tokens, startServTemplate, startServ);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new DomainException(STRINGS_MANAGER.getString("startServNotCreated"), e);
         }
     }
 
-    void createStopServ(DomainConfig domainConfig, TokenValueSet  tokens) throws DomainException {
-        try {
+    void createStopServ(DomainConfig domainConfig, 
+        TokenValueSet  tokens) throws DomainException
+    {
+        try
+        {
             final PEFileLayout  layout = getFileLayout(domainConfig);
             final File stopServTemplate = layout.getStopServTemplate();
             final File stopServ = layout.getStopServ();
@@ -183,6 +170,11 @@ public class PEDomainsManager extends RepositoryManager implements DomainsManage
         } catch (Exception e) {
             throw new DomainException(STRINGS_MANAGER.getString("stopServNotCreated"), e);
         }
+        catch (Exception e)
+        {
+            throw new DomainException(
+                STRINGS_MANAGER.getString("stopServNotCreated"), e);
+    } 
     } 
 
     protected File getDomainDir(DomainConfig domainConfig) {
@@ -230,12 +222,13 @@ public class PEDomainsManager extends RepositoryManager implements DomainsManage
     
     protected static boolean saveMasterPassword(DomainConfig domainConfig) {
         Boolean b = (Boolean)domainConfig.get(DomainConfig.K_SAVE_MASTER_PASSWORD);
-        return b.booleanValue();
+        return b;
     }
     
     /**
      * Changes the master password for the domain
      */    
+    @Override
     public void changeMasterPassword(DomainConfig config) throws DomainException
     {                                      
         try {

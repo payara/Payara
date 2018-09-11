@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt;
 
@@ -55,8 +56,7 @@ public abstract class DomainConfigValidator extends Validator
     /**
      * i18n strings manager object
      */
-    private static final StringManager strMgr = 
-        StringManager.getManager(DomainConfigValidator.class);
+    private static final StringManager STRING_MANAGER = StringManager.getManager(DomainConfigValidator.class);
 
     /**
      * Holder class for domain config entry meta info. The meta info of a 
@@ -102,7 +102,7 @@ public abstract class DomainConfigValidator extends Validator
      */
     protected DomainConfigValidator(DomainConfigEntryInfo[] entries)
     {
-        super(strMgr.getString("domainConfig"), DomainConfig.class);
+        super(STRING_MANAGER.getString("domainConfig"), DomainConfig.class);
         this.entries = entries;
     }
     
@@ -126,18 +126,16 @@ public abstract class DomainConfigValidator extends Validator
      * </ul>
      * @throws InvalidConfigException If invalid domainConfig is supplied.
      */
+    @Override
     public void validate(Object domainConfig) 
         throws InvalidConfigException
     {
         super.validate(domainConfig);
-        for (int i = 0; i < entries.length; i++)
-        {
-            if (isValidate(entries[i].key, domainConfig))
-            {
-                final Object value = ((HashMap)domainConfig).get(entries[i].key);
-                if (entries[i].hasValidator())
-                {
-                    entries[i].validator.validate(value);
+        for (DomainConfigEntryInfo entry : entries) {
+            if (isValidate(entry.key, domainConfig)) {
+                final Object value = ((HashMap)domainConfig).get(entry.key);
+                if (entry.hasValidator()) {
+                    entry.validator.validate(value);
                 }
             }
         }
@@ -184,9 +182,10 @@ public abstract class DomainConfigValidator extends Validator
     }
 
     /**
+     * @param key
      * @return Returns the accepted datatype for the key. The returned value is
      * the fully qualified class name of the datatype. If the key is invalid or 
-     * doesnot belong to the valid domain config key set, "" is returned.
+     * does not belong to the valid domain config key set, "" is returned.
      */
     public String getDataType(Object key)
     {
@@ -213,9 +212,10 @@ public abstract class DomainConfigValidator extends Validator
      */
     private DomainConfigEntryInfo get(Object key)
     {
-        for (int i = 0; i < entries.length; i++)
-        {
-            if (entries[i].key.equals(key)) { return entries[i]; }
+        for (DomainConfigEntryInfo entrie : entries) {
+            if (entrie.key.equals(key)) {
+                return entrie;
+        }
         }
         return null;
     }

@@ -318,7 +318,7 @@ public class DomainBuilder {
         if (!dir.exists()) {
             try {
                 if (!dir.mkdirs()) {
-                    throw new RepositoryException(STRINGS.get("directoryCreationError",	 dir));
+                    throw new RepositoryException(STRINGS.get("directoryCreationError", dir));
                 }
             } catch (Exception e) {
                 throw new RepositoryException(STRINGS.get("directoryCreationError", dir), e);

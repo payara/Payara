@@ -50,10 +50,6 @@ package com.sun.enterprise.admin.servermgmt;
  */
 public class NodeKeystoreManager extends KeystoreManager {
 
-    public NodeKeystoreManager(){
-        // public constuctor
-    }
-
     public void encryptKeystore(RepositoryConfig config, String oldPassword, String newPassword) throws RepositoryException {
         super.changeSSLCertificateDatabasePassword(config, oldPassword, newPassword);
     }

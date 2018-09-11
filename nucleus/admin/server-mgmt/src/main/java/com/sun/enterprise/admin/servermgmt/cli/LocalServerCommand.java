@@ -488,14 +488,14 @@ public abstract class LocalServerCommand extends CLICommand {
     protected final long getUptime() throws CommandException {
         RemoteCLICommand cmd = new RemoteCLICommand("uptime", programOpts, env);
         String up = cmd.executeAndReturnOutput("uptime", "--milliseconds").trim();
-        long upTimeMillis = parseUptime(up);
+        long uptimeMillis = parseUptime(up);
 
-        if (upTimeMillis <= 0) {
+        if (uptimeMillis <= 0) {
             throw new CommandException(STRINGS.get("restart.dasNotRunning"));
         }
 
-        logger.log(Level.FINER, "server uptime: {0}", upTimeMillis);
-        return upTimeMillis;
+        logger.log(Level.FINER, "server uptime: {0}", uptimeMillis);
+        return uptimeMillis;
     }
     /**
      * See if the server is restartable

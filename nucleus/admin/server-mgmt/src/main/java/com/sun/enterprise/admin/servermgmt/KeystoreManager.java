@@ -95,7 +95,6 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.net.NetUtils;
 import java.util.Map.Entry;
-import java.util.logging.Logger;
 
 /**
  * @author kebbs
@@ -112,7 +111,10 @@ public class KeystoreManager {
     private static final String SKID_EXTENSION_SYSTEM_PROPERTY = "-J-Dsun.security.internal.keytool.skid";
     private static final String INSTANCE_CN_SUFFIX = "-instance";
     
-    private static final Logger LOGGER = Logger.getLogger("KeystoreManager");
+    private static final StringManager STRING_MANAGER = StringManager.getManager(KeystoreManager.class);
+    
+    protected PEFileLayout _fileLayout = null;
+    
 
     static {
         // Byron Nevins, July 2011
@@ -177,15 +179,6 @@ public class KeystoreManager {
         }
     }
 
-    protected PEFileLayout _fileLayout = null;
-    private static final StringManager STRING_MANAGER = StringManager.getManager(KeystoreManager.class);
-
-    /**
-     * Creates a new instance of RepositoryManager
-     */
-    public KeystoreManager() {
-    }
-
     protected static String getCertificateDN(RepositoryConfig cfg, final String CNSuffix) {
         String cn = getCNFromCfg(cfg);
         if (cn == null) {
@@ -222,12 +215,12 @@ public class KeystoreManager {
         // Generate a new self signed certificate with s1as as the alias
         // Create the default self signed cert
         final String dasCertDN = getDASCertDN(config);
-        LOGGER.log(Level.INFO, STRING_MANAGER.getString("CertificateDN", dasCertDN));
+        getLogger().log(Level.INFO, STRING_MANAGER.getString("CertificateDN", dasCertDN));
         addSelfSignedCertToKeyStore(keystore, CERTIFICATE_ALIAS, masterPassword, dasCertDN);
 
         // Create the default self-signed cert for instances to use for SSL auth.
         final String instanceCertDN = getInstanceCertDN(config);
-        LOGGER.log(Level.INFO,STRING_MANAGER.getString("CertificateDN", instanceCertDN));
+        getLogger().log(Level.INFO,STRING_MANAGER.getString("CertificateDN", instanceCertDN));
         addSelfSignedCertToKeyStore(keystore, INSTANCE_SECURE_ADMIN_ALIAS, masterPassword, instanceCertDN);
     }
 

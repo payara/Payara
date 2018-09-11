@@ -37,13 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt;
 
 import java.util.BitSet;
 
-/**
- */
 public interface DomainsManager
 {       
     /**
@@ -58,9 +57,12 @@ public interface DomainsManager
     public BitSet getDomainFlags();
     
     /**
-     * SE/EE supports NSS as its native SSL database. NSS is capable of supporting multiple
-     * slots (e.g. for different SSL hardware devices, smartcards, etc). Each device 
+     * SE/EE supports NSS as its native SSL database.NSS is capable of supporting multiple
+     * slots (e.g.for different SSL hardware devices, smartcards, etc).Each device 
      * needs a specific password which the CLI must prompt for.
+     * @param config the config to get the options from
+     * @return the extra options
+     * @throws DomainException if an error occurred
      */
      public String[] getExtraPasswordOptions(DomainConfig config)
         throws DomainException;
@@ -73,71 +75,33 @@ public interface DomainsManager
      * @param domainConfig
      * @throws DomainException  This exception is thrown if 
      * <ul>
-     * - the domain doesnot exist.
+     * - the domain does not exist.
      * - an exception occurred while deleting the domain.
      * </ul>
      */
     public void deleteDomain(DomainConfig domainConfig) 
         throws DomainException;
-
-    /**
-     * Starts the Domain Administration Server (DAS) that administers the given
-     * domain.     
-     * @param startParams
-     * @throws DomainException
-     */
-    /*
-    public void startDomain(DomainConfig domainConfig) 
-        throws DomainException;
-    */
-    /**
-     * Stops the Domain Administration Server (DAS) that administers the given
-     * domain.     
-     * @param domainConfig
-     * @throws DomainException  
-     */
-    /*
-    public void stopDomain(DomainConfig domainConfig) 
-        throws DomainException;
-    */
+    
     /**
      * Lists all the domains.
+     * @param domainConfig
+     * @return an array of all the domain names
+     * @throws DomainException if an exception occured
      */
     public String[] listDomains(DomainConfig domainConfig)
         throws DomainException;
-
-    /**
-     * Lists all the domains and their status
-     */
-    /*
-    public String[] listDomainsAndStatus(DomainConfig domainConfig)
-        throws DomainException;
-    */
+    
     /**
      * Changes the master password for the domain
+     * @param domainConfig the config for the domain to change
+     * @throws DomainException
      */    
-    /*
     public void changeMasterPassword(DomainConfig domainConfig) 
         throws DomainException;
-    */
+    
     public void validateDomain(DomainConfig domainConfig, boolean domainExists)
         throws DomainException;
     
     public void validateMasterPassword(DomainConfig config) throws DomainException;
-    
-    //public void validateAdminUserAndPassword(DomainConfig domainConfig) throws DomainException;
         
-    /*
-    public InstancesManager getInstancesManager(RepositoryConfig config);
-    */
-    /**
-     * Stops the Domain Administration Server (DAS) that administers the given
-     * domain.     
-     * @param domainConfig
-     * @throws DomainException  
-     */
-    /*
-    public void stopDomainForcibly(DomainConfig domainConfig, int timeout) 
-        throws DomainException;    
-     */
 }   
