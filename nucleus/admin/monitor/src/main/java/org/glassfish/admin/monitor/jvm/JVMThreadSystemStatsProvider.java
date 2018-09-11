@@ -53,9 +53,14 @@ import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
 
-/* server.jvm.thread-system */
-// v2 mbean: com.sun.appserv:name=thread-system,type=thread-system,category=monitor,server=server
-// v3 mbean:
+/**
+ * Base class providing the MBean to monitor JVM thread system statistics
+ * <p>
+ * The MBean will of the format 
+ * {@code amx:pp=/mon/server-mon[server],type=thread-system-mon,name=jvm/thread-system}
+ * and can be enabled by turning the Jvm monitoring level in the admin console to LOW
+ * @since v2
+ */
 @AMXMetadata(type="thread-system-mon", group="monitoring")
 @ManagedObject
 @Description( "JVM Thread System Statistics" )
@@ -92,7 +97,7 @@ public class JVMThreadSystemStatsProvider {
 
     /**
      * Returns all live thread IDs
-     * @return 
+     * @return a {@link StringStatistic} with a comma separated list of all live thread IDs
      */
     @ManagedAttribute(id="allthreadids")
     @Description( "Returns all live thread IDs" )
@@ -114,7 +119,7 @@ public class JVMThreadSystemStatsProvider {
 
     /**
      * Returns the total CPU time for the current thread in nanoseconds
-     * @return 
+     * @return a {@link CountStatistic} with the time in nanoseconds
      */
     @ManagedAttribute(id="currentthreadcputime")
     @Description( "Returns the total CPU time for the current thread in nanoseconds" )
@@ -124,8 +129,8 @@ public class JVMThreadSystemStatsProvider {
     }
 
     /**
-     * 
-     * @return 
+     * Returns the CPU time that the current thread has executed in user mode in nanoseconds
+     * @return a {@link CountStatistic} with the time in nanoseconds
      */
     @ManagedAttribute(id="currentthreadusertime")
     @Description( "Returns the CPU time that the current thread has executed in user mode in nanoseconds" )
@@ -136,7 +141,7 @@ public class JVMThreadSystemStatsProvider {
 
     /**
      * Returns the current number of live daemon threads
-     * @return 
+     * @return a {@link CountStatistic} with thenumber of threads
      */
     @ManagedAttribute(id="daemonthreadcount")
     @Description( "Returns the current number of live daemon threads" )
@@ -147,7 +152,8 @@ public class JVMThreadSystemStatsProvider {
 
     /**
      * Finds cycles of threads that are in deadlock waiting to acquire object monitors or ownable synchronizers
-     * @return 
+     * @return A {@link StringStatistic} with a comma separated list of deadlocked threads or the string "{@code None of the threads are deadlocked.}"
+     * if there are no deadlocked threads
      */
     @ManagedAttribute(id="deadlockedthreads")
     @Description( "Finds cycles of threads that are in deadlock waiting to acquire object monitors or ownable synchronizers" )
@@ -168,7 +174,9 @@ public class JVMThreadSystemStatsProvider {
 
     /**
      * Finds cycles of threads that are in deadlock waiting to acquire object monitors
-     * @return 
+     * @return A {@link StringStatistic} with a comma separated list of deadlocked threads or the string
+     * "{@code None of the threads are monitor deadlocked.}"
+     * if there are no deadlocked threads
      */
     @ManagedAttribute(id="monitordeadlockedthreads")
     @Description( "Finds cycles of threads that are in deadlock waiting to acquire object monitors" )
@@ -189,7 +197,7 @@ public class JVMThreadSystemStatsProvider {
 
     /**
      * Returns the peak live thread count since the Java virtual machine started or peak was reset
-     * @return 
+     * @return a {@link CountStatistic} with the highest number of threads
      */
     @ManagedAttribute(id="peakthreadcount")
     @Description( "Returns the peak live thread count since the Java virtual machine started or peak was reset" )
@@ -200,7 +208,7 @@ public class JVMThreadSystemStatsProvider {
 
     /**
      * Returns the current number of live threads including both daemon and non-daemon threads
-     * @return 
+     * @return A {@link CountStatistic} with the current number of threads
      */
     @ManagedAttribute(id="threadcount")
     @Description( "Returns the current number of live threads including both daemon and non-daemon threads" )
@@ -211,7 +219,7 @@ public class JVMThreadSystemStatsProvider {
 
     /**
      * Returns the total number of threads created and also started since the Java virtual machine started
-     * @return 
+     * @return a {@link CountStatistic} with the total number of threads
      */
     @ManagedAttribute(id="totalstartedthreadcount")
     @Description( "Returns the total number of threads created and also started since the Java virtual machine started" )

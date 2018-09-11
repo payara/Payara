@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor.jvm;
 
@@ -47,7 +48,13 @@ import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
 
-/* server.runtime */
+/**
+ * Class providing the MBean for server runtime statistics
+ * <p>
+ * The MBean will be of the format
+ * {@code amx:pp=/mon/server-mon[server],type=server-runtime-mon}
+ * and can be enabled by turning the Jvm monitoring level in the admin console to LOW
+ */
 @AMXMetadata(type="server-runtime-mon", group="monitoring", isSingleton=true)
 @ManagedObject
 @Description( "Server Runtime Statistics" )
@@ -62,18 +69,35 @@ public class ServerRuntimeStatsProvider {
     public static final int FAILED_STATE = 4;
     private int state = STOPPED_STATE;
 
+    /**
+     * Gets the uptime of the Java virtual machine
+     * @return time in milliseconds
+     */
     @ManagedAttribute(id="uptime")
     @Description( "uptime of the Java virtual machine in milliseconds" )
     public long getUptime() {
         return rtBean.getUptime();
     }
 
+    /**
+     * Gets the start time of the Java virtual machine
+     * @return time in milliseconds since the epoch (1st January 1970)
+     */
     @ManagedAttribute(id="starttime")
     @Description( "start time of the Java virtual machine" )
     public long getStartTime() {
         return rtBean.getStartTime();
     }
 
+    /**
+     * Gets the state of the server such as Running, Stopped, Failed.
+     * @return a number representing the state of the server
+     * @see #STARTING_STATE
+     * @see #RUNNING_STATE
+     * @see #STOPPING_STATE
+     * @see #STOPPED_STATE
+     * @see #FAILED_STATE
+     */
     @ManagedAttribute(id="state")
     @Description( "state of the server such as Running, Stopped, Failed" )
     public synchronized long getState() {

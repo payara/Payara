@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor.jvm;
 
@@ -52,9 +53,14 @@ import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
 
-/* jvm.runtime */
-// v2 mbean: com.sun.appserv:name=runtime,type=runtime,category=monitor,server=server
-// v3 mbean:
+/**
+ * Class providing the MBean for JVM runtime statistics
+ * <p>
+ * The MBean will be of the format
+ * {@code amx:pp=/mon/server-mon[server],type=runtime-mon,name=jvm/runtime}
+ * and can be enabled by turning the Jvm monitoring level in the admin console to LOW
+ * @since v2
+ */
 @AMXMetadata(type="runtime-mon", group="monitoring")
 @ManagedObject
 @Description( "JVM Runtime Statistics" )
@@ -89,6 +95,11 @@ public class JVMRuntimeStatsProvider {
     private final StringStatisticImpl vmVersion = new StringStatisticImpl("VmVersion", "String",
                 "Java virtual machine implementation version" );
 
+    
+    /**
+     * Gets the boot class path that is used by the bootstrap class loader to search for class files
+     * @return a {@link StringStatistic} with the boot classpath
+     */
     @ManagedAttribute(id="bootclasspath-current")
     @Description( "boot class path that is used by the bootstrap class loader to search for class files" )
     public StringStatistic getBootClassPath() {
@@ -96,6 +107,10 @@ public class JVMRuntimeStatsProvider {
         return bootClassPath;
     }
 
+    /**
+     * Gets the Java class path that is used by the system class loader to search for class files
+     * @return a {@link StringStatistic} with the system classpath
+     */
     @ManagedAttribute(id="classpath-current")
     @Description( "Java class path that is used by the system class loader to search for class files" )
     public StringStatistic getClassPath() {
@@ -103,6 +118,11 @@ public class JVMRuntimeStatsProvider {
         return classPath;
     }
 
+    /**
+     * Gets the input arguments passed to the Java virtual machine.
+     * @return a {@link StringStatistic} with a comma separated list of input arguments. This does not include arguments
+     * to the main method.
+     */
     @ManagedAttribute(id="inputarguments-current")
     @Description( "input arguments passed to the Java virtual machine which does not include the arguments to the main method" )
     public StringStatistic getInputArguments() {
@@ -117,6 +137,10 @@ public class JVMRuntimeStatsProvider {
         return inputArguments;
     }
 
+    /**
+     * Gets the Java library path
+     * @return a {@link StringStatistic} with the lib path
+     */
     @ManagedAttribute(id="librarypath-current")
     @Description( "Java library path" )
     public StringStatistic getLibraryPath() {
@@ -124,6 +148,10 @@ public class JVMRuntimeStatsProvider {
         return libraryPath;
     }
 
+    /**
+     * Gets the version of the specification for the management interface implemented by the running Java virtual machine
+     * @return a {@link StringStatistic} with the specification version. This is version 1.2 in Payara.
+     */
     @ManagedAttribute(id="managementspecversion-current")
     @Description( "version of the specification for the management interface implemented by the running Java virtual machine" )
     public StringStatistic getManagementSpecVersion() {
@@ -131,6 +159,10 @@ public class JVMRuntimeStatsProvider {
         return mgmtSpecVersion;
     }
 
+    /**
+     * Gets the name representing the running Java virtual machine
+     * @return a {@link StringStatistic} with the name of the machine
+     */
     @ManagedAttribute(id="name-current")
     @Description( "name representing the running Java virtual machine" )
     public StringStatistic getRuntimeName() {
@@ -138,6 +170,11 @@ public class JVMRuntimeStatsProvider {
         return runtimeName;
     }
 
+    /**
+     * Gets the Java virtual machine specification name
+     * @return a {@link StringStatistic} with the name of the specification.
+     * This is normally {@code Java Virtual Machine Specification}
+     */
     @ManagedAttribute(id="specname-current")
     @Description( "Java virtual machine specification name" )
     public StringStatistic getSpecName() {
@@ -145,6 +182,10 @@ public class JVMRuntimeStatsProvider {
         return specName;
     }
 
+    /**
+     * Gets the Java virtual machine specification vendor
+     * @return a {@link StringStatistic} with the name of the vendor
+     */
     @ManagedAttribute(id="specvendor-current")
     @Description( "Java virtual machine specification vendor" )
     public StringStatistic getSpecVendor() {
@@ -152,6 +193,10 @@ public class JVMRuntimeStatsProvider {
         return specVendor;
     }
 
+    /**
+     * Gets the Java virtual machine specification version
+     * @return a {@link StringStatistic} with the specification version
+     */
     @ManagedAttribute(id="specversion-current")
     @Description( "Java virtual machine specification version" )
     public StringStatistic getSpecVersion() {
@@ -159,6 +204,10 @@ public class JVMRuntimeStatsProvider {
         return specVersion;
     }
 
+    /**
+     * Gets the uptime of the Java virtual machine
+     * @return a {@link CountStatistic} with the uptime in milliseconds
+     */
     @ManagedAttribute(id="uptime-count")
     @Description( "uptime of the Java virtual machine in milliseconds" )
     public CountStatistic getUptime() {
@@ -166,6 +215,10 @@ public class JVMRuntimeStatsProvider {
         return uptime;
     }
 
+    /**
+     * Gets the Java virtual machine implementation name
+     * @return a {@link StringStatistic} with the implementation name
+     */
     @ManagedAttribute(id="vmname-current")
     @Description( "Java virtual machine implementation name" )
     public StringStatistic getVmName() {
@@ -173,6 +226,10 @@ public class JVMRuntimeStatsProvider {
         return vmName;
     }
 
+    /**
+     * Gets the Java virtual machine implementation vendor
+     * @return a {@link StringStatistic} with the name of the vendor
+     */
     @ManagedAttribute(id="vmvendor-current")
     @Description( "Java virtual machine implementation vendor" )
     public StringStatistic getVmVendor() {
@@ -180,6 +237,10 @@ public class JVMRuntimeStatsProvider {
         return vmVendor;
     }
 
+    /**
+     * Gets the Java virtual machine implementation version
+     * @return a {@link StringStatistic} with the implementation version
+     */
     @ManagedAttribute(id="vmversion-current")
     @Description( "Java virtual machine implementation version" )
     public StringStatistic getVmVersion() {

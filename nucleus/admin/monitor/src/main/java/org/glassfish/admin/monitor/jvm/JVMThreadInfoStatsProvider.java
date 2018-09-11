@@ -52,9 +52,14 @@ import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
 
-/* server.jvm.thread-system.thread-1 */
-// v2 mbean: com.sun.appserv:name=thread-1,type=threadinfo,category=monitor,server=server
-// v3 mbean:
+/**
+ * Class providing the MBean for JVM class loading statistics
+ * <p>
+ * The MBean will be of the format
+ * {@code aamx:pp=/mon/server-mon[server],type=threadinfo-mon,name=jvm/thread-system/thread-1}
+ * and can be enabled by turning the Jvm monitoring level in the admin console to HIGH
+ * @since v2
+ */
 @AMXMetadata(type="threadinfo-mon", group="monitoring")
 @ManagedObject
 @Description( "JVM Thread Info Statistics" )
@@ -100,6 +105,10 @@ public class JVMThreadInfoStatsProvider {
         this.threadInfo = info;
     }
 
+    /**
+     * Gets the total number of times that the thread associated with this ThreadInfo blocked to enter or reenter a monitor
+     * @return a {@link CountStatistic} with the number of times
+     */
     @ManagedAttribute(id="blockedcount")
     @Description( "Returns the total number of times that the thread associated with this ThreadInfo blocked to enter or reenter a monitor" )
     public CountStatistic getBlockedCount() {
@@ -107,6 +116,11 @@ public class JVMThreadInfoStatsProvider {
         return blockedCount;
     }
 
+    /**
+     * Gets he approximate accumulated elapsed time that the thread associated with this ThreadInfo
+     * has blocked to enter or reenter a monitor since thread contention monitoring is enabled
+     * @return a {@link CountStatistic} with blocked time in milliseconds
+     */
     @ManagedAttribute(id="blockedtime")
     @Description( "Returns the approximate accumulated elapsed time (in milliseconds) that the thread associated with this ThreadInfo has blocked to enter or reenter a monitor since thread contention monitoring is enabled" )
     public CountStatistic getBlockedTime() {
@@ -114,6 +128,10 @@ public class JVMThreadInfoStatsProvider {
         return blockedTime;
     }
 
+    /**
+     * Gets the string representation of an object for which the thread associated with this ThreadInfo is blocked waiting
+     * @return a {@link StringStatistic} with the object's representation
+     */
     @ManagedAttribute(id="lockname")
     @Description( "Returns the string representation of an object for which the thread associated with this ThreadInfo is blocked waiting" )
     public StringStatistic getLockName() {
@@ -126,6 +144,10 @@ public class JVMThreadInfoStatsProvider {
         return lockName;
     }
 
+    /**
+     * Gets the ID of the thread which owns the object for which the thread associated with this ThreadInfo is blocked waiting
+     * @return a {@link CountStatistic} with the thread ID
+     */
     @ManagedAttribute(id="lockownerid")
     @Description( "Returns the ID of the thread which owns the object for which the thread associated with this ThreadInfo is blocked waiting" )
     public CountStatistic getLockOwnerId() {
@@ -133,6 +155,10 @@ public class JVMThreadInfoStatsProvider {
         return lockOwnerId;
     }
 
+    /**
+     * Gets the name of the thread which owns the object for which the thread associated with this ThreadInfo is blocked waiting
+     * @return a {@link StringStatistic} with the name of the lock's owner
+     */
     @ManagedAttribute(id="lockownername")
     @Description( "Returns the name of the thread which owns the object for which the thread associated with this ThreadInfo is blocked waiting" )
     public StringStatistic getLockOwnerName() {
@@ -145,6 +171,10 @@ public class JVMThreadInfoStatsProvider {
         return lockOwnerName;
     }
 
+    /**
+     * Gets the the stack trace of the thread associated with this {@link ThreadInfo}
+     * @return a {@link StringStatistic} with a command separated list of the stack trace elements
+     */
     @ManagedAttribute(id="stacktrace")
     @Description( "Returns the stack trace of the thread associated with this ThreadInfo" )
     public StringStatistic getStackTrace() {
@@ -158,6 +188,10 @@ public class JVMThreadInfoStatsProvider {
         return stackTrace;
     }
 
+    /**
+     * Gets the ID of the thread associated with this {@link ThreadInfo}
+     * @return a {@link CountStatistic} with the thread id
+     */
     @ManagedAttribute(id="threadid")
     @Description( "Returns the ID of the thread associated with this ThreadInfo" )
     public CountStatistic getThreadId() {
@@ -165,6 +199,10 @@ public class JVMThreadInfoStatsProvider {
         return threadId;
     }
 
+    /**
+     * Gets the name of the thread associated with this {@link ThreadInfo}
+     * @return a {@link StringStatistic} with the name of this thread
+     */
     @ManagedAttribute(id="threadname")
     @Description( "Returns the name of the thread associated with this ThreadInfo" )
     public StringStatistic getThreadName() {
@@ -172,6 +210,10 @@ public class JVMThreadInfoStatsProvider {
         return threadName;
     }
 
+    /**
+     * Gets the state of the thread associated with this {@link ThreadInfo}
+     * @return a {@link StringStatistic} with the state of the thread
+     */
     @ManagedAttribute(id="threadstate")
     @Description( "Returns the state of the thread associated with this ThreadInfo" )
     public StringStatistic getThreadState() {
@@ -179,6 +221,10 @@ public class JVMThreadInfoStatsProvider {
         return threadState;
     }
 
+    /**
+     * Gets the total number of times that the thread associated with this {@link ThreadInfo} waited for notification
+     * @return a {@link CountStatistic} with the number of times
+     */
     @ManagedAttribute(id="waitedcount")
     @Description( "Returns the total number of times that the thread associated with this ThreadInfo waited for notification" )
     public CountStatistic getWaitedCount() {
@@ -186,6 +232,11 @@ public class JVMThreadInfoStatsProvider {
         return waitedCount;
     }
 
+    /**
+     * Gets the approximate accumulated elapsed time that the thread associated with this {@link ThreadInfo}
+     * has waited for notification since thread contention monitoring is enabled
+     * @return a {@link CountStatistic} with the time in milliseconds
+     */
     @ManagedAttribute(id="waitedtime")
     @Description( "Returns the approximate accumulated elapsed time (in milliseconds) that the thread associated with this ThreadInfo has waited for notification since thread contention monitoring is enabled" )
     public CountStatistic getWaitedTime() {
