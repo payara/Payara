@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt;
 
 import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.enterprise.admin.servermgmt.InvalidConfigException;
 
 import java.util.HashMap;
 
@@ -55,7 +55,8 @@ public abstract class DomainConfigValidator extends Validator
     /**
      * i18n strings manager object
      */
-    private static final StringManager STRING_MANAGER = StringManager.getManager(DomainConfigValidator.class);
+    private static final StringManager strMgr = 
+        StringManager.getManager(DomainConfigValidator.class);
 
     /**
      * Holder class for domain config entry meta info. The meta info of a 
@@ -68,10 +69,7 @@ public abstract class DomainConfigValidator extends Validator
         final String dataType;
         final Validator validator;
 
-        /** Creates a new DomainConfigEntryInfo object
-         * @param key
-         * @param dataType
-         * @param validator */
+        /** Creates a new DomainConfigEntryInfo object */
         public DomainConfigEntryInfo(String key, 
                                      String dataType, 
                                      Validator validator)
@@ -84,7 +82,6 @@ public abstract class DomainConfigValidator extends Validator
         /**
          * Returns true if a non-null Validator object was specified during 
          * construction.
-         * @return 
          */
         public boolean hasValidator()
         {
@@ -96,7 +93,7 @@ public abstract class DomainConfigValidator extends Validator
      * An array of DomainConfigEntryInfo objects that must be initialized by 
      * subclasses.
      */
-    protected DomainConfigEntryInfo[] entries;
+    private DomainConfigEntryInfo[] entries;
 
     /**
      * Constructs a new DomainConfigValidator object.
@@ -105,7 +102,7 @@ public abstract class DomainConfigValidator extends Validator
      */
     protected DomainConfigValidator(DomainConfigEntryInfo[] entries)
     {
-        super(STRING_MANAGER.getString("domainConfig"), DomainConfig.class);
+        super(strMgr.getString("domainConfig"), DomainConfig.class);
         this.entries = entries;
     }
     
@@ -129,16 +126,18 @@ public abstract class DomainConfigValidator extends Validator
      * </ul>
      * @throws InvalidConfigException If invalid domainConfig is supplied.
      */
-    @Override
     public void validate(Object domainConfig) 
         throws InvalidConfigException
     {
         super.validate(domainConfig);
-        for (DomainConfigEntryInfo entrie : entries) {
-            if (isValidate(entrie.key, domainConfig)) {
-                final Object value = ((HashMap)domainConfig).get(entrie.key);
-                if (entrie.hasValidator()) {
-                    entrie.validator.validate(value);
+        for (int i = 0; i < entries.length; i++)
+        {
+            if (isValidate(entries[i].key, domainConfig))
+            {
+                final Object value = ((HashMap)domainConfig).get(entries[i].key);
+                if (entries[i].hasValidator())
+                {
+                    entries[i].validator.validate(value);
                 }
             }
         }
@@ -185,10 +184,9 @@ public abstract class DomainConfigValidator extends Validator
     }
 
     /**
-     * @param key
      * @return Returns the accepted datatype for the key. The returned value is
      * the fully qualified class name of the datatype. If the key is invalid or 
-     * does not belong to the valid domain config key set, "" is returned.
+     * doesnot belong to the valid domain config key set, "" is returned.
      */
     public String getDataType(Object key)
     {
@@ -201,12 +199,10 @@ public abstract class DomainConfigValidator extends Validator
     }
 
     /**
-     * This method allows subclasses to say if an entry should be validated at all.
-     * This is an attempt to add some flexibility to the otherwise static validation.
-     * (Eg:- If we do not want to validate the ports during domain creation)
-     * @param name
-     * @param domainConfig
-     * @return 
+     * This method allows subclasses to say if an entry should be validated at
+     * all. This is an attempt to add some flexibility to the otherwise static
+     * validation. (Eg:- If we donot want to validate the ports during domain
+     * creation)
      */
     protected abstract boolean isValidate(String name, Object domainConfig);
 
@@ -217,10 +213,9 @@ public abstract class DomainConfigValidator extends Validator
      */
     private DomainConfigEntryInfo get(Object key)
     {
-        for (DomainConfigEntryInfo entrie : entries) {
-            if (entrie.key.equals(key)) {
-                return entrie;
-            }
+        for (int i = 0; i < entries.length; i++)
+        {
+            if (entries[i].key.equals(key)) { return entries[i]; }
         }
         return null;
     }

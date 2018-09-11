@@ -37,8 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
-
 package com.sun.enterprise.admin.servermgmt;
 
 import java.util.HashMap;
@@ -102,9 +100,6 @@ public class DomainConfig extends RepositoryConfig {
     /**
      * The DomainConfig always contains the K_DOMAINS_ROOT and K_HOST_NAME
      * attributes.
-     * @param domainName The name of the domain
-     * @param domainRoot The root directory of the domain
-     * @throws DomainException
      */
     public DomainConfig(String domainName, String domainRoot) throws DomainException {
         super(domainName, domainRoot);
@@ -123,24 +118,6 @@ public class DomainConfig extends RepositoryConfig {
 
     /**
      * This constructor is used at domain creation time only.
-     * @param domainName
-     * @param adminPort
-     * @param domainRoot
-     * @param adminUser
-     * @param adminPassword
-     * @param masterPassword
-     * @param saveMasterPassword
-     * @param instancePort
-     * @param jmsPort
-     * @param orbPort
-     * @param httpSSLPort
-     * @param iiopSSLPort
-     * @param iiopMutualAuthPort
-     * @param jmxAdminPort
-     * @param osgiShellTelnetPort
-     * @param javaDebuggerPort
-     * @param domainProperties
-     * @throws DomainException 
      */
     public DomainConfig(String domainName, Integer adminPort, String domainRoot,
             String adminUser, String adminPassword, String masterPassword,
@@ -180,16 +157,6 @@ public class DomainConfig extends RepositoryConfig {
 
     /**
      * This constructor is used at domain creation time only.
-     * @param domainName
-     * @param domainRoot
-     * @param adminUser
-     * @param adminPassword
-     * @param masterPassword
-     * @param saveMasterPassword
-     * @param adminPort
-     * @param instancePort
-     * @param domainProperties
-     * @throws DomainException 
      */
     public DomainConfig(String domainName, String domainRoot,
             String adminUser, String adminPassword, String masterPassword,
