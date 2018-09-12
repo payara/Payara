@@ -240,7 +240,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     public void initializeRealm(Object descriptor, boolean isSystemApp, String realmName) {
         webDescriptor = (WebBundleDescriptor) descriptor;
 
-        computeRealmName(webDescriptor, realmName);
+        this.realmName = computeRealmName(webDescriptor, realmName);
 
         jaccContextId = WebSecurityManager.getContextID(webDescriptor);
 
@@ -263,7 +263,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         }
 
         moduleID = webDescriptor.getModuleID();
-        jaspicRealm = new JaspicRealm(realmName, isSystemApp, webDescriptor, requestTracing);
+        jaspicRealm = new JaspicRealm(this.realmName, isSystemApp, webDescriptor, requestTracing);
         cNonceValidator = new CNonceValidator(webDescriptor, appCNonceCacheMapProvider, cNonceCacheFactoryProvider);
     }
 
@@ -952,16 +952,17 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         return false;
     }
 
-    private void computeRealmName(WebBundleDescriptor webDescriptor, String realmName) {
+    private String computeRealmName(WebBundleDescriptor webDescriptor, String realmName) {
         Application application = webDescriptor.getApplication();
         LoginConfiguration loginConfig = webDescriptor.getLoginConfiguration();
-        this.realmName = application.getRealm();
-        if (this.realmName == null && loginConfig != null) {
-            this.realmName = loginConfig.getRealmName();
+        String computedRealmName = application.getRealm();
+        if (computedRealmName == null && loginConfig != null) {
+            computedRealmName = loginConfig.getRealmName();
         }
-        if (realmName != null && (this.realmName == null || this.realmName.equals(""))) {
-            this.realmName = realmName;
+        if (realmName != null && (computedRealmName == null || computedRealmName.equals(""))) {
+            computedRealmName = realmName;
         }
+        return computedRealmName;
     }
 
     private void doLogout(HttpRequest request, boolean extensionEnabled) {
