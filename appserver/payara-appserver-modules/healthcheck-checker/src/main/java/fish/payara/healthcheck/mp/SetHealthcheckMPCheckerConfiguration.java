@@ -89,7 +89,7 @@ import org.jvnet.hk2.config.TransactionFailure;
             path = "healthcheck-mp-configure",
             description = "Configures the Microprofile Healthcheck Checker")
 })
-public class MPCheckerConfigurer implements AdminCommand {
+public class SetHealthcheckMPCheckerConfiguration implements AdminCommand {
     
     private static final Logger LOGGER = Logger.getLogger("HEALTHCHECK-MP");
     
