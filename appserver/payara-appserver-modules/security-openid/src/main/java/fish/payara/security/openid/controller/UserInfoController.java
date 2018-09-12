@@ -39,10 +39,11 @@
  */
 package fish.payara.security.openid.controller;
 
-import fish.payara.security.openid.domain.OpenIdConfiguration;
 import static fish.payara.security.openid.api.OpenIdConstant.ERROR_DESCRIPTION_PARAM;
 import static fish.payara.security.openid.api.OpenIdConstant.ERROR_PARAM;
 import static fish.payara.security.openid.api.OpenIdConstant.SUBJECT_IDENTIFIER;
+import fish.payara.security.openid.api.OpenIdContext;
+import fish.payara.security.openid.domain.OpenIdConfiguration;
 import java.io.StringReader;
 import static java.util.Objects.nonNull;
 import static java.util.logging.Level.WARNING;
@@ -51,6 +52,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
@@ -58,7 +60,6 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import fish.payara.security.openid.api.OpenIdContext;
 
 /**
  * Controller for Token endpoint
@@ -103,7 +104,9 @@ public class UserInfoController {
         if (response.getStatus() == Status.OK.getStatusCode()) {
             if (nonNull(contentType) && contentType.contains(APPLICATION_JSON)) {
                 // Successful UserInfo Response
-                userInfo = Json.createReader(new StringReader(responseBody)).readObject();
+                try (JsonReader reader = Json.createReader(new StringReader(responseBody))) {
+                    userInfo = reader.readObject();
+                }
             } else if (nonNull(contentType) && contentType.contains(APPLICATION_JWT)) {
                 throw new UnsupportedOperationException("application/jwt content-type not supported for userinfo endpoint");
                 //If the UserInfo Response is signed and/or encrypted, then the Claims are returned in a JWT and the content-type MUST be application/jwt. The response MAY be encrypted without also being signed. If both signing and encryption are requested, the response MUST be signed then encrypted, with the result being a Nested JWT, ??
