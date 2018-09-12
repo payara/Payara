@@ -58,6 +58,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
@@ -80,7 +82,7 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
     private ServiceLocator serviceLocator;
     private RequestTracingService requestTracing;
     private OpenTracingService openTracing;
-
+    
     /**
      * Initialises the service variables.
      */
@@ -174,6 +176,16 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
             try (Scope activeScope = openTracing.getTracer(openTracing.getApplicationName(
                     serviceLocator.getService(InvocationManager.class)))
                     .scopeManager().active()) {
+                
+                if (activeScope == null) {
+                    // This should really only occur when enabling request tracing due to the nature of the 
+                    // service not being enabled when making the request to enable it, and then
+                    // obviously being enabled on the return. Any other entrance into here is likely a bug
+                    // caused by a tracing context not being propagated.
+                    Logger.getLogger(JaxrsClientRequestTracingFilter.class.getName()).log(Level.FINE,
+                            "activeScope in  opentracing request tracing filter was null for {0}", responseContext);
+                    return;
+                }
                 
                 Span activeSpan = activeScope.span();
                 // Get the response status and add it to the active span
