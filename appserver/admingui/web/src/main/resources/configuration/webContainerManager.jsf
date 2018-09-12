@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2018] Payara Foundation and/or affiliates -->
 
 <!-- configuration/webContainerManager.jsf -->
 
@@ -84,7 +85,7 @@
             <sun:textField id="ReapInterval" styleClass="integer" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.webManager.reapInterval']}" text="#{pageSession.valueMap['reapIntervalInSeconds']}" />
             <sun:staticText id="sec" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
         </sun:property>
-        <sun:property id="MaxSessionsProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.webManager.maxSessionsLabel}" >
+        <sun:property id="MaxSessionsProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.webManager.maxSessionsLabel}" helpText="$resource{i18n_web.webManager.maxSessionsHelp}>
             <sun:textField id="MaxSessions" styleClass="intAllowMinusOne" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.webManager.maxSessions']}" text="#{pageSession.valueMap['maxSessions']}" />
         </sun:property>
         <sun:property id="SessFileNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.webManager.sessFileNameLabel}" helpText="$resource{i18n_web.webManager.sessFileNameHelp}" >
