@@ -178,8 +178,10 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
                     .scopeManager().active()) {
                 
                 if (activeScope == null) {
-                    // occurs when request tracing has been enabled between during method invocation
-                    //in this case nothing will be done, but log in case of other error
+                    // This should really only occur when enabling request tracing due to the nature of the 
+                    // service not being enabled when making the request to enable it, and then
+                    // obviously being enabled on the return. Any other entrance into here is likely a bug
+                    // caused by a tracing context not being propagated.
                     Logger.getLogger(JaxrsClientRequestTracingFilter.class.getName()).log(Level.FINE,
                             "activeScope in  opentracing request tracing filter was null for {0}", responseContext);
                     return;
