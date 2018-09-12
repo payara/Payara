@@ -517,14 +517,14 @@ public final class ModelUtils {
                                 }
                             }
                         }
-                        if (newValue instanceof Collection) {
+                        else if (newValue instanceof Collection) {
                             for (Object o : Collection.class.cast(newValue)) {
                                 if (!Collection.class.cast(currentValue).contains(o)) {
                                     Collection.class.cast(currentValue).add(o);
                                 }
                             }
                         }
-                        if (newValue instanceof Constructible) {
+                       else if (newValue instanceof Constructible) {
                             if (currentValue == null) {
                                 f.set(to, newValue.getClass().newInstance());
                                 currentValue = f.get(to);
