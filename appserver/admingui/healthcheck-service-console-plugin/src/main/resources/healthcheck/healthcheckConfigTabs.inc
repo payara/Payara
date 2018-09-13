@@ -116,8 +116,8 @@
     </sun:tab>
         
     <sun:tab id="healthcheckMicroprofileHealthcheckCheckerTab" immediate="true" 
-             text="$resource{i18nhx.healthcheck.configuration.mircroprofileHealthcheckCheckerTabTitle}"
-             toolTip="$resource{i18nhx.healthcheck.configuration.mircroprofileHealthcheckCheckerTabTitleToolTip}">
+             text="$resource{i18nhx.healthcheck.configuration.microprofileHealthcheckCheckerTabTitle}"
+             toolTip="$resource{i18nhx.healthcheck.configuration.microprofileHealthcheckCheckerTabTitleToolTip}">
 	<!command
             setSessionAttribute(key="healthcheckConfigTab" value="healthcheckMicroprofileHealthcheckCheckerTab");
             gf.redirect(page="#{request.contextPath}/healthcheck/healthcheck/checkers/mphealthcheckConfiguration.jsf?configName=#{configName}");

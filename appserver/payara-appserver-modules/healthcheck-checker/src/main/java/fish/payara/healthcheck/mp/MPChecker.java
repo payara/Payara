@@ -87,7 +87,7 @@ import org.jvnet.hk2.annotations.Service;
 @RunLevel(10)
 public class MPChecker extends BaseHealthCheck<TimeoutHealthCheckExecutionOptions, MPCheckerConfiguration> implements PostConstruct {
 
-    private static final Logger LOGGER = Logger.getLogger("HEALTHCHECK");
+    private static final Logger LOGGER = Logger.getLogger(MPChecker.class.getPackage().getName());
     
     @Inject
     private Target targetUtil;
@@ -155,7 +155,7 @@ public class MPChecker extends BaseHealthCheck<TimeoutHealthCheckExecutionOption
             try {
                 taskResult.get(options.getTimeout(), TimeUnit.MILLISECONDS);
             } catch (InterruptedException | ExecutionException | TimeoutException ex) {
-                LOGGER.log(Level.FINE, "Error processing MP Healcheck checker", ex);
+                LOGGER.log(Level.FINE, "Error processing MP Healthcheck checker", ex);
                 result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CRITICAL, "UNABLE TO CONNECT - " + ex.toString()));
             }
         }
