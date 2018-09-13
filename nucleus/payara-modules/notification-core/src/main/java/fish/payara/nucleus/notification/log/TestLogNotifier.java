@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -58,12 +58,12 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- *
+ * Tests that the log notifier works
  * @author jonathan coustick
+ * @since 4.1.2.173
  */
 @Service(name = "test-log-notifier-configuration")
 @PerLookup
@@ -105,12 +105,14 @@ public class TestLogNotifier extends TestNotifier {
         }
         //prepare log message
         LogNotificationEvent event = factory.buildNotificationEvent(SUBJECT, MESSAGE);
-        
+        event.setLevel(Level.FINE);
         LogNotifierConfigurationExecutionOptions options = new LogNotifierConfigurationExecutionOptions();
         options.setUseSeparateLogFile(useSeparateLogFile);
+        options.setEnabled(true);
         
         //set up logger to store result
         LogNotifierService service = new LogNotifierService();
+        service.execOptions = options;
         Logger logger = Logger.getLogger(LogNotifierService.class.getCanonicalName());
         BlockingQueueHandler bqh = new BlockingQueueHandler(10);
         bqh.setLevel(Level.FINE);
@@ -134,8 +136,7 @@ public class TestLogNotifier extends TestNotifier {
             } else {
                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
-            
-            
+
         }
         
     }

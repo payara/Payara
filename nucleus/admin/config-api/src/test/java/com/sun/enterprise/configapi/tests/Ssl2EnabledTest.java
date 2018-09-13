@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.configapi.tests;
 
@@ -71,6 +72,9 @@ public class Ssl2EnabledTest extends ConfigApiTest {
     public void sslEnabledTest() {
         for (final NetworkListener listener : config.getNetworkListeners()
             .getNetworkListener()) {
+            if(listener.findHttpProtocol() == null){
+                continue;
+            }
             Ssl ssl = listener.findHttpProtocol().getSsl();
             if (ssl!=null) {
                 try {

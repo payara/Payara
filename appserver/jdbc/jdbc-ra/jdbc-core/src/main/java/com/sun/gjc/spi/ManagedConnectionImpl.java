@@ -521,7 +521,9 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
                 sqlTraceDelegator.deregisterSQLTraceListener(RequestTracingListener.class);
             }
 
-            sqlTraceDelegator.deregisterSQLTraceListener(SlowSQLLogger.class);
+            if (!isSlowQueryLoggingEnabled()) {
+                sqlTraceDelegator.deregisterSQLTraceListener(SlowSQLLogger.class);
+            }
             if (connectionPool != null && isSlowQueryLoggingEnabled()) {
                 double threshold = Double.valueOf(connectionPool.getSlowQueryThresholdInSeconds());
                 if (threshold > 0) {
