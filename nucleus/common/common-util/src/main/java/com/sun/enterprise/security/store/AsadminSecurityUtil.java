@@ -88,13 +88,13 @@ public class AsadminSecurityUtil {
     	 * export AS_GFCLIENT="/var/www/html/payara5/.gfclient"
          */
 		String AS_GFCLIENT = System.getenv("AS_GFCLIENT");
-		logger.info("Variabile di ambiente AS_GFCLIENT: " + AS_GFCLIENT);
+		logger.finer("AS_GFCLIENT: " + AS_GFCLIENT);
 		if (AS_GFCLIENT != null) {
     		DEFAULT_CLIENT_DIR = new File(AS_GFCLIENT);
 		}else {
     		DEFAULT_CLIENT_DIR = new File(System.getProperty("user.home"), ".gfclient");
 		}
-		logger.info("Impostata Directory .gfclient a : " + DEFAULT_CLIENT_DIR);
+		logger.finer("Set .gfclient directory to: " + DEFAULT_CLIENT_DIR);
     }
 
 
