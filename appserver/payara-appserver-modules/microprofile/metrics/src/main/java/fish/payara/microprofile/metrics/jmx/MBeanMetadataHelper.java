@@ -61,57 +61,60 @@ public class MBeanMetadataHelper {
     private static final String SPECIFIER = "%s";
 
     private static final Logger LOGGER = Logger.getLogger(MBeanMetadataHelper.class.getName());
-    
-    private List<MBeanMetadata> unresolvedMetadataList;
 
     /**
      * Registers metrics as MBeans
+     *
      * @param metricRegistry Registry to add metrics to
-     * @param metadataList List of all {@link MBeanMetadata} representing a {@link Metric}
-     * @param globalTags 
-     * @param isRetry true if this is not initial registration, this is used to register 
-     * lazy-loaded MBeans
+     * @param metadataList List of all {@link MBeanMetadata} representing a
+     * {@link Metric}
+     * @param globalTags
+     * @param isRetry true if this is not initial registration, this is used to
+     * register lazy-loaded MBeans
+     * @return the list of unresolved MBean Metadata
      */
-    public void registerMetadata(MetricRegistry metricRegistry,
+    public List<MBeanMetadata> registerMetadata(MetricRegistry metricRegistry,
             List<MBeanMetadata> metadataList, Map<String, String> globalTags, boolean isRetry) {
 
-        if (!metricRegistry.getMetadata().isEmpty()) {
+        if (!metricRegistry.getMetadata().isEmpty() && !isRetry) {
             metricRegistry.removeMatching(MetricFilter.ALL);
         }
 
-        resolveDynamicMetadata(metadataList);
-        for (MBeanMetadata beanMetadata: metadataList){
-          try {
-            if (metricRegistry.getNames().contains(beanMetadata.getName()) && isRetry){
-                //
-                continue;
-            }
-            beanMetadata.getTags().putAll(globalTags);
-            Metric type;
-            MBeanExpression mBeanExpression = new MBeanExpression(beanMetadata.getMBean());
-            switch (beanMetadata.getTypeRaw()) {
-                case COUNTER:
-                    type = new MBeanCounterImpl(mBeanExpression);
-                    break;
-                case GAUGE:
-                    type = (Gauge<Number>) mBeanExpression::getNumberValue;
-                    break;
-                default:
-                    throw new IllegalStateException("Unsupported type : " + beanMetadata);
-            }
-            metricRegistry.register(beanMetadata, type);
+        List<MBeanMetadata> unresolvedMetadataList = resolveDynamicMetadata(metadataList);
+        for (MBeanMetadata beanMetadata : metadataList) {
+            try {
+                if (metricRegistry.getNames().contains(beanMetadata.getName())) {
+                    continue;
+                }
+                beanMetadata.getTags().putAll(globalTags);
+                Metric type;
+                MBeanExpression mBeanExpression = new MBeanExpression(beanMetadata.getMBean());
+                switch (beanMetadata.getTypeRaw()) {
+                    case COUNTER:
+                        type = new MBeanCounterImpl(mBeanExpression);
+                        break;
+                    case GAUGE:
+                        type = (Gauge<Number>) mBeanExpression::getNumberValue;
+                        break;
+                    default:
+                        throw new IllegalStateException("Unsupported type : " + beanMetadata);
+                }
+                metricRegistry.register(beanMetadata, type);
             } catch (IllegalArgumentException e) {
                 LOGGER.log(Level.WARNING, e.getMessage());
             }
         }
+        return unresolvedMetadataList;
     }
 
     /**
      * Resolve dynamic metadata by replacing specifier <b>%s</b> with the mbean value.
      *
      * @param metadataList list of MBean Metadata
+     * @return the list of unresolved MBean Metadata
      */
-    public void resolveDynamicMetadata(List<MBeanMetadata> metadataList) {
+    public List<MBeanMetadata> resolveDynamicMetadata(List<MBeanMetadata> metadataList) {
+        List<MBeanMetadata> unresolvedMetadataList = new ArrayList<>();
         List<MBeanMetadata> resolvedMetadataList = new ArrayList<>();
         List<Metadata> removedMetadataList = new ArrayList<>(metadataList.size());
         for (MBeanMetadata metadata : metadataList) {
@@ -126,7 +129,10 @@ public class MBeanMetadataHelper {
                     String dynamicKey = mBeanExpression.findDynamicKey();
                     Set<ObjectName> mBeanObjects = mBeanExpression.queryNames(null);
                     if (mBeanObjects.isEmpty()){
+                        unresolvedMetadataList.add(metadata);
                         LOGGER.log(Level.INFO, "{0} does not correspond to any MBeans", metadata.getMBean());
+                    } else if (metadata.isDynamic()) {
+                        unresolvedMetadataList.add(metadata);
                     }
                     for (ObjectName objName : mBeanObjects) {
                         String dynamicValue = objName.getKeyPropertyList().get(dynamicKey);
@@ -159,9 +165,10 @@ public class MBeanMetadataHelper {
                 }
             }
         }
-        
+
         metadataList.removeAll(removedMetadataList);
         metadataList.addAll(resolvedMetadataList);
+        return unresolvedMetadataList;
     }
     
     private boolean validateMetadata(MBeanMetadata metadata) {
