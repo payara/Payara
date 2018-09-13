@@ -96,6 +96,8 @@ import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor.VisitorFunction;
 import fish.payara.microprofile.openapi.api.visitor.ApiWalker;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A walker that visits each annotation and passes it to the visitor.
@@ -182,10 +184,20 @@ public class OpenApiWalker implements ApiWalker {
 
             processAnnotation(clazz, annotationClass, annotationFunction, altClass, altFunction,
                     new OpenApiContext(api, getResourcePath(clazz)));
-
+            List<Field> fields = new ArrayList<>();
             for (Field field : clazz.getDeclaredFields()) {
-                processAnnotation(field, annotationClass, annotationFunction, altClass, altFunction,
-                        new OpenApiContext(api, null));
+                for (Annotation annotation : field.getDeclaredAnnotations()) {
+                    if (annotation instanceof QueryParam
+                            || annotation instanceof PathParam
+                            || annotation instanceof HeaderParam
+                            || annotation instanceof CookieParam
+                            || annotation instanceof FormParam) {
+                        fields.add(field);
+                    } else {
+                        processAnnotation(field, annotationClass, annotationFunction, altClass, altFunction,
+                                new OpenApiContext(api, null));
+                    }
+                }
             }
 
             for (Method method : clazz.getDeclaredMethods()) {
@@ -193,6 +205,12 @@ public class OpenApiWalker implements ApiWalker {
                 processAnnotation(method, annotationClass, annotationFunction, altClass, altFunction,
                         new OpenApiContext(api, getResourcePath(method), getOperation(method)));
 
+                if (!fields.isEmpty()) {
+                    for (Field field : fields) {
+                        processAnnotation(field, annotationClass, annotationFunction, altClass, altFunction,
+                                new OpenApiContext(api, getResourcePath(method), getOperation(method)));
+                    }
+                }
                 for (java.lang.reflect.Parameter parameter : method.getParameters()) {
                     processAnnotation(parameter, annotationClass, annotationFunction, altClass, altFunction,
                             new OpenApiContext(api, getResourcePath(method), getOperation(method)));
