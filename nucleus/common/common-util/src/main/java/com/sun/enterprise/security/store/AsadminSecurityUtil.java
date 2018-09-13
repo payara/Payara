@@ -40,10 +40,13 @@
 
 package com.sun.enterprise.security.store;
 
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.enterprise.util.CULoggerInfo;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.Console;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -51,6 +54,10 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.util.CULoggerInfo;
+import com.sun.enterprise.util.SystemPropertyConstants;
 
 /**
  * Various utility methods related to certificate-based security.
@@ -63,13 +70,33 @@ import java.util.logging.Logger;
  * @author Tim Quinn (with portions refactored from elsewhere)
  */
 public class AsadminSecurityUtil {
-    
-    private static final File DEFAULT_CLIENT_DIR = 
-            new File(System.getProperty("user.home"), ".gfclient");
+
+    private static final File DEFAULT_CLIENT_DIR;
 
     private static AsadminSecurityUtil instance = null;
 
     private static final Logger logger = CULoggerInfo.getLogger();
+
+
+    static {
+
+    	/** Patch to make dir $HOME/.gfclient configurable.
+    	 *
+    	 * To set a different gfclient directory, add in /payara5/glassfish/config/[asenv.bat/asenv.conf]
+    	 * the  AS_GFCLIENT variable.
+    	 * Example:
+    	 * export AS_GFCLIENT="/var/www/html/payara5/.gfclient"
+         */
+		String AS_GFCLIENT = System.getenv("AS_GFCLIENT");
+		logger.info("Variabile di ambiente AS_GFCLIENT: " + AS_GFCLIENT);
+		if (AS_GFCLIENT != null) {
+    		DEFAULT_CLIENT_DIR = new File(AS_GFCLIENT);
+		}else {
+    		DEFAULT_CLIENT_DIR = new File(System.getProperty("user.home"), ".gfclient");
+		}
+		logger.info("Impostata Directory .gfclient a : " + DEFAULT_CLIENT_DIR);
+    }
+
 
     /**
      * Returns the usable instance, creating it if needed.
@@ -115,14 +142,14 @@ public class AsadminSecurityUtil {
         return System.getProperty(SystemPropertyConstants.CLIENT_TRUSTSTORE_PASSWORD_PROPERTY,
             "changeit").toCharArray();
     }
-    
+
     /**
      * Get the default location for client related files
      */
     public static File getDefaultClientDir() {
         if (!DEFAULT_CLIENT_DIR.isDirectory()) {
             if (DEFAULT_CLIENT_DIR.mkdirs() == false) {
-                logger.log(Level.SEVERE, CULoggerInfo.errorCreatingDirectory, 
+                logger.log(Level.SEVERE, CULoggerInfo.errorCreatingDirectory,
                         DEFAULT_CLIENT_DIR);
                 // return the File anyway, the user of the file will report the failure
             }
@@ -165,7 +192,7 @@ public class AsadminSecurityUtil {
         return asadminKeystore;
     }
 
-    private void init(final char[] commandLineMasterPassword, final boolean isPromptable) 
+    private void init(final char[] commandLineMasterPassword, final boolean isPromptable)
             throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
         char[] passwordToUse = chooseMasterPassword(commandLineMasterPassword);
         try {
@@ -174,7 +201,7 @@ public class AsadminSecurityUtil {
              * the standard system property.  That would allow users to add a
              * key to a client-side keystore and use SSL client auth from
              * asadmin to the DAS (if they have added the corresponding cert to
-             * the DAS truststore). 
+             * the DAS truststore).
              */
             asadminKeystore = openKeystore(passwordToUse);
             if (asadminKeystore == null) {
