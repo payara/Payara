@@ -80,19 +80,19 @@ public class AsadminSecurityUtil {
 
     static {
 
-    	/** Patch to make dir $HOME/.gfclient configurable.
-    	 *
-    	 * To set a different gfclient directory, add in /payara5/glassfish/config/[asenv.bat/asenv.conf]
-    	 * the  AS_GFCLIENT variable.
-    	 * Example:
-    	 * export AS_GFCLIENT="/var/www/html/payara5/.gfclient"
-         */
+		/** Patch to make dir $HOME/.gfclient configurable.
+		 *
+		 * To set a different gfclient directory, add in /payara5/glassfish/config/[asenv.bat/asenv.conf]
+		 * the  AS_GFCLIENT variable.
+		 * Example:
+		 * export AS_GFCLIENT="/var/www/html/payara5/.gfclient"
+		 */
 		String AS_GFCLIENT = System.getenv("AS_GFCLIENT");
 		logger.finer("AS_GFCLIENT: " + AS_GFCLIENT);
 		if (AS_GFCLIENT != null) {
-    		DEFAULT_CLIENT_DIR = new File(AS_GFCLIENT);
-		}else {
-    		DEFAULT_CLIENT_DIR = new File(System.getProperty("user.home"), ".gfclient");
+    			DEFAULT_CLIENT_DIR = new File(AS_GFCLIENT);
+		} else {
+    			DEFAULT_CLIENT_DIR = new File(System.getProperty("user.home"), ".gfclient");
 		}
 		logger.finer("Set .gfclient directory to: " + DEFAULT_CLIENT_DIR);
     }
