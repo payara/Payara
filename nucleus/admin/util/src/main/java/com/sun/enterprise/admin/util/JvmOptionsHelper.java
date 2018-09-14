@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions COpyright [2018] Payara Foundation and/or affiliates
 
 /*
  * $Id: JvmOptionsHelper.java,v 1.3 2007/04/03 01:13:42 llc Exp $
@@ -49,7 +50,7 @@ import java.util.*;
 /**
  * A helper class to facilitate the add/delete/get jvm options.
  */
-final public class JvmOptionsHelper {
+public final class JvmOptionsHelper {
 
     /**
      * First in the chain of responsibility
@@ -114,7 +115,7 @@ final public class JvmOptionsHelper {
     /**
      * Returns the last JvmOptionsElement in the chain of responsibility.
      */
-    public JvmOptionsElement last() {
+    private JvmOptionsElement last() {
         JvmOptionsElement current = head;
         while (current.hasNext()) {
             current = current.next();
@@ -169,7 +170,7 @@ final public class JvmOptionsHelper {
         JvmOptionsElement current = head;
         while (!JvmOptionsElement.isLast(current)) {
             ArrayList options = current.getJvmOptions();
-            if ((options != null) && (options.size() > 0)) {
+            if ((options != null) && !options.isEmpty()) {
                 s.addAll(options);
             }
             current = current.next();
