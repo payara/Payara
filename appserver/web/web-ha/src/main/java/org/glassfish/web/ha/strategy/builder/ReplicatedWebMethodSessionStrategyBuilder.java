@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.web.ha.strategy.builder;
 
@@ -124,7 +125,9 @@ public class ReplicatedWebMethodSessionStrategyBuilder extends BasePersistenceSt
 
         boolean disableJreplica = serverConfigLookup.getDisableJreplicaFromConfig();
         rwepMgr.setMaxActiveSessions(maxSessions);
-        rwepMgr.setMaxIdleBackup(0);
+        rwepMgr.setMaxIdleBackup(maxIdleBackup);
+        rwepMgr.setMinIdleSwap(minIdleSwap);
+        rwepMgr.setMaxIdleSwap(maxIdleSwap);
         rwepMgr.setRelaxCacheVersionSemantics(relaxCacheVersionSemantics);
         rwepMgr.setStore(store);
         rwepMgr.setDisableJreplica(disableJreplica);
