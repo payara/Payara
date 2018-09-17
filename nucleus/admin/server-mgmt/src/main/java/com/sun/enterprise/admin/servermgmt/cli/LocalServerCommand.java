@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation] and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -280,6 +280,7 @@ public abstract class LocalServerCommand extends CLICommand {
         logger.log(Level.FINER, "Check if server is at location {0}", ourDir);
 
         try {
+            programOpts.setHostAndPort(getAdminAddress());
             RemoteCLICommand cmd =
                     new RemoteCLICommand("__locations", programOpts, env);
             ActionReport report =
