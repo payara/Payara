@@ -213,9 +213,9 @@ public abstract class DomainConfigValidator extends Validator
      */
     private DomainConfigEntryInfo get(Object key)
     {
-        for (DomainConfigEntryInfo entrie : entries) {
-            if (entrie.key.equals(key)) {
-                return entrie;
+        for (DomainConfigEntryInfo entry : entries) {
+            if (entry.key.equals(key)) {
+                return entry;
         }
         }
         return null;
