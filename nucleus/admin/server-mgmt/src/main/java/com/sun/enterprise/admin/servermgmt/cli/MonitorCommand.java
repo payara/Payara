@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affilates
+
 package com.sun.enterprise.admin.servermgmt.cli;
 
 import com.sun.enterprise.admin.cli.CLICommand;
@@ -70,8 +72,7 @@ public class MonitorCommand extends CLICommand {
     private File fileName;
     @Param(primary = true, optional = true)
     private String target;	// XXX - not currently used
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(MonitorCommand.class);
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(MonitorCommand.class);
 
     @Override
     protected int executeCommand()
@@ -90,7 +91,7 @@ public class MonitorCommand extends CLICommand {
 
                 if (monitorTask.allOK == null)
                     str = ""; // not ready yet
-                else if (monitorTask.allOK == false)
+                else if (!monitorTask.allOK)
                     str = "Q";
                 else if (System.in.available() > 0)
                     str = in.readLine();
@@ -117,7 +118,7 @@ public class MonitorCommand extends CLICommand {
         catch (Exception e) {
             timer.cancel();
             throw new CommandException(
-                    strings.get("monitorCommand.errorRemote", e.getMessage()));
+                    STRINGS.get("monitorCommand.errorRemote", e.getMessage()));
         }
         return 0;
     }

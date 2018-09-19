@@ -40,6 +40,9 @@
 
 package com.sun.enterprise.admin.servermgmt.pe;
 
+/**
+ * @deprecated No known implementations.
+ */
 public interface TimerCallback
 {
     boolean check() throws Exception;

@@ -54,8 +54,8 @@ import com.sun.enterprise.util.i18n.StringManager;
 
 public class DomainSecurity extends MasterPasswordFileManager {
 
-    private static final StringManager _strMgr =
-            StringManager.getManager(DomainSecurity.class);
+    private static final StringManager STRING_MANAGER = StringManager.getManager(DomainSecurity.class);
+
     /**
      * Modifies the contents of given keyfile with administrator's user-name and
      * password. Uses the FileRealm classes that application server's Runtime
@@ -84,12 +84,9 @@ public class DomainSecurity extends MasterPasswordFileManager {
     void createPasswordAliasKeystore(File pwFile, String password)
             throws RepositoryException {
         try {
-            PasswordAdapter p = new PasswordAdapter(pwFile.getAbsolutePath(),
-                    password.toCharArray());
-            p.writeStore();
-        }
-        catch (Exception ex) {
-            throw new RepositoryException(_strMgr.getString("passwordAliasKeystoreNotCreated", pwFile), ex);
+            new PasswordAdapter(passwordFile.getAbsolutePath(), password.toCharArray()).writeStore();
+        } catch (Exception ex) {
+            throw new RepositoryException(STRING_MANAGER.getString("passwordAliasKeystoreNotCreated", passwordFile), ex);
         }
     }
 
@@ -102,11 +99,14 @@ public class DomainSecurity extends MasterPasswordFileManager {
      * @param masterPassword Master password.
      * @throws RepositoryException if any error occurs during keystore creation.
      */
-    void createSSLCertificateDatabase(File configDir, DomainConfig config, String masterPassword)
-            throws RepositoryException {
-        createKeyStore(new File(configDir, DomainConstants.KEYSTORE_FILE), config, masterPassword);
-        changeKeystorePassword(DEFAULT_MASTER_PASSWORD, masterPassword, new File(configDir, DomainConstants.TRUSTSTORE_FILE));
-        copyCertificates(configDir, config, masterPassword);
+    void createSSLCertificateDatabase(File configDir, DomainConfig config, String masterPassword) throws RepositoryException {
+        File trustStore = new File(configDir, TRUSTSTORE_FILE);
+        File keyStore = new File(configDir, KEYSTORE_FILE);
+        
+        createKeyStore(keyStore, config, masterPassword);
+        changeKeyStorePassword(DEFAULT_MASTER_PASSWORD, masterPassword, trustStore);
+        copyCertificates(keyStore, trustStore, config, masterPassword);
+        copyCertificatesFromJdk(trustStore, masterPassword);
     }
 
     /**
