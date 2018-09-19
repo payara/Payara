@@ -1,4 +1,6 @@
+#!groovy
 //in repo Jenkinsfile
+@Library('versionUtils') _
 pipeline {
     agent any
     parameters {
@@ -16,34 +18,51 @@ pipeline {
                 MAVEN_OPTS=getMavenOpts()
             }
             steps {
-                sh 'printenv'
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh "mvn -V -ff -e clean install -PBuildExtras -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts -Djavax.xml.accessExternalSchema=all"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
-        stage('Checkout Test') {
+        stage('Checkout EE8 Tests') {
+            steps{
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                    branches: [[name: "*/master"]],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [
+                        [$class: 'SubmoduleOption',
+                        disableSubmodules: false,
+                        parentCredentials: true,
+                        recursiveSubmodules: true,
+                        reference: '',
+                        trackingSubmodules: false]],
+                    submoduleCfg: [],
+                    userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee8-samples.git"]]]
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+        stage('Run Test') {
             tools {
                 jdk "zulu-${jdkVer}"
             }
             environment {
                 MAVEN_OPTS=getMavenOpts()
             }
-            steps{
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                // checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                //     branches: [[name: "*/master"]],
-                //     doGenerateSubmoduleConfigurations: false,
-                //     extensions: [
-                //         [$class: 'SubmoduleOption',
-                //         disableSubmodules: false,
-                //         parentCredentials: true,
-                //         recursiveSubmodules: true,
-                //         reference: '',
-                //         trackingSubmodules: false]],
-                //     submoduleCfg: [],
-                //     userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee8-samples.git"]]]
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            steps {
+                script{
+                    def pom = readMavenPom file: 'pom.xml'
+                    echo "Payara pom version is ${pom.version}"
+                }
+            	echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -V -ff -e clean install -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts
+                    -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} -Dpayara.directory.name=${getPayaraDirectoryName()}
+                    -Dpayara.version.major=${getPayaraMajorVersion()} -Ppayara-ci-managed,stable"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
             }
         }
     }
