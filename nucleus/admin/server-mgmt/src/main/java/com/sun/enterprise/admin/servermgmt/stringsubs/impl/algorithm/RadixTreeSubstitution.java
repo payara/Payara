@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.stringsubs.impl.algorithm;
 
 /**
- * Perform's string substitution for the given input.  Substitution process look 
+ * Performs string substitution for the given input.  Substitution process look 
  * for the matching input in the given {@link RadixTree} and replaced the string
  * with the corresponding matching value.
  *
@@ -49,23 +50,23 @@ package com.sun.enterprise.admin.servermgmt.stringsubs.impl.algorithm;
  */
 class RadixTreeSubstitution {
     /** {@link RadixTree} used sub. */
-    private RadixTree _tree;
+    private RadixTree tree;
 
     /** Buffer to store the current processing characters, reset when match found
      *  for the processed character. */
-    private StringBuffer _processedChars;
+    private StringBuffer processedChars;
 
     /** Reference to the currently processing node.*/
-    private RadixTreeNode _currentNode;
+    private RadixTreeNode currentNode;
 
     /** No of matched character in currently processing node. */
-    private int _nodeMatchedChars;
+    private int nodeMatchedChars;
 
     /** Last matched node value. */
-    private String _lastMatchedValue;
+    private String lastMatchedValue;
 
     /** Buffer to store the characters need to re-process from root. */
-    private StringBuffer _reProcessChars;
+    private StringBuffer reProcessChars;
 
     /**
      * Construct {@link RadixTreeSubstitution} for the given {@link RadixTree}.
@@ -75,9 +76,9 @@ class RadixTreeSubstitution {
         if (tree == null) {
             throw new IllegalArgumentException("Invalid tree.");
         }
-        _tree = tree;
-        _processedChars = new StringBuffer();
-        _currentNode = _tree.getRootNode();
+        this.tree = tree;
+        processedChars = new StringBuffer();
+        currentNode = tree.getRootNode();
     }
 
     /**
@@ -101,92 +102,89 @@ class RadixTreeSubstitution {
      */
     String substitute(Character c) {
         StringBuffer outputBuffer = null;
-        boolean finalCall = (c == null) ? true : false;
+        boolean finalCall = (c == null);
         do {
             if (c != null) {
-                if (_reProcessChars != null && _reProcessChars.length() > 0) {
-                    c = _reProcessChars.charAt(0);
-                    _reProcessChars.delete(0, 1);
+                if (reProcessChars != null && reProcessChars.length() > 0) {
+                    c = reProcessChars.charAt(0);
+                    reProcessChars.delete(0, 1);
                 }
-                String nodeKey = _currentNode.getKey();
-                if (_nodeMatchedChars < nodeKey.length()) {
-                    if (c == nodeKey.charAt(_nodeMatchedChars)) {
-                        _processedChars.append(c);
-                        _nodeMatchedChars++;
+                String nodeKey = currentNode.getKey();
+                if (nodeMatchedChars < nodeKey.length()) {
+                    if (c == nodeKey.charAt(nodeMatchedChars)) {
+                        processedChars.append(c);
+                        nodeMatchedChars++;
                         continue;
                     }
                 } else {
-                    if (_currentNode.getValue() != null) {
-                        _lastMatchedValue = _currentNode.getValue();
-                        _processedChars.delete(0, _processedChars.length());
+                    if (currentNode.getValue() != null) {
+                        lastMatchedValue = currentNode.getValue();
+                        processedChars.delete(0, processedChars.length());
                     }
-                    RadixTreeNode childNode =  _currentNode.getChildNode(c);
+                    RadixTreeNode childNode =  currentNode.getChildNode(c);
                     if (childNode != null) {
-                        _processedChars.append(c);
-                        _currentNode = childNode;
-                        _nodeMatchedChars = 1;
+                        processedChars.append(c);
+                        currentNode = childNode;
+                        nodeMatchedChars = 1;
                         continue;
                     }
                 }
-            }
-            else if(_currentNode.getValue() != null &&
-                    _nodeMatchedChars == _currentNode.getKey().length()) {
-                _lastMatchedValue = _currentNode.getValue();
-                _processedChars.delete(0, _processedChars.length());
+            } else if(currentNode.getValue() != null && nodeMatchedChars == currentNode.getKey().length()) {
+                lastMatchedValue = currentNode.getValue();
+                processedChars.delete(0, processedChars.length());
             }
 
             if (outputBuffer == null) {
                 outputBuffer = new StringBuffer();
             }
             // write to the output buffer.
-            if (_lastMatchedValue != null) {
-                outputBuffer.append(_lastMatchedValue);
+            if (lastMatchedValue != null) {
+                outputBuffer.append(lastMatchedValue);
                 if (c != null) {
-                    _processedChars.append(c);
+                    processedChars.append(c);
                 }
-                _lastMatchedValue = null;
+                lastMatchedValue = null;
             } else {
                 // If no match found than append the first character and start fresh from second character.
-                if (_processedChars.length() > 0) {
-                    outputBuffer.append(_processedChars.charAt(0));
-                    _processedChars.delete(0, 1);
+                if (processedChars.length() > 0) {
+                    outputBuffer.append(processedChars.charAt(0));
+                    processedChars.delete(0, 1);
                     if (c != null) {
-                        _processedChars.append(c);
+                        processedChars.append(c);
                     }
                 } else {
                     if (c != null) {
                         outputBuffer.append(c);
                     }
-                    _processedChars.delete(0, _processedChars.length());
+                    processedChars.delete(0, processedChars.length());
                 }
             }
-            if (_processedChars.length() > 0) {
-                if (_reProcessChars == null) {
-                    _reProcessChars = new StringBuffer(_processedChars);
+            if (processedChars.length() > 0) {
+                if (reProcessChars == null) {
+                    reProcessChars = new StringBuffer(processedChars);
                 } else {
-                    _processedChars.append(_reProcessChars);
-                    _reProcessChars.delete(0, _reProcessChars.length());
-                    _reProcessChars.append(_processedChars);
+                    processedChars.append(reProcessChars);
+                    reProcessChars.delete(0, reProcessChars.length());
+                    reProcessChars.append(processedChars);
                 }
-                c = _reProcessChars.charAt(0);
-                _processedChars.delete(0, _processedChars.length());
+                c = reProcessChars.charAt(0);
+                processedChars.delete(0, processedChars.length());
             }
-            _currentNode = _tree.getRootNode();
-            _nodeMatchedChars = 0;
-        } while (_reProcessChars != null && _reProcessChars.length() > 0);
+            currentNode = tree.getRootNode();
+            nodeMatchedChars = 0;
+        } while (reProcessChars != null && reProcessChars.length() > 0);
 
         //Append the last process character sequence.
         if (finalCall) {
-            if (_nodeMatchedChars == _currentNode.getKey().length()
-                    && _currentNode.getValue() != null) {
-                outputBuffer.append(_currentNode.getValue());
+            if (nodeMatchedChars == currentNode.getKey().length() && currentNode.getValue() != null) {
+                outputBuffer.append(currentNode.getValue());
             } else {
-                outputBuffer.append(_currentNode.getKey().substring(0, _nodeMatchedChars));
+                outputBuffer.append(currentNode.getKey().substring(0, nodeMatchedChars));
             }
-            _processedChars.delete(0, _processedChars.length());
-            _currentNode = _tree.getRootNode();
-            _nodeMatchedChars = 0;
-            _lastMatchedValue = null;
+            processedChars.delete(0, processedChars.length());
+            currentNode = tree.getRootNode();
+            nodeMatchedChars = 0;
+            lastMatchedValue = null;
         }
         return outputBuffer == null || outputBuffer.toString().isEmpty() ? null : outputBuffer.toString();
     }

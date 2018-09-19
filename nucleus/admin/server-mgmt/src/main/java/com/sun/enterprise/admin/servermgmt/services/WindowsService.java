@@ -58,6 +58,17 @@ import static com.sun.enterprise.admin.servermgmt.services.Constants.*;
  * @author Byron Nevins
  */
 public class WindowsService extends NonSMFServiceAdapter {
+    
+    private static final String SOURCE_WIN32_EXE_FILENAME = "winsw.exe";
+    private static final String TARGET_DIR = "bin";
+    private static final String TEMPLATE_FILE_NAME = "Domain-service-winsw.xml.template";
+    private File sourceWin32Exe;
+    private File targetDir;
+    private File targetXml;
+    private File targetWin32Exe;
+    private File targetConfig;
+    private String xmlFileCopy;
+    
     static boolean apropos() {
         return OS.isWindowsForSure();
     }
@@ -98,7 +109,7 @@ public class WindowsService extends NonSMFServiceAdapter {
             throw re;
         }
         catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new OSServiceAdapterException(e);
         }
     }
 
@@ -131,7 +142,7 @@ public class WindowsService extends NonSMFServiceAdapter {
             trace(toString());
         }
         catch (ProcessManagerException ex) {
-            throw new RuntimeException(ex);
+            throw new OSServiceAdapterException(ex);
         }
     }
 
@@ -211,25 +222,23 @@ public class WindowsService extends NonSMFServiceAdapter {
             setTemplateFile(TEMPLATE_FILE_NAME);
             setSourceWin32Exe();
             targetDir = new File(getServerDirs().getServerDir(), TARGET_DIR);
-            if (!targetDir.isDirectory()) {
-                if (!targetDir.mkdirs())
-                    throw new RuntimeException(Strings.get("noTargetDir", targetDir));
+            if (!targetDir.isDirectory() && !targetDir.mkdirs()) {
+                    throw new OSServiceAdapterException(Strings.get("noTargetDir", targetDir));
             }
             targetWin32Exe = new File(targetDir, info.serviceName + "Service.exe");
             targetConfig = new File(targetDir, info.serviceName + "Service.exe.config");
-            PrintWriter config = new PrintWriter(targetConfig);
-            config.println("<configuration>");
-            config.println("<startup>");
-            config.println("<supportedRuntime version=\"v2.0.50727\" />");
-            config.println("<supportedRuntime version=\"v4.0\" />");
-            config.println("</startup>");
-            config.println("</configuration>");
-            config.close();
+            try (PrintWriter config = new PrintWriter(targetConfig)) {
+                config.println("<configuration>");
+                config.println("<startup>");
+                config.println("<supportedRuntime version=\"v2.0.50727\" />");
+                config.println("<supportedRuntime version=\"v4.0\" />");
+                config.println("</startup>");
+                config.println("</configuration>");
+            }
             
             targetXml = new File(targetDir, info.serviceName + "Service.xml");
-        }
-        catch (IOException ex) {
-            throw new RuntimeException(ex);
+        } catch (IOException ex) {
+            throw new UncheckedIOException(ex);
         }
     }
 
@@ -381,13 +390,4 @@ public class WindowsService extends NonSMFServiceAdapter {
         return "  " + STOP_ARG_START + s + STOP_ARG_END + "\n";
     }
 
-    private static final String SOURCE_WIN32_EXE_FILENAME = "winsw.exe";
-    private static final String TARGET_DIR = "bin";
-    private static final String TEMPLATE_FILE_NAME = "Domain-service-winsw.xml.template";
-    private File sourceWin32Exe;
-    private File targetDir;
-    private File targetXml;
-    private File targetWin32Exe;
-    private File targetConfig;
-    private String xmlFileCopy;
 }

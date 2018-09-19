@@ -1,8 +1,8 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
- *
+ * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
  *  and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,23 @@
  *  https://github.com/payara/Payara/blob/master/LICENSE.txt
  *  See the License for the specific
  *  language governing permissions and limitations under the License.
- *
+ * 
+ *  When distributing the software, include this License Header Notice in each
+ *  file and include the License.
+ * 
  *  When distributing the software, include this License Header Notice in each
  *  file and include the License file at glassfish/legal/LICENSE.txt.
- *
+ * 
  *  GPL Classpath Exception:
  *  The Payara Foundation designates this particular file as subject to the "Classpath"
  *  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *  file that accompanied this code.
- *
+ * 
  *  Modifications:
  *  If applicable, add the following below the License Header, with the fields
  *  enclosed by brackets [] replaced by your own identifying information:
  *  "Portions Copyright [year] [name of copyright owner]"
- *
+ * 
  *  Contributor(s):
  *  If you wish your version of this file to be governed by only the CDDL or
  *  only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -37,51 +40,47 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.openid.controller;
+package org.glassfish.resources.connector;
 
-import static fish.payara.security.openid.OpenIdUtil.not;
-import fish.payara.security.openid.api.OpenIdState;
-import fish.payara.security.openid.domain.OpenIdConfiguration;
-import static fish.payara.security.openid.http.HttpStorageController.getInstance;
-import javax.enterprise.context.ApplicationScoped;
-import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
-import org.glassfish.common.util.StringHelper;
+import java.util.ArrayList;
+import java.util.List;
+import javax.inject.Inject;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.resourcebase.resources.api.ResourceConstants;
+import org.glassfish.resources.util.ResourceUtil;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- * Controller to manage OpenId state parameter value
  *
- * @author Gaurav Gupta
+ * @author jonathan coustick
+ * @since 5.184
  */
-@ApplicationScoped
-public class StateController {
-
-    private static final String STATE_KEY = "oidc.state";
-
-    public void store(
-            OpenIdState state,
-            OpenIdConfiguration configuration,
-            HttpMessageContext context) {
-
-        getInstance(configuration, context)
-                .store(STATE_KEY, state.getValue(), null);
+@Service(name = ResourceConstants.PY_RESOURCES_MODULE)
+public class PayaraResourcesSniffer extends ResourcesSniffer {
+    
+    @Inject 
+    private ServiceLocator locator;
+    
+    public PayaraResourcesSniffer() {
+        super(ResourceConstants.PY_RESOURCES_MODULE, ResourceConstants.PAYARA_RESOURCES_LOCATION);
     }
-
-    public OpenIdState get(
-            OpenIdConfiguration configuration,
-            HttpMessageContext context) {
-
-        return getInstance(configuration, context)
-                .getAsString(STATE_KEY)
-                .filter(not(StringHelper::isEmpty))
-                .map(OpenIdState::new)
-                .orElse(null);
+    
+    @Override
+    public String getModuleType() {
+        return ResourceConstants.PY_RESOURCES_MODULE;
     }
+    
+    @Override
+    public boolean handles(ReadableArchive archive) {
+        return ResourceUtil.hasPayaraResourcesXML(archive, locator) && archive.getParentArchive() == null;
+    }
+    
+    private static final List<String> deploymentConfigurationPaths = initDeploymentConfigurationPaths();
 
-    public void remove(
-            OpenIdConfiguration configuration,
-            HttpMessageContext context) {
-
-        getInstance(configuration, context)
-                .remove(STATE_KEY);
+    private static List<String> initDeploymentConfigurationPaths() {
+        final List<String> result = new ArrayList<String>();
+        result.add(ResourceConstants.PAYARA_RESOURCES_LOCATION);
+        return result;
     }
 }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor.jvm;
 
@@ -55,24 +56,25 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.*;
 
 /**
- *
+ * Starts the various JVM monitoring MBeans
  * @author PRASHANTH ABBAGANI
  */
 @Service
 @RunLevel(value=PostStartupRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
 public class JVMStatsProviderBootstrap implements PostConstruct {
 
-    private ServerRuntimeStatsProvider sRuntimeStatsProvider = new ServerRuntimeStatsProvider();
-    private JVMClassLoadingStatsProvider clStatsProvider = new JVMClassLoadingStatsProvider();
-    private JVMCompilationStatsProvider compileStatsProvider = new JVMCompilationStatsProvider();
-    private JVMMemoryStatsProvider memoryStatsProvider = new JVMMemoryStatsProvider();
-    private JVMOSStatsProvider osStatsProvider = new JVMOSStatsProvider();
-    private JVMRuntimeStatsProvider runtimeStatsProvider = new JVMRuntimeStatsProvider();
-    private JVMThreadSystemStatsProvider threadSysStatsProvider = new JVMThreadSystemStatsProvider();
-    private List<JVMGCStatsProvider> jvmStatsProviderList = new ArrayList();
-    private ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
+    private final ServerRuntimeStatsProvider sRuntimeStatsProvider = new ServerRuntimeStatsProvider();
+    private final JVMClassLoadingStatsProvider clStatsProvider = new JVMClassLoadingStatsProvider();
+    private final JVMCompilationStatsProvider compileStatsProvider = new JVMCompilationStatsProvider();
+    private final JVMMemoryStatsProvider memoryStatsProvider = new JVMMemoryStatsProvider();
+    private final JVMOSStatsProvider osStatsProvider = new JVMOSStatsProvider();
+    private final JVMRuntimeStatsProvider runtimeStatsProvider = new JVMRuntimeStatsProvider();
+    private final JVMThreadSystemStatsProvider threadSysStatsProvider = new JVMThreadSystemStatsProvider();
+    private final List<JVMGCStatsProvider> jvmStatsProviderList = new ArrayList();
+    private final ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
     public static final String JVM = "jvm";
 
+    @Override
     public void postConstruct(){
 
         /* register with monitoring */

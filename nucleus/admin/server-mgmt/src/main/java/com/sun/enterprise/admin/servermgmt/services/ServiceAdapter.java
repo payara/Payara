@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.servermgmt.services;
 
 import com.sun.enterprise.util.OS;
@@ -51,6 +53,10 @@ import static com.sun.enterprise.admin.servermgmt.services.Constants.*;
  * @author bnevins
  */
 public abstract class ServiceAdapter implements Service {
+    
+    private final Map<String, String> tokenMap = new HashMap<String, String>();
+    final PlatformServicesInfo info;
+    
     ServiceAdapter(ServerDirs serverDirs, AppserverServiceType type) {
         info = new PlatformServicesInfo(serverDirs, type);
     }
@@ -115,7 +121,7 @@ public abstract class ServiceAdapter implements Service {
         getTokenMap().put(FQSN_TN, info.fqsn);
         getTokenMap().put(OS_USER_TN, info.osUser);
 
-        if (OS.isWindowsForSure() && !LINUX_HACK) {
+        if (OS.isWindowsForSure()) {
             // Windows doesn't respond well to slashes in the name!!
             getTokenMap().put(SERVICE_NAME_TN, info.serviceName);
             getTokenMap().put(ENTITY_NAME_TN, serverName);
@@ -228,6 +234,17 @@ public abstract class ServiceAdapter implements Service {
             }
         }
     }
-    private final Map<String, String> tokenMap = new HashMap<String, String>();
-    final PlatformServicesInfo info;
+    
+    public class OSServiceAdapterException extends RuntimeException {
+        
+        public OSServiceAdapterException(String message){
+            super(message);
+        }
+        
+        public OSServiceAdapterException(Exception ex){
+            super(ex);
+        }
+    }
+    
+    
 }

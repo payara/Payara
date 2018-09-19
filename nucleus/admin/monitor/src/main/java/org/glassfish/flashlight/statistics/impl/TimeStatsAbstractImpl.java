@@ -80,15 +80,10 @@ public abstract class TimeStatsAbstractImpl extends AbstractTreeNode implements 
         
     }
 
+    @Override
     public double getTime() {
         return average.getAverage();
     }
-
-    @Override
-    abstract public void entry();
-
-    @Override
-    abstract public void exit();
 
     protected void postEntry(long entryTime) {
         if (startTime == 0) {

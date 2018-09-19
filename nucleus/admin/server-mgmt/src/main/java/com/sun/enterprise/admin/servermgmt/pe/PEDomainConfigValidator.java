@@ -37,11 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.pe;
-
-
-
 
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
 import com.sun.enterprise.admin.servermgmt.DomainConfigValidator;
@@ -50,10 +48,8 @@ import com.sun.enterprise.admin.servermgmt.InvalidConfigException;
 import com.sun.enterprise.admin.servermgmt.PortValidator;
 import com.sun.enterprise.admin.servermgmt.StringValidator;
 import com.sun.enterprise.util.i18n.StringManager;
-import java.lang.StringBuffer;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -68,41 +64,29 @@ public class PEDomainConfigValidator extends DomainConfigValidator
     /**
      * i18n strings manager object
      */
-    private static final StringManager strMgr = 
-        StringManager.getManager(PEDomainConfigValidator.class);
+    private static final StringManager STRING_MANAGER = StringManager.getManager(PEDomainConfigValidator.class);
 
-    private static final String lInstallRoot    = strMgr.getString("installRoot");
-    private static final String lDomainsRoot    = strMgr.getString("domainsRoot");
-    private static final String lJavaHome       = strMgr.getString("javaHome");
-    private static final String lAdminPort      = strMgr.getString("adminPort");
-    private static final String lInstancePort   = strMgr.getString("instancePort");
-    private static final String lHostName       = strMgr.getString("hostName");
-    private static final String lJmsPort        = strMgr.getString("jmsPort");
-    private static final String lOrbPort        = strMgr.getString("orbPort");
+    private static final String INSTALL_ROOT    = STRING_MANAGER.getString("installRoot");
+    private static final String DOMAINS_ROOT    = STRING_MANAGER.getString("domainsRoot");
+    private static final String JAVA_HOME       = STRING_MANAGER.getString("javaHome");
+    private static final String ADMIN_PORT      = STRING_MANAGER.getString("adminPort");
+    private static final String INSTANCE_PORT   = STRING_MANAGER.getString("instancePort");
+    private static final String HOST_NAME       = STRING_MANAGER.getString("hostName");
+    private static final String JMS_PORT        = STRING_MANAGER.getString("jmsPort");
+    private static final String ORB_PORT        = STRING_MANAGER.getString("orbPort");
+    
+    private static final String STRING_TYPE = String.class.getCanonicalName();
+    private static final String INTEGER_TYPE = Integer.class.getCanonicalName();
 
     static DomainConfigEntryInfo[] entries = new DomainConfigEntryInfo[]
     {
-        new DomainConfigEntryInfo(DomainConfig.K_INSTALL_ROOT, 
-                                  "java.lang.String",
-                                  new FileValidator(lInstallRoot, "dr")),
-        new DomainConfigEntryInfo(DomainConfig.K_DOMAINS_ROOT, 
-                                  "java.lang.String",
-                                  new FileValidator(lDomainsRoot, "drw")),
-        new DomainConfigEntryInfo(DomainConfig.K_ADMIN_PORT, 
-                                  "java.lang.Integer",
-                                  new PortValidator(lAdminPort)),
-        new DomainConfigEntryInfo(DomainConfig.K_INSTANCE_PORT, 
-                                  "java.lang.Integer",
-                                  new PortValidator(lInstancePort)),
-        new DomainConfigEntryInfo(DomainConfig.K_HOST_NAME, 
-                                  "java.lang.String",
-                                  new StringValidator(lHostName)),
-        new DomainConfigEntryInfo(DomainConfig.K_ORB_LISTENER_PORT, 
-                                  "java.lang.Integer",
-                                  new PortValidator(lOrbPort)),
-        new DomainConfigEntryInfo(DomainConfig.K_JMS_PORT, 
-                                  "java.lang.Integer",
-                                  new PortValidator(lJmsPort))
+        new DomainConfigEntryInfo(DomainConfig.K_INSTALL_ROOT, STRING_TYPE, new FileValidator(INSTALL_ROOT, "dr")),
+        new DomainConfigEntryInfo(DomainConfig.K_DOMAINS_ROOT, STRING_TYPE, new FileValidator(DOMAINS_ROOT, "drw")),
+        new DomainConfigEntryInfo(DomainConfig.K_ADMIN_PORT, INTEGER_TYPE, new PortValidator(ADMIN_PORT)),
+        new DomainConfigEntryInfo(DomainConfig.K_INSTANCE_PORT, INTEGER_TYPE, new PortValidator(INSTANCE_PORT)),
+        new DomainConfigEntryInfo(DomainConfig.K_HOST_NAME, STRING_TYPE, new StringValidator(HOST_NAME)),
+        new DomainConfigEntryInfo(DomainConfig.K_ORB_LISTENER_PORT, INTEGER_TYPE, new PortValidator(ORB_PORT)),
+        new DomainConfigEntryInfo(DomainConfig.K_JMS_PORT, INTEGER_TYPE, new PortValidator(JMS_PORT))
     };
 
     /** Creates a new instance of PEDomainConfigValidator */
@@ -111,11 +95,13 @@ public class PEDomainConfigValidator extends DomainConfigValidator
         super(entries);
     }
 
+    @Override
     public void validate(Object domainConfig) throws InvalidConfigException{
         super.validate(domainConfig);
         uniquePorts((DomainConfig) domainConfig);
     }
 
+    @Override
     protected boolean isValidate(String name, Object domainConfig)
     {
         boolean isPortEntry =   DomainConfig.K_ADMIN_PORT.equals(name) ||
@@ -125,12 +111,9 @@ public class PEDomainConfigValidator extends DomainConfigValidator
         return (isPortEntry) ? isValidatePorts((Map)domainConfig) : true;
     }
 
-    private boolean isValidatePorts(Map domainConfig)
-    {
-        Boolean isValidatePorts = 
-            (Boolean)domainConfig.get(DomainConfig.K_VALIDATE_PORTS);
-        return (null != isValidatePorts) ? 
-                    isValidatePorts.booleanValue() : true;
+    private boolean isValidatePorts(Map domainConfig) {
+        Boolean isValidatePorts = (Boolean)domainConfig.get(DomainConfig.K_VALIDATE_PORTS);
+        return (null != isValidatePorts) ? isValidatePorts : true;
     }
 
     final void uniquePorts(final DomainConfig dc) throws InvalidConfigException{
@@ -141,12 +124,12 @@ public class PEDomainConfigValidator extends DomainConfigValidator
         }
     }
 
-    private final String getMessage(final Map ports){
+    private String getMessage(final Map ports){
         return getLocalizedString("duplicatePorts", getDuplicatePorts(ports));
     }
 
-    private final String getLocalizedString(final String key, final Object o){
-        return strMgr.getString(key, o);
+    private String getLocalizedString(final String key, final Object o){
+        return STRING_MANAGER.getString(key, o);
     }
 
     final String getDuplicatePorts(final Map ports){
@@ -161,7 +144,7 @@ public class PEDomainConfigValidator extends DomainConfigValidator
          * map must be sets, to allow for many to 1 relations in the input
          * map.
          */
-    private final Map reverseMap(final Map inputMap){
+    private Map reverseMap(final Map inputMap){
         final Map outputMap = new TreeMap();
         for (Iterator entries = inputMap.entrySet().iterator(); entries.hasNext(); ){
             Map.Entry entry = (Map.Entry) entries.next();
@@ -174,7 +157,7 @@ public class PEDomainConfigValidator extends DomainConfigValidator
          * Add the given key/value pair, but reversing it, in the given
          * map. reversal means that the values in the map must be sets.
          */
-    private final void addEntryToMap(final Object key, final Object value, final Map map){
+    private void addEntryToMap(final Object key, final Object value, final Map map){
         if (!map.containsKey(value)){
             map.put(value, new TreeSet());
         }
@@ -186,7 +169,7 @@ public class PEDomainConfigValidator extends DomainConfigValidator
          * those entries where the value has a size greater than 1
          * @param map a map of key to Set of value
          */
-    private final String printDuplicatesFromMap(final Map map){
+    private String printDuplicatesFromMap(final Map map){
         final StringBuffer sb = new StringBuffer();
         final Iterator it = map.entrySet().iterator();
         Map.Entry entry = getNextDuplicate(it);
@@ -205,7 +188,7 @@ public class PEDomainConfigValidator extends DomainConfigValidator
          * Get next entry from iterator whose value is a set of
          * cardinality greater than 1
          */
-    private final Map.Entry getNextDuplicate(final Iterator it){
+    private Map.Entry getNextDuplicate(final Iterator it){
         while (it.hasNext()){
             Map.Entry result = (Map.Entry) it.next();
             if (((Set)result.getValue()).size() > 1){
@@ -215,7 +198,7 @@ public class PEDomainConfigValidator extends DomainConfigValidator
         return null;
     }
 
-    private final void printEntry(final StringBuffer sb, final Map.Entry entry){
+    private void printEntry(final StringBuffer sb, final Map.Entry entry){
         printEntry(sb, (Object) entry.getKey(), (Set) entry.getValue());
     }
 
@@ -224,7 +207,7 @@ public class PEDomainConfigValidator extends DomainConfigValidator
          * buffer. Note that the set is considered to contain more than
          * one object
          */
-    private final void printEntry(final StringBuffer sb, final Object key, final Set dups){
+    private void printEntry(final StringBuffer sb, final Object key, final Set dups){
         sb.append(key).append(" -> ");
         printSet(sb, dups);
     }
@@ -232,7 +215,7 @@ public class PEDomainConfigValidator extends DomainConfigValidator
         /**
          * Print the given set on the given string buffer
          */
-    private final void printSet(final StringBuffer sb, final Set set){
+    private void printSet(final StringBuffer sb, final Set set){
         sb.append("{");
         String separator = "";
         for (Iterator it = set.iterator(); it.hasNext(); ){

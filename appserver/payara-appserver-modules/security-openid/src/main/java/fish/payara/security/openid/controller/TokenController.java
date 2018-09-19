@@ -64,7 +64,6 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.PlainJWT;
 import com.nimbusds.jwt.SignedJWT;
-import com.nimbusds.jwt.proc.BadJWTException;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.nimbusds.jwt.proc.JWTClaimsSetVerifier;
@@ -144,10 +143,9 @@ public class TokenController {
         //  ID Token and Access Token Request
         Client client = ClientBuilder.newClient();
         WebTarget target = client.target(configuration.getProviderMetadata().getTokenEndpoint());
-        Response response = target.request()
+        return target.request()
                 .accept(APPLICATION_JSON)
                 .post(Entity.form(form));
-        return response;
     }
 
     /**
@@ -162,8 +160,7 @@ public class TokenController {
             /**
              * The ID tokens are in JSON Web Token (JWT) format.
              */
-            JWT idTokenJWT = JWTParser.parse(idToken);
-            return idTokenJWT;
+            return JWTParser.parse(idToken);
         } catch (ParseException ex) {
             throw new IllegalStateException("Error in parsing the Id Token", ex);
         }
@@ -190,18 +187,12 @@ public class TokenController {
             expectedNonceHash = nonceController.getNonceHash(expectedNonce);
         }
 
-
         try {
-
             if (idToken instanceof PlainJWT) {
                 PlainJWT plainToken = (PlainJWT) idToken;
-                try {
-                    claimsSet = plainToken.getJWTClaimsSet();
-                    JWTClaimsSetVerifier jwtVerifier = new IdTokenClaimsSetVerifier(configuration, expectedNonceHash);
-                    jwtVerifier.verify(claimsSet, null);
-                } catch (ParseException | BadJWTException e) {
-                    throw new IllegalStateException(e.getMessage(), e);
-                }
+                claimsSet = plainToken.getJWTClaimsSet();
+                JWTClaimsSetVerifier jwtVerifier = new IdTokenClaimsSetVerifier(configuration, expectedNonceHash);
+                jwtVerifier.verify(claimsSet, null);
             } else if (idToken instanceof SignedJWT) {
                 SignedJWT signedToken = (SignedJWT) idToken;
                 JWSHeader header = signedToken.getHeader();
@@ -233,7 +224,7 @@ public class TokenController {
             } else {
                 throw new IllegalStateException("Unexpected JWT type : " + idToken.getClass());
             }
-        } catch (BadJOSEException | JOSEException ex) {
+        } catch (ParseException | BadJOSEException | JOSEException ex) {
             throw new IllegalStateException(ex);
         } finally {
             nonceController.remove(configuration, httpContext);

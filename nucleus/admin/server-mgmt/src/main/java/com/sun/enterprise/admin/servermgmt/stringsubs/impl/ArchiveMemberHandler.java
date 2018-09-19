@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.stringsubs.impl;
 
@@ -55,9 +56,9 @@ import com.sun.enterprise.admin.servermgmt.xml.stringsubs.MemberEntry;
  */
 public class ArchiveMemberHandler implements ArchiveMember
 {
-    // Reference to the parent archive wrapper.
-    private ArchiveEntryWrapper _archiveWrapper;
-    private FileSubstitutionHandler _handler;
+    /** Reference to the parent archive wrapper. */
+    private final ArchiveEntryWrapper archiveWrapper;
+    private final FileSubstitutionHandler handler;
 
     /**
      * Constructs the {@link ArchiveMemberHandler} for the given input file.
@@ -68,34 +69,34 @@ public class ArchiveMemberHandler implements ArchiveMember
      */
     public ArchiveMemberHandler(File file, ArchiveEntryWrapper wrapper)
             throws FileNotFoundException {
-        _handler = file.length() > SubstitutionFileUtil.getInMemorySubstitutionFileSizeInBytes() ?
+        handler = file.length() > SubstitutionFileUtil.getInMemorySubstitutionFileSizeInBytes() ?
                 new LargeFileSubstitutionHandler(file) : new SmallFileSubstitutionHandler(file);
-        _archiveWrapper = wrapper;
+        archiveWrapper = wrapper;
     }
 
     @Override
     public void finish() {
-        _handler.finish();
+        handler.finish();
         getParent().notifyCompletion();
     }
 
     @Override
     public ArchiveEntryWrapper getParent() {
-        return _archiveWrapper;
+        return archiveWrapper;
     }
 
     @Override
     public String getName() {
-        return _handler.getName();
+        return handler.getName();
     }
 
     @Override
     public Reader getReader() {
-        return _handler.getReader();
+        return handler.getReader();
     }
 
     @Override
     public Writer getWriter() {
-        return _handler.getWriter();
+        return handler.getWriter();
     }
 }
