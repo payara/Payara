@@ -48,8 +48,6 @@ import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
 
 public class Constants {
     
-    public static final String ENDPOINT_PATTERN = "/metrics/*";
-    
     public static final String EMPTY_STRING = "";
     
     // Registry Names
