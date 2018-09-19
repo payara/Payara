@@ -16,6 +16,7 @@ pipeline {
                 MAVEN_OPTS=getMavenOpts()
             }
             steps {
+                sh 'printenv'
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh "mvn -V -ff -e clean install -PBuildExtras -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts -Djavax.xml.accessExternalSchema=all"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -29,7 +30,6 @@ pipeline {
                 MAVEN_OPTS=getMavenOpts()
             }
             echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            sh 'printenv'
             // checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
             //     branches: [[name: "*/master"]],
             //     doGenerateSubmoduleConfigurations: false,
