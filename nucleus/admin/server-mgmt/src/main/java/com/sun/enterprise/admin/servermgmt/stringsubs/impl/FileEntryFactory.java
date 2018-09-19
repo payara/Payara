@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.stringsubs.impl;
 
@@ -62,8 +63,8 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  */
 class FileEntryFactory {
 
-    private static final Logger _logger = SLogger.getLogger();
-    private static final LocalStringsImpl _strings = new LocalStringsImpl(FileEntryFactory.class);
+    private static final Logger LOGGER = SLogger.getLogger();
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(FileEntryFactory.class);
 
     /**
      * Create the {@link List} of {@link FileSubstitutionHandler} by processing the file path.
@@ -77,7 +78,7 @@ class FileEntryFactory {
     @SuppressWarnings("unchecked")
     List<Substitutable> getFileElements(FileEntry fileEntry)  {
         // TODO: Name attribute of file entry can not contain comma separated files.
-        String pathEntries[] = fileEntry.getName().split(",");
+        String[] pathEntries= fileEntry.getName().split(",");
         List<Substitutable> substituables = null;
         List<File> retrievedFiles  = null;
         for(String pathEntry : pathEntries) {
@@ -99,8 +100,8 @@ class FileEntryFactory {
                         if(matchingFile.exists() && matchingFile.canRead() && matchingFile.canWrite()) {
                             retrievedFiles.add(matchingFile);
                         } else {
-                        	if (_logger.isLoggable(Level.FINER)) {
-                        		_logger.log(Level.FINER, _strings.get("skipFileFromSubstitution", matchingFile.getAbsolutePath()));
+                        	if (LOGGER.isLoggable(Level.FINER)) {
+                        		LOGGER.log(Level.FINER, STRINGS.get("skipFileFromSubstitution", matchingFile.getAbsolutePath()));
                         	}
                         }
                     }
@@ -111,8 +112,8 @@ class FileEntryFactory {
                 retrievedFiles = fileLocator.getFiles(fileEntry.getName());
             }
             if (retrievedFiles.isEmpty()) {
-            	if (_logger.isLoggable(Level.FINER)) {
-            		_logger.log(Level.FINER, _strings.get("noMatchedFile", pathEntry));
+            	if (LOGGER.isLoggable(Level.FINER)) {
+            		LOGGER.log(Level.FINER, STRINGS.get("noMatchedFile", pathEntry));
             	}
                 continue;
             }
@@ -126,11 +127,11 @@ class FileEntryFactory {
                                 new LargeFileSubstitutionHandler(retrievedFile) : new SmallFileSubstitutionHandler(retrievedFile);
                                 substituables.add(substituable);
                     } catch (FileNotFoundException e) {
-                    	LogHelper.log(_logger, Level.WARNING, SLogger.INVALID_FILE_LOCATION, e, retrievedFile);
+                    	LogHelper.log(LOGGER, Level.WARNING, SLogger.INVALID_FILE_LOCATION, e, retrievedFile);
                     }
                 }
             }
         }
-        return substituables == null ? Collections.EMPTY_LIST: substituables;
+        return substituables == null ? Collections.emptyList() : substituables;
     }
 }

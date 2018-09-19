@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,8 +50,10 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.io.DomainDirs;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.*;
 /**
@@ -82,44 +84,50 @@ public class StopAllDomainsCommand extends StopDomainCommand {
     @Override
     protected void validate()
             throws CommandException, CommandValidationException {
+        // no-op to prevent initDomain being called
     }    
     
     @Override
+    @SuppressWarnings("ThrowFromFinallyBlock")
     protected int executeCommand() throws CommandException {
+        MultiException allExceptions = new MultiException();
         try {
             String[] domainsList = getDomains();
-            for (String domain : domainsList){
+            for (String domain : domainsList) {
                 setConfig(domain);
                 RemoteCLICommand cmd = new RemoteCLICommand("stop-domain", programOpts, env);
-                logger.fine("Stopping domain " + domain);
+                logger.log(Level.FINE, "Stopping domain {0}", domain);
                 try {
-                    cmd.executeAndReturnOutput("stop-domain","--force", force.toString());
-                } catch (Exception e){
-                    //System.out.println(e.getLocalizedMessage());
+                    cmd.executeAndReturnOutput("stop-domain", "--force", force.toString());
+                } catch (Exception e) {
+                    allExceptions.addError(e);
                 }
                 logger.fine("Stopped domain");
-            }      
-        return 0;
+            }
+            return 0;
         } catch (Exception ex) {
-            throw new CommandException(ex.getLocalizedMessage());
+            allExceptions.addError(ex);
+            return 1; // required to compile, but exception should be thrown in finally block
+        } finally {
+            if (!allExceptions.getErrors().isEmpty()){
+                throw new CommandException(allExceptions.getMessage());
+            }
         }
-        
         
     }
     
     //Copied from ListDomainCommand.java
     private String[] getDomains() throws DomainException, IOException{
-        
-         File domainsDirFile = ok(domainDirParam)
-                    ? new File(domainDirParam) : DomainDirs.getDefaultDomainsDir();
 
-            DomainConfig domainConfig = new DomainConfig(null, domainsDirFile.getAbsolutePath());
-            DomainsManager manager = new PEDomainsManager();
-            String[] domainsList = manager.listDomains(domainConfig);
-            if (domainsList.length == 0){
-                logger.fine(strings.get("NoDomainsToList"));
-            }
-            return domainsList;
+        File domainsDirFile = ok(domainDirParam) ? new File(domainDirParam) : DomainDirs.getDefaultDomainsDir();
+
+        DomainConfig domainConfig = new DomainConfig(null, domainsDirFile.getAbsolutePath());
+        DomainsManager manager = new PEDomainsManager();
+        String[] domainsList = manager.listDomains(domainConfig);
+        if (domainsList.length == 0) {
+            logger.fine(strings.get("NoDomainsToList"));
+        }
+        return domainsList;
     }
     
     //Copied from com.sun.enterprise.admin.servermgmt.cli.StopDomainCommand
@@ -133,8 +141,7 @@ public class StopAllDomainsCommand extends StopDomainCommand {
                 return dasNotRunning();
             }
             programOpts.setHostAndPort(getAdminAddress());
-            logger.finer("Stopping local domain on port "
-                    + programOpts.getPort());
+            logger.log(Level.FINER, "Stopping local domain on port {0}", programOpts.getPort());
 
             /*
              * If we're using the local password, we don't want to prompt

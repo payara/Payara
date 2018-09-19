@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.domain;
 
@@ -72,20 +73,21 @@ public class CustomTokenClient {
     public static final String CUSTOM_TOKEN_PLACE_HOLDER = "TOKENS_HERE";
     public static final String DEFAULT_TOKEN_PLACE_HOLDER = "DEFAULT_TOKENS_HERE";
 
-    private DomainConfig _domainConfig;
+    private final DomainConfig domainConfig;
 
     public CustomTokenClient(DomainConfig domainConfig) {
-        _domainConfig = domainConfig;
+        this.domainConfig = domainConfig;
     }
 
     /**
-     * Get's the substitutable custom tokens.
+     * Gets the substitutable custom tokens.
      *
      * @return {@link Map} of substitutable tokens, or empty Map
      *   if no custom token found.
      * @throws DomainException If error occurred in retrieving the
      *   custom tokens.
      */
+    @SuppressWarnings("empty-statement")
     public Map<String, String> getSubstitutableTokens() throws DomainException {
         CustomizationTokensProvider provider = CustomizationTokensProviderFactory.createCustomizationTokensProvider();
         Map<String, String> generatedTokens = new HashMap<String, String>();
@@ -94,12 +96,12 @@ public class CustomTokenClient {
         try {
             List<ConfigCustomizationToken> customTokens = provider.getPresentConfigCustomizationTokens();
             if (!customTokens.isEmpty()) {
-                StringBuffer generatedSysTags = new StringBuffer();
+                StringBuilder generatedSysTags = new StringBuilder();
 
                 // Check presence of token place-holder
                 Set<Integer> usedPorts = new HashSet<Integer>();
-                Properties domainProps = _domainConfig.getDomainProperties();
-                String portBase = (String)_domainConfig.get(DomainConfig.K_PORTBASE);
+                Properties domainProps = domainConfig.getDomainProperties();
+                String portBase = (String)domainConfig.get(DomainConfig.K_PORTBASE);
 
                 Map<String, String> filePaths = new HashMap<String, String>(3, 1);
                 filePaths.put(SystemPropertyConstants.INSTALL_ROOT_PROPERTY, System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
@@ -181,7 +183,7 @@ public class CustomTokenClient {
             }
             List<ConfigCustomizationToken> defaultTokens = provider.getPresentDefaultConfigCustomizationTokens();
             if (!defaultTokens.isEmpty()) {
-                StringBuffer defaultSysTags = new StringBuffer();
+                StringBuilder defaultSysTags = new StringBuilder();
                 noOfTokens = defaultTokens.size();
                 for (ConfigCustomizationToken token : defaultTokens) {
                     defaultSysTags.append(SystemPropertyTagBuilder.buildSystemTag(token));
@@ -212,19 +214,19 @@ public class CustomTokenClient {
      */
     private static class SystemPropertyTagBuilder {
 
-        private static final String placeHolderTagWithDesc = "<system-property name=\"%%%NAME%%%\" value=\"%%%VALUE%%%\" description=\"%%%DESCRIPTION%%%\" />";
-        private static final String placeHolderTagWithoutDesc = "<system-property name=\"%%%NAME%%%\" value=\"%%%VALUE%%%\" />";
-        private static final String namePlaceHolder = "%%%NAME%%%";
-        private static final String valuePlaceHolder = "%%%VALUE%%%";
-        private static final String descriptionPlaceHolder = "%%%DESCRIPTION%%%";
+        private static final String PLACE_HOLDER_TAG_WITH_DESC = "<system-property name=\"%%%NAME%%%\" value=\"%%%VALUE%%%\" description=\"%%%DESCRIPTION%%%\" />";
+        private static final String PLACE_HOLDER_TAG_WITHOUT_DESC = "<system-property name=\"%%%NAME%%%\" value=\"%%%VALUE%%%\" />";
+        private static final String NAME_PLACE_HOLDER = "%%%NAME%%%";
+        private static final String VALUE_PLACE_HOLDER = "%%%VALUE%%%";
+        private static final String DESCRIPTION_PLACE_HOLDER = "%%%DESCRIPTION%%%";
 
         /**
          * Build the System tag for the given token & value.
          */
         private static String buildSystemTag(ConfigCustomizationToken token, String value) {
-            String builtTag = placeHolderTagWithDesc.replace(valuePlaceHolder, value);
-            builtTag = builtTag.replace(descriptionPlaceHolder, token.getDescription());
-            builtTag = builtTag.replace(namePlaceHolder, token.getName());
+            String builtTag = PLACE_HOLDER_TAG_WITH_DESC.replace(VALUE_PLACE_HOLDER, value);
+            builtTag = builtTag.replace(DESCRIPTION_PLACE_HOLDER, token.getDescription());
+            builtTag = builtTag.replace(NAME_PLACE_HOLDER, token.getName());
             return builtTag;
         }
 
@@ -236,8 +238,8 @@ public class CustomTokenClient {
          * Build the System tag for the given name & value.
          */
         private static String buildSystemTag(String name, String value) {
-            String builtTag = placeHolderTagWithoutDesc.replace(valuePlaceHolder, value);
-            builtTag = builtTag.replace(namePlaceHolder, name);
+            String builtTag = PLACE_HOLDER_TAG_WITHOUT_DESC.replace(VALUE_PLACE_HOLDER, value);
+            builtTag = builtTag.replace(NAME_PLACE_HOLDER, name);
             return builtTag;
         }
     } 

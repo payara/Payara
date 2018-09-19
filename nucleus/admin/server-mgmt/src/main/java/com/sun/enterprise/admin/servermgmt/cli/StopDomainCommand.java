@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
  */
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -48,6 +48,7 @@ import com.sun.enterprise.universal.process.ProcessUtils;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.File;
 import java.util.Map;
+import java.util.logging.Level;
 import javax.inject.Inject;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
@@ -113,7 +114,7 @@ public class StopDomainCommand extends LocalDomainCommand {
                 return dasNotRunning();
             }
             programOpts.setHostAndPort(getAdminAddress());
-            logger.finer("Stopping local domain on port " + programOpts.getPort());
+            logger.log(Level.FINER, "Stopping local domain on port {0}", programOpts.getPort());
 
             /*
              * If we're using the local password, we don't want to prompt
@@ -168,12 +169,12 @@ public class StopDomainCommand extends LocalDomainCommand {
         // https://glassfish.dev.java.net/issues/show_bug.cgi?id=8387
         if (isLocal()) {
             ListDomainsCommand listDomains = serviceLocator.getService(ListDomainsCommand.class);
-            String runningDomains = "";
+            StringBuilder runningDomains = new StringBuilder();
             try {
                 Map<String, Boolean> domains = listDomains.getDomains();
                 for (String domain : domains.keySet()) {
                     if (domains.get(domain)) {
-                        runningDomains += "\n" + domain;
+                        runningDomains.append("\n").append(domain);
                     }
                 }
             } catch(Exception e) {        
