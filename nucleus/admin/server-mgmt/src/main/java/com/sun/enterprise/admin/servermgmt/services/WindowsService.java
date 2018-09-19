@@ -238,7 +238,7 @@ public class WindowsService extends NonSMFServiceAdapter {
             
             targetXml = new File(targetDir, info.serviceName + "Service.xml");
         } catch (IOException ex) {
-            throw new UncheckedIOException(ex);
+            throw new RuntimeException(ex);
         }
     }
 
