@@ -55,7 +55,7 @@ import org.glassfish.common.util.StringHelper;
 @ApplicationScoped
 public class StateController {
 
-    private final static String STATE_KEY = "oidc.state";
+    private static final String STATE_KEY = "oidc.state";
 
     public void store(
             OpenIdState state,
