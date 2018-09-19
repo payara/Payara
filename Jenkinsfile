@@ -29,20 +29,22 @@ pipeline {
             environment {
                 MAVEN_OPTS=getMavenOpts()
             }
-            echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            // checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-            //     branches: [[name: "*/master"]],
-            //     doGenerateSubmoduleConfigurations: false,
-            //     extensions: [
-            //         [$class: 'SubmoduleOption',
-            //         disableSubmodules: false,
-            //         parentCredentials: true,
-            //         recursiveSubmodules: true,
-            //         reference: '',
-            //         trackingSubmodules: false]],
-            //     submoduleCfg: [],
-            //     userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee8-samples.git"]]]
-            echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            steps{
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                // checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                //     branches: [[name: "*/master"]],
+                //     doGenerateSubmoduleConfigurations: false,
+                //     extensions: [
+                //         [$class: 'SubmoduleOption',
+                //         disableSubmodules: false,
+                //         parentCredentials: true,
+                //         recursiveSubmodules: true,
+                //         reference: '',
+                //         trackingSubmodules: false]],
+                //     submoduleCfg: [],
+                //     userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee8-samples.git"]]]
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
         }
     }
 }
