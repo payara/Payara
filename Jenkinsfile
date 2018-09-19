@@ -16,6 +16,7 @@ pipeline {
                 MAVEN_OPTS=getMavenOpts()
             }
             steps {
+                sh 'echo $PATH'
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh "mvn -V -U -ff -e clean install -PBuildExtras"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
