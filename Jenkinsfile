@@ -18,14 +18,14 @@ pipeline {
             steps {
                 sh 'echo $PATH'
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -V -U -ff -e clean install -PBuildExtras"
+                sh "mvn -V -U -ff -e clean install -PBuildExtras -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts -Djavax.xml.accessExternalSchema=all"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
     }
 }
 def String getMavenOpts(){
-    def mavenOpts = '-Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts -Djavax.xml.accessExternalSchema=all';
+    def mavenOpts = '';
     if('7'.equalsIgnoreCase(params.jdkVer)){
       mavenOpts= mavenOpts + ' -Xmx1024M -XX:MaxPermSize=512m';
     }
