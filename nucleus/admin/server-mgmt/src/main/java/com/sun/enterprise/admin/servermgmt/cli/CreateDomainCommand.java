@@ -194,7 +194,7 @@ public final class CreateDomainCommand extends CLICommand {
         }
         if (programOpts.getUser() != null) {
             try {
-                FileRealmStorageManager.validateUserName(programOpts.getUser());
+                FileRealmHelper.validateUserName(programOpts.getUser());
             } catch (IllegalArgumentException ise) {
                 throw new CommandValidationException(STRINGS.get("InvalidUserName", programOpts.getUser()));
             }
@@ -338,27 +338,27 @@ public final class CreateDomainCommand extends CLICommand {
     /**
      * Get the admin password as a required option.
      */
-    private char[] getAdminPassword() throws CommandValidationException {
+    private String getAdminPassword() throws CommandValidationException {
         // Create a required ParamModel for the password
         ParamModelData paramModelData = new ParamModelData(ADMIN_PASSWORD, String.class, false, null);
         paramModelData.prompt = STRINGS.get("AdminPassword");
         paramModelData.promptAgain = STRINGS.get("AdminPasswordAgain");
         paramModelData.param._password = true;
         
-        return getPassword(paramModelData, DEFAULT_ADMIN_PASSWORD, true);
+        return getPassword(paramModelData, SystemPropertyConstants.DEFAULT_ADMIN_PASSWORD, true);
     }
     
     /**
      * Get the master password as a required option (by default it is not required)
      */
-    private char[] getMasterPassword() throws CommandValidationException {
+    private String getMasterPassword() throws CommandValidationException {
         // Create a required ParamModel for the password
         ParamModelData paramModelData = new ParamModelData(MASTER_PASSWORD, String.class, false /* optional */, null);
         paramModelData.prompt = STRINGS.get("MasterPassword");
         paramModelData.promptAgain = STRINGS.get("MasterPasswordAgain");
         paramModelData.param._password = true;
         
-        return getPassword(paramModelData, DEFAULT_MASTER_PASSWORD, true);
+        return getPassword(paramModelData, RepositoryManager.DEFAULT_MASTER_PASSWORD, true);
     }
 
     /**
@@ -375,13 +375,13 @@ public final class CreateDomainCommand extends CLICommand {
 
         final int portToVerify = convertPortStr(portNum);
 
-        if (!isPortValid(portToVerify)) {
+        if (!NetUtils.isPortValid(portToVerify)) {
             throw new CommandException(STRINGS.get("InvalidPortRange", portNum));
         }
 
         if (!checkPorts) {
             // Do NOT make any network calls!
-            logger.log(FINER, "Port ={0}", portToVerify);
+            logger.log(Level.FINER, "Port ={0}", portToVerify);
             return;
         }
 
@@ -466,11 +466,11 @@ public final class CreateDomainCommand extends CLICommand {
         if (template == null || template.endsWith(".jar")) {
             domainConfig = new DomainConfig(domainName, domainPath, adminUser, adminPassword, masterPassword, saveMasterPassword, adminPort,
                     instancePort, domainProperties);
-            domainConfig.put(K_VALIDATE_PORTS, checkPorts);
-            domainConfig.put(KEYTOOLOPTIONS, keytoolOptions);
-            domainConfig.put(K_TEMPLATE_NAME, template);
-            domainConfig.put(K_PORTBASE, portBase);
-            domainConfig.put(K_INITIAL_ADMIN_USER_GROUPS, Version.getInitialAdminGroups());
+            domainConfig.put(DomainConfig.K_VALIDATE_PORTS, checkPorts);
+            domainConfig.put(DomainConfig.KEYTOOLOPTIONS, keytoolOptions);
+            domainConfig.put(DomainConfig.K_TEMPLATE_NAME, template);
+            domainConfig.put(DomainConfig.K_PORTBASE, portBase);
+            domainConfig.put(DomainConfig.K_INITIAL_ADMIN_USER_GROUPS, Version.getInitialAdminGroups());
             initSecureAdminSettings(domainConfig);
             try {
                 DomainBuilder domainBuilder = new DomainBuilder(domainConfig);
@@ -484,10 +484,10 @@ public final class CreateDomainCommand extends CLICommand {
         }
         
         logger.info(STRINGS.get("DomainCreated", domainName));
-        Integer aPort = (Integer) domainConfig.get(K_ADMIN_PORT);
+        Integer aPort = (Integer) domainConfig.get(DomainConfig.K_ADMIN_PORT);
         logger.info(STRINGS.get("DomainPort", domainName, Integer.toString(aPort)));
         
-        if (adminPassword != null && adminPassword.equals(DEFAULT_ADMIN_PASSWORD)) {
+        if (adminPassword != null && adminPassword.equals(SystemPropertyConstants.DEFAULT_ADMIN_PASSWORD)) {
             logger.info(STRINGS.get("DomainAllowsUnauth", domainName, adminUser));
         } else {
             logger.info(STRINGS.get("DomainAdminUser", domainName, adminUser));

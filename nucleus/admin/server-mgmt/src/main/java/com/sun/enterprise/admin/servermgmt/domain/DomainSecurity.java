@@ -46,6 +46,7 @@ import java.io.IOException;
 import org.glassfish.security.common.FileRealmHelper;
 
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
+import com.sun.enterprise.admin.servermgmt.KeystoreManager;
 import com.sun.enterprise.admin.servermgmt.MasterPasswordFileManager;
 import com.sun.enterprise.admin.servermgmt.RepositoryException;
 import com.sun.enterprise.admin.util.AdminConstants;
@@ -77,11 +78,11 @@ public class DomainSecurity extends MasterPasswordFileManager {
     /**
      * Create the password alias keystore (initially empty)
      *
-     * @param pwFile File to store encrypted password.
+     * @param passwordFile File to store encrypted password.
      * @param password password protecting the keystore
      * @throws RepositoryException if any error occurs in creation.
      */
-    void createPasswordAliasKeystore(File pwFile, String password)
+    void createPasswordAliasKeystore(File passwordFile, String password)
             throws RepositoryException {
         try {
             new PasswordAdapter(passwordFile.getAbsolutePath(), password.toCharArray()).writeStore();
@@ -100,13 +101,12 @@ public class DomainSecurity extends MasterPasswordFileManager {
      * @throws RepositoryException if any error occurs during keystore creation.
      */
     void createSSLCertificateDatabase(File configDir, DomainConfig config, String masterPassword) throws RepositoryException {
-        File trustStore = new File(configDir, TRUSTSTORE_FILE);
-        File keyStore = new File(configDir, KEYSTORE_FILE);
+        File trustStore = new File(configDir, DomainConstants.TRUSTSTORE_FILE);
+        File keyStore = new File(configDir, DomainConstants.KEYSTORE_FILE);
         
         createKeyStore(keyStore, config, masterPassword);
         changeKeyStorePassword(DEFAULT_MASTER_PASSWORD, masterPassword, trustStore);
-        copyCertificates(keyStore, trustStore, config, masterPassword);
-        copyCertificatesFromJdk(trustStore, masterPassword);
+        copyCertificates(configDir, config, masterPassword);
     }
 
     /**

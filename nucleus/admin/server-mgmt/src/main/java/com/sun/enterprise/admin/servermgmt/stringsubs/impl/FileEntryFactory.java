@@ -132,6 +132,6 @@ class FileEntryFactory {
                 }
             }
         }
-        return substituables == null ? Collections.emptyList() : substituables;
+        return substituables == null ? Collections.EMPTY_LIST : substituables;
     }
 }

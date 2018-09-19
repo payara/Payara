@@ -131,11 +131,9 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
         }
         
         if (password == null) {
-
-            // Prompt for it (if interactive)
-            char[] pwdChar = getPassword("password", STRINGS.get("AdminPassword"), null, false);
-
-            password = pwdChar != null ? new String(pwdChar) : null;
+            // prompt for it (if interactive)
+            password = getPassword("password", STRINGS.get("AdminPassword"), 
+                    null, false);
             if (password == null) {
                 throw new CommandValidationException(STRINGS.get("AdminPwRequired"));
             }
@@ -143,11 +141,9 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
         }
 
         if (newpassword == null) {
-            // Prompt for it (if interactive)
-            char[] pwdChar = getPassword("newpassword", STRINGS.get("change.admin.password.newpassword"),
+            // prompt for it (if interactive)
+            newpassword = getPassword("newpassword", STRINGS.get("change.admin.password.newpassword"), 
                     STRINGS.get("change.admin.password.newpassword.again"), true);
-
-            newpassword = pwdChar != null ? new String(pwdChar) : null;
             if (newpassword == null) {
                 throw new CommandValidationException(STRINGS.get("AdminNewPwRequired"));
             }

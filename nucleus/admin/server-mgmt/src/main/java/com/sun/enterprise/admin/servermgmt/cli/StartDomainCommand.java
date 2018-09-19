@@ -341,12 +341,11 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
                     
                     logger.info(STRINGS.get("new.adminpw.prompt"));
                     
-                    char[] password = super.getPassword(paramModelData, null, true);
-                    String passwordCopy = password != null ? new String(password) : null;
+                    String passwordCopy = super.getPassword(paramModelData, null, true);
                     if (passwordCopy == null) {
                         throw new CommandException(STRINGS.get("no.console"));
                     }
-                    ar.updateUser(auser, auser, npw.toCharArray(), null);
+                    ar.updateUser(adminUsername, adminUsername, passwordCopy.toCharArray(), null);
                     ar.persist();
                 }
             } catch (IOException ioe) {

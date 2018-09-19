@@ -77,7 +77,7 @@ public class KeystoreManager {
     
     private static final StringManager STRING_MANAGER = StringManager.getManager(KeystoreManager.class);
     
-    protected PEFileLayout _fileLayout = null;
+    protected PEFileLayout fileLayout = null;
     
 
     static {
@@ -161,10 +161,10 @@ public class KeystoreManager {
     }
 
     protected PEFileLayout getFileLayout(RepositoryConfig config) {
-        if (_fileLayout == null) {
-            _fileLayout = new PEFileLayout(config);
+        if (fileLayout == null) {
+            fileLayout = new PEFileLayout(config);
         }
-        return _fileLayout;
+        return fileLayout;
     }
 
     /**
