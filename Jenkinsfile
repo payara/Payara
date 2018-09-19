@@ -16,11 +16,33 @@ pipeline {
                 MAVEN_OPTS=getMavenOpts()
             }
             steps {
-                sh 'echo $PATH'
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -V -U -ff -e clean install -PBuildExtras -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts -Djavax.xml.accessExternalSchema=all"
+                sh "mvn -V -ff -e clean install -PBuildExtras -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts -Djavax.xml.accessExternalSchema=all"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
+        }
+        stage('Checkout Test') {
+            tools {
+                jdk "zulu-${jdkVer}"
+            }
+            environment {
+                MAVEN_OPTS=getMavenOpts()
+            }
+            echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            sh 'printenv'
+            // checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+            //     branches: [[name: "*/master"]],
+            //     doGenerateSubmoduleConfigurations: false,
+            //     extensions: [
+            //         [$class: 'SubmoduleOption',
+            //         disableSubmodules: false,
+            //         parentCredentials: true,
+            //         recursiveSubmodules: true,
+            //         reference: '',
+            //         trackingSubmodules: false]],
+            //     submoduleCfg: [],
+            //     userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee8-samples.git"]]]
+            echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
         }
     }
 }
