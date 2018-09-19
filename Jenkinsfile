@@ -1,6 +1,7 @@
 #!groovy
 //in repo Jenkinsfile
 @Library('versionUtils') _
+def pom = ''
 pipeline {
     agent any
     parameters {
@@ -50,7 +51,7 @@ pipeline {
             }
             steps {
                 script{
-                    def pom = readMavenPom file: 'pom.xml'
+                    pom = readMavenPom file: 'pom.xml'
                     echo "Payara pom version is ${pom.version}"
                 }
             	echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
