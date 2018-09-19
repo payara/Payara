@@ -388,13 +388,11 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                 if (null != throwable) {
                     try (StringWriter stringWriter = new StringWriter(); 
                          PrintWriter printWriter = new PrintWriter(stringWriter)) {
-                        JsonObjectBuilder traceObject = Json.createObjectBuilder();
                         throwable.printStackTrace(printWriter);
                         logMessage = stringWriter.toString();
-                        traceObject.add(EXCEPTION_KEY, throwable.getMessage());
-                        traceObject.add(STACK_TRACE_KEY, logMessage);
                         logEvent.setMessage(logMessage);
-                        eventObject.add(LOG_MESSAGE_KEY, traceObject.build());
+                        eventObject.add(LOG_MESSAGE_KEY, throwable.getMessage());
+                        eventObject.add(STACK_TRACE_KEY, logMessage);
                     }
                 } 
             } else {
@@ -423,13 +421,11 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                 if (null != throwable) {
                     try (StringWriter stringWriter = new StringWriter(); 
                          PrintWriter printWriter = new PrintWriter(stringWriter)) {
-                        JsonObjectBuilder traceObject =Json.createObjectBuilder();
                         throwable.printStackTrace(printWriter);
                         logMessage = stringWriter.toString();
-                        traceObject.add(EXCEPTION_KEY, logMessageBuilder.toString());
-                        traceObject.add(STACK_TRACE_KEY, logMessage);
                         logEvent.setMessage(logMessage);
-                        eventObject.add(LOG_MESSAGE_KEY, traceObject.build());
+                        eventObject.add(LOG_MESSAGE_KEY, logMessageBuilder.toString());
+                        eventObject.add(STACK_TRACE_KEY, logMessage);
                     }
                 } else {
                     logMessage = logMessageBuilder.toString();
