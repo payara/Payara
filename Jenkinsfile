@@ -54,9 +54,7 @@ pipeline {
             }
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -V -ff -e clean install -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts
-                    -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} -Dpayara.directory.name=${getPayaraDirectoryName(pom.version)}
-                    -Dpayara.version.major=${getMajorVersion(pom.version)} -Ppayara-ci-managed,stable"""
+                sh "mvn -V -ff -e clean install -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} -Dpayara.directory.name=${getPayaraDirectoryName(pom.version)} -Dpayara.version.major=${getMajorVersion(pom.version)} -Ppayara-ci-managed,stable"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
