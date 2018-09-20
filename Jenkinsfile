@@ -56,8 +56,8 @@ pipeline {
                 }
             	echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh """mvn -V -ff -e clean install -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts
-                    -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} -Dpayara.directory.name=${getPayaraDirectoryName(pom.version)}
-                    -Dpayara.version.major=${getPayaraMajorVersion(pom.version)} -Ppayara-ci-managed,stable"""
+                    -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} -Dpayara.directory.name=${getPayaraDirectoryName()}
+                    -Dpayara.version.major=${getMajorVersion()} -Ppayara-ci-managed,stable"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -68,10 +68,28 @@ pipeline {
         }
     }
 }
-def String getMavenOpts(){
+def String getMavenOpts() {
     def mavenOpts = '';
     if('7'.equalsIgnoreCase(params.jdkVer)){
       mavenOpts= mavenOpts + ' -Xmx1024M -XX:MaxPermSize=512m';
     }
     return mavenOpts;
+}
+def String getMajorVersion() {
+    if (pom.version.startsWith("4")) {
+        return "4"
+    }else if (pom.version.startsWith("5")) {
+        return "5"
+    }else{
+        error("unknown major version. Please check pom version")
+    }
+}
+def String getPayaraDirectoryName() {
+    if (pom.version.startsWith("4")) {
+        return "payara41"
+    }else if (pom.version.startsWith("5")) {
+        return "payara5"
+    }else{
+        error("unknown major version. Please check pom version")
+    }
 }
