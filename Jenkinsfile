@@ -1,7 +1,5 @@
 #!groovy
 //in repo Jenkinsfile
-@Library('versionUtils') _
-def pom
 pipeline {
     agent any
     parameters {
@@ -51,14 +49,14 @@ pipeline {
             }
             steps {
                 script{
-                    pom = readMavenPom file: 'pom.xml'
+                    def pom = readMavenPom file: 'pom.xml'
                     echo "Payara pom version is ${pom.version}"
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    sh """mvn -V -ff -e clean install -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts
+                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} -Dpayara.directory.name=${getPayaraDirectoryName(pom.version)}
+                        -Dpayara.version.major=${getMajorVersion(pom.version)} -Ppayara-ci-managed,stable"""
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 }
-            	echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -V -ff -e clean install -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts
-                    -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} -Dpayara.directory.name=${getPayaraDirectoryName()}
-                    -Dpayara.version.major=${getMajorVersion()} -Ppayara-ci-managed,stable"""
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
                 always {
@@ -75,19 +73,19 @@ def String getMavenOpts() {
     }
     return mavenOpts;
 }
-def String getMajorVersion() {
-    if (pom.version.startsWith("4")) {
+def String getMajorVersion(fullVersion) {
+    if (fullVersion.startsWith("4")) {
         return "4"
-    }else if (pom.version.startsWith("5")) {
+    }else if (fullVersion.startsWith("5")) {
         return "5"
     }else{
         error("unknown major version. Please check pom version")
     }
 }
-def String getPayaraDirectoryName() {
-    if (pom.version.startsWith("4")) {
+def String getPayaraDirectoryName(fullVersion) {
+    if (fullVersion.startsWith("4")) {
         return "payara41"
-    }else if (pom.version.startsWith("5")) {
+    }else if (fullVersion.startsWith("5")) {
         return "payara5"
     }else{
         error("unknown major version. Please check pom version")
