@@ -54,7 +54,7 @@
         gf.restRequest(endpoint="#{pageSession.HEALTHCHECK_CONFIG_URL}/get-healthcheck-configuration?target=#{pageSession.configName}"  
                 method="GET" result="#{requestScope.resp}");      
         setPageSessionAttribute(key="valueMap", 
-                value="#{requestScope.resp.data.subReports.get(4).extraProperties.mpHealthcheck}");
+                value="#{requestScope.resp.data.subReports.get(4).extraProperties.mpHealth}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
                 
         setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic"});
