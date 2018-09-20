@@ -83,7 +83,7 @@ pipeline {
                         reference: '',
                         trackingSubmodules: false]],
                     submoduleCfg: [],
-                    userRemoteConfigs: [[url: "https://github.com/payara/patched-src-cargoTracker.git"]]]
+                    userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
