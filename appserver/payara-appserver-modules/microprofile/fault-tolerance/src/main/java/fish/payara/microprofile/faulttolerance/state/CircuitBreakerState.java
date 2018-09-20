@@ -60,7 +60,7 @@ public class CircuitBreakerState {
 
     private final BlockingQueue<Boolean> closedResultsQueue;
     private volatile CircuitState circuitState = CircuitState.CLOSED;
-    private volatile long stateCreationTimeNanos = System.nanoTime();
+    private volatile long timeInStateNanos = System.nanoTime();
     private final AtomicInteger halfOpenSuccessfulResultsCounter = new AtomicInteger(0);
     private final AtomicLong closedTime = new AtomicLong(0);
     private final AtomicLong openTime = new AtomicLong(0);
@@ -169,42 +169,36 @@ public class CircuitBreakerState {
     }
 
     private void resetTimer() {
-        stateCreationTimeNanos = System.nanoTime();
+        timeInStateNanos = System.nanoTime();
     }
 
     public long updateAndGetClosedTime(long nanoseconds) {
-        if (circuitState.equals(CircuitState.CLOSED)) {
-            updateClosedTime(nanoseconds);
-        }
-
-        return closedTime.get();
+        return CircuitState.CLOSED.equals(circuitState)
+            ? updateClosedTime(nanoseconds)
+            : closedTime.get();
     }
 
-    private void updateClosedTime(long nanoseconds) {
-        closedTime.addAndGet(nanoseconds - stateCreationTimeNanos);
+    private long updateClosedTime(long nanoseconds) {
+        return closedTime.addAndGet(nanoseconds - timeInStateNanos);
     }
 
     public long updateAndGetOpenTime(long nanoseconds) {
-        if (circuitState.equals(CircuitState.OPEN)) {
-            updateOpenTime(nanoseconds);
-        }
-
-        return openTime.get();
+        return CircuitState.OPEN.equals(circuitState)
+            ? updateOpenTime(nanoseconds)
+            : openTime.get();
     }
 
-    private void updateOpenTime(long nanoseconds) {
-        openTime.addAndGet(nanoseconds - stateCreationTimeNanos);
+    private long updateOpenTime(long nanoseconds) {
+        return openTime.addAndGet(nanoseconds - timeInStateNanos);
     }
 
     public long updateAndGetHalfOpenTime(long nanoseconds) {
-        if (circuitState.equals(CircuitState.HALF_OPEN)) {
-            updateHalfOpenTime(nanoseconds);
-        }
-
-        return halfOpenTime.get();
+        return CircuitState.HALF_OPEN.equals(circuitState)
+            ? updateHalfOpenTime(nanoseconds)
+            : halfOpenTime.get();
     }
 
-    private void updateHalfOpenTime(long nanoseconds) {
-        halfOpenTime.addAndGet(nanoseconds - stateCreationTimeNanos);
+    private long updateHalfOpenTime(long nanoseconds) {
+        return halfOpenTime.addAndGet(nanoseconds - timeInStateNanos);
     }
 }
