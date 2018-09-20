@@ -40,12 +40,12 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.healthcheck.mp;
+package fish.payara.healthcheck.mphealth;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.healthcheck.configuration.MPCheckerConfiguration;
+import fish.payara.nucleus.healthcheck.configuration.MicroProfileHealthCheckerConfiguration;
 import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,19 +77,19 @@ import org.jvnet.hk2.config.TransactionFailure;
  * @author jonathan coustick
  * @since 5.184
  */
-@Service(name = "set-healthcheck-mp-checker-configuration")
+@Service(name = "set-healthcheck-microprofile-health-checker-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("healthcheck.mphealthecheck.configure")
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@ExecuteOn({RuntimeType.DAS})
+@TargetType({CommandTarget.DAS})
 @RestEndpoints({
     @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
             opType = RestEndpoint.OpType.POST,
             path = "healthcheck-mp-configure",
             description = "Configures the Microprofile Healthcheck Checker")
 })
-public class SetHealthcheckMPCheckerConfiguration implements AdminCommand {
+public class SetMicroProfileHealthCheckerConfiguration implements AdminCommand {
     
     private static final Logger LOGGER = Logger.getLogger("HEALTHCHECK-MP");
     
@@ -133,7 +133,7 @@ public class SetHealthcheckMPCheckerConfiguration implements AdminCommand {
         final ActionReport actionReport = context.getActionReport();
                 
         Config config = targetUtil.getConfig(target);
-        MPChecker service = habitat.getService(MPChecker.class);
+        MicroProfileHealthChecker service = habitat.getService(MicroProfileHealthChecker.class);
         if (service == null) {
             actionReport.appendMessage("Microprofile Healthcheck Checker Service could not be found");
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -142,13 +142,15 @@ public class SetHealthcheckMPCheckerConfiguration implements AdminCommand {
         
         try {
             HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
-            MPCheckerConfiguration hoggingThreadConfiguration = healthCheckServiceConfiguration.getCheckerByType(MPCheckerConfiguration.class);
-            if (hoggingThreadConfiguration == null) {
+            MicroProfileHealthCheckerConfiguration healthCheckerConfiguration = 
+                    healthCheckServiceConfiguration.getCheckerByType(MicroProfileHealthCheckerConfiguration.class);
+            if (healthCheckerConfiguration == null) {
                 ConfigSupport.apply(new SingleConfigCode<HealthCheckServiceConfiguration>() {
                     @Override
                     public Object run(final HealthCheckServiceConfiguration healthCheckServiceConfigurationProxy) throws
                             PropertyVetoException, TransactionFailure {
-                        MPCheckerConfiguration checkerProxy = healthCheckServiceConfigurationProxy.createChild(MPCheckerConfiguration.class);
+                        MicroProfileHealthCheckerConfiguration checkerProxy = 
+                                healthCheckServiceConfigurationProxy.createChild(MicroProfileHealthCheckerConfiguration.class);
                         applyValues(checkerProxy);
                         healthCheckServiceConfigurationProxy.getCheckerList().add(checkerProxy);
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
@@ -156,21 +158,22 @@ public class SetHealthcheckMPCheckerConfiguration implements AdminCommand {
                     }
                 }, healthCheckServiceConfiguration);
             } else {
-                ConfigSupport.apply(new SingleConfigCode<MPCheckerConfiguration>() {
+                ConfigSupport.apply(new SingleConfigCode<MicroProfileHealthCheckerConfiguration>() {
                     @Override
-                    public Object run(final MPCheckerConfiguration hoggingThreadConfigurationProxy) throws
+                    public Object run(final MicroProfileHealthCheckerConfiguration hoggingThreadConfigurationProxy) throws
                             PropertyVetoException, TransactionFailure {
                         applyValues(hoggingThreadConfigurationProxy);
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return hoggingThreadConfigurationProxy;
                     }
-                }, hoggingThreadConfiguration);
+                }, healthCheckerConfiguration);
             }
             
             if (dynamic) {
                 if (server.isDas()) {
                     if (targetUtil.getConfig(target).isDas()) {
-                        MPCheckerConfiguration checkerByType = healthCheckServiceConfiguration.getCheckerByType(MPCheckerConfiguration.class);
+                        MicroProfileHealthCheckerConfiguration checkerByType = 
+                                healthCheckServiceConfiguration.getCheckerByType(MicroProfileHealthCheckerConfiguration.class);
                         service.setOptions(service.constructOptions(checkerByType));
                         healthCheckService.registerCheck(checkerByType.getName(), service);
                         healthCheckService.reboot();
@@ -178,8 +181,9 @@ public class SetHealthcheckMPCheckerConfiguration implements AdminCommand {
                 } else {
                     // it implicitly targetted to us as we are not the DAS
                     // restart the service
-                    MPCheckerConfiguration checkerByType = healthCheckServiceConfiguration.getCheckerByType(MPCheckerConfiguration.class);
-                    service.setOptions(service.constructOptions(hoggingThreadConfiguration));
+                    MicroProfileHealthCheckerConfiguration checkerByType = 
+                            healthCheckServiceConfiguration.getCheckerByType(MicroProfileHealthCheckerConfiguration.class);
+                    service.setOptions(service.constructOptions(healthCheckerConfiguration));
                     healthCheckService.registerCheck(checkerByType.getName(), service);
                     healthCheckService.reboot();
                 }
@@ -193,7 +197,7 @@ public class SetHealthcheckMPCheckerConfiguration implements AdminCommand {
     }
     
     
-    private void applyValues(MPCheckerConfiguration checkerProxy) throws PropertyVetoException {
+    private void applyValues(MicroProfileHealthCheckerConfiguration checkerProxy) throws PropertyVetoException {
         if (enabled != null) {
             checkerProxy.setEnabled(enabled.toString());
         }

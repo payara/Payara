@@ -40,7 +40,7 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.healthcheck.mp;
+package fish.payara.healthcheck.mphealth;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import java.net.URI;
@@ -54,7 +54,7 @@ import javax.ws.rs.core.Response;
 
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
-import fish.payara.nucleus.healthcheck.configuration.MPCheckerConfiguration;
+import fish.payara.nucleus.healthcheck.configuration.MicroProfileHealthCheckerConfiguration;
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
@@ -68,6 +68,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.ProcessingException;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.PropertyResolver;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -77,7 +78,7 @@ import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * Health Check service that pokes MP Healthcheck endpoints of instances 
+ * Health Check service that pokes MicroProfile Healthcheck endpoints of instances 
  * in the current domain to see if they are responsive
  *
  * @author jonathan coustick
@@ -85,9 +86,9 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "healthcheck-mp")
 @RunLevel(10)
-public class MPChecker extends BaseHealthCheck<TimeoutHealthCheckExecutionOptions, MPCheckerConfiguration> implements PostConstruct {
+public class MicroProfileHealthChecker extends BaseHealthCheck<HealthCheckTimeoutExecutionOptions, MicroProfileHealthCheckerConfiguration> implements PostConstruct {
 
-    private static final Logger LOGGER = Logger.getLogger(MPChecker.class.getPackage().getName());
+    private static final Logger LOGGER = Logger.getLogger(MicroProfileHealthChecker.class.getPackage().getName());
     
     @Inject
     private Target targetUtil;
@@ -100,15 +101,23 @@ public class MPChecker extends BaseHealthCheck<TimeoutHealthCheckExecutionOption
     
     @Inject
     Domain domain;
+    
+    @Inject
+    ServerEnvironment envrionment;
 
     @Override
     public void postConstruct() {
-        postConstruct(this, MPCheckerConfiguration.class);
+        postConstruct(this, MicroProfileHealthCheckerConfiguration.class);
     }
 
     @Override
     public HealthCheckResult doCheck() {
         HealthCheckResult result = new HealthCheckResult();
+        
+        if (!envrionment.isDas()) {
+            //currrently this should only run on DAS
+            return result;
+        }
 
         //get all instances that this server knows about
         for (Server server : domain.getServers().getServer()) {
@@ -164,8 +173,8 @@ public class MPChecker extends BaseHealthCheck<TimeoutHealthCheckExecutionOption
     }
 
     @Override
-    public TimeoutHealthCheckExecutionOptions constructOptions(MPCheckerConfiguration c) {
-        return new TimeoutHealthCheckExecutionOptions(Boolean.valueOf(c.getEnabled()), Long.parseLong(c.getTime()), asTimeUnit(c.getUnit()), 
+    public HealthCheckTimeoutExecutionOptions constructOptions(MicroProfileHealthCheckerConfiguration c) {
+        return new HealthCheckTimeoutExecutionOptions(Boolean.valueOf(c.getEnabled()), Long.parseLong(c.getTime()), asTimeUnit(c.getUnit()), 
                 Long.parseLong(c.getTimeout()));
     }
 

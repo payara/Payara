@@ -40,29 +40,33 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.nucleus.healthcheck.configuration;
+package fish.payara.healthcheck.mphealth;
 
-import java.beans.PropertyVetoException;
-import javax.validation.constraints.Min;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
+import fish.payara.nucleus.healthcheck.HealthCheckExecutionOptions;
+import java.util.concurrent.TimeUnit;
 
 /**
- *
+ * Execution Options for the Microprofile Healthcheck checker.
+ * 
+ * This contains the timeout for getting the healthcheck from the remote endpoint
  * @author jonathan coustick
  * @since 5.184
  */
-@Configured
-@CheckerConfigurationType(type = CheckerType.MP_HEALTH)
-public interface MPCheckerConfiguration extends Checker {
+public class HealthCheckTimeoutExecutionOptions extends HealthCheckExecutionOptions {
     
-    @Attribute(defaultValue = "MP")
-    String getName();
-    void setName(String value) throws PropertyVetoException;
+    private final long timeout;
     
-    @Attribute(defaultValue = "30000", dataType = Long.class)
-    @Min(value = 0)
-    String getTimeout();
-    void setTimeout(String value) throws PropertyVetoException;
+    public HealthCheckTimeoutExecutionOptions(boolean enabled, long time, TimeUnit unit, long timeout) {
+        super(enabled, time, unit);
+        this.timeout = timeout;
+    }
+
+    /**
+     * The timeout for getting a response from the remove server
+     * @return The connection timeout in milliseconds
+     */
+    public long getTimeout() {
+        return timeout;
+    }
     
 }

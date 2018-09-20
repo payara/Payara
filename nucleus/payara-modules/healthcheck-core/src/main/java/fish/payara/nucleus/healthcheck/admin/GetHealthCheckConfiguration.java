@@ -49,7 +49,7 @@ import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.configuration.CheckerConfigurationType;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.configuration.HoggingThreadsChecker;
-import fish.payara.nucleus.healthcheck.configuration.MPCheckerConfiguration;
+import fish.payara.nucleus.healthcheck.configuration.MicroProfileHealthCheckerConfiguration;
 import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
@@ -111,7 +111,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
     private final String machineMemoryUsagePropertyName = "machineMemoryUsage";
     private final String hoggingThreadsPropertyName = "hoggingThreads";
     private final String stuckThreadsPropertyName = "stuckThreads";
-    private final String mpHealthcheckPropertyName = "mpHealthcheck";
+    private final String mpHealthcheckPropertyName = "mpHealth";
     
     @Inject
     ServiceLocator habitat;
@@ -271,8 +271,8 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 
                 addStuckThreadsCheckerExtrasProps(stuckThreadsExtrasProps, stuckThreadsChecker);
                 
-            } else if (checker instanceof MPCheckerConfiguration) {
-                MPCheckerConfiguration mpHealthcheckChecker = (MPCheckerConfiguration) checker;
+            } else if (checker instanceof MicroProfileHealthCheckerConfiguration) {
+                MicroProfileHealthCheckerConfiguration mpHealthcheckChecker = (MicroProfileHealthCheckerConfiguration) checker;
                 
                 Object[] values = new Object[5];
                 values[0] = mpHealthcheckChecker.getName();
@@ -370,7 +370,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         
     }
     
-    private void addMPHealthcheckCheckerExtrasProps(Properties mpHealthcheckExtrasProps, MPCheckerConfiguration mpHealthcheckCheck) {
+    private void addMPHealthcheckCheckerExtrasProps(Properties mpHealthcheckExtrasProps, MicroProfileHealthCheckerConfiguration mpHealthcheckCheck) {
         Map<String, Object> extraPropsMap = new HashMap<String, Object>(5);
         extraPropsMap.put("checkerName", mpHealthcheckCheck.getName());
         extraPropsMap.put("enabled", mpHealthcheckCheck.getEnabled());
