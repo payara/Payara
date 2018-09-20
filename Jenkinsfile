@@ -1,7 +1,7 @@
 #!groovy
 //in repo Jenkinsfile
 @Library('versionUtils') _
-def pom = ''
+def pom
 pipeline {
     agent any
     parameters {
