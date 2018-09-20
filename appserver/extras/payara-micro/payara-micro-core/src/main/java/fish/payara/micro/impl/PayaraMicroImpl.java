@@ -2290,7 +2290,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         props.setProperty("payaramicro.disablePhoneHome", Boolean.toString(disablePhoneHome));
         props.setProperty("payaramicro.showServletMappings", Boolean.toString(showServletMappings));
         props.setProperty("payaramicro.sniEnabled", Boolean.toString(sniEnabled));
-        props.setProperty("payaramicro.publicAddress", publicAddress);
+        
+        if (publicAddress != null) {
+            props.setProperty("payaramicro.publicAddress", publicAddress);
+        }
 
         if (userLogFile != null) {
             props.setProperty("payaramicro.userLogFile", userLogFile);

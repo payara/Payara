@@ -228,13 +228,11 @@ public class CircuitBreakerInterceptor implements Serializable {
 
         long delayMillis = Duration.of(delay, delayUnit).toMillis();
         
-        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class);
-        
-        CircuitBreakerState circuitBreakerState = faultToleranceService.getCircuitBreakerState(
-                faultToleranceService.getApplicationName(invocationManager, invocationContext), 
+        CircuitBreakerState circuitBreakerState = faultToleranceService.getCircuitBreakerState(appName,
+                invocationContext.getTarget(), 
                 invocationContext.getMethod(), circuitBreaker);
         
-        if (faultToleranceService.isFaultToleranceMetricsEnabled(appName, config)) {
+        if (faultToleranceService.areFaultToleranceMetricsEnabled(appName, config)) {
             Gauge<Long> openTimeGauge = metricRegistry.getGauges()
                     .get("ft." + fullMethodSignature + ".circuitbreaker.open.total");
 

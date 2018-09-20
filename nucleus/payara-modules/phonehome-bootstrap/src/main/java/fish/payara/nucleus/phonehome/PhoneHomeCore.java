@@ -40,6 +40,7 @@
 package fish.payara.nucleus.phonehome;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.beans.PropertyVetoException;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -76,7 +77,8 @@ public class PhoneHomeCore implements EventListener {
     
     private UUID phoneHomeId;
     
-    private ScheduledExecutorService executor;
+    @Inject
+    private PayaraExecutorService executor;
     
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -150,20 +152,11 @@ public class PhoneHomeCore implements EventListener {
     
     private void bootstrapPhoneHome() {
         if (enabled) {
-            executor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable r) {
-                    return new Thread(r, THREAD_NAME);
-                }
-            });
             executor.scheduleAtFixedRate(new PhoneHomeTask(phoneHomeId.toString(), domain, env), 0, 1, TimeUnit.DAYS);
         }
     }
     
     private void shutdownPhoneHome() {
-        if (executor != null) {
-            executor.shutdownNow();
-        }
     }
     
     public void enable(){

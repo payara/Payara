@@ -46,10 +46,12 @@ import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadataConfig;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -107,7 +109,11 @@ public class MetricsService implements EventListener {
     public void init() {
         events.register(this);
         metricsServiceConfiguration = serviceLocator.getService(MetricsServiceConfiguration.class);
-        initMetadataConfig(getConfig(), false);
+        // Only start if metrics are enabled
+        if (isMetricsEnabled()) {
+            PayaraExecutorService payaraExecutor = serviceLocator.getService(PayaraExecutorService.class, new Annotation[0]);
+            payaraExecutor.submit(() -> initMetadataConfig(getConfig(), false));
+        }
     }
 
     @Override
