@@ -59,16 +59,15 @@ public class CircuitBreakerState {
     }
 
     private final BlockingQueue<Boolean> closedResultsQueue;
-    private volatile AtomicInteger halfOpenSuccessfulResultsCounter;
     private volatile CircuitState circuitState = CircuitState.CLOSED;
-    private volatile long timer = System.nanoTime();
-    private volatile AtomicLong closedTime = new AtomicLong(0);
-    private volatile AtomicLong openTime = new AtomicLong(0);
-    private volatile AtomicLong halfOpenTime = new AtomicLong(0);
+    private volatile long stateCreationTimeNanos = System.nanoTime();
+    private final AtomicInteger halfOpenSuccessfulResultsCounter = new AtomicInteger(0);
+    private final AtomicLong closedTime = new AtomicLong(0);
+    private final AtomicLong openTime = new AtomicLong(0);
+    private final AtomicLong halfOpenTime = new AtomicLong(0);
 
     public CircuitBreakerState(int requestVolumeThreshold) {
         closedResultsQueue = new LinkedBlockingQueue<>(requestVolumeThreshold);
-        halfOpenSuccessfulResultsCounter = new AtomicInteger(0);
     }
 
     /**
@@ -170,7 +169,7 @@ public class CircuitBreakerState {
     }
 
     private void resetTimer() {
-        timer = System.nanoTime();
+        stateCreationTimeNanos = System.nanoTime();
     }
 
     public long updateAndGetClosedTime(long nanoseconds) {
@@ -182,7 +181,7 @@ public class CircuitBreakerState {
     }
 
     private void updateClosedTime(long nanoseconds) {
-        closedTime.addAndGet(nanoseconds - timer);
+        closedTime.addAndGet(nanoseconds - stateCreationTimeNanos);
     }
 
     public long updateAndGetOpenTime(long nanoseconds) {
@@ -194,7 +193,7 @@ public class CircuitBreakerState {
     }
 
     private void updateOpenTime(long nanoseconds) {
-        openTime.addAndGet(nanoseconds - timer);
+        openTime.addAndGet(nanoseconds - stateCreationTimeNanos);
     }
 
     public long updateAndGetHalfOpenTime(long nanoseconds) {
@@ -206,6 +205,6 @@ public class CircuitBreakerState {
     }
 
     private void updateHalfOpenTime(long nanoseconds) {
-        halfOpenTime.addAndGet(nanoseconds - timer);
+        halfOpenTime.addAndGet(nanoseconds - stateCreationTimeNanos);
     }
 }
