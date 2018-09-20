@@ -1,5 +1,6 @@
 #!groovy
 //in repo Jenkinsfile
+def pom
 pipeline {
     agent any
     parameters {
@@ -17,6 +18,10 @@ pipeline {
                 MAVEN_OPTS=getMavenOpts()
             }
             steps {
+                script{
+                    pom = readMavenPom file: 'pom.xml'
+                    echo "Payara pom version is ${pom.version}"
+                }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh "mvn -V -ff -e clean install -PBuildExtras -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts -Djavax.xml.accessExternalSchema=all"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -48,15 +53,11 @@ pipeline {
                 MAVEN_OPTS=getMavenOpts()
             }
             steps {
-                script{
-                    def pom = readMavenPom file: 'pom.xml'
-                    echo "Payara pom version is ${pom.version}"
-                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    sh """mvn -V -ff -e clean install -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} -Dpayara.directory.name=${getPayaraDirectoryName(pom.version)}
-                        -Dpayara.version.major=${getMajorVersion(pom.version)} -Ppayara-ci-managed,stable"""
-                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                }
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -V -ff -e clean install -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts
+                    -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} -Dpayara.directory.name=${getPayaraDirectoryName(pom.version)}
+                    -Dpayara.version.major=${getMajorVersion(pom.version)} -Ppayara-ci-managed,stable"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
                 always {
