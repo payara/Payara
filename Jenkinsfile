@@ -27,6 +27,24 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
+        stage('Run Quicklook Tests') {
+            tools {
+                jdk "zulu-${jdkVer}"
+            }
+            environment {
+                MAVEN_OPTS=getMavenOpts()
+            }
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -V -ff -e clean test -Dglassfish.home=\"/appserver/distributions/payara/target/stage/${getPayaraDirectoryName(pom.version)}/glassfish\" -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts -Djavax.xml.accessExternalSchema=all -f \"appserver/tests/quicklook/pom.xml\""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
         stage('Checkout EE8 Tests') {
             when{
                 expression{ jdkVer == '8' }
