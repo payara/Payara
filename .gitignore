@@ -20,3 +20,4 @@ appserver/extras/arquillian-containers/payara-common/dependency-reduced-pom.xml
 /appserver/tests/quicklook/cluster/clustersetup/nbproject/
 /nucleus/payara-modules/service-exemplar/nbproject/
 /nucleus/admin/server-mgmt/nbproject/
+appserver/tests/quicklook/quicklook_summary.txt

@@ -48,7 +48,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Implementation of Scope from Opentracing.
+ * Implementation of Scope from OpenTracing.
  * 
  * @author jonathan coustick
  * @since 5.183
@@ -70,7 +70,8 @@ public class OTScope implements io.opentracing.Scope {
             if (allSpans.get(span)){
                 span.finish();
             }
-            allSpans.remove(span);//prevents scope holding on a reference to old spans
+            // Prevent scope holding on a reference to old spans
+            keys.remove();
         }
     }
 
@@ -79,7 +80,7 @@ public class OTScope implements io.opentracing.Scope {
         return currentSpan;
     }
     
-    //package private - used only by ScopeManager
+    // Package private - used only by ScopeManager
     void setSpan(Span span, Boolean finishOnClose){
         allSpans.put(span, finishOnClose);
         currentSpan = span;
