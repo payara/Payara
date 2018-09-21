@@ -119,7 +119,7 @@ public @interface GoogleAuthenticationDefinition {
      *
      * @return
      */
-    String redirectURI() default "";
+    String redirectURI() default "${baseURL}/Callback";
 
     /**
      * Optional. The scope value defines the access privileges. The basic (and
