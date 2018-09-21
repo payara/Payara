@@ -78,7 +78,7 @@ public class TracedInterceptor implements Serializable {
     private static final Logger logger = Logger.getLogger(TracedInterceptor.class.getName());
 
     @Inject
-    private transient BeanManager beanManager;
+    private BeanManager beanManager;
 
     @AroundInvoke
     public Object traceCdiCall(InvocationContext invocationContext) throws Exception {
