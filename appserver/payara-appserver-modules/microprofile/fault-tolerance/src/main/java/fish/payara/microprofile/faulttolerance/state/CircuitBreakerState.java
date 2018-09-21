@@ -39,6 +39,8 @@
  */
 package fish.payara.microprofile.faulttolerance.state;
 
+import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -59,8 +61,10 @@ public class CircuitBreakerState {
     }
 
     private final BlockingQueue<Boolean> closedResultsQueue;
+
     private volatile CircuitState circuitState = CircuitState.CLOSED;
-    private volatile long timeInStateNanos = System.nanoTime();
+    private volatile ZonedDateTime stateSince = ZonedDateTime.now();
+
     private final AtomicInteger halfOpenSuccessfulResultsCounter = new AtomicInteger(0);
     private final AtomicLong closedTime = new AtomicLong(0);
     private final AtomicLong openTime = new AtomicLong(0);
@@ -85,13 +89,13 @@ public class CircuitBreakerState {
     public void setCircuitState(CircuitState circuitState) {
         switch (this.circuitState) {
             case OPEN:
-                updateOpenTime(System.nanoTime());
+                updateOpenTime();
                 break;
             case HALF_OPEN:
-                updateHalfOpenTime(System.nanoTime());
+                updateHalfOpenTime();
                 break;
             case CLOSED:
-                updateClosedTime(System.nanoTime());
+                updateClosedTime();
                 break;
         }
 
@@ -169,36 +173,36 @@ public class CircuitBreakerState {
     }
 
     private void resetTimer() {
-        timeInStateNanos = System.nanoTime();
+        stateSince = ZonedDateTime.now();
     }
 
-    public long updateAndGetClosedTime(long nanoseconds) {
+    public long updateAndGetClosedTime() {
         return CircuitState.CLOSED.equals(circuitState)
-            ? updateClosedTime(nanoseconds)
+            ? updateClosedTime()
             : closedTime.get();
     }
 
-    private long updateClosedTime(long nanoseconds) {
-        return closedTime.addAndGet(nanoseconds - timeInStateNanos);
+    private long updateClosedTime() {
+        return closedTime.addAndGet(Duration.between(stateSince, ZonedDateTime.now()).toNanos());
     }
 
-    public long updateAndGetOpenTime(long nanoseconds) {
+    public long updateAndGetOpenTime() {
         return CircuitState.OPEN.equals(circuitState)
-            ? updateOpenTime(nanoseconds)
+            ? updateOpenTime()
             : openTime.get();
     }
 
-    private long updateOpenTime(long nanoseconds) {
-        return openTime.addAndGet(nanoseconds - timeInStateNanos);
+    private long updateOpenTime() {
+        return openTime.addAndGet(Duration.between(stateSince, ZonedDateTime.now()).toNanos());
     }
 
-    public long updateAndGetHalfOpenTime(long nanoseconds) {
+    public long updateAndGetHalfOpenTime() {
         return CircuitState.HALF_OPEN.equals(circuitState)
-            ? updateHalfOpenTime(nanoseconds)
+            ? updateHalfOpenTime()
             : halfOpenTime.get();
     }
 
-    private long updateHalfOpenTime(long nanoseconds) {
-        return halfOpenTime.addAndGet(nanoseconds - timeInStateNanos);
+    private long updateHalfOpenTime() {
+        return halfOpenTime.addAndGet(Duration.between(stateSince, ZonedDateTime.now()).toNanos());
     }
 }
