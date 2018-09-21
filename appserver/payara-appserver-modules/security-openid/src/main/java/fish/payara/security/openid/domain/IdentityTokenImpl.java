@@ -49,7 +49,7 @@ import java.util.Map;
 
 /**
  *
- * @author jGauravGupta
+ * @author Gaurav Gupta
  */
 public class IdentityTokenImpl implements IdentityToken {
 

@@ -52,7 +52,7 @@ import static java.util.Objects.nonNull;
 
 /**
  *
- * @author jGauravGupta
+ * @author Gaurav Gupta
  */
 public abstract class TokenClaimsSetVerifier implements JWTClaimsSetVerifier {
 

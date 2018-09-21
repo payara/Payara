@@ -41,7 +41,7 @@ package fish.payara.security.openid.domain;
 
 /**
  *
- * @author jGauravGupta
+ * @author Gaurav Gupta
  */
 public class ClaimsConfiguration {
 

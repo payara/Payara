@@ -53,11 +53,9 @@ import javax.security.enterprise.credential.Credential;
 
 /**
  *
- * @author jGauravGupta
+ * @author Gaurav Gupta
  */
 public class OpenIdCredential implements Credential {
-
-    private final JsonObject tokensObject;
 
     private final HttpMessageContext httpContext;
 
@@ -68,7 +66,6 @@ public class OpenIdCredential implements Credential {
     private AccessToken accessToken;
 
     public OpenIdCredential(JsonObject tokensObject, HttpMessageContext httpContext, OpenIdConfiguration configuration) {
-        this.tokensObject = tokensObject;
         this.httpContext = httpContext;
         this.configuration = configuration;
 
@@ -77,10 +74,6 @@ public class OpenIdCredential implements Credential {
         if (nonNull(accessTokenString)) {
             accessToken = new AccessTokenImpl(accessTokenString);
         }
-    }
-
-    public JsonObject getTokens() {
-        return tokensObject;
     }
 
     public IdentityToken getIdentityToken() {

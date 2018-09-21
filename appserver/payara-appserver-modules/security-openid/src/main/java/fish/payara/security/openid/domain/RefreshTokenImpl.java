@@ -43,7 +43,7 @@ import fish.payara.security.openid.api.RefreshToken;
 
 /**
  *
- * @author jGauravGupta
+ * @author Gaurav Gupta
  */
 public class RefreshTokenImpl implements RefreshToken {
 

@@ -55,7 +55,7 @@ import java.util.Map;
 /**
  * Validates the Access token
  *
- * @author jGauravGupta
+ * @author Gaurav Gupta
  */
 public class AccessTokenClaimsSetVerifier extends TokenClaimsSetVerifier {
 
