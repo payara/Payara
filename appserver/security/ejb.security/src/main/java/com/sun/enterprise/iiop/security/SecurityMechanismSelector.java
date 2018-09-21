@@ -59,24 +59,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 // GSS Related Functionality
 import javax.security.auth.Subject;
 
-import org.glassfish.api.admin.ProcessEnvironment;
-import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
-import org.glassfish.enterprise.iiop.api.ProtocolManager;
 import org.glassfish.enterprise.iiop.impl.GlassFishORBManager;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.internal.api.ORBLocator;
-import org.ietf.jgss.Oid;
-import org.jvnet.hk2.annotations.Service;
 import org.omg.CORBA.ORB;
 
 import com.sun.corba.ee.org.omg.CSI.ITTAnonymous;
@@ -110,13 +98,26 @@ import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.enterprise.security.auth.login.common.X509CertificateCredential;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.common.ClientSecurityContext;
-import com.sun.enterprise.security.common.SecurityConstants;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Utility;
 import com.sun.logging.LogDomains;
 
-import sun.security.x509.X500Name;
+import org.glassfish.api.admin.ProcessEnvironment;
+import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
+import org.glassfish.enterprise.iiop.api.ProtocolManager;
+
+import org.jvnet.hk2.annotations.Service;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.internal.api.ORBLocator;
+
+import javax.inject.Singleton;
+
+import javax.inject.Inject;
+import javax.security.auth.x500.X500Principal;
+import org.ietf.jgss.Oid;
 
 /**
  * This class is responsible for making various decisions for selecting security information to be
@@ -790,8 +791,8 @@ public final class SecurityMechanismSelector implements PostConstruct {
                 Object o = credIter.next();
                 if (o instanceof GSSUPName) {
                     ctx.identcls = GSSUPName.class;
-                } else if (o instanceof X500Name) {
-                    ctx.identcls = X500Name.class;
+                } else if (o instanceof X500Principal) {
+                    ctx.identcls = X500Principal.class;
                 } else {
                     ctx.identcls = X509CertificateCredential.class;
                 }
@@ -1307,15 +1308,15 @@ public final class SecurityMechanismSelector implements PostConstruct {
                 // Note: if the target object is not an EJB, no security ctx is needed.
                 return null;
             } else {
-                // Set the transport principal in subject and return the X500Name class
-                SecurityContext newSecurityContext = new SecurityContext();
-                X500Name x500Name = (X500Name) certChain[0].getSubjectDN();
-                newSecurityContext.subject = new Subject();
-                newSecurityContext.subject.getPublicCredentials().add(x500Name);
-                newSecurityContext.identcls = X500Name.class;
-                newSecurityContext.authcls = null;
-                
-                return newSecurityContext;
+                // Set the transport principal in subject and
+                // return the X500Principal class
+                securityContext = new SecurityContext();
+                X500Principal x500Name = (X500Principal) certChain[0].getSubjectX500Principal();
+                securityContext.subject = new Subject();
+                securityContext.subject.getPublicCredentials().add(x500Name);
+                securityContext.identcls = X500Principal.class;
+                securityContext.authcls = null;
+                return securityContext;
             }
         }
 

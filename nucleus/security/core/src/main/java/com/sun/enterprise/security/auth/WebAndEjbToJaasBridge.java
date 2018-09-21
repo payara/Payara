@@ -86,6 +86,7 @@ import com.sun.enterprise.security.auth.realm.NoSuchUserException;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import com.sun.enterprise.security.auth.realm.file.FileRealm;
+import javax.security.auth.x500.X500Principal;
 
 import sun.security.x509.X500Name;
 
@@ -207,7 +208,7 @@ public class WebAndEjbToJaasBridge {
         String user = null;
         String realmName = null;
         try {
-            X500Name x500name = getPublicCredentials(subject, X500Name.class);
+            X500Principal x500name = (X500Principal)getPublicCredentials(subject, X500Principal.class);
             user = x500name.getName();
 
             // In the RI-inherited implementation this directly creates

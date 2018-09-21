@@ -42,14 +42,12 @@ package com.sun.enterprise.security.auth.realm.ldap;
 
 import static java.util.logging.Level.FINE;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 
@@ -74,8 +72,9 @@ import com.sun.enterprise.security.auth.realm.BadRealmException;
 import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
-
-import sun.security.x509.X500Name;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Vector;
 
 /**
  * Realm wrapper for supporting LDAP authentication.
@@ -177,7 +176,7 @@ public final class LDAPRealm extends BaseRealm {
     public static final String SSL = "SSL";
 
     private HashMap groupCache;
-    private Vector emptyVector;
+    private LinkedList emptyVector;
     private Properties ldapBindProps = new Properties();
 
     /**
@@ -299,11 +298,11 @@ public final class LDAPRealm extends BaseRealm {
         if (_logger.isLoggable(FINE)) {
             Properties tempProps = (Properties) ldapBindProps.clone();
             tempProps.remove(Context.SECURITY_CREDENTIALS);
-            _logger.log(FINE, "LDAPRealm : " + tempProps);
+            _logger.log(Level.FINE, "LDAPRealm : {0}", tempProps);
         }
 
         groupCache = new HashMap();
-        emptyVector = new Vector();
+        emptyVector = new LinkedList();
     }
 
     /**
@@ -322,9 +321,9 @@ public final class LDAPRealm extends BaseRealm {
         if (groupMapper == null) {
             return grpList;
         }
-        ArrayList<String> finalresult = new ArrayList<String>();
+        ArrayList<String> finalresult = new ArrayList<>();
         for (String grp : grpList) {
-            ArrayList<String> result = new ArrayList<String>();
+            ArrayList<String> result = new ArrayList<>();
             groupMapper.getMappedGroups(grp, result);
             finalresult.add(grp);
             if (!result.isEmpty()) {
@@ -353,12 +352,13 @@ public final class LDAPRealm extends BaseRealm {
             ctx = new InitialDirContext(getLdapBindProps());
 
             String _username = userDN;
-            try {
-                X500Name name = new X500Name(userDN);
-                _username = name.getCommonName();
-            } catch (IOException e) {
-                // Ignoring the exception to suppot simple group names as userDN
-                // Issue GLASSFISH-19595
+            LdapName name = new LdapName(userDN); //Ignoring the exception to suppot simple group names as userDN
+            //Issue GLASSFISH-19595
+            for (Rdn rdn : name.getRdns()) {
+                if (rdn.getType().equalsIgnoreCase("CN")) {
+                    _username = rdn.getValue().toString();
+                    break;
+                }
             }
             if (_username == null && userDN != null && userDN.startsWith("uid")) {
                 // handle uid=XXX here where cn is not present
@@ -379,7 +379,7 @@ public final class LDAPRealm extends BaseRealm {
 
             srcFilter = sb.toString();
             dynFilter = dynSb.toString();
-            List<String> groupsList = new ArrayList<String>();
+            List<String> groupsList = new ArrayList<>();
             groupsList.addAll(groupSearch(ctx, getProperty(PARAM_GRPDN), srcFilter, getProperty(PARAM_GRP_TARGET)));
             // search filter is constructed internally as
             // as a groupofURLS
@@ -422,7 +422,7 @@ public final class LDAPRealm extends BaseRealm {
             }
             // we don't load group here as we need to bind ctx to user with
             // password before doing that and password is not available here
-            return emptyVector.elements();
+            return Collections.enumeration(emptyVector);
         } else {
             if (groupMapper != null) {
                 Vector ret = new Vector();
@@ -448,17 +448,20 @@ public final class LDAPRealm extends BaseRealm {
      * See bugs 4646133,4646270 on why this is here.
      *
      */
-    private void setGroupNames(String username, String[] groups) {
-        Vector v = new Vector(groups.length);
-        for (int i = 0; i < groups.length; i++) {
-            v.add(groups[i]);
-        }
+    private void setGroupNames(String username, String[] groups)
+    {
+        LinkedList v = new LinkedList();
+        v.addAll(Arrays.asList(groups));
         groupCache.put(username, v);
     }
 
     /**
      * Supports mode=find-bind. See class documentation.
      *
+     * @param _username
+     * @param _password
+     * @return 
+     * @throws javax.security.auth.login.LoginException 
      */
     public String[] findAndBind(String _username, char[] _password) throws LoginException {
         // do search for user, substituting %s for username
@@ -521,26 +524,26 @@ public final class LDAPRealm extends BaseRealm {
         }
 
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "LDAP:Group search filter: " + srcFilter);
-            StringBuffer gb = new StringBuffer();
+            _logger.log(Level.FINE, "LDAP:Group search filter: {0}", srcFilter);
+            StringBuilder gb = new StringBuilder();
             gb.append("Group memberships found: ");
             if (grpList.length > 0) {
-                for (int i = 0; i < grpList.length; i++) {
-                    gb.append(" " + grpList[i]);
+                for (String grpList1 : grpList) {
+                    gb.append(" ").append(grpList1);
                 }
             } else {
                 gb.append("(null)");
             }
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "LDAP: " + gb.toString());
+                _logger.log(Level.FINE, "LDAP: {0}", gb.toString());
             }
         }
         grpList = addAssignGroups(grpList);
         grpList = this.addMappedGroupNames(grpList);
         setGroupNames(_username, grpList);
 
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "LDAP: login succeeded for: " + _username);
+        if(_logger.isLoggable(Level.FINE)){
+             _logger.log(Level.FINE, "LDAP: login succeeded for: {0}", _username);
         }
 
         return grpList;
@@ -552,7 +555,7 @@ public final class LDAPRealm extends BaseRealm {
      */
     private String userSearch(DirContext ctx, String baseDN, String filter) {
         if (_logger.isLoggable(Level.FINEST)) {
-            _logger.log(Level.FINE, "search: baseDN: " + baseDN + "  filter: " + filter);
+            _logger.log(Level.FINE, "search: baseDN: {0}  filter: {1}", new Object[]{baseDN, filter});
         }
 
         String foundDN = null;
@@ -568,8 +571,8 @@ public final class LDAPRealm extends BaseRealm {
             if (namingEnum.hasMore()) {
                 SearchResult res = (SearchResult) namingEnum.next();
 
-                StringBuffer sb = new StringBuffer();
-                // for dn name with '/'
+                StringBuilder sb = new StringBuilder();
+                //for dn name with '/'
                 CompositeName compDN = new CompositeName(res.getName());
                 String ldapDN = compDN.get(0);
                 sb.append(ldapDN);
@@ -580,7 +583,7 @@ public final class LDAPRealm extends BaseRealm {
                 }
                 foundDN = sb.toString();
                 if (_logger.isLoggable(Level.FINEST)) {
-                    _logger.log(Level.FINE, "Found user DN: " + foundDN);
+                    _logger.log(Level.FINE, "Found user DN: {0}", foundDN);
                 }
             }
         } catch (Exception e) {
@@ -616,8 +619,8 @@ public final class LDAPRealm extends BaseRealm {
             bindSuccessful = true;
         } catch (Exception e) {
             if (_logger.isLoggable(Level.FINEST)) {
-                _logger.finest("Error binding to directory as: " + bindDN);
-                _logger.finest("Exception from JNDI: " + e.toString());
+                _logger.log(Level.FINEST, "Error binding to directory as: {0}", bindDN);
+                _logger.log(Level.FINEST, "Exception from JNDI: {0}", e.toString());
             }
         } finally {
             if (ctx != null) {
@@ -730,7 +733,7 @@ public final class LDAPRealm extends BaseRealm {
     private String RFC2254Encode(String inName) {
 
         int len = inName.length();
-        StringBuffer buf = new StringBuffer(len);
+        StringBuilder buf = new StringBuilder(len);
         for (int i = 0; i < len; i++) {
             char ch = inName.charAt(i);
             switch (ch) {
