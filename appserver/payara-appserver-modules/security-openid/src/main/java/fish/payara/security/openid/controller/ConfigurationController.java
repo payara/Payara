@@ -39,6 +39,8 @@
  */
 package fish.payara.security.openid.controller;
 
+import static fish.payara.security.annotations.ClaimsDefinition.OPENID_MP_CALLER_GROUP_CLAIM;
+import static fish.payara.security.annotations.ClaimsDefinition.OPENID_MP_CALLER_NAME_CLAIM;
 import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_CLIENT_ENC_ALGORITHM;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_CLIENT_ENC_JWKS;
@@ -70,6 +72,7 @@ import static fish.payara.security.openid.api.OpenIdConstant.OPENID_SCOPE;
 import static fish.payara.security.openid.api.OpenIdConstant.TOKEN_ENDPOINT;
 import static fish.payara.security.openid.api.OpenIdConstant.USERINFO_ENDPOINT;
 import fish.payara.security.openid.api.PromptType;
+import fish.payara.security.openid.domain.ClaimsConfiguration;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdProviderMetadata;
 import fish.payara.security.openid.domain.OpenIdTokenEncryptionMetadata;
@@ -199,6 +202,9 @@ public class ConfigurationController {
         String encryptionMethod = provider.getOptionalValue(OPENID_MP_CLIENT_ENC_METHOD, String.class).orElse(null);
         String privateKeyJWKS = provider.getOptionalValue(OPENID_MP_CLIENT_ENC_JWKS, String.class).orElse(null);
 
+        String callerNameClaim = getConfiguredValue(String.class, definition.claimsDefinition().callerNameClaim(), provider, OPENID_MP_CALLER_NAME_CLAIM);
+        String callerGroupsClaim = getConfiguredValue(String.class, definition.claimsDefinition().callerGroupsClaim(), provider, OPENID_MP_CALLER_GROUP_CLAIM);
+
         OpenIdConfiguration configuration = new OpenIdConfiguration()
                 .setProviderMetadata(
                         new OpenIdProviderMetadata(providerDocument)
@@ -206,6 +212,11 @@ public class ConfigurationController {
                                 .setTokenEndpoint(tokenEndpoint)
                                 .setUserinfoEndpoint(userinfoEndpoint)
                                 .setJwksURL(jwksURL)
+                )
+                .setClaimsConfiguration(
+                        new ClaimsConfiguration()
+                                .setCallerNameClaim(callerNameClaim)
+                                .setCallerGroupsClaim(callerGroupsClaim)
                 )
                 .setEncryptionMetadata(
                         new OpenIdTokenEncryptionMetadata()

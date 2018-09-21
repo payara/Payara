@@ -39,26 +39,114 @@
  */
 package fish.payara.security.openid;
 
-import static java.util.Collections.singleton;
+import com.nimbusds.jose.Algorithm;
+import fish.payara.security.openid.controller.TokenController;
+import fish.payara.security.openid.controller.UserInfoController;
+import fish.payara.security.openid.domain.AccessTokenImpl;
+import fish.payara.security.openid.domain.IdentityTokenImpl;
+import fish.payara.security.openid.domain.OpenIdConfiguration;
+import fish.payara.security.openid.domain.OpenIdContextImpl;
+import java.util.HashSet;
+import java.util.Map;
+import static java.util.Objects.nonNull;
 import java.util.Set;
-import javax.security.enterprise.credential.CallerOnlyCredential;
+import static java.util.stream.Collectors.toSet;
+import javax.inject.Inject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
-import static javax.security.enterprise.identitystore.IdentityStore.ValidationType.VALIDATE;
+import net.minidev.json.JSONArray;
 
 /**
- * Identity store sets the subject (sub) claim value as callerName.
+ * Identity store validates the identity token & access toekn and returns the
+ * validation result with the caller name and groups.
  *
  * @author Gaurav Gupta
  */
 public class OpenIdIdentityStore implements IdentityStore {
 
-    public CredentialValidationResult validate(CallerOnlyCredential credential) {
-        return new CredentialValidationResult(credential.getCaller());
+    @Inject
+    private OpenIdContextImpl context;
+
+    @Inject
+    private TokenController tokenController;
+
+    @Inject
+    private UserInfoController userInfoController;
+
+    public CredentialValidationResult validate(OpenIdCredential credential) {
+        HttpMessageContext httpContext = credential.getHttpContext();
+        OpenIdConfiguration configuration = credential.getConfiguration();
+        IdentityTokenImpl idToken = (IdentityTokenImpl) credential.getIdentityToken();
+
+        Algorithm idTokenAlgorithm = idToken.getTokenJWT().getHeader().getAlgorithm();
+        Map<String, Object> idTokenClaims = tokenController.validateIdToken(idToken, httpContext, configuration);
+        if (idToken.isEncrypted()) {
+            idToken.setClaims(idTokenClaims);
+        }
+        context.setIdentityToken(idToken);
+
+        AccessTokenImpl accessToken = (AccessTokenImpl) credential.getAccessToken();
+        if (nonNull(accessToken)) {
+            Map<String, Object> accesTokenClaims = tokenController.validateAccessToken(accessToken, idTokenAlgorithm, idTokenClaims, configuration);
+            if (accessToken.isEncrypted()) {
+                accessToken.setClaims(accesTokenClaims);
+            }
+            context.setAccessToken(accessToken);
+            JsonObject userInfo = userInfoController.getUserInfo(configuration, accessToken);
+            context.setClaims(userInfo);
+        }
+
+        return new CredentialValidationResult(
+                getCallerName(configuration),
+                getGroups(configuration)
+        );
     }
 
-    @Override
-    public Set<ValidationType> validationTypes() {
-        return singleton(VALIDATE);
+    private String getCallerName(OpenIdConfiguration configuration) {
+        String callerNameClaim = configuration.getClaimsConfiguration().getCallerNameClaim();
+        String callerName = context.getClaimsJson().getString(callerNameClaim, null);
+        if (callerName == null) {
+            callerName = (String) context.getIdentityToken().getClaim(callerNameClaim);
+        }
+        if (callerName == null) {
+            callerName = (String) context.getAccessToken().getClaim(callerNameClaim);
+        }
+        if (callerName == null) {
+            callerName = context.getSubject();
+        }
+        return callerName;
     }
+
+    private Set<String> getGroups(OpenIdConfiguration configuration) {
+        Set<String> groups = new HashSet<>();
+        String callerGroupsClaim = configuration.getClaimsConfiguration().getCallerGroupsClaim();
+        JsonArray groupsUserinfoClaim
+                = context.getClaimsJson().getJsonArray(callerGroupsClaim);
+        JSONArray groupsIdentityClaim
+                = (JSONArray) context.getIdentityToken().getClaim(callerGroupsClaim);
+        JSONArray groupsAccessClaim
+                = (JSONArray) context.getAccessToken().getClaim(callerGroupsClaim);
+        if (nonNull(groupsUserinfoClaim)) {
+            for (int i = 0; i < groupsUserinfoClaim.size(); i++) {
+                JsonValue value = groupsUserinfoClaim.get(i);
+                if (value.getValueType() == JsonValue.ValueType.STRING) {
+                    groups.add(groupsUserinfoClaim.getString(i));
+                }
+            }
+        } else if (nonNull(groupsIdentityClaim)) {
+            groups = groupsIdentityClaim.stream()
+                    .map(Object::toString)
+                    .collect(toSet());
+        } else if (nonNull(groupsAccessClaim)) {
+            groups = groupsAccessClaim.stream()
+                    .map(Object::toString)
+                    .collect(toSet());
+        }
+        return groups;
+    }
+
 }
