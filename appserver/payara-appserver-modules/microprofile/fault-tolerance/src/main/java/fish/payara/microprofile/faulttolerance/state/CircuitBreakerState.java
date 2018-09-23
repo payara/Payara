@@ -39,12 +39,11 @@
  */
 package fish.payara.microprofile.faulttolerance.state;
 
-import java.time.Duration;
-import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -62,16 +61,17 @@ public class CircuitBreakerState {
 
     private final BlockingQueue<Boolean> closedResultsQueue;
 
-    private volatile CircuitState circuitState = CircuitState.CLOSED;
-    private volatile ZonedDateTime stateSince = ZonedDateTime.now();
-
     private final AtomicInteger halfOpenSuccessfulResultsCounter = new AtomicInteger(0);
-    private final AtomicLong closedTime = new AtomicLong(0);
-    private final AtomicLong openTime = new AtomicLong(0);
-    private final AtomicLong halfOpenTime = new AtomicLong(0);
+
+    private final Map<CircuitState, StateTime> allStateTimes = new HashMap<>();
+    private volatile StateTime currentStateTime;
 
     public CircuitBreakerState(int requestVolumeThreshold) {
         this.closedResultsQueue = new LinkedBlockingQueue<>(requestVolumeThreshold);
+        for(CircuitState state : CircuitState.values()) {
+            this.allStateTimes.put(state, new StateTime(state));
+        }
+        this.currentStateTime = this.allStateTimes.get(CircuitState.CLOSED);
     }
 
     /**
@@ -79,7 +79,7 @@ public class CircuitBreakerState {
      * @return The current circuit state
      */
     public CircuitState getCircuitState() {
-        return this.circuitState;
+        return this.currentStateTime.state();
     }
 
     /**
@@ -87,18 +87,12 @@ public class CircuitBreakerState {
      * @param circuitState The state to set the CircuitBreaker to.
      */
     public void setCircuitState(CircuitState circuitState) {
-        switch (this.circuitState) {
-            case OPEN:
-                updateOpenTime();
-                break;
-            case HALF_OPEN:
-                updateHalfOpenTime();
-                break;
-            case CLOSED:
-                updateClosedTime();
-                break;
+        this.currentStateTime.update();
+        if (!this.currentStateTime.is(circuitState)) {
+            StateTime nextStateTime = allStateTimes.get(circuitState);
+            nextStateTime.reset();
+            this.currentStateTime = nextStateTime;
         }
-        this.circuitState = circuitState;
     }
 
     /**
@@ -170,42 +164,34 @@ public class CircuitBreakerState {
         return over;
     }
 
+    /**
+     * Updates if the current state is CLOSED and returns the amount of nanos.
+     * @return The amount of nanos.
+     */
     public long updateAndGetClosedTime() {
-        return CircuitState.CLOSED.equals(this.circuitState)
-            ? updateClosedTime()
-            : this.closedTime.get();
+        return this.currentStateTime.is(CircuitState.CLOSED)
+            ? this.currentStateTime.update()
+            : this.allStateTimes.get(CircuitState.CLOSED).nanos();
     }
 
-    private long updateClosedTime() {
-        ZonedDateTime now = ZonedDateTime.now();
-        long nanos = this.closedTime.addAndGet(Duration.between(this.stateSince, now).toNanos());
-        this.stateSince = now;
-        return nanos;
-    }
-
+    /**
+     * Updates if the current state is OPEN and returns the amount of nanos.
+     * @return The amount of nanos.
+     */
     public long updateAndGetOpenTime() {
-        return CircuitState.OPEN.equals(this.circuitState)
-            ? updateOpenTime()
-            : this.openTime.get();
+        return this.currentStateTime.is(CircuitState.OPEN)
+            ? this.currentStateTime.update()
+            : this.allStateTimes.get(CircuitState.OPEN).nanos();
     }
 
-    private long updateOpenTime() {
-        ZonedDateTime now = ZonedDateTime.now();
-        long nanos = this.openTime.addAndGet(Duration.between(this.stateSince, now).toNanos());
-        this.stateSince = now;
-        return nanos;
-    }
-
+    /**
+     * Updates if the current state is HALF_OPEN and returns the amount of nanos.
+     * @return The amount of nanos.
+     */
     public long updateAndGetHalfOpenTime() {
-        return CircuitState.HALF_OPEN.equals(this.circuitState)
-            ? updateHalfOpenTime()
-            : this.halfOpenTime.get();
+        return this.currentStateTime.is(CircuitState.HALF_OPEN)
+            ? this.currentStateTime.update()
+            : this.allStateTimes.get(CircuitState.HALF_OPEN).nanos();
     }
 
-    private long updateHalfOpenTime() {
-        ZonedDateTime now = ZonedDateTime.now();
-        long nanos = this.halfOpenTime.addAndGet(Duration.between(this.stateSince, now).toNanos());
-        this.stateSince = now;
-        return nanos;
-    }
 }
