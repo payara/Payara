@@ -54,7 +54,7 @@ import java.util.logging.Logger;
  */
 public class CircuitBreakerState {
 
-    private static final Logger logger = Logger.getLogger(CircuitBreakerState.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CircuitBreakerState.class.getName());
 
     public enum CircuitState {
         OPEN, CLOSED, HALF_OPEN
@@ -71,7 +71,7 @@ public class CircuitBreakerState {
     private final AtomicLong halfOpenTime = new AtomicLong(0);
 
     public CircuitBreakerState(int requestVolumeThreshold) {
-        closedResultsQueue = new LinkedBlockingQueue<>(requestVolumeThreshold);
+        this.closedResultsQueue = new LinkedBlockingQueue<>(requestVolumeThreshold);
     }
 
     /**
@@ -79,7 +79,7 @@ public class CircuitBreakerState {
      * @return The current circuit state
      */
     public CircuitState getCircuitState() {
-        return circuitState;
+        return this.circuitState;
     }
 
     /**
@@ -98,8 +98,6 @@ public class CircuitBreakerState {
                 updateClosedTime();
                 break;
         }
-
-        resetTimer();
         this.circuitState = circuitState;
     }
 
@@ -109,9 +107,9 @@ public class CircuitBreakerState {
      */
     public void recordClosedResult(Boolean result) {
         // If the queue is full, remove the oldest result and add
-        if (!closedResultsQueue.offer(result)) {
-            closedResultsQueue.poll();
-            closedResultsQueue.offer(result);
+        if (!this.closedResultsQueue.offer(result)) {
+            this.closedResultsQueue.poll();
+            this.closedResultsQueue.offer(result);
         }
     }
 
@@ -119,21 +117,21 @@ public class CircuitBreakerState {
      * Clears the results queue.
      */
     public void resetResults() {
-        closedResultsQueue.clear();
+        this.closedResultsQueue.clear();
     }
 
     /**
      * Increments the successful results counter for the half open state.
      */
     public void incrementHalfOpenSuccessfulResultCounter() {
-        halfOpenSuccessfulResultsCounter.incrementAndGet();
+        this.halfOpenSuccessfulResultsCounter.incrementAndGet();
     }
 
     /**
      * Resets the successful results counter for the half open state.
      */
     public void resetHalfOpenSuccessfulResultCounter() {
-        halfOpenSuccessfulResultsCounter.set(0);
+        this.halfOpenSuccessfulResultsCounter.set(0);
     }
 
     /**
@@ -141,7 +139,7 @@ public class CircuitBreakerState {
      * @return The number of consecutive successful results.
      */
     public int getHalfOpenSuccessFulResultCounter() {
-        return halfOpenSuccessfulResultsCounter.get();
+        return this.halfOpenSuccessfulResultsCounter.get();
     }
 
     /**
@@ -154,8 +152,8 @@ public class CircuitBreakerState {
         int failures = 0;
 
         // Only check if the queue is full
-        if (closedResultsQueue.remainingCapacity() == 0) {
-            for (Boolean success : closedResultsQueue) {
+        if (this.closedResultsQueue.remainingCapacity() == 0) {
+            for (Boolean success : this.closedResultsQueue) {
                 if (!success) {
                     failures++;
 
@@ -166,43 +164,48 @@ public class CircuitBreakerState {
                 }
             }
         } else {
-            logger.log(Level.FINE, "CircuitBreaker results queue isn't full yet.");
+            LOGGER.log(Level.FINE, "CircuitBreaker results queue isn't full yet.");
         }
 
         return over;
     }
 
-    private void resetTimer() {
-        stateSince = ZonedDateTime.now();
-    }
-
     public long updateAndGetClosedTime() {
-        return CircuitState.CLOSED.equals(circuitState)
+        return CircuitState.CLOSED.equals(this.circuitState)
             ? updateClosedTime()
-            : closedTime.get();
+            : this.closedTime.get();
     }
 
     private long updateClosedTime() {
-        return closedTime.addAndGet(Duration.between(stateSince, ZonedDateTime.now()).toNanos());
+        ZonedDateTime now = ZonedDateTime.now();
+        long nanos = this.closedTime.addAndGet(Duration.between(this.stateSince, now).toNanos());
+        this.stateSince = now;
+        return nanos;
     }
 
     public long updateAndGetOpenTime() {
-        return CircuitState.OPEN.equals(circuitState)
+        return CircuitState.OPEN.equals(this.circuitState)
             ? updateOpenTime()
-            : openTime.get();
+            : this.openTime.get();
     }
 
     private long updateOpenTime() {
-        return openTime.addAndGet(Duration.between(stateSince, ZonedDateTime.now()).toNanos());
+        ZonedDateTime now = ZonedDateTime.now();
+        long nanos = this.openTime.addAndGet(Duration.between(this.stateSince, now).toNanos());
+        this.stateSince = now;
+        return nanos;
     }
 
     public long updateAndGetHalfOpenTime() {
-        return CircuitState.HALF_OPEN.equals(circuitState)
+        return CircuitState.HALF_OPEN.equals(this.circuitState)
             ? updateHalfOpenTime()
-            : halfOpenTime.get();
+            : this.halfOpenTime.get();
     }
 
     private long updateHalfOpenTime() {
-        return halfOpenTime.addAndGet(Duration.between(stateSince, ZonedDateTime.now()).toNanos());
+        ZonedDateTime now = ZonedDateTime.now();
+        long nanos = this.halfOpenTime.addAndGet(Duration.between(this.stateSince, now).toNanos());
+        this.stateSince = now;
+        return nanos;
     }
 }
