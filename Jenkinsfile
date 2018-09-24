@@ -1,7 +1,7 @@
 #!groovy
 //in repo Jenkinsfile
 def pom
-def DOMAIN_NAME='testdomain'
+def DOMAIN_NAME='test-domain'
 def ASADMIN
 pipeline {
     agent any
@@ -39,7 +39,7 @@ pipeline {
                     ASADMIN = "./appserver/distributions/payara/target/stage/${getPayaraDirectoryName(pom.version)}/bin/asadmin"
                 }
 
-                sh "${ASADMIN} create-domain --nopassword test-domain"
+                sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
                 sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
                 script{
                     if(getMajorVersion(pom.version) == '5') {
