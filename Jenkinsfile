@@ -2,6 +2,7 @@
 //in repo Jenkinsfile
 def pom
 def DOMAIN_NAME='testdomain'
+def ASADMIN
 pipeline {
     agent any
     parameters {
@@ -37,7 +38,8 @@ pipeline {
             }
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                def ASADMIN ="./${getPayaraDirectoryName(pom.version)}/bin/asadmin"
+
+                ASADMIN = "./${getPayaraDirectoryName(pom.version)}/bin/asadmin"
 
                 sh "${ASADMIN} create-domain --nopassword test-domain"
                 sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
