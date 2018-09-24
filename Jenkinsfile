@@ -29,17 +29,14 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
-        stage('Run Quicklook Tests') {
+        stage('Setup for Quicklook Tests') {
             tools {
                 jdk "zulu-${jdkVer}"
-            }
-            environment {
-                MAVEN_OPTS=getMavenOpts()
             }
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 script{
-                    ASADMIN = "./${getPayaraDirectoryName(pom.version)}/bin/asadmin"
+                    ASADMIN = "./appserver/distributions/payara/target/stage/${getPayaraDirectoryName(pom.version)}/bin/asadmin"
                 }
 
                 sh "${ASADMIN} create-domain --nopassword test-domain"
@@ -53,6 +50,17 @@ pipeline {
                         error("unknown Payara version \"${pom.version}\"")
                     }
                 }
+            }
+        }
+        stage('Run Quicklook Tests') {
+            tools {
+                jdk "zulu-${jdkVer}"
+            }
+            environment {
+                MAVEN_OPTS=getMavenOpts()
+            }
+            steps {
+
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh """mvn -V -ff -e clean test \
                 -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/${getPayaraDirectoryName(pom.version)}/glassfish\" \
@@ -60,7 +68,20 @@ pipeline {
                 -Djavax.xml.accessExternalSchema=all \
                 -f appserver/tests/quicklook/pom.xml"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                echo'tidying up after tests:'
+
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('cleanup from Quicklook Tests') {
+            tools {
+                jdk "zulu-${jdkVer}"
+            }
+            steps {
+                echo 'tidying up after tests:'
                 sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
                 script{
                     if(getMajorVersion(pom.version) == '5') {
@@ -70,11 +91,6 @@ pipeline {
                     }else {
                         error("unknown Payara version \"${pom.version}\"")
                     }
-                }
-            }
-            post {
-                always {
-                    junit '**/target/surefire-reports/*.xml'
                 }
             }
         }
