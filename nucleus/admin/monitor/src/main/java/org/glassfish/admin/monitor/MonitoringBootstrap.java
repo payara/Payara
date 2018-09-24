@@ -107,7 +107,7 @@ import static org.glassfish.admin.monitor.MLogger.*;
 
 
 /**
- *
+ * Starts AMX monitoring
  * @author abbagani
  */
 @Service
@@ -141,10 +141,6 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
     @Inject
     Transactions transactions;
 
-    //Don't inject ConfigBeans to avoid getting every event on them
-    private Domain domain;
-
-
     Map<String,Module> map = Collections.synchronizedMap(new WeakHashMap<String,Module>());
     List<String> appList = Collections.synchronizedList(new ArrayList<String>());
 
@@ -159,7 +155,6 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
 
     @Override
     public void postConstruct() {
-        domain = habitat.getService(Domain.class);
         transactions.addListenerForType(ContainerMonitoring.class, this);
         transactions.addListenerForType(MonitoringService.class, this);
         transactions.addListenerForType(ModuleMonitoringLevels.class, this);
@@ -208,8 +203,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
         //We need to do the cleanup for preventing errors from server starting in Embedded mode
         ProbeRegistry.cleanup();
         if (spmd != null) {
-            spmd = new StatsProviderManagerDelegateImpl(pcm, probeRegistry, mrdr, domain, serverEnv.getInstanceName(),
-                    monitoringService);
+            spmd = new StatsProviderManagerDelegateImpl(pcm, probeRegistry, mrdr, serverEnv.getInstanceName(), monitoringService);
             StatsProviderManager.setStatsProviderManagerDelegate(spmd);
         }
     }
@@ -230,8 +224,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
             return;
 
         //Set the StatsProviderManagerDelegate, so we can start processing the StatsProviders
-        spmd = new StatsProviderManagerDelegateImpl(pcm, probeRegistry, mrdr, domain, serverEnv.getInstanceName(),
-                monitoringService);
+        spmd = new StatsProviderManagerDelegateImpl(pcm, probeRegistry, mrdr, serverEnv.getInstanceName(), monitoringService);
         StatsProviderManager.setStatsProviderManagerDelegate(spmd);
         StatsProviderUtil.setStatsProviderManagerDelegate(spmd);
         if (LOGGER.isLoggable(Level.FINE))
@@ -250,8 +243,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
 
     @Override
     public synchronized void moduleStarted(Module module) {
-        if (module == null) return;
-        verifyModule(module);
+        moduleResolved(module);
     }
 
     private synchronized void verifyModule(Module module) {
@@ -509,13 +501,13 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
 
             if(!ok(propName))
                 continue;
-            String level_change_mesg = "Level change event received, {0} New Level = {1}, Old Level = {2}";
+            String levelChangeMessage = "Level change event received, {0} New Level = {1}, Old Level = {2}";
             if (event.getSource() instanceof ModuleMonitoringLevels) {
                 String newEnabled = newVal.toString().toUpperCase(Locale.ENGLISH);
                 String oldEnabled = (oldVal == null) ? "OFF" : oldVal.toString().toUpperCase(Locale.ENGLISH);
-                if (LOGGER.isLoggable(Level.FINE))
-                    LOGGER.log(Level.FINE, level_change_mesg,
-                                new Object[]{propName, newEnabled, oldEnabled});
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, levelChangeMessage, new Object[]{propName, newEnabled, oldEnabled});
+                }
                 if (!newEnabled.equals(oldEnabled)) {
                     handleLevelChange(propName, newEnabled);
                 }
@@ -525,9 +517,9 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
 
                 String newEnabled = newVal.toString().toUpperCase(Locale.ENGLISH);
                 String oldEnabled = (oldVal == null) ? "OFF" : oldVal.toString().toUpperCase(Locale.ENGLISH);
-                if (LOGGER.isLoggable(Level.FINE))
-                    LOGGER.log(Level.FINE, level_change_mesg,
-                                new Object[]{propName, newEnabled, oldEnabled});
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, levelChangeMessage, new Object[]{propName, newEnabled, oldEnabled});
+                }
                 if (!newEnabled.equals(oldEnabled)) {
                     handleLevelChange(cm.getName(), newEnabled);
                 }
@@ -538,9 +530,9 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
                 // so we convert to boolean and then compare...
                 boolean newEnabled = Boolean.parseBoolean(newVal.toString());
                 boolean oldEnabled = (oldVal == null) ? !newEnabled : Boolean.parseBoolean(oldVal.toString());
-                if (LOGGER.isLoggable(Level.FINE))
-                    LOGGER.log(Level.FINE, level_change_mesg,
-                                new Object[]{propName, newEnabled, oldEnabled});
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, levelChangeMessage, new Object[]{propName, newEnabled, oldEnabled});
+                }
 
                 if(newEnabled != oldEnabled) {
                     handleServiceChange(spr, propName, newEnabled);
