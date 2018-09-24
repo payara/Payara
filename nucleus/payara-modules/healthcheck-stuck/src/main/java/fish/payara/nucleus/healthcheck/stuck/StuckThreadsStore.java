@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -48,6 +48,8 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 /**
+ * Stores all managed and pooled threads
+ * for testing if they are unresponsive
  * @since 4.1.2.173
  * @author jonathan coustick
  */
@@ -71,12 +73,8 @@ public class StuckThreadsStore {
     /**
      * Registers a thread with the store
      *
-     * @param thread
-     */
-    /*public void registerThread(Thread thread) {
-        threads.put(thread, System.nanoTime());
-    }*/
-    
+     * @param threadid the id of the thread to register
+     */    
     public void registerThread(Long threadid){
         threads.put(threadid, System.nanoTime());
     }
@@ -84,23 +82,17 @@ public class StuckThreadsStore {
     /**
      * Removes a thread from the store. This means that the thread is not stuck.
      *
-     * @param thread
-     */
-    /*public void deregisterThread(Thread thread) {
-        if (threads.remove(thread) == null) {
-            logger.log(Level.WARNING, "Tried to deregister non-existent thread " + thread.toString());
-        }
-    }*/
-    
+     * @param threadid the id of the thread to remove
+     */    
     public void deregisterThread(long threadid){
         if (threads.remove(threadid) == null) {
-            logger.log(Level.WARNING, "Tried to deregister non-existent thread {0}", threadid);
+            logger.log(Level.FINE, "Tried to deregister non-existent thread {0}", threadid);
         }
     }
 
     /**
      * Returns a HashMap of the threads in the store with the values of time the thread was registered.
-     * @return 
+     * @return all threads
      */
     public ConcurrentHashMap<Long, Long> getThreads() {
         return threads;
