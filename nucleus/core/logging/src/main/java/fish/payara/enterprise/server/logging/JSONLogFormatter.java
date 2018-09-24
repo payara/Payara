@@ -134,7 +134,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     private String TIME_MILLIS_KEY = "TimeMillis";
     private String MESSAGE_ID_KEY = "MessageID";
     private String LOG_MESSAGE_KEY = "LogMessage";
-    private String THROWABLE_KEY = "THROWABLE";
+    private String THROWABLE_KEY = "Throwable";
 
     private static final String RFC3339_DATE_FORMAT = 
             "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
