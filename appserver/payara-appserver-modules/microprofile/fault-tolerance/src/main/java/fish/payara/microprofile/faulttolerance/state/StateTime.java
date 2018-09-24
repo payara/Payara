@@ -40,8 +40,8 @@
 package fish.payara.microprofile.faulttolerance.state;
 
 import java.io.Serializable;
-import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -97,7 +97,7 @@ class StateTime implements Serializable {
      */
     long update() {
         ZonedDateTime now = ZonedDateTime.now();
-        long result = this.nanos.addAndGet(Duration.between(this.since, now).toNanos());
+        long result = this.nanos.addAndGet(ChronoUnit.NANOS.between(this.since, now));
         this.since = now;
         return result;
     }
