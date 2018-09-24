@@ -36,8 +36,7 @@ pipeline {
                 MAVEN_OPTS=getMavenOpts()
             }
             steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 def ASADMIN ="./${getPayaraDirectoryName(pom.version)}/bin/asadmin"
 
                 sh "${ASADMIN} create-domain --nopassword test-domain"
@@ -45,18 +44,30 @@ pipeline {
                 script{
                     if(getMajorVersion(pom.version) == '5') {
                         sh "${ASADMIN} start-database --dbtype derby || true"
-                    }else if (getMajorVersion(pom.version) == '4') {
-                        sh "${ASADMIN} start-database --dbtype derby || true"
+                        }else if (getMajorVersion(pom.version) == '4') {
+                            sh "${ASADMIN} start-database --dbtype derby || true"
                     }else {
                         error("unknown Payara version \"${pom.version}\"")
                     }
                 }
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh """mvn -V -ff -e clean test \
                 -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/${getPayaraDirectoryName(pom.version)}/glassfish\" \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all \
                 -f appserver/tests/quicklook/pom.xml"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                echo'tidying up after tests:'
+                sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
+                script{
+                    if(getMajorVersion(pom.version) == '5') {
+                        sh "${ASADMIN} start-database --dbtype derby || true"
+                        }else if (getMajorVersion(pom.version) == '4') {
+                            sh "${ASADMIN} start-database --dbtype derby || true"
+                    }else {
+                        error("unknown Payara version \"${pom.version}\"")
+                    }
+                }
             }
             post {
                 always {
