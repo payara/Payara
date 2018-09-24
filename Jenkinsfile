@@ -38,8 +38,9 @@ pipeline {
             }
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-
-                ASADMIN = "./${getPayaraDirectoryName(pom.version)}/bin/asadmin"
+                script{
+                    ASADMIN = "./${getPayaraDirectoryName(pom.version)}/bin/asadmin"
+                }
 
                 sh "${ASADMIN} create-domain --nopassword test-domain"
                 sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
