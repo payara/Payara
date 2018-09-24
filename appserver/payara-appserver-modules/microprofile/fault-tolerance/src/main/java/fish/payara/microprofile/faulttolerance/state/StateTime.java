@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.faulttolerance.state;
 
+import java.io.Serializable;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.concurrent.atomic.AtomicLong;
@@ -47,7 +48,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * Represents the state its time amount and since when this is in charge.
  * @author Sven Diedrichsen
  */
-class StateTime {
+class StateTime implements Serializable {
+
+    private static final long serialVersionUID = 1;
 
     private CircuitBreakerState.CircuitState state;
     private ZonedDateTime since;

@@ -165,33 +165,13 @@ public class CircuitBreakerState {
     }
 
     /**
-     * Updates if the current state is CLOSED and returns the amount of nanos.
+     * Updates if the current state equals the provided and returns the amount of nanos.
      * @return The amount of nanos.
      */
-    public long updateAndGetClosedTime() {
-        return this.currentStateTime.is(CircuitState.CLOSED)
+    public long updateAndGet(CircuitState circuitState) {
+        return this.currentStateTime.is(circuitState)
             ? this.currentStateTime.update()
-            : this.allStateTimes.get(CircuitState.CLOSED).nanos();
-    }
-
-    /**
-     * Updates if the current state is OPEN and returns the amount of nanos.
-     * @return The amount of nanos.
-     */
-    public long updateAndGetOpenTime() {
-        return this.currentStateTime.is(CircuitState.OPEN)
-            ? this.currentStateTime.update()
-            : this.allStateTimes.get(CircuitState.OPEN).nanos();
-    }
-
-    /**
-     * Updates if the current state is HALF_OPEN and returns the amount of nanos.
-     * @return The amount of nanos.
-     */
-    public long updateAndGetHalfOpenTime() {
-        return this.currentStateTime.is(CircuitState.HALF_OPEN)
-            ? this.currentStateTime.update()
-            : this.allStateTimes.get(CircuitState.HALF_OPEN).nanos();
+            : this.allStateTimes.get(circuitState).nanos();
     }
 
 }

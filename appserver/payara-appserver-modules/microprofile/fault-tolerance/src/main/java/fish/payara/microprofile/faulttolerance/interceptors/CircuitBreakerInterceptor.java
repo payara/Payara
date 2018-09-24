@@ -434,21 +434,21 @@ public class CircuitBreakerInterceptor implements Serializable {
 
         // Register a open time gauge if there isn't one
         if (openTimeGauge == null) {
-            openTimeGauge = circuitBreakerState::updateAndGetOpenTime;
+            openTimeGauge = () -> circuitBreakerState.updateAndGet(CircuitBreakerState.CircuitState.OPEN);
 
             metricRegistry.register("ft." + fullMethodSignature + ".circuitbreaker.open.total", openTimeGauge);
         }
 
         // Register a open time gauge if there isn't one
         if (halfOpenTimeGauge == null) {
-            halfOpenTimeGauge = circuitBreakerState::updateAndGetHalfOpenTime;
+            halfOpenTimeGauge = () -> circuitBreakerState.updateAndGet(CircuitBreakerState.CircuitState.HALF_OPEN);
 
             metricRegistry.register("ft." + fullMethodSignature + ".circuitbreaker.halfOpen.total", halfOpenTimeGauge);
         }
 
         // Register a open time gauge if there isn't one
         if (closedTimeGauge == null) {
-            closedTimeGauge = circuitBreakerState::updateAndGetClosedTime;
+            closedTimeGauge = () -> circuitBreakerState.updateAndGet(CircuitBreakerState.CircuitState.CLOSED);
 
             metricRegistry.register("ft." + fullMethodSignature + ".circuitbreaker.closed.total", closedTimeGauge);
         }
