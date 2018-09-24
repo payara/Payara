@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.stringsubs;
 
@@ -52,7 +53,7 @@ import com.sun.enterprise.admin.servermgmt.xml.stringsubs.PropertyType;
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.StringsubsDefinition;
 
 /**
- * An object which allows to set the custom behavior for string substitution
+ * An object which allows to set the custom behaviour for string substitution
  * operation and facilitate String substitution process.
  * <p>String substitution is a process of substituting a string in a
  * file with another string.</p>
@@ -82,7 +83,7 @@ public interface StringSubstitutor
     void setFileBackupLocation(File backupLocation);
 
     /**
-     * Get's the default {@link Property} for the given {@link PropertyType}, If
+     * Gets the default {@link Property} for the given {@link PropertyType}, If
      * the property type is null then all the default properties will be returned. 
      * 
      * @param type The type for which default properties has to be retrieved. 
@@ -91,25 +92,25 @@ public interface StringSubstitutor
     List<Property> getDefaultProperties(PropertyType type);
 
     /**
-     * Get's the string-subs definition object. A {@link StringSubsDefiniton} object
+     * Gets the string-subs definition object. A {@link StringSubsDefiniton} object
      * contains the details of component, groups and files used in substitution.
      *
-     * <p><b>NOTE</b>: This object is updatable. </p>
+     * <p><b>NOTE</b>: This object is updateable. </p>
      * @return Parsed string-subs configuration object.
      */
     StringsubsDefinition getStringSubsDefinition();
 
     /**
-     * Perform's string substitution.
+     * Performs string substitution.
      *
      * @throws StringSubstitutionException If any error occurs in string substitution.
      */
     void substituteAll() throws StringSubstitutionException;
 
     /**
-     * Perform's string substitution for give components.
+     * Performs string substitution for give components.
      *
-     * @param component List of {@link Component} identifiers for which the string
+     * @param components List of {@link Component} identifiers for which the string
      *  substitution has to be performed.
      * @throws StringSubstitutionException If any error occurs during
      *  substitution.
@@ -117,7 +118,7 @@ public interface StringSubstitutor
     void substituteComponents(List<String> components) throws StringSubstitutionException;
 
     /**
-     * Perform's string substitution for give groups.
+     * Performs string substitution for give groups.
      *
      * @param groups List of {@link Group} identifiers for which the string
      *  substitution has to be performed.
