@@ -1,6 +1,7 @@
 #!groovy
 //in repo Jenkinsfile
 def pom
+def DOMAIN_NAME='testdomain'
 pipeline {
     agent any
     parameters {
@@ -36,6 +37,20 @@ pipeline {
             }
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                def ASADMIN ="./${getPayaraDirectoryName(pom.version)}/bin/asadmin"
+
+                sh "${ASADMIN} create-domain --nopassword test-domain"
+                sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
+                script{
+                    if(getMajorVersion(pom.version) == '5') {
+                        sh "${ASADMIN} start-database --dbtype derby || true"
+                    }else if (getMajorVersion(pom.version) == '4') {
+                        sh "${ASADMIN} start-database --dbtype derby || true"
+                    }else {
+                        error("unknown Payara version \"${pom.version}\"")
+                    }
+                }
                 sh """mvn -V -ff -e clean test \
                 -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/${getPayaraDirectoryName(pom.version)}/glassfish\" \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
