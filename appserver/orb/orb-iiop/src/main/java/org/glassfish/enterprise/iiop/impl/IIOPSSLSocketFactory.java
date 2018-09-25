@@ -59,10 +59,12 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.KeyManager;
@@ -105,6 +107,7 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
     private static final int BACKLOG = 50;
     
     private static final String SO_KEEPALIVE = "fish.payara.SOKeepAlive";
+
     
 
     //private static SecureRandom sr = null;
@@ -117,7 +120,8 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
      * @todo provide an interface to the admin, so that whenever a iiop-listener
      * is added / removed, we modify the hashtable,
      */ 
-    private Map portToSSLInfo = new Hashtable();
+    private Map portToSSLInfo = new ConcurrentHashMap();
+    
     /* this is stored for the client side of SSL Connections. 
      * Note: There will be only 1 ctx for the client side, as we will reuse the 
      * ctx for all SSL connections
@@ -152,18 +156,22 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
                     boolean securityEnabled = Boolean.valueOf(listener.getSecurityEnabled());
                    
                     if (securityEnabled) {
+                        ArrayList<String> supportedProtocol = new ArrayList<>(4);
                         if (ssl != null) {
                             boolean ssl2Enabled = Boolean.valueOf(ssl.getSsl2Enabled());
                             boolean tlsEnabled = Boolean.valueOf(ssl.getTlsEnabled());
                             boolean tlsEnabled11 = Boolean.valueOf(ssl.getTls11Enabled());
                             boolean tlsEnabled12 = Boolean.valueOf(ssl.getTls12Enabled());
                             boolean ssl3Enabled = Boolean.valueOf(ssl.getSsl3Enabled());
+                            
                             sslInfo = init(ssl.getCertNickname(),
                                     ssl2Enabled, ssl.getSsl2Ciphers(),
                                     ssl3Enabled, ssl.getSsl3TlsCiphers(),
                                     tlsEnabled, tlsEnabled11, tlsEnabled12);
+                            
                         } else {
                             sslInfo = getDefaultSslInfo();
+                            
                         }
                         portToSSLInfo.put(
                             new Integer(listener.getPort()), sslInfo);
@@ -233,6 +241,7 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
             boolean tlsEnabled, boolean tlsEnabled11,boolean tlsEnabled12) throws Exception {
 
         String protocol;
+        ArrayList<String> selectedProtocols = new ArrayList<>();
         if (tlsEnabled12) {
             protocol = TLS12;
         } else if (tlsEnabled11) {
@@ -248,7 +257,7 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
         }
 
         String[] ssl3TlsCipherArr = null;
-        if (tlsEnabled || ssl3Enabled) {
+        if (tlsEnabled11 || tlsEnabled12|| tlsEnabled || ssl3Enabled) {
             ssl3TlsCipherArr = getEnabledCipherSuites(ssl3TlsCiphers,
                     false, ssl3Enabled, tlsEnabled, tlsEnabled11, tlsEnabled12);
         }
@@ -269,7 +278,20 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
             //ctx.init(mgrs, sslUtil.getTrustManagers(), sslUtil.getInitializedSecureRandom());
         }
 
-        return new SSLInfo(ctx, ssl3TlsCipherArr, ssl2CipherArr);
+        SSLInfo newInfo = new SSLInfo(ctx, ssl3TlsCipherArr, ssl2CipherArr);
+        if (ssl3Enabled) {
+            newInfo.addProtocol(SSL3);
+        }
+        if (tlsEnabled) {
+            newInfo.addProtocol(TLS);            
+        }
+        if (tlsEnabled11) {
+            newInfo.addProtocol(TLS11);            
+        }
+        if (tlsEnabled12) {
+            newInfo.addProtocol(TLS12);            
+        }
+        return newInfo;
     }
 
     //----- implements com.sun.corba.ee.spi.transport.ORBSocketFactory -----
@@ -430,6 +452,20 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
             ss = ssf.createServerSocket(port, BACKLOG, inetSocketAddress.getAddress());
             if (ciphers != null) {
                 ((SSLServerSocket)ss).setEnabledCipherSuites(ciphers);
+            }
+            
+            if (sslInfo.allowedProtocols.size() > 0) {
+                // filter protocols against socket supported
+                ArrayList<String> socketSupported = new ArrayList<>(Arrays.asList(((SSLServerSocket)ss).getSupportedProtocols()));
+                ArrayList<String> allowedProtocols = new ArrayList<>();
+                for (String protocolName : sslInfo.allowedProtocols) {
+                    if (socketSupported.contains(protocolName)) {
+                        allowedProtocols.add(protocolName);
+                    }
+                }
+                if (allowedProtocols.size() > 0) {
+                    ((SSLServerSocket)ss).setEnabledProtocols(allowedProtocols.toArray(new String[allowedProtocols.size()]));
+                }
             }
         } catch(IOException e) {
             _logger.log(Level.SEVERE, "iiop.createsocket_exception",
@@ -651,15 +687,25 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
         private SSLContext ctx;
         private String[] ssl3TlsCiphers = null;
         private String[] ssl2Ciphers = null;
+        private ArrayList<String> allowedProtocols;
 
         SSLInfo(SSLContext ctx, String[] ssl3TlsCiphers, String[] ssl2Ciphers) {
             this.ctx = ctx;
             this.ssl3TlsCiphers = ssl3TlsCiphers;
             this.ssl2Ciphers = ssl2Ciphers;
+            allowedProtocols = new ArrayList<>();
         }
 
         SSLContext getContext() {
             return ctx;
+        }
+        
+        void addProtocol(String protocol) {
+            allowedProtocols.add(protocol);
+        }
+        
+        String[] getAllowedProtocol() {
+            return (String[]) allowedProtocols.toArray();
         }
 
         String[] getSsl3TlsCiphers() {
