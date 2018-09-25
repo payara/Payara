@@ -82,7 +82,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("healthcheck.mphealthecheck.configure")
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.DAS})
+@TargetType({CommandTarget.DAS, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
             opType = RestEndpoint.OpType.POST,

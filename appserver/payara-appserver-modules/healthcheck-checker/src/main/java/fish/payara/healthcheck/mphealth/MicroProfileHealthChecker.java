@@ -54,6 +54,9 @@ import javax.ws.rs.core.Response;
 
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
+import fish.payara.appserver.micro.services.PayaraInstanceImpl;
+import fish.payara.micro.ClusterCommandResult;
+import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.nucleus.healthcheck.configuration.MicroProfileHealthCheckerConfiguration;
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
@@ -61,6 +64,9 @@ import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -72,7 +78,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.PropertyResolver;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.grizzly.config.dom.NetworkListener;
-import org.glassfish.hk2.api.PostConstruct;;
+import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
@@ -89,21 +95,25 @@ import org.jvnet.hk2.annotations.Service;
 public class MicroProfileHealthChecker extends BaseHealthCheck<HealthCheckTimeoutExecutionOptions, MicroProfileHealthCheckerConfiguration> implements PostConstruct {
 
     private static final Logger LOGGER = Logger.getLogger(MicroProfileHealthChecker.class.getPackage().getName());
-    
+    private static final String GET_MP_CONFIG_STRING = "get-microprofile-healthcheck-configuration";
+
     @Inject
     private Target targetUtil;
 
     @Inject
     private PayaraExecutorService payaraExecutorService;
-    
+
     @Inject
     GrizzlyService grizzlyService;
-    
+
     @Inject
     Domain domain;
-    
+
     @Inject
     ServerEnvironment envrionment;
+
+    @Inject
+    private PayaraInstanceImpl payaraMicro;
 
     @Override
     public void postConstruct() {
@@ -113,14 +123,20 @@ public class MicroProfileHealthChecker extends BaseHealthCheck<HealthCheckTimeou
     @Override
     public HealthCheckResult doCheck() {
         HealthCheckResult result = new HealthCheckResult();
-        
+
         if (!envrionment.isDas()) {
             //currrently this should only run on DAS
             return result;
         }
 
+        Map<String, Future<ClusterCommandResult>> configs = payaraMicro.executeClusteredASAdmin(GET_MP_CONFIG_STRING, new String[0]);
+
+        HashSet<String> usedInstances = new HashSet<String>();
+        
         //get all instances that this server knows about
         for (Server server : domain.getServers().getServer()) {
+            
+            usedInstances.add(server.getName());
 
             Future taskResult = payaraExecutorService.submit(() -> {
 
@@ -132,25 +148,7 @@ public class MicroProfileHealthChecker extends BaseHealthCheck<HealthCheckTimeou
 
                         URI remote = buildURI(server, endpoint);
 
-                        //send request to remote healthcheck endpoint to get the status
-                        Client jaxrsClient = ClientBuilder.newClient();
-                        WebTarget target = jaxrsClient.target(remote);
-
-                        Response metricsResponse = target.request().accept(MediaType.APPLICATION_JSON).get();
-                        switch (metricsResponse.getStatus()) {
-                            case 200:
-                                result.add(new HealthCheckResultEntry(HealthCheckResultStatus.GOOD, "UP"));
-                                break;
-                            case 503:
-                                result.add(new HealthCheckResultEntry(HealthCheckResultStatus.WARNING, "DOWN"));
-                                break;
-                            case 500:
-                                result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CRITICAL, "FAILURE"));
-                                break;
-                            default:
-                                result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CHECK_ERROR, "UNKNOWN RESPONSE"));
-                                break;
-                        }
+                        result.add(pingHealthEndpoint(remote));
 
                     } catch (URISyntaxException ex) {
                         result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CHECK_ERROR, "INVALID ENDPOINT: " + ex.getInput()));
@@ -168,13 +166,56 @@ public class MicroProfileHealthChecker extends BaseHealthCheck<HealthCheckTimeou
                 result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CRITICAL, "UNABLE TO CONNECT - " + ex.toString()));
             }
         }
+        
+        for (InstanceDescriptor instance : payaraMicro.getClusteredPayaras()) {
+            
+            if (usedInstances.contains(instance.getInstanceName())) {
+                continue;
+            }
+
+            Future taskResult = payaraExecutorService.submit(() -> {
+                try {
+                    
+                    ClusterCommandResult mpHealthConfigResult = configs.get(instance.getMemberUUID()).get();
+                    String values = mpHealthConfigResult.getOutput().split("\n")[1];
+                    Boolean enabled = Boolean.parseBoolean(values.split(" ")[0]);
+                    if (enabled) {
+                        
+                        String endpoint = values.split(" ", 2)[1].trim();
+
+                        URL usedURL = instance.getApplicationURLS().get(0);
+                        URI remote = new URI(usedURL.getProtocol(), usedURL.getUserInfo(), usedURL.getHost(), usedURL.getPort(), "/" + endpoint, null, null);
+
+                        result.add(pingHealthEndpoint(remote));
+
+                    }
+                } catch (InterruptedException | ExecutionException ex) {
+                    LOGGER.log(Level.FINE, "Error processing MP Healthcheck checker", ex);
+                result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CRITICAL, "UNABLE TO CONNECT - " + ex.toString()));
+                } catch (URISyntaxException ex) {
+                    result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CHECK_ERROR, "INVALID ENDPOINT: " + ex.getInput()));
+                } catch (ProcessingException ex) {
+                    LOGGER.log(Level.FINE, "Error sending JAX-RS Request", ex);
+                    result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CRITICAL, "UNABLE TO CONNECT - " + ex.getMessage()));
+                }
+
+            });
+
+            try {
+                taskResult.get(options.getTimeout(), TimeUnit.MILLISECONDS);
+            } catch (InterruptedException | ExecutionException | TimeoutException ex) {
+                LOGGER.log(Level.FINE, "Error processing MP Healthcheck checker", ex);
+                result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CRITICAL, "UNABLE TO CONNECT - " + ex.toString()));
+            }
+
+        }
 
         return result;
     }
 
     @Override
     public HealthCheckTimeoutExecutionOptions constructOptions(MicroProfileHealthCheckerConfiguration c) {
-        return new HealthCheckTimeoutExecutionOptions(Boolean.valueOf(c.getEnabled()), Long.parseLong(c.getTime()), asTimeUnit(c.getUnit()), 
+        return new HealthCheckTimeoutExecutionOptions(Boolean.valueOf(c.getEnabled()), Long.parseLong(c.getTime()), asTimeUnit(c.getUnit()),
                 Long.parseLong(c.getTimeout()));
     }
 
@@ -196,6 +237,24 @@ public class MicroProfileHealthChecker extends BaseHealthCheck<HealthCheckTimeou
             truePort = Integer.parseInt(sysPropsPort);
         }
         return new URI(protocol, null, (String) TranslatedConfigView.getTranslatedValue(listener.getAddress()), truePort, "/" + endpoint, null, null);
+    }
+
+    //send request to remote healthcheck endpoint to get the status
+    private HealthCheckResultEntry pingHealthEndpoint(URI remote) {
+        Client jaxrsClient = ClientBuilder.newClient();
+        WebTarget target = jaxrsClient.target(remote);
+
+        Response metricsResponse = target.request().accept(MediaType.APPLICATION_JSON).get();
+        switch (metricsResponse.getStatus()) {
+            case 200:
+                return new HealthCheckResultEntry(HealthCheckResultStatus.GOOD, "UP");
+            case 503:
+                return new HealthCheckResultEntry(HealthCheckResultStatus.WARNING, "DOWN");
+            case 500:
+                return new HealthCheckResultEntry(HealthCheckResultStatus.CRITICAL, "FAILURE");
+            default:
+                return new HealthCheckResultEntry(HealthCheckResultStatus.CHECK_ERROR, "UNKNOWN RESPONSE");
+        }
     }
 
 }
