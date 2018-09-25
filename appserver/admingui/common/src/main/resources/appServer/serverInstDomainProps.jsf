@@ -60,6 +60,7 @@
             setPageSessionAttribute(key="selfUrl", value="#{sessionScope.REST_URL}");
             gf.restRequest(endpoint="#{sessionScope.REST_URL}/property", method="GET", result="#{requestScope.propTable}");
             setPageSessionAttribute(key="tableList", value="#{requestScope.propTable.data.extraProperties.properties}");
+            setPageSessionAttribute(key="showCancelButton", value="#{false}");
         />
     </event>
     <sun:form id="propertyForm">
