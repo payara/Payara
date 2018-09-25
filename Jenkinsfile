@@ -41,15 +41,7 @@ pipeline {
 
                 sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
                 sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
-                script{
-                    if(getMajorVersion(pom.version) == '5') {
-                        sh "${ASADMIN} start-database --dbtype derby || true"
-                        }else if (getMajorVersion(pom.version) == '4') {
-                            sh "${ASADMIN} start-database --dbtype derby || true"
-                    }else {
-                        error("unknown Payara version \"${pom.version}\"")
-                    }
-                }
+                sh "${ASADMIN} start-database || true"
             }
         }
         stage('Run Quicklook Tests') {
@@ -83,20 +75,12 @@ pipeline {
             steps {
                 echo 'tidying up after tests:'
                 sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
-                script{
-                    if(getMajorVersion(pom.version) == '5') {
-                        sh "${ASADMIN} start-database --dbtype derby || true"
-                        }else if (getMajorVersion(pom.version) == '4') {
-                            sh "${ASADMIN} start-database --dbtype derby || true"
-                    }else {
-                        error("unknown Payara version \"${pom.version}\"")
-                    }
-                }
+                sh "${ASADMIN} stop-database || true"
             }
         }
         stage('Checkout EE8 Tests') {
             when{
-                expression{ jdkVer == '8' }
+                expression{ getMajorVersion(pom.version) == '4' }
             }
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
