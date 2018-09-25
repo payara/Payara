@@ -41,7 +41,7 @@ pipeline {
 
                 sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
                 sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
-                sh "${ASADMIN} start-database || true"
+                sh "${ASADMIN} start-database --dbtype derby || true"
             }
         }
         stage('Run Quicklook Tests') {
@@ -75,7 +75,7 @@ pipeline {
             steps {
                 echo 'tidying up after tests:'
                 sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
-                sh "${ASADMIN} stop-database || true"
+                sh "${ASADMIN} stop-database --dbtype derby || true"
             }
         }
         stage('Checkout EE8 Tests') {
