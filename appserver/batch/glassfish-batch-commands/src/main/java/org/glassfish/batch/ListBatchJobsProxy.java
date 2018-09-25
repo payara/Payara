@@ -83,11 +83,11 @@ public class ListBatchJobsProxy
     @Param(primary = true, optional = true)
     String jobName;
 
-    @Min(value = 0, message = "Offset value needs to be greter than 0")
+    @Min(value = 0, message = "Offset value needs to be greater than 0")
     @Param(name = "offset", optional = true, defaultValue = "0")
     String offSetValue;
 
-    @Min(value = 0, message = "Limit value needs to be greter than 0")
+    @Min(value = 0, message = "Limit value needs to be greater than 0")
     @Param(name = "limit", optional = true, defaultValue = "2000")
     String limitValue;
 
