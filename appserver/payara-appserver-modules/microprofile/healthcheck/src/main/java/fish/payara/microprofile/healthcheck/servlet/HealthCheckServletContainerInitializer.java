@@ -57,7 +57,6 @@ import javax.servlet.ServletRegistration;
 import org.eclipse.microprofile.health.Health;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.glassfish.api.invocation.InvocationManager;
-import static org.glassfish.common.util.StringHelper.isEmpty;
 import org.glassfish.internal.api.Globals;
 
 /**
@@ -87,7 +86,7 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
             }
 
             String virtualServers = configuration.getVirtualServers();
-            if (!isEmpty(virtualServers)
+            if ((virtualServers != null && !virtualServers.trim().isEmpty())
                     && !asList(virtualServers.split(",")).contains(ctx.getVirtualServerName())) {
                 return;
             }

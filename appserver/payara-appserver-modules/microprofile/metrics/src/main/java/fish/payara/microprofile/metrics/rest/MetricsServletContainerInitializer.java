@@ -48,7 +48,6 @@ import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
-import static org.glassfish.common.util.StringHelper.isEmpty;
 import org.glassfish.internal.api.Globals;
 
 public class MetricsServletContainerInitializer implements ServletContainerInitializer {
@@ -72,7 +71,7 @@ public class MetricsServletContainerInitializer implements ServletContainerIniti
                 .getService(MetricsServiceConfiguration.class);
 
         String virtualServers = configuration.getVirtualServers();
-        if (!isEmpty(virtualServers)
+        if ((virtualServers != null && !virtualServers.trim().isEmpty())
                 && !asList(virtualServers.split(",")).contains(ctx.getVirtualServerName())) {
             return;
         }
