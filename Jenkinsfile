@@ -80,7 +80,7 @@ pipeline {
         }
         stage('Checkout EE8 Tests') {
             when{
-                expression{ getMajorVersion(pom.version) == '4' }
+                expression{ getMajorVersion(pom.version) == '5' }
             }
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -101,7 +101,7 @@ pipeline {
         }
         stage('Run EE8 Tests') {
             when{
-                expression{ jdkVer == '8' }
+                expression{ getMajorVersion(pom.version) == '5' }
             }
             tools {
                 jdk "zulu-${jdkVer}"
