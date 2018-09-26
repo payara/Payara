@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -98,16 +98,16 @@ public class SampleFilterTest {
         }
         BigDecimal actualSampleRate = new BigDecimal(samplesSampled).divide(new BigDecimal(samplesProvided));
         boolean withinErrorMargin = true;
-        
+
         //less than
         if(actualSampleRate.compareTo(expectedSampleRate) == -1 && actualSampleRate.add(allowedErrorMargin).compareTo(expectedSampleRate) == -1){
             withinErrorMargin = false;
         }
-        
+
         if(actualSampleRate.compareTo(expectedSampleRate) == 1 && actualSampleRate.subtract(allowedErrorMargin).compareTo(expectedSampleRate) == 1){
             withinErrorMargin = false;
         }
-        
+
         assertTrue(String.format("The observed sample rate strayed too far from %d%%. plus/minus %4.3f, but was actually %4.3f.",
                         expectedSampleRate.multiply(new BigDecimal(100)).intValue(), allowedErrorMargin.doubleValue(), actualSampleRate.doubleValue()),
             withinErrorMargin);
