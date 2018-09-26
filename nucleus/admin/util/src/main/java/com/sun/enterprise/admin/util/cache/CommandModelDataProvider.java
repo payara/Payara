@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.util.cache;
 
 import com.sun.enterprise.admin.util.CachedCommandModel;
@@ -44,7 +46,6 @@ import com.sun.enterprise.admin.util.CommandModelData;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import java.io.*;
 import java.nio.charset.Charset;
-import javax.xml.stream.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandModel;
 import org.jvnet.hk2.annotations.Service;
@@ -57,7 +58,7 @@ import org.jvnet.hk2.annotations.Service;
  *
  * @author mmares
  */
-//It is ugly hand made code bud fast and with readable result. Maybe rewrite to some JAX-B based on performance result.
+//It is ugly hand made code but fast and with readable result. Maybe rewrite to some JAX-B based on performance result.
 @Service
 public class CommandModelDataProvider implements DataProvider {
     private static final String ADDEDUPLOADOPTIONS_ELEMENT = "added-upload-options";
@@ -112,12 +113,9 @@ public class CommandModelDataProvider implements DataProvider {
         if (cm == null) {
             return;
         }
-        // @todo Java SE 7: Managed source
-        BufferedWriter bw = null;
-        OutputStreamWriter writer = null;
-        try {
-            writer = new OutputStreamWriter(stream, charset);
-            bw = new BufferedWriter(writer);
+
+        try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(stream, charset))) {
+
             //command name
             String str = cm.getCommandName();
             if (str != null && !str.isEmpty()) {
@@ -243,9 +241,6 @@ public class CommandModelDataProvider implements DataProvider {
                     }
                 }
             }
-        } finally {
-            try { bw.close(); } catch (Exception ex) {}
-            try { writer.close(); } catch (Exception ex) {}
         }
     }
 
@@ -270,8 +265,6 @@ public class CommandModelDataProvider implements DataProvider {
 
     private CommandModel toInstanceSimpleFormat(InputStream stream) throws IOException {
         CachedCommandModel result = null;
-        InputStreamReader isr = null;
-        BufferedReader r = null;
         boolean inParam = false;
         String name = null;
         String eTag = null;
@@ -290,93 +283,114 @@ public class CommandModelDataProvider implements DataProvider {
         boolean pPassword = false;
         String pPrompt = null;
         String pPromptAgain = null;
-        try {
-            isr = new InputStreamReader(stream, charset);
-            r = new BufferedReader(isr);
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, charset))) {
             String line;
-            while ((line = r.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 int ind = line.indexOf(':');
                 if (ind <= 0) {
                     continue;
                 }
                 String key = line.substring(0, ind);
                 String value = line.substring(ind + 1).trim();
-                // @todo Java SE 7: String switch-case
+                
                 if (inParam) {
-                    if (NAME_ELEMENT.equals(key)) {
-                        //Add before parameter
-                        CommandModelData.ParamModelData pmd =
-                                new CommandModelData.ParamModelData(pName,
-                                pCls, pOptional, pDefaultValue, pShortName,
-                                pObsolete, pAlias);
-                        pmd.param._primary = pPrimary;
-                        pmd.param._multiple = pMultiple;
-                        pmd.param._password = pPassword;
-                        pmd.prompt = pPrompt;
-                        pmd.promptAgain = pPromptAgain;
-                        result.add(pmd);
-                        //Reset values
-                        pCls = null;
-                        pOptional = false;
-                        pDefaultValue = null;
-                        pShortName = null;
-                        pObsolete = false;
-                        pAlias = null;
-                        pPrimary = false;
-                        pMultiple = false;
-                        pPassword = false;
-                        pPrompt = null;
-                        pPromptAgain = null;
-                        //New param
-                        pName = value;
-                    } else if (CLASS_ELEMENT.equals(key)) {
-                        if (!value.isEmpty()) {
-                            try {
-                                pCls = Class.forName(value);
-                            } catch (Exception ex) {
-                            }
-                        }
-                    } else if (OPTIONAL_ELEMENT.equals(key)) {
-                        pOptional = value.startsWith("t");
-                    } else if (DEFAULT_VALUE_ELEMENT.equals(key)) {
-                        pDefaultValue = value;
-                    } else if (SHORTNAME_ELEMENT.equals(key)) {
-                        pShortName = value;
-                    } else if (OBSOLETE_ELEMENT.equals(key)) {
-                        pObsolete = value.startsWith("t");
-                    } else if (ALIAS_ELEMENT.equals(key)) {
-                        pAlias = value;
-                    } else if (PRIMARY_ELEMENT.equals(key)) {
-                        pPrimary = value.startsWith("t");
-                    } else if (MULTIPLE_ELEMENT.equals(key)) {
-                        pMultiple = value.startsWith("t");
-                    } else if (PASSWORD_ELEMENT.equals(key)) {
-                        pPassword = value.startsWith("t");
-                    } else if (PROMPT_ELEMENT.equals(key)) {
-                        pPrompt = resolveEndLines(value);
-                    } else if (PROMPT_AGAIN_ELEMENT.equals(key)) {
-                        pPromptAgain = resolveEndLines(value);
+                    switch (key) {
+                        case NAME_ELEMENT:
+                            //Add before parameter
+                            CommandModelData.ParamModelData pmd =
+                                    new CommandModelData.ParamModelData(pName,
+                                            pCls, pOptional, pDefaultValue, pShortName,
+                                            pObsolete, pAlias);
+                            pmd.param._primary = pPrimary;
+                            pmd.param._multiple = pMultiple;
+                            pmd.param._password = pPassword;
+                            pmd.prompt = pPrompt;
+                            pmd.promptAgain = pPromptAgain;
+                            result.add(pmd);
+                            //Reset values
+                            pCls = null;
+                            pOptional = false;
+                            pDefaultValue = null;
+                            pShortName = null;
+                            pObsolete = false;
+                            pAlias = null;
+                            pPrimary = false;
+                            pMultiple = false;
+                            pPassword = false;
+                            pPrompt = null;
+                            pPromptAgain = null;
+                            //New param
+                            pName = value;
+                            break;
+                        case CLASS_ELEMENT:
+                            if (!value.isEmpty()) {
+                                try {
+                                    pCls = Class.forName(value);
+                                } catch (Exception ex) {
+                                }
+                            }   break;
+                        case OPTIONAL_ELEMENT:
+                            pOptional = value.startsWith("t");
+                            break;
+                        case DEFAULT_VALUE_ELEMENT:
+                            pDefaultValue = value;
+                            break;
+                        case SHORTNAME_ELEMENT:
+                            pShortName = value;
+                            break;
+                        case OBSOLETE_ELEMENT:
+                            pObsolete = value.startsWith("t");
+                            break;
+                        case ALIAS_ELEMENT:
+                            pAlias = value;
+                            break;
+                        case PRIMARY_ELEMENT:
+                            pPrimary = value.startsWith("t");
+                            break;
+                        case MULTIPLE_ELEMENT:
+                            pMultiple = value.startsWith("t");
+                            break;
+                        case PASSWORD_ELEMENT:
+                            pPassword = value.startsWith("t");
+                            break;
+                        case PROMPT_ELEMENT:
+                            pPrompt = resolveEndLines(value);
+                            break;
+                        case PROMPT_AGAIN_ELEMENT:
+                            pPromptAgain = resolveEndLines(value);
+                            break;
+                        default:
+                            break;
                     }
                 } else {
-                    if (ROOT_ELEMENT.equals(key)) {
-                        name = value;
-                    } else if (ETAG_ELEMENT.equals(key)) {
-                        eTag = value;
-                    } else if (UNKNOWN_ARE_OPERANDS_ELEMENT.equals(key)) {
-                        unknownAreOperands = value.startsWith("t");
-                    } else if (ADDEDUPLOADOPTIONS_ELEMENT.equals(key)) {
-                        addedUploadOption = value.startsWith("t");
-                    } else if (USAGE_ELEMENT.equals(key)) {
-                        usage = resolveEndLines(value);
-                    } else if (NAME_ELEMENT.equals(key)) {
-                        //Create base
-                        result = new CachedCommandModel(name, eTag);
-                        result.dashOk = unknownAreOperands;
-                        result.setUsage(usage);
-                        result.setAddedUploadOption(addedUploadOption);
-                        //Continue in params
-                        inParam = true;
-                        pName = value;
+                    switch (key) {
+                        case ROOT_ELEMENT:
+                            name = value;
+                            break;
+                        case ETAG_ELEMENT:
+                            eTag = value;
+                            break;
+                        case UNKNOWN_ARE_OPERANDS_ELEMENT:
+                            unknownAreOperands = value.startsWith("t");
+                            break;
+                        case ADDEDUPLOADOPTIONS_ELEMENT:
+                            addedUploadOption = value.startsWith("t");
+                            break;
+                        case USAGE_ELEMENT:
+                            usage = resolveEndLines(value);
+                            break;
+                        case NAME_ELEMENT:
+                            //Create base
+                            result = new CachedCommandModel(name, eTag);
+                            result.dashOk = unknownAreOperands;
+                            result.setUsage(usage);
+                            result.setAddedUploadOption(addedUploadOption);
+                            //Continue in params
+                            inParam = true;
+                            pName = value;
+                            break;
+                        default:
+                            break;
                     }
                 }
             }
@@ -398,9 +412,6 @@ public class CommandModelDataProvider implements DataProvider {
                 result.setUsage(usage);
                 result.setAddedUploadOption(addedUploadOption);
             }
-        } finally {
-            try {r.close();} catch (Exception ex) {}
-            try {isr.close();} catch (Exception ex) {}
         }
         return result;
     }

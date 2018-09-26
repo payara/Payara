@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.util;
 
@@ -84,7 +85,7 @@ public class QuotedStringTokenizer
     {
         if (curToken == numTokens)
             throw new NoSuchElementException();
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
         boolean bQuote = false;
         boolean bEscaped = false;
         char c;
@@ -97,17 +98,17 @@ public class QuotedStringTokenizer
                 if (c == '\"')
                     bQuote = !bQuote;
                 char next = iterator.peekNext();
-                if (next == CharIterator.EOF || (isDelimiter(next) && !bQuote))
+                if (next == CharIterator.EOF || (isDelimiter(next) && !bQuote)) {
                     break;
-            }
-            else if (bQuote || bEscaped)
-            {
+                }
+            } else if (bQuote || bEscaped) {
                 sb.append(c);
             }
-            if(c=='\\')
+            if(c=='\\') {
                 bEscaped = !bEscaped;
-            else
+            } else {
                 bEscaped = false;
+            }
         }
         curToken++;
         return sb.toString();

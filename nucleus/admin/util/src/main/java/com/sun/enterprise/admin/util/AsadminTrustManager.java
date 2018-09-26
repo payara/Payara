@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.util;
 
@@ -61,14 +62,13 @@ import javax.net.ssl.X509TrustManager;
  */
 public class AsadminTrustManager implements X509TrustManager {
         
-    private final Object _alias;    
-    private boolean _alreadyInvoked;
+    private final Object alias;    
+    private boolean alreadyInvoked;
     private boolean interactive = true;
-    private CertificateException _lastCertException;
-    private RuntimeException _lastRuntimeException;
+    private CertificateException lastCertException;
+    private RuntimeException lastRuntimeException;
     
-    private static final LocalStringsImpl strmgr =
-        new LocalStringsImpl(AsadminTrustManager.class);
+    private static final LocalStringsImpl STRING_MANAGER = new LocalStringsImpl(AsadminTrustManager.class);
 
     /**
      * Creates an instance of the AsadminTrustManager
@@ -78,10 +78,10 @@ public class AsadminTrustManager implements X509TrustManager {
      * only a date / timestamp is used as an alias.
      */    
     public AsadminTrustManager(Object alias, Map env) {
-        _alias = alias;
-        _alreadyInvoked = false;
-        _lastCertException = null;
-        _lastRuntimeException = null;
+        this.alias = alias;
+        alreadyInvoked = false;
+        lastCertException = null;
+        lastRuntimeException = null;
     }
     
     /**
@@ -105,8 +105,8 @@ public class AsadminTrustManager implements X509TrustManager {
     /**
      * Checks if client is trusted given the certificate chain and
      * authorization type string, e.g., "RSA".
-     * @throws {@link CertificateException}
-     * @throws {@link UnsupportedOperationException}
+     * @throws CertificateException
+     * @throws UnsupportedOperationException
      */
     @Override
     public void checkClientTrusted(X509Certificate[] x509Certificate,
@@ -130,22 +130,22 @@ public class AsadminTrustManager implements X509TrustManager {
         // sure of the root cause of this problem (i.e., why it is called
         // twice).  In addition, we keep track of any exception that occurred
         // on the first invocation and propagate that back.
-        if (!_alreadyInvoked) {
-            _alreadyInvoked = true;            
+        if (!alreadyInvoked) {
+            alreadyInvoked = true;            
             try {
                 checkCertificate(chain);                
             } catch (RuntimeException ex) {
-                _lastRuntimeException = ex;
+                lastRuntimeException = ex;
                 throw ex;
             } catch (CertificateException ex) {
-                _lastCertException = ex;
+                lastCertException = ex;
                 throw ex;
             } 
         } else {
-            if (_lastRuntimeException != null) {
-                throw _lastRuntimeException;
-            } else if (_lastCertException != null) {
-                throw _lastCertException;
+            if (lastRuntimeException != null) {
+                throw lastRuntimeException;
+            } else if (lastCertException != null) {
+                throw lastCertException;
             }
         }
     }
@@ -162,21 +162,19 @@ public class AsadminTrustManager implements X509TrustManager {
      * @throws IOException
      * @return true if the user trusts the certificate
      */    
-    private boolean isItOKToAddCertToTrustStore(X509Certificate c)
-                                throws IOException {                     
+    private boolean isItOKToAddCertToTrustStore(X509Certificate c) {                     
         Console cons = System.console();
         if (!interactive || cons == null) {
             return true;
         }
         
         cons.printf("%s%n", c.toString());
-        String result =
-            cons.readLine("%s", strmgr.get("certificateTrustPrompt"));
+        String result = cons.readLine("%s", STRING_MANAGER.get("certificateTrustPrompt"));
         return result != null && result.equalsIgnoreCase("y");
     }
  
     private String getAliasName() {
-        String aliasName = _alias != null ? _alias.toString() : "";
+        String aliasName = alias != null ? alias.toString() : "";
         // We append a timestamp to the alias to ensure that it is unqiue.    
         DateFormat f =
             DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);
@@ -194,7 +192,7 @@ public class AsadminTrustManager implements X509TrustManager {
                                 throws RuntimeException, CertificateException,
                                 IllegalArgumentException {        
         if (chain == null || chain.length == 0) {
-            throw new IllegalArgumentException (strmgr.get(
+            throw new IllegalArgumentException (STRING_MANAGER.get(
                 "emptyServerCertificate"));
         } 
         // First ensure that the certificate is valid.
@@ -216,8 +214,7 @@ public class AsadminTrustManager implements X509TrustManager {
                 if (isItOKToAddCertToTrustStore(chain[0])) {
                     truststore.addCertificate(getAliasName(), chain[0]);
                 } else {
-                    throw new CertificateException(strmgr.get(
-                        "serverCertificateNotTrusted"));
+                    throw new CertificateException(STRING_MANAGER.get("serverCertificateNotTrusted"));
                 }
             }     
         } catch (CertificateException ex) {
