@@ -206,7 +206,7 @@ pipeline {
             }
             steps{
                 //Not sure if this is going to work. Trying anayway.
-                result = build( job: "${env.JOB_NAME}",
+                build( job: "${env.JOB_NAME}",
                     propagate: false, //whether to propogate errors. Note UNSTABLE propogates as FAILURE
                     wait: true,  //wait for this job to finish before proceeding
                     parameters: [[$class: 'StringParameterValue', name: 'jdkVer', value: jdkVer],
