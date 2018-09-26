@@ -18,13 +18,15 @@ pipeline {
     agent any
     stages {
         stage('report') {
-            script{
-                pom = readMavenPom file: 'pom.xml'
-                payaraBuildNumber = "PR${env.CHANGE_ID}.${currentBuild.number}"
-                echo "Payara pom version is ${pom.version}"
-                echo "Build number is ${payaraBuildNumber}"
-                echo "jdkVer = ${isRecursive}"
-                echo "Recursive = ${isRecursive}"
+            steps {
+                script{
+                    pom = readMavenPom file: 'pom.xml'
+                    payaraBuildNumber = "PR${env.CHANGE_ID}.${currentBuild.number}"
+                    echo "Payara pom version is ${pom.version}"
+                    echo "Build number is ${payaraBuildNumber}"
+                    echo "jdkVer = ${isRecursive}"
+                    echo "Recursive = ${isRecursive}"
+                }
             }
         }
         stage('Build') {
