@@ -64,18 +64,11 @@ pipeline {
             }
             post {
                 always {
+                    echo 'tidying up after tests:'
+                    sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
+                    sh "${ASADMIN} stop-database --dbtype derby || true"
                     junit '**/target/surefire-reports/*.xml'
                 }
-            }
-        }
-        stage('cleanup from Quicklook Tests') {
-            tools {
-                jdk "zulu-${jdkVer}"
-            }
-            steps {
-                echo 'tidying up after tests:'
-                sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
-                sh "${ASADMIN} stop-database --dbtype derby || true"
             }
         }
         stage('Checkout EE8 Tests') {
