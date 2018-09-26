@@ -3,15 +3,30 @@
 def pom
 def DOMAIN_NAME='test-domain'
 def ASADMIN
+def payaraBuildNumber
 pipeline {
-    agent any
-    parameters {
+    parameters{
         choice(
             choices: '8\n7',
             description: 'Which JDK version you wish to build and test with?',
             name: 'jdkVer')
+        booleanParam(
+            defaultValue: false,
+            description: 'Is this Job being triggered by itself?',
+            name: 'isRecursive')
     }
+    agent any
     stages {
+        stage('report') {
+            script{
+                pom = readMavenPom file: 'pom.xml'
+                payaraBuildNumber = "PR${env.CHANGE_ID}.${currentBuild.number}"
+                echo "Payara pom version is ${pom.version}"
+                echo "Build number is ${payaraBuildNumber}"
+                echo "jdkVer = ${isRecursive}"
+                echo "Recursive = ${isRecursive}"
+            }
+        }
         stage('Build') {
             tools {
                 jdk "zulu-${jdkVer}"
@@ -20,12 +35,10 @@ pipeline {
                 MAVEN_OPTS=getMavenOpts()
             }
             steps {
-                script{
-                    pom = readMavenPom file: 'pom.xml'
-                    echo "Payara pom version is ${pom.version}"
-                }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -V -ff -e clean install -PBuildExtras -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts -Djavax.xml.accessExternalSchema=all"
+                sh """mvn -V -ff -e clean install -PBuildExtras \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber}"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
@@ -183,6 +196,19 @@ pipeline {
                 always {
                     junit '**/target/surefire-reports/*.xml'
                 }
+            }
+        }
+        stage('Run JDK7 Too'){
+            when{
+                expression{ getMajorVersion(pom.version) == '4'  && !isRecursive}
+            }
+            steps{
+                //Not sure if this is going to work. Trying anayway.
+                result = build( job: "${env.JOB_NAME}",
+                    propagate: false, //whether to propogate errors. Note UNSTABLE propogates as FAILURE
+                    wait: true,  //wait for this job to finish before proceeding
+                    parameters: [[$class: 'StringParameterValue', name: 'jdkVer', value: jdkVer],
+                                [$class: 'BooleanParameterValue', name: 'isRecursive', value: true]])
             }
         }
     }
