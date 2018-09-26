@@ -58,8 +58,8 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  */
 public class RadixTreeSubstitutionAlgo implements SubstitutionAlgorithm {
 
-    private RadixTree _tree;
-    private static final LocalStringsImpl _strings = new LocalStringsImpl(RadixTreeSubstitutionAlgo.class);
+    private RadixTree tree;
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(RadixTreeSubstitutionAlgo.class);
 
     /**
      * Construct {@link RadixTreeSubstitutionAlgo} for the given substitutable key/value
@@ -69,11 +69,11 @@ public class RadixTreeSubstitutionAlgo implements SubstitutionAlgorithm {
      */
     public RadixTreeSubstitutionAlgo(Map<String, String> substitutionMap) {
         if (substitutionMap == null || substitutionMap.isEmpty()) {
-            throw new IllegalArgumentException(_strings.get("noKeyValuePairForSubstitution"));
+            throw new IllegalArgumentException(STRINGS.get("noKeyValuePairForSubstitution"));
         }
-        _tree = new RadixTree();
+        tree = new RadixTree();
         for (Map.Entry<String, String> entry : substitutionMap.entrySet()) {
-            _tree.insert(entry.getKey(), entry.getValue());
+            tree.insert(entry.getKey(), entry.getValue());
         }
     }
 
@@ -82,7 +82,7 @@ public class RadixTreeSubstitutionAlgo implements SubstitutionAlgorithm {
             throws StringSubstitutionException {
         Reader reader = substitutable.getReader();
         Writer writer = substitutable.getWriter();
-        RadixTreeSubstitution sub = new RadixTreeSubstitution(_tree);
+        RadixTreeSubstitution sub = new RadixTreeSubstitution(tree);
         String output = null;
         char[] cbuffer = new char[8192];
         int count = 0;
@@ -101,7 +101,7 @@ public class RadixTreeSubstitutionAlgo implements SubstitutionAlgorithm {
             }
             writer.flush();
         } catch (IOException e) {
-            throw new StringSubstitutionException(_strings.get("errorInStringSubstitution", substitutable.getName()), e);
+            throw new StringSubstitutionException(STRINGS.get("errorInStringSubstitution", substitutable.getName()), e);
         }
     }
 }

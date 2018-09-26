@@ -789,6 +789,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                     Application app = (Application) clazz.newInstance();
                     // Add all classes contained in the application
                     resourceClasses.addAll(app.getClasses());
+                    // Remove all Jersey providers
+                    resourceClasses.removeIf(resource -> resource.getPackage().getName().contains("org.glassfish.jersey"));
                 } catch (InstantiationException | IllegalAccessException ex) {
                     LOGGER.log(WARNING, "Unable to initialise application class.", ex);
                 }

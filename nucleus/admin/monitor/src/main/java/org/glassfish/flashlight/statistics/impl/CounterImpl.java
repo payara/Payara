@@ -66,7 +66,7 @@ public class CounterImpl extends AbstractTreeNode implements Counter {
     long max = 0;
     long min = 0;
     private final AtomicLong lastSampleTime = new AtomicLong();
-    private static final String DESCRIPTION = "Counter CountStatistic";
+    private static final String COUNTER_DESCRIPTION = "Counter CountStatistic";
     private static final String UNIT = java.lang.Long.class.toString();
 
     private long startTime = 0;
@@ -138,7 +138,7 @@ public class CounterImpl extends AbstractTreeNode implements Counter {
 
     @Override
     public String getDescription() {
-        return DESCRIPTION;
+        return COUNTER_DESCRIPTION;
     }
 
     @Override

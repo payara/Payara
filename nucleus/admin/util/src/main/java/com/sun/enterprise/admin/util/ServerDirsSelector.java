@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.util;
 
@@ -63,10 +64,10 @@ import org.glassfish.api.admin.CommandException;
  */
 public class ServerDirsSelector {
 
-    private File userSpecifiedDomainDirParent;
-    private String userSpecifiedServerName;
-    private String userSpecifiedNodeDir;           // nodeDirRoot
-    private String userSpecifiedNode;
+    private final File userSpecifiedDomainDirParent;
+    private final String userSpecifiedServerName;
+    private final String userSpecifiedNodeDir;           // nodeDirRoot
+    private final String userSpecifiedNode;
 
     private DomainDirs domainDirs = null;
     private InstanceDirs instanceDirs = null;

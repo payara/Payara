@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -44,12 +45,10 @@ import java.io.File;
 import java.io.IOException;
 
 import org.jvnet.hk2.annotations.*;
-import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
 
-import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
 import com.sun.enterprise.admin.servermgmt.DomainsManager;
 import com.sun.enterprise.admin.servermgmt.pe.PEDomainsManager;
@@ -66,15 +65,13 @@ public final class DeleteDomainCommand extends LocalDomainCommand {
     @Param(name = "domain_name", primary = true)
     private String domainName0;
 
-    private static final LocalStringsImpl strings =
+    private static final LocalStringsImpl STRINGS =
             new LocalStringsImpl(DeleteDomainCommand.class);
 
     // this is single threaded code, deliberately avoiding volatile/atomic
     private HostAndPort adminAddress;
 
 
-    /**
-     */
     @Override
     protected void validate()
             throws CommandException, CommandValidationException  {
@@ -83,15 +80,11 @@ public final class DeleteDomainCommand extends LocalDomainCommand {
         adminAddress = super.getAdminAddress();
     }
  
-    /**
-     */
     @Override
-    protected int executeCommand()
-            throws CommandException, CommandValidationException {
+    protected int executeCommand() throws CommandException {
 
         try {            
-            DomainConfig domainConfig =
-                new DomainConfig(getDomainName(), getDomainsDir().getPath());
+            DomainConfig domainConfig = new DomainConfig(getDomainName(), getDomainsDir().getPath());
             checkRunning();
             checkRename();
             DomainsManager manager = new PEDomainsManager();
@@ -103,15 +96,15 @@ public final class DeleteDomainCommand extends LocalDomainCommand {
 	    throw new CommandException(e.getLocalizedMessage());
         }
 
-	logger.fine(strings.get("DomainDeleted", getDomainName()));
+	logger.fine(STRINGS.get("DomainDeleted", getDomainName()));
         return 0;
     }
 
-    private void checkRunning() throws CommandException {
+    private void checkRunning() {
         programOpts.setInteractive(false);      // don't prompt for password
         if (isRunning(adminAddress.getHost(), adminAddress.getPort()) &&
                 isThisDAS(getDomainRootDir())) {
-            String msg = strings.get("domain.is.running", getDomainName(),
+            String msg = STRINGS.get("domain.is.running", getDomainName(),
                                         getDomainRootDir());
             throw new IllegalStateException(msg);
         }
@@ -134,7 +127,7 @@ public final class DeleteDomainCommand extends LocalDomainCommand {
             ok = false;
         }
        if (!ok) {
-           String msg = strings.get("domain.fileinuse", getDomainName(),
+           String msg = STRINGS.get("domain.fileinuse", getDomainName(),
                    getDomainRootDir());
            throw new IllegalStateException(msg);
        }

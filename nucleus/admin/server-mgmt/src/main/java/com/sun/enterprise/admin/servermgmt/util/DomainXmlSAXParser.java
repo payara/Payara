@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.util;
 
@@ -67,33 +68,31 @@ public class DomainXmlSAXParser extends DefaultHandler {
 
 
     @Override
-  public void startElement(String namespaceURI, String localName, String qName, Attributes attrs)
-  throws SAXException {
-      level++;
-      if ( level==2 && PROPERTY.equals(qName)){
-          if (attrs != null) {
-              for (int i = 0; i < attrs.getLength(); i++) {
-                  String aName = attrs.getQName(i); // Attr name
-                  String aValue = attrs.getValue(aName);
-                  if ("DomainXmlEventListenerClass".equals(aValue)) {
-                      domainXmlEventListenerClass=attrs.getValue("value");
-                  }
-              }
-          }
-      }
-  }
+    public void startElement(String namespaceURI, String localName, String qName, Attributes attrs)
+            throws SAXException {
+        level++;
+        if (level == 2 && PROPERTY.equals(qName) && attrs != null) {
+            for (int i = 0; i < attrs.getLength(); i++) {
+                String aName = attrs.getQName(i); // Attr name
+                String aValue = attrs.getValue(aName);
+                if ("DomainXmlEventListenerClass".equals(aValue)) {
+                    domainXmlEventListenerClass = attrs.getValue("value");
+                }
+            }
+        }
+    }
 
 
     @Override
-  public void endElement(String namespaceURI, String localName, String qName)
-      throws SAXException {
-      level--;
-  }
+    public void endElement(String namespaceURI, String localName, String qName)
+            throws SAXException {
+        level--;
+    }
 
     @Override
-  public InputSource resolveEntity(String publicId, String systemId) throws SAXException {
-      return null;
-  }
+    public InputSource resolveEntity(String publicId, String systemId) throws SAXException {
+        return null;
+    }
 }
 
 

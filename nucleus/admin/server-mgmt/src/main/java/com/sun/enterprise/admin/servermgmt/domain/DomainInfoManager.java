@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.domain;
 
@@ -57,15 +58,20 @@ import com.sun.enterprise.admin.servermgmt.xml.domaininfo.TemplateRef;
 import com.sun.enterprise.admin.servermgmt.xml.templateinfo.TemplateInfo;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
+/**
+ * Processes domain template for creating a new domain
+ */
 public class DomainInfoManager {
 
-    private static final Logger _logger = SLogger.getLogger();
+    private static final Logger LOGGER = SLogger.getLogger();
 
     private static final String JAVA_HOME = "JAVA_HOME";
 
     /**
      * Parses template information file and uses its information to create 
      * domain info file.
+     * @param domainTemplate the template to use
+     * @param domainDir the directory to create the domain in
      */
     public void process(DomainTemplate domainTemplate, File domainDir) {
         FileOutputStream outputStream = null;
@@ -73,7 +79,7 @@ public class DomainInfoManager {
             TemplateInfo templateInfo = domainTemplate.getInfo();
             File infoDir = new File(domainDir, DomainConstants.INFO_DIRECTORY);
             if(!infoDir.exists() && !infoDir.mkdirs()) {
-                _logger.log(Level.INFO, SLogger.DIR_CREATION_ERROR, infoDir.getAbsolutePath());
+                LOGGER.log(Level.INFO, SLogger.DIR_CREATION_ERROR, infoDir.getAbsolutePath());
                 return;
             }
             File domainInfoXML = new File(infoDir, DomainConstants.DOMAIN_INFO_XML);
@@ -98,7 +104,7 @@ public class DomainInfoManager {
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             marshaller.marshal(objFactory.createDomainInfo(domainInfo), outputStream);
         } catch (Exception e) {
-        	LogHelper.log(_logger, Level.WARNING, 
+        	LogHelper.log(LOGGER, Level.WARNING, 
         		SLogger.DOMAIN_INFO_CREATION_ERROR, e, 
         		DomainConstants.DOMAIN_INFO_XML);
         } finally {

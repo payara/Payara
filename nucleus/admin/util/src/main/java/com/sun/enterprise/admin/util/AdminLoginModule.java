@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.util;
 
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -75,7 +77,7 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 public class AdminLoginModule implements LoginModule {
     
-    private static final Logger logger = GenericAdminAuthenticator.ADMSEC_LOGGER;
+    private static final Logger LOGGER = GenericAdminAuthenticator.ADMSEC_LOGGER;
     private static final Level PROGRESS_LEVEL = Level.FINE;
 
     @Inject
@@ -173,7 +175,7 @@ public class AdminLoginModule implements LoginModule {
             isAuthenticated |= auth.identify(subjectToAssemble);
         }
 
-        logger.log(PROGRESS_LEVEL, "login returning {0}", isAuthenticated);
+        LOGGER.log(PROGRESS_LEVEL, "login returning {0}", isAuthenticated);
         
         if ( ! isAuthenticated) {
             throw new LoginException();
@@ -193,21 +195,21 @@ public class AdminLoginModule implements LoginModule {
             return false;
         }
         updateFromSubject(subject, subjectToAssemble);
-        logger.log(PROGRESS_LEVEL, "commiting");
+        LOGGER.log(PROGRESS_LEVEL, "commiting");
         final Level dumpLevel = Level.FINER;
-        if (logger.isLoggable(dumpLevel)) {
-            logger.log(dumpLevel, "Following identity attached to subject: {0} principals, {1} private credentials, {2} public credentials",
+        if (LOGGER.isLoggable(dumpLevel)) {
+            LOGGER.log(dumpLevel, "Following identity attached to subject: {0} principals, {1} private credentials, {2} public credentials",
                     new Object[] {subjectToAssemble.getPrincipals().size(), 
                         subjectToAssemble.getPrivateCredentials().size(), 
                         subjectToAssemble.getPublicCredentials().size()});
             for (Principal p : subjectToAssemble.getPrincipals()) {
-                logger.log(dumpLevel, "  principal: {0}", p.getName());
+                LOGGER.log(dumpLevel, "  principal: {0}", p.getName());
             }
             for (Object c : subjectToAssemble.getPrivateCredentials()) {
-                logger.log(dumpLevel, "  private credential: {0}", c.toString());
+                LOGGER.log(dumpLevel, "  private credential: {0}", c);
             }
             for (Object c : subjectToAssemble.getPublicCredentials()) {
-                logger.log(dumpLevel, "  public credential: {0}", c.toString());
+                LOGGER.log(dumpLevel, "  public credential: {0}", c);
             }
         }
 
@@ -219,14 +221,14 @@ public class AdminLoginModule implements LoginModule {
         if ( ! isAuthenticated) {
             return false;
         }
-        logger.log(PROGRESS_LEVEL, "aborting");
+        LOGGER.log(PROGRESS_LEVEL, "aborting");
         removeAddedInfo();
         return true;
     }
 
     @Override
     public boolean logout() throws LoginException {
-        logger.log(PROGRESS_LEVEL, "logging out");
+        LOGGER.log(PROGRESS_LEVEL, "logging out");
         removeAddedInfo();
         return true;
     }
@@ -263,13 +265,13 @@ public class AdminLoginModule implements LoginModule {
     */
     private static class SpecialAdminIndicatorChecker {
 
-        private static enum Result {
+        private enum Result {
             NOT_IN_REQUEST,
             MATCHED,
             MISMATCHED
         }
 
-        private final SpecialAdminIndicatorChecker.Result _result;
+        private final SpecialAdminIndicatorChecker.Result result;
 
         private SpecialAdminIndicatorChecker(
                 final String actualIndicator,
@@ -278,21 +280,21 @@ public class AdminLoginModule implements LoginModule {
             final Level dumpLevel = Level.FINER;
             if (actualIndicator != null) {
                 if (actualIndicator.equals(expectedIndicator)) {
-                    _result = SpecialAdminIndicatorChecker.Result.MATCHED;
-                    logger.log(dumpLevel, "Admin request contains expected domain ID");
+                    result = SpecialAdminIndicatorChecker.Result.MATCHED;
+                    LOGGER.log(dumpLevel, "Admin request contains expected domain ID");
                 } else {
-                    logger.log(Level.WARNING, AdminLoggerInfo.mForeignDomainID, 
+                    LOGGER.log(Level.WARNING, AdminLoggerInfo.mForeignDomainID, 
                             new Object[] { originHost, actualIndicator, expectedIndicator});
-                    _result = SpecialAdminIndicatorChecker.Result.MISMATCHED;
+                    result = SpecialAdminIndicatorChecker.Result.MISMATCHED;
                 }
             } else {
-                logger.log(dumpLevel, "Admin request contains no domain ID; this is OK - continuing");
-                _result = SpecialAdminIndicatorChecker.Result.NOT_IN_REQUEST;
+                LOGGER.log(dumpLevel, "Admin request contains no domain ID; this is OK - continuing");
+                result = SpecialAdminIndicatorChecker.Result.NOT_IN_REQUEST;
             }
         }
 
         private SpecialAdminIndicatorChecker.Result result() {
-            return _result;
+            return result;
         }
     }
 
@@ -329,7 +331,7 @@ public class AdminLoginModule implements LoginModule {
 
     class PrincipalAuthenticator extends Authenticator {
 
-        final private PrincipalCallback pcb;
+        private final PrincipalCallback pcb;
         PrincipalAuthenticator() {
             super(AuthenticatorType.PRINCIPAL, new PrincipalCallback());
             pcb = (PrincipalCallback) cb;
@@ -358,14 +360,14 @@ public class AdminLoginModule implements LoginModule {
                      * is identifiable using an SSL cert.  Instead rely on
                      * the username/password authentication code path.
                      */
-                    logger.log(PROGRESS_LEVEL, "Detected console request - not adding SSL principal to the subject");
+                    LOGGER.log(PROGRESS_LEVEL, "Detected console request - not adding SSL principal to the subject");
                     return false;
                 }
                 /*
                  * In all other cases add the principal to the tentative subject.
                  */
                 subject.getPrincipals().add(p);
-                logger.log(PROGRESS_LEVEL, "Attaching Principal {0}", p.getName());
+                LOGGER.log(PROGRESS_LEVEL, "Attaching Principal {0}", p.getName());
                 
             }
             return p != null;
@@ -440,7 +442,7 @@ public class AdminLoginModule implements LoginModule {
                     * was created.  We add those to the lists we'll add if this module's
                     * commit is invoked.
                     */
-                    logger.log(PROGRESS_LEVEL, "Recognized valid limited-use token");
+                    LOGGER.log(PROGRESS_LEVEL, "Recognized valid limited-use token");
                     updateFromSubject(subject, s);
                     /*
                      * Add an additional principal indicating that we trust this
@@ -481,7 +483,7 @@ public class AdminLoginModule implements LoginModule {
             final boolean result = localPassword.isLocalPassword(new String(pwCB.getPassword()));
             if (result) {
                 subject.getPrincipals().add(new AdminLocalPasswordPrincipal());
-                logger.log(PROGRESS_LEVEL, "AdminLoginModule detected local password");
+                LOGGER.log(PROGRESS_LEVEL, "AdminLoginModule detected local password");
             }
             return result;
         }
@@ -530,7 +532,7 @@ public class AdminLoginModule implements LoginModule {
                 if (s != null) {
                     result = true;
                     updateFromSubject(subject, s);
-                    logger.log(PROGRESS_LEVEL, "Detected ReST token");
+                    LOGGER.log(PROGRESS_LEVEL, "Detected ReST token");
                 }
             }
             return result;

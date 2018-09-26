@@ -38,6 +38,7 @@
  * holder.
  */
 // Portions Copyright [2017] Payara Foundation and/or its affiliates
+
 package com.sun.enterprise.admin.servermgmt.cli;
 
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
@@ -80,6 +81,7 @@ public final class ListDomainsCommand extends LocalDomainCommand {
      */
     @Override
     protected void validate() throws CommandException, CommandValidationException {
+        // see above
     }
 
     @Override

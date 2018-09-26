@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor.jvm;
 
@@ -49,23 +50,32 @@ import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
 
-/* jvm.class-loading-system */
-// v2: com.sun.appserv:name=class-loading-system,type=class-loading-system,category=monitor,server=server
-// v3: 
+/**
+ * Class providing the MBean for JVM class loading statistics
+ * <p>
+ * The MBean will be of the format
+ * {@code amx:pp=/mon/server-mon[server],type=class-loading-system-mon,name=jvm/class-loading-system}
+ * and can be enabled by turning the Jvm monitoring level in the admin console to LOW
+ * @since v2
+ */
 @AMXMetadata(type="class-loading-system-mon", group="monitoring")
 @ManagedObject
 @Description( "JVM Class Loading Statistics" )
 public class JVMClassLoadingStatsProvider {
 
-    private ClassLoadingMXBean clBean = ManagementFactory.getClassLoadingMXBean();
+    private final ClassLoadingMXBean clBean = ManagementFactory.getClassLoadingMXBean();
 
-    private CountStatisticImpl loadedClassCount = new CountStatisticImpl("LoadedClassCount", CountStatisticImpl.UNIT_COUNT,
+    private final CountStatisticImpl loadedClassCount = new CountStatisticImpl("LoadedClassCount", CountStatisticImpl.UNIT_COUNT,
             "Number of classes currently loaded in the Java virtual machine");
-    private CountStatisticImpl totalLoadedClassCount = new CountStatisticImpl("TotalLoadedClassCount", CountStatisticImpl.UNIT_COUNT,
+    private final CountStatisticImpl totalLoadedClassCount = new CountStatisticImpl("TotalLoadedClassCount", CountStatisticImpl.UNIT_COUNT,
             "Total number of classes that have been loaded since the Java virtual machine has started execution");
-    private CountStatisticImpl unloadedClassCount = new CountStatisticImpl("UnLoadedClassCount", CountStatisticImpl.UNIT_COUNT,
+    private final CountStatisticImpl unloadedClassCount = new CountStatisticImpl("UnLoadedClassCount", CountStatisticImpl.UNIT_COUNT,
             "Total number of classes unloaded since the Java virtual machine has started execution");
 
+    /**
+     * Gets the number of classes currently loaded in the JVM
+     * @return a {@link CountStatistic} with the number of classes
+     */
     @ManagedAttribute(id="loadedclass-count")
     @Description( "number of classes currently loaded in the JVM" )
     public CountStatistic getLoadedClassCount() {
@@ -73,6 +83,10 @@ public class JVMClassLoadingStatsProvider {
         return loadedClassCount;
     }
 
+    /**
+     * Gets the total number of classes loaded since the JVM started
+     * @return a {@link CountStatistic} with the number of classes
+     */
     @ManagedAttribute(id="totalloadedclass-count")
     @Description( "total number of classes loaded since the JVM started" )
     public CountStatistic getTotalLoadedClassCount() {
@@ -80,6 +94,10 @@ public class JVMClassLoadingStatsProvider {
         return totalLoadedClassCount;
     }
 
+    /**
+     * Gets the total number of classes unloaded since the JVM started
+     * @return A statistic with the value of the number of classes
+     */
     @ManagedAttribute(id="unloadedclass-count")
     @Description( "total number of classes unloaded since the JVM started" )
     public CountStatistic getUnloadedClassCount() {

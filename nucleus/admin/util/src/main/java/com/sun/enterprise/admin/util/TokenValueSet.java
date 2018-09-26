@@ -58,9 +58,6 @@ public class TokenValueSet implements Cloneable {
     }
     
     public TokenValueSet(final Set<TokenValue> values) {
-        //if (!isTokenValueSet(values)) {
-          //  throw new IllegalArgumentException("Invalid set");
-        //}
         this.values = new HashSet<TokenValue>();
         this.values.addAll(values);
     }

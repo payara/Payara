@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.util.test;
 
@@ -44,7 +45,6 @@ import com.sun.enterprise.admin.util.LineTokenReplacer;
 import com.sun.enterprise.admin.util.TokenValue;
 import com.sun.enterprise.admin.util.TokenValueSet;
 
-import java.io.File;
 import java.io.FileReader;
 import java.io.BufferedReader;
 import java.util.StringTokenizer;
@@ -66,9 +66,7 @@ public class TokenReplacementTester {
 
     private TokenValueSet getTokensFromFile(String fileName) {
         final TokenValueSet tokens  = new TokenValueSet();
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new FileReader(fileName));
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
             String line = null;
             while ((line = reader.readLine()) != null) {
                 final TokenValue tv = getTokenValue(line);
@@ -78,11 +76,6 @@ public class TokenReplacementTester {
         }
         catch(Exception e) {
             e.printStackTrace();
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (Exception ex) {}
-            }
         }
         return tokens;
     }

@@ -37,63 +37,62 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.pe;
 
-public final class InstanceTimer implements Runnable
-{
-    private final   int             timeOutSeconds;
-    private final   TimerCallback   callBack;
-    private final   int             startAfterSeconds;
-    private boolean                 timeOutReached;
-    private long                    startTime;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Runs a timer on an instance
+ * @deprecated No known use
+ */
+public final class InstanceTimer implements Runnable {
+
+    private final int timeOutSeconds;
+    private final TimerCallback callBack;
+    private final int startAfterSeconds;
+    private boolean timeOutReached;
+    private long startTime;
+    
+    private static final Logger LOGGER = Logger.getLogger("com.sun.enterprise.admin.servermgmt.pe");
 
     public InstanceTimer(int timeOutSeconds,
-                  int startAfterSeconds,
-                  TimerCallback callBack)
-    {
-        this.timeOutSeconds     = timeOutSeconds;
-        this.startAfterSeconds  = startAfterSeconds;
-        this.callBack           = callBack;
-        this.timeOutReached     = false;
+            int startAfterSeconds,
+            TimerCallback callBack) {
+        this.timeOutSeconds = timeOutSeconds;
+        this.startAfterSeconds = startAfterSeconds;
+        this.callBack = callBack;
+        this.timeOutReached = false;
     }
 
-    public void run()
-    {
+    @Override
+    public void run() {
         startTime = System.currentTimeMillis();
-        try
-        {
+        try {
             Thread.sleep(startAfterSeconds * 1000L);
-            while (!timeOutReached() && !callBack.check())
-            {
-                try
-                {
+            while (!timeOutReached() && !callBack.check()) {
+                try {
                     Thread.sleep(1000);
                     computeTimeOut();
-                }
-                catch (InterruptedException ie)
-                {
-                    //sLogger.warning(ie.toString());
+                } catch (InterruptedException ie) {
+                    LOGGER.log(Level.FINER, ie.toString());
                     timeOutReached = true;
                 }
             }
-        }
-        catch (Exception e)
-        {
-            //sLogger.warning(e.toString());
+        } catch (Exception e) {
+            LOGGER.log(Level.FINER, e.toString());
             timeOutReached = true;
         }
     }
 
-    private boolean timeOutReached()
-    {
+    private boolean timeOutReached() {
         return timeOutReached;
     }
 
-    private void computeTimeOut()
-    {
+    private void computeTimeOut() {
         long currentTime = System.currentTimeMillis();
-        timeOutReached =
-            ((currentTime - startTime) >= (timeOutSeconds * 1000L));
+        timeOutReached = ((currentTime - startTime) >= (timeOutSeconds * 1000L));
     }
 }

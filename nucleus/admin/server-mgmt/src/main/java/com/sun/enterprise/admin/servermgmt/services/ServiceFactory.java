@@ -46,11 +46,7 @@ public final class ServiceFactory {
     
     public static final Service getService(ServerDirs dirs, AppserverServiceType type) {
 
-        if(Constants.LINUX_HACK)
-            return new LinuxService(dirs, type);
         // the order matters!
-        //if(UbuntuService.apropos())
-            //return new UbuntuService(dirs, type);
         if(LinuxService.apropos())
             return new LinuxService(dirs, type);
         if(SMFService.apropos())
@@ -59,7 +55,14 @@ public final class ServiceFactory {
             return new WindowsService(dirs, type);
         if(LinuxService.apropos())
             return new LinuxService(dirs, type);
-        throw new RuntimeException(Strings.get("noSuitableServiceImplementation"));
+        throw new NotSupportedOSException(Strings.get("noSuitableServiceImplementation"));
+    }
+    
+    public static class NotSupportedOSException extends RuntimeException {
+        
+        public NotSupportedOSException(String message) {
+            super(message);
+        }
     }
 
 

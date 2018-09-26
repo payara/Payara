@@ -70,6 +70,11 @@ public class ResourcesSniffer extends GenericSniffer {
     public ResourcesSniffer() {
         super(ResourceConstants.GF_RESOURCES_MODULE, ResourceConstants.GF_RESOURCES_LOCATION, null);
     }
+    
+    //For Payara Resources sniffer
+    protected ResourcesSniffer(String containerName, String appStigma) {
+        super(containerName, appStigma, null);
+    }
 
     /**
      * Returns true if the passed file or directory is recognized by this
@@ -80,7 +85,7 @@ public class ResourcesSniffer extends GenericSniffer {
      */
     @Override
     public boolean handles(ReadableArchive archive) {
-        return ResourceUtil.hasResourcesXML(archive, locator)
+        return ResourceUtil.hasGlassfishResourcesXML(archive, locator)
                 && archive.getParentArchive() == null;
     }
 

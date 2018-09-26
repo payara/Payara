@@ -39,26 +39,23 @@
  */
 package fish.payara.microprofile.openapi.impl.admin;
 
-import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
-import static org.glassfish.config.support.CommandTarget.CLUSTER;
-import static org.glassfish.config.support.CommandTarget.CLUSTERED_INSTANCE;
-import static org.glassfish.config.support.CommandTarget.CONFIG;
-import static org.glassfish.config.support.CommandTarget.DAS;
-import static org.glassfish.config.support.CommandTarget.DEPLOYMENT_GROUP;
-import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
-
 import java.util.logging.Logger;
-
 import javax.inject.Inject;
-
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
+import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
+import static org.glassfish.config.support.CommandTarget.CLUSTER;
+import static org.glassfish.config.support.CommandTarget.CLUSTERED_INSTANCE;
+import static org.glassfish.config.support.CommandTarget.CONFIG;
+import static org.glassfish.config.support.CommandTarget.DAS;
+import static org.glassfish.config.support.CommandTarget.DEPLOYMENT_GROUP;
+import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Target;
@@ -86,19 +83,23 @@ public class SetOpenApiConfigurationCommand implements AdminCommand {
     @Param(name = "enabled", optional = true)
     private Boolean enabled;
 
+    @Param(name = "virtualServers", optional = true)
+    private String virtualServers;
+
     @Param(optional = true, defaultValue = "server-config")
     private String target;
 
     @Override
-    public void execute(AdminCommandContext adminCommandContext) {
+    public void execute(AdminCommandContext context) {
+        ActionReport actionReport = context.getActionReport();
         // Check for the existing config
         if (targetUtil.getConfig(target) == null) {
-            adminCommandContext.getActionReport().setMessage("No such config name: " + targetUtil);
-            adminCommandContext.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
+            actionReport.setMessage("No such config name: " + targetUtil);
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
 
-        OpenApiServiceConfiguration openApiConfig = targetUtil.getConfig(target)
+        OpenApiServiceConfiguration config = targetUtil.getConfig(target)
                 .getExtensionByType(OpenApiServiceConfiguration.class);
 
         try {
@@ -106,10 +107,15 @@ public class SetOpenApiConfigurationCommand implements AdminCommand {
                 if (enabled != null) {
                     configProxy.setEnabled(Boolean.toString(enabled));
                 }
+                if (virtualServers != null) {
+                    configProxy.setVirtualServers(virtualServers);
+                }
                 return configProxy;
-            }, openApiConfig);
+            }, config);
+
+            actionReport.setMessage("Restart server for change to take effect");
         } catch (TransactionFailure ex) {
-            adminCommandContext.getActionReport().failure(LOGGER, "Failed to update OpenAPI configuration", ex);
+            actionReport.failure(LOGGER, "Failed to update OpenAPI configuration", ex);
         }
     }
 
