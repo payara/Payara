@@ -39,24 +39,23 @@
  */
 package fish.payara.nucleus.requesttracing.sampling;
 
+import java.math.BigDecimal;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore("Test itself is broken. It is currently tuned to have something like a 5% failure rate, instead of 0.5%")
 public class SampleFilterTest {
 
-    private int sampleCount = 100000;
-    private double expectedSampleRate;
-    private final double allowedErrorMargin = 0.02;
+    private int samplesProvided = 100000;
+    private BigDecimal expectedSampleRate;
+    private final BigDecimal allowedErrorMargin = new BigDecimal("0.02");
 
     @Test
     public void OneHundredPercentTest() {
         SampleFilter sampleFilter = new SampleFilter();
 
-        for(int i = 0; i < sampleCount; i ++) {
+        for(int i = 0; i < samplesProvided; i ++) {
             assertTrue("No samples should fail when a sample rate of 1 is provided.", sampleFilter.sample());
         }
     }
@@ -65,42 +64,53 @@ public class SampleFilterTest {
     public void zeroPercentTest() {
         SampleFilter sampleFilter = new SampleFilter(0);
 
-        for(int i = 0; i < sampleCount; i ++) {
+        for(int i = 0; i < samplesProvided; i ++) {
             assertFalse("All should fail when a sample rate of 0 is provided.", sampleFilter.sample());
         }
     }
 
     @Test
     public void twentyPercentTest() {
-        expectedSampleRate = 0.2;
+        expectedSampleRate = new BigDecimal("0.2");
         runErrorMarginTest();
     }
 
     @Test
     public void fiftyPercentTest() {
-        expectedSampleRate = 0.5;
+        expectedSampleRate = new BigDecimal("0.5");
         runErrorMarginTest();
     }
 
     @Test
     public void eightyPercentTest() {
-        expectedSampleRate = 0.8;
+        expectedSampleRate = new BigDecimal("0.8");
         runErrorMarginTest();
     }
 
     public void runErrorMarginTest() {
-        SampleFilter sampleFilter = new SampleFilter(expectedSampleRate);
+        SampleFilter sampleFilter = new SampleFilter(expectedSampleRate.doubleValue());
 
-        int passedSamples = 0;
-        for(int i = 0; i < sampleCount; i++) {
+        int samplesSampled = 0;
+        for(int i = 0; i < samplesProvided; i++) {
             if (sampleFilter.sample()) {
-                passedSamples ++;
+                samplesSampled ++;
             }
         }
-        double observedErrorMargin = (double)(Math.max(passedSamples, expectedSampleRate * sampleCount) / Math.min(passedSamples, expectedSampleRate * sampleCount)) - 1;
-        assertTrue(String.format("The observed sample rate strayed too far from %d%%. Allowed error rate was %4.3f, but was actually %4.3f.",
-                        (int) (expectedSampleRate * 100), allowedErrorMargin, observedErrorMargin),
-            observedErrorMargin <= allowedErrorMargin);
+        BigDecimal actualSampleRate = new BigDecimal(samplesSampled).divide(new BigDecimal(samplesProvided));
+        boolean withinErrorMargin = true;
+        
+        //less than
+        if(actualSampleRate.compareTo(expectedSampleRate) == -1 && actualSampleRate.add(allowedErrorMargin).compareTo(expectedSampleRate) == -1){
+            withinErrorMargin = false;
+        }
+        
+        if(actualSampleRate.compareTo(expectedSampleRate) == 1 && actualSampleRate.subtract(allowedErrorMargin).compareTo(expectedSampleRate) == 1){
+            withinErrorMargin = false;
+        }
+        
+        assertTrue(String.format("The observed sample rate strayed too far from %d%%. plus/minus %4.3f, but was actually %4.3f.",
+                        expectedSampleRate.multiply(new BigDecimal(100)).intValue(), allowedErrorMargin.doubleValue(), actualSampleRate.doubleValue()),
+            withinErrorMargin);
     }
 
 }
