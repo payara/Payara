@@ -39,7 +39,7 @@
  */
 
 // Portions Copyright [2014-2018] [Payara Foundation and/or its affiliates]
- 
+
 package com.sun.common.util.logging;
 
 import static com.sun.common.util.logging.LoggingXMLNames.xmltoPropsMap;
@@ -123,7 +123,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             if (!file.exists()) {
                 fis = getDefaultLoggingPropertiesInputStream();
             } else {
-                fis = new FileInputStream(file);            
+                fis = new FileInputStream(file);
             }
             fis = new BufferedInputStream(fis);
             props.load(fis);
@@ -146,7 +146,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             if (!file.exists()) {
                 fis = getDefaultLoggingPropertiesInputStream();
             } else {
-                fis = new FileInputStream(file);            
+                fis = new FileInputStream(file);
             }
             fis = new BufferedInputStream(fis);
             props.load(fis);
@@ -156,18 +156,18 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             }
         }
     }
-    
+
     private File getLoggingPropertiesFile() {
         return new File(loggingConfigDir, loggingPropertiesName);
     }
-    
+
     private File getLoggingPropertiesFile(String target) {
         String pathForLoggingFile = loggingConfigDir.getAbsolutePath() + File.separator + target;
         return new File(pathForLoggingFile, ServerEnvironmentImpl.kLoggingPropertiesFileName);
     }
-    
+
     private FileInputStream getDefaultLoggingPropertiesInputStream() throws IOException {
-        File defaultConfig = new File(env.getConfigDirPath(), 
+        File defaultConfig = new File(env.getConfigDirPath(),
                 ServerEnvironmentImpl.kDefaultLoggingPropertiesFileName);
         return new FileInputStream(defaultConfig);
     }
@@ -191,7 +191,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             // nothing can be done about it...
         }
     }
-    
+
     private void closePropFile(String targetConfigName) throws IOException {
         OutputStream os = null;
         try {
@@ -199,8 +199,8 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             if (targetConfigName == null || targetConfigName.isEmpty()) {
                 file = getLoggingPropertiesFile();
             } else {
-                file = getLoggingPropertiesFile(targetConfigName);    
-            } 
+                file = getLoggingPropertiesFile(targetConfigName);
+            }
             File parentFile = file.getParentFile();
             if (!parentFile.exists() && !parentFile.mkdirs()) {
                 throw new IOException();
@@ -377,7 +377,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
         Map<String, String> m = new HashMap<String, String>();
         try {
             loadLoggingProperties();
-            
+
             Enumeration e = props.propertyNames();
             while (e.hasMoreElements()) {
                 String key = (String) e.nextElement();
@@ -395,7 +395,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             throw ex;
         }
     }
-    
+
     public synchronized Map<String, String> checkForLoggingProperties(Map<String, String> loggingProperties, String targetConfigName) throws IOException {
 
         if (!loggingProperties.containsKey(Constants.GF_HANDLER_LOG_TO_FILE)) {
@@ -479,10 +479,10 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
                 setLoggingProperty(Constants.PY_HANDLER_LOG_FORMATTER, Constants.PY_HANDLER_LOG_FORMATTER_DEFAULT_VALUE, targetConfigName);
             }
         }
-           
+
         return loggingProperties;
     }
-    
+
     /* delete the properties from logging.properties file.  properties is a Map of names of properties and
       * their cooresponding value.
       *
@@ -501,11 +501,11 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             if (key == null) {
                 key = e.getKey();
             }
-            
+
             if (key.contains("\\:")) {
                 key = key.replace("\\:", ":");
             }
-            
+
             props.remove(key);
         }
 
@@ -520,7 +520,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @throws  IOException
       */
 
-    public synchronized void deleteLoggingProperties(Map<String, 
+    public synchronized void deleteLoggingProperties(Map<String,
             String> properties, String targetConfigName) throws IOException {
         loadLoggingProperties(targetConfigName);
 
@@ -531,11 +531,11 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             if (key == null) {
                 key = e.getKey();
             }
-            
+
             if (key.contains("\\:")) {
                 key = key.replace("\\:", ":");
             }
-            
+
             props.remove(key);
         }
 
@@ -557,9 +557,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
         String currentTime = sdf.format(cal.getTime());
 
-        String zipFile = sourceDir + File.separator + "log_" + currentTime + ".zip";
-
-        return zipFile;
+        return sourceDir + File.separator + "log_" + currentTime + ".zip";
     }
 
     /*
@@ -577,9 +575,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
         String currentTime = sdf.format(cal.getTime());
 
-        String zipFile = sourceDir + File.separator + fileName + "-" + currentTime + ".zip";
-
-        return zipFile;
+        return sourceDir + File.separator + fileName + "-" + currentTime + ".zip";
     }
 
     /*
@@ -591,30 +587,15 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       */
 
     public String createZipFile(String sourceDir) throws IOException {
-        ZipOutputStream zout = null;
         String zipFile = getZipFileName(sourceDir);
-        try {
-            //create object of FileOutputStream
-            FileOutputStream fout = new FileOutputStream(zipFile);
-
-            //create object of ZipOutputStream from FileOutputStream
-            zout = new ZipOutputStream(fout);
-
-            //create File object from source directory
+        try (FileOutputStream fout = new FileOutputStream(zipFile);
+             ZipOutputStream zout = new ZipOutputStream(fout)) {
             File fileSource = new File(sourceDir);
-
-            addDirectory(zout, fileSource,
-                    fileSource.getAbsolutePath().length() + 1);
-
-            //close the ZipOutputStream
-            zout.close();
+            addDirectory(zout, fileSource,fileSource.getAbsolutePath().length() + 1);
         }
         catch (IOException ioe) {
             Logger.getAnonymousLogger().log(Level.SEVERE, "Error while creating zip file :", ioe);
             throw ioe;
-        }
-        finally {
-            safeCloseStream(zout);
         }
         return zipFile;
     }
@@ -628,30 +609,15 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       */
 
     public String createZipFile(String sourceDir, String zipFileName) throws IOException {
-        ZipOutputStream zout = null;
         String zipFile = getZipFileName(sourceDir, zipFileName);
-        try {
-            //create object of FileOutputStream
-            FileOutputStream fout = new FileOutputStream(zipFile);
-
-            //create object of ZipOutputStream from FileOutputStream
-            zout = new ZipOutputStream(fout);
-
-            //create File object from source directory
+        try (FileOutputStream fout = new FileOutputStream(zipFile);
+             ZipOutputStream zout = new ZipOutputStream(fout)) {
             File fileSource = new File(sourceDir);
-
-            addDirectory(zout, fileSource,
-                    fileSource.getAbsolutePath().length() + 1);
-
-            //close the ZipOutputStream
-            zout.close();
+            addDirectory(zout, fileSource,fileSource.getAbsolutePath().length() + 1);
         }
         catch (IOException ioe) {
             Logger.getAnonymousLogger().log(Level.SEVERE, "Error while creating zip file :", ioe);
             throw ioe;
-        }
-        finally {
-            safeCloseStream(zout);
         }
         return zipFile;
     }
@@ -669,7 +635,6 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
     private void addDirectory(ZipOutputStream zout, File fileSource, int ignoreLength) throws IOException {
         //get sub-folder/files list
         File[] files = fileSource.listFiles();
-        FileInputStream fin = null;
         for (int i = 0; i < files.length; i++) {
             //if the file is directory, call the function recursively
             if (files[i].isDirectory()) {
@@ -684,39 +649,35 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             * we are here means, its file and not directory, so
             * add it to the zip file
             */
-            try {
+            try (FileInputStream fin = new FileInputStream(files[i].getAbsolutePath())) {
                 //create byte buffer
                 byte[] buffer = new byte[1024];
 
                 //create object of FileInputStream
-                fin = new FileInputStream(files[i].getAbsolutePath());
                 zout.putNextEntry(new ZipEntry(ignoreLength > -1 ?
                         files[i].getAbsolutePath().substring(ignoreLength) :
                         files[i].getAbsolutePath()));
 
                 /*
-                            * After creating entry in the zip file, actually
-                            * write the file.
-                            */
+                * After creating entry in the zip file, actually
+                * write the file.
+                */
                 int length;
                 while ((length = fin.read(buffer)) > 0) {
                     zout.write(buffer, 0, length);
                 }
 
                 /*
-                            * After writing the file to ZipOutputStream, use
-                            * void closeEntry() method of ZipOutputStream class to
-                            * close the current entry and position the stream to
-                            * write the next entry.
-                            */
+                * After writing the file to ZipOutputStream, use
+                * void closeEntry() method of ZipOutputStream class to
+                * close the current entry and position the stream to
+                * write the next entry.
+                */
                 zout.closeEntry();
 
             } catch (IOException ioe) {
                 Logger.getAnonymousLogger().log(Level.SEVERE, "Error while creating zip file :", ioe);
                 throw ioe;
-            }
-            finally {
-                safeCloseStream(fin);
             }
         }
     }
@@ -726,26 +687,22 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       */
 
     public synchronized String getLoggingFileDetails() throws IOException {
-        try {
-            loadLoggingProperties();
-            
-            @SuppressWarnings("unchecked")
-            Enumeration<String> loggingPropertyNames = (Enumeration<String>) props.propertyNames();
+        loadLoggingProperties();
 
-            while (loggingPropertyNames.hasMoreElements()) {
-                String key = loggingPropertyNames.nextElement();
-                
-                // Convert the name in domain.xml to the name in logging.properties if needed
-                key = xmltoPropsMap.getOrDefault(key, key);
+        @SuppressWarnings("unchecked")
+        Enumeration<String> loggingPropertyNames = (Enumeration<String>) props.propertyNames();
 
-                if (key != null && key.equals("com.sun.enterprise.server.logging.GFFileHandler.file")) {
-                    return props.getProperty(key);
-                }
+        while (loggingPropertyNames.hasMoreElements()) {
+            String key = loggingPropertyNames.nextElement();
+
+            // Convert the name in domain.xml to the name in logging.properties if needed
+            key = xmltoPropsMap.getOrDefault(key, key);
+
+            if (key != null && key.equals("com.sun.enterprise.server.logging.GFFileHandler.file")) {
+                return props.getProperty(key);
             }
-        } catch (IOException ex) {
-            throw ex;
         }
-        
+
         // If "com.sun.enterprise.server.logging.GFFileHandler.file" not found, check "java.util.logging.FileHandler.pattern"
         // This property can have been set by Payara Micro when using the --logtofile
         return props.getProperty("java.util.logging.FileHandler.pattern");
@@ -756,24 +713,20 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       */
 
     public synchronized String getLoggingFileDetails(String targetConfigName) throws IOException {
-        try {
-            loadLoggingProperties(targetConfigName);
-            Enumeration e = props.propertyNames();
+        loadLoggingProperties(targetConfigName);
+        Enumeration e = props.propertyNames();
 
-            while (e.hasMoreElements()) {
-                String key = (String) e.nextElement();
-                // convert the name in domain.xml to the name in logging.properties if needed
-                if (LoggingXMLNames.xmltoPropsMap.get(key) != null) {
-                    key = LoggingXMLNames.xmltoPropsMap.get(key);
-                }
-
-                if (key != null && key.equals("com.sun.enterprise.server.logging.GFFileHandler.file")) {
-                    return props.getProperty(key);
-                }
-
+        while (e.hasMoreElements()) {
+            String key = (String) e.nextElement();
+            // convert the name in domain.xml to the name in logging.properties if needed
+            if (LoggingXMLNames.xmltoPropsMap.get(key) != null) {
+                key = LoggingXMLNames.xmltoPropsMap.get(key);
             }
-        } catch (IOException ex) {
-            throw ex;
+
+            if (key != null && key.equals("com.sun.enterprise.server.logging.GFFileHandler.file")) {
+                return props.getProperty(key);
+            }
+
         }
         return null;
     }
@@ -783,28 +736,22 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       */
 
     public Map<String, String> getDefaultLoggingProperties() throws IOException {
-        FileInputStream fisForLoggingTemplate = null;
-        Properties propsLoggingTempleate = new Properties();
-        Map<String, String> m = new HashMap<String, String>();
-        try {
-            File loggingTemplateFile = new File(env.getConfigDirPath(), 
-                    ServerEnvironmentImpl.kDefaultLoggingPropertiesFileName);
-            fisForLoggingTemplate = new java.io.FileInputStream(loggingTemplateFile);
-            propsLoggingTempleate.load(fisForLoggingTemplate);
-        }
-        finally {
-            safeCloseStream(fisForLoggingTemplate);
+        Properties propsLoggingTemplate = new Properties();
+        File loggingTemplateFile =
+                new File(env.getConfigDirPath(), ServerEnvironmentImpl.kDefaultLoggingPropertiesFileName);
+        try (FileInputStream fisForLoggingTemplate = new java.io.FileInputStream(loggingTemplateFile)) {
+            propsLoggingTemplate.load(fisForLoggingTemplate);
         }
 
-        Enumeration e = propsLoggingTempleate.propertyNames();
-
+        Map<String, String> m = new HashMap<>();
+        Enumeration e = propsLoggingTemplate.propertyNames();
         while (e.hasMoreElements()) {
             String key = (String) e.nextElement();
             // convert the name in domain.xml to the name in logging.properties if needed
             if (LoggingXMLNames.xmltoPropsMap.get(key) != null) {
                 key = LoggingXMLNames.xmltoPropsMap.get(key);
             }
-            m.put(key, propsLoggingTempleate.getProperty(key));
+            m.put(key, propsLoggingTemplate.getProperty(key));
         }
         m = checkForLoggingProperties(m, "");
         return m;

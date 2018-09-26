@@ -38,8 +38,8 @@
  * holder.
  */
 
-/* 
- * Portions Copyright [2016] [Payara Foundation] 
+/*
+ * Portions Copyright [2016] [Payara Foundation]
  */
 package com.sun.enterprise.util.io;
 
@@ -79,11 +79,6 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-
-import javax.inject.Inject;
-
-import org.jvnet.hk2.config.ConfigBean;
-
 
 
 public class FileUtils  {
@@ -215,13 +210,13 @@ public class FileUtils  {
 
       String canonical =null;
       String absolute=null;
-      
+
       try {
     	  canonical = safeGetCanonicalPath(f);
     	  absolute = f.getParentFile().getCanonicalPath() + File.separator + f.getName();
-    	   
+
     	  _utillogger.log(Level.FINE,"Canonical path and abolute path values are " + canonical + " " + absolute);
-     
+
     	  if(canonical.equals(absolute)){
     		  _utillogger.log(Level.FINE,"The directory  " + absolute + " is a symbolic link false");
 		        return true;
@@ -1009,7 +1004,6 @@ public class FileUtils  {
      * @param fout the destination file
      */
     public static void copyFile(File fin, File fout) throws IOException {
-
         InputStream inStream = new BufferedInputStream(new FileInputStream(fin));
         FileOutputStream fos = FileUtils.openFileOutputStream(fout);
         copy(inStream, fos, fin.length());
@@ -1017,14 +1011,9 @@ public class FileUtils  {
 
 
     public static void copy(InputStream in, FileOutputStream out, long size) throws IOException {
-
-        try {
-            copyWithoutClose(in, out, size);
-        } finally {
-            if (in != null)
-                in.close();
-            if (out != null)
-                out.close();
+        try (InputStream inputStream = in;
+             FileOutputStream fileOutputStream = out) {
+            copyWithoutClose(inputStream, fileOutputStream, size);
         }
     }
 
@@ -1040,31 +1029,31 @@ public class FileUtils  {
         if (os instanceof FileOutputStream) {
             copy(in, (FileOutputStream) os, size);
         } else {
-            ReadableByteChannel inChannel = Channels.newChannel(in);
-            WritableByteChannel outChannel = Channels.newChannel(os);
-            if (size==0) {
-
-                ByteBuffer byteBuffer = ByteBuffer.allocate(10240);
-                int read;
-                do {
-                    read = inChannel.read(byteBuffer);
-                    if (read>0) {
-                        byteBuffer.limit(byteBuffer.position());
-                        byteBuffer.rewind();
-                        outChannel.write(byteBuffer);
-                        byteBuffer.clear();
+            try(ReadableByteChannel inChannel = Channels.newChannel(in);
+                WritableByteChannel outChannel = Channels.newChannel(os)) {
+                if (size==0) {
+                    ByteBuffer byteBuffer = ByteBuffer.allocate(10240);
+                    int read;
+                    do {
+                        read = inChannel.read(byteBuffer);
+                        if (read>0) {
+                            byteBuffer.limit(byteBuffer.position());
+                            byteBuffer.rewind();
+                            outChannel.write(byteBuffer);
+                            byteBuffer.clear();
+                        }
+                    } while (read!=-1);
+                } else {
+                    ByteBuffer byteBuffer;
+                    try{
+                        byteBuffer = ByteBuffer.allocate(Long.valueOf(size).intValue());
+                    }catch(Throwable err){
+                        throw new IOException(messages.get("allocate.more.than.java.heap.space", err));
                     }
-                } while (read!=-1);
-            } else {
-                ByteBuffer byteBuffer;
-                try{
-                    byteBuffer = ByteBuffer.allocate(Long.valueOf(size).intValue());
-                }catch(Throwable err){
-                    throw new IOException(messages.get("allocate.more.than.java.heap.space", err));
+                    inChannel.read(byteBuffer);
+                    byteBuffer.rewind();
+                    outChannel.write(byteBuffer);
                 }
-                inChannel.read(byteBuffer);
-                byteBuffer.rewind();
-                outChannel.write(byteBuffer);
             }
         }
     }

@@ -37,25 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation] 
+// Portions Copyright [2016] [Payara Foundation]
 package com.sun.common.util.logging;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Formatter;
-import java.util.Locale;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-//import com.sun.enterprise.server.logging.GFLogRecord;
 
 /**
  * Implementation of a OutputStream that flush the records to a Logger.
@@ -74,8 +69,8 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
     private Level level;
 
     private ThreadLocal reentrant = new ThreadLocal();
-    
-    private BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<LogRecord>(MAX_RECORDS);
+
+    private BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<>(MAX_RECORDS);
 
     private BooleanLatch done = new BooleanLatch();
     private Thread pump;
@@ -90,7 +85,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         super();
         this.logger = logger;
         this.level = level;
-        lineSeparator = System.getProperty("line.separator");
+        lineSeparator = System.lineSeparator();
         initializePump();
     }
 
@@ -113,14 +108,14 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             return;
         }
         LogRecord logRecord = new LogRecord(level, logMessage);
-        
+
         // JUL LogRecord does not capture thread-name. Create a wrapper to
         // capture the name of the logging thread so that a formatter can
-        // output correct thread-name if done asynchronously. Note that 
+        // output correct thread-name if done asynchronously. Note that
         // this fix is limited to records published through this handler only.
         GFLogRecord logRecordWrapper = new GFLogRecord(logRecord);
         logRecordWrapper.setThreadName(Thread.currentThread().getName());
-        
+
         pendingRecords.offer(logRecordWrapper);
     }
 
@@ -139,7 +134,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         };
         pump.setName("logging output pump");
         pump.setDaemon(true);
-        pump.start();        
+        pump.start();
     }
 
     /**
@@ -148,7 +143,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
     public void log() {
 
         LogRecord record;
-        
+
         // take is blocking so we take one record off the queue
         try {
             record = pendingRecords.take();
@@ -166,7 +161,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         }
 
         // now try to read more.  we end up blocking on the above take call if nothing is in the queue
-        Vector<LogRecord> v = new Vector<LogRecord>();
+        List<LogRecord> v = new ArrayList<>();
         final int size = pendingRecords.size();
         int msgs = pendingRecords.drainTo(v, size);
         for (int j = 0; j < msgs; j++) {
@@ -174,7 +169,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         }
 
     }
-    
+
     public void close() throws IOException {
         done.tryReleaseShared(1);
         pump.interrupt();
@@ -182,16 +177,16 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         // Drain and log the remaining messages
         final int size = pendingRecords.size();
         if (size > 0) {
-            Collection<LogRecord> records = new ArrayList<LogRecord>(size);
+            Collection<LogRecord> records = new ArrayList<>(size);
             pendingRecords.drainTo(records, size);
             for (LogRecord record : records) {
                 logger.log(record);
             }
         }
-        
+
         super.close();
     }
-    
+
 /*
  * LoggingPrintStream creates a PrintStream with a
  * LoggingByteArrayOutputStream as its OutputStream. Once it is
@@ -239,39 +234,43 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             } else {
                 StackTraceObjects sTO = new StackTraceObjects((Throwable) x);
                 perThreadStObjects.set(sTO);
-                super.println(sTO.toString());                
+                super.println(sTO.toString());
             }
 
         }
 
         public PrintStream printf(String str, Object... args) {
             StringBuilder sb = new StringBuilder();
-            Formatter formatter = new Formatter(sb, Locale.getDefault());
-            formatter.format(str,args);
+            try (Formatter formatter = new Formatter(sb, Locale.getDefault())) {
+                formatter.format(str, args);
+            }
             print(sb.toString());
             return  null;
         }
 
         public PrintStream printf(Locale locale, String str, Object... args) {
             StringBuilder sb = new StringBuilder();
-            Formatter formatter = new Formatter(sb, locale);
-            formatter.format(str,args);
+            try (Formatter formatter = new Formatter(sb, locale)) {
+                formatter.format(str,args);
+            }
             print(sb.toString());
             return  null;
         }
 
         public PrintStream format(String format, Object... args) {
             StringBuilder sb = new StringBuilder();
-            Formatter formatter = new Formatter(sb, Locale.getDefault());
-            formatter.format(Locale.getDefault(), format, args);
+            try (Formatter formatter = new Formatter(sb, Locale.getDefault())) {
+                formatter.format(Locale.getDefault(), format, args);
+            }
             print(sb.toString());
             return  null;
         }
 
         public PrintStream format(Locale locale,String format, Object... args) {
             StringBuilder sb = new StringBuilder();
-            Formatter formatter = new Formatter(sb, locale);
-            formatter.format(locale, format, args);
+            try (Formatter formatter = new Formatter(sb, locale)) {
+                formatter.format(locale, format, args);
+            }
             print(sb.toString());
             return  null;
         }
@@ -505,5 +504,5 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             }
         }
     }
-    
+
 }
