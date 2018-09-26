@@ -37,17 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] PAyara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.util.cache;
 
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
 
 /** In memory {@link AdminCache} containing fixed amount of items. Rotation
- * is based on last update first out.<br/>
+ * is based on last update first out.<\br>
  * This implementation is backgrounded by {@link AdminCacheWeakReference} and
  * all non locally cached items are searched from that implementation.
  *
@@ -55,7 +55,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 public class AdminCacheMemStore implements AdminCache {
 
-     private final static class CachedItem implements Comparable<CachedItem> {
+     private static final class CachedItem implements Comparable<CachedItem> {
 
         private Object item;
         private long touched;

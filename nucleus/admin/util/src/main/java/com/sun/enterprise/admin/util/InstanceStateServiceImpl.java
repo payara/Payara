@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.util;
 
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import java.io.File;
 import java.io.IOException;
@@ -69,19 +69,12 @@ public class InstanceStateServiceImpl implements InstanceStateService {
     private ServerEnvironment serverEnv;
 
     @Inject
-    private Domain domain;
-
-    @Inject
     private CommandThreadPool cmdPool;
 
     private InstanceStateFileProcessor stateProcessor;
     private HashMap<String, InstanceState> instanceStates;
-    private final static int MAX_RECORDED_FAILED_COMMANDS = 10;
-    private final static Logger logger = AdminLoggerInfo.getLogger();
-    
-    
-
-    public InstanceStateServiceImpl() {}
+    private static final int MAX_RECORDED_FAILED_COMMANDS = 10;
+    private static final Logger LOGGER = AdminLoggerInfo.getLogger();
 
     /*
      * Perform lazy-initialization for the object, since this InstanceStateService
@@ -98,7 +91,7 @@ public class InstanceStateServiceImpl implements InstanceStateService {
             stateProcessor = new InstanceStateFileProcessor(instanceStates,
                         stateFile);
         } catch (IOException ioe) {
-            logger.log(Level.FINE, AdminLoggerInfo.mISScannotread, stateFile);
+            LOGGER.log(Level.FINE, AdminLoggerInfo.mISScannotread, stateFile);
             instanceStates = new HashMap<String, InstanceState>();
             // Even though instances may already exist, do not populate the
             // instancesStates array because it will be repopulated as it is
@@ -107,7 +100,7 @@ public class InstanceStateServiceImpl implements InstanceStateService {
             try {
                 stateProcessor = InstanceStateFileProcessor.createNew(instanceStates, stateFile);
             } catch (IOException ex) {
-                logger.log(Level.SEVERE, AdminLoggerInfo.mISScannotcreate, 
+                LOGGER.log(Level.SEVERE, AdminLoggerInfo.mISScannotcreate, 
                         new Object[] { stateFile, ex.getLocalizedMessage()} );
                 stateProcessor = null;
             }
@@ -121,7 +114,7 @@ public class InstanceStateServiceImpl implements InstanceStateService {
         try {
             stateProcessor.addNewServer(instanceName);
         } catch (Exception e) {
-            logger.log(Level.SEVERE, AdminLoggerInfo.mISSaddstateerror, e.getLocalizedMessage());
+            LOGGER.log(Level.SEVERE, AdminLoggerInfo.mISSaddstateerror, e.getLocalizedMessage());
         }
     }
 
@@ -142,7 +135,7 @@ public class InstanceStateServiceImpl implements InstanceStateService {
                 stateProcessor.addFailedCommand(instance, cmdDetails);
             }
         } catch (Exception e) {
-            logger.log(Level.SEVERE, AdminLoggerInfo.mISSaddcmderror, e.getLocalizedMessage());
+            LOGGER.log(Level.SEVERE, AdminLoggerInfo.mISSaddcmderror, e.getLocalizedMessage());
         }
     }
 
@@ -156,7 +149,7 @@ public class InstanceStateServiceImpl implements InstanceStateService {
                 stateProcessor.removeFailedCommands(instance);
             }
         } catch (Exception e) {
-            logger.log(Level.SEVERE, AdminLoggerInfo.mISSremcmderror, e.getLocalizedMessage());
+            LOGGER.log(Level.SEVERE, AdminLoggerInfo.mISSremcmderror, e.getLocalizedMessage());
         }
     }
 
@@ -214,7 +207,7 @@ public class InstanceStateServiceImpl implements InstanceStateService {
                 stateProcessor.updateState(name, newState.getDescription());
             }
         } catch (Exception e) {
-            logger.log(Level.SEVERE, AdminLoggerInfo.mISSsetstateerror, e.getLocalizedMessage());
+            LOGGER.log(Level.SEVERE, AdminLoggerInfo.mISSsetstateerror, e.getLocalizedMessage());
         }
         return ret;
     }
@@ -226,7 +219,7 @@ public class InstanceStateServiceImpl implements InstanceStateService {
         try {
             stateProcessor.removeInstanceNode(name);
         } catch (Exception e) {
-            logger.log(Level.SEVERE, AdminLoggerInfo.mISSremstateerror, e.getLocalizedMessage());
+            LOGGER.log(Level.SEVERE, AdminLoggerInfo.mISSremstateerror, e.getLocalizedMessage());
         }
     }
 

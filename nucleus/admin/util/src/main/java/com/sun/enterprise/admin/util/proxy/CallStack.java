@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.util.proxy;
 
@@ -49,11 +50,7 @@ import java.util.Stack;
  */
 public class CallStack {
 
-    private Stack callStack = new Stack();
-
-    /** Creates a new instance of CallStack */
-    public CallStack() {
-    }
+    private final Stack callStack = new Stack();
 
     public int getStackSize() {
         return callStack.size();
