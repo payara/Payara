@@ -24,7 +24,7 @@ pipeline {
                     payaraBuildNumber = "PR${env.CHANGE_ID}.${currentBuild.number}"
                     echo "Payara pom version is ${pom.version}"
                     echo "Build number is ${payaraBuildNumber}"
-                    echo "jdkVer = ${isRecursive}"
+                    echo "jdkVer = ${jdkVer}"
                     echo "Recursive = ${isRecursive}"
                 }
             }
