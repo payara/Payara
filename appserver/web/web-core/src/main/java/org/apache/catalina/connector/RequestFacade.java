@@ -868,14 +868,15 @@ public class RequestFacade implements HttpServletRequest {
     @Override
     public String getServletPath() {
 
+        if (request == null) {
+            throw new IllegalStateException(rb.getString(LogFacade.CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
+        }
+
         // PAYARA-917 WELD Request Beans access the Request Facade directly not via the
         // wrapper class when requests are forwarded
         String forwardedPath = (String) request.getAttribute("fish.payara.servlet.dispatchPath");
         if (forwardedPath != null) {
             return forwardedPath;
-        }
-        if (request == null) {
-            throw new IllegalStateException(rb.getString(LogFacade.CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
         }
 
         return request.getServletPath();

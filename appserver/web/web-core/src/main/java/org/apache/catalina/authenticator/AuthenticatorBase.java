@@ -332,7 +332,7 @@ public abstract class AuthenticatorBase extends ValveBase
 
     /**
      * Set the value of the flag that states if we add headers to disable caching by proxies.
-     * 
+     *
      * @param nocache <code>true</code> if we add headers to disable proxy caching, <code>false</code> if we leave the
      * headers alone.
      */
@@ -349,7 +349,7 @@ public abstract class AuthenticatorBase extends ValveBase
 
     /**
      * Set the value of the flag that states what headers we add to disable proxy caching.
-     * 
+     *
      * @param securePagesWithPragma <code>true</code> if we add headers which are incompatible with downloading office
      * documents in IE under SSL but which fix a caching problem in Mozilla.
      */
@@ -359,7 +359,7 @@ public abstract class AuthenticatorBase extends ValveBase
 
     /**
      * Return the flag that states if we should change the session ID of an existing session upon successful authentication.
-     * 
+     *
      * @return <code>true</code> to change session ID upon successful authentication, <code>false</code> to do not perform
      * the change.
      */
@@ -370,7 +370,7 @@ public abstract class AuthenticatorBase extends ValveBase
     /**
      * Set the value of the flag that states if we should change the session ID of an existing session upon successful
      * authentication.
-     * 
+     *
      * @param changeSessionIdOnAuthentication <code>true</code> to change session ID upon successful authentication,
      * <code>false</code> to do not perform the change.
      */
@@ -407,7 +407,7 @@ public abstract class AuthenticatorBase extends ValveBase
             } catch (IllegalStateException | IOException e) {
                 ;
             }
-            
+
             return END_PIPELINE;
         }
         // END GlassFish 247
@@ -431,7 +431,7 @@ public abstract class AuthenticatorBase extends ValveBase
                         if (log.isLoggable(FINE)) {
                             log.fine("We have cached auth type " + session.getAuthType() + " for principal " + session.getPrincipal());
                         }
-                        
+
                         hrequest.setAuthType(session.getAuthType());
                         hrequest.setUserPrincipal(principal);
                     }
@@ -716,13 +716,13 @@ public abstract class AuthenticatorBase extends ValveBase
             if (session != null) {
                 session.setAuthType(authType);
                 session.setPrincipal(principal);
-                
+
                 if (username != null) {
                     session.setNote(SESS_USERNAME_NOTE, username);
                 } else {
                     session.removeNote(SESS_USERNAME_NOTE);
                 }
-                
+
                 if (password != null) {
                     session.setNote(SESS_PASSWORD_NOTE, password);
                 } else {
@@ -735,7 +735,7 @@ public abstract class AuthenticatorBase extends ValveBase
         if (sso == null) {
             return;
         }
-        
+
         HttpServletRequest hreq = (HttpServletRequest) request.getRequest();
         HttpServletResponse hres = (HttpServletResponse) response.getResponse();
 
@@ -750,7 +750,7 @@ public abstract class AuthenticatorBase extends ValveBase
         Cookie cookie = new Cookie(SINGLE_SIGN_ON_COOKIE, value);
         cookie.setMaxAge(-1);
         cookie.setPath("/");
-        
+
         StandardHost host = (StandardHost) context.getParent();
         if (host != null) {
             host.configureSingleSignOnCookieSecure(cookie, hreq);
@@ -846,9 +846,9 @@ public abstract class AuthenticatorBase extends ValveBase
     /**
      * CR 6411114 (Lifecycle implementation moved to ValveBase) public void addLifecycleListener(LifecycleListener listener)
      * {
-     * 
+     *
      * lifecycle.addLifecycleListener(listener);
-     * 
+     *
      * }
      */
 
@@ -858,9 +858,9 @@ public abstract class AuthenticatorBase extends ValveBase
      */
     /**
      * CR 6411114 (Lifecycle implementation moved to ValveBase) public LifecycleListener[] findLifecycleListeners() {
-     * 
+     *
      * return lifecycle.findLifecycleListeners();
-     * 
+     *
      * }
      */
 
@@ -872,9 +872,9 @@ public abstract class AuthenticatorBase extends ValveBase
     /**
      * CR 6411114 (Lifecycle implementation moved to ValveBase) public void removeLifecycleListener(LifecycleListener
      * listener) {
-     * 
+     *
      * lifecycle.removeLifecycleListener(listener);
-     * 
+     *
      * }
      */
 
@@ -890,14 +890,14 @@ public abstract class AuthenticatorBase extends ValveBase
             return;
         super.start();
         // END CR 6411114
-        if ("org.apache.catalina.core.StandardContext".equals(context.getClass().getName())) {
+        if (context instanceof org.apache.catalina.core.StandardContext) {
             try {
                 // XXX What is this ???
                 Class paramTypes[] = new Class[0];
                 Object paramValues[] = new Object[0];
                 Method method = context.getClass().getMethod("getDebug", paramTypes);
                 Integer result = (Integer) method.invoke(context, paramValues);
-                setDebug(result.intValue());
+                setDebug(result);
             } catch (Exception e) {
                 log.log(Level.SEVERE, LogFacade.GETTING_DEBUG_VALUE_EXCEPTION, e);
             }
