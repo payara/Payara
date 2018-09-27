@@ -101,7 +101,7 @@ public class DnsDiscoveryService implements DiscoveryService {
                 port = host.substring(colon + 1);
             }
             try {
-                InetAddress[] addresses = InetAddress.getAllByName(host);
+                InetAddress[] addresses = InetAddress.getAllByName(hostname);
                 for (InetAddress address : addresses) {
                     if (!address.isLoopbackAddress()) {
                         LOGGER.log(Level.FINE, "Adding Node {0}", address);
@@ -109,6 +109,7 @@ public class DnsDiscoveryService implements DiscoveryService {
                     }
                 }
             } catch (UnknownHostException ex) {
+                LOGGER.log(Level.FINEST, ex.getMessage());
                 // not a known host, do a DNS lookup
                 try {
                     
@@ -121,10 +122,8 @@ public class DnsDiscoveryService implements DiscoveryService {
                         nodes.add(new SimpleDiscoveryNode(new Address(address, Integer.valueOf(port))));
                         
                     }
-                } catch (NamingException ex1) {
-                    LOGGER.log(Level.SEVERE, null, ex1);
-                } catch (UnknownHostException ex1) {
-                    LOGGER.log(Level.SEVERE, null, ex1);
+                } catch (NamingException | UnknownHostException ex1) {
+                    LOGGER.log(Level.WARNING, "Unable to find DNS record for {0}", hostname);
                 }
             }
 
