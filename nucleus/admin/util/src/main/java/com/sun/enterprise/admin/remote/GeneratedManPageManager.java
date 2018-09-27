@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.remote;
 
@@ -48,7 +49,16 @@ import java.util.*;
  *
  * @author bnevins
  */
-class GeneratedManPageManager implements ResponseManager{
+class GeneratedManPageManager implements ResponseManager {
+    
+    AdminCommandResponse response;
+    private String name; 
+    private String synopsis; 
+    List<NameValue<String,String>> params = new LinkedList<NameValue<String,String>>();
+    List<NameValue<String,String>> operands = new LinkedList<NameValue<String,String>>();
+    private static final String TAB = "    ";
+    private static final String EOL = System.lineSeparator();
+    
     GeneratedManPageManager(AdminCommandResponse response) {
         this.response = response;
     }
@@ -145,27 +155,20 @@ class GeneratedManPageManager implements ResponseManager{
             String subStr = strToDisplay.substring(ii, index+1);
             if (subStr.endsWith(" ") || subStr.endsWith(",") ||
                 subStr.endsWith(".") || subStr.endsWith("-") ) {
-                sb.append(TAB + subStr + EOL);
+                sb.append(TAB).append(subStr).append(EOL);
                 ii++;
                 index++;
             } else {
-                sb.append(TAB + strToDisplay.substring(ii, index) + "-" + EOL);
+                sb.append(TAB).append(strToDisplay.substring(ii, index)).append("-").append(EOL);
             }
         }
         if (index < strToDisplay.length()) {
-            sb.append(TAB + strToDisplay.substring(index) + EOL);
+            sb.append(TAB).append(strToDisplay.substring(index)).append(EOL);
         }
         
         return sb.toString();
     }
 
-    AdminCommandResponse response;
-    private String name; 
-    private String synopsis; 
-    List<NameValue<String,String>> params = new LinkedList<NameValue<String,String>>();
-    List<NameValue<String,String>> operands = new LinkedList<NameValue<String,String>>();
-    private static final String TAB = "    ";
-    private static final String EOL = System.getProperty("line.separator");
 }
 /*
  --------  RESPONSE DUMP         --------------

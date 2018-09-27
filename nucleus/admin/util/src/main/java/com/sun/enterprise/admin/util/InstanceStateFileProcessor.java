@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions COpyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.util;
 
@@ -61,8 +62,8 @@ import org.xml.sax.SAXException;
  */
 class InstanceStateFileProcessor {
     private Document xmlDoc = null;
-    private File stateFile;
-    private HashMap<String, InstanceState> instanceStates;
+    private final File stateFile;
+    private final HashMap<String, InstanceState> instanceStates;
 
     public InstanceStateFileProcessor(HashMap<String, InstanceState> st, File xmlFile)
             throws IOException {
@@ -85,11 +86,10 @@ class InstanceStateFileProcessor {
         }
     }
 
-    static public InstanceStateFileProcessor createNew(HashMap<String, InstanceState> st, File xmlFileObject)
+    public static InstanceStateFileProcessor createNew(HashMap<String, InstanceState> st, File xmlFileObject)
             throws IOException {
-        BufferedWriter writer = null;
-        try {
-            writer = new BufferedWriter(new FileWriter(xmlFileObject));
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(xmlFileObject))) {
 
             writer.write("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>");
             writer.newLine();
@@ -105,10 +105,6 @@ class InstanceStateFileProcessor {
             writer.write("</instance-state>");
             writer.newLine();
             writer.flush();
-        } finally {
-            if (writer != null) {
-                writer.close();
-            }
         }
         return new InstanceStateFileProcessor(st, xmlFileObject);
     }
@@ -137,7 +133,8 @@ class InstanceStateFileProcessor {
     }
 
     private void parseInstanceElement(Node n) {
-        String name = null, state = null;
+        String name = null;
+        String state = null;
         NamedNodeMap attrs = n.getAttributes();
         if(attrs != null) {
             name = getNodeValue(attrs.getNamedItem("name"));
@@ -175,7 +172,6 @@ class InstanceStateFileProcessor {
             Transformer transformer = transformerfactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.METHOD, "xml");
             transformer.setOutputProperty(OutputKeys.ENCODING, "utf-8");
-            //transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             DOMSource domSource = new DOMSource(this.xmlDoc);
             transformer.transform(domSource, new StreamResult(outputStream));

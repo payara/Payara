@@ -60,7 +60,7 @@ import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_PREFI
 import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY;
 
 /**
- * 
+ *
  * DB2 Persistence Manager
  */
 
@@ -72,7 +72,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 	private final static Logger logger = Logger.getLogger(CLASSNAME);
 
 	private IBatchConfig batchConfig = null;
-	
+
 	// db2 create table strings
 	protected Map<String, String> createDB2Strings;
 
@@ -87,7 +87,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
                 prefix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_PREFIX_PROPERTY, "");
 	        suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
-		
+
 		try {
 			Context ctx = new InitialContext();
 			dataSource = (DataSource) ctx.lookup(jndiName);
@@ -119,7 +119,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 					"JNDI name is not defined.");
 		}
 
-		
+
 		try {
 			if (!isSchemaValid()) {
 				setDefaultSchema();
@@ -133,7 +133,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 
 		logger.config("Exiting CLASSNAME.init()");
 	}
-    
+
 	/**
 	 * Check the schema exists
 	 * @return
@@ -143,43 +143,37 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 	protected boolean isSchemaValid() throws SQLException {
 
 		boolean result = false;
-		Connection conn = null;
-		DatabaseMetaData dbmd = null;
-		ResultSet rs = null;
 
 		logger.entering(CLASSNAME, "isDB2SchemaValid");
-		try {
-			conn = getConnectionToDefaultSchema();
-			dbmd = conn.getMetaData();
-			rs = dbmd.getSchemas();
-
-			while (rs.next()) {
-
-				String schemaname = rs.getString("TABLE_SCHEM");
-				if (schema.equalsIgnoreCase(schemaname)) {
-					logger.exiting(CLASSNAME, "isSchemaValid", true);
-					return true;
+		try (Connection conn = getConnectionToDefaultSchema()) {
+			DatabaseMetaData dbmd = conn.getMetaData();
+			try (ResultSet rs = dbmd.getSchemas()) {
+				while (rs.next()) {
+					String schemaname = rs.getString("TABLE_SCHEM");
+					if (schema.equalsIgnoreCase(schemaname)) {
+						logger.exiting(CLASSNAME, "isSchemaValid", true);
+						return true;
+					}
 				}
 			}
+
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
 			throw e;
-		} finally {
-			cleanupConnection(conn, rs, null);
 		}
 		logger.exiting(CLASSNAME, "isDB2SchemaValid", false);
 
 		return result;
 
 	}
-    
+
 	/**
 	 * Check the relevant db2 tables exist in the relevant schema
 	 * @throws SQLException
 	 */
         @Override
 	protected void checkTables() throws SQLException {
-                
+
 		logger.entering(CLASSNAME, "checkDB2Tables");
                 setCreateDB2StringsMap(tableNames);
 		createTableIfNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
@@ -206,8 +200,6 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 
         @Override
         public boolean checkIfTableExists(DataSource dSource, String tableName, String schemaName) {
-                Statement statement = null;
-                ResultSet resultSet = null;
                 dataSource = dSource;
 
                 boolean result = true;
@@ -219,26 +211,30 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
                         setDefaultSchema();
                     }
 
-                    statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-                            ResultSet.CONCUR_READ_ONLY);
-                    String query = "select name from sysibm.systables where name ="
-                            + "\'" + tableName.toUpperCase() + "\'" + "and type = 'T'";
-                    resultSet = statement.executeQuery(query);
+					try (Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                            ResultSet.CONCUR_READ_ONLY)) {
 
-                    int rowcount = getTableRowCount(resultSet);
+						String query = "select name from sysibm.systables where name ="
+								+ "\'" + tableName.toUpperCase() + "\'" + "and type = 'T'";
 
-                    if (rowcount == 0) {
-                        if (!resultSet.next()) {
-                            result = false;
-                        }
-                    }
+						try (ResultSet resultSet = statement.executeQuery(query)) {
+							int rowcount = getTableRowCount(resultSet);
+
+							if (rowcount == 0) {
+								if (!resultSet.next()) {
+									result = false;
+								}
+							}
+						}
+
+					}
                 } catch (SQLException ex) {
                     logger.severe(ex.getLocalizedMessage());
                 }
 
                 return result;
         }
-	
+
 	/**
 	 * Method invoked to insert the DB2 create table strings into a hashmap
 	 **/

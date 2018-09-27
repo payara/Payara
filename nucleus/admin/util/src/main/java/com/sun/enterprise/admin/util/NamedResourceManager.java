@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.util;
 
 import java.lang.reflect.Array;
@@ -50,8 +52,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.inject.Singleton;
 import org.glassfish.api.admin.NamedResource;
-import org.glassfish.logging.annotation.LogMessagesResourceBundle;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -88,7 +88,7 @@ public class NamedResourceManager {
     private final WeakHashMap<Class<?>, Model> models = new WeakHashMap<Class<?>, Model>();
     private final WeakHashMap<Object, String> instanceNames = new WeakHashMap<Object, String>();
     
-    private final String LINE_SEP = System.getProperty("line.separator");
+    private final String LINE_SEP = System.lineSeparator();
     
     private static final Logger  ADMSEC_LOGGER = GenericAdminAuthenticator.ADMSEC_LOGGER;
 
@@ -100,7 +100,7 @@ public class NamedResourceManager {
         final StringBuilder addedNames = new StringBuilder();
         final T result = register("", model.owningCollectionName, instance, model, addedNames);
         if (ADMSEC_LOGGER.isLoggable(Level.FINER)) {
-            ADMSEC_LOGGER.log(Level.FINER, "Added named resources:\n{0}", addedNames.toString());
+            ADMSEC_LOGGER.log(Level.FINER, "Added named resources:\n{0}", addedNames);
         }
         return result;
         
@@ -115,7 +115,6 @@ public class NamedResourceManager {
             final T instance,
             final StringBuilder addedNames) throws IllegalArgumentException, IllegalAccessException {
         final Model model = findOrCreateModel(instance.getClass());
-        //return prepare(prefix, (model.isSingleton ? null : model.owningCollectionName + '/' + model.name + '/'), instance, model, addedNames);
         return register(prefix, containingCollectionName, instance, model, addedNames);
     }
     
@@ -155,8 +154,6 @@ public class NamedResourceManager {
     }
     
     private String collectionName(final Field f) {
-//        final Class<?> c = f.getClass();
-//        final String shortClassName = c.getName().substring(c.getName().lastIndexOf('.'));
         return f.getName();
     }
     
@@ -169,7 +166,8 @@ public class NamedResourceManager {
         return result;
     }
     
-    private String instanceName(final Object instance, final String containingCollectionName, final Model model) throws IllegalArgumentException, IllegalAccessException {
+    private String instanceName(final Object instance, final String containingCollectionName, final Model model) 
+            throws IllegalArgumentException, IllegalAccessException {
         final StringBuilder sb = new StringBuilder();
         if (containingCollectionName != null && ! containingCollectionName.isEmpty()) {
             sb.append(containingCollectionName).append('/').append(model.subpath).append('/');
@@ -178,8 +176,7 @@ public class NamedResourceManager {
     }
     
     private Model buildModel(final Class<?> c) {
-        final Model model = new Model(c);
-        return model;
+        return new Model(c);
     }
     
     /**
@@ -234,8 +231,7 @@ public class NamedResourceManager {
         
         private static String defaultSubpath(final Class<?> c) {
             final String className = convertName(c.getName());
-            final String shortClassName = className.substring(className.lastIndexOf('.') + 1);
-            return shortClassName;
+            return className.substring(className.lastIndexOf('.') + 1);
         }
         
         private static String defaultCollectionName(final Class<?> c) {
