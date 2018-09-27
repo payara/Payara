@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.nucleus.admin.rest;
@@ -44,10 +46,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.json.Json;
+import javax.json.JsonArray;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
 import static org.testng.AssertJUnit.*;
 import org.testng.annotations.Test;
@@ -270,7 +273,7 @@ public class PropertiesBagTest extends RestTestBase {
         r = getClient()
                 .target(getAddress("/domain/configs/config/default-config/availability-service/web-container-availability/property")).
                 request(getResponseType())
-                .post(Entity.json(new JSONArray()), Response.class);
+                .post(Entity.json(Json.createArrayBuilder().build()), Response.class);
         assertTrue(isSuccess(r));
         
         assertTrue(isSuccess(get(wcaUri)));

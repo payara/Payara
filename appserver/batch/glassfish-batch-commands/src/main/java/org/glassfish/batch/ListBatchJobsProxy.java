@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.batch;
 
@@ -52,6 +52,10 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.Properties;
+import javax.validation.constraints.Min;
+import static org.glassfish.batch.BatchConstants.LIST_BATCH_JOBS;
+import static org.glassfish.batch.BatchConstants.LIST_JOBS_COUNT;
+import static org.glassfish.batch.BatchConstants.SIMPLE_MODE;
 
 /**
  * Command to list batch jobs info
@@ -79,24 +83,41 @@ public class ListBatchJobsProxy
     @Param(primary = true, optional = true)
     String jobName;
 
+    @Min(value = 0, message = "Offset value needs to be greater than 0")
+    @Param(name = "offset", optional = true, defaultValue = "0")
+    String offSetValue;
+
+    @Min(value = 0, message = "Limit value needs to be greater than 0")
+    @Param(name = "limit", optional = true, defaultValue = "2000")
+    String limitValue;
+
+
     @Override
     protected String getCommandName() {
         return "_ListBatchJobs";
     }
 
     protected void fillParameterMap(ParameterMap parameterMap) {
-       super.fillParameterMap(parameterMap);
-        if (jobName != null)
+        super.fillParameterMap(parameterMap);
+        if (jobName != null) {
             parameterMap.add("DEFAULT", jobName);
+        }
+        parameterMap.add("offset", offSetValue);
+        parameterMap.add("limit", limitValue);
     }
 
 
     protected void postInvoke(AdminCommandContext context, ActionReport subReport) {
         Properties subProperties = subReport.getExtraProperties();
         Properties extraProps = context.getActionReport().getExtraProperties();
-        if (subProperties.get("simpleMode") != null)
-            extraProps.put("simpleMode", subProperties.get("simpleMode"));
-        if (subProperties.get("listBatchJobs") != null)
-            extraProps.put("listBatchJobs", subProperties.get("listBatchJobs"));
+        if (subProperties.get(SIMPLE_MODE) != null) {
+            extraProps.put(SIMPLE_MODE, subProperties.get(SIMPLE_MODE));
+        }
+        if (subProperties.get(LIST_BATCH_JOBS) != null) {
+            extraProps.put(LIST_BATCH_JOBS, subProperties.get(LIST_BATCH_JOBS));
+        }
+        if (subProperties.get(LIST_JOBS_COUNT) != null) {
+            extraProps.put(LIST_JOBS_COUNT, subProperties.get(LIST_JOBS_COUNT));
+        }
     }
 }

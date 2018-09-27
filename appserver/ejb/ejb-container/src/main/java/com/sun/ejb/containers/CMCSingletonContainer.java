@@ -37,21 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
-
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import javax.ejb.ConcurrentAccessException;
-import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.ejb.IllegalLoopbackException;
-import javax.ejb.LockType;
 
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.InvocationInfo;
 import com.sun.ejb.MethodLockInfo;
 import com.sun.enterprise.security.SecurityManager;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import javax.ejb.ConcurrentAccessException;
+import javax.ejb.ConcurrentAccessTimeoutException;
+import javax.ejb.IllegalLoopbackException;
+import javax.ejb.LockType;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 
 /**
@@ -77,8 +77,7 @@ public class CMCSingletonContainer
 
         // In absence of any method lock info default is WRITE lock with no timeout.
         defaultMethodLockInfo = new MethodLockInfo();
-        defaultMethodLockInfo.setLockType(LockType.WRITE);
-
+        defaultMethodLockInfo.setLockType(LockType.WRITE, clusteredLookup.isDistributedLockEnabled());
     }
 
     /*
@@ -112,13 +111,21 @@ public class CMCSingletonContainer
      * before every bean method.
      *
      */
+    @Override
     protected ComponentContext _getContext(EjbInvocation inv) {
-        checkInit();
+        super._getContext(inv);
+
         InvocationInfo invInfo = inv.invocationInfo;
 
         MethodLockInfo lockInfo = (invInfo.methodLockInfo == null)
                 ? defaultMethodLockInfo : invInfo.methodLockInfo;
-        Lock theLock = lockInfo.isReadLockedMethod() ? readLock : writeLock;
+        Lock theLock;
+        if(lockInfo.isDistributed()) {
+            theLock = clusteredLookup.getDistributedLock();
+        }
+        else {
+            theLock = lockInfo.isReadLockedMethod() ? readLock : writeLock;
+        }
 
         if ( (rwLock.getReadHoldCount() > 0) &&
              (!rwLock.isWriteLockedByCurrentThread()) ) {
@@ -176,7 +183,10 @@ public class CMCSingletonContainer
      * @see com.sun.ejb.containers.CMCSingletonContainer#_getContext(EjbInvocation inv)
      * @param inv The current EjbInvocation that was passed to _getContext()
      */
+    @Override
     public void releaseContext(EjbInvocation inv) {
+        super.releaseContext(inv);
+
         Lock theLock = inv.getCMCLock();
         if (theLock != null) {
             theLock.unlock();

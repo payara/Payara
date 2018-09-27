@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.api;
@@ -75,11 +77,13 @@ public interface JavaEEResource {
 
     /**
      * Resource Info. Immutable.
+     * @return 
      */
     ResourceInfo getResourceInfo();
 
     /**
      * Resource type.  Defined above. Immutable.
+     * @return 
      */
     int getType();
 
@@ -97,6 +101,7 @@ public interface JavaEEResource {
      * Add a property. Underlying set is keyed by
      * property name.  The new property overrides any
      * existing property with same name.
+     * @param property
      */
     void addProperty(ResourceProperty property);
 
@@ -104,6 +109,7 @@ public interface JavaEEResource {
      * Remove a property. Underlying set is keyed by
      * property name.
      *
+     * @param property
      * @return true if property was removed, false if
      *         property was not found
      */
@@ -112,6 +118,7 @@ public interface JavaEEResource {
     /**
      * Get a property with the given name.
      *
+     * @param propertyName
      * @return ResourceProperty or null if not found.
      */
     ResourceProperty getProperty(String propertyName);
@@ -120,16 +127,40 @@ public interface JavaEEResource {
      * Create a new resource with the given name
      * that has the same attribute and property
      * settings as the invoked object.
+     * @param resourceInfo
+     * @return 
      */
     JavaEEResource makeClone(ResourceInfo resourceInfo);
 
     // START OF IASRI #4626188
+    /**
+     * Sets whether the resource is enabled.
+     * <p>
+     * A resource can exist but be disabled, in which case references if an application is deployed that references it
+     * will deploy without errors, but when it is looked up a {@link javax.naming.NamingException} will be thrown
+     * @param value 
+     */
     void setEnabled(boolean value);
 
+    /**
+     * Checks whether the resource is enabled.
+     * <p>
+     * A resource can exist but be disabled, in which case references if an application is deployed that references it
+     * will deploy without errors, but when it is looked up a {@link javax.naming.NamingException} will be thrown
+     * @return 
+     */
     boolean isEnabled();
 
+    /**
+     * Sets description of the resource
+     * @param value 
+     */
     void setDescription(String value);
 
+    /**
+     * Gets description of the resource
+     * @return 
+     */
     String getDescription();
     // END OF IASRI #4626188
 }

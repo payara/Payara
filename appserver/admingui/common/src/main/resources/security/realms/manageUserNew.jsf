@@ -64,7 +64,7 @@
         setPageSessionAttribute(key="emptyPswdMsg", value="$resource{i18n.msg.JS.manageUser.setEmptyPassword}")
     />
      </event>
-            <sun:form id="propertyForm">
+            <sun:form id="propertyForm" autoComplete="off">
 #include "/common/shared/alertMsg.inc"                
                 <!-- Page Title -->
                 <sun:title id="propertyContentPage" title="$resource{i18nc.manageUsers.NewPageTitle}" 
@@ -114,7 +114,7 @@
                             </sun:property>
 
                             <sun:property id="newPasswordProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.manageUsers.NewPassword}">
-                                <sun:passwordField id="NewPassword"  columns="$int{25}" text="#{requestScope.password}"  >
+                                <sun:passwordField id="NewPassword"  name="password" columns="$int{25}" text="#{requestScope.password}"  >
                                     <!afterCreate
                                         getClientId(component="$this{component}" clientId=>$page{ps1});
                                     />

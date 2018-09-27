@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation]
 
 package com.sun.jts.CosTransactions;
 import java.lang.InterruptedException;
@@ -91,7 +91,7 @@ import com.sun.logging.LogDomains;
 
 public class RWLock {
 
-  private static Logger _logger = LogDomains.getLogger(RWLock.class, LogDomains.TRANSACTION_LOGGER, false);
+  private static Logger _logger = LogDomains.getLogger(RWLock.class, LogDomains.TRANSACTION_LOGGER);
 
   int currentReaders;
   int pendingReaders;

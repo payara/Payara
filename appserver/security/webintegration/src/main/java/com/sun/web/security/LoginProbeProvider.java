@@ -48,13 +48,15 @@ import org.glassfish.external.probe.provider.annotations.ProbeProvider;
  *
  * @author nithyasubramanian
  */
-@ProbeProvider(moduleProviderName="glassfish",moduleName="security",probeProviderName="login" )
+@ProbeProvider(moduleProviderName = "glassfish", moduleName = "security", probeProviderName = "login")
 public class LoginProbeProvider {
-    
-    @Probe(name="loginSuccessfulEvent")
-    public void loginSuccessfulEvent(@ProbeParam("username") String username){}
-    
-    @Probe(name="loginFailedEvent")
-    public void loginFailedEvent(@ProbeParam("username") String username){}
+
+    @Probe(name = "loginSuccessfulEvent")
+    public void loginSuccessfulEvent(@ProbeParam("username") String username) {
+    }
+
+    @Probe(name = "loginFailedEvent")
+    public void loginFailedEvent(@ProbeParam("username") String username) {
+    }
 
 }

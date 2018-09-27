@@ -159,7 +159,6 @@
       </monitoring-service>
       <java-config debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=${SUSPEND},address=9009" system-classpath="" classpath-suffix="">
         <jvm-options>-javaagent:${com.sun.aas.installRoot}/lib/monitor/btrace-agent.jar=dumpClasses=true,dumpDir=${java.io.tmpdir},debug=false,unsafe=true</jvm-options>
-        <jvm-options>-XX:MaxPermSize=192m</jvm-options>
         <jvm-options>-client</jvm-options>
         <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
         <jvm-options>-XX:+LogVMOutput</jvm-options>

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package com.sun.enterprise.web;
 
@@ -77,6 +77,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -174,7 +175,8 @@ public class VirtualServer extends StandardHost
     /**
      * Default constructor that simply gets a handle to the web container
      * subsystem's logger.
-     */
+     *///XXX: WebContainer.createHost is the only time many of the set methods in Virtual Server
+    // are used, they might be movable to the constuctor or injected
     public VirtualServer() {
         origPipeline = pipeline;
         vsPipeline = new VirtualServerPipeline(this);
@@ -291,6 +293,7 @@ public class VirtualServer extends StandardHost
     /**
      * Return the virtual server identifier.
      */
+    @Override
     public String getID() {
         return _id;
     }
@@ -300,6 +303,7 @@ public class VirtualServer extends StandardHost
      *
      * @param id New identifier for this virtual server
      */
+    @Override
     public void setID(String id) {
         _id = id;
     }
@@ -348,6 +352,7 @@ public class VirtualServer extends StandardHost
 
     /**
      * Gets the config bean associated with this VirtualServer.
+     * @return 
      */
     public com.sun.enterprise.config.serverbeans.VirtualServer getBean(){
         return vsBean;
@@ -355,6 +360,7 @@ public class VirtualServer extends StandardHost
 
     /**
      * Sets the config bean for this VirtualServer
+     * @param vsBean
      */
     public void setBean(
             com.sun.enterprise.config.serverbeans.VirtualServer vsBean){
@@ -370,6 +376,7 @@ public class VirtualServer extends StandardHost
 
     /**
      * Sets the mime map for this VirtualServer
+     * @param mimeMap
      */
     public void setMimeMap(MimeMap mimeMap){
         this.mimeMap = mimeMap;
@@ -459,6 +466,7 @@ public class VirtualServer extends StandardHost
      * Adds the given valve to the currently active pipeline, keeping the
      * pipeline that is not currently active in sync.
      */
+    @Override
     public synchronized void addValve(GlassFishValve valve) {
         super.addValve(valve);
         if (pipeline == vsPipeline) {
@@ -472,7 +480,9 @@ public class VirtualServer extends StandardHost
     /**
      * Adds the given Tomcat-style valve to the currently active pipeline,
      * keeping the pipeline that is not currently active in sync.
+     * @param valve
      */
+    @Override
     public synchronized void addValve(Valve valve) {
         super.addValve(valve);
         if (pipeline == vsPipeline) {
@@ -487,6 +497,7 @@ public class VirtualServer extends StandardHost
      * Removes the given valve from the currently active pipeline, keeping the
      * valve that is not currently active in sync.
      */
+    @Override
     public synchronized void removeValve(GlassFishValve valve) {
         super.removeValve(valve);
         if (pipeline == vsPipeline) {
@@ -516,6 +527,8 @@ public class VirtualServer extends StandardHost
      * attribute is either "${standalone-web-module-name}" or
      * "${j2ee-app-name}:${web-module-uri}".
      *
+     * @param domain
+     * @param appRegistry
      * @return null if the default-web-module has not been specified or
      *              if the web module specified either could not be found or
      *              is disabled or does not specify this virtual server (if
@@ -613,6 +626,8 @@ public class VirtualServer extends StandardHost
      * and the modules within j2ee-application elements have been added to
      * this virtual server's list of modules (only then will one know whether
      * the user has already configured a default web module or not).
+     * @param webArchivist
+     * @return 
      */
     public WebModuleConfig createSystemDefaultWebModuleIfNecessary(
             WebArchivist webArchivist) {
@@ -659,6 +674,7 @@ public class VirtualServer extends StandardHost
      * Returns the id of the default web module for this virtual server
      * as specified in the 'default-web-module' attribute of the
      * 'virtual-server' element.
+     * @return 
      */
     protected String getDefaultWebModuleID() {
         String wmID = vsBean.getDefaultWebModule();
@@ -680,6 +696,8 @@ public class VirtualServer extends StandardHost
      * of the J2EE application and <code>b</code> is the name of the embedded
      * web module.
      *
+     * @param appsBean
+     * @param id
      * @return null if <code>id</code> does not identify a web module embedded
      * within a J2EE application.
      */
@@ -825,6 +843,12 @@ public class VirtualServer extends StandardHost
 
     /**
      * Configures this virtual server.
+     * @param vsID
+     * @param vsBean
+     * @param vsDocroot
+     * @param vsLogFile
+     * @param logServiceFile
+     * @param logLevel
      */
     public void configure(
                     String vsID,
@@ -912,79 +936,60 @@ public class VirtualServer extends StandardHost
         }
     }
 
-
-    /*
+    /**
      * Configures this virtual server with the specified log file.
      *
-     * @param logFile The value of the virtual server's log-file attribute in
-     * the domain.xml
+     * @param logFile the value of the virtual server's log-file attribute in
+     * the domain.xml.
+     * @param logLevel the verbosity of the logger.
+     * @param logServiceFile the file used for the log service.
      */
     synchronized void setLogFile(String logFile, String logLevel, String logServiceFile) {
-
-        /** catalina file logger code
-        String logPrefix = logFile;
-        String logDir = null;
-        String logSuffix = null;
-
-        if (logPrefix == null || logPrefix.equals("")) {
-            return;
-        }
-
-        int index = logPrefix.lastIndexOf(File.separatorChar);
-        if (index != -1) {
-            logDir = logPrefix.substring(0, index);
-            logPrefix = logPrefix.substring(index+1);
-        }
-
-        index = logPrefix.indexOf('.');
-        if (index != -1) {
-            logSuffix = logPrefix.substring(index);
-            logPrefix = logPrefix.substring(0, index);
-        }
-
-        logPrefix += "_";
-
-        FileLogger contextLogger = new FileLogger();
-        if (logDir != null) {
-            contextLogger.setDirectory(logDir);
-        }
-        contextLogger.setPrefix(logPrefix);
-        if (logSuffix != null) {
-            contextLogger.setSuffix(logSuffix);
-        }
-        contextLogger.setTimestamp(true);
-        contextLogger.setLevel(logLevel); 
-         */
-        
 
         /*
          * Configure separate logger for this virtual server only if
          * 'log-file' attribute of this <virtual-server> and 'file'
          * attribute of <log-service> are different (See 6189219).
          */
-        boolean noCustomLog = (logFile == null ||
-            (logServiceFile != null && new File(logFile).equals(
-                    new File(logServiceFile))));
+        boolean customLog = (logFile != null && logServiceFile != null
+                && !new File(logFile).equals(new File(logServiceFile)));
 
-        if ((fileLoggerHandler == null && noCustomLog) ||
-                (fileLoggerHandler != null && logFile != null &&
-                logFile.equals(fileLoggerHandler.getLogFile()))) {
+        boolean logFileChanged = logFile != null
+                && ((fileLoggerHandler != null && !logFile.equals(fileLoggerHandler.getLogFile()))
+                || fileLoggerHandler == null);
+
+        /*
+         * Exit early if the log file isn't being changed.
+         */
+        if (!logFileChanged) {
             return;
         }
 
-        Logger newLogger = null;
-        FileLoggerHandler oldHandler = fileLoggerHandler;
-        //remove old handler
-        if (oldHandler != null) {
-            _logger.removeHandler(oldHandler);
+        // As it is being changed, close the old file handler
+        if (fileLoggerHandler != null) {
+            _logger.removeHandler(fileLoggerHandler);
+            close(fileLoggerHandler);
+            fileLoggerHandler = null;
         }
 
-        if (noCustomLog) {
-            fileLoggerHandler = null;
+        // Store new logger to replace current one
+        Logger newLogger = null;
+
+        /*
+         * If the file is being changed to the log service file, reset the logger.
+         */
+        if (!customLog) {
             newLogger = _logger;
+            for (Handler h : _logger.getHandlers()) {
+                newLogger.removeHandler(h);
+            }
+            newLogger.setUseParentHandlers(true);
         } else {
-            // append the _logger name with "._vs.<virtual-server-id>"
-            String lname = _logger.getName() + "._vs." + getID();
+            // append the _logger name with "._vs.<virtual-server-id>" if it doesn't already have it
+            String lname = _logger.getName();
+            if (!lname.endsWith("._vs." + getID())) {
+                lname = _logger.getName() + "._vs." + getID();
+            }
             newLogger = LogManager.getLogManager().getLogger(lname);
             if (newLogger == null) {
                 newLogger = new Logger(lname, null) {
@@ -997,7 +1002,7 @@ public class VirtualServer extends StandardHost
                                 record.setResourceBundle(bundle);
                             }
                         }
-                        record.setThreadID((int)Thread.currentThread().getId());
+                        record.setThreadID((int) Thread.currentThread().getId());
                         super.log(record);
                     }
 
@@ -1011,7 +1016,7 @@ public class VirtualServer extends StandardHost
                     public synchronized void addHandler(Handler handler) {
                         super.addHandler(handler);
                         if (handler instanceof FileLoggerHandler) {
-                            ((FileLoggerHandler)handler).associate();
+                            ((FileLoggerHandler) handler).associate();
                         }
                     }
 
@@ -1032,13 +1037,13 @@ public class VirtualServer extends StandardHost
                             }
                             if (hasHandler) {
                                 super.removeHandler(handler);
-                                ((FileLoggerHandler)handler).disassociate();
+                                ((FileLoggerHandler) handler).disassociate();
                             }
                         }
                     }
                 };
 
-                synchronized(Logger.class) {
+                synchronized (Logger.class) {
                     LogManager.getLogManager().addLogger(newLogger);
                 }
             }
@@ -1065,13 +1070,12 @@ public class VirtualServer extends StandardHost
             }
 
             // create and add new handler
-            fileLoggerHandler = fileLoggerHandlerFactory.getHandler(logServiceFile);
-            newLogger.addHandler(fileLoggerHandler);            
+            fileLoggerHandler = fileLoggerHandlerFactory.getHandler(logFile);
+            newLogger.addHandler(fileLoggerHandler);
             newLogger.setUseParentHandlers(false);
         }
 
         setLogger(newLogger, logLevel);
-        close(oldHandler);
     }
 
     /**
@@ -1628,6 +1632,11 @@ public class VirtualServer extends StandardHost
         }
     }
 
+    /**
+     * Sets all the monitoring probes used in the virtual server
+     * @param globalAccessLoggingEnabled
+     * @see org.glassfish.grizzly.http.HttpProbe
+     */
     void addProbes(boolean globalAccessLoggingEnabled) {
         for (final NetworkListener listener : getGrizzlyNetworkListeners()) {
             try {
@@ -1902,6 +1911,7 @@ public class VirtualServer extends StandardHost
         }
     }
 
+    
     void setServerContext(ServerContext serverContext) {
         this.serverContext = serverContext;
     }
@@ -1910,10 +1920,18 @@ public class VirtualServer extends StandardHost
         this.serverConfig = serverConfig;
     }
 
+    /**
+     * Sets the grizzly service to be used
+     * @param grizzlyService 
+     */
     void setGrizzlyService(GrizzlyService grizzlyService) {
         this.grizzlyService = grizzlyService;
     }
 
+    /**
+     * Sets the Web Container for the virtual server
+     * @param webContainer 
+     */
     void setWebContainer(WebContainer webContainer) {
         this.webContainer = webContainer;
     }
@@ -1930,6 +1948,7 @@ public class VirtualServer extends StandardHost
      *
      * @param docRoot the docroot of this <tt>VirtualServer</tt>.
      */
+    @Override
     public void setDocRoot(File docRoot) {
         this.setAppBase(docRoot.getPath());
     }
@@ -1937,6 +1956,7 @@ public class VirtualServer extends StandardHost
     /**
      * Gets the docroot of this <tt>VirtualServer</tt>.
      */
+    @Override
     public File getDocRoot() {
         return new File(getAppBase());
     }
@@ -1961,6 +1981,7 @@ public class VirtualServer extends StandardHost
      * @return the collection of <tt>WebListener</tt> instances from which
      * this <tt>VirtualServer</tt> receives requests.
      */
+    @Override
     public Collection<WebListener> getWebListeners() {
         return listeners;
     }
@@ -1971,7 +1992,9 @@ public class VirtualServer extends StandardHost
      *
      * <p>If this <tt>VirtualServer</tt> has already been started, the
      * given <tt>context</tt> will be started as well.
+     * @throws org.glassfish.embeddable.GlassFishException
      */
+    @Override
     public void addContext(Context context, String contextRoot)
         throws ConfigException, GlassFishException {
 
@@ -2166,7 +2189,9 @@ public class VirtualServer extends StandardHost
     /**
      * Stops the given <tt>context</tt> and removes it from this
      * <tt>VirtualServer</tt>.
+     * @throws org.glassfish.embeddable.GlassFishException
      */
+    @Override
     public void removeContext(Context context) throws GlassFishException {
         ActionReport report = services.getService(ActionReport.class, "plain");
         Deployment deployment = services.getService(Deployment.class);
@@ -2222,6 +2247,7 @@ public class VirtualServer extends StandardHost
     /**
      * Finds the <tt>Context</tt> registered at the given context root.
      */
+    @Override
     public Context getContext(String contextRoot) {
         if (!contextRoot.startsWith("/")) {
             contextRoot = "/"+contextRoot;
@@ -2233,6 +2259,7 @@ public class VirtualServer extends StandardHost
      * Gets the collection of <tt>Context</tt> instances registered with
      * this <tt>VirtualServer</tt>.
      */
+    @Override
     public Collection<Context> getContexts() {
         Collection<Context> ctxs = new ArrayList<Context>();
         for (Container container : findChildren()) {
@@ -2250,6 +2277,7 @@ public class VirtualServer extends StandardHost
      * <p>In order for the given configuration to take effect, this
      * <tt>VirtualServer</tt> may be stopped and restarted.
      */
+    @Override
     public void setConfig(VirtualServerConfig config) 
         throws ConfigException {
         
@@ -2275,6 +2303,7 @@ public class VirtualServer extends StandardHost
     /**
      * Gets the current configuration of this <tt>VirtualServer</tt>.
      */
+    @Override
     public VirtualServerConfig getConfig() {
         return config;
     }
@@ -2295,20 +2324,22 @@ public class VirtualServer extends StandardHost
 
         Map<String, String> servlets = facade.getAddedServlets();
         Map<String, String[]> mappings = facade.getServletMappings();
-        List<String> listeners = facade.getListeners();
+        List<String> flisteners = facade.getListeners();
         Map<String, String> filters = facade.getAddedFilters();
         Map<String, String> servletNameFilterMappings = facade.getServletNameFilterMappings();
         Map<String, String> urlPatternFilterMappings = facade.getUrlPatternFilterMappings();
 
-        if (!filters.isEmpty() || !listeners.isEmpty() || !servlets.isEmpty()) {
+        if (!filters.isEmpty() || !flisteners.isEmpty() || !servlets.isEmpty()) {
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, LogFacade.MODIFYING_WEB_XML, file.getAbsolutePath());
             }
 
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            dbFactory.setValidating(true);
+            dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = null;
-            Element webapp = null;
+            Document doc;
+            Element webapp;
 
             if ((file != null) && (file.exists())) {
                 doc = dBuilder.parse(file);
@@ -2478,7 +2509,7 @@ public class VirtualServer extends StandardHost
                 }
             }
 
-            for (String listenerStr : listeners) {
+            for (String listenerStr : flisteners) {
                 Element listener = doc.createElement("listener");
                 Element listenerClass = doc.createElement("listener-class");
                 listenerClass.setTextContent(listenerStr);

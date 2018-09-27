@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -50,7 +51,6 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>amx-tests</artifactId>
-    <packaging>jar</packaging>
     <name>amx-tests</name>
     <description>AMX end to end tests</description>
     
@@ -76,8 +76,6 @@
 	       <groupId>org.apache.maven.plugins</groupId>
 	       <artifactId>maven-compiler-plugin</artifactId>
 	       <configuration>
-	         <source>1.5</source>
-	         <target>1.5</target>
 	         <compilerArgument>-Xlint:all</compilerArgument>
 	       </configuration>
 	     </plugin>
@@ -115,21 +113,18 @@
             <groupId>javax.management.j2ee</groupId>
             <artifactId>management-api</artifactId>
             <version>${management-api.version}</version>
-            <scope>compile</scope>
         </dependency>
 		
 		<dependency>
             <groupId>org.glassfish.external</groupId>
             <artifactId>jmxremote_optional-repackaged</artifactId>
             <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency> 
+        </dependency>
         
         <dependency>
             <groupId>org.glassfish.common</groupId>
             <artifactId>amx-core</artifactId>
             <version>${project.version}</version>
-            <scope>compile</scope>
         </dependency>
         
         <dependency>
@@ -151,8 +146,6 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.4</version>
-			<scope>compile</scope>
 		</dependency>
         
     </dependencies>

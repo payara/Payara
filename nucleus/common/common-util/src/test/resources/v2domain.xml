@@ -205,7 +205,6 @@
       <diagnostic-service capture-app-dd="true" capture-hadb-info="true" capture-install-log="true" capture-system-info="true" compute-checksum="true" max-log-entries="500" min-log-level="INFO" verify-config="true"/>
       <java-config classpath-suffix="" debug-enabled="false" debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9009" env-classpath-ignored="true" java-home="${com.sun.aas.javaRoot}" javac-options="-g" rmic-options="-iiop -poa -alwaysgenerate -keepgenerated -g" system-classpath="">
         <!-- various required jvm-options -->
-        <jvm-options>-XX:MaxPermSize=192m</jvm-options>
         <jvm-options>-client</jvm-options>
         <jvm-options>-Djava.endorsed.dirs=${com.sun.aas.installRoot}/lib/endorsed</jvm-options>
         <jvm-options>-Djava.security.policy=${com.sun.aas.instanceRoot}/config/server.policy</jvm-options>

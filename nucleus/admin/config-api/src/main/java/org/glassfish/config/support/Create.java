@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
@@ -54,7 +55,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * Create command annotation.
- *
+ * <p>
  * Methods annotated with this annotation delegates to the framework
  * to provide a generic administrative command that create configured
  * instances.
@@ -64,15 +65,15 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * configured interface.
  *
  * The annotated method must follow one of the two pattern :
- *    List<X> getXs();
+ *    {@code List<X> getXs();}
  * or
- *    void setX(X x);
+ *    {@code void setX(X x);}
  *
- * the name of the method is immaterial, only the generic type of the
+ * The name of the method is immaterial, only the generic type of the
  * returned List or the single parameter of the setter method are used
  * to determine the type of configured instance the command will create.
  *
- * the resolver is used to find which instance of the parent type should
+ * The resolver is used to find which instance of the parent type should
  * be used to add the newly created child. The resolver can also
  * be annotated with {@link org.glassfish.api.Param} to get parameters
  * passed to the command invocation (like a name or a target parameter).
@@ -90,7 +91,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *
  * The {@link CreationDecorator} will be looked up by its type and
  * normal injection or parameter injection can happen.
- *
+ * <p>
  * Internationalization of generic commands follow the same rule as
  * described in the {@link AdminCommand} javadocs. The {@link I18n}
  * annotation referenced from this annotation will be used as the
@@ -104,31 +105,31 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * Sometimes, the @Create annotation cannot be used in the parent
  * configuration object because the parent cannot have a direct
  * reference its children types.
- *
+ * <p>
  * For instance, if you have a declaration like
  * <code>
- *     public interface ParentContainer {
- *      @Element("*)
- *      List<ParentConfigType> children();
+ *     public interface ParentContainer { 
+ *      &#64Element("*)
+ *      List&gt;ParentConfigType&lt; children();
  *     }
  * </code>
- *
+ * </p>
  * you cannot use the @Create annotation in such declaration because
  * you do not know which subtypes of ParentConfigType will exist.
  *
  * In such cases, you should place the @Create on the child type
  * and use the @Decorate annotation alongside to specify the parent's
  * method used to add the element to the parent.
- *
+ * <p>
  * <code>
- *     @Create(....)
- *     @Decorate(parentType=ParentContainer.class, methodName="children",
+ *     &#64Create(....)
+ *     &#64Decorate(parentType=ParentContainer.class, methodName="children",
  *      with={Create.class})
  *     public interface SomeChild extends ParentConfigType {
  *      ...
  *     }
  * </code>
- *
+ * </p>
  * @author Jerome Dochez
  */
 @Retention(RUNTIME)

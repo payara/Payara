@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.mbeanserver;
 
 import java.lang.reflect.InvocationHandler;
@@ -249,10 +251,10 @@ public class AdminAuthorizedMBeanServer {
      * to the real MBeanServer.
      * 
      * @param mbs the real MBeanServer to which to delegate
+     * @param isInstance
      * @return the security-checking wrapper around the MBeanServer
      */
-    public static MBeanServerForwarder newInstance(final MBeanServer mbs, final boolean isInstance,
-            final BootAMX bootAMX) {
+    public static MBeanServerForwarder newInstance(final MBeanServer mbs, final boolean isInstance) {
         final AdminAuthorizedMBeanServer.Handler handler = new AdminAuthorizedMBeanServer.Handler(mbs, isInstance);
        
         return (MBeanServerForwarder) Proxy.newProxyInstance(

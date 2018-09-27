@@ -36,9 +36,14 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.testing;
+
+import javax.json.Json;
+import javax.json.JsonValue;
 
 public class StringValue extends ScalarValue {
     private String value = "";
@@ -57,9 +62,9 @@ public class StringValue extends ScalarValue {
     }
 
     @Override
-    Object getJsonValue() throws Exception {
+    JsonValue getJsonValue() throws Exception {
         assertJsonable();
-        return getValue();
+        return Json.createValue(getValue());
     }
 
     @Override

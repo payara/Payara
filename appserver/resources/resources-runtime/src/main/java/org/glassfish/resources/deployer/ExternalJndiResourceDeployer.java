@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.deployer;
@@ -112,6 +114,7 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
         ExternalJndiResource jndiRes =
                 (ExternalJndiResource) resource;
@@ -122,6 +125,7 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void deployResource(Object resource) throws Exception {
 
         ExternalJndiResource jndiRes =
@@ -143,6 +147,7 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
         ExternalJndiResource jndiRes =
                 (ExternalJndiResource) resource;
@@ -153,6 +158,7 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void undeployResource(Object resource)
             throws Exception {
 
@@ -174,6 +180,7 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void redeployResource(Object resource)
             throws Exception {
 
@@ -184,6 +191,7 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean handles(Object resource) {
         return resource instanceof ExternalJndiResource;
     }
@@ -191,6 +199,7 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
     /**
      * @inheritDoc
      */
+    @Override
     public boolean supportsDynamicReconfiguration() {
         return false;
     }
@@ -198,6 +207,7 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
     /**
      * @inheritDoc
      */
+    @Override
     public Class[] getProxyClassesForDynamicReconfiguration() {
         return new Class[0];
     }
@@ -206,6 +216,7 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void enableResource(Object resource) throws Exception {
         deployResource(resource);
     }
@@ -213,6 +224,7 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void disableResource(Object resource) throws Exception {
         undeployResource(resource);
     }
@@ -223,6 +235,7 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
      * deployer to handle resource events.
      *
      * @param extJndiRes external jndi resource
+     * @param resourceInfo Information about the resource
      */
     public void installExternalJndiResource(org.glassfish.resources.beans.ExternalJndiResource extJndiRes, ResourceInfo resourceInfo) {
 
@@ -343,6 +356,7 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
      * external-jndi  j2ee resource.
      *
      * @param rbean external-jndi-resource config bean
+     * @param resourceInfo
      * @return a new instance of j2ee external jndi resource
      */
     public static org.glassfish.resources.api.JavaEEResource toExternalJndiJavaEEResource(
@@ -379,6 +393,7 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource) {
         if (handles(resource)) {
             if (!postApplicationDeployment) {
@@ -391,6 +406,7 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void validatePreservedResource(Application oldApp, Application newApp, Resource resource,
                                           Resources allResources)
             throws ResourceConflictException {

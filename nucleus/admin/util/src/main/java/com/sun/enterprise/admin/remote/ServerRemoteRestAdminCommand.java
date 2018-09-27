@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.remote;
 
@@ -52,7 +53,6 @@ import java.util.logging.Logger;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.security.services.impl.JCEKSDomainPasswordAliasStore;
 
 /**
  * RemoteAdminCommand which is sent from a server (DAS or instance).
@@ -73,14 +73,14 @@ public class ServerRemoteRestAdminCommand extends RemoteRestAdminCommand {
 
     private ServerEnvironment serverEnv;
 
-    private SSLUtils _sslUtils = null;
+    private SSLUtils sslUtils = null;
     
     private DomainScopedPasswordAliasStore domainPasswordAliasStore = null;
 
     public ServerRemoteRestAdminCommand(ServiceLocator habitat, String name, String host, int port,
             boolean secure, String user, String password, Logger logger)
             throws CommandException {
-        super(name, host, port, secure, "admin", "", logger,false);
+        super(name, host, port, secure, "admin", "".toCharArray(), logger,false);
         completeInit(habitat);
     }
 
@@ -122,8 +122,7 @@ public class ServerRemoteRestAdminCommand extends RemoteRestAdminCommand {
             if (secureAdminInternalUser != null) {
                 try {
                     result = new AuthenticationInfo(secureAdminInternalUser.getUsername(), 
-                            new String(domainPasswordAliasStore.
-                                get(secureAdminInternalUser.getPasswordAlias())));
+                            domainPasswordAliasStore.get(secureAdminInternalUser.getPasswordAlias()));
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
@@ -156,9 +155,9 @@ public class ServerRemoteRestAdminCommand extends RemoteRestAdminCommand {
     }
 
     private synchronized SSLUtils sslUtils() {
-        if (_sslUtils == null) {
-            _sslUtils = habitat.getService(SSLUtils.class);
+        if (sslUtils == null) {
+            sslUtils = habitat.getService(SSLUtils.class);
         }
-        return _sslUtils;
+        return sslUtils;
     }
 }

@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.services.impl;
 
 import java.beans.PropertyChangeEvent;
@@ -72,7 +73,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
-import org.glassfish.grizzly.config.GrizzlyListener;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.impl.FutureImpl;
 import org.glassfish.grizzly.impl.SafeFutureImpl;
@@ -181,79 +181,57 @@ public class DynamicConfigListener implements ConfigListener {
             Lock portLock = null;
             try {
                 portLock = acquirePortLock(listener);
-                if (type == Changed.TYPE.ADD) {
-                    final int[] ports = portLock.getPorts();
-                    if (isAdminListener && ports[ports.length - 1] == -1) {
-                        return null;
-                    }
-
-                    final Future future = grizzlyService.createNetworkProxy(listener);
-                    if (future != null) {
-                        future.get(RECONFIG_LOCK_TIMEOUT_SEC, TimeUnit.SECONDS);
-                        grizzlyService.registerContainerAdapters();
-                    } else {
-                        logger.log(Level.FINE, "Skipping proxy registration for the listener {0}",
-                                listener.getName());
-                    }
-                } else if (type == Changed.TYPE.REMOVE) {
-                    if (!isAdminListener) {
-                        grizzlyService.removeNetworkProxy(listener);
-                    }
-                } else if (type == Changed.TYPE.CHANGE) {
-                    // If the listener is the admin listener
-                    if (isAdminListener) {
-                        final boolean dynamic = isAdminDynamic(changedProperties);
-                        // If configuration is dynamic then make the change
-                        if (dynamic) {
-                            GrizzlyProxy proxy = (GrizzlyProxy) grizzlyService.lookupNetworkProxy(listener);
-                            if (proxy != null) {
-                                GrizzlyListener netListener = proxy.getUnderlyingListener();
-                                netListener.processDynamicConfigurationChange(
-                                        grizzlyService.getHabitat(), changedProperties);
-                                return null;
-                            }
-                        }
-                        // Otherwise return the unprocessed event, describing the changed values.
-                        if (!isRedundantChange(changedProperties)) {
-                            StringBuilder eventsMessage = new StringBuilder();
-                            /* Add list of changed events to an events message.
-                            *  Usually only one message is sent to this method at a time, so the for loop should only run once,
-                            *  but it's there just in case.
-                            */
-                            for (PropertyChangeEvent event : changedProperties) {
-                                eventsMessage.append("\"" + event.getPropertyName() + "\" changed from \"" + event.getOldValue() + "\" to \"" + event.getNewValue() + "\".\n");
-                            }
-                            return new NotProcessed(listener.getThreadPool() + " attribute " + eventsMessage.toString());
-                        }
-                        return null;
-                    }
-
-                    // Only restart the network listener if something hasn't changed
-                    if (!isRedundantChange(changedProperties)) {
-                        MonitoringService ms = config.getMonitoringService();
-                        String level = ms.getModuleMonitoringLevels().getHttpService();
-                        
-                        // We only need to throw an unprocessed change event if monitoring is enabled for the HTTP service
-                        if (level != null && (!level.equals(OFF))) {
-                            String eventsMessage = "Monitoring statistics will be incorrect for " 
-                                    + listener.findHttpProtocolName() + " until restart due to changed attribute(s): ";
-                            
-                            // Add list of changed events. Usually only one message is sent to this method at a time, 
-                            // so the for loop should only run once, but it's there just in case.
-                            for (PropertyChangeEvent event : changedProperties) {
-                                eventsMessage += ("\"" + event.getPropertyName() + "\" changed from \"" 
-                                        + event.getOldValue() + "\" to \"" + event.getNewValue() + "\".\n");
-                            }
-                        
-                            // Still restart the network listener, as it's only the monitoring that breaks.
-                            grizzlyService.restartNetworkListener(listener, RECONFIG_LOCK_TIMEOUT_SEC, TimeUnit.SECONDS);
-                            
-                            return new NotProcessed(eventsMessage);
+                switch (type) {
+                    case ADD:
+                        final int[] ports = portLock.getPorts();
+                        if (isAdminListener && ports[ports.length - 1] == -1) {
+                            return null;
+                        }   final Future future = grizzlyService.createNetworkProxy(listener);
+                        if (future != null) {
+                            future.get(RECONFIG_LOCK_TIMEOUT_SEC, TimeUnit.SECONDS);
+                            grizzlyService.registerContainerAdapters();
                         } else {
-                            // Restart the network listener without throwing an unprocessed change
-                            grizzlyService.restartNetworkListener(listener, RECONFIG_LOCK_TIMEOUT_SEC, TimeUnit.SECONDS);
-                        }
-                    }
+                            logger.log(Level.FINE, "Skipping proxy registration for the listener {0}",
+                                    listener.getName());
+                        }   break;
+                    case REMOVE:
+                        if (!isAdminListener) {
+                            grizzlyService.removeNetworkProxy(listener);
+                        }   break;
+                    case CHANGE:
+                        // If the listener is the admin listener
+                        if (isAdminListener) {
+                            return null;
+                        }   
+
+                        // Only restart the network listener if something hasn't changed
+                        if (!isRedundantChange(changedProperties)) {
+                            MonitoringService ms = config.getMonitoringService();
+                            String level = ms.getModuleMonitoringLevels().getHttpService();
+                            
+                            // We only need to throw an unprocessed change event if monitoring is enabled for the HTTP service
+                            if (level != null && (!level.equals(OFF))) {
+                                String eventsMessage = "Monitoring statistics will be incorrect for "
+                                        + listener.findHttpProtocolName() + " until restart due to changed attribute(s): ";
+                                
+                                // Add list of changed events. Usually only one message is sent to this method at a time,
+                                // so the for loop should only run once, but it's there just in case.
+                                for (PropertyChangeEvent event : changedProperties) {
+                                    eventsMessage += ("\"" + event.getPropertyName() + "\" changed from \""
+                                            + event.getOldValue() + "\" to \"" + event.getNewValue() + "\".\n");
+                                }
+                                
+                                // Still restart the network listener, as it's only the monitoring that breaks.
+                                grizzlyService.restartNetworkListener(listener, RECONFIG_LOCK_TIMEOUT_SEC, TimeUnit.SECONDS);
+                                
+                                return new NotProcessed(eventsMessage);
+                            } else {
+                                // Restart the network listener without throwing an unprocessed change
+                                grizzlyService.restartNetworkListener(listener, RECONFIG_LOCK_TIMEOUT_SEC, TimeUnit.SECONDS);
+                            }
+                        }   break;
+                    default:
+                        break;
                 }
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Network listener configuration error. Type: " + type, e);

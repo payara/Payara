@@ -36,18 +36,23 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.composite.metadata;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.logging.Level;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import java.util.logging.Level;import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import org.glassfish.admin.rest.OptionsCapable;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.composite.CompositeUtil;
+import org.glassfish.admin.rest.utils.JsonUtil;
 import org.jvnet.hk2.config.Attribute;
 
 /**
@@ -58,7 +63,7 @@ public class ParamMetadata {
     private String name;
     private Type type;
     private String help;
-    private Object defaultValue;
+    private JsonValue defaultValue;
     private boolean readOnly = false;
     private boolean confidential = false;
     private boolean immutable = false;
@@ -120,7 +125,7 @@ public class ParamMetadata {
         return defaultValue;
     }
 
-    public void setDefaultValue(Object defaultValue) {
+    public void setDefaultValue(JsonValue defaultValue) {
         this.defaultValue = defaultValue;
     }
 
@@ -129,18 +134,20 @@ public class ParamMetadata {
         return "ParamMetadata{" + "name=" + name + ", type=" + getTypeString() + ", help=" + help + '}';
     }
 
-    public JSONObject toJson() throws JSONException {
-        JSONObject o = new JSONObject();
+    public JsonObject toJson() throws JsonException {
+        JsonObjectBuilder o = Json.createObjectBuilder();
 //        o.put("name", name);
-        o.put("type", getTypeString());
-        o.put("help", help);
-        Object defVal = (defaultValue != null) ? defaultValue : JSONObject.NULL;
-        o.put("default", defVal);
-        o.put("readOnly", readOnly);
-        o.put("confidential", confidential);
-        o.put("immutable", immutable);
-        o.put("createOnly", createOnly);
-        return o;
+        o.add("type", getTypeString());
+        if (help != null){
+            o.add("help", help);
+        }
+        JsonValue defVal = (defaultValue != null) ? defaultValue : JsonObject.NULL;
+        o.add("default", defVal);
+        o.add("readOnly", readOnly);
+        o.add("confidential", confidential);
+        o.add("immutable", immutable);
+        o.add("createOnly", createOnly);
+        return o.build();
     }
     
     protected String getTypeString() {
@@ -165,7 +172,7 @@ public class ParamMetadata {
      * @param annos
      * @return
      */
-    private Object getDefaultValue(Annotation[] annos) {
+    private JsonValue getDefaultValue(Annotation[] annos) {
         Object defval = null;
         if (annos != null) {
             for (Annotation annotation : annos) {
@@ -195,7 +202,11 @@ public class ParamMetadata {
                 }
             }
         }
-        return defval;
+        try {
+            return JsonUtil.getJsonValue(defval);
+        } catch (JsonException e){
+            return null;
+        }
     }
 
     private Object parseValue(String value) {

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jauth;
 
 import javax.security.auth.message.MessageInfo;
@@ -45,11 +45,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * An HTTP Servlet authentication parameter that encapsulates
- * HTTP Servlet request and response objects.
+ * An HTTP Servlet authentication parameter that encapsulates HTTP Servlet request and response objects.
  *
- * <p> HttpServletAuthParam may be created with null request or response
- * objects.  The following table describes when it is appropriate to pass null:
+ * <p>
+ * HttpServletAuthParam may be created with null request or response objects. The following table describes when it is
+ * appropriate to pass null:
  *
  * <pre>
  *                                        Request   Response
@@ -62,12 +62,11 @@ import javax.servlet.http.HttpServletResponse;
  * ServerAuthModule.secureResponse        null      non-null
  * </pre>
  *
- * <p> As noted above, in the case of
- * <code>ServerAuthModule.validateRequest</code> the module receives
- * a null response object.  If the implementation of
- * <code>validateRequest</code> encounters an authentication error,
- * it may construct the appropriate response object itself and set it
- * into the HttpServletAuthParam via the <code>setResponse</code> method.
+ * <p>
+ * As noted above, in the case of <code>ServerAuthModule.validateRequest</code> the module receives a null response
+ * object. If the implementation of <code>validateRequest</code> encounters an authentication error, it may construct
+ * the appropriate response object itself and set it into the HttpServletAuthParam via the <code>setResponse</code>
+ * method.
  *
  * @version %I%, %G%
  */
@@ -75,9 +74,9 @@ public class HttpServletAuthParam implements AuthParam {
 
     private HttpServletRequest request;
     private HttpServletResponse response;
-    //private static final MessageLayer layer =
-    //      new MessageLayer(MessageLayer.HTTP_SERVLET);
-    
+    // private static final MessageLayer layer =
+    // new MessageLayer(MessageLayer.HTTP_SERVLET);
+
     /**
      * Create an HttpServletAuthParam with HTTP request and response objects.
      *
@@ -85,19 +84,20 @@ public class HttpServletAuthParam implements AuthParam {
      * @param response the HTTP Servlet response object, or null.
      */
     public HttpServletAuthParam(HttpServletRequest request,
-				HttpServletResponse response) {
-	this.request = request;
-	this.response = response;
+            HttpServletResponse response) {
+        this.request = request;
+        this.response = response;
     }
 
     /**
      * Create an HttpServletAuthParam with MessageInfo object.
+     * 
      * @param messageInfo
      *
      */
     public HttpServletAuthParam(MessageInfo messageInfo) {
-        this.request = (HttpServletRequest)messageInfo.getRequestMessage();
-        this.response = (HttpServletResponse)messageInfo.getResponseMessage();
+        this.request = (HttpServletRequest) messageInfo.getRequestMessage();
+        this.response = (HttpServletResponse) messageInfo.getResponseMessage();
     }
 
     /**
@@ -106,7 +106,7 @@ public class HttpServletAuthParam implements AuthParam {
      * @return the HTTP Servlet request object, or null.
      */
     public HttpServletRequest getRequest() {
-	return this.request;
+        return this.request;
     }
 
     /**
@@ -115,48 +115,44 @@ public class HttpServletAuthParam implements AuthParam {
      * @return the HTTP Servlet response object, or null.
      */
     public HttpServletResponse getResponse() {
-	return this.response;
+        return this.response;
     }
 
     /**
      * Set a new HTTP Servlet response object.
      *
-     * <p> If a response has already been set (it is non-null),
-     * this method returns.  The original response is not overwritten.
+     * <p>
+     * If a response has already been set (it is non-null), this method returns. The original response is not overwritten.
      *
      * @param response the HTTP Servlet response object.
      *
      * @exception IllegalArgumentException if the specified response is null.
      */
     public void setResponse(HttpServletResponse response) {
-	if (response == null) {
-	    throw new IllegalArgumentException("invalid null response");
-	}
+        if (response == null) {
+            throw new IllegalArgumentException("invalid null response");
+        }
 
-	if (this.response == null) {
-	    this.response = response;
-	}
+        if (this.response == null) {
+            this.response = response;
+        }
     }
 
     /**
-     * Get a MessageLayer instance that identifies HttpServlet
-     * as the message layer.
+     * Get a MessageLayer instance that identifies HttpServlet as the message layer.
      *
-     * @return a MessageLayer instance that identifies HttpServlet
-     *          as the message layer.
+     * @return a MessageLayer instance that identifies HttpServlet as the message layer.
      */
-    //public MessageLayer getMessageLayer() {
-    //    return layer;
-    //};
+    // public MessageLayer getMessageLayer() {
+    // return layer;
+    // };
 
     /**
-     * Get the operation related to the encapsulated HTTP Servlet
-     * request and response objects.
+     * Get the operation related to the encapsulated HTTP Servlet request and response objects.
      *
-     * @return the operation related to the encapsulated request and response
-     *          objects, or null.
+     * @return the operation related to the encapsulated request and response objects, or null.
      */
     public String getOperation() {
-	return null;
+        return null;
     }
 }

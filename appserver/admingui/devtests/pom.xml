@@ -40,7 +40,8 @@
     holder.
 
 -->
-<!--"Portions Copyright [2016] [Payara Foundation]" -->
+<!--"Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]" -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -48,13 +49,12 @@
     <parent>
         <groupId>fish.payara.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>4.1</version>
+        <version>5.184-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>console-devtests</artifactId>
     <version>4.0</version>
-    <packaging>jar</packaging>
     <name>Admin Console Dev Tests</name>
     <description>This module contains the dev tests for the admin console</description>
 
@@ -166,7 +166,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.8.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -203,22 +202,19 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>${javase.version}</source>
+                    <target>${javase.version}</target>
                 </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-deploy-plugin</artifactId>
-                <version>2.5</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.7.1</version>
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.maven.surefire</groupId>
@@ -235,7 +231,6 @@
             </plugin>
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>2.4.1</version>
                 <executions>
                     <execution>
                         <id>auto-clean</id>
@@ -249,7 +244,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3.1</version>
                 <executions>
                     <execution>
                         <id>package-tests</id>

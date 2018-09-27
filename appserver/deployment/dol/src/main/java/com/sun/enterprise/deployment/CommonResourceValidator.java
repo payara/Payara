@@ -44,12 +44,12 @@ import java.util.Vector;
 
 import org.glassfish.deployment.common.Descriptor;
 
+//Created by IntelliJ IDEA.
 /**
- * Created by IntelliJ IDEA.
- * User: naman
- * Date: 24/5/12
- * Time: 11:23 AM
- * To change this template use File | Settings | File Templates.
+ * Class for holding JNDI information of a resource for comparison puporses
+ * @author: naman
+ * @since: 24/5/12 11:23 AM
+ * @see org.glassfish.resources.api.JavaEEResource
  */
 public class CommonResourceValidator {
 

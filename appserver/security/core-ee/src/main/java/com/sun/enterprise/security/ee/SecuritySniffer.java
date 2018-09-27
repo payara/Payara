@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+//Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.security.ee;
 
@@ -64,7 +64,7 @@ import javax.inject.Inject;
 /**
  * SecuritySniffer for security related activities
  */
-@Service(name="Security")
+@Service(name = "Security")
 public class SecuritySniffer extends GenericSniffer {
 
     final String[] containers = { "com.sun.enterprise.security.ee.SecurityContainer" };
@@ -73,62 +73,61 @@ public class SecuritySniffer extends GenericSniffer {
     private ServiceLocator habitat;
 
     private ServiceHandle<SecurityLifecycle> lifecycle;
-    
+
     @SuppressWarnings("unchecked")
-    private static final Class<? extends Annotation>[] ejbAnnotations = new Class[]{
-        javax.ejb.Stateless.class, javax.ejb.Stateful.class,
-        javax.ejb.MessageDriven.class, javax.ejb.Singleton.class
+    private static final Class<? extends Annotation>[] ejbAnnotations = new Class[] {
+            javax.ejb.Stateless.class, javax.ejb.Stateful.class,
+            javax.ejb.MessageDriven.class, javax.ejb.Singleton.class
     };
 
     public SecuritySniffer() {
         super("security", null, null);
     }
-    
-   /**
-     * Returns true if the passed file or directory is recognized by this
-     * instance.
+
+    /**
+     * Returns true if the passed file or directory is recognized by this instance.
      *
      * @param location the file or directory to explore
      * @return true if this sniffer handles this application type
      */
+    @Override
     public boolean handles(ReadableArchive location) {
         ArchiveType archiveType = location.getExtraData(ArchiveType.class);
         boolean rv = false;
-        if(archiveType != null) {
+        if (archiveType != null) {
             rv |= archiveType.equals(DOLUtils.warType()) || archiveType.equals(DOLUtils.earType())
                     || archiveType.equals(DOLUtils.ejbType());
         }
-        return rv || DeploymentUtils.isArchiveOfType(location, DOLUtils.warType(), habitat) || DeploymentUtils.isArchiveOfType(location, DOLUtils.earType(), habitat) || isJar(location);
+        return rv || DeploymentUtils.isArchiveOfType(location, DOLUtils.warType(), habitat)
+                || DeploymentUtils.isArchiveOfType(location, DOLUtils.earType(), habitat) || isJar(location);
     }
 
     /**
-     * Sets up the container libraries so that any imported bundle from the
-     * connector jar file will now be known to the module subsystem
+     * Sets up the container libraries so that any imported bundle from the connector jar file will now be known to the
+     * module subsystem
      * <p/>
-     * This method returns a {@link com.sun.enterprise.module.ModuleDefinition} for the module containing
-     * the core implementation of the container. That means that this module
-     * will be locked as long as there is at least one module loaded in the
-     * associated container.
+     * This method returns a {@link com.sun.enterprise.module.ModuleDefinition} for the module containing the core
+     * implementation of the container. That means that this module will be locked as long as there is at least one module
+     * loaded in the associated container.
      *
      * @param containerHome is where the container implementation resides
-     * @param logger        the logger to use
+     * @param logger the logger to use
      * @return the module definition of the core container implementation.
      * @throws java.io.IOException exception if something goes sour
      */
     @Override
-     public Module[] setup(String containerHome, Logger logger) throws IOException {
+    public Module[] setup(String containerHome, Logger logger) throws IOException {
         lifecycle = habitat.getServiceHandle(SecurityLifecycle.class);
         lifecycle.getService();
         return null;
     }
 
     /**
-     * Tears down a container, remove all imported libraries from the module
-     * subsystem.
+     * Tears down a container, remove all imported libraries from the module subsystem.
      */
     @Override
-     public void tearDown() {
-        if (lifecycle!=null) {
+    public void tearDown() {
+        if (lifecycle != null) {
             lifecycle.destroy();
         }
     }
@@ -136,11 +135,11 @@ public class SecuritySniffer extends GenericSniffer {
     /**
      * Returns the list of Containers that this Sniffer enables.
      * <p/>
-     * The runtime will look up each container implementing
-     * using the names provided in the habitat.
+     * The runtime will look up each container implementing using the names provided in the habitat.
      *
      * @return list of container names known to the habitat for this sniffer
      */
+    @Override
     public String[] getContainersNames() {
         return containers;
     }
@@ -149,21 +148,20 @@ public class SecuritySniffer extends GenericSniffer {
     public Class<? extends Annotation>[] getAnnotationTypes() {
         return ejbAnnotations;
     }
-    
+
     /**
      *
-     * This API is used to help determine if the sniffer should recognize
-     * the current archive.
-     * If the sniffer does not support the archive type associated with
-     * the current deployment, the sniffer should not recognize the archive.
+     * This API is used to help determine if the sniffer should recognize the current archive. If the sniffer does not
+     * support the archive type associated with the current deployment, the sniffer should not recognize the archive.
      *
      * @param archiveType the archive type to check
      * @return whether the sniffer supports the archive type
      *
      */
+    @Override
     public boolean supportsArchiveType(ArchiveType archiveType) {
         if (archiveType.toString().equals(ModuleType.WAR.toString()) ||
-            archiveType.toString().equals(ModuleType.EJB.toString())) {
+                archiveType.toString().equals(ModuleType.EJB.toString())) {
             return true;
         }
         return false;
@@ -173,11 +171,11 @@ public class SecuritySniffer extends GenericSniffer {
         // check for ejb-jar.xml
         boolean result = false;
         try {
-                result = location.exists("META-INF/ejb-jar.xml");
-            } catch (IOException ioEx) {
-                //TODO
-            }
+            result = location.exists("META-INF/ejb-jar.xml");
+        } catch (IOException ioEx) {
+            // TODO
+        }
         return result;
     }
-     
+
 }

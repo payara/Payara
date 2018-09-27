@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor.jvm;
 
@@ -51,29 +52,39 @@ import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
 
-/* jvm.operating-system */
-// v2 mbean: com.sun.appserv:name=operating-system,type=operating-system,category=monitor,server=server
-// v3 mbean: 
+/**
+ * Class providing the MBean for JVM operating system statistics
+ * <p>
+ * The MBean will be of the format
+ * {@code amx:pp=/mon/server-mon[server],type=operating-system-mon,name=jvm/operating-system}
+ * and can be enabled by turning the Jvm monitoring level in the admin console to LOW
+ * @since v2
+ */
 @AMXMetadata(type="operating-system-mon", group="monitoring")
 @ManagedObject
 @Description( "JVM Operating System Statistics" )
 public class JVMOSStatsProvider {
 
-    private OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+    private final OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
 
-    private StringStatisticImpl arch = new StringStatisticImpl("Architecture", "String",
+    private final StringStatisticImpl arch = new StringStatisticImpl("Architecture", "String",
                 "Operating system architecture" );
-    private CountStatisticImpl availableProcessors = new CountStatisticImpl(
+    private final CountStatisticImpl availableProcessors = new CountStatisticImpl(
             "AvailableProcessors", CountStatisticImpl.UNIT_COUNT,
                 "Number of processors available to the Java virtual machine" );
-    private StringStatisticImpl osName = new StringStatisticImpl("Name", "String",
+    private final StringStatisticImpl osName = new StringStatisticImpl("Name", "String",
                 "Operating system name" );
-    private StringStatisticImpl osVersion = new StringStatisticImpl("Version", "String",
+    private final StringStatisticImpl osVersion = new StringStatisticImpl("Version", "String",
                 "operating system version" );
     //private CountStatisticImpl sysLoadAverage = new CountStatisticImpl(
     //        "SystemLoadAverage", CountStatisticImpl.UNIT_COUNT,
     //            "System load average for the last minute" );
 
+    
+    /**
+     * Gets the operating system architecture i.e. i386 or amd64
+     * @return a {@link StringStatistic} with the name of architecture
+     */
     @ManagedAttribute(id="arch-current")
     @Description( "operating system architecture" )
     public StringStatistic getArch() {
@@ -81,6 +92,10 @@ public class JVMOSStatsProvider {
         return arch;
     }
 
+    /**
+     * Gets the number of processors available to the Java virtual machine
+     * @return a {@link CountStatistic} with the number of processors
+     */
     @ManagedAttribute(id="availableprocessors-count")
     @Description( "number of processors available to the Java virtual machine" )
     public CountStatistic getAvailableProcessors() {
@@ -88,6 +103,10 @@ public class JVMOSStatsProvider {
         return availableProcessors;
     }
 
+    /**
+     * Gets the operating system name i.e. Linux or Windows
+     * @return a {@link StringStatistic} with the name of the operating system
+     */
     @ManagedAttribute(id="name-current")
     @Description( "operating system name" )
     public StringStatistic getOSName() {
@@ -95,6 +114,10 @@ public class JVMOSStatsProvider {
         return osName;
     }
 
+    /**
+     * Gets the operating system version
+     * @return a {@link StringStatistic} with the operating system version
+     */
     @ManagedAttribute(id="version-current")
     @Description( "operating system version" )
     public StringStatistic getOSVersion() {

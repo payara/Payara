@@ -122,6 +122,17 @@ public class MapInjectionResolverTest {
         assertEquals(propsExpected, propsActual);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void parsePropertiesEscapeCharEqualsInValueTest() {
+        String propsStr = "connectionAttributes=;create\\\\=true";
+        try {
+            MapInjectionResolver.convertStringToProperties(propsStr, ':');
+        } catch (IllegalArgumentException e) {
+            assertEquals("Invalid property syntax, \"=\" in value: connectionAttributes=;create\\\\=true", e.getMessage());
+            throw e;
+        }
+    }
+
     @Test
     public void parsePropertiesQuoteTest() {
         String propsStr =

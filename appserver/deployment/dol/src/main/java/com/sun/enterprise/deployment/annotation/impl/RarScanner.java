@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment.annotation.impl;
@@ -52,11 +54,14 @@ import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
 
-
+/**
+ * Scanner for rar files to file subjars in a directory
+ */
 @Service(name="rar")
 @PerLookup
 public class RarScanner extends ModuleScanner<ConnectorDescriptor>{
 
+    @Override
     public void process(File archiveFile, ConnectorDescriptor desc,
         ClassLoader classLoader) throws IOException {
         if (AnnotationUtils.getLogger().isLoggable(Level.FINE)) {
@@ -70,6 +75,7 @@ public class RarScanner extends ModuleScanner<ConnectorDescriptor>{
 
             // add top level jars for scanning
             File[] jarFiles = archiveFile.listFiles(new FileFilter() {
+                 @Override
                  public boolean accept(File pathname) {
                      return (pathname.isFile() &&
                             pathname.getAbsolutePath().endsWith(".jar"));

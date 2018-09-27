@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld;
@@ -45,7 +47,6 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext; 
 
 import org.jboss.weld.bootstrap.api.SingletonProvider;
-import org.jboss.weld.bootstrap.api.helpers.TCCLSingletonProvider;
 
 /**
  * This is a bundle activator which is responsible for configuring Weld bundle
@@ -69,10 +70,12 @@ import org.jboss.weld.bootstrap.api.helpers.TCCLSingletonProvider;
  * @author Sanjeeb.Sahoo@Sun.COM
  */
 public class WeldActivator implements BundleActivator {
+    @Override
     public void start(BundleContext context) throws Exception {
       Util.initializeWeldSingletonProvider();
     }
 
+    @Override
     public void stop(BundleContext context) throws Exception {
         SingletonProvider.reset();
     }

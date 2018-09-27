@@ -59,8 +59,8 @@
         urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
         setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/web/configuration/threadPoolEdit.jsf?name=#{pageSession.encodedName}&cancelTo=#{pageSession.cancelTo}&configName=#{pageSession.encodedConfigName}");
         setPageSessionAttribute(key="childType" value="thread-pool");
-        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/thread-pools");
-        setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}/#{pageSession.Name}");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/thread-pools");
+        setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}/#{pageSession.encodedName}");
         setPageSessionAttribute(key="rest-api" value="true");
         gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}.json", valueMap="#{pageSession.valueMap}");
         //set the following for including buttons.inc

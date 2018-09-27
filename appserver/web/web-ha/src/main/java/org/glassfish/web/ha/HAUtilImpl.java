@@ -37,14 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.web.ha;
-
 
 import com.sun.enterprise.config.serverbeans.AvailabilityService;
 import com.sun.enterprise.config.serverbeans.Config;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.security.common.HAUtil;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Optional;
@@ -54,32 +53,39 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 
 /**
- *
+ * Implementations for high availability utils
+ * 
  * @author vbkumarjayanti
  */
 @Service
 @PerLookup
 public class HAUtilImpl implements HAUtil {
 
-    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Config config;
-    
-    @Inject @Optional
-    private GMSAdapterService gmsAdapterService;
 
+    @Inject
+    @Optional
+    HazelcastCore hazelcast;
+
+    @Override
     public String getClusterName() {
-        return (this.gmsAdapterService != null) ?
-            gmsAdapterService.getGMSAdapter().getClusterName() : null;
+        return hazelcast != null ? hazelcast.getMemberGroup() : null;
     }
+
+    @Override
     public String getInstanceName() {
-         return (this.gmsAdapterService != null) ?
-            gmsAdapterService.getGMSAdapter().getModule().getInstanceName(): null;
+        return hazelcast != null ? hazelcast.getMemberName() : null;
     }
+
+    @Override
     public boolean isHAEnabled() {
-         AvailabilityService availabilityService = config.getAvailabilityService();
-         if (availabilityService != null && gmsAdapterService != null && gmsAdapterService.isGmsEnabled()) {
-             return Boolean.valueOf(availabilityService.getAvailabilityEnabled());
-         }
-         return false;
+        AvailabilityService availabilityService = config.getAvailabilityService();
+        if (availabilityService != null && hazelcast != null && hazelcast.isEnabled()) {
+            return Boolean.valueOf(availabilityService.getAvailabilityEnabled());
+        }
+        
+        return false;
     }
 }

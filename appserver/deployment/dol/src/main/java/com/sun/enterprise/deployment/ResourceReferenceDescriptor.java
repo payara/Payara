@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment;
 
@@ -113,6 +113,10 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     boolean dropTablesAtUndeploy=false;
     String databaseVendorName = null;
     Properties schemaGeneratorProperties = null;
+    
+    // Create logger object per Java SDK 1.4 to log messages
+    // introduced Santanu De, Sun Microsystems, March 2002
+    static final Logger _logger = DOLUtils.getDefaultLogger();
 
     // START OF IASRI 4718559
     private static final LocalStringManagerImpl localStrings =
@@ -122,9 +126,9 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     /**
      * Construct a resource reference with the given name, description 
      * and type.
-     * @param the name of the reference
-     * @param the description
-     * @param the type of the resource reference.
+     * @param name the name of the reference
+     * @param description the description
+     * @param type the type of the resource reference.
      */
     public ResourceReferenceDescriptor(String name, String description, 
 					String type) {
@@ -136,18 +140,13 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
      * Default constructor.
      */
     public ResourceReferenceDescriptor() {
-    }
-    
-   // Create logger object per Java SDK 1.4 to log messages
-    // introduced Santanu De, Sun Microsystems, March 2002
-
-    static final Logger _logger = DOLUtils.getDefaultLogger();
-    
+    }    
 
     /**
      * Return the JNDI name of this resource reference.
      * @return the JNDI name of the resource reference.
      */
+    @Override
     public String getJndiName() {
         String jndiName = super.getValue();
         if (jndiName != null  && ! jndiName.equals("")) {
@@ -169,16 +168,19 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
         
     /** 
      * Set the JNDI name of this resource reference.
-     * @param the JNDI name of the resource reference.
+     * @param jndiName the JNDI name of the resource reference.
      */
+    @Override
     public void setJndiName(String jndiName) {
 	super.setValue(jndiName);
     }
 
+    @Override
     public String getInjectResourceType() {
         return rType;
     }
 
+    @Override
     public void setInjectResourceType(String resourceType) {
         rType = resourceType;
     }
@@ -204,7 +206,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     
     /** 
      * Set the res-sharing-scope of this resource reference.
-     * @param the sharing scope.
+     * @param ss the sharing scope.
      */
     public void setSharingScope(String ss) {
 	sharingScope = ss;
@@ -241,6 +243,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
      * is APPLICATION_AUTHORIZATION
      * @return the authorization type of the resource.
      */
+    @Override
     public String getAuthorization() {
 	if (this.authorization == null) {
 	    this.authorization = APPLICATION_AUTHORIZATION;
@@ -250,8 +253,9 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
 
     /** 
      * Sets the authorization type of this resource. 
-     * @param the authorization type.
+     * @param authorization the authorization type.
      */    
+    @Override
     public void setAuthorization(String authorization) {
 	this.authorization = authorization;
     }
@@ -267,7 +271,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     
     /** 
      * Sets the type of this resource.
-     * @param the type of the resource.
+     * @param type the type of the resource.
      */
     @Override
     public void setType(String type) {
@@ -291,10 +295,18 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
 	return dataSource;
     }
 
+    /**
+     * Return true is the resource is of {@link javax.xml.ws.WebServiceContext} type
+     * @return 
+     */
     public boolean isWebServiceContext() {
         return this.getType().equals(WEBSERVICE_CONTEXT_TYPE);
     }
     
+    /**
+     * Return true is the resource is of {@link org.omg.CORBA.ORB} type
+     * @return 
+     */
     public boolean isORB() {
     	return this.getType().equals(ORB_RESOURCE_TYPE);
     }
@@ -321,8 +333,9 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
 
 
     /**
-     * Return true if this resource is a URL object.
+     * Return true if this resource is a URL object
      * @return true if the resource is a URL object, false otherwise.
+     * @see java.net.URL
      */
     public boolean isURLResource() {
         return (this.getType() != null && this.getType().equals(URL_RESOURCE_TYPE));
@@ -350,7 +363,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     
     /**
      * Sets the identity used to authorize this resource.
-     * @param the principal.
+     * @param resourcePrincipal the principal.
      */
     public void setResourcePrincipal(ResourcePrincipal resourcePrincipal) {
 	this.resourcePrincipal = resourcePrincipal;
@@ -358,7 +371,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     
     /**
      * Sets the mail configuration information for this reference.
-     * @param the mail configuration object.
+     * @param mailConfiguration the mail configuration object.
      */
     public void setMailConfiguration(MailConfiguration mailConfiguration) {
 	this.mailConfiguration = mailConfiguration;
@@ -366,6 +379,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     
     /**
      * Add a new runtime property to this cmp resource
+     * @param newProp
      */
      public void addProperty(NameValuePairDescriptor newProp) {
 	 if (runtimeProps==null) {
@@ -403,6 +417,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     /**
      * Sets whether if automatic creation of tables for the CMP Beans is 
      * done at deployment time
+     * @param createTablesAtDeploy
      */
     public void setCreateTablesAtDeploy(boolean createTablesAtDeploy) {
         this.createTablesAtDeploy = createTablesAtDeploy;
@@ -419,6 +434,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     /**
      * Sets whether if automatic creation of tables for the CMP Beans is 
      * done at deployment time
+     * @param dropTablesAtUndeploy
      */
     public void setDropTablesAtUndeploy(boolean dropTablesAtUndeploy) {
         this.dropTablesAtUndeploy = dropTablesAtUndeploy;
@@ -433,6 +449,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     
     /**
      * Sets the database vendor name
+     * @param vendorName
      */
     public void setDatabaseVendorName(String vendorName) {
         this.databaseVendorName = vendorName;
@@ -447,6 +464,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     
     /**
      * Sets the override properties for the schema generation
+     * @param props
      */
     public void setSchemaGeneratorProperties(Properties props) {
         schemaGeneratorProperties = props;
@@ -454,7 +472,9 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     
     /**
      * Equality on name. 
+     * @param object
      */
+    @Override
     public boolean equals(Object object) {
 	if (object instanceof ResourceReference) {
 	    ResourceReference resourceReference = (ResourceReference) object;
@@ -463,6 +483,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
 	return false;
     }
     
+    @Override
     public int hashCode() {
         int result = NULL_HASH_CODE;
         String name = getName();
@@ -474,7 +495,9 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
 
     /** 
      * Returns a formatted string representing my state.
+     * @param toStringBuffer
      */
+    @Override
     public void print(StringBuffer toStringBuffer) {
         StringBuffer sb = toStringBuffer;
         sb.append("Res-Ref-Env-Property: ");
@@ -499,9 +522,9 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
         } else {
             sb.append("\nNo Runtime properties");
         }
-        sb.append("\nDatabase Vendor : " + databaseVendorName);
-        sb.append("\nCreate Tables at Deploy : " + createTablesAtDeploy);
-        sb.append("\nDelete Tables at Undeploy : " + dropTablesAtUndeploy);
+        sb.append("\nDatabase Vendor : ").append(databaseVendorName);
+        sb.append("\nCreate Tables at Deploy : ").append(createTablesAtDeploy);
+        sb.append("\nDelete Tables at Undeploy : ").append(dropTablesAtUndeploy);
         
         if (schemaGeneratorProperties!=null) {
             sb.append("\nSchema Generator Properties : ");

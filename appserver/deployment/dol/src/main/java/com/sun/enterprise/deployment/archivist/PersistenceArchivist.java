@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment.archivist;
@@ -58,13 +60,20 @@ import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.Map;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Enumeration;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 
+/**
+ * Class for processing JPA on a deployment
+ * 
+ * @see ACCPersistenceArchivist
+ * @see EarPersistenceArchivist
+ * @see ServerSidePersistenceArchivist
+ * @see WarPersistenceArchivist
+ */
 public abstract class PersistenceArchivist extends ExtensionsArchivist {
     protected static final String JAR_EXT = ".jar";
     protected static final char SEPERATOR_CHAR = '/';
@@ -77,6 +86,7 @@ public abstract class PersistenceArchivist extends ExtensionsArchivist {
   public PersistenceArchivist() {
   }
 
+    @Override
     public DeploymentDescriptorFile getStandardDDFile(RootDeploymentDescriptor descriptor) {
         if (standardDD == null) {
              standardDD = new PersistenceDeploymentDescriptorFile();
@@ -85,9 +95,11 @@ public abstract class PersistenceArchivist extends ExtensionsArchivist {
     }
 
     /**
+     * @param descriptor
      * @return the list of the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
+    @Override
     public List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles(RootDeploymentDescriptor descriptor) {
         return Collections.emptyList();
     }
@@ -104,7 +116,9 @@ public abstract class PersistenceArchivist extends ExtensionsArchivist {
         return null;  // return null so that the descritor does not get added twice to extensions
     }
 
-    /** @return true of given path is probable pu root */
+    /**
+     * @param path *  
+     * @return true if given path is probable pu root */
     public static boolean isProbablePuRootJar(String path) {
         return isJarEntry(path) && checkIsInRootOfArchive(path);
     }
@@ -153,6 +167,7 @@ public abstract class PersistenceArchivist extends ExtensionsArchivist {
         return persistenceUnitsDescriptor;
     }
 
+    @Override
     public <T extends RootDeploymentDescriptor> T getDefaultDescriptor() {
         return null;
     }
@@ -244,8 +259,11 @@ public abstract class PersistenceArchivist extends ExtensionsArchivist {
      * writes the deployment descriptors (standard and runtime)
      * to a JarFile using the right deployment descriptor path
      *
+     * @param main
+     * @param descriptor
      * @param in the input archive
      * @param out the abstract archive file to write to
+     * @throws java.io.IOException
      */
     @Override
     public void writeDeploymentDescriptors(Archivist main, BundleDescriptor descriptor, ReadableArchive in, WritableArchive out) throws IOException {

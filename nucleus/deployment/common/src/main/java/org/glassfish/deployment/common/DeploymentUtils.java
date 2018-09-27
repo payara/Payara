@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.common;
 
@@ -47,11 +48,10 @@ import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
-import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ArchiveDetector;
-import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.admin.ServerEnvironment;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.loader.util.ASClassLoaderUtil;
@@ -168,7 +168,7 @@ public class DeploymentUtils {
     /**
      * Returns the generated artifacts object from the specified deployment
      * context, creating it there if it does not already exist.
-     * @param app
+     * @param dc
      * @return
      */
     public static Artifacts generatedArtifacts(final DeploymentContext dc) {
@@ -318,7 +318,6 @@ public class DeploymentUtils {
         } else if (name.indexOf(';') != -1) {
             throw new IllegalArgumentException(localStrings.getLocalString("illegal_char_in_name", "Illegal character [{0}] in the name [{1}].", ";", name)); 
         }
-        return;
     }
 
     /**
@@ -383,10 +382,22 @@ public class DeploymentUtils {
         return getManifestLibraries(context.getSource(), manifest);
     }
 
+    /**
+     * Returns the URLs of libraries referenced in the manifest
+     * @param archive
+     * @return
+     * @throws IOException 
+     */
     public static List<URL> getManifestLibraries(ReadableArchive archive) throws IOException {
         return getManifestLibraries(archive, archive.getManifest());
     }
 
+    /**
+     * Returns the URLs of libraries referenced in the manifest
+     * @param archive
+     * @param manifest
+     * @return 
+     */
     private static List<URL> getManifestLibraries(ReadableArchive archive, Manifest manifest) {
         String appRootPath = null;
         ReadableArchive parentArchive = archive.getParentArchive();
@@ -467,7 +478,17 @@ public class DeploymentUtils {
             if (cluster != null) {
                 config = domain.getConfigs().getConfigByName(
                     cluster.getConfigRef());
+            } else {
+                DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
+                if (dg != null) {
+                    // get the first server in the group
+                    List<Server> servers = dg.getInstances();
+                    if (servers!= null && servers.size() >= 1) {
+                        config = servers.get(0).getConfig();
+                    }
+                }
             }
+            
         }
 
         if (config != null) {

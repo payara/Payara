@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.testing;
@@ -43,13 +45,16 @@ package org.glassfish.admin.rest.testing;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Map;
-
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 
 import static org.glassfish.admin.rest.testing.Common.*;
 
 public class ObjectValue extends Value {
     private boolean ignoreExtra;
+    private Map<String, Value> properties = new HashMap<String, Value>();
 
     ObjectValue() {
     }
@@ -66,8 +71,6 @@ public class ObjectValue extends Value {
     public ObjectValue ignoreExtra() {
         return ignoreExtra(true);
     }
-
-    private Map<String, Value> properties = new HashMap<String, Value>();
 
     Map<String, Value> getProperties() {
         return this.properties;
@@ -159,19 +162,19 @@ public class ObjectValue extends Value {
     }
 
     @Override
-    Object getJsonValue() throws Exception {
+    JsonValue getJsonValue() throws Exception {
         if (isIgnoreExtra()) {
             throw new IllegalStateException("Cannot be converted to json because ignoreExtra is true");
         }
-        JSONObject o = new JSONObject();
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
         for (Map.Entry<String, Value> p : getProperties().entrySet()) {
-            o.put(p.getKey(), p.getValue().getJsonValue());
+            objectBuilder.add(p.getKey(), p.getValue().getJsonValue());
         }
-        return o;
+        return objectBuilder.build();
     }
 
-    public JSONObject toJSONObject() throws Exception {
-        return (JSONObject) getJsonValue();
+    public JsonObject toJsonObject() throws Exception {
+        return (JsonObject) getJsonValue();
     }
 
     @Override

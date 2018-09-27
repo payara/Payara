@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -71,10 +71,8 @@ import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
 import com.sun.ejb.monitoring.stats.StatelessSessionBeanStatsProvider;
 import com.sun.enterprise.admin.monitor.callflow.ComponentType;
-import com.sun.enterprise.deployment.DescriptorConstants;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
-import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.security.SecurityManager;
 
 /** This class provides container functionality specific to stateless 
@@ -584,6 +582,10 @@ public class StatelessSessionContainer
 
             sc.setState(EJBContextImpl.BeanState.POOLED);
 
+            // prevent java.util.ConcurrentModificationException from JMS
+            // or others that hold on to invocation references, and thus possibly
+            // reference to the contexts that are out of scope
+            sc.resetResourceList();
             // Stateless beans cant have transactions across invocations
             sc.setTransaction(null);
             sc.touch();
@@ -779,8 +781,8 @@ public class StatelessSessionContainer
 
         public PoolProperties(EjbContainer ejbContainer, BeanPoolDescriptor beanPoolDes) {
 
-            maxWaitTimeInMillis = ejbContainer.getMaxWaitTimeInMillis();
-            if(!ejbContainer.getLimitInstancesEnabled()) {
+            maxWaitTimeInMillis = Integer.parseInt(ejbContainer.getMaxWaitTimeInMillis());
+            if(!Boolean.parseBoolean(ejbContainer.getLimitInstancesEnabled())) {
                 maxWaitTimeInMillis = -1;
             }
             maxPoolSize = Integer.parseInt(ejbContainer.getMaxPoolSize());

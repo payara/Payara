@@ -265,6 +265,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
         _logger.log(Level.FINE, "[MessageBeanContainer] registered monitorable");
     }
 
+    @Override
     protected EjbMonitoringStatsProvider getMonitoringStatsProvider(
             String appName, String modName, String ejbName) {
         return new MessageDrivenBeanStatsProvider(getContainerId(), appName, modName, ejbName);
@@ -524,6 +525,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
 
     private class MessageBeanContextFactory implements ObjectFactory {
 
+        @Override
         public Object create(Object param) {
             try {
                 return createMessageDrivenEJB();
@@ -532,6 +534,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
             }
         }
 
+        @Override
         public void destroy(Object obj) {
 
             MessageBeanContextImpl beanContext = (MessageBeanContextImpl) obj;
@@ -586,6 +589,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
 
     }
 
+    @Override
     protected ComponentContext _getContext(EjbInvocation inv) {
         MessageBeanContextImpl context = null;
         try {
@@ -600,6 +604,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
     /**
      * Return instance to a pooled state.
      */
+    @Override
     public void releaseContext(EjbInvocation inv) {
         MessageBeanContextImpl beanContext = (MessageBeanContextImpl) inv.context;
 
@@ -629,6 +634,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
 **/
 
     // This particular postInvoke signature not used
+    @Override
     public void postInvoke(EjbInvocation inv) {
         throw new EJBException("postInvoke(Invocation) not supported "
                 + "in message-driven bean container");
@@ -639,6 +645,10 @@ public final class MessageBeanContainer extends BaseContainer implements Message
      * MessageBeanProtocalManager interface. *
      ****************************************************************/
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public MessageBeanListener createMessageBeanListener(ResourceHandle resource)
             throws ResourcesExceededException {
 
@@ -683,6 +693,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
         return new MessageBeanListenerImpl(this, resource);
     }
 
+    @Override
     public void destroyMessageBeanListener(MessageBeanListener listener) {
         synchronized (this) {
             numMessageBeanListeners_--;
@@ -695,11 +706,14 @@ public final class MessageBeanContainer extends BaseContainer implements Message
      *            method for javax.jms.MessageListener. Note that if the
      *            <code>method</code> is not one of the methods for message
      *            delivery, the behavior of this method is not defined.
+     * @return 
      */
+    @Override
     public boolean isDeliveryTransacted(Method method) {
         return containerStartsTx(method);
     }
 
+    @Override
     public BeanPoolDescriptor getPoolDescriptor() {
         return beanPoolDesc_;
     }
@@ -711,6 +725,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
      * @return an object implementing MessageEndpoint and the appropriate MDB view
      * @throws Exception
      */
+    @Override
     public Object createMessageBeanProxy(InvocationHandler handler) throws Exception {
 
         if (isNoMethodsListenerInterface(messageListenerType_)) {
@@ -844,19 +859,23 @@ public final class MessageBeanContainer extends BaseContainer implements Message
         }
     }
 
+    @Override
     protected void afterBegin(EJBContextImpl context) {
         // Message-driven Beans cannot implement SessionSynchronization!!
     }
 
+    @Override
     protected void beforeCompletion(EJBContextImpl context) {
         // Message-driven beans cannot implement SessionSynchronization!!
     }
 
+    @Override
     protected void afterCompletion(EJBContextImpl ctx, int status) {
         // Message-driven Beans cannot implement SessionSynchronization!!
     }
 
     // default
+    @Override
     public boolean passivateEJB(ComponentContext context) {
         return false;
     }
@@ -873,6 +892,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
      * instances.
      * @param deploy true if this method is called during application deploy
      */
+    @Override
     public void startApplication(boolean deploy) {
         super.startApplication(deploy);
 
@@ -998,6 +1018,7 @@ public final class MessageBeanContainer extends BaseContainer implements Message
             this.componentInvocation = componentInvocation;
         }
 
+        @Override
         public void run() {
             ClassLoader previousClassLoader = null;
             InvocationManager invocationManager = EjbContainerUtilImpl.getInstance().getInvocationManager();
@@ -1037,7 +1058,9 @@ public final class MessageBeanContainer extends BaseContainer implements Message
 
     /**
      * Called by BaseContainer during container shutdown sequence
+     * @param appBeingUndeployed
      */
+    @Override
     protected void doConcreteContainerShutdown(boolean appBeingUndeployed) {
         _logger.log(Level.FINE, "containers.mdb.shutdown_cleanup_start",
                 appEJBName_);
@@ -1063,6 +1086,10 @@ public final class MessageBeanContainer extends BaseContainer implements Message
      * We use the EjbInvocation manager's thread-specific state to track the
      * invocation across these three calls.
      * 
+     * @param method
+     * @param deliveryType
+     * @param txImported
+     * @param resourceHandle
      */
 
     public void beforeMessageDelivery(Method method, MessageDeliveryType deliveryType,

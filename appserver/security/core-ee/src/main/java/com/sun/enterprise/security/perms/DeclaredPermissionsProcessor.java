@@ -48,9 +48,9 @@ public class DeclaredPermissionsProcessor extends PermissionsProcessor {
 
     private PermissionCollection orginalDeclaredPc;
     private PermissionCollection declaredPc;
-    
-    public DeclaredPermissionsProcessor(SMGlobalPolicyUtil.CommponentType type, 
-            DeploymentContext dc, PermissionCollection declPc)  throws SecurityException {
+
+    public DeclaredPermissionsProcessor(SMGlobalPolicyUtil.CommponentType type, DeploymentContext dc, PermissionCollection declPc)
+            throws SecurityException {
         super(type, dc);
         orginalDeclaredPc = declPc;
         convertPathDeclaredPerms();
@@ -58,19 +58,19 @@ public class DeclaredPermissionsProcessor extends PermissionsProcessor {
 
     /**
      * get the declared permissions which have the file path adjusted for the right module
-     * @return  adjusted declared permissions
+     * 
+     * @return adjusted declared permissions
      */
     public PermissionCollection getAdjustedDeclaredPermissions() {
         return declaredPc;
     }
-    
-    //conver the path for permissions
+
+    // conver the path for permissions
     private void convertPathDeclaredPerms() throws SecurityException {
-        
-        //revise the filepermission's path
+
+        // revise the filepermission's path
         try {
-            declaredPc = 
-                processPermisssonsForPath(orginalDeclaredPc, context);
+            declaredPc = processPermisssonsForPath(orginalDeclaredPc, context);
         } catch (MalformedURLException e) {
             throw new SecurityException(e);
         }

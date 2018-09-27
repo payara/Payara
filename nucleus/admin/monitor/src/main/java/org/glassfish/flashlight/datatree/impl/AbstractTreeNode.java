@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package org.glassfish.flashlight.datatree.impl;
 
 import static com.sun.enterprise.util.StringUtils.ok;
@@ -46,6 +48,8 @@ import static com.sun.enterprise.util.SystemPropertyConstants.SLASH;
 import org.glassfish.flashlight.datatree.TreeNode;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,20 +62,18 @@ import java.util.regex.Pattern;
  * about dots, splitting strings, etc.  So we replace with ___MONDOT___
  */
 public abstract class AbstractTreeNode implements TreeNode, Comparable<TreeNode> {
-    protected Map<String, TreeNode> children =
-            new ConcurrentHashMap<String, TreeNode>();
+    protected Map<String, TreeNode> children = new ConcurrentHashMap<String, TreeNode>();
     // bnevins 6/25/2011  -- why is normalizedChildren static ?!?
-    private static Map<String, TreeNode> normalizedChildren =
-            new ConcurrentHashMap<String, TreeNode>();
+    private static Map<String, TreeNode> normalizedChildren = new ConcurrentHashMap<String, TreeNode>();
     protected String name;    // The node object itself
     protected String category;
     protected String description;
     protected boolean enabled = false;
-    private static String NAME_SEPARATOR = ".";
-    private static String REGEX = "(?<!\\\\)\\.";
+    private static final String NAME_SEPARATOR = ".";
+    private static final String REGEX = "(?<!\\\\)\\.";
     private TreeNode parent = null;
     // Special character Regex to be converted to .* for v2 compatibility
-    private String STAR = "*";
+    private static final String STAR = "*";
 
     @Override
     public String toString() {
@@ -86,10 +88,9 @@ public abstract class AbstractTreeNode implements TreeNode, Comparable<TreeNode>
 
     @Override
     public void setName(String aname) {
-
-        if (aname == null)
-            throw new RuntimeException("Flashlight-utils: Tree Node needs a"
-                    + " non-null name");
+        if (aname == null) {
+            throw new RuntimeException("Flashlight-utils: Tree Node needs a non-null name");
+        }
         name = encodeNodeName(aname);
     }
 
@@ -114,11 +115,7 @@ public abstract class AbstractTreeNode implements TreeNode, Comparable<TreeNode>
 
     @Override
     public TreeNode addChild(TreeNode newChild) {
-        if (newChild == null) {
-            return null;
-        }
-        else if (newChild.getName() == null) {
-            // log it and return null
+        if (newChild == null || newChild.getName() == null) {
             return null;
         }
         newChild.setParent(this);
@@ -128,12 +125,9 @@ public abstract class AbstractTreeNode implements TreeNode, Comparable<TreeNode>
 
     @Override
     public String getCompletePathName() {
-
         if (getParent() != null) {
-            return getParent().getCompletePathName()
-                    + this.NAME_SEPARATOR + getName();
-        }
-        else {
+            return getParent().getCompletePathName() + NAME_SEPARATOR + getName();
+        } else {
             return getName();
         }
     }
@@ -172,7 +166,6 @@ public abstract class AbstractTreeNode implements TreeNode, Comparable<TreeNode>
     }
 
     public Enumeration<TreeNode> getChildNodesImmutable() {
-
         return ((ConcurrentHashMap) children).elements();
     }
 
@@ -285,10 +278,7 @@ public abstract class AbstractTreeNode implements TreeNode, Comparable<TreeNode>
     }
 
     private String[] dropFirstStringToken(String[] token) {
-        if (token.length == 0) {
-            return null;
-        }
-        if (token.length == 1) {
+        if (token.length == 0 || token.length == 1) {
             return null;
         }
         String[] newToken = new String[token.length - 1];
@@ -304,13 +294,10 @@ public abstract class AbstractTreeNode implements TreeNode, Comparable<TreeNode>
      */
     @Override
     public List<TreeNode> traverse(boolean ignoreDisabled) {
-//        System.out.println ("Node: " + this.getName ()+ " is enabled "+isEnabled());
         List<TreeNode> list = new ArrayList<TreeNode>();
 
-        if (ignoreDisabled) {
-            if (!this.enabled) {
+        if (ignoreDisabled && !this.enabled) {
                 return list;
-            }
         }
         list.add(this);
 
@@ -342,12 +329,12 @@ public abstract class AbstractTreeNode implements TreeNode, Comparable<TreeNode>
 
         List<TreeNode> list = getNodesInternal(pattern, ignoreDisabled, gfv2Compatible);
 
-        if (list.size() <= 0)
+        if (list.isEmpty()) {
             list = getNodesInternal(pattern.replace("/", SLASH), ignoreDisabled, gfv2Compatible);
-
-        if (list.size() <= 0)
+        }
+        if (list.isEmpty()){
             list = getNodesInternal(decodeNameToDots(pattern), ignoreDisabled, gfv2Compatible);
-
+        }
         return list;
     }
 
@@ -366,25 +353,23 @@ public abstract class AbstractTreeNode implements TreeNode, Comparable<TreeNode>
                 String path = node.getCompletePathName();
                 String path2 = null;
 
-                if (path.indexOf("\\") >= 0)
+                if (path.contains("\\")){
                     path2 = path.replace("\\", "");
-
+                }
                 Matcher matcher = mPattern.matcher(path);
 
                 if (matcher.matches()) {
                     regexMatchedTree.add(node);
-                }
-                else if (path2 != null) {
+                } else if (path2 != null) {
                     Matcher matcher2 = mPattern.matcher(path2);
                     if (matcher2.matches()) {
                         regexMatchedTree.add(node);
                     }
                 }
             }
-        }
-        catch (java.util.regex.PatternSyntaxException e) {
+        } catch (java.util.regex.PatternSyntaxException e) {
             // log this
-            // e.printStackTrace ();
+            Logger.getLogger("FLASHLIGHT-TREENODE").log(Level.FINEST, "Unable to process Regex", e);
         }
         return regexMatchedTree;
     }
@@ -402,8 +387,7 @@ public abstract class AbstractTreeNode implements TreeNode, Comparable<TreeNode>
         // is too hassling
 
         String modifiedPattern = pattern.replaceAll("\\*", ":");
-        String regex = modifiedPattern.replaceAll(":", ".*");
-        return regex;
+        return modifiedPattern.replaceAll(":", ".*");
     }
 
     @Override
@@ -561,13 +545,13 @@ public abstract class AbstractTreeNode implements TreeNode, Comparable<TreeNode>
     }
 
     private static boolean hasDots(String s) {
-        if(s == null)
+        if(s == null) {
             return false;
-        if(s.indexOf(MONDOT) >= 0)
+        }
+        if(s.contains(MONDOT)) {
             return true;
-        if(s.indexOf(".") >= 0)
-            return true;
-        return false;
+        }
+        return s.contains(".");
     }
 
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.iiop.security;
 
 import java.security.AccessController;
@@ -45,48 +45,37 @@ import java.security.PrivilegedAction;
 import java.util.Hashtable;
 
 /**
- * This class that implements ConnectionExecutionContext that gets 
- * stored in Thread Local Storage. If the current thread creates
- * child threads, the context info that is  stored in the current 
- * thread is automatically propogated to the child threads.
+ * This class that implements ConnectionExecutionContext that gets stored in Thread Local Storage.
+ * If the current thread creates child threads, the context info that is stored in the current
+ * thread is automatically propagated to the child threads.
  * 
- * Two class methods serve as a convinient way to set/get the 
- * Context information within the current thread.   
- *
- * Thread Local Storage is a concept introduced in JDK1.2. So, it
- * will not work on earlier releases of JDK.
+ * Two class methods serve as a convenient way to set/get the Context information within the current
+ * thread.
  *
  * @see java.lang.ThreadLocal
  * @see java.lang.InheritableThreadLocal
  * 
  */
 public class ConnectionExecutionContext {
-    
-    public static final String IIOP_CLIENT_PER_THREAD_FLAG =
-        "com.sun.appserv.iiopclient.perthreadauth";
-    private static final boolean isPerThreadAuth;
 
-    static {
-       Boolean b  = (Boolean) AccessController.doPrivileged( new PrivilegedAction(){
-            @Override
-            public Object run() {
-                 return Boolean.valueOf(Boolean.getBoolean(IIOP_CLIENT_PER_THREAD_FLAG));
-            }
+    public static final String IIOP_CLIENT_PER_THREAD_FLAG = "com.sun.appserv.iiopclient.perthreadauth";
 
-       });
-       isPerThreadAuth = b.booleanValue();
-    }
+    private static final boolean isPerThreadAuth = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
+        @Override
+        public Boolean run() {
+            return Boolean.valueOf(Boolean.getBoolean(IIOP_CLIENT_PER_THREAD_FLAG));
+        }
 
-     //private static final InheritableThreadLocal connCurrent= new InheritableThreadLocal();
-    private static final ThreadLocal connCurrent= (isPerThreadAuth) ? new ThreadLocal() : new InheritableThreadLocal();
+    });
+
+    private static final ThreadLocal<Hashtable<String, Object>> currentContext = isPerThreadAuth ? new ThreadLocal<>()
+            : new InheritableThreadLocal<>();
 
     // XXX: Workaround for non-null connection object ri for local invocation.
     private static final ThreadLocal<Long> ClientThreadID = new ThreadLocal<Long>();
 
     public static Long readClientThreadID() {
-        Long ID = ClientThreadID.get();
-        //ClientThreadID.remove();
-        return ID;
+        return ClientThreadID.get();
     }
 
     public static void setClientThreadID(Long ClientThreadID) {
@@ -97,31 +86,31 @@ public class ConnectionExecutionContext {
         ClientThreadID.remove();
     }
 
-    /** 
-     * This method can be used to add a new hashtable for storing the 
-     * Thread specific context information. This method is useful to add a 
-     * deserialized Context information that arrived over the wire.
-     * @param A hashtable that stores the current thread's context
-     * information.
+    /**
+     * This method can be used to add a new hashtable for storing the Thread specific context
+     * information. This method is useful to add a deserialized Context information that arrived over
+     * the wire.
+     * 
+     * @param A hashtable that stores the current thread's context information.
      */
-    public static void setContext(Hashtable ctxTable) {
+    public static void setContext(Hashtable<String, Object> ctxTable) {
         if (ctxTable != null) {
-            connCurrent.set(ctxTable);
+            currentContext.set(ctxTable);
         } else {
-            connCurrent.set(new Hashtable());
+            currentContext.set(new Hashtable<String, Object>());
         }
     }
 
     /**
-     * This method returns the hashtable that stores the thread specific
-     * Context information.
-     * @return The Context object stored in the current TLS. It always 
-     * returns a non null value;
+     * This method returns the hashtable that stores the thread specific Context information.
+     * 
+     * @return The Context object stored in the current TLS. It always returns a non null value;
      */
-    public static Hashtable getContext() {
-         if (connCurrent.get() == null) {
-             setContext(null); // Create a new one...
-         } 
-         return (Hashtable) connCurrent.get();
+    public static Hashtable<String, Object> getContext() {
+        if (currentContext.get() == null) {
+            setContext(null); // Create a new one...
+        }
+
+        return currentContext.get();
     }
 }

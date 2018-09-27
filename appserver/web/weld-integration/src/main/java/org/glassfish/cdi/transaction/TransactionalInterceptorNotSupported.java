@@ -38,59 +38,70 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation]
 
 package org.glassfish.cdi.transaction;
 
-import org.glassfish.logging.annotation.LoggerInfo;
+import static java.util.logging.Level.FINE;
+import static javax.transaction.Transactional.TxType.NOT_SUPPORTED;
 
+import java.util.logging.Logger;
+
+import javax.annotation.Priority;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.transaction.Transaction;
+import javax.transaction.Transactional;
 import javax.transaction.TransactionalException;
-import java.util.logging.Logger;
 
 /**
- * Transactional annotation Interceptor class for NotSupported transaction type,
- * ie javax.transaction.Transactional.TxType.NOT_SUPPORTED
- * If called outside a transaction context, managed bean method execution will then
- * continue outside a transaction context.
- * If called inside a transaction context, the current transaction context will be suspended,
- * the managed bean method execution will then continue outside a transaction context,
- * and the previously suspended transaction will be resumed.
+ * Transactional annotation Interceptor class for NotSupported transaction type, ie
+ * javax.transaction.Transactional.TxType.NOT_SUPPORTED If called outside a transaction context,
+ * managed bean method execution will then continue outside a transaction context. If called inside
+ * a transaction context, the current transaction context will be suspended, the managed bean method
+ * execution will then continue outside a transaction context, and the previously suspended
+ * transaction will be resumed.
  *
  * @author Paul Parkinson
  */
-@javax.annotation.Priority(Interceptor.Priority.PLATFORM_BEFORE + 200)
+@Priority(Interceptor.Priority.PLATFORM_BEFORE + 200)
 @Interceptor
-@javax.transaction.Transactional(javax.transaction.Transactional.TxType.NOT_SUPPORTED)
+@Transactional(NOT_SUPPORTED)
 public class TransactionalInterceptorNotSupported extends TransactionalInterceptorBase {
 
+    private static final long serialVersionUID = 1L;
     private static final Logger _logger = Logger.getLogger(CDI_JTA_LOGGER_SUBSYSTEM_NAME, SHARED_LOGMESSAGE_RESOURCE);
 
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
-        _logger.log(java.util.logging.Level.FINE, CDI_JTA_NOTSUPPORTED);
-        if (isLifeCycleMethod(ctx)) return proceed(ctx);
+        _logger.log(FINE, CDI_JTA_NOTSUPPORTED);
+
+        if (isLifeCycleMethod(ctx)) {
+            return proceed(ctx);
+        }
+
         setTransactionalTransactionOperationsManger(true);
+
         try {
             Transaction transaction = null;
             if (getTransactionManager().getTransaction() != null) {
-                _logger.log(java.util.logging.Level.FINE, CDI_JTA_MBNOTSUPPORTED);
+                _logger.log(FINE, CDI_JTA_MBNOTSUPPORTED);
                 try {
                     transaction = getTransactionManager().suspend();
                 } catch (Exception exception) {
-                    String messageString =
+                    _logger.log(FINE, CDI_JTA_MBNOTSUPPORTEDTX, exception);
+
+                    throw new TransactionalException(
                             "Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
-                                    "called inside a transaction context.  Suspending transaction failed due to " +
-                                    exception;
-                    _logger.log(java.util.logging.Level.FINE, 
-                        CDI_JTA_MBNOTSUPPORTEDTX, exception);
-                    throw new TransactionalException(messageString, exception);
+                            "called inside a transaction context.  Suspending transaction failed due to " +
+                            exception,
+                            exception);
                 }
             }
+
             Object proceed = null;
+
             try {
                 proceed = proceed(ctx);
             } finally {
@@ -98,14 +109,14 @@ public class TransactionalInterceptorNotSupported extends TransactionalIntercept
                     try {
                         getTransactionManager().resume(transaction);
                     } catch (Exception exception) {
-                        String messageString =
+                        throw new TransactionalException(
                                 "Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
-                                        "encountered exception during resume " +
-                                        exception;
-                        throw new TransactionalException(messageString, exception);
+                                "encountered exception during resume " + exception,
+                                exception);
                     }
                 }
             }
+
             return proceed;
 
         } finally {

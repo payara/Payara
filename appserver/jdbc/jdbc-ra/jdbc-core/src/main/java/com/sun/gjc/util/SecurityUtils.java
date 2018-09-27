@@ -116,7 +116,7 @@ public class SecurityUtils {
             }
         } else {
             ConnectionRequestInfoImpl cxReqInfo = (ConnectionRequestInfoImpl) info;
-            PasswordCredential pc = new PasswordCredential(cxReqInfo.getUser(), cxReqInfo.getPassword().toCharArray());
+            PasswordCredential pc = new PasswordCredential(cxReqInfo.getUser(), cxReqInfo.getPassword());
             pc.setManagedConnectionFactory(mcf);
             return pc;
         }

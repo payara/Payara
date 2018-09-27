@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.launcher;
 
@@ -51,11 +52,20 @@ import static com.sun.enterprise.admin.launcher.GFLauncherConstants.*;
  * @author bnevins
  */
 class GFLauncherNativeHelper {
-    GFLauncherNativeHelper(GFLauncherInfo info_, JavaConfig javaConfig_, JvmOptions jvmOptions_, Profiler profiler_) {
-        info = info_;
-        javaConfig = javaConfig_;
-        jvmOptions = jvmOptions_;
-        profiler = profiler_;
+    
+    private final GFLauncherInfo    info;
+    private final JvmOptions        jvmOptions;
+    private final Profiler          profiler;
+    private final File              installDir;
+    private final File              libDir;
+    private final JavaConfig        javaConfig;
+    
+    
+    GFLauncherNativeHelper(GFLauncherInfo info, JavaConfig javaConfig, JvmOptions jvmOptions, Profiler profiler) {
+        this.info = info;
+        this.javaConfig = javaConfig;
+        this.jvmOptions = jvmOptions;
+        this.profiler = profiler;
 
         if(info == null || jvmOptions == null || profiler == null)
             throw new NullPointerException(
@@ -140,11 +150,4 @@ class GFLauncherNativeHelper {
         
         return "";
     }
-
-    private final GFLauncherInfo    info;
-    private final JvmOptions        jvmOptions;
-    private final Profiler          profiler;
-    private final File              installDir;
-    private final File              libDir;
-    private final JavaConfig        javaConfig;
 }

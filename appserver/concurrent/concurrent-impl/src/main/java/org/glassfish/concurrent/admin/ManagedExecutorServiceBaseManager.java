@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation]
 package org.glassfish.concurrent.admin;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
@@ -45,7 +45,6 @@ import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.api.I18n;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.concurrent.config.ManagedExecutorServiceBase;
 import org.glassfish.concurrent.config.ManagedExecutorService;
@@ -54,9 +53,7 @@ import org.glassfish.resources.admin.cli.ResourceManager;
 import org.glassfish.resourcebase.resources.admin.cli.ResourceUtil;
 import org.glassfish.resourcebase.resources.api.ResourceStatus;
 import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
-import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.ConfiguredBy;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;

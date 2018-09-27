@@ -88,8 +88,9 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
 
     public final static String SCHEMA_ID_15 = "application_5.xsd";
     public final static String SCHEMA_ID_16 = "application_6.xsd";
-    public final static String SCHEMA_ID = "application_7.xsd";
-    public final static String SPEC_VERSION = "7";
+    public final static String SCHEMA_ID_17 = "application_7.xsd";
+    public final static String SCHEMA_ID = "application_8.xsd";
+    public final static String SPEC_VERSION = "8";
     private final static List<String> systemIDs = initSystemIDs();
      
     // The XML tag associated with this Node
@@ -101,6 +102,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
         systemIDs.add(SCHEMA_ID_14);
         systemIDs.add(SCHEMA_ID_15);
         systemIDs.add(SCHEMA_ID_16);
+        systemIDs.add(SCHEMA_ID_17);
         return Collections.unmodifiableList(systemIDs);
     }
     

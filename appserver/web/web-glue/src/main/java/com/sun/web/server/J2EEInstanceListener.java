@@ -74,8 +74,8 @@ import java.util.logging.Logger;
 //END OF IASRI 4660742
 
 /**
- * This class implements the Tomcat InstanceListener interface and
- * handles the INIT,DESTROY and SERVICE, FILTER events.
+ * This class implements the Tomcat InstanceListener interface and handles the INIT,DESTROY and SERVICE, FILTER events.
+ * 
  * @author Vivek Nagar
  * @author Tony Ng
  */
@@ -100,11 +100,11 @@ public final class J2EEInstanceListener implements InstanceListener {
         if (!(context instanceof WebModule)) {
             return;
         }
-        WebModule wm = (WebModule)context;
+        WebModule wm = (WebModule) context;
         init(wm);
 
         InstanceEvent.EventType eventType = event.getType();
-        if(_logger.isLoggable(Level.FINEST)) {
+        if (_logger.isLoggable(Level.FINEST)) {
             _logger.log(Level.FINEST, LogFacade.INSTANCE_EVENT, eventType);
         }
         if (eventType.isBefore) {
@@ -147,7 +147,8 @@ public final class J2EEInstanceListener implements InstanceListener {
         if (!(context instanceof WebModule)) {
             return;
         }
-        WebModule wm = (WebModule)context;
+        
+        WebModule wm = (WebModule) context;
 
         Object instance;
         if (eventType == InstanceEvent.EventType.BEFORE_FILTER_EVENT) {
@@ -158,101 +159,82 @@ public final class J2EEInstanceListener implements InstanceListener {
 
         // set security context
         // BEGIN IAfSRI 4688449
-        //try {
+        // try {
         Realm ra = context.getRealm();
-        /** IASRI 4713234
-        if (ra != null) {
-            HttpServletRequest request =
-                (HttpServletRequest) event.getRequest();
-            if (request != null && request.getUserPrincipal() != null) {
-                WebPrincipal prin =
-                    (WebPrincipal) request.getUserPrincipal();
-                // ra.authenticate(prin);
 
-                // It is inefficient to call authenticate just to set
-                // sec.ctx.  Instead, WebPrincipal modified to keep the
-                // previously created secctx, and set it here directly.
-
-                SecurityContext.setCurrent(prin.getSecurityContext());
-            }
-        }
-        **/
         // START OF IASRI 4713234
         if (ra != null) {
 
             ServletRequest request = event.getRequest();
             if (request != null && request instanceof HttpServletRequest) {
 
-                HttpServletRequest hreq = (HttpServletRequest)request;
-		HttpServletRequest base = hreq;
+                HttpServletRequest hreq = (HttpServletRequest) request;
+                HttpServletRequest base = hreq;
 
-		Principal prin = hreq.getUserPrincipal();
-		Principal basePrincipal = prin;
+                Principal prin = hreq.getUserPrincipal();
+                Principal basePrincipal = prin;
 
-		boolean wrapped = false;
+                boolean wrapped = false;
 
-		while (prin != null) {
+                while (prin != null) {
 
-		    if (base instanceof ServletRequestWrapper) {
-			// unwarp any wrappers to find the base object
-			ServletRequest sr =
-			    ((ServletRequestWrapper) base).getRequest();
+                    if (base instanceof ServletRequestWrapper) {
+                        // unwarp any wrappers to find the base object
+                        ServletRequest sr = ((ServletRequestWrapper) base).getRequest();
 
-			if (sr instanceof HttpServletRequest) {
+                        if (sr instanceof HttpServletRequest) {
 
-			    base = (HttpServletRequest) sr;
-			    wrapped = true;
-			    continue;
-			}
-		    }
+                            base = (HttpServletRequest) sr;
+                            wrapped = true;
+                            continue;
+                        }
+                    }
 
-		    if (wrapped) {
-			basePrincipal = base.getUserPrincipal();
-		    }
+                    if (wrapped) {
+                        basePrincipal = base.getUserPrincipal();
+                    }
 
-		    else if (base instanceof RequestFacade) {
-			// try to avoid the getUnWrappedCoyoteRequest call
-			// when we can identify see we have the texact class.
-			if (base.getClass() != RequestFacade.class) {
-			    basePrincipal = ((RequestFacade)base).
-				getUnwrappedCoyoteRequest().getUserPrincipal();
-			}
-		    } else {
-			basePrincipal = base.getUserPrincipal();
-		    }
+                    else if (base instanceof RequestFacade) {
+                        // try to avoid the getUnWrappedCoyoteRequest call
+                        // when we can identify see we have the texact class.
+                        if (base.getClass() != RequestFacade.class) {
+                            basePrincipal = ((RequestFacade) base).getUnwrappedCoyoteRequest().getUserPrincipal();
+                        }
+                    } else {
+                        basePrincipal = base.getUserPrincipal();
+                    }
 
-		    break;
-		}
+                    break;
+                }
 
-		if (prin != null && prin == basePrincipal &&
-                        prin.getClass().getName().equals(SecurityConstants.WEB_PRINCIPAL_CLASS)) {
+                if (prin != null && prin == basePrincipal && prin.getClass().getName().equals(SecurityConstants.WEB_PRINCIPAL_CLASS)) {
                     securityContext.setSecurityContextWithPrincipal(prin);
-		} else if (prin != basePrincipal) {
+                } else if (prin != basePrincipal) {
 
-		    // the wrapper has overridden getUserPrincipal
-		    // reject the request if the wrapper does not have
-		    // the necessary permission.
+                    // the wrapper has overridden getUserPrincipal
+                    // reject the request if the wrapper does not have
+                    // the necessary permission.
 
-		    checkObjectForDoAsPermission(hreq);
+                    checkObjectForDoAsPermission(hreq);
                     securityContext.setSecurityContextWithPrincipal(prin);
 
-		}
+                }
 
-	    }
+            }
         }
         // END OF IASRI 4713234
         // END IASRI 4688449
 
         ComponentInvocation inv;
         if (eventType == InstanceEvent.EventType.BEFORE_INIT_EVENT) {
-          // The servletName is not avaiable from servlet instance before servlet init.
-          // We have to pass the servletName to ComponentInvocation so it can be retrieved 
-          // in RealmAdapter.getServletName().
-          inv = new WebComponentInvocation(wm, instance, event.getWrapper().getName());
+            // The servletName is not avaiable from servlet instance before servlet init.
+            // We have to pass the servletName to ComponentInvocation so it can be retrieved
+            // in RealmAdapter.getServletName().
+            inv = new WebComponentInvocation(wm, instance, event.getWrapper().getName());
         } else {
-          inv = new WebComponentInvocation(wm, instance);
+            inv = new WebComponentInvocation(wm, instance);
         }
-        
+
         try {
             im.preInvoke(inv);
             if (eventType == InstanceEvent.EventType.BEFORE_SERVICE_EVENT) {
@@ -271,39 +253,32 @@ public final class J2EEInstanceListener implements InstanceListener {
         }
     }
 
+    private static javax.security.auth.AuthPermission doAsPrivilegedPerm = new javax.security.auth.AuthPermission("doAsPrivileged");
 
-    private static javax.security.auth.AuthPermission doAsPrivilegedPerm =
- 	new javax.security.auth.AuthPermission("doAsPrivileged");
+    private static void checkObjectForDoAsPermission(final Object o) throws AccessControlException {
 
-
-    private static void checkObjectForDoAsPermission(final Object o)
-            throws AccessControlException{
-
-	if (System.getSecurityManager() != null) {
-	    AccessController.doPrivileged(new PrivilegedAction<Void>() {
-		public Void run() {
-		    ProtectionDomain pD = o.getClass().getProtectionDomain();
-		    Policy p = Policy.getPolicy();
-		    if (!p.implies(pD,doAsPrivilegedPerm)) {
-			throw new AccessControlException
-			    ("permission required to override getUserPrincipal",
-			     doAsPrivilegedPerm);
-		    }
-		    return null;
-		}
-	    });
-	}
+        if (System.getSecurityManager() != null) {
+            AccessController.doPrivileged(new PrivilegedAction<Void>() {
+                public Void run() {
+                    ProtectionDomain pD = o.getClass().getProtectionDomain();
+                    Policy p = Policy.getPolicy();
+                    if (!p.implies(pD, doAsPrivilegedPerm)) {
+                        throw new AccessControlException("permission required to override getUserPrincipal", doAsPrivilegedPerm);
+                    }
+                    return null;
+                }
+            });
+        }
     }
 
-    private void handleAfterEvent(InstanceEvent event,
-                InstanceEvent.EventType eventType) {
+    private void handleAfterEvent(InstanceEvent event, InstanceEvent.EventType eventType) {
 
         Wrapper wrapper = event.getWrapper();
         Context context = (Context) wrapper.getParent();
         if (!(context instanceof WebModule)) {
             return;
         }
-        WebModule wm = (WebModule)context;
+        WebModule wm = (WebModule) context;
 
         Object instance;
         if (eventType == InstanceEvent.EventType.AFTER_FILTER_EVENT) {
@@ -327,9 +302,8 @@ public final class J2EEInstanceListener implements InstanceListener {
         // Must call InjectionManager#destroyManagedObject WITHIN
         // EE invocation context
         try {
-            if (eventType == InstanceEvent.EventType.AFTER_DESTROY_EVENT &&
-                    !DefaultServlet.class.equals(instance.getClass()) &&
-                    !JspServlet.class.equals(instance.getClass())) {
+            if (eventType == InstanceEvent.EventType.AFTER_DESTROY_EVENT && !DefaultServlet.class.equals(instance.getClass())
+                    && !JspServlet.class.equals(instance.getClass())) {
                 injectionMgr.destroyManagedObject(instance, false);
             }
         } catch (InjectionException ie) {
@@ -350,14 +324,13 @@ public final class J2EEInstanceListener implements InstanceListener {
                 if (tm != null) {
                     tm.componentDestroyed(instance, inv);
                 }
-            } else if (eventType == InstanceEvent.EventType.AFTER_FILTER_EVENT ||
-                    eventType == InstanceEvent.EventType.AFTER_SERVICE_EVENT) {
+            } else if (eventType == InstanceEvent.EventType.AFTER_FILTER_EVENT
+                    || eventType == InstanceEvent.EventType.AFTER_SERVICE_EVENT) {
                 // Emit monitoring probe event
                 if (eventType == InstanceEvent.EventType.AFTER_SERVICE_EVENT) {
                     ServletResponse response = event.getResponse();
                     int status = -1;
-                    if (response != null &&
-                            response instanceof HttpServletResponse) {
+                    if (response != null && response instanceof HttpServletResponse) {
                         status = ((HttpServletResponse) response).getStatus();
                     }
                     wm.afterServiceEvent(wrapper.getName(), status);
@@ -366,18 +339,18 @@ public final class J2EEInstanceListener implements InstanceListener {
                 // check it's top level invocation
                 // BEGIN IASRI# 4646060
                 if (im.getCurrentInvocation() == null) {
-                // END IASRI# 4646060
+                    // END IASRI# 4646060
                     try {
                         // clear security context
                         Realm ra = context.getRealm();
                         if (ra != null && (ra instanceof RealmInitializer)) {
-                            //cleanup not only securitycontext but also PolicyContext
-                            ((RealmInitializer)ra).logout();
+                            // cleanup not only securitycontext but also PolicyContext
+                            ((RealmInitializer) ra).logout();
                         }
                     } catch (Exception ex) {
                         String msg = _rb.getString(LogFacade.EXCEPTION_DURING_HANDLE_EVENT);
                         msg = MessageFormat.format(msg, new Object[] { eventType, wm });
-                        _logger.log(Level.SEVERE, msg,  ex);
+                        _logger.log(Level.SEVERE, msg, ex);
                     }
 
                     if (tm != null) {
@@ -386,7 +359,8 @@ public final class J2EEInstanceListener implements InstanceListener {
                                 tm.rollback();
                             }
                             tm.cleanTxnTimeout();
-                        } catch (Exception ex) {}
+                        } catch (Exception ex) {
+                        }
                     }
                 }
 
@@ -403,8 +377,7 @@ public final class J2EEInstanceListener implements InstanceListener {
         if (inhabitant != null && inhabitant.isActive()) {
             tm = inhabitant.getService();
         }
-        
+
         return tm;
     }
 }
-

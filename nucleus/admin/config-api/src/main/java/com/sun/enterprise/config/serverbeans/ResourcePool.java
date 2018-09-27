@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
-import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.customvalidators.ResourceNameConstraint;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.DuckTyped;
@@ -69,12 +69,13 @@ public interface ResourcePool extends Resource, Payload {
     /**
      * Sets the value of the name property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     public void setName(String value) throws PropertyVetoException;
 
     @DuckTyped
+    @Override
     String getIdentity();
 
     class Duck {
@@ -97,8 +98,8 @@ public interface ResourcePool extends Resource, Payload {
     /**
      * Sets the value of the ping property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setPing(String value) throws PropertyVetoException;
 

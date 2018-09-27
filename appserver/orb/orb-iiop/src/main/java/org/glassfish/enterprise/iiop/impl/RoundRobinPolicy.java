@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.enterprise.iiop.impl;
 
 import com.sun.corba.ee.spi.folb.ClusterInstanceInfo;
 import com.sun.corba.ee.spi.folb.SocketInfo;
 import com.sun.jndi.cosnaming.IiopUrl;
-import com.sun.logging.LogDomains;
 import org.glassfish.internal.api.ORBLocator;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
@@ -56,10 +56,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.security.SecureRandom;
 
 import static org.glassfish.api.naming.NamingClusterInfo.*;
-import static org.glassfish.enterprise.iiop.impl.NamingClusterInfoImpl.NO_ENDPOINT_SELECTED;
 import static org.glassfish.enterprise.iiop.impl.NamingClusterInfoImpl.logger;
 
 /**
@@ -122,7 +121,7 @@ public class RoundRobinPolicy {
     private static final String SSL = "SSL" ;
     private static final String CLEAR_TEXT = "CLEAR_TEXT" ;
 
-    private static java.util.Random rand = new java.util.Random();
+    private static SecureRandom rand = new SecureRandom();
 
     private List<ClusterInstanceInfo> endpointsList = 
 	 new LinkedList<ClusterInstanceInfo>();

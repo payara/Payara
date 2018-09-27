@@ -39,8 +39,13 @@
  */
 package fish.payara.microprofile.config.cdi;
 
-import fish.payara.microprofile.config.spi.PayaraConfig;
+import fish.payara.nucleus.microprofile.config.spi.PayaraConfig;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Member;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Set;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.DeploymentException;
@@ -59,7 +64,7 @@ public class ConfigPropertyProducer {
      * General producer method for injecting a property into a field annotated 
      * with the @ConfigProperty annotation.
      * Note this does not have @Produces annotation as a synthetic bean using this method
-     * is created in teh CDI Extension.
+     * is created in the CDI Extension.
      * @param ip
      * @return 
      */
@@ -69,7 +74,7 @@ public class ConfigPropertyProducer {
         Object result = null;
         ConfigProperty property = ip.getAnnotated().getAnnotation(ConfigProperty.class);
         PayaraConfig config = (PayaraConfig) ConfigProvider.getConfig();
-        Class<?> type = (Class<?>) ip.getType();
+        
         String name = property.name();
         if (name.isEmpty()) {
             // derive the property name from the injection point
@@ -81,16 +86,26 @@ public class ConfigPropertyProducer {
             } else {
                 beanClass = bean.getBeanClass();
             }
-            StringBuilder sb = new StringBuilder(beanClass.getCanonicalName().length() + ip.getMember().getName().length());
-            sb.append(beanClass.getPackage().getName());
-            sb.append('.');
-            sb.append(beanClass.getSimpleName().substring(0,1).toLowerCase());
-            sb.append(beanClass.getSimpleName().substring(1));
+            StringBuilder sb = new StringBuilder(beanClass.getCanonicalName());
             sb.append('.');
             sb.append(ip.getMember().getName());
-            name = sb.toString();
+            name =  sb.toString();
         }
-        result = config.getValue(name, property.defaultValue(),type);
+        
+        Type type = ip.getType();      
+        if (type instanceof Class) {
+            result = config.getValue(name, property.defaultValue(),(Class<?>)type);
+        } else if ( type instanceof ParameterizedType) {
+            ParameterizedType ptype = (ParameterizedType)type;
+            if (List.class.equals(ptype.getRawType())) {
+                result = config.getListValues(name, property.defaultValue(), (Class<?>) ptype.getActualTypeArguments()[0]);
+            } else if (Set.class.equals(ptype.getRawType())) {
+                result = config.getSetValues(name, property.defaultValue(), (Class<?>) ptype.getActualTypeArguments()[0]);                
+            } else {
+                result = config.getValue(name, (Class<?>)((ParameterizedType)type).getRawType());
+            }
+        }
+        
         if (result == null) {
             throw new DeploymentException("Microprofile Config Property " + property.name() + " can not be found");
         }

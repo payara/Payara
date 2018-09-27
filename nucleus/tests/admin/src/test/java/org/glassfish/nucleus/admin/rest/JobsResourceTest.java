@@ -36,14 +36,16 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.nucleus.admin.rest;
 
 import java.util.Locale;
+import javax.json.JsonArray;
+import javax.json.JsonException;
+import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.resources.composite.Job;
@@ -63,7 +65,7 @@ public class JobsResourceTest extends RestTestBase {
         assertTrue(isSuccess(get(URL_JOBS)));
     }
 
-    public void testGetJob() throws JSONException {
+    public void testGetJob() throws JsonException {
         // make sure we have at least one job
         issueDetachedCommand();
 
@@ -72,18 +74,18 @@ public class JobsResourceTest extends RestTestBase {
         assertTrue(isSuccess(response));
 
         // verify the overall structure
-        JSONObject json = response.readEntity(JSONObject.class);
-        JSONArray resources = json.getJSONArray("resources");
+        JsonObject json = response.readEntity(JsonObject.class);
+        JsonArray resources = json.getJsonArray("resources");
         assertNotNull(resources);
-        assertTrue(resources.length() > 0);
-        JSONArray items = json.getJSONArray("items");
+        assertTrue(resources.size() > 0);
+        JsonArray items = json.getJsonArray("items");
         assertNotNull(items);
-        assertTrue(items.length() > 0);
+        assertTrue(items.size() > 0);
 
         // unlike most resources that also return a parent link,
         // the jobs resource only returns child links.
         // verify the first of them
-        JSONObject resource = resources.getJSONObject(0);
+        JsonObject resource = resources.getJsonObject(0);
         String uri = resource.getString("uri");
         assertNotNull(uri);
         assertEquals("job", resource.getString("rel"));
@@ -95,20 +97,20 @@ public class JobsResourceTest extends RestTestBase {
         // it should only have a parent link
         response = get(uri);
         assertTrue(isSuccess(response));
-        json = response.readEntity(JSONObject.class);
-        JSONObject item = json.getJSONObject("item");
+        json = response.readEntity(JsonObject.class);
+        JsonObject item = json.getJsonObject("item");
         verifyItem(jobId, item);
-        resources = json.getJSONArray("resources");
+        resources = json.getJsonArray("resources");
         assertNotNull(resources);
-        assertTrue(resources.length() == 1);
-        resource = resources.getJSONObject(0);
+        assertTrue(resources.size() == 1);
+        resource = resources.getJsonObject(0);
         assertEquals("parent", resource.getString("rel"));
         assertTrue(resource.getString("uri").endsWith(URL_JOBS));
         
         // verify that the collection returned the item too
         item = null;
-        for (int i = 0; item == null && i < items.length(); i++) {
-            JSONObject thisItem = items.getJSONObject(i);
+        for (int i = 0; item == null && i < items.size(); i++) {
+            JsonObject thisItem = items.getJsonObject(i);
             if (jobId.equals(thisItem.getString("jobId"))) {
                 item = thisItem;
             }
@@ -116,7 +118,7 @@ public class JobsResourceTest extends RestTestBase {
         verifyItem(jobId, item);
     }
 
-    private void verifyItem(String jobIdWant, JSONObject itemHave) throws JSONException {
+    private void verifyItem(String jobIdWant, JsonObject itemHave) throws JsonException {
         assertNotNull(itemHave);
         Locale locale = null;
         Job job = CompositeUtil.instance().unmarshallClass(locale, Job.class, itemHave);

@@ -37,24 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.admin.cli.cluster;
 
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.*;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.api.ServiceLocatorFactory;
-import org.glassfish.hk2.bootstrap.HK2Populator;
-import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
-import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.RelativePathResolver;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
@@ -62,21 +55,14 @@ import com.sun.enterprise.admin.cli.CLICommand;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.sftp.SFTPClient;
 
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Nodes;
-import com.sun.enterprise.config.serverbeans.Node;
 
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.io.DomainDirs;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.util.net.NetUtils;
 
 import com.trilead.ssh2.SFTPv3DirectoryEntry;
 
-import org.jvnet.hk2.config.ConfigParser;
-import org.jvnet.hk2.config.Dom;
-import org.jvnet.hk2.config.DomDocument;
 
 import com.sun.enterprise.security.store.PasswordAdapter;
 
@@ -110,6 +96,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
     @Override
     protected void validate() throws CommandException {
         remoteUser = resolver.resolve(getRawRemoteUser());
+        remotePort = getRawRemotePort();
     }
 
     final String getRemoteUser() {
@@ -151,7 +138,8 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
         //get password from user if not found in password file
         if (password == null) {
             if (programOpts.isInteractive()) {
-                password = readPassword(Strings.get("SSHPasswordPrompt", getRemoteUser(), node));
+                char[] pArr = readPassword(Strings.get("SSHPasswordPrompt", getRemoteUser(), node));
+                password = pArr != null ? new String(pArr) : null;
             }
             else {
                 throw new CommandException(Strings.get("SSHPasswordNotFound"));
@@ -177,7 +165,8 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
         if (passphrase == null) {
             if (programOpts.isInteractive()) {
                 //i18n
-                passphrase = readPassword(Strings.get("SSHPassphrasePrompt", getSshKeyFile()));
+                char[] pArr = readPassword(Strings.get("SSHPassphrasePrompt", getSshKeyFile()));
+                passphrase = pArr != null ? new String(pArr) : null;
             }
             else {
                 passphrase = ""; //empty passphrase
@@ -196,7 +185,8 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
         if (masterPass == null) {
             if (programOpts.isInteractive()) {
                 //i18n
-                masterPass = readPassword(Strings.get("DomainMasterPasswordPrompt", domain));
+                char[] mpArr = readPassword(Strings.get("DomainMasterPasswordPrompt", domain));
+                masterPass = mpArr != null ? new String(mpArr) : null;
             }
             else {
                 masterPass = "changeit"; //default

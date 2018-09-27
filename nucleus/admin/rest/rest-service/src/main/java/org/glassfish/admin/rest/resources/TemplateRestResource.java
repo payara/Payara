@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -345,7 +345,9 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
         }
         this.parent = parent;
         this.tagName = tagName;
-        entity = parent.nodeElement(tagName);
+        synchronized (parent) {
+            entity = parent.nodeElement(tagName);
+        }
         if (entity == null) {
             // In some cases, the tagName requested is not found in the DOM tree.  This is true,
             // for example, for the various ZeroConf elements (e.g., transaction-service).  If

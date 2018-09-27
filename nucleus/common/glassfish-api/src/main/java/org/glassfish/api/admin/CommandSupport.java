@@ -47,10 +47,6 @@ import java.security.PrivilegedAction;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.Job;
-import org.glassfish.api.admin.WrappedAdminCommand;
 import org.glassfish.hk2.api.ServiceLocator;
 
 /**

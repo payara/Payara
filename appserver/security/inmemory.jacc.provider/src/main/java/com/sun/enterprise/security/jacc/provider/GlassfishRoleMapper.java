@@ -37,35 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jacc.provider;
 
-import org.glassfish.deployment.common.SecurityRoleMapper;
-import org.glassfish.deployment.common.SecurityRoleMapperFactory;
+import static java.util.logging.Level.SEVERE;
+
 import java.security.Principal;
 import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.security.auth.Subject;
 
+import org.glassfish.deployment.common.SecurityRoleMapper;
+import org.glassfish.deployment.common.SecurityRoleMapperFactory;
 import org.glassfish.internal.api.Globals;
 
 /**
- * Glassfish role mapper 
- * NB: mapper only supports disjunctive 
- * (as apposed to conjunctive principal 2 role mappings. IOW, there 
- * is no way to require 2 or more principals to be in a Role.
+ * Glassfish role mapper NB: mapper only supports disjunctive (as apposed to conjunctive principal 2 role mappings. IOW,
+ * there is no way to require 2 or more principals to be in a Role.
  *
  * @author monzillo
  */
 public class GlassfishRoleMapper implements JACCRoleMapper {
 
-    private static final Logger defaultLogger =
-            Logger.getLogger(GlassfishRoleMapper.class.getName());
+    private static final Logger defaultLogger = Logger.getLogger(GlassfishRoleMapper.class.getName());
     private final Logger logger;
 
     public GlassfishRoleMapper(Logger logger) {
@@ -79,65 +78,62 @@ public class GlassfishRoleMapper implements JACCRoleMapper {
     private SecurityRoleMapper getInternalMapper(String pcid) {
 
         SecurityRoleMapperFactory factory = Globals.get(SecurityRoleMapperFactory.class);
-                //SecurityRoleMapperFactoryMgr.getFactory();
 
         if (factory == null) {
             String msg = "RoleMapper.factory.lookup.failed";
-            logger.log(Level.SEVERE, msg);
+            logger.log(SEVERE, msg);
             throw new SecurityException(msg);
         }
 
-        SecurityRoleMapper srm = factory.getRoleMapper(pcid);
+        SecurityRoleMapper securityRoleMapper = factory.getRoleMapper(pcid);
 
-        if (srm == null) {
+        if (securityRoleMapper == null) {
             String msg = "RoleMapper.mapper.lookup.failed";
-            logger.log(Level.SEVERE, msg);
+            logger.log(SEVERE, msg);
             throw new SecurityException(msg);
         }
-        return srm;
+        
+        return securityRoleMapper;
     }
 
-    private Set<String> getDeclaredRoles(SecurityRoleMapper srm) {
+    private Set<String> getDeclaredRoles(SecurityRoleMapper securityRoleMapper) {
 
-        // default role mapping does not implement srm.getRoles() properly
+        // Default role mapping does not implement srm.getRoles() properly
         // until that is fixed, must throw UnsupportedOperation exception
+        
+        String msg = "RoleMapper.unable.to.get.roles";
+        logger.log(SEVERE, msg);
+        throw new UnsupportedOperationException(msg);
 
-        if (true) {
-            String msg = "RoleMapper.unable.to.get.roles";
-            logger.log(Level.SEVERE, msg);
-            throw new UnsupportedOperationException(msg);
-        }
-
-        HashSet<String> roleNameSet = null;
-        Iterator<String> it = srm.getRoles();
-        while (it.hasNext()) {
-            if (roleNameSet == null) {
-                roleNameSet = new HashSet<String>();
-            }
-            roleNameSet.add(it.next());
-        }
-        return roleNameSet;
+//        HashSet<String> roleNameSet = null;
+//        Iterator<String> it = securityRoleMapper.getRoles();
+//        while (it.hasNext()) {
+//            if (roleNameSet == null) {
+//                roleNameSet = new HashSet<String>();
+//            }
+//            roleNameSet.add(it.next());
+//        }
+//        
+//        return roleNameSet;
     }
 
-    private Set<Principal> getPrincipalsInRole(SecurityRoleMapper srm,
-            String roleName) throws SecurityException, UnsupportedOperationException {
+    private Set<Principal> getPrincipalsInRole(SecurityRoleMapper securityRoleMapper, String roleName) throws SecurityException, UnsupportedOperationException {
 
-        Map<String, Subject> roleMap = (Map) srm.getRoleToSubjectMapping();
+        @SuppressWarnings("unchecked")
+        Map<String, Subject> roleMap = (Map<String, Subject>) securityRoleMapper.getRoleToSubjectMapping();
         if (roleMap == null) {
             return null;
         }
 
-        Subject s = roleMap.get(roleName);
-        if (s == null) {
+        Subject subject = roleMap.get(roleName);
+        if (subject == null) {
             return null;
         }
 
-        return s.getPrincipals();
+        return subject.getPrincipals();
     }
 
-    public boolean arePrincipalsInRole(SecurityRoleMapper srm,
-            Principal[] principals, String roleName) throws SecurityException {
-
+    public boolean arePrincipalsInRole(SecurityRoleMapper srm, Principal[] principals, String roleName) throws SecurityException {
         if (principals == null || principals.length == 0) {
             return false;
         }
@@ -152,6 +148,7 @@ public class GlassfishRoleMapper implements JACCRoleMapper {
                 return true;
             }
         }
+        
         return false;
     }
 
@@ -160,35 +157,31 @@ public class GlassfishRoleMapper implements JACCRoleMapper {
         return getDeclaredRoles(getInternalMapper(pcid));
     }
 
-    public boolean isSubjectInRole(String pcid, Subject s, String roleName)
-            throws SecurityException {
-        return arePrincipalsInRole(pcid, toArray(s.getPrincipals()),roleName);
+    public boolean isSubjectInRole(String pcid, Subject s, String roleName) throws SecurityException {
+        return arePrincipalsInRole(pcid, toArray(s.getPrincipals()), roleName);
     }
 
-    public boolean arePrincipalsInRole(String pcid, Principal[] principals,
-            String roleName) throws SecurityException {
+    public boolean arePrincipalsInRole(String pcid, Principal[] principals, String roleName) throws SecurityException {
         return arePrincipalsInRole(getInternalMapper(pcid), principals, roleName);
     }
 
-    public Set<String> getRolesOfSubject(String pcid, Subject s)
-            throws SecurityException, UnsupportedOperationException {
+    public Set<String> getRolesOfSubject(String pcid, Subject s) throws SecurityException, UnsupportedOperationException {
         return getRolesOfPrincipals(pcid, toArray(s.getPrincipals()));
     }
 
-    public Set<String> getRolesOfPrincipals(String pcid, Principal[] principals)
-            throws SecurityException, UnsupportedOperationException {
-
-        if ( principals.length == 0) {
+    public Set<String> getRolesOfPrincipals(String pcid, Principal[] principals) throws SecurityException, UnsupportedOperationException {
+        if (principals.length == 0) {
             return null;
         }
 
         SecurityRoleMapper srm = getInternalMapper(pcid);
         Set<String> roleNames = getDeclaredRoles(srm);
 
-        //Comment out for now to supress FindBugs warning, getDeclaredRoles(srm) always throw UnsupportedOperationException currently so roleNames cannot be null, when getDeclaredRoles is fixed we can uncomment this
-        //if (roleNames == null) {
-        //    return null;
-        //}
+        // Comment out for now to supress FindBugs warning, getDeclaredRoles(srm) always throw UnsupportedOperationException
+        // currently so roleNames cannot be null, when getDeclaredRoles is fixed we can uncomment this
+        // if (roleNames == null) {
+        // return null;
+        // }
 
         HashSet<String> roles = new HashSet<String>();
         Iterator<String> it = roleNames.iterator();
@@ -208,37 +201,37 @@ public class GlassfishRoleMapper implements JACCRoleMapper {
         return roles;
     }
 
-    public BitSet getRolesOfSubject(String pcid, String[] roles, Subject s)
-            throws SecurityException, UnsupportedOperationException {
+    public BitSet getRolesOfSubject(String pcid, String[] roles, Subject s) throws SecurityException, UnsupportedOperationException {
         return getRolesOfPrincipals(pcid, roles, toArray(s.getPrincipals()));
     }
 
-    private Principal[] toArray(Set principals) {
+    private Principal[] toArray(Set<Principal> principals) {
         Principal[] list = new Principal[principals.size()];
-        int i=0;
-        for (Object obj: principals) {
+        int i = 0;
+        for (Object obj : principals) {
             if (obj instanceof Principal) {
-                list[i] = (Principal)obj;
+                list[i] = (Principal) obj;
             }
         }
+        
         return list;
     }
-    public BitSet getRolesOfPrincipals(String pcid, String[] roles, Principal[] principals)
-            throws SecurityException, UnsupportedOperationException {
-        if ( principals.length == 0 ||
-                roles == null || roles.length == 0) {
+
+    public BitSet getRolesOfPrincipals(String pcid, String[] roles, Principal[] principals) throws SecurityException, UnsupportedOperationException {
+        if (principals.length == 0 || roles == null || roles.length == 0) {
             return null;
         }
+        
         BitSet roleSet = new BitSet(roles.length);
         SecurityRoleMapper srm = getInternalMapper(pcid);
         for (int i = 0; i < roles.length; i++) {
             roleSet.set(i, arePrincipalsInRole(srm, principals, roles[i]));
         }
+        
         return roleSet;
     }
 
-    public Set<Principal> getPrincipalsInRole(String pcid, String roleName)
-            throws SecurityException, UnsupportedOperationException {
+    public Set<Principal> getPrincipalsInRole(String pcid, String roleName) throws SecurityException, UnsupportedOperationException {
         return getPrincipalsInRole(getInternalMapper(pcid), roleName);
     }
 }

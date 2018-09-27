@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.composite;
 
@@ -49,6 +51,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import javax.json.JsonObject;
 import javax.security.auth.Subject;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
@@ -57,8 +60,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestResource;
 import org.glassfish.admin.rest.model.ResponseBody;
@@ -151,19 +152,19 @@ public abstract class CompositeResource extends AbstractResource implements Rest
         template.allFieldsSet();
         return template;
     }
-    protected <T extends RestModel> T getTypedModel(Class<T> modelIface, JSONObject jsonModel) throws Exception {
+    protected <T extends RestModel> T getTypedModel(Class<T> modelIface, JsonObject jsonModel) throws Exception {
         if (jsonModel == null) {
           return null;
         }
         return CompositeUtil.instance().unmarshallClass(getLocale(), modelIface, jsonModel);
     }
-    protected JSONObject getJsonModel(RestModel typedModel) throws Exception {
-        return (JSONObject)JsonUtil.getJsonObject(typedModel, false); // include confidential properties
+    protected JsonObject getJsonModel(RestModel typedModel) throws Exception {
+        return (JsonObject)JsonUtil.getJsonValue(typedModel, false); // include confidential properties
     }
 
     // Convenience methods for constructing URIs
     /**
-     * Every resource that returns a collection will need to return the URI for each item in the colleciton. This method
+     * Every resource that returns a collection will need to return the URI for each item in the collection. This method
      * handles the creation of that URI, ensuring a correct and consistent URI pattern.
      * @param name
      * @return
@@ -526,8 +527,8 @@ public abstract class CompositeResource extends AbstractResource implements Rest
         return filterModel(modelIface, unfilteredModel, getFilter(include, exclude, identityAttr));
     }
     protected <T extends RestModel> T filterModel(Class<T> modelIface, T unfilteredModel, JsonFilter filter) throws Exception {
-        JSONObject unfilteredJson = (JSONObject)JsonUtil.getJsonObject(unfilteredModel, false); // don't hide confidential properties
-        JSONObject filteredJson = filter.trim(unfilteredJson);
+        JsonObject unfilteredJson = (JsonObject)JsonUtil.getJsonObject(unfilteredModel, false); // don't hide confidential properties
+        JsonObject filteredJson = filter.trim(unfilteredJson);
         T filteredModel = getTypedModel(modelIface, filteredJson);
         filteredModel.trimmed(); // TBD - remove once the conversion to the new REST style guide is completed
         return filteredModel;

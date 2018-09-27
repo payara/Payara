@@ -37,34 +37,38 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.login;
 
-import java.io.*;
-import javax.security.auth.callback.*;
+import java.io.IOException;
 
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.security.TextLoginDialog;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+
 import com.sun.enterprise.security.GUILoginDialog;
+import com.sun.enterprise.security.TextLoginDialog;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 
 /**
- * This is the default callback handler provided by the application
- * client container. The container tries to use the application specified 
- * callback handler (if provided). If there is no callback handler or if
- * the handler cannot be instantiated then this default handler is used.
+ * This is the default callback handler provided by the application client container. The container tries to use the
+ * application specified callback handler (if provided). If there is no callback handler or if the handler cannot be
+ * instantiated then this default handler is used.
  *
- * Note: User-defined Callback Handlers which intend to indicate cancel
- * status must extend this class and set the ThreadLocal cancelStatus.
+ * Note: User-defined Callback Handlers which intend to indicate cancel status must extend this class and set the
+ * ThreadLocal cancelStatus.
  */
-public class LoginCallbackHandler implements CallbackHandler 
-{
+public class LoginCallbackHandler implements CallbackHandler {
+
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LoginCallbackHandler.class);
+
     private boolean isGUI;
-    private static final LocalStringManagerImpl localStrings =
-    new LocalStringManagerImpl(LoginCallbackHandler.class);
     protected ThreadLocal<Boolean> cancelStatus = new ThreadLocal<Boolean>();
 
     /**
      * Check whether the authentication was cancelled by the user.
+     *
      * @return boolean indicating whether the authentication was cancelled.
      */
     public boolean getCancelStatus() {
@@ -83,17 +87,17 @@ public class LoginCallbackHandler implements CallbackHandler
     }
 
     /**
-     * This is the callback method called when authentication data is
-     * required. It either pops up a dialog box to request authentication
-     * data or use text input.
+     * This is the callback method called when authentication data is required. It either pops up a dialog box to request
+     * authentication data or use text input.
+     *
      * @param the callback object instances supported by the login module.
      */
-    public void handle(Callback[] callbacks) throws IOException,
-					UnsupportedCallbackException
-    {
-        if(isGUI) {
+    @Override
+    public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+        if (isGUI) {
             String user = localStrings.getLocalString("login.user", "user");
-	    new GUILoginDialog(user, callbacks);
+            new GUILoginDialog(user, callbacks);
+
             for (int i = 0; i < callbacks.length; i++) {
                 if (callbacks[i] instanceof NameCallback) {
                     cancelStatus.set(((NameCallback) callbacks[i]).getName() == null);
@@ -101,8 +105,7 @@ public class LoginCallbackHandler implements CallbackHandler
                 }
             }
         } else {
-	    new TextLoginDialog(callbacks);
+            new TextLoginDialog(callbacks);
         }
     }
 }
-

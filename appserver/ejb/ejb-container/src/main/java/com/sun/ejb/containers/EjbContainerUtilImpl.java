@@ -454,7 +454,7 @@ public class EjbContainerUtilImpl
 
     @Override
     public boolean isEJBLite() {
-        return (cmpDeployerProvider.get() == null);
+        return (!env.isMicro() && cmpDeployerProvider.get() == null);
     }
 
     @Override

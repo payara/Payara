@@ -45,7 +45,7 @@ public class JMXConnectorConfig {
     private String host=null;
     private String port=null;
     private String user=null;
-    private String password=null;
+    private char[] password=null;
     private String protocol=null;    
     
 
@@ -54,7 +54,7 @@ public class JMXConnectorConfig {
     
     
     public JMXConnectorConfig(String host, String port, 
-        String user, String password, String protocol) 
+        String user, char[] password, String protocol)
     {
         this.host=host;
         this.port=port;
@@ -62,7 +62,7 @@ public class JMXConnectorConfig {
         this.password=password;
         this.protocol=protocol;
     }
-    
+
     
     public String getHost() {
         return host;
@@ -76,7 +76,7 @@ public class JMXConnectorConfig {
         return user;
     }
 
-    public String getPassword() {
+    public char[] getPassword() {
         return password;
     }
 

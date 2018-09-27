@@ -86,7 +86,9 @@ public class SnmpNotificationConfigurer extends BaseNotificationConfigurer<SnmpN
         if(this.enabled != null) {
             configuration.enabled(this.enabled);
         }
-
+        if(this.noisy != null) {
+            configuration.noisy(this.noisy);
+        }
         if(!Strings.isNullOrEmpty(community)) {
             configuration.setCommunity(community);
         }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.autodeploy;
 
@@ -54,7 +55,6 @@ import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.PostStartupRunLevel;
 import javax.inject.Inject;
@@ -64,7 +64,6 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.ServiceLocator;
 
-import javax.inject.Singleton;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
@@ -127,6 +126,7 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
     private static final String DEFAULT_POLLING_INTERVAL_IN_SECONDS = "2";
     private static final String DEFAULT_AUTO_DEPLOY_ENABLED = "true";
 
+    @Override
     public void postConstruct() {
         deplLogger = org.glassfish.deployment.autodeploy.AutoDeployer.deplLogger;
         /*
@@ -180,6 +180,7 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
 
     }
 
+    @Override
     public void preDestroy() {
         stopAutoDeployer();
     }
@@ -193,9 +194,8 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
             int pollingIntervalInSeconds,
             String directory) {
         if (deplLogger.isLoggable(Level.FINE)) {
-            deplLogger.fine("[AutoDeploy] " + title + ", enabled=" + isEnabled +
-                    ", polling interval(seconds)=" + pollingIntervalInSeconds +
-                    ", directory=" + directory);
+            deplLogger.log(Level.FINE, "[AutoDeploy] {0}, enabled={1}, polling interval(seconds)={2}, directory={3}",
+                    new Object[]{title, isEnabled, pollingIntervalInSeconds, directory});
         }
     }
     
@@ -276,6 +276,7 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
         startAutoDeployer(pollingIntervalInSeconds);
     }
 
+    @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         /*
          * Deal with any changes to the DasConfig that might affect whether
@@ -377,7 +378,7 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
                  * start it.  If it is running now, restart it to use the new
                  * polling interval.
                  */
-                rescheduleAutoDeployer(newPollingIntervalInSeconds.intValue());
+                rescheduleAutoDeployer(newPollingIntervalInSeconds);
             }
         }
         return (unprocessedEvents.size() > 0) ? new UnprocessedChangeEvents(unprocessedEvents) : null;

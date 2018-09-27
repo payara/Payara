@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!--"Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]" -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -50,9 +51,9 @@
         investigates this issue further.                                                                                maven-buildglassfish-extension
     -->
     <!--<parent>-->
-    <!--<groupId>org.glassfish</groupId>-->
-    <!--<artifactId>glassfish-parent</artifactId>-->
-    <!--<version>4.1-SNAPSHOT</version>-->
+    <!--<groupId>fish.payara</groupId>-->
+    <!--<artifactId>payara-parent</artifactId>-->
+    <!--<version>5.184-SNAPSHOT</version>-->
     <!--</parent>-->
 
     <modelVersion>4.0.0</modelVersion>
@@ -76,7 +77,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.6</version>
             <scope>test</scope>
         </dependency>
 
@@ -88,14 +88,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>${javase.version}</source>
+                    <target>${javase.version}</target>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.4.2</version>
                 <configuration>
                     <systemProperties>
                         <property>
@@ -108,7 +107,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.1</version>
                 <executions>
                     <execution>
                         <id>copy</id>
@@ -123,7 +121,6 @@
                                     <groupId>org.glassfish.extras</groupId>
                                     <artifactId>glassfish-embedded-web</artifactId>
                                     <version>${project.version}</version>
-                                    <type>jar</type>
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>${project.build.directory}</outputDirectory>
@@ -172,7 +169,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.3.1</version>
         </dependency>
     </dependencies>    
     <licenses>

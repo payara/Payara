@@ -58,7 +58,7 @@
         setPageSessionAttribute(key="jmsType" value="#{jmsTypeOptionGrp}");
     />
     </event>
-    <sun:form id="propertyForm">
+    <sun:form id="propertyForm" autoComplete="off">
 #include "/cluster/shared/handlers.inc"
 #include "/cluster/shared/jmsHandlers.inc"
 #include "/common/shared/alertMsg.inc"

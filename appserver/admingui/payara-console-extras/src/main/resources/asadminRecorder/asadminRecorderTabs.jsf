@@ -37,14 +37,14 @@
   holder.
 
  -->
-<sun:tab id="asadminRecorder" immediate="true" text="$resource{i18nar.asadminRecorder.asadminRecorderTabs}" toolTip="$resource{i18nar.asadminRecorder.asadminRecorderTabs}">
+<sun:tab id="asadminRecorderDomainTab" immediate="true" text="$resource{i18nar.asadminRecorder.asadminRecorderTabs}" toolTip="$resource{i18nar.asadminRecorder.asadminRecorderTabs}">
     <!beforeCreate
         setResourceBundle(key="i18nar" bundle="fish.payara.admingui.extras.Strings");
         setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
     />
     
     <!command
-        setSessionAttribute(key="domainTabs" value="asadminRecorderConfig");
+        setSessionAttribute(key="domainTabs" value="asadminRecorderDomainTab");
         gf.redirect(page="#{request.contextPath}/payaraExtras/asadminRecorder/asadminRecorderServer.jsf?target=server&tabSetName=domainTabs");
     />
 </sun:tab>

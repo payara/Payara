@@ -36,18 +36,17 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.provider;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.logging.Level;
+import javax.json.Json;
+import javax.json.JsonException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.composite.CompositeResource;
@@ -66,8 +65,8 @@ public class MapWriter extends BaseProvider<Map> {
     public String getContent(Map proxy) {
         String json = null;
         try {
-            json = new JSONObject(proxy).toString(getFormattingIndentLevel());
-        } catch (JSONException ex) {
+            json = Json.createObjectBuilder(proxy).toString();
+        } catch (JsonException ex) {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
         return json;

@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
-
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.security.factory;
 
 import java.util.ArrayList;
@@ -48,14 +47,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.security.application.EJBSecurityManager;
 import org.glassfish.ejb.security.application.EjbSecurityProbeProvider;
-
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
 
 import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
 import com.sun.enterprise.security.factory.SecurityManagerFactory;
@@ -75,11 +73,11 @@ public final class EJBSecurityManagerFactory extends SecurityManagerFactory {
     @Inject
     InvocationManager invMgr;
 
-
     @Inject
     AppServerAuditManager auditManager;
 
     private EjbSecurityProbeProvider probeProvider = new EjbSecurityProbeProvider();
+
     /**
      * Creates a new instance of EJBSecurityManagerFactory
      */
@@ -87,22 +85,18 @@ public final class EJBSecurityManagerFactory extends SecurityManagerFactory {
     }
 
     // stores the context ids to appnames for apps
-    private Map<String, ArrayList<String>> CONTEXT_IDS =
-            new HashMap<String, ArrayList<String>>();
-    private Map<String, Map<String, EJBSecurityManager>> SECURITY_MANAGERS =
-            new HashMap<String, Map<String, EJBSecurityManager>>();
+    private Map<String, ArrayList<String>> CONTEXT_IDS = new HashMap<String, ArrayList<String>>();
+    private Map<String, Map<String, EJBSecurityManager>> SECURITY_MANAGERS = new HashMap<String, Map<String, EJBSecurityManager>>();
 
     public <T> EJBSecurityManager getManager(String ctxId, String name, boolean remove) {
         return getManager(SECURITY_MANAGERS, ctxId, name, remove);
     }
 
-    public  <T> ArrayList<EJBSecurityManager>
-            getManagers(String ctxId, boolean remove) {
+    public <T> ArrayList<EJBSecurityManager> getManagers(String ctxId, boolean remove) {
         return getManagers(SECURITY_MANAGERS, ctxId, remove);
     }
 
-    public  <T> ArrayList<EJBSecurityManager>
-            getManagersForApp(String appName, boolean remove) {
+    public <T> ArrayList<EJBSecurityManager> getManagersForApp(String appName, boolean remove) {
         return getManagersForApp(SECURITY_MANAGERS, CONTEXT_IDS, appName, remove);
     }
 
@@ -110,26 +104,26 @@ public final class EJBSecurityManagerFactory extends SecurityManagerFactory {
         return getContextsForApp(CONTEXT_IDS, appName, remove);
     }
 
-    public <T> void addManagerToApp(String ctxId, String name,
-            String appName, EJBSecurityManager manager) {
+    public <T> void addManagerToApp(String ctxId, String name, String appName, EJBSecurityManager manager) {
         addManagerToApp(SECURITY_MANAGERS, CONTEXT_IDS, ctxId, name, appName, manager);
     }
 
-    public EJBSecurityManager createManager(EjbDescriptor ejbDesc,
-            boolean register) {
+    public EJBSecurityManager createManager(EjbDescriptor ejbDesc, boolean register) {
         String ctxId = EJBSecurityManager.getContextID(ejbDesc);
         String ejbName = ejbDesc.getName();
         EJBSecurityManager manager = null;
+        
         if (register) {
             manager = getManager(ctxId, ejbName, false);
         }
+        
         if (manager == null || !register) {
             try {
                 probeProvider.securityManagerCreationStartedEvent(ejbName);
                 manager = new EJBSecurityManager(ejbDesc, this.invMgr, this);
                 probeProvider.securityManagerCreationEndedEvent(ejbName);
+                
                 if (register) {
-
                     String appName = ejbDesc.getApplication().getRegistrationName();
                     addManagerToApp(ctxId, ejbName, appName, manager);
                     probeProvider.securityManagerCreationEvent(ejbName);
@@ -139,10 +133,11 @@ public final class EJBSecurityManagerFactory extends SecurityManagerFactory {
                 throw new RuntimeException(ex);
             }
         }
+        
         return manager;
     }
 
     public final AppServerAuditManager getAuditManager() {
-        return this.auditManager;
+        return auditManager;
     }
 }

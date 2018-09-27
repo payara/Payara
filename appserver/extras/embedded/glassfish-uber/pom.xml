@@ -40,14 +40,15 @@
     holder.
 
 -->
+<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-parent</artifactId>
         <version>4.1-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
@@ -82,7 +83,6 @@
                                     <groupId>org.glassfish.extras</groupId>
                                     <artifactId>installroot-builder</artifactId>
                                     <version>${project.version}</version>
-                                    <type>jar</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/classes/modules/installroot-builder_jar</outputDirectory>
                                 </artifactItem>
@@ -90,7 +90,6 @@
                                     <groupId>org.glassfish.extras</groupId>
                                     <artifactId>instanceroot-builder</artifactId>
                                     <version>${project.version}</version>
-                                    <type>jar</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/classes/modules/instanceroot-builder_jar</outputDirectory>
                                 </artifactItem>
@@ -98,7 +97,6 @@
                                     <groupId>org.glassfish.extras</groupId>
                                     <artifactId>osgi-modules-uninstaller</artifactId>
                                     <version>${project.version}</version>
-                                    <type>jar</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/classes/modules/osgi-modules-uninstaller_jar</outputDirectory>
                                 </artifactItem>
@@ -106,7 +104,6 @@
                                     <groupId>org.apache.felix</groupId>
                                     <artifactId>org.apache.felix.main</artifactId>
                                     <version>3.0.2</version>
-                                    <type>jar</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
                                 </artifactItem>
@@ -114,7 +111,6 @@
                                     <groupId>org.glassfish.extras</groupId>
                                     <artifactId>bootstrap</artifactId>
                                     <version>${project.version}</version>
-                                    <type>jar</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
                                 </artifactItem>
@@ -132,7 +128,6 @@
                                     <groupId>org.glassfish.extras</groupId>
                                     <artifactId>osgi-main</artifactId>
                                     <version>${project.version}</version>
-                                    <type>jar</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
                                     <destFileName>uber-osgi-main.jar</destFileName>

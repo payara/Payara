@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld;
@@ -43,13 +45,18 @@ package org.glassfish.weld;
 import org.glassfish.api.deployment.Deployer;
 import org.jvnet.hk2.annotations.Service;
 
+/**
+ * Service for the Weld container
+ */
 @Service(name = "org.glassfish.weld.WeldContainer")
 public class WeldContainer implements org.glassfish.api.container.Container {
 
+    @Override
     public Class<? extends Deployer> getDeployer() {
         return WeldDeployer.class;
     }
 
+    @Override
     public String getName() {
         return "Weld";
     }

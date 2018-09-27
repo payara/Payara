@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment;
@@ -48,7 +50,7 @@ import java.util.logging.Logger;
 
 /**
  * This descriptor holds the security configuration of an EJB IOR.
- *
+ * (Enterprise Java Bean Interoperable Object Reference)
  */
 
 public class EjbIORConfigurationDescriptor implements Serializable {
@@ -95,6 +97,10 @@ public class EjbIORConfigurationDescriptor implements Serializable {
 	}
     }
 
+    /**
+     * Constuctor
+     * @param enableUsernamePassword 
+     */
     public EjbIORConfigurationDescriptor(boolean enableUsernamePassword) {
 	if(enableUsernamePassword) {
 	    required = true;
@@ -112,7 +118,7 @@ public class EjbIORConfigurationDescriptor implements Serializable {
 
     /**
      * Set the value of the integrity element to the specified value.
-     * @param the value (one of supported, required, none).
+     * @param val the value (one of supported, required, none).
      */
     public void setIntegrity(String val) {
 	if(!val.equalsIgnoreCase(NONE) && !val.equalsIgnoreCase(SUPPORTED) && 
@@ -134,7 +140,7 @@ public class EjbIORConfigurationDescriptor implements Serializable {
 
     /**
      * Set the value of the confidentiality element to the specified value.
-     * @param the value (one of supported, required, none).
+     * @param val the value (one of supported, required, none).
      */
     public void setConfidentiality(String val) {
 	if(!val.equalsIgnoreCase(NONE) && !val.equalsIgnoreCase(SUPPORTED) && 
@@ -156,7 +162,7 @@ public class EjbIORConfigurationDescriptor implements Serializable {
 
     /**
      * Set the value of establishTrustInTarget in the transport layer.
-     * @param the value (required, supported, or none)
+     * @param val the value (required, supported, or none)
      */
     public void setEstablishTrustInTarget(String val) {
 	if(!val.equalsIgnoreCase(NONE) && !val.equalsIgnoreCase(SUPPORTED)) {
@@ -178,7 +184,7 @@ public class EjbIORConfigurationDescriptor implements Serializable {
 
     /**
      * Set the value of establishTrustInClient in the transport layer.
-     * @param the value (required, supported, or none)
+     * @param val the value (required, supported, or none)
      */
     public void setEstablishTrustInClient(String val) {
 	if(!val.equalsIgnoreCase(NONE) && !val.equalsIgnoreCase(SUPPORTED) && 
@@ -201,7 +207,7 @@ public class EjbIORConfigurationDescriptor implements Serializable {
 
     /**
      * Set the authentication method used to authenticate clients.
-     * @param the authentication method.
+     * @param val the authentication method.
      */
     public void setAuthenticationMethod(String val) {
 	if(!val.equalsIgnoreCase(USERNAME_PASSWORD) && !val.equalsIgnoreCase(NONE)) {
@@ -222,7 +228,7 @@ public class EjbIORConfigurationDescriptor implements Serializable {
 
     /**
      * Set the realm name to authenticate the caller in.
-     * @param the realm name.
+     * @param val the realm name.
      */
     public void setRealmName(String val) {
 	realmName = val; 
@@ -238,7 +244,7 @@ public class EjbIORConfigurationDescriptor implements Serializable {
 
     /**
      * Set the value of identity assertion in the SAS_Context layer.
-     * @param the value (one of none, required or supported).
+     * @param val the value (one of none, required or supported).
      */
     public void setCallerPropagation(String val) {
 	if(!val.equalsIgnoreCase(NONE) && !val.equalsIgnoreCase(SUPPORTED) && 
@@ -260,7 +266,7 @@ public class EjbIORConfigurationDescriptor implements Serializable {
     /**
      * Set whether the establishTrustInClient element should be required
      * in the AS_context.
-     * @param the value (true or false).
+     * @param val the value (true or false).
      */
     public void setAuthMethodRequired(boolean val) {
 	required = val;
@@ -270,7 +276,7 @@ public class EjbIORConfigurationDescriptor implements Serializable {
     /**
      * Set whether the establishTrustInClient element should be required
      * in the AS_context.
-     * @param the value (true or false).
+     * @param val the value (true or false).
      */
     public void setAuthMethodRequired(String val) {
 	required = Boolean.valueOf(val).booleanValue();
@@ -278,6 +284,7 @@ public class EjbIORConfigurationDescriptor implements Serializable {
 
     /**
     * Returns a formatted String of the attributes of this object.
+     * @param toStringBuffer
     */
     public void print(StringBuffer toStringBuffer) {
 	toStringBuffer.append("\n integrity ").append(integrity);

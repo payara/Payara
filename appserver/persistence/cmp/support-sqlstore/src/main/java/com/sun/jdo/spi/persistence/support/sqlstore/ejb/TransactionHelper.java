@@ -172,7 +172,7 @@ import com.sun.jdo.api.persistence.support.PersistenceManagerFactory;
      * @return a Connection. 
      * @throws java.sql.SQLException.
      */  
-    java.sql.Connection getConnection(Object resource, String username, String password)
+    java.sql.Connection getConnection(Object resource, String username, char[] password)
         throws java.sql.SQLException;
 
     /** Called in a managed environment to get a non-transactional Connection
@@ -187,7 +187,7 @@ import com.sun.jdo.api.persistence.support.PersistenceManagerFactory;
      * @throws java.sql.SQLException.
      */
     java.sql.Connection getNonTransactionalConnection(
-        Object resource, String username, String password)
+        Object resource, String username, char[] password)
         throws java.sql.SQLException;
 
     /** Called in a managed environment to access a TransactionManager

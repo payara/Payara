@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld;
@@ -56,7 +58,7 @@ import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * This is a decorator which calls Weld implemetation to
+ * This is a decorator which calls Weld implementation to
  * do necessary injection of a web component. It is called by
  * {@link com.sun.web.server.J2EEInstanceListener}
  * before a web component is put into service.
@@ -67,6 +69,7 @@ import org.jvnet.hk2.annotations.Service;
 @Service
 public class WebComponentInjectionManager<T> implements WebComponentDecorator<T> {
     @SuppressWarnings("unchecked")
+    @Override
     public void decorate(T webComponent, WebModule wm) {
         if (wm.getWebBundleDescriptor().hasExtensionProperty(WeldDeployer.WELD_EXTENSION)) {
             DeploymentContext deploymentContext = wm.getWebModuleConfig().getDeploymentContext();

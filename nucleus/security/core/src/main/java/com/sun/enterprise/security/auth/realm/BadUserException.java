@@ -37,22 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm;
 
-
 /**
- * Exception thrown when a User is found to be corrupted for some reason.
- * This is a special case of a realm data structure being corrupted.
+ * Exception thrown when a User is found to be corrupted for some reason. This is a special case of a realm data
+ * structure being corrupted.
  *
  * @author Harish Prabandham
  */
-public class BadUserException extends BadRealmException
-{
+public class BadUserException extends BadRealmException {
+  
+    private static final long serialVersionUID = 877880373232694396L;
+
     /**
      * Constructs the exception, with descriptive information.
      *
      * @param info describes the problem with the user
      */
-    public BadUserException (String info) { super (info); }
+    public BadUserException(String info) {
+        super(info);
+    }
 }

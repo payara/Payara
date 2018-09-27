@@ -52,8 +52,6 @@ import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.config.support.TargetType;
-import org.glassfish.config.support.CommandTarget;
 import org.glassfish.internal.config.UnprocessedConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;

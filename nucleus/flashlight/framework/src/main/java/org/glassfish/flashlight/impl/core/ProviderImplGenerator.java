@@ -37,34 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.flashlight.impl.core;
 
 /**
  * @author Mahesh Kannan
  *         Date: Jul 20, 2008
  */
+
 import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
+import org.glassfish.flashlight.FlashlightLoggerInfo;
 import org.glassfish.flashlight.provider.FlashlightProbe;
 import org.glassfish.flashlight.provider.ProbeRegistry;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
-import java.lang.reflect.InvocationTargetException;
-import java.security.PrivilegedActionException;
-import java.security.ProtectionDomain;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.glassfish.flashlight.FlashlightLoggerInfo;
 import org.glassfish.hk2.external.org.objectweb.asm.ClassWriter;
 import org.glassfish.hk2.external.org.objectweb.asm.Label;
 import org.glassfish.hk2.external.org.objectweb.asm.Opcodes;
 import org.glassfish.hk2.external.org.objectweb.asm.Type;
 import org.glassfish.hk2.external.org.objectweb.asm.commons.GeneratorAdapter;
 import org.glassfish.hk2.external.org.objectweb.asm.commons.Method;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.security.PrivilegedActionException;
+import java.security.ProtectionDomain;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ProviderImplGenerator {
     private static final Logger logger = FlashlightLoggerInfo.getLogger();

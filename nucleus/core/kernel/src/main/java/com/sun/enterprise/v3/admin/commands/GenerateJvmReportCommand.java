@@ -37,12 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation]
 
 package com.sun.enterprise.v3.admin.commands;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.config.serverbeans.Server;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.I18n;
@@ -66,7 +68,7 @@ import org.glassfish.config.support.TargetType;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("generate.jvm.report")
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
 @ExecuteOn(value = {RuntimeType.INSTANCE}, ifNeverStarted=FailurePolicy.Error)
 @RestEndpoints({
     @RestEndpoint(configBean=Cluster.class,
@@ -77,6 +79,13 @@ import org.glassfish.config.support.TargetType;
             @RestParam(name="target", value="$parent")
         }),
     @RestEndpoint(configBean=Server.class,
+        opType=RestEndpoint.OpType.GET, 
+        path="generate-jvm-report", 
+        description="Generate Report",
+        params={
+            @RestParam(name="target", value="$parent")
+        }),
+    @RestEndpoint(configBean=DeploymentGroup.class,
         opType=RestEndpoint.OpType.GET, 
         path="generate-jvm-report", 
         description="Generate Report",

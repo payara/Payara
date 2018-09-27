@@ -36,14 +36,18 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.testing;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.codehaus.jettison.json.JSONArray;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonValue;
 
 import static org.glassfish.admin.rest.testing.Common.*;
 
@@ -164,19 +168,19 @@ public class ArrayValue extends Value {
     // TBD - could support swapping out a value, but we're not likely to need that since arrays are usually homogeneous
 
     @Override
-    Object getJsonValue() throws Exception {
+    JsonValue getJsonValue() throws Exception {
         if (isIgnoreExtra()) {
             throw new IllegalStateException("Cannot be converted to json because ignoreExtra is true");
         }
-        JSONArray a = new JSONArray();
+        JsonArrayBuilder a = Json.createArrayBuilder();
         for (Value v : getValues()) {
-            a.put(v.getJsonValue());
+            a.add(v.getJsonValue());
         }
-        return a;
+        return a.build();
     }
 
-    public JSONArray toJSONArray() throws Exception {
-        return (JSONArray) getJsonValue();
+    public JsonArray toJsonArray() throws Exception {
+        return (JsonArray) getJsonValue();
     }
 
     @Override

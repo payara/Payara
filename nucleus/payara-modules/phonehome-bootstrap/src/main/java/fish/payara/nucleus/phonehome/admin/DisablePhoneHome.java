@@ -48,7 +48,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("disable-phone-home")
 @ExecuteOn(RuntimeType.INSTANCE)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
 public class DisablePhoneHome implements AdminCommand {
     
     @Inject

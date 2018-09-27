@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans.customvalidators;
 
@@ -49,21 +50,22 @@ import org.jvnet.hk2.config.types.Property;
  *
  * @author Nandini Ektare
  */
-public class SolarisRealmPropertyCheckValidator
-    implements ConstraintValidator<SolarisRealmPropertyCheck, AuthRealm> {
+public class SolarisRealmPropertyCheckValidator implements ConstraintValidator<SolarisRealmPropertyCheck, AuthRealm> {
 
-    private static final String SOLARIS_REALM =
-        "com.sun.enterprise.security.auth.realm.solaris.SolarisRealm";
+    private static final String SOLARIS_REALM = "com.sun.enterprise.security.auth.realm.solaris.SolarisRealm";
 
+    @Override
     public void initialize(final SolarisRealmPropertyCheck fqcn) {
+        // no-op
     }
 
+    @Override
     public boolean isValid(final AuthRealm realm,
         final ConstraintValidatorContext constraintValidatorContext) {
 
         if (realm.getClassname().equals(SOLARIS_REALM)) {
-            Property jaas_context = realm.getProperty("jaas-context");
-            if (jaas_context == null || jaas_context.getName().equals(""))
+            Property jaasContext = realm.getProperty("jaas-context");
+            if (jaasContext == null || jaasContext.getName().equals(""))
                 return false;
         }
         

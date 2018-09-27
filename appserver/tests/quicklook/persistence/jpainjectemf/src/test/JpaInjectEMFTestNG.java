@@ -39,6 +39,7 @@
  */
 
 package test.jpa.jpainjectemf;
+
 import org.testng.annotations.Configuration;
 import org.testng.annotations.ExpectedExceptions;
 import org.testng.annotations.Test;
@@ -49,43 +50,35 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-
 public class JpaInjectEMFTestNG {
 
-    private String strContextRoot="/jpainjectemf";
+    private String strContextRoot = "/jpainjectemf";
 
     static String result = "";
-    String host=System.getProperty("http.host");
-    String port=System.getProperty("http.port");
-           
+    String host = System.getProperty("http.host");
+    String port = System.getProperty("http.port");
 
     @Test(groups = { "init" })
-    public void persistWithInjectEMF() throws Exception{
-        boolean result=false;       
+    public void persistWithInjectEMF() throws Exception {
+        boolean result = false;
 
-        try{
-
-          result = test("llinit");
-	  Assert.assertEquals(result, true,"Unexpected Results");
-
-        }catch(Exception e){
-
-	  e.printStackTrace();
-	  throw new Exception(e);
-
+        try {
+            result = test("llinit");
+            Assert.assertEquals(result, true, "Unexpected Results");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception(e);
         }
     }
 
     @Test(dependsOnGroups = { "init.*" })
-    public void lazyLoadingByQuery() throws Exception{
-        boolean result=false;        
+    public void lazyLoadingByQuery() throws Exception {
+        boolean result = false;
 
-        try{
-
-            result = test("llquery");               
-  	    Assert.assertEquals(result, true,"Unexpected Results");
-
-        }catch(Exception e){
+        try {
+            result = test("llquery");
+            Assert.assertEquals(result, true, "Unexpected Results");
+        } catch (Exception e) {
             e.printStackTrace();
             throw new Exception(e);
         }
@@ -94,29 +87,35 @@ public class JpaInjectEMFTestNG {
 
     private boolean test(String c) throws Exception {
         String EXPECTED_RESPONSE = c + ":pass";
-        boolean result=false;
-        String url = "http://" + host + ":" + port + strContextRoot + 
-                     "/jpa?testcase=" + c;
-        //System.out.println("url="+url);
+        boolean result = false;
+        String url = "http://" + host + ":" + port + strContextRoot + "/jpa?testcase=" + c;
+        System.out.println("url = " + url);
 
-        HttpURLConnection conn = (HttpURLConnection)
-            (new URL(url)).openConnection();
+        HttpURLConnection conn = (HttpURLConnection) (new URL(url)).openConnection();
         int code = conn.getResponseCode();
         if (code != 200) {
-            System.err.println("Unexpected return code: " + code);
-	} else {
+            System.out.println("Unexpected return code: " + code);
+        } else {
+            
+            System.out.println("Looking in response for " + EXPECTED_RESPONSE);
+            
             InputStream is = conn.getInputStream();
             BufferedReader input = new BufferedReader(new InputStreamReader(is));
-	    String line = null;
-	    while ((line = input.readLine()) != null) {
-	      if (line.contains(EXPECTED_RESPONSE)) {
-                result = true;
-		break;
-	      }
-	    }
-	    
-        }    
-	return result;
+            String line = null;
+            while ((line = input.readLine()) != null) {
+                System.out.println(line);
+                if (line.contains(EXPECTED_RESPONSE)) {
+                    result = true;
+                    break;
+                }
+            }
+            
+            if (result == false) {
+                System.out.println("Expected response not found");
+            }
+        }
+        
+        return result;
     }
 
     public static void echo(String msg) {

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.jta.admin.cli;
 
@@ -48,6 +48,7 @@ import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.logging.LogDomains;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -71,7 +72,7 @@ import org.glassfish.api.admin.RuntimeType;
 
 
 @Service(name = "freeze-transaction-service")
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
 @ExecuteOn(value = {RuntimeType.INSTANCE}, ifNeverStarted=FailurePolicy.Error)
 @PerLookup
 @I18n("freeze.transaction.service")
@@ -93,7 +94,12 @@ import org.glassfish.api.admin.RuntimeType;
     @RestEndpoint(configBean=Domain.class,
         opType=RestEndpoint.OpType.POST,
         path="freeze-transaction-service",
+        description="Freeze Transaction Service"),
+    @RestEndpoint(configBean=DeploymentGroup.class,
+        opType=RestEndpoint.OpType.POST,
+        path="freeze-transaction-service",
         description="Freeze Transaction Service")
+
 })
 public class FreezeTransactionService implements AdminCommand {
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.digest.impl;
 
 import com.sun.enterprise.security.auth.digest.api.NestedDigestAlgoParam;
@@ -51,28 +51,28 @@ public class NestedDigestAlgoParamImpl implements NestedDigestAlgoParam {
 
     private byte[] delimeter = ":".getBytes();
     private String algorithm = "";
-    private AlgorithmParameterSpec[] params = null;
+    private AlgorithmParameterSpec[] params;
     private String name = "";
 
-    public NestedDigestAlgoParamImpl(String algorithm, String name,AlgorithmParameterSpec[] values) {
+    public NestedDigestAlgoParamImpl(String algorithm, String name, AlgorithmParameterSpec[] values) {
         this.algorithm = algorithm;
         this.params = values;
         this.name = name;
     }
 
-    public NestedDigestAlgoParamImpl(String name,AlgorithmParameterSpec[] values) {
+    public NestedDigestAlgoParamImpl(String name, AlgorithmParameterSpec[] values) {
         this.params = values;
         this.name = name;
     }
 
-    public NestedDigestAlgoParamImpl(String algorithm,String name, AlgorithmParameterSpec[] values, byte[] delimiter) {
+    public NestedDigestAlgoParamImpl(String algorithm, String name, AlgorithmParameterSpec[] values, byte[] delimiter) {
         this.algorithm = algorithm;
         this.params = values;
         this.delimeter = delimiter;
         this.name = name;
     }
 
-    public NestedDigestAlgoParamImpl(AlgorithmParameterSpec[] values,String name,  byte[] delimiter) {
+    public NestedDigestAlgoParamImpl(AlgorithmParameterSpec[] values, String name, byte[] delimiter) {
         this.params = values;
         this.delimeter = delimiter;
         this.name = name;
@@ -84,7 +84,7 @@ public class NestedDigestAlgoParamImpl implements NestedDigestAlgoParam {
 
     public byte[] getDelimiter() {
         return delimeter;
-    } 
+    }
 
     public String getAlgorithm() {
         return algorithm;

@@ -159,14 +159,18 @@ public class SerialInitContextFactory implements InitialContextFactory {
         boolean useLB = propertyIsSet(myEnv, IIOP_ENDPOINTS_PROPERTY)
             || propertyIsSet(myEnv, LOAD_BALANCING_PROPERTY) ;
         NamingClusterInfo namingClusterInfo = null;
-
+        boolean enableClusterUpdate = true;
+        enableClusterUpdate = Boolean.parseBoolean(System.getProperty(IIOP_CLUSTER_UPDATE_PROPERTY, "true"));
+        if(propertyIsSet(myEnv, IIOP_CLUSTER_UPDATE_PROPERTY)) {
+            enableClusterUpdate = Boolean.parseBoolean(getEnvSysProperty(myEnv, IIOP_CLUSTER_UPDATE_PROPERTY));
+        }
 
         if (useLB)  {
         	 if (!initialized) {
                  synchronized( SerialInitContextFactory.class ) {
                      if (!initialized) {
                          namingClusterInfo = services.getService(NamingClusterInfo.class);
-                         namingClusterInfo.initGroupInfoService(myEnv, defaultHost, defaultPort, getORB(), services);
+                         namingClusterInfo.initGroupInfoService(myEnv, defaultHost, defaultPort, getORB(), services, enableClusterUpdate);
                          initialized = true ;
                      }
                  }
@@ -182,7 +186,7 @@ public class SerialInitContextFactory implements InitialContextFactory {
 
                 if(namingClusterInfo == null) {
                     namingClusterInfo = services.getService(NamingClusterInfo.class);
-                    namingClusterInfo.setClusterInstanceInfo(myEnv, defaultHost, defaultPort, false);
+                    namingClusterInfo.setClusterInstanceInfo(myEnv, defaultHost, defaultPort, !enableClusterUpdate);
                 }
 
                 List<String> rrList = namingClusterInfo.getNextRotation();

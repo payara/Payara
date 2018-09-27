@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,7 @@ package fish.payara.jdbc;
 import com.sun.gjc.util.SQLTraceLogger;
 import com.sun.logging.LogDomains;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import fish.payara.notification.requesttracing.RequestTraceSpanLog;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,9 +76,9 @@ public class RequestTracingListener implements SQLTraceListener {
     @Override
     public void sqlTrace(SQLTraceRecord record) {
         // Construct request event and trace
-        RequestEvent requestEvent = constructJDBCEvent(record);
+        RequestTraceSpanLog spanLog = constructJDBCSpanLog(record);
         if (requestTracing != null) {
-            requestTracing.traceRequestEvent(requestEvent);
+            requestTracing.addSpanLog(spanLog);
         } 
     }
     
@@ -87,19 +87,16 @@ public class RequestTracingListener implements SQLTraceListener {
      * @param record The SQL record to log
      * @return RequestEvent to be traced
      */
-    private RequestEvent constructJDBCEvent(SQLTraceRecord record) {
-        RequestEvent requestEvent = new RequestEvent("JDBCContextTrace");
+    private RequestTraceSpanLog constructJDBCSpanLog(SQLTraceRecord record) {
+        RequestTraceSpanLog spanLog = new RequestTraceSpanLog("jdbcContextEvent");
         
-        requestEvent.addProperty("Method Name", record.getMethodName());
-        requestEvent.addProperty("Parameters", 
-                Arrays.toString(record.getParams()));
-        requestEvent.addProperty("Pool Name", record.getPoolName());
-        requestEvent.addProperty("Thread ID", 
-                Long.toString(record.getThreadID()));
-        requestEvent.addProperty("Thread Name", record.getThreadName());
-        requestEvent.addProperty("Execution Time", 
-                Long.toString(record.getExecutionTime()));
+        spanLog.addLogEntry("Method Name", record.getMethodName());
+        spanLog.addLogEntry("Parameters", Arrays.toString(record.getParams()));
+        spanLog.addLogEntry("Pool Name", record.getPoolName());
+        spanLog.addLogEntry("Thread ID", Long.toString(record.getThreadID()));
+        spanLog.addLogEntry("Thread Name", record.getThreadName());
+        spanLog.addLogEntry("Execution Time", Long.toString(record.getExecutionTime()));
              
-        return requestEvent;
+        return spanLog;
     }
 }

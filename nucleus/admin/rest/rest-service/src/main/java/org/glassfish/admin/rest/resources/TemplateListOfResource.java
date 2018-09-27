@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -185,9 +185,10 @@ public abstract class TemplateListOfResource extends AbstractResource {
         this.parent = parent;
         this.tagName = tagName;
         if (parent != null) {
-            entity = parent.nodeElements(tagName);
+            synchronized (parent) {
+                entity = parent.nodeElements(tagName);
+            }
         }
-
     }
 
     /**

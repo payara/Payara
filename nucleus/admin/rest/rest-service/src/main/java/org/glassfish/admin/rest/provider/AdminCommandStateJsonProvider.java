@@ -36,16 +36,21 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.provider;
 
 import com.sun.enterprise.v3.common.ActionReporter;
 import java.lang.reflect.Type;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.api.admin.AdminCommandState;
 
 /**
@@ -71,24 +76,24 @@ public class AdminCommandStateJsonProvider extends BaseProvider<AdminCommandStat
     public String getContent(AdminCommandState proxy) {
         try {
             return processState(proxy).toString();
-        } catch (JSONException ex) {
+        } catch (JsonException ex) {
             throw new RuntimeException(ex);
         }
     }
     
-    public JSONObject processState(AdminCommandState state) throws JSONException {
-        JSONObject result = new JSONObject();
-        result.put("state", state.getState().name());
-        result.put("id", state.getId());
-        result.put("empty-payload", state.isOutboundPayloadEmpty());
+    public JsonObject processState(AdminCommandState state) throws JsonException {
+        JsonObjectBuilder result = Json.createObjectBuilder();
+        result.add("state", state.getState().name());
+        result.add("id", state.getId());
+        result.add("empty-payload", state.isOutboundPayloadEmpty());
         ActionReporter ar = (ActionReporter) state.getActionReport();
         addActionReporter(ar, result);
-        return result;
+        return result.build();
     }
     
-    protected void addActionReporter(ActionReporter ar, JSONObject json) throws JSONException {
+    protected void addActionReporter(ActionReporter ar, JsonObjectBuilder json) throws JsonException {
         if (ar != null) {
-            json.put("action-report", actionReportJsonProvider.processReport(ar));
+            json.add("action-report", actionReportJsonProvider.processReport(ar));
         }
     }
     

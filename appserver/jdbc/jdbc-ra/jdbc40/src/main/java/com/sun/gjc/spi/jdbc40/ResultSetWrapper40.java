@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.gjc.spi.jdbc40;
 
@@ -1428,5 +1429,99 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
             result = resultSet.isWrapperFor(iface);
         }
         return result;
+    }
+    
+    //-------------------------------- JDBC 4.2 --------------------------------
+   
+    /**
+     * Updates the designated column with an {@code Object} value.
+     *
+     * @param columnIndex the first column is 1, the second is 2, ...
+     * @param columnValue the new column value
+     * @param targetSqlType the SQL type to be sent to the database
+     * @param scaleOrLength for an object of {@code java.math.BigDecimal} ,
+     *          this is the number of digits after the decimal point. For
+     *          Java Object types {@code InputStream} and {@code Reader},
+     *          this is the length
+     *          of the data in the stream or reader.  For all other types,
+     *          this value will be ignored.
+     * @exception SQLException if the columnIndex is not valid;
+     * if a database access error occurs;
+     * the result set concurrency is {@code CONCUR_READ_ONLY}
+     * or this method is called on a closed result set
+     * @exception SQLFeatureNotSupportedException if the JDBC driver does not
+     * support this method; if the JDBC driver does not support the specified targetSqlType
+     */
+    @Override
+     public void updateObject(int columnIndex, Object columnValue,
+             SQLType targetSqlType, int scaleOrLength)  throws SQLException {
+        resultSet.updateObject(columnIndex, columnValue, targetSqlType, scaleOrLength);
+    }
+
+    /**
+     * Updates the designated column with an {@code Object} value.
+     *
+     * @param columnLabel the label for the column specified with the SQL AS
+     * clause.  If the SQL AS clause was not specified, then the label is
+     * the name of the column
+     * @param columnValue the new column value
+     * @param targetSqlType the SQL type to be sent to the database
+     * @param scaleOrLength for an object of {@code java.math.BigDecimal} ,
+     *          this is the number of digits after the decimal point. For
+     *          Java Object types {@code InputStream} and {@code Reader},
+     *          this is the length
+     *          of the data in the stream or reader.  For all other types,
+     *          this value will be ignored.
+     * @exception SQLException if the columnLabel is not valid;
+     * if a database access error occurs;
+     * the result set concurrency is {@code CONCUR_READ_ONLY}
+     * or this method is called on a closed result set
+     * @exception SQLFeatureNotSupportedException if the JDBC driver does not
+     * support this method; if the JDBC driver does not support the specified targetSqlType
+     */
+    @Override
+    public void updateObject(String columnLabel, Object columnValue,
+            SQLType targetSqlType, int scaleOrLength) throws SQLException {
+        resultSet.updateObject(columnLabel, columnValue, targetSqlType, scaleOrLength);
+    }
+
+    /**
+     * Updates the designated column with an {@code Object} value.
+     *
+     * @param columnIndex the first column is 1, the second is 2, ...
+     * @param columnValue the new column value
+     * @param targetSqlType the SQL type to be sent to the database
+     * @exception SQLException if the columnIndex is not valid;
+     * if a database access error occurs;
+     * the result set concurrency is {@code CONCUR_READ_ONLY}
+     * or this method is called on a closed result set
+     * @exception SQLFeatureNotSupportedException if the JDBC driver does not
+     * support this method; if the JDBC driver does not support the specified targetSqlType
+     */
+    @Override
+    public void updateObject(int columnIndex, Object columnValue, SQLType targetSqlType)
+            throws SQLException {
+        resultSet.updateObject(columnIndex, columnValue, targetSqlType);
+    }
+
+    /**
+     * Updates the designated column with an {@code Object} value.
+     *
+     * @param columnLabel the label for the column specified with the SQL AS
+     * clause.  If the SQL AS clause was not specified, then the label is
+     * the name of the column
+     * @param columnValue the new column value
+     * @param targetSqlType the SQL type to be sent to the database
+     * @exception SQLException if the columnLabel is not valid;
+     * if a database access error occurs;
+     * the result set concurrency is {@code CONCUR_READ_ONLY}
+     * or this method is called on a closed result set
+     * @exception SQLFeatureNotSupportedException if the JDBC driver does not
+     * support this method; if the JDBC driver does not support the specified targetSqlType
+     */
+    @Override
+    public void updateObject(String columnLabel, Object columnValue,
+            SQLType targetSqlType) throws SQLException {
+        resultSet.updateObject(columnLabel, columnValue, targetSqlType);
     }
 }

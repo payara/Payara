@@ -36,12 +36,16 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.model;
 
 import java.net.URI;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 /**
  * Describes a link from one resource to another resource.
@@ -90,14 +94,14 @@ public class ResourceLink {
         this.title = val;
     }
 
-    public JSONObject toJson() throws JSONException {
-        JSONObject object = new JSONObject();
-        object.put("rel", getRelationship());
-        object.put("uri", getURI().toASCIIString());
+    public JsonObject toJson() throws JsonException {
+        JsonObjectBuilder object = Json.createObjectBuilder();
+        object.add("rel", getRelationship());
+        object.add("uri", getURI().toASCIIString());
         String t = getTitle();
         if (t != null && t.length() > 0) {
-          object.put("title", t);
+          object.add("title", t);
         }
-        return object;
+        return object.build();
     }
 }

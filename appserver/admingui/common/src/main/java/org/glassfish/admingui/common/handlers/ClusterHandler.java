@@ -37,15 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 
-/*
- * ClusterHandler.java
- *
- * Created on July 1,2010  9:32 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 /**
  *
  * @author anilam
@@ -139,7 +132,22 @@ public class ClusterHandler {
          }
      }
 
-
+    @Handler(id = "gf.isDGName",
+        input = {
+            @HandlerInput(name = "dgName", type = String.class, required = true)
+        },
+        output = {
+            @HandlerOutput(name = "exists", type = Boolean.class)
+        })
+    public static void isDepoymentGroupName(HandlerContext handlerCtx) {
+        if( ! TargetUtil.isDeploymentGroup((String) handlerCtx.getInputValue("dgName"))){
+            GuiUtil.handleError(handlerCtx, GuiUtil.getMessage("msg.NoSuchDG"));
+            handlerCtx.setOutputValue("exists",  false);
+        }else{
+            handlerCtx.setOutputValue("exists",  true);
+        }
+    }
+    
     @Handler(id = "gf.isClusterName",
         input = {
             @HandlerInput(name = "clusterName", type = String.class, required = true)
@@ -219,7 +227,60 @@ public class ClusterHandler {
             GuiUtil.handleError(handlerCtx, details);
         }
      }
+    
+    
+    @Handler(id="gf.removeFromDG",
+            input= {
+                @HandlerInput(name = "selectedRows", type = List.class, required = true),
+                @HandlerInput(name = "dgName", type = String.class, required = true) } )
+    public static void removeFromDG(HandlerContext ctx) {
+        String deploymentGroup = (String) ctx.getInputValue("dgName");
+        List<Map> rows = (List<Map>) ctx.getInputValue("selectedRows");
+        String endPoint = GuiUtil.getSessionValue("REST_URL") + "/deployment-groups/remove-instance-from-deployment-group";
+        for (Map oneRow : rows) {
+            String instanceName = (String) oneRow.get("name");
+            Map<String,Object> attrs = new HashMap<>(2);
+            attrs.put("deploymentGroup", deploymentGroup);
+            attrs.put("instance", instanceName);
+            GuiUtil.getLogger().info(endPoint);
+            try {
+            RestUtil.restRequest(endPoint, attrs, "post", null, false);
+            }catch (Exception ex){
+                GuiUtil.prepareAlert("error", GuiUtil.getMessage("msg.Error"), ex.getMessage());
+                return;
+            }
+        }
+        
+    }
 
+        @Handler(id = "gf.dgAction",
+        input = {
+            @HandlerInput(name = "rows", type = List.class, required = true),
+            @HandlerInput(name = "action", type = String.class, required = true),
+            @HandlerInput(name = "extraInfo", type = Object.class) })
+    public static void deploymentGroupAction(HandlerContext handlerCtx) {
+        String action = (String) handlerCtx.getInputValue("action");
+        List<Map> rows =  (List<Map>) handlerCtx.getInputValue("rows");
+        String  errorMsg = null;
+        String prefix = GuiUtil.getSessionValue("REST_URL") + "/deployment-groups/deployment-group/";
+
+        for (Map oneRow : rows) {
+            String dgName = (String) oneRow.get("name");
+            String endpoint = prefix + dgName + "/" + action;
+            String method = "post";
+            if (action.equals("delete-deployment-group")){
+                endpoint = prefix + dgName;
+                method = "delete";
+            }
+            try{
+                GuiUtil.getLogger().info(endpoint);
+                RestUtil.restRequest( endpoint, null, method, null, false);
+            }catch (Exception ex){
+                GuiUtil.prepareAlert("error", GuiUtil.getMessage("msg.Error"), ex.getMessage());
+                return;
+            }
+        }
+     }
 
     @Handler(id = "gf.clusterAction",
         input = {
@@ -467,6 +528,16 @@ public class ClusterHandler {
                     GuiUtil.getCommonMessage("LOG_DELETE_INSTANCE", new Object[]{endpoint, "null"}));
             return ex.getMessage();
         }
+    }
+    
+    
+    @Handler(id = "gf.listDeploymentGroups",
+            output = {
+                    @HandlerOutput(name = "deploymentgroups", type = List.class)
+            })
+    public static void listDeploymentGroups(HandlerContext handlerCtx) {
+        List deploymentGroups = TargetUtil.getDeploymentGroups();
+        handlerCtx.setOutputValue("deploymentgroups", deploymentGroups);
     }
 
     @Handler(id = "gf.listClusters",

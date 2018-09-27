@@ -61,6 +61,7 @@
 <sun:form id="propertyForm">
 
 #include "/common/appServer/serverInstTabs.inc"
+#include "/common/shared/alertMsg_1.inc"
                 <!-- Page Title -->
 
 <sun:title id="propertyContentPage" title="$resource{i18nc.resourcesTarget.pageTitle}"

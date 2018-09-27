@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment.util;
@@ -80,6 +82,10 @@ public class EnvEntriesValidator {
     globalNameSpace = new HashMap();
   }
 
+  /**
+   * 
+   * @param env 
+   */
   public void validateEnvEntries(JndiNameEnvironment env) {
     if (env instanceof WebBundleDescriptor) {
       Enumeration<EnvironmentEntry> envEntries = ((WebBundleDescriptor) env)
@@ -232,11 +238,23 @@ public class EnvEntriesValidator {
     return namespace;
   }
 
+  /**
+   * Throws an {@link IllegalStateException}
+   * @param jndiName jndi for which a binding already exists
+   * @param namespace namespace where the jndi is
+   */
   private void throwConflictException(String jndiName, String namespace) {
     throw new IllegalStateException("Naming binding already exists for "
         + jndiName + " in namespace " + namespace);
   }
 
+  /**
+   * Returns true is neither string is null and are equal
+   * @param s1
+   * @param s2
+   * @return
+   * @see String#equals(Object)
+   */
   private boolean areConflicting(String s1, String s2) {
     boolean conflict = false;
     if ((s1 != null && !s1.equals(s2)) || (s2 != null && !s2.equals(s1))) {
@@ -255,6 +273,7 @@ public class EnvEntriesValidator {
       module = moduleName;
     }
 
+    @Override
     public boolean equals(Object o) {
       boolean equal = false;
       if ((o != null) && (o instanceof AppModuleKey)) {
@@ -266,10 +285,12 @@ public class EnvEntriesValidator {
       return equal;
     }
 
+    @Override
     public int hashCode() {
       return app.hashCode();
     }
 
+    @Override
     public String toString() {
       return "appName = " + app + " , module = " + module;
     }

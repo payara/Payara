@@ -37,15 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [nPayara Foundation and/or its affiliates]
 
-/*
- * RegisgterHandlers.java
- *
- * Created on March 24, 2008
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 
 package org.glassfish.admingui.registration;
 
@@ -62,10 +55,10 @@ import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.Random;
 
 import com.sun.enterprise.registration.impl.RelayService;
 import com.sun.enterprise.registration.glassfish.RegistrationUtil;
+import java.security.SecureRandom;
 import org.glassfish.admingui.common.util.GuiUtil;
 
 /**
@@ -92,7 +85,7 @@ public class RegisterHandlers {
         int maxImageCount = 25+1; //the # of images we have under images/square
         List result = new ArrayList();
         int cnt = ((Integer) handlerCtx.getInputValue("count")).intValue();
-        Random random = new Random();
+        SecureRandom random = new SecureRandom();
         for(int i=0; i < cnt; i++){
             for(;;){
                 int num = Math.abs(random.nextInt() % maxImageCount);

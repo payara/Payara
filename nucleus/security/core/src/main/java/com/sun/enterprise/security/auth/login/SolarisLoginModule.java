@@ -37,41 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.login;
 
-import java.util.*;
+import static java.util.logging.Level.FINEST;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-
-import javax.security.auth.*;
-import javax.security.auth.callback.*;
-import javax.security.auth.login.*;
-import javax.security.auth.spi.*;
-
-import com.sun.enterprise.security.auth.realm.solaris.SolarisRealm;
-
-// limit RI imports
-import com.sun.enterprise.security.auth.Privilege;
-import com.sun.enterprise.security.auth.PrivilegeImpl;
-
-import com.sun.enterprise.security.auth.realm.Realm;
-import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import javax.security.auth.login.LoginException;
+
+import com.sun.enterprise.security.BasePasswordLoginModule;
+import com.sun.enterprise.security.auth.realm.solaris.SolarisRealm;
 
 /**
  * Solaris realm login module.
  *
- * <P>Processing is delegated to the SolarisRealm class which accesses
- * the native methods.
+ * <P>
+ * Processing is delegated to the SolarisRealm class which accesses the native methods.
  *
- * @see com.sun.enterprise.security.auth.login.PasswordLoginModule
  * @see com.sun.enterprise.security.auth.realm.solaris.SolarisRealm
  *
  */
-public class SolarisLoginModule extends PasswordLoginModule
-{
+public class SolarisLoginModule extends BasePasswordLoginModule {
 
     /**
      * Perform solaris authentication. Delegates to SolarisRealm.
@@ -79,35 +64,26 @@ public class SolarisLoginModule extends PasswordLoginModule
      * @throws LoginException If login fails (JAAS login() behavior).
      *
      */
-    protected void authenticate()
-        throws LoginException
-    {
-        if (!(_currentRealm instanceof SolarisRealm)) {
-            String msg = sm.getString("solarislm.badrealm");
-            throw new LoginException(msg);
-        }
-        
-        SolarisRealm solarisRealm = (SolarisRealm)_currentRealm;
+    @Override
+    protected void authenticateUser() throws LoginException {
+        SolarisRealm solarisRealm = getRealm(SolarisRealm.class , "solarislm.badrealm");
 
-        // A solaris user must have a name not null so check here.
-        if ( (_username == null) || (_username.length() == 0) ) {
-            String msg = sm.getString("solarislm.nulluser");
-            throw new LoginException(msg);
-        }
-        
-        String[] grpList = solarisRealm.authenticate(_username, getPasswordChar());
-
-        if (grpList == null) {  // JAAS behavior
-            String msg = sm.getString("solarislm.loginfail", _username);
-            throw new LoginException(msg);
+        // A Solaris user must have a name not null and non-empty.
+        if (_username == null || _username.length() == 0) {
+            throw new LoginException(sm.getString("solarislm.nulluser"));
         }
 
-        if (_logger.isLoggable(Level.FINEST)) {
+        String[] groups = solarisRealm.authenticate(_username, getPasswordChar());
+
+        if (groups == null) { // JAAS behavior
+            throw new LoginException(sm.getString("solarislm.loginfail", _username));
+        }
+
+        if (_logger.isLoggable(FINEST)) {
             _logger.finest("Solaris login succeeded for: " + _username);
         }
 
-        commitAuthentication(_username, getPasswordChar(),
-                             _currentRealm, grpList);
+        commitUserAuthentication(groups);
     }
 
 }

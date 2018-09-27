@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
@@ -45,6 +46,7 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import java.io.*;
 import java.text.*;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.MessagePart;
@@ -57,33 +59,33 @@ public class CLIUtil {
 
     private static final int MAX_COMMANDS_TO_DISPLAY = 75;
 
-    private static final LocalStringsImpl strings =
-                                new LocalStringsImpl(CLIUtil.class);
+    private static final LocalStringsImpl strings = new LocalStringsImpl(CLIUtil.class);
 
     /**
      *   Read passwords from the password file and save them in a java.util.Map.
      *   @param passwordFileName  password file name
      *   @param withPrefix decides whether prefix should be taken into account
      *   @return Map of the password name and value
+     *   @CommandException
      */
-    public static Map<String, String> readPasswordFileOptions(
-                        final String passwordFileName, boolean withPrefix)
-                        throws CommandException {
+    public static Map<String, String> readPasswordFileOptions(final String passwordFileName, boolean withPrefix) throws CommandException {
 
         Map<String, String> passwordOptions = new HashMap<String, String>();
         boolean readStdin = passwordFileName.equals("-");
         InputStream is = null;
         try {
-            is = new BufferedInputStream(
-                readStdin ? System.in : new FileInputStream(passwordFileName));
+            is = new BufferedInputStream(readStdin ? System.in : new FileInputStream(passwordFileName));
             final Properties prop = new Properties();
             prop.load(is);
             for (Object key : prop.keySet()) {
                 final String entry = (String)key;
                 if (entry.startsWith(Environment.getPrefix())) {
-                    final String optionName = withPrefix ? entry :
-                      entry.substring(Environment.getPrefix().length()).
-                            toLowerCase(Locale.ENGLISH);
+                    final String optionName;
+                    if (withPrefix){
+                        optionName = entry;
+                    } else {
+                        optionName = entry.substring(Environment.getPrefix().length()).toLowerCase(Locale.ENGLISH);
+                    }
                     final String optionValue = prop.getProperty(entry);
                     passwordOptions.put(optionName, optionValue);
                 }
@@ -102,28 +104,34 @@ public class CLIUtil {
     /**
      * Display the commands from the list that are the closest match
      * to the specified command.
+     * @param commandName
+     * @param commands
+     * @param msg
+     * @param logger
+     * @throws org.glassfish.api.admin.InvalidCommandException
      */
-    public static void displayClosestMatch(final String commandName,
-                               String[] commands, final String msg,
-                               final Logger logger)
+    public static void displayClosestMatch(final String commandName, String[] commands, final String msg, final Logger logger)
                                throws InvalidCommandException {
         try {
             // remove leading "*" and ending "*" chars
             int beginIndex = 0;
             int endIndex = commandName.length();
-            if (commandName.startsWith("*"))
+            if (commandName.startsWith("*")){
                 beginIndex = 1;
-            if (commandName.endsWith("*"))
+            }
+            if (commandName.endsWith("*")){
                 endIndex = commandName.length() - 1;
-            final String trimmedCommandName =
-                    commandName.substring(beginIndex, endIndex);
+            }
+            final String trimmedCommandName = commandName.substring(beginIndex, endIndex);
 
             // if pattern doesn't start with "_", remove hidden commands
             if (!trimmedCommandName.startsWith("_")) {
                 List<String> ncl = new ArrayList<String>();
-                for (String cmd : Arrays.asList(commands))
-                    if (!cmd.startsWith("_"))
+                for (String cmd : Arrays.asList(commands)){
+                    if (!cmd.startsWith("_")){
                         ncl.add(cmd);
+                    }
+                }
                 commands = ncl.toArray(new String[ncl.size()]);
             }
 
@@ -132,33 +140,37 @@ public class CLIUtil {
 
             // add all matches to the search String since we want
             // to search all the commands that match the string
-            final String[] matchedCommands =
-                    getMatchedCommands(trimmedCommandName, commands);
+            final String[] matchedCommands = getMatchedCommands(trimmedCommandName, commands);
                     //".*"+trimmedCommandName+".*", commands);
             // don't want to display more than 50 commands
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
-            if (matchedCommands.length > 0 &&
-                    matchedCommands.length < MAX_COMMANDS_TO_DISPLAY) {
-                pw.println(msg != null ? msg :
-                                   strings.get("ClosestMatchedCommands"));
-                for (String eachCommand : matchedCommands)
+            if (matchedCommands.length > 0 && matchedCommands.length < MAX_COMMANDS_TO_DISPLAY) {
+                if (msg != null){
+                    pw.println(msg);
+                } else {
+                    pw.println(strings.get("ClosestMatchedCommands"));
+                }
+                for (String eachCommand : matchedCommands){
                     pw.println("    " + eachCommand);
+                }
             } else {
                 // find the closest distance
-                final String nearestString = StringEditDistance.findNearest(
-                        trimmedCommandName, commands);
+                final String nearestString = StringEditDistance.findNearest(trimmedCommandName, commands);
                 // don't display the string if the edit distance is too large
-                if (StringEditDistance.editDistance(
-                        trimmedCommandName, nearestString) < 5) {
-                    pw.println(msg != null? msg :
-                                       strings.get("ClosestMatchedCommands"));
+                if (StringEditDistance.editDistance(trimmedCommandName, nearestString) < 5) {
+                    if (msg != null) {
+                        pw.println(msg);
+                    } else {
+                        pw.println(strings.get("ClosestMatchedCommands"));
+                    }
                     pw.println("    " + nearestString);
-                } else
+                } else {
                     throw new InvalidCommandException(commandName);
+                }
             }
             pw.flush();
-            logger.severe(sw.toString());
+            logger.log(Level.SEVERE, sw.toString());
         } catch (Exception e) {
             throw new InvalidCommandException(commandName);
         }
@@ -171,9 +183,10 @@ public class CLIUtil {
     private static String[] getMatchedCommands(final String pattern,
                                 final String[] commands) {
         List<String> matchedCommands = new ArrayList<String>();
-        for (int i = 0; i < commands.length; i++) {
-            if (commands[i].indexOf(pattern) >= 0)
-                matchedCommands.add(commands[i]);
+        for (String command : commands) {
+            if (command.contains(pattern)) {
+                matchedCommands.add(command);
+            }
         }
         return matchedCommands.toArray(new String[matchedCommands.size()]);
     }
@@ -181,19 +194,18 @@ public class CLIUtil {
     /**
      * Return all commands, local and remote.
      *
+     * @param container
+     * @param po Options to get the command i.e. admin port
+     * @param env
      * @return the commands as a String array, sorted
      */
-    public static String[] getAllCommands(CLIContainer container, ProgramOptions po,
-                                Environment env) {
+    public static String[] getAllCommands(CLIContainer container, ProgramOptions po, Environment env) {
         try {
             String[] remoteCommands = getRemoteCommands(container, po, env);
             String[] localCommands = getLocalCommands(container);
-            String[] allCommands =
-                    new String[localCommands.length + remoteCommands.length];
-            System.arraycopy(localCommands, 0,
-                allCommands, 0, localCommands.length);
-            System.arraycopy(remoteCommands, 0,
-                allCommands, localCommands.length, remoteCommands.length);
+            String[] allCommands = new String[localCommands.length + remoteCommands.length];
+            System.arraycopy(localCommands, 0, allCommands, 0, localCommands.length);
+            System.arraycopy(remoteCommands, 0, allCommands, localCommands.length, remoteCommands.length);
             Arrays.sort(allCommands);
             return allCommands;
         } catch (CommandValidationException cve) {
@@ -206,6 +218,7 @@ public class CLIUtil {
     /**
      * Get all the known local commands.
      *
+     * @param container
      * @return the commands as a String array, sorted
      */
     public static String[] getLocalCommands(CLIContainer container) {
@@ -218,11 +231,14 @@ public class CLIUtil {
     /**
      * Get the list of commands from the remote server.
      *
+     * @param container
+     * @param po Options to get the command i.e. admin port
+     * @param env
      * @return the commands as a String array, sorted
+     * @throws CommandException
+     * @throws CommandValidationException
      */
-    public static String[] getRemoteCommands(CLIContainer container,
-            ProgramOptions po, Environment env)
-            throws CommandException, CommandValidationException {
+    public static String[] getRemoteCommands(CLIContainer container, ProgramOptions po, Environment env) throws CommandException, CommandValidationException {
         /*
          * In order to eliminate all local command names from the list
          * of remote commands, we collect the local command names into
@@ -235,8 +251,7 @@ public class CLIUtil {
          * Now get the list of remote commands.
          */
         po.removeDetach();
-        RemoteCLICommand cmd =
-            new RemoteCLICommand("list-commands", po, env);
+        RemoteCLICommand cmd = new RemoteCLICommand("list-commands", po, env);
         ActionReport report = cmd.executeAndReturnActionReport("list-commands");
         List<MessagePart> children = report.getTopMessagePart().getChildren();
         List<String> rcmds = new ArrayList<String>(children.size());
@@ -253,16 +268,19 @@ public class CLIUtil {
 
     /**
      * Log the command, for debugging.
+     * @param cname
+     * @param env
+     * @param args
+     * @param exit
      */
     public static void writeCommandToDebugLog(String cname, Environment env, String[] args, int exit) {
         File log = env.getDebugLogfile();
 
-        if (log == null)
+        if (log == null){
             return;
-
-        BufferedWriter out = null;
-        try {
-            out = new BufferedWriter(new FileWriter(log, true));
+        }
+        
+        try (BufferedWriter out = new BufferedWriter(new FileWriter(log, true))) {
             DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
             Date date = new Date();
             out.write(dateFormat.format(date));
@@ -278,35 +296,23 @@ public class CLIUtil {
                    // file so let's truncate them.
                    String arg = args[i];
 
-                   if(i > 0 && arg.length() > maxPath && "--passwordfile".equals(args[i-1]))
+                   if(i > 0 && arg.length() > maxPath && "--passwordfile".equals(args[i-1])){
                        arg = truncate(arg, maxPath);
-
+                   }
                    out.write(arg + " ");
                }
             }
+            out.write("\n");
         } catch (IOException e) {
             // It is just a debug file.
-        } finally {
-            if (out != null) {
-                try {
-                    out.write("\n");
-                } catch (Exception e) {
-                    // ignore
-                }
-                try {
-                    out.close();
-                } catch (Exception e) {
-                    // ignore
-                }
-            }
         }
     }
     private static String truncate(String arg, int max) {
         int len = arg.length();
 
-        if(len < 20)
+        if(len < 20){
             return arg;
-
+        }
         return "....." + arg.substring(len - max);
     }
 }

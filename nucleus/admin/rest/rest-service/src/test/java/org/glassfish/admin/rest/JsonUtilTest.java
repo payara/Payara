@@ -36,13 +36,15 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest;
 
 import java.util.Locale;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonArray;
+import javax.json.JsonException;
+import javax.json.JsonObject;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.model.BaseModel;
 import org.glassfish.admin.rest.utils.JsonUtil;
@@ -55,16 +57,16 @@ import org.testng.annotations.Test;
  */
 public class JsonUtilTest {
     @Test
-    public void testArrayEncoding() throws JSONException {
+    public void testArrayEncoding() throws JsonException {
         Locale locale = null;
         BaseModel model = CompositeUtil.instance().getModel(BaseModel.class);
         model.setStringArray(new String[] {"one", "two"});
-        JSONObject json = (JSONObject)JsonUtil.getJsonObject(model);
+        JsonObject json = (JsonObject)JsonUtil.getJsonValue(model);
         Assert.assertNotNull(json);
         Object o = json.get("stringArray");
-        Assert.assertTrue(o instanceof JSONArray);
-        JSONArray array = (JSONArray)o;
-        Assert.assertEquals(array.length(), 2);
+        Assert.assertTrue(o instanceof JsonArray);
+        JsonArray array = (JsonArray)o;
+        Assert.assertEquals(array.size(), 2);
         Assert.assertTrue(contains(array, "one"));
         Assert.assertTrue(contains(array, "two"));
 
@@ -74,9 +76,9 @@ public class JsonUtilTest {
         Assert.assertEquals(2, model2.getStringArray().length);
     }
 
-    private boolean contains(JSONArray array, String text) throws JSONException {
-        for (int i = 0, len = array.length(); i < len; i++) {
-            if (text.equals(array.get(i))) {
+    private boolean contains(JsonArray array, String text) throws JsonException {
+        for (int i = 0, len = array.size(); i < len; i++) {
+            if (text.equals(array.getString(i))) {
                 return true;
             }
         }

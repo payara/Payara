@@ -142,7 +142,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
      */
     public Connection getConnection(String user, String pwd) throws SQLException {
         try {
-            ConnectionRequestInfoImpl info = new ConnectionRequestInfoImpl(user, pwd);
+            ConnectionRequestInfoImpl info = new ConnectionRequestInfoImpl(user, pwd.toCharArray());
             ConnectionHolder con = (ConnectionHolder)
                     cm.allocateConnection(mcf, info);
             setConnectionType(con);
@@ -213,7 +213,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
      */
     public Connection getNonTxConnection(String user, String password) throws SQLException {
         try {
-            ConnectionRequestInfoImpl cxReqInfo = new ConnectionRequestInfoImpl(user, password);
+            ConnectionRequestInfoImpl cxReqInfo = new ConnectionRequestInfoImpl(user, password.toCharArray());
             ConnectionHolder con = (ConnectionHolder)
                     ((com.sun.appserv.connectors.internal.spi.ConnectionManager)
                             cm).allocateNonTxConnection(mcf, cxReqInfo);

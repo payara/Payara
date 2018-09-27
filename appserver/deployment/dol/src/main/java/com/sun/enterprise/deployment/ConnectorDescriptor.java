@@ -163,6 +163,7 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
      * @return the default version of the deployment descriptor
      * loaded by this descriptor
      */
+    @Override
     public String getDefaultSpecVersion() {
         return ConnectorNode.SPEC_VERSION;
     }
@@ -182,13 +183,15 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
     //using new DOL
 
     /**
+     * @return 
      * @deprecated 
      */
     public String getConnectionFactoryInterface() {
         throw new UnsupportedOperationException();
     }
     
-    /** 
+    /**
+     * @param connectionFactoryInterface
      * @deprecated 
      */
     public void 
@@ -204,7 +207,8 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
         throw new UnsupportedOperationException();
     }
     
-    /** 
+    /**
+     * @param connectionFactoryImpl
      * @deprecated 
      */
     public void 
@@ -212,7 +216,8 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
         throw new UnsupportedOperationException();
     }
 
-    /** 
+    /**
+     * @return 
      * @deprecated 
      */
     public String 
@@ -220,7 +225,8 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
         throw new UnsupportedOperationException();
     }
     
-    /** 
+    /**
+     * @param connectionInterface
      * @deprecated 
      */
     public void 
@@ -228,15 +234,16 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
         throw new UnsupportedOperationException();
     }
 
-    /** 
+    /**
+     * @return 
      * @deprecated 
      */
-    public String 
-    getConnectionImpl() {
+    public String getConnectionImpl() {
         throw new UnsupportedOperationException();
     }
  
-    /** 
+    /**
+     * @param connectionImpl
      * @deprecated 
      */
     public void 
@@ -244,35 +251,40 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
         throw new UnsupportedOperationException();
     }
 
-    /** 
+    /**
+     * @return 
      * @deprecated 
      */
     public String getManagedConnectionFactoryImpl() {
         throw new UnsupportedOperationException();
     }
 
-    /** 
+    /**
+     * @param managedConnectionFactoryImpl
      * @deprecated 
      */
     public void setManagedConnectionFactoryImpl(String managedConnectionFactoryImpl) {
         throw new UnsupportedOperationException();
     }
 
-    /** 
+    /**
+     * @return 
      * @deprecated 
      */
     public boolean supportsReauthentication() {
         throw new UnsupportedOperationException();
     }
 
-    /** 
+    /**
+     * @return 
      * @deprecated 
      */
     public String getReauthenticationSupport() {
         throw new UnsupportedOperationException();
     } 
  
-    /** 
+    /**
+     * @param reauthenticationSupport
      * @deprecated 
      */
     public void setReauthenticationSupport(boolean reauthenticationSupport) {
@@ -286,39 +298,43 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
         throw new UnsupportedOperationException();
     }
 
-    /** 
+    /**
+     * @return 
      * @deprecated 
      */
     public String getTransSupport() {
         throw new UnsupportedOperationException();
     }
 
-    /** 
+    /**
+     * @return 
      * @deprecated 
      */
     public int getTransactionSupport() {
         throw new UnsupportedOperationException();
     }
     
-    /** 
+    /**
+     * @param transactionSupport
      * @deprecated 
      */
     public void setTransactionSupport(int transactionSupport) {
         throw new UnsupportedOperationException();
     }
 
-    /** 
+    /**
+     * @param support
      * @deprecated 
      */
     public void setTransactionSupport(String support) {
         throw new UnsupportedOperationException();
     }
 
-    /** 
+    /**
+     * @return 
      * @deprecated 
      */
-    public Set 
-    getAuthMechanisms() {
+    public Set getAuthMechanisms() {
         throw new UnsupportedOperationException();
     }
     
@@ -332,9 +348,9 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
 
     /** 
      *Set of SecurityPermission objects 
+     * @return 
      */
-    public Set 
-    getSecurityPermissions() 
+    public Set getSecurityPermissions() 
     {
         if (securityPermissions == null) {
             securityPermissions = new OrderedSet();
@@ -342,45 +358,50 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
         return securityPermissions;
     }
 
-    /** 
+    /**
+     * @param mech
+     * @return 
      * @deprecated 
      */
-    public boolean 
-    addAuthMechanism(AuthMechanism mech) 
+    public boolean addAuthMechanism(AuthMechanism mech) 
     {
         throw new UnsupportedOperationException();
     }
     
-    /** 
+    /**
+     * @param mech
+     * @return 
      * @deprecated 
      */
-    public boolean 
-    removeAuthMechanism(AuthMechanism mech) 
+    public boolean removeAuthMechanism(AuthMechanism mech) 
     {
         throw new UnsupportedOperationException();
     }
 
-    /** 
+    /**
+     * @param mech
+     * @return 
      * @deprecated 
      */
-    public boolean 
-    addAuthMechanism(int mech) 
+    public boolean addAuthMechanism(int mech) 
     {
         throw new UnsupportedOperationException();
     }
     
 
-    /** 
+    /**
+     * @param mech
+     * @return 
      * @deprecated 
      */
-    public boolean 
-    removeAuthMechanism(int mech) 
+    public boolean removeAuthMechanism(int mech) 
     {
         throw new UnsupportedOperationException();
     }
 
     /** 
      * Add a SecurityPermission object to the set
+     * @param permission
      */
     public void 
     addSecurityPermission(SecurityPermission permission) 
@@ -390,6 +411,7 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
 
     /** 
      * Remove a SecurityPermission object to the set
+     * @param permission
      */  
     public void 
     removeSecurityPermission(SecurityPermission permission) 
@@ -413,19 +435,22 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
         resourceAdapterClass = raClass;
     }
     
-    /** Set of ConnectorConfigProperty 
+    /** Set of ConnectorConfigProperty
+     * @return 
      */
     public Set getConfigProperties() {
         return configProperties;
     }
 
     /** add a configProperty to the set
+     * @param configProperty
      */
     public void addConfigProperty(ConnectorConfigProperty configProperty) {
 	this.configProperties.add(configProperty);
     }
 
     /** remove a configProperty from the set
+     * @param configProperty
      */ 
     public void removeConfigProperty(ConnectorConfigProperty configProperty) {
 	configProperties.remove(configProperty);
@@ -466,6 +491,7 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
 
     /** 
      * set admin object
+     * @param admin
      */
     public void addAdminObject(AdminObject admin) {
         boolean duplicate = false; //hasAdminObject(admin.getAdminObjectInterface(), admin.getAdminObjectClass(), adminObjects);
@@ -523,12 +549,14 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
 
 
     /** get the connector description
+     * @return 
     */
     public String getConnectorDescription() {
         return connectorDescription;
     }
  
     /** set the connector description
+     * @param description
     */
     public void setConnectorDescription(String description) {
         connectorDescription = description;
@@ -536,12 +564,14 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
 
 
     /** get value for vendorName
+     * @return 
     */
     public String getVendorName() {
         return vendorName;
     }
  
     /** set value for vendorName
+     * @param vendorName
     */
     public void setVendorName(String vendorName) {
         this.vendorName = vendorName;
@@ -549,6 +579,7 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
 
 
     /** get eisType
+     * @return 
     */
     public String getEisType() {
         return eisType;
@@ -556,12 +587,14 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
  
    
     /** set eisType
+     * @param eisType
     */
     public void setEisType(String eisType) {
         this.eisType = eisType;
     } 
 
     /** get value for version
+     * @return 
     */
     public String getVersion() {
         return version;
@@ -569,6 +602,7 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
     }
 
     /** set value for version
+     * @param version
     */ 
     public void setVersion(String version) {
         //TODO V3 validate version ?
@@ -579,12 +613,16 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
     }
 
     /** get value for resourceadapter version (1.5 schema
+     * @return 
+     * @since 1.5
     */
     public String getResourceAdapterVersion() {
         return resourceAdapterVersion;
     }
 
     /** set value for resourceadater version (1.5 schema)
+     * @param resourceAdapterVersion
+     * @since 1.5
     */ 
     public void setResourceAdapterVersion(String resourceAdapterVersion) {
         this.resourceAdapterVersion = resourceAdapterVersion;
@@ -595,6 +633,7 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
     ////////////////////////////////////////////////////////
 
     /** return name used for deployment
+     * @return 
     */
     public String getDeployName() {
 	return getModuleDescriptor().getArchiveUri();
@@ -606,6 +645,7 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
      * 
      * @param aVisitor visitor to traverse the descriptors
      */    
+    @Override
     public void visit(DescriptorVisitor aVisitor) {
         if (aVisitor instanceof ConnectorVisitor) {
             visit((ComponentVisitor) aVisitor);
@@ -614,24 +654,24 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
         }
     }    
 
-    /*
+    /**
      * @param type The full qualified name for connection factory interface
+     * @return 
      */
-    public ConnectionDefDescriptor 
-    getConnectionDefinitionByCFType (String type)
+    public ConnectionDefDescriptor getConnectionDefinitionByCFType (String type)
     {
         return getConnectionDefinitionByCFType(type, true);
     }
 
-    /*
+    /**
      * @param type The full qualified name for connection factory interface
      * @param useDefault This param is to support the backward compatibility
      *                   of connector 1.0 resource adapter where there is
      *                   only one connection factory type.  If type is null
      *                   and useDefault is true, the only CF will be returned.
+     * @return 
      */
-    public ConnectionDefDescriptor 
-    getConnectionDefinitionByCFType (String type, boolean useDefault)
+    public ConnectionDefDescriptor getConnectionDefinitionByCFType (String type, boolean useDefault)
     {
         if (this.outboundRA == null) {
             return null;
@@ -706,7 +746,9 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
 
     /**
      * A formatted string representing my state.
+     * @param toStringBuffer
      */
+    @Override
     public void print(StringBuffer toStringBuffer)
     {
         StringBuffer buf = toStringBuffer;
@@ -857,6 +899,7 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
     /**
      * @return the module type for this bundle descriptor
      */
+    @Override
     public ArchiveType getModuleType() {
         return DOLUtils.rarType();
     }
@@ -864,6 +907,7 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
     /**
      * @return the tracer visitor for this descriptor
      */
+    @Override
     public DescriptorVisitor getTracerVisitor() {
         return new ConnectorTracerVisitor();
     }
@@ -871,12 +915,14 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
     /**
      * @return the visitor for this bundle descriptor
      */
+    @Override
     public ComponentVisitor getBundleVisitor() {
         return new ConnectorValidator();
     }
     
     /**
      *@param type message listener type
+     * @return 
      */
     public MessageListener getSupportedMessageListener(String type) {
         if (this.inboundRA == null) {
@@ -894,6 +940,8 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
     }
 
     /**
+     * @param type
+     * @return 
      * @deprecated
      */
     public boolean isMessageListenerSupported(String type) {
@@ -901,6 +949,7 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
     }
 
 
+    @Override
     public boolean isEmpty() {
         return false;
     }

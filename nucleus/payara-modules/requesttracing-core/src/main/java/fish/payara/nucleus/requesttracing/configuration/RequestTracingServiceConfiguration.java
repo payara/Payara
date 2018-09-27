@@ -45,10 +45,13 @@ import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Pattern;
 
 /**
- * Main configuration class that defines whole configuration for request tracing services.
+ * Configuration class that holds the configuration of the Request
+ * Tracing service.
  *
  * @author mertcaliskan
  */
@@ -58,28 +61,77 @@ public interface RequestTracingServiceConfiguration extends ConfigBeanProxy, Con
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getEnabled();
     void enabled(String value) throws PropertyVetoException;
+    
+    @Attribute(defaultValue = "1.0")
+    @Pattern(regexp = "0(\\.\\d+)?|1(\\.0)?", message = "Must be a valid double between 0 and 1")
+    String getSampleRate();
+    void setSampleRate(String value) throws PropertyVetoException;
 
-    @Attribute(defaultValue = "30", dataType = Long.class)
-    @Min(value = 0)
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getAdaptiveSamplingEnabled();
+    void setAdaptiveSamplingEnabled(String value) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "6", dataType = Integer.class)
+    @Min(value = 1, message = "Adaptive sampling target count must be greater than 0")
+    @Max(value = Integer.MAX_VALUE, message = "Adaptive sampling target count must be less than " + Integer.MAX_VALUE)
+    String getAdaptiveSamplingTargetCount();
+    void setAdaptiveSamplingTargetCount(String value) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "1", dataType = Integer.class)
+    @Min(value = 1, message = "Adaptive sampling time value must be greater than 0")
+    @Max(value = Integer.MAX_VALUE, message = "Adaptive sampling time value must be less than " + Integer.MAX_VALUE)
+    String getAdaptiveSamplingTimeValue();
+    void setAdaptiveSamplingTimeValue(String value) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "MINUTES")
+    @Pattern(regexp = "SECONDS|MINUTES|HOURS|DAYS", message = "Invalid time unit. Value must be one of: SECONDS, MINUTES, HOURS, DAYS.")
+    String getAdaptiveSamplingTimeUnit();
+    void setAdaptiveSamplingTimeUnit(String value) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    String getApplicationsOnlyEnabled();
+    void setApplicationsOnlyEnabled(String value) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "30", dataType = Integer.class)
+    @Min(value = 0, message = "Threshold value must be at least 0")
+    @Max(value = Integer.MAX_VALUE, message = "Threshold value must be less than " + Integer.MAX_VALUE)
     String getThresholdValue();
     void setThresholdValue(String value) throws PropertyVetoException;
 
     @Attribute(defaultValue = "SECONDS")
+    @Pattern(regexp = "NANOSECONDS|MICROSECONDS|MILLISECONDS|SECONDS|MINUTES|HOURS|DAYS", message = "Invalid time unit. Value must be one of: NANOSECONDS, MICROSECONDS, MILLISECONDS, SECONDS, MINUTES, HOURS, DAYS.")
     String getThresholdUnit();
     void setThresholdUnit(String value) throws PropertyVetoException;
 
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getHistoricalTraceEnabled();
-    void setHistoricalTraceEnabled(String value) throws PropertyVetoException;
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    String getSampleRateFirstEnabled();
+    void setSampleRateFirstEnabled(String value) throws PropertyVetoException;
 
     @Attribute(defaultValue = "20", dataType = Integer.class)
-    @Min(value = 0)
-    String getHistoricalTraceStoreSize();
-    void setHistoricalTraceStoreSize(String value) throws PropertyVetoException;
+    @Min(value = 0, message = "Trace store size must be greater than or equal to 0")
+    String getTraceStoreSize();
+    void setTraceStoreSize(String value) throws PropertyVetoException;
 
     @Attribute
-    String getHistoricalTraceStoreTimeout();
-    void setHistoricalTraceStoreTimeout(String value) throws PropertyVetoException;
+    String getTraceStoreTimeout();
+    void setTraceStoreTimeout(String value) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getReservoirSamplingEnabled();
+    void setReservoirSamplingEnabled(String value) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getHistoricTraceStoreEnabled();
+    void setHistoricTraceStoreEnabled(String value) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "20", dataType = Integer.class)
+    @Min(value = 0, message = "Historic trace store size must be greater than or equal to 0")
+    String getHistoricTraceStoreSize();
+    void setHistoricTraceStoreSize(String value) throws PropertyVetoException;
+
+    @Attribute
+    String getHistoricTraceStoreTimeout();
+    void setHistoricTraceStoreTimeout(String value) throws PropertyVetoException;
 
     @Element("*")
     List<Notifier> getNotifierList();
@@ -88,6 +140,7 @@ public interface RequestTracingServiceConfiguration extends ConfigBeanProxy, Con
     <T extends Notifier> T getNotifierByType(Class type);
 
     class Duck {
+
         public static <T extends Notifier> T getNotifierByType(RequestTracingServiceConfiguration config, Class<T> type) {
             for (Notifier notifier : config.getNotifierList()) {
                 try {
@@ -100,4 +153,3 @@ public interface RequestTracingServiceConfiguration extends ConfigBeanProxy, Con
         }
     }
 }
-

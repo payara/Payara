@@ -37,11 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.apf.impl;
 
 import org.glassfish.apf.Scanner;
 import java.util.Stack;
+import java.util.logging.Level;
 import org.glassfish.apf.*;
 import org.glassfish.apf.context.AnnotationContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -63,18 +65,22 @@ class ProcessingContextImpl implements ProcessingContext {
         this.processor = processor;
     }
     
+    @Override
     public AnnotationProcessor getProcessor() {
         return processor;
     }
         
+    @Override
     public ReadableArchive getArchive() {
         return archive;    
     }
 
+    @Override
     public void setArchive(ReadableArchive archive) {
         this.archive = archive;
     }
 
+    @Override
     public void pushHandler(AnnotatedElementHandler handler) {
         if (handler instanceof AnnotationContext) {
             ((AnnotationContext) handler).setProcessingContext(this);
@@ -82,6 +88,7 @@ class ProcessingContextImpl implements ProcessingContext {
         handlers.push(handler);
     }
     
+    @Override
     public AnnotatedElementHandler getHandler() {
         if (handlers.isEmpty()) 
             return null;
@@ -89,6 +96,7 @@ class ProcessingContextImpl implements ProcessingContext {
         return handlers.peek();
     }
     
+    @Override
     public AnnotatedElementHandler popHandler() {
         if (handlers.isEmpty()) 
             return null;
@@ -100,20 +108,24 @@ class ProcessingContextImpl implements ProcessingContext {
      * @return the previously set ClientContext casted to the requestd
      * type if possible or throw an exception otherwise.
      */
+    @Override
     public <U extends AnnotatedElementHandler> U getHandler(Class<U> contextType)
         throws ClassCastException {
         
         if (handlers.isEmpty()) 
             return null;
         if (AnnotationUtils.shouldLog("handler")) {
-            AnnotationUtils.getLogger().finer("Top handler is " + handlers.peek());
+            AnnotationUtils.getLogger().log(Level.FINER, "Top handler is {0}", handlers.peek());
         }
         return contextType.cast(handlers.peek());
     }
     
+    @Override
     public Scanner getProcessingInput() {
         return scanner;
     }
+    
+    @Override
     public void setProcessingInput(Scanner scanner) {
         this.scanner = scanner;
     }
@@ -123,6 +135,7 @@ class ProcessingContextImpl implements ProcessingContext {
     /** 
      * Sets the error handler for this processing context.
      */
+    @Override
     public void setErrorHandler(ErrorHandler errorHandler) {
         this.errorHandler = errorHandler;
     }
@@ -130,6 +143,7 @@ class ProcessingContextImpl implements ProcessingContext {
     /**
      * @return the error handler for this processing context.
      */
+    @Override
     public ErrorHandler getErrorHandler() {
         return errorHandler;
     }      

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.services;
 
@@ -52,12 +53,12 @@ public class Strings {
     }
 
     public static String get(String indexString, Object... objects) {
-        return strings.get(indexString, objects);
+        return STRINGS.get(indexString, objects);
     }
 
     public static String get(String indexString) {
-        return strings.get(indexString);
+        return STRINGS.get(indexString);
     }
 
-    private final static LocalStringsImpl strings = new LocalStringsImpl(Strings.class);
+    private final static LocalStringsImpl STRINGS = new LocalStringsImpl(Strings.class);
 }

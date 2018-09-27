@@ -40,11 +40,11 @@
 
 package org.glassfish.deployapi;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import org.glassfish.logging.annotation.LogMessageInfo;
+
+import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
+import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -53,17 +53,8 @@ import java.security.PrivilegedAction;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.logging.LogRecord;
-
-import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
-import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-
-import org.glassfish.deployment.common.DeploymentUtils;
-
-import com.sun.enterprise.util.shared.ArchivistUtils;
-
-import org.glassfish.logging.annotation.LogMessageInfo;
+import java.util.logging.Logger;
 
 /**
  * This singleton object is responsible to resolving all the 
@@ -121,29 +112,6 @@ public class DeploymentFactoryInstaller {
         
         return repository.listFiles();        
     }
-    
-    /**
-     * Add a new deployment manager to our respository
-     */
-    public void addDeploymentFactory(File newDM) throws IOException {
-        
-        int number=1;
-        // copy to the right location...
-        File repository = new File(System.getProperty(J2EE_HOME)+File.separator+
-            J2EE_DEPLOYMENT_MANAGER_REPOSITORY);
-        File to = new File(repository, newDM.getName());
-        while (to.exists()) {
-            to = new File(repository, newDM.getName()+number);
-            number++;
-        }
-        ArchivistUtils.copy(
-            new BufferedInputStream(new FileInputStream(newDM)),
-            new BufferedOutputStream(new FileOutputStream(to)));
-        
-        installDeploymentFactory(to);
-    
-    }
-    
     
     protected void installDeploymentFactory(final File installedDM) throws IOException {
         

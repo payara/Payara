@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import java.util.*;
+import java.util.logging.Level;
 import javax.validation.ValidationException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -175,19 +176,26 @@ public class PropertiesBagResource extends AbstractResource {
 
             for (Map<String, String> property : properties) {
                 Property existingProp = existing.get(property.get("name"));
-                String escapedName = getEscapedPropertyName(property.get("name"));
-                String value = property.get("value");
-                String description = property.get("description");
-                final String unescapedValue = value.replaceAll("\\\\", "");
+
+                String unescapedName = Object.class.cast(property.get("name")).toString();
+                String escapedName = getEscapedPropertyName(unescapedName);
+
+                String value = Object.class.cast(property.get("value")).toString();
+                String unescapedValue = value.replaceAll("\\\\", "");
+                
+                String description = null;
+                if (property.get(description) != null) {
+                    description = Object.class.cast(property.get("description")).toString();
+                }
 
                 // the prop name can not contain .
                 // need to remove the . test when http://java.net/jira/browse/GLASSFISH-15418  is fixed
-                boolean canSaveDesc = property.get("name").indexOf(".") == -1;
+                boolean canSaveDesc = !((Object)property.get("name")).toString().contains(".");
 
                 if ((existingProp == null) || !unescapedValue.equals(existingProp.getValue())) {
-                    data.put(escapedName, property.get("value"));
+                    data.put(escapedName, ((Object)property.get("value")).toString());
                     if (canSaveDesc && (description != null)) {
-                        data.put(escapedName + ".description", description);
+                        data.put(escapedName + ".description", ((Object) description).toString());
                     }
                 }
 
@@ -216,6 +224,7 @@ public class PropertiesBagResource extends AbstractResource {
                 ar.setFailureCause(ex);
                 ar.setMessage(ex.getLocalizedMessage());
             } else {
+                logger.log(Level.FINE, "Error processing properties", ex);
                 throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
             }
         }
@@ -229,7 +238,11 @@ public class PropertiesBagResource extends AbstractResource {
     protected Map<String, Property> getExistingProperties() {
         Map<String, Property> properties = new HashMap<>();
         if (parent != null) {
-            for (Dom child : parent.nodeElements(tagName)) {
+            List<Dom> children;
+            synchronized (parent) {
+                children = parent.nodeElements(tagName);
+            }
+            for (Dom child : children) {
                 Property property = child.createProxy();
                 properties.put(property.getName(), property);
             }
@@ -269,7 +282,9 @@ public class PropertiesBagResource extends AbstractResource {
         this.parent = parent;
         this.tagName = tagName;
         if (parent != null) {
-            entity = parent.nodeElements(tagName);
+            synchronized (parent) {
+                entity = parent.nodeElements(tagName);
+            }
         }
     }
 }

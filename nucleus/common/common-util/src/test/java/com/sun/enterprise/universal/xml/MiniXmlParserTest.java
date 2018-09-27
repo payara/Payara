@@ -37,10 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.universal.xml;
 
+import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 import java.io.File;
-import java.net.*;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -57,6 +59,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.sun.enterprise.util.HostAndPort;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author bnevins
@@ -144,9 +147,9 @@ public class MiniXmlParserTest {
         try {
             MiniXmlParser instance = new MiniXmlParser(wrongOrder, "server");
             Map<String, String> javaConfig = instance.getJavaConfig();
-            List<String> jvmOptions = instance.getJvmOptions();
-            assertEquals("JVMOPTION1", jvmOptions.get(0));
-            assertEquals("JVMOPTION2", jvmOptions.get(1));
+            List<JvmOption> jvmOptions = instance.getJvmOptions();
+            assertEquals("JVMOPTION1", jvmOptions.get(0).option);
+            assertEquals("JVMOPTION2", jvmOptions.get(1).option);
             assertEquals("test", javaConfig.get("test"));
         }
         catch (MiniXmlParserException ex) {
@@ -197,9 +200,9 @@ public class MiniXmlParserTest {
         try {
             MiniXmlParser instance = new MiniXmlParser(rightOrder, "server");
             Map<String, String> javaConfig = instance.getJavaConfig();
-            List<String> jvmOptions = instance.getJvmOptions();
-            assertEquals("JVMOPTION1", jvmOptions.get(0));
-            assertEquals("JVMOPTION2", jvmOptions.get(1));
+            List<JvmOption> jvmOptions = instance.getJvmOptions();
+            assertEquals("JVMOPTION1", jvmOptions.get(0).option);
+            assertEquals("JVMOPTION2", jvmOptions.get(1).option);
             assertEquals("test", javaConfig.get("test"));
         }
         catch (MiniXmlParserException ex) {
@@ -235,10 +238,10 @@ public class MiniXmlParserTest {
         try {
             MiniXmlParser instance = new MiniXmlParser(rightOrder, "server");
             Map<String, String> javaConfig = instance.getJavaConfig();
-            List<String> jvmOptions = instance.getJvmOptions();
+            List<JvmOption> jvmOptions = instance.getJvmOptions();
             Map<String, String> sysProps = instance.getSystemProperties();
-            assertEquals("JVMOPTION1", jvmOptions.get(0));
-            assertEquals("JVMOPTION2", jvmOptions.get(1));
+            assertEquals("JVMOPTION1", jvmOptions.get(0).option);
+            assertEquals("JVMOPTION2", jvmOptions.get(1).option);
             assertEquals("test", javaConfig.get("test"));
             assertEquals("true", sysProps.get("beforeJavaConfig"));
             assertEquals("true", sysProps.get("afterJavaConfig"));
@@ -509,5 +512,27 @@ public class MiniXmlParserTest {
         assertEquals(clu, "cluster");
         assertEquals(dom, "domain");
 
+    }
+
+    @Test
+    public void versionedOptions() {
+       JvmOption opt = new JvmOption("[1.7|1.8]-XX:xxx");
+       assertEquals("1.7", opt.minVersion.get().toString());
+       assertEquals("1.8", opt.maxVersion.get().toString());
+       assertEquals("-XX:xxx", opt.option);
+
+       opt = new JvmOption("[|1.8]-XX:xxx");
+       assertFalse("Min Version Not Present", opt.minVersion.isPresent());
+       assertEquals("1.8", opt.maxVersion.get().toString());
+       assertEquals("-XX:xxx", opt.option);
+
+       opt = new JvmOption("[1.7|]-XX:xxx");
+       assertEquals("1.7", opt.minVersion.get().toString());
+       assertFalse("Max Version Not Present", opt.maxVersion.isPresent());
+       assertEquals("-XX:xxx", opt.option);
+
+       opt = new JvmOption("-XX:xxx");
+       assertFalse("Min Version Not Present", opt.minVersion.isPresent());
+       assertFalse("Max Version Not Present", opt.maxVersion.isPresent());
     }
 }

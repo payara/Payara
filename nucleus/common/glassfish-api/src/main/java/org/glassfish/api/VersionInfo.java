@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
  */
 package org.glassfish.api;
 
@@ -48,12 +50,28 @@ import org.jvnet.hk2.annotations.Contract;
 @Contract
 public interface VersionInfo {
 
+    /**
+     * Returns the Abbreviated Product Name
+     * @return The product name
+     */
     public String getAbbreviatedProductName();
-    
+
+    /**
+     * Returns this version's prefix, e.g. "Alpha".
+     * @return The product version prefix
+     */
     public String getVersionPrefix();
-    
+
+    /**
+     * Returns the major version of Payara, e.g. for Payara 5 return 5.
+     * @return The major version of Payara.
+     */
     public String getMajorVersion();
-    
+
+    /**
+     * Returns the minor version of Payara, e.g. for Payara 5.1 return 1.
+     * @return The minor version of Payara.
+     */
     public String getMinorVersion();
 
 }

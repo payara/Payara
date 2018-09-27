@@ -42,15 +42,17 @@
 -->
 
 <persistence xmlns="http://java.sun.com/xml/ns/persistence" version="1.0">
-  <persistence-unit name="pu1" transaction-type="JTA">
-    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-    <jta-data-source>jdbc/__default</jta-data-source>
-    <non-jta-data-source>jdbc/__default</non-jta-data-source>
-    <class>myapp.Department</class>
-    <class>myapp.Employee</class>
-    <properties>
-       <property name="eclipselink.ddl-generation" value="drop-and-create-tables"/>
-       <property name="eclipselink.logging.level" value="INFO"/>
-    </properties>
-  </persistence-unit>
+    <persistence-unit name="pu1" transaction-type="JTA">
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        <jta-data-source>jdbc/__default</jta-data-source>
+        <non-jta-data-source>jdbc/__default</non-jta-data-source>
+        
+        <class>myapp.Department</class>
+        <class>myapp.Employee</class>
+        
+        <properties>
+            <property name="eclipselink.ddl-generation" value="drop-and-create-tables" />
+            <property name="eclipselink.logging.level" value="INFO" />
+        </properties>
+    </persistence-unit>
 </persistence>

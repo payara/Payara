@@ -43,7 +43,8 @@ package fish.payara.nucleus.notification.domain;
  */
 public enum EventSource {
     HEALTHCHECK("HealthCheck"),
-    REQUESTTRACING("RequestTracing");
+    REQUESTTRACING("RequestTracing"),
+    MONITORING("Monitoring");
 
     private final String value;
 

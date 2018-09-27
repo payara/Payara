@@ -48,52 +48,60 @@ import test.admincli.util.*;
 
 @Test(sequential = true)
 public class MDBTests {
-    private boolean execReturn = false;
+    
+    private boolean execReturn;
     private String APPCLIENT = System.getProperty("APPCLIENT");
     private String ASADMIN = System.getProperty("ASADMIN");
     private String cwd = System.getProperty("BASEDIR") == null ? System.getProperty("user.dir") : System.getProperty("BASEDIR");
     private String cmd;
-    private String mdbApp= "ejb-ejb30-hello-mdbApp";
+    private String mdbApp = "ejb-ejb30-hello-mdbApp";
 
     @Parameters({ "BATCH_FILE1" })
     @Test
     public void createJMSRscTest(String batchFile1) throws Exception {
-        cmd = ASADMIN + " multimode --port 4848 --file " + cwd + File.separator + batchFile1;
-        execReturn = RtExec.execute(cmd);
-        Assert.assertEquals(execReturn, true, "Create JMS resource failed ...");
+        Assert.assertEquals(
+            RtExec.execute(
+                "MDBTests.createJMSRscTest", 
+                ASADMIN + " multimode --port 4848 --file " + cwd + File.separator + batchFile1), 
+            true, 
+            "Create JMS resource failed ...");
     }
-    
+
     @Parameters({ "MDB_APP_DIR" })
     @Test(dependsOnMethods = { "createJMSRscTest" })
     public void deployJMSAppTest(String mdbAppDir) throws Exception {
-        cmd = ASADMIN + " deploy --port 4848 --retrieve=" + cwd + File.separator + mdbAppDir
-                + " " + cwd + File.separator + mdbAppDir + mdbApp + ".ear ";
-        execReturn = RtExec.execute(cmd);
+        cmd = ASADMIN + " deploy --port 4848 --retrieve=" + cwd + File.separator + mdbAppDir + " " + cwd + File.separator + mdbAppDir
+                + mdbApp + ".ear ";
+        execReturn = RtExec.execute("MDBTests.deployJMSAppTest", cmd);
+        
         Assert.assertEquals(execReturn, true, "Deploy the mdb app failed ... ");
     }
 
     @Parameters({ "MDB_APP_DIR" })
     @Test(dependsOnMethods = { "deployJMSAppTest" })
     public void runJMSAppTest(String mdbAppDir) throws Exception {
-        cmd = APPCLIENT+ " -targetserver"+" localhost:3700"+" -client "+ cwd + File.separator +mdbAppDir+mdbApp+"Client.jar "
-           + "-name ejb-ejb30-hello-mdb-client " ;
-        execReturn = RtExec.execute(cmd);
+        cmd = APPCLIENT + " -targetserver" + " localhost:3700" + " -client " + cwd + File.separator + mdbAppDir + mdbApp + "Client.jar "
+                + "-name ejb-ejb30-hello-mdb-client ";
+        execReturn = RtExec.execute("MDBTests.runJMSAppTest", cmd);
+        
         Assert.assertEquals(execReturn, true, "Run appclient against JMS APP failed ...");
     }
 
-    @Test(dependsOnMethods = { "runJMSAppTest" }) 
+    @Test(dependsOnMethods = { "runJMSAppTest" })
     public void undeployJMSAppTest() throws Exception {
         cmd = ASADMIN + " undeploy --port 4848 " + mdbApp;
-        execReturn = RtExec.execute(cmd);
+        execReturn = RtExec.execute("MDBTests.undeployJMSAppTest", cmd);
+        
         Assert.assertEquals(execReturn, true, "UnDeploy the mdb app failed ... ");
     }
 
     @Parameters({ "BATCH_FILE2" })
-    @Test(dependsOnMethods = { "undeployJMSAppTest" }) 
+    @Test(dependsOnMethods = { "undeployJMSAppTest" })
     public void deleteJMSRscTest(String batchFile2) throws Exception {
         cmd = ASADMIN + " multimode --port 4848 --file " + cwd + File.separator + batchFile2;
-        execReturn = RtExec.execute(cmd);
+        execReturn = RtExec.execute("MDBTests.deleteJMSRscTest", cmd);
+        
         Assert.assertEquals(execReturn, true, "Delete JMD Resource failed ...");
     }
-    
+
 }

@@ -52,10 +52,10 @@ import java.util.StringTokenizer;
 public class GroupMapper {
 
     private Map<String, ArrayList<String>> groupMappingTable = new HashMap<String, ArrayList<String>>();
-    
+
     public void parse(String mappingStr) {
         StringTokenizer tokenizer = new StringTokenizer(mappingStr, ";");
-        while(tokenizer.hasMoreElements()) {
+        while (tokenizer.hasMoreElements()) {
             String mapping = tokenizer.nextToken();
             String[] mappingGroups = mapping.split(",");
             String mappedGroup = null;
@@ -83,7 +83,7 @@ public class GroupMapper {
             }
         }
     }
-    
+
     public void getMappedGroups(String group, ArrayList<String> result) {
         if (result == null) {
             throw new RuntimeException("result argument cannot be NULL");
@@ -92,15 +92,15 @@ public class GroupMapper {
         if (mappedGrps == null || mappedGrps.isEmpty()) {
             return;
         }
-        addUnique(result,mappedGrps);
-        //look for transitive closure
+        addUnique(result, mappedGrps);
+        // look for transitive closure
         ArrayList<String> result1 = new ArrayList<String>();
         for (String str : mappedGrps) {
-            getMappedGroups(group, str,result1);
+            getMappedGroups(group, str, result1);
         }
         addUnique(result, result1);
     }
-    
+
     private void addUnique(ArrayList<String> dest, ArrayList<String> src) {
         for (String str : src) {
             if (!dest.contains(str)) {
@@ -108,35 +108,16 @@ public class GroupMapper {
             }
         }
     }
-    /*
-    public void traverse() {
-        Iterator<String> it = groupMappingTable.keySet().iterator();
-        while(it.hasNext()) {
-            String key = it.next();
-            System.out.println();
-            System.out.print( key + "<<<Is Mapped to>>>");
-            ArrayList<String> list = new ArrayList<String>();
-            getMappedGroups(key, list);
-            if (list != null) {
-                for (String str : list) {
-                    System.out.print(str + ", ");
-                }
-            }
-            System.out.println();
-        }
-    }*/
+
     /**
      * @param args the command line arguments
-     
-    public static void main(String[] args) {
-        // TODO code application logic here
-        GroupMapper mapper = new GroupMapper();
-        mapper.parse(mappingStr);
-        mapper.traverse();
-    }*/
+     *
+     * public static void main(String[] args) { // TODO code application logic here GroupMapper mapper =
+     * new GroupMapper(); mapper.parse(mappingStr); mapper.traverse(); }
+     */
 
     private void getMappedGroups(String group, String str, ArrayList<String> result) {
-       
+
         ArrayList<String> mappedGrps = groupMappingTable.get(str);
         if (mappedGrps == null || mappedGrps.isEmpty()) {
             return;
@@ -144,9 +125,9 @@ public class GroupMapper {
         if (mappedGrps.contains(group)) {
             throw new RuntimeException("Illegal Mapping: cycle detected with group'" + group);
         }
-        addUnique(result,mappedGrps);
+        addUnique(result, mappedGrps);
         for (String str1 : mappedGrps) {
-            getMappedGroups(group, str1,result);
+            getMappedGroups(group, str1, result);
         }
     }
 
@@ -157,7 +138,7 @@ public class GroupMapper {
             if (aIndex > 0) {
                 theGroup = str.substring(0, aIndex);
             } else {
-                theGroup = str;        
+                theGroup = str;
             }
             if (theGroup.equals(mappedGroup)) {
                 throw new RuntimeException("Illegal Mapping: Identity Mapping of group '" + theGroup + "' to '" + theGroup + "'");

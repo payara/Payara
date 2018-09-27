@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright (c) 2007-2013 Oracle and/or its affiliates. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,7 +11,7 @@
  * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
- *
+ * 
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at packager/legal/LICENSE.txt.
  *
@@ -38,11 +38,13 @@
  * holder.
  */
 
+/*  Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates] */
+
 /* CSS Document */
 
 body {
 	font-family:Arial, Helvetica, sans-serif;
-	font-size:75%;
+	font-size:70%;
 }
 TABLE, TH, TD, P, DIV, SPAN, INPUT, BUTTON, SELECT, TEXTAREA, FORM, B, STRONG, LABEL, I, U, H1, H2, H3, H4, H5, H6, DL, DD, DT, UL, LI, OL, OPTION, OPTGROUP, A {
 	font-size:100%;
@@ -74,7 +76,7 @@ strong {
 }
 
 /* ADDREMOVE [originalName: ADD-REMOVE-IDIOM]*/
-.AddRmvLbl_sun4, .AddRmvLbl2_sun4 {
+.AddRmvLbl_sun4 {
 	font-size:1.0em;
 	font-weight:bold;
 }
@@ -144,7 +146,7 @@ body.HlpBdy_sun4 h5, H6 {
 /*---*/
 
 /* HELPINLINE [originalName: INLINE HELP] */
-.inlineFieldHelp_sun4, a.HlpFldLnk_sun4 {
+a.HlpFldLnk_sun4 {
 	font-size:1.0em;
 }
 /*---*/
@@ -158,13 +160,16 @@ table.EdtLstTbl_sun4 td.EdtLstAddLblTd_sun4 span.LblLev2Txt_sun4 {
 /*---*/
 /* LABEL [originalName: GENERIC FIELD LABELS]*/
 
-.LblLev2Txt_sun4, .LblLev2smTxt_sun4, .LblRqdDiv_sun4, .LblLev3Txt_sun4, .LblLev3TxtDis_sun4 {
+.LblLev2smTxt_sun4, 
+.LblLev3Txt_sun4, .LblLev3TxtDis_sun4 {
 	font-size:1.0em;
 }
 .LblLev1Txt_sun4 {
 	font-size:1.3em;
 }
-.LblLev1Txt_sun4, .LblLev2Txt_sun4, .LblLev2smTxt_sun4,
+.LblLev1Txt_sun4, 
+.LblLev2Txt_sun4, 
+.LblLev2smTxt_sun4,
 .LblLev1TxtDis_sun4, .LblLev2TxtDis_sun4, .LblLev2smTxtDis_sun4, .LblLev3Txt_sun4, .LblLev3TxtDis_sun4 {
 	font-weight:bold;
 }
@@ -177,7 +182,6 @@ table.EdtLstTbl_sun4 td.EdtLstAddLblTd_sun4 span.LblLev2Txt_sun4 {
 /*---*/
 
 /* LISTS */
-.LstOptSel_sun4, 
 .LstOptSep_sun4, 
 .LstOptGrp_sun4, 
 .LstDis_sun4 .LstOptGrp_sun4 {
@@ -225,10 +229,6 @@ table.EdtLstTbl_sun4 td.EdtLstAddLblTd_sun4 span.LblLev2Txt_sun4 {
 .TtlVewLbl_sun4 {
 	font-weight:bold;
 }
-.TtlTxt_sun4 {
-	font-size:1.5em;
-	font-weight:bold;
-}
 /*---*/
 
 /* TEXTAREA*/
@@ -242,7 +242,7 @@ table.EdtLstTbl_sun4 td.EdtLstAddLblTd_sun4 span.LblLev2Txt_sun4 {
 .Tab1Div_sun4, .Tab2Div_sun4, .Tab3Div_sun4, .MniTabDiv_sun4, .TabGrpBox_sun4 {
 	font-size:1.0em;
 }
-.Tab1Div_sun4, .Tab2Div_sun4, .Tab3Div_sun4, .MniTabDiv_sun4 {
+.Tab3Div_sun4, .MniTabDiv_sun4 {
 	font-weight:bold;
 }
 /*---*/
@@ -297,7 +297,6 @@ a.MstPrgLnk_sun4, a.MstAlmLnk_sun4 {
 .TblHdrTxt_sun4, .TblMultHdrTxt_sun4, .TblGrpTxt_sun4 {
 	font-weight:bold;
 }
-table.Tbl_sun4 th {font-weight:normal}
 table.Tbl_sun4 th.TblMultColHdr_sun4 a.TblHdrLnk_sun4:link, table.Tbl_sun4 th.TblMultColHdr_sun4 a.TblHdrLnk_sun4:visited {font-weight:normal;}
 table.Tbl_sun4 th.TblMultColHdr_sun4 .TblHdrTxt_sun4 {font-weight:normal;}
 table.Tbl_sun4 th.TblMultColHdrSrt_sun4 a.TblHdrLnk_sun4:link, table.Tbl_sun4 th.TblMultColHdrSrt_sun4 a.TblHdrLnk_sun4:visited {font-weight:normal;}
@@ -355,16 +354,6 @@ a.TreeSelLink_sun4:hover {
 }
 /*---*/
 
-/* VERSION DIALOG */
-.VrsHdrTxt_sun4 {
-	font-size:1.3em;
-	font-weight:bold;
-} 
-.VrsTxt_sun4 {
-	font-size:1.1em;
-} 
-/*---*/
-
 /* WIZARD */
 .WizStpTitle_sun4, .WizStpTxt_sun4, .WizHlpTxt_sun4, .WizStpCurTxt_sun4, a.WizStpLnk_sun4, .WizSubStpTtlTxt_sun4, .WizCntHlpTxt_sun4 {
 	font-size:1.0em;
@@ -387,3 +376,17 @@ a.TreeSelLink_sun4:hover {
 	font-size:1.4em;
 }
 /*---*/
+
+.TtlTxt_sun4 {
+	font-size: 21px;
+	font-weight: bold;
+}
+
+/* ABOUT PAGE */
+.VrsBdy_sun4 {
+	font-size: 13px;
+}
+.VrsHdrTxt_sun4 {
+	font-size: 15px;
+	font-weight: bold;
+}

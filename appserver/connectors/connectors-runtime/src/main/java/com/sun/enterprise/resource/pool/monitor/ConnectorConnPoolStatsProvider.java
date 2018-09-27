@@ -38,7 +38,7 @@
  * holder.
  *
 */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package com.sun.enterprise.resource.pool.monitor;
 
@@ -210,7 +210,8 @@ public class ConnectorConnPoolStatsProvider {
             } 
             //Decrement counter
             synchronized(numConnFree) {
-                numConnFree.setCurrent(numConnFree.getCurrent() - 1);
+                long numConnFreeSafe = (numConnFree.getCurrent() - 1 >= 0) ? numConnFree.getCurrent() - 1 : 0;
+                numConnFree.setCurrent(numConnFreeSafe);
             }
         }
     }

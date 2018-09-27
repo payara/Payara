@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.connectors.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -65,7 +65,7 @@ import javax.inject.Inject;
  * List Connector Connection Pools command
  * 
  */
-@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE })
+@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
 @Service(name="list-connector-connection-pools")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
@@ -84,10 +84,9 @@ public class ListConnectorConnectionPools implements AdminCommand {
     @Inject
     private Domain domain;
 
-    @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME, alias = "targetName", obsolete = true)
+    @Param(primary = true, optional = true, alias = "targetName", obsolete = true)
     private String target ;
     
-
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the paramter names and the values the parameter values

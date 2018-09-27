@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld.ejb;
@@ -48,9 +50,9 @@ import org.glassfish.ejb.api.EjbContainerServices;
 /**
  */
 public class SessionObjectReferenceImpl implements SessionObjectReference {
-	
+
 	private static final long serialVersionUID = 1L;
-	
+
 	private EjbContainerServices ejbContainerServices;
     private Object ejbRef;
 
@@ -59,14 +61,17 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
         ejbRef = ref;
     }
 
+    @Override
     public <S> S getBusinessObject(java.lang.Class<S> sClass) {
         return ejbContainerServices.getBusinessObject(ejbRef, sClass);
     }
 
+    @Override
     public void remove() {
         ejbContainerServices.remove(ejbRef);
     }
 
+    @Override
     public boolean isRemoved() {
         return ejbContainerServices.isRemoved(ejbRef);
     }

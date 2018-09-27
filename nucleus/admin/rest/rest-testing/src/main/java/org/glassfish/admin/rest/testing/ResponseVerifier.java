@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.testing;
@@ -43,9 +45,11 @@ package org.glassfish.admin.rest.testing;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
-
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import static org.glassfish.admin.rest.testing.Common.*;
 
@@ -132,16 +136,16 @@ public class ResponseVerifier {
     }
 
     public ResponseVerifier headers(ObjectValue objectWant) throws Exception {
-        JSONObject objectHave = new JSONObject();
+        JsonObjectBuilder objectHave = Json.createObjectBuilder();
         for (Entry<String, List<String>> header : getResponse().getJaxrsResponse().getStringHeaders().entrySet()) {
             String name = header.getKey();
-            JSONArray values = new JSONArray();
+            JsonArrayBuilder values = Json.createArrayBuilder();
             for (String value : header.getValue()) {
-                values.put(value);
+                values.add(value);
             }
-            objectHave.put(name, values);
+            objectHave.add(name, values.build());
         }
-        verifyData(objectWant, objectHave);
+        verifyData(objectWant, objectHave.build());
         return this;
     }
 
@@ -153,13 +157,13 @@ public class ResponseVerifier {
     public ResponseVerifier body(StringValue want) throws Exception {
         ObjectValue objectWant = new ObjectValue();
         objectWant.put("string", want);
-        JSONObject objectHave = new JSONObject();
-        objectHave.put("string", getResponse().getStringBody());
-        verifyData(objectWant, objectHave);
+        JsonObjectBuilder objectHave = Json.createObjectBuilder();
+        objectHave.add("string", getResponse().getStringBody());
+        verifyData(objectWant, objectHave.build());
         return this;
     }
 
-    private void verifyData(ObjectValue want, JSONObject have) throws Exception {
+    private void verifyData(ObjectValue want, JsonObject have) throws Exception {
         DataVerifier.verify(getEnvironment(), want, have);
     }
 

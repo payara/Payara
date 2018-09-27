@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.deploy.shared;
 
@@ -159,6 +160,7 @@ public class DeploymentPlanArchive extends JarArchive implements ReadableArchive
     /**
      * @return an Enumeration of entries for this archive
      */
+    @Override
     public Enumeration entries() {
         // Deployment Plan are organized flatly, 
         
@@ -183,12 +185,11 @@ public class DeploymentPlanArchive extends JarArchive implements ReadableArchive
             String prefix = "META-INF/";
             ArchiveType warType = locator.getService(ArchiveType.class, "war");
             boolean isWar = DeploymentUtils.isArchiveOfType(getParentArchive(), warType, locator);
-            if (entryName.indexOf("sun-web.xml")!=-1 || 
-                entryName.indexOf("glassfish-web.xml")!=-1) {
+            if (entryName.contains("sun-web.xml") || entryName.contains("glassfish-web.xml") || entryName.contains("payara-web.xml")) {
                 prefix = "WEB-INF/";
-            } else if (entryName.indexOf("glassfish-resources.xml")!=-1 && isWar) {
+            } else if ((entryName.contains("glassfish-resources.xml") || entryName.contains("payara-resources.xml"))&& isWar) {
                 prefix = "WEB-INF/";
-            } else if (entryName.indexOf("glassfish-services.xml")!=-1 && isWar) {
+            } else if (entryName.contains("glassfish-services.xml") && isWar) {
                 prefix = "WEB-INF/";
             }
             if (subArchiveUri != null && entryName.startsWith(subArchiveUri)) {
@@ -202,9 +203,7 @@ public class DeploymentPlanArchive extends JarArchive implements ReadableArchive
             
             if (subArchiveUri==null) {
                 // top level archive
-                if ((entryName.indexOf(".jar.")!=-1) || 
-                    (entryName.indexOf(".war.")!=-1) || 
-                    (entryName.indexOf(".rar."))!=-1) {
+                if ((entryName.contains(".jar.")) || (entryName.contains(".war.")) || entryName.contains(".rar.")) {
                     
                     // this element is in a sub archive
                     continue;

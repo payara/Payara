@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.gjc.spi.jdbc40;
 
@@ -1498,5 +1499,202 @@ public class CallableStatementWrapper40 extends CallableStatementWrapper {
             }
         }
         throw new UnsupportedOperationException("Operation not supported in this runtime.");
+    }
+    
+    //-------------------------------- JDBC 4.2 --------------------------------
+   
+     /**
+     * <p>Sets the value of the designated parameter with the given object.
+     * The given Java object will be converted to the given targetSqlType
+     * before being sent to the database.
+     *
+     * @param parameterName the name of the parameter
+     * @param parameterValue the object containing the input parameter value
+     * @param targetSqlType the SQL type to be
+     * sent to the database. The scale argument may further qualify this type.
+     * @param scaleOrLength for {@code java.sql.JDBCType.DECIMAL}
+     *          or {@code java.sql.JDBCType.NUMERIC types},
+     *          this is the number of digits after the decimal point. For
+     *          Java Object types {@code InputStream} and {@code Reader},
+     *          this is the length
+     *          of the data in the stream or reader.  For all other types,
+     *          this value will be ignored.
+     * @exception SQLException if parameterName does not correspond to a named
+     * parameter; if a database access error occurs
+     * or this method is called on a closed {@code CallableStatement}  or
+     *            if the Java Object specified by x is an InputStream
+     *            or Reader object and the value of the scale parameter is less
+     *            than zero
+     * @exception SQLFeatureNotSupportedException if
+     * the JDBC driver does not support the specified targetSqlType
+     *
+     */
+    @Override
+     public void setObject(String parameterName, Object parameterValue, SQLType targetSqlType,
+             int scaleOrLength) throws SQLException {
+        callableStatement.setObject(parameterName, parameterValue, targetSqlType, scaleOrLength);
+    }
+     
+    /**
+     * Sets the value of the designated parameter with the given object.
+     * This method is similar to {@link #setObject(String parameterName,
+     * Object x, SQLType targetSqlType, int scaleOrLength)},
+     * except that it assumes a scale of zero.
+     *
+     * @param parameterName the name of the parameter
+     * @param parameterValue the object containing the input parameter value
+     * @param targetSqlType the SQL type to be sent to the database
+     * @exception SQLException if parameterName does not correspond to a named
+     * parameter; if a database access error occurs
+     * or this method is called on a closed {@code CallableStatement}
+     * @exception SQLFeatureNotSupportedException if
+     * the JDBC driver does not support the specified targetSqlType
+     */
+    @Override
+     public void setObject(String parameterName, Object parameterValue, SQLType targetSqlType)
+        throws SQLException {
+        callableStatement.setObject(parameterName, parameterValue, targetSqlType);
+    }
+
+    /**
+     * Registers the OUT parameter in ordinal position {@code parameterIndex} to
+     * the JDBC type {@code sqlType}.
+     *
+     * @param parameterIndex the first parameter is 1, the second is 2, and so
+     * on
+     * @param sqlType the JDBC type code defined by {@code SQLType} to use to
+     * register the OUT Parameter. If the parameter is of JDBC type
+     * {@code JDBCType.NUMERIC} or {@code JDBCType.DECIMAL}, the version of
+     * {@code registerOutParameter} that accepts a scale value should be used.
+     *
+     * @exception SQLException if the parameterIndex is not valid; if a database
+     * access error occurs or this method is called on a closed
+     * {@code CallableStatement}
+     * @exception SQLFeatureNotSupportedException if the JDBC driver does not
+     * support the specified sqlType
+     */
+    @Override
+    public void registerOutParameter(int parameterIndex, SQLType sqlType)
+        throws SQLException {
+        callableStatement.registerOutParameter(parameterIndex, sqlType);
+    }
+
+    /**
+     * Registers the parameter in ordinal position
+     * {@code parameterIndex} to be of JDBC type {@code sqlType}.
+     * This version of {@code  registerOutParameter} should be
+     * used when the parameter is of JDBC type {@code JDBCType.NUMERIC}
+     * or {@code JDBCType.DECIMAL}.
+     *
+     * @param parameterIndex the first parameter is 1, the second is 2,
+     * and so on
+     * @param sqlType the JDBC type code defined by {@code SQLType} to use to
+     * register the OUT Parameter.
+     * @param scale the desired number of digits to the right of the
+     * decimal point.  It must be greater than or equal to zero.
+     * @exception SQLException if the parameterIndex is not valid;
+     * if a database access error occurs or
+     * this method is called on a closed {@code CallableStatement}
+     * @exception SQLFeatureNotSupportedException if
+     * the JDBC driver does not support the specified sqlType
+     */
+    @Override
+    public void registerOutParameter(int parameterIndex, SQLType sqlType,
+            int scale) throws SQLException {
+        callableStatement.registerOutParameter(parameterIndex, sqlType, scale);
+    }
+    
+    /**
+     * Registers the designated output parameter.
+     * This version of the method {@code  registerOutParameter}
+     * should be used for a user-defined or {@code REF} output parameter.
+     *
+     * @param parameterIndex the first parameter is 1, the second is 2,...
+     * @param sqlType the JDBC type code defined by {@code SQLType} to use to
+     * register the OUT Parameter.
+     * @param typeName the fully-qualified name of an SQL structured type
+     * @exception SQLException if the parameterIndex is not valid;
+     * if a database access error occurs or
+     * this method is called on a closed {@code CallableStatement}
+     * @exception SQLFeatureNotSupportedException if
+     * the JDBC driver does not support the specified sqlType
+     */
+    @Override
+    public void registerOutParameter (int parameterIndex, SQLType sqlType,
+            String typeName) throws SQLException {
+        callableStatement.registerOutParameter(parameterIndex, sqlType, typeName);
+    }
+
+    /**
+     * Registers the OUT parameter named <code>parameterName</code> 
+     * to the JDBC type {@code sqlType}.
+     *
+     * @param parameterName the name of the parameter
+     * @param sqlType the JDBC type code defined by {@code SQLType} to use to
+     * register the OUT Parameter.
+     * If the parameter is of JDBC type {@code JDBCType.NUMERIC}
+     * or {@code JDBCType.DECIMAL}, the version of
+     * {@code  registerOutParameter} that accepts a scale value
+     * should be used.
+     * @exception SQLException if parameterName does not correspond to a named
+     * parameter; if a database access error occurs or
+     * this method is called on a closed {@code CallableStatement}
+     * @exception SQLFeatureNotSupportedException if
+     * the JDBC driver does not support the specified sqlType
+     * or if the JDBC driver does not support
+     * this method
+     */
+    @Override
+    public void registerOutParameter(String parameterName, SQLType sqlType)
+        throws SQLException {
+        callableStatement.registerOutParameter(parameterName, sqlType);
+    }
+
+    /**
+     * Registers the parameter named <code>parameterName</code> 
+     * to be of JDBC type {@code sqlType}.
+     * This version of {@code  registerOutParameter} should be
+     * used when the parameter is of JDBC type {@code JDBCType.NUMERIC}
+     * or {@code JDBCType.DECIMAL}.
+     *
+     * @param parameterName the name of the parameter
+     * @param sqlType the JDBC type code defined by {@code SQLType} to use to
+     * register the OUT Parameter.
+     * @param scale the desired number of digits to the right of the
+     * decimal point.  It must be greater than or equal to zero.
+     * @exception SQLException if parameterName does not correspond to a named
+     * parameter; if a database access error occurs or
+     * this method is called on a closed {@code CallableStatement}
+     * @exception SQLFeatureNotSupportedException if
+     * the JDBC driver does not support the specified sqlType
+     * or if the JDBC driver does not support
+     * this method
+     */
+    @Override
+    public void registerOutParameter(String parameterName, SQLType sqlType,
+            int scale) throws SQLException {
+        callableStatement.registerOutParameter(parameterName, sqlType, scale);
+    }
+
+    /**
+     * Registers the designated output parameter.
+     * This version of the method {@code  registerOutParameter}
+     * should be used for a user-named or REF output parameter.
+     *
+     * @param parameterName the name of the parameter
+     * @param sqlType the JDBC type code defined by {@code SQLType} to use to
+     * register the OUT Parameter.
+     * @param typeName the fully-qualified name of an SQL structured type
+     * @exception SQLException if parameterName does not correspond to a named
+     * parameter; if a database access error occurs or
+     * this method is called on a closed {@code CallableStatement}
+     * @exception SQLFeatureNotSupportedException if
+     * the JDBC driver does not support the specified sqlType
+     * or if the JDBC driver does not support this method
+     */
+    @Override
+    public void registerOutParameter (String parameterName, SQLType sqlType,
+            String typeName) throws SQLException {
+        callableStatement.registerOutParameter(parameterName, sqlType, typeName);
     }
 }

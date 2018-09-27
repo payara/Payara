@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates.]
 
 package com.sun.ejb.containers;
 
@@ -44,9 +45,6 @@ import com.sun.appserv.connectors.internal.api.ResourceHandle;
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.Container;
 import com.sun.ejb.EjbInvocation;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.RoleReference;
-import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.invocation.ComponentInvocation;
 
@@ -275,7 +273,14 @@ public abstract class EJBContextImpl
             resources = new ArrayList(0);
         return resources;
     }
-    
+
+    /**
+     * reset resource list when putting SLSB back in the pool
+     */
+    void resetResourceList() {
+        resources = null;
+    }
+
     
     /**
      * Get the number of concurrent invocations on this bean

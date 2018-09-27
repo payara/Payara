@@ -37,12 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.config.support;
 
 import com.sun.enterprise.config.serverbeans.*;
 
-import java.util.List;
 
 import org.glassfish.hk2.api.ServiceLocator;
 
@@ -138,6 +137,21 @@ public enum CommandTarget implements TargetValidator {
         @Override
         public String getDescription() {
             return "Cluster";
+        }
+    },
+    /**
+     * a cluster configuration change
+     */
+    DEPLOYMENT_GROUP {
+        @Override
+        public boolean isValid(ServiceLocator habitat, String target) {
+            Domain domain = habitat.getService(Domain.class);
+            return domain.getDeploymentGroupNamed(target) != null;
+        }
+
+        @Override
+        public String getDescription() {
+            return "DeploymentGroup";
         }
     },
     /**

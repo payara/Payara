@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.cli;
 
 import com.sun.enterprise.config.serverbeans.AuthRealm;
@@ -55,20 +56,18 @@ import org.glassfish.api.ActionReport;
  * 
  */
 public class CLIUtil {
-    
-    final private static LocalStringManagerImpl localStrings = 
-        new LocalStringManagerImpl(CLIUtil.class);    
+
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CLIUtil.class);
 
     /**
-     * Selects a config of interest from the domain, based on the target.
-     * (Eliminates duplicated code formerly in Create, Delete, and ListAuthRealm).
+     * Selects a config of interest from the domain, based on the target. (Eliminates duplicated code formerly in Create,
+     * Delete, and ListAuthRealm).
      * 
      * @param domain
      * @param target
-     * @return 
+     * @return
      */
-    static Config chooseConfig(final Domain domain, 
-            final String target) {
+    static Config chooseConfig(final Domain domain, final String target) {
         Config config = null;
         Config tmp = null;
         try {
@@ -89,23 +88,18 @@ public class CLIUtil {
         }
         return config;
     }
-    
-    static Config chooseConfig(final Domain domain,
-            final String target,
-            final ActionReport report) {
+
+    static Config chooseConfig(final Domain domain, final String target, final ActionReport report) {
         final Config config = chooseConfig(domain, target);
         if (config == null) {
-            report.setMessage(localStrings.getLocalString(
-                "util.noconfigfortarget",
-                "Configuration for target {0} not found.", target));
+            report.setMessage(localStrings.getLocalString("util.noconfigfortarget", "Configuration for target {0} not found.", target));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
         return config;
     }
-    
-    static boolean isRealmNew(final SecurityService securityService,
-            final String authRealmName) {
-        
+
+    static boolean isRealmNew(final SecurityService securityService, final String authRealmName) {
+
         // check if there exists an auth realm byt he specified name
         // if so return failure.
         List<AuthRealm> authrealms = securityService.getAuthRealm();
@@ -114,45 +108,46 @@ public class CLIUtil {
                 return false;
             }
         }
+        
         return true;
     }
-    
-    static AuthRealm findRealm(final SecurityService securityService,
-            String authRealmName) {
+
+    static AuthRealm findRealm(final SecurityService securityService, String authRealmName) {
         // ensure we have the file authrealm
-        
+
         if (authRealmName == null) {
             authRealmName = securityService.getDefaultRealm();
         }
-        
-        for (AuthRealm authRealm : securityService.getAuthRealm()) {            
+
+        for (AuthRealm authRealm : securityService.getAuthRealm()) {
             if (authRealm.getName().equals(authRealmName)) {
                 return authRealm;
             }
-        }     
+        }
+        
         return null;
     }
-    
-    static JaccProvider findJaccProvider(final SecurityService securityService,
-            final String jaccProviderName) {
+
+    static JaccProvider findJaccProvider(final SecurityService securityService, final String jaccProviderName) {
         final List<JaccProvider> jaccProviders = securityService.getJaccProvider();
         for (JaccProvider jaccProv : jaccProviders) {
             if (jaccProv.getName().equals(jaccProviderName)) {
                 return jaccProv;
             }
         }
+        
         return null;
     }
-    
-    static MessageSecurityConfig findMessageSecurityConfig(final SecurityService securityService,
-            final String authLayer) {
-        List<MessageSecurityConfig> mscs = securityService.getMessageSecurityConfig();        
-        
-        for (MessageSecurityConfig  msc : mscs) {
+
+    static MessageSecurityConfig findMessageSecurityConfig(final SecurityService securityService, final String authLayer) {
+        List<MessageSecurityConfig> mscs = securityService.getMessageSecurityConfig();
+
+        for (MessageSecurityConfig msc : mscs) {
             if (msc.getAuthLayer().equals(authLayer)) {
                 return msc;
             }
         }
+        
         return null;
     }
 }

@@ -37,31 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
-import com.sun.enterprise.security.audit.AuditManager;
-import java.util.logging.Level;
+import static com.sun.enterprise.security.SecurityLoggerInfo.secServiceStartupEnter;
+import static com.sun.enterprise.security.SecurityLoggerInfo.secServiceStartupExit;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.SEVERE;
+
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-import org.jvnet.hk2.annotations.Optional;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.PreDestroy;
-import org.glassfish.hk2.api.ServiceLocator;
-
-import com.sun.enterprise.security.auth.realm.RealmsManager;
-import com.sun.enterprise.security.common.Util;
-import com.sun.enterprise.security.ssl.SSLUtils;
-import org.glassfish.internal.api.ServerContext;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
-import javax.inject.Inject;
-
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.ServerContext;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
-import org.jvnet.hk2.config.ConfigListener;
+
+import com.sun.enterprise.security.audit.AuditManager;
+import com.sun.enterprise.security.auth.realm.RealmsManager;
+import com.sun.enterprise.security.common.Util;
+import com.sun.enterprise.security.ssl.SSLUtils;
 
 /**
  * This class extends default implementation of ServerLifecycle interface.
@@ -74,9 +76,6 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
     
     @Inject
     private ServerContext sc;
-    
-    //@Inject 
-    //private RealmConfig realmConfig;
     
     @Inject 
     private PolicyLoader policyLoader;
@@ -110,10 +109,10 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
     private static final Logger _logger = SecurityLoggerInfo.getLogger();
 
     public SecurityLifecycle() {
-	try {
+        try {
 
             if (Util.isEmbeddedServer()) {
-                //If the user-defined login.conf/server.policy are set as system properties, then they are given priority
+                // If the user-defined login.conf/server.policy are set as system properties, then they are given priority
                 if (System.getProperty(SYS_PROP_LOGIN_CONF) == null) {
                     System.setProperty(SYS_PROP_LOGIN_CONF, Util.writeConfigFileToTempDir("login.conf").getAbsolutePath());
                 }
@@ -121,45 +120,30 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
                     System.setProperty(SYS_PROP_JAVA_SEC_POLICY, Util.writeConfigFileToTempDir("server.policy").getAbsolutePath());
                 }
             }
-            
-            // security manager is set here so that it can be accessed from
+
+            // Security manager is set here so that it can be accessed from
             // other lifecycles, like PEWebContainer
             java.lang.SecurityManager secMgr = System.getSecurityManager();
-            if (_logger.isLoggable(Level.INFO)) {
+            if (_logger.isLoggable(INFO)) {
                 if (secMgr != null) {
                     _logger.info(SecurityLoggerInfo.secMgrEnabled);
                 } else {
                     _logger.info(SecurityLoggerInfo.secMgrDisabled);
                 }
             }
-	} catch(Exception ex) {
-            _logger.log(Level.SEVERE, "java_security.init_securitylifecycle_fail", ex);
+        } catch (Exception ex) {
+            _logger.log(SEVERE, "java_security.init_securitylifecycle_fail", ex);
             throw new RuntimeException(ex.toString(), ex);
-	}
-    }   
+        }
+    }  
 
     // override default
     public void onInitialization() {
-
         try {
-             if (_logger.isLoggable(Level.INFO)) {
-                 _logger.log(Level.INFO, SecurityLoggerInfo.secServiceStartupEnter);
+             if (_logger.isLoggable(INFO)) {
+                 _logger.log(INFO, secServiceStartupEnter);
              }
 
-             
-
-            //TODO:V3 LoginContextDriver has a static variable dependency on BaseAuditManager
-            //And since LoginContextDriver has too many static methods that use BaseAuditManager
-            //we have to make this workaround here.
-             //Commenting this since this is being handles in LoginContextDriver
-        //    LoginContextDriver.AUDIT_MANAGER = secServUtil.getAuditManager();
-
-            //replaced with SharedSecureRandom API
-            //secServUtil.initSecureSeed();
-
-            // jacc
-            //registerPolicyHandlers();
-            // assert(policyLoader != null);
             policyLoader.loadPolicy();
 
             realmsManager.createRealms();
@@ -174,34 +158,16 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
             // this is because a DummyRoleMapperFactory is register due
             // to invocation of ConnectorRuntime.createActiveResourceAdapter
             // initRoleMapperFactory is called after it
-            //initRoleMapperFactory();
+            // initRoleMapperFactory();
            
-           if (_logger.isLoggable(Level.INFO)) {
-                 _logger.log(Level.INFO, SecurityLoggerInfo.secServiceStartupExit);
+           if (_logger.isLoggable(INFO)) {
+                 _logger.log(INFO, secServiceStartupExit);
              }
 
         } catch(Exception ex) {
             throw new SecurityLifecycleException(ex);
         }
     }
-
-    
-
-/*    private void registerPolicyHandlers()
-            throws javax.security.jacc.PolicyContextException {
-        PolicyContextHandler pch = PolicyContextHandlerImpl.getInstance();
-        PolicyContext.registerHandler(PolicyContextHandlerImpl.ENTERPRISE_BEAN,
-            pch, true);
-        PolicyContext.registerHandler(PolicyContextHandlerImpl.SUBJECT, pch, true);
-        PolicyContext.registerHandler(PolicyContextHandlerImpl.EJB_ARGUMENTS,
-            pch, true);
-        *//*V3 Commented: PolicyContext.registerHandler(PolicyContextHandlerImpl.SOAP_MESSAGE,
-            pch, true);
-         *//*
-        PolicyContext.registerHandler(PolicyContextHandlerImpl.HTTP_SERVLET_REQUEST,
-            pch, true);
-        PolicyContext.registerHandler(PolicyContextHandlerImpl.REUSE, pch, true);
-    }*/
 
     @Override
     public void postConstruct() {
@@ -214,12 +180,9 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
 
     @Override
     public void preDestroy() {
-        //DO Nothing ?
-        //TODO:V3 need to see if something needs cleanup
-       
     }
     
-    //To audit the server shutdown event
+    // To audit the server shutdown event
     public class AuditServerShutdownListener implements EventListener {
         @Override
         public void event(Event event) {

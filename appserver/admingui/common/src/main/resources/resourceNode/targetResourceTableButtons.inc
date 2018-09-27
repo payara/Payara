@@ -68,7 +68,8 @@
                     }
                 }
                 setAttribute(key="selectedRows" value="${selectedRows}");
-                gf.redirect(page="#{pageSession.listLink}&filterValue=#{pageSession.filterValue}");
+                prepareAlertMsg(summary="$resource{i18n.msg.enableResourceSuccessful}", type="success");
+                gf.redirect(page="#{pageSession.listLink}&filterValue=#{pageSession.filterValue}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
             />
         </sun:button>
         <sun:button id="button2" text="$resource{i18n.button.Disable}" disabled="#{true}" primary="#{false}" >
@@ -92,7 +93,8 @@
                     }
                 }
                 setAttribute(key="selectedRows" value="${selectedRows}");
-                gf.redirect(page="#{pageSession.listLink}&filterValue=#{pageSession.filterValue}");
+                prepareAlertMsg(summary="$resource{i18n.msg.disableResourceSuccessful}", type="success");
+                gf.redirect(page="#{pageSession.listLink}&filterValue=#{pageSession.filterValue}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
             />
         </sun:button>
         

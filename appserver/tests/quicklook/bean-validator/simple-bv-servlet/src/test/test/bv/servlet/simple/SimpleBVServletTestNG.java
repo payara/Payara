@@ -48,20 +48,17 @@ import java.net.*;
 
 public class SimpleBVServletTestNG {
 
-    private static final String TEST_NAME =
-        "bv-servlet-simple";
+    private static final String TEST_NAME = "bv-servlet-simple";
    
-    private String strContextRoot="simple-bv-servlet";
+    private String strContextRoot = "simple-bv-servlet";
 
     static String result = "";
-    String host=System.getProperty("http.host");
-    String port=System.getProperty("http.port");
+    String host = System.getProperty("http.host");
+    String port = System.getProperty("http.port");
 
     public SimpleBVServletTestNG() {
         result = null;
     }
-    
-    
            
     /*
      *If two asserts are mentioned in one method, then last assert is taken in
@@ -95,9 +92,9 @@ public class SimpleBVServletTestNG {
 		"(?s)(?m).*Obtained ValidatorFactory: org.hibernate.validator.(internal.)*engine.ValidatorFactoryImpl.*",
                 "(?s)(?m).*case1: No ConstraintViolations found.*",
                 "(?s)(?m).*case2: caught IllegalArgumentException.*",
-                "(?s)(?m).*case3: ConstraintViolation: message: may not be null propertyPath: listOfString.*",
-                "(?s)(?m).*case3: ConstraintViolation: message: may not be null propertyPath: lastName.*",
-                "(?s)(?m).*case3: ConstraintViolation: message: may not be null propertyPath: firstName.*",
+                "(?s)(?m).*case3: ConstraintViolation: message: must not be null propertyPath: listOfString.*",
+                "(?s)(?m).*case3: ConstraintViolation: message: must not be null propertyPath: lastName.*",
+                "(?s)(?m).*case3: ConstraintViolation: message: must not be null propertyPath: firstName.*",
                 "(?s)(?m).*case4: No ConstraintViolations found.*"
             };
             final int len = regexesToFind.length;

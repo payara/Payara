@@ -37,16 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.flashlight.statistics.factory;
-import org.glassfish.flashlight.statistics.*;
+
 import org.glassfish.flashlight.statistics.impl.AverageImpl;
 import org.glassfish.flashlight.statistics.Average;
+
 /**
  * 
  * @author hsingh
@@ -54,8 +51,7 @@ import org.glassfish.flashlight.statistics.Average;
 public class AverageFactory {
     
     public static Average createAverage (){
-        Average average = new AverageImpl ();
-        return average;
+        return new AverageImpl();
     }
  
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,23 +40,8 @@
 
 package fish.payara.appserver.micro.services;
 
-import fish.payara.micro.PayaraInstance;
-import fish.payara.micro.event.PayaraClusterListener;
-import fish.payara.micro.event.CDIEventListener;
-import fish.payara.appserver.micro.services.command.AsAdminCallable;
-import fish.payara.appserver.micro.services.command.ClusterCommandResultImpl;
-import fish.payara.micro.data.ApplicationDescriptor;
-import fish.payara.appserver.micro.services.data.ApplicationDescriptorImpl;
-import fish.payara.appserver.micro.services.data.InstanceDescriptorImpl;
-import fish.payara.micro.ClusterCommandResult;
-import fish.payara.micro.data.InstanceDescriptor;
-import fish.payara.micro.event.PayaraClusteredCDIEvent;
-import fish.payara.nucleus.cluster.PayaraCluster;
-import fish.payara.nucleus.eventbus.ClusterMessage;
-import fish.payara.nucleus.eventbus.MessageReceiver;
-import fish.payara.nucleus.events.HazelcastEvents;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.Serializable;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,9 +52,13 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import lombok.extern.java.Log;
+
+import com.sun.enterprise.v3.services.impl.GrizzlyService;
+
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -77,6 +66,7 @@ import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -84,6 +74,23 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.appserver.micro.services.command.AsAdminCallable;
+import fish.payara.appserver.micro.services.command.ClusterCommandResultImpl;
+import fish.payara.appserver.micro.services.data.ApplicationDescriptorImpl;
+import fish.payara.appserver.micro.services.data.InstanceDescriptorImpl;
+import fish.payara.micro.ClusterCommandResult;
+import fish.payara.micro.PayaraInstance;
+import fish.payara.micro.data.ApplicationDescriptor;
+import fish.payara.micro.data.InstanceDescriptor;
+import fish.payara.micro.event.CDIEventListener;
+import fish.payara.micro.event.PayaraClusterListener;
+import fish.payara.micro.event.PayaraClusteredCDIEvent;
+import fish.payara.nucleus.cluster.PayaraCluster;
+import fish.payara.nucleus.eventbus.ClusterMessage;
+import fish.payara.nucleus.eventbus.MessageReceiver;
+import fish.payara.nucleus.events.HazelcastEvents;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
 
 /**
  * Internal Payara Service for describing instances
@@ -93,7 +100,6 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name = "payara-instance")
 @RunLevel(StartupRunLevel.VAL)
 @Contract
-@Log
 public class PayaraInstanceImpl implements EventListener, MessageReceiver, PayaraInstance {
 
     public static final String INSTANCE_STORE_NAME = "payara.instance.store";
@@ -102,7 +108,12 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
 
     public static final String CDI_EVENTS_NAME = "payara.micro.cdi.event";
 
-    public static final String APPLICATIONS_STORE_NAME = "payara.micro.applications.store";    
+    public static final String APPLICATIONS_STORE_NAME = "payara.micro.applications.store";
+    
+    private static final Logger logger = Logger.getLogger(PayaraInstanceImpl.class.getName());
+
+    @Inject
+    private ServiceLocator habitat;
     
     @Inject
     private PayaraCluster cluster;
@@ -240,7 +251,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
                     initialiseInstanceDescriptor();
                 }
                 me.addApplication(new ApplicationDescriptorImpl(applicationInfo));
-                log.log(Level.FINE, "App Loaded: {2}, Enabled: {0}, my ID: {1}", new Object[] { hazelcast.isEnabled(),
+                logger.log(Level.FINE, "App Loaded: {2}, Enabled: {0}, my ID: {1}", new Object[] { hazelcast.isEnabled(),
                     myCurrentID, applicationInfo.getName() });
                 cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             }
@@ -262,7 +273,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
         // When Hazelcast is bootstrapped, update the instance descriptor with any new information
         if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)) {
             initialiseInstanceDescriptor();
-            log.log(Level.FINE, "Hz Bootstrap Complete, Enabled: {0}, my ID: {1}", new Object[] { hazelcast.isEnabled(), myCurrentID });
+            logger.log(Level.FINE, "Hz Bootstrap Complete, Enabled: {0}, my ID: {1}", new Object[] { hazelcast.isEnabled(), myCurrentID });
             // remove listener first
             cluster.getEventBus().removeMessageReceiver(INTERNAL_EVENTS_NAME, this);
             cluster.getEventBus().removeMessageReceiver(CDI_EVENTS_NAME, this);
@@ -335,6 +346,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
     private void initialiseInstanceDescriptor() {
         boolean liteMember = false;
         int hazelcastPort = 5900;
+        InetAddress hostname = null;
         
         // Get the Hazelcast specific information
         if (hazelcast.isEnabled()) {
@@ -343,6 +355,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
             myCurrentID = hazelcast.getUUID();
             liteMember = hazelcast.isLite();
             hazelcastPort = hazelcast.getPort();
+            hostname = hazelcast.getInstance().getCluster().getLocalMember().getSocketAddress().getAddress();
         } else {
             instanceName = "payara-micro";
             instanceGroup = "no-cluster";
@@ -356,7 +369,16 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
         List<Integer> sslPorts = new ArrayList<>();
         int adminPort = 0;
         for (NetworkListener networkListener : 
-                context.getConfigBean().getConfig().getNetworkConfig().getNetworkListeners().getNetworkListener()) {  
+                context.getConfigBean().getConfig().getNetworkConfig().getNetworkListeners().getNetworkListener()) {
+
+            // Try and get the port. First get the port in the domain xml, then attempt to get the dynamic config port.
+            int port = Integer.parseInt(networkListener.getPort());
+            try {
+                port = habitat.getService(GrizzlyService.class).getRealPort(networkListener);
+            } catch (Exception ex) {
+                logger.log(Level.WARNING, "Failed to get running Grizzly listener.", ex);
+            }
+
             // Skip the network listener if it isn't enabled
             if (Boolean.parseBoolean(networkListener.getEnabled())) {
                 // Check if this listener is using HTTP or HTTPS
@@ -366,24 +388,24 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
                             context.getConfigBean().getConfig().getAdminListener().getName())) {
                         // Micro instances can use the admin listener as both an admin and HTTP port
                         if (instanceType.equals("MICRO")) {
-                            ports.add(Integer.parseInt(networkListener.getPort()));
+                            ports.add(port);
                         }
-                        adminPort = Integer.parseInt(networkListener.getPort());
+                        adminPort = port;
                     } else {
                         // If this listener isn't the admin listener, it must be an HTTP listener
-                        ports.add(Integer.parseInt(networkListener.getPort()));
+                        ports.add(port);
                     }
                 } else if (networkListener.findProtocol().getSecurityEnabled().equals("true")) {
                     if (networkListener.getName().equals(
                             context.getConfigBean().getConfig().getAdminListener().getName())) {
                         // Micro instances can use the admin listener as both an admin and HTTPS port
                         if (instanceType.equals("MICRO")) {
-                            ports.add(Integer.parseInt(networkListener.getPort()));
+                            ports.add(port);
                         }
-                        adminPort = Integer.parseInt(networkListener.getPort());
+                        adminPort = port;
                     } else {
                         // If this listener isn't the admin listener, it must be an HTTPS listener
-                        sslPorts.add(Integer.parseInt(networkListener.getPort()));
+                        sslPorts.add(port);
                     }
                 }
             }
@@ -412,6 +434,10 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
             me.setLiteMember(liteMember);
             me.setInstanceType(instanceType);
             
+            if (hostname != null) {
+                me.setHostName(hostname);
+            }
+            
             // If there were some deployed applications from the previous instance descriptor, register them with the new 
             // one
             if (!deployedApplications.isEmpty()) {
@@ -425,7 +451,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
                 cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             }  
         } catch (UnknownHostException ex) {
-            log.log(Level.SEVERE, "Could not find local hostname", ex);
+            logger.log(Level.SEVERE, "Could not find local hostname", ex);
         }
     }
     

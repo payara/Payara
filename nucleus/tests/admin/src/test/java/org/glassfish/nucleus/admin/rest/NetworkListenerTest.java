@@ -36,14 +36,16 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.nucleus.admin.rest;
 
 import java.util.HashMap;
 import java.util.Map;
+import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
-import org.codehaus.jettison.json.JSONObject;
 import static org.testng.AssertJUnit.*;
 import org.testng.annotations.Test;
 
@@ -172,8 +174,8 @@ public class NetworkListenerTest extends RestTestBase {
         assertTrue(isSuccess(response));
         response = get(URL_SSL, params);
         entity = this.getEntityValues(response);
-        assertEquals(JSONObject.NULL, entity.get("keyStore"));
-        assertEquals(JSONObject.NULL, entity.get("trustAlgorithm"));
-        assertEquals(JSONObject.NULL, entity.get("trustStore"));
+        assertEquals(JsonObject.NULL.toString(), entity.get("keyStore"));
+        assertEquals(JsonObject.NULL.toString(), entity.get("trustAlgorithm"));
+        assertEquals(JsonObject.NULL.toString(), entity.get("trustStore"));
     }
 }

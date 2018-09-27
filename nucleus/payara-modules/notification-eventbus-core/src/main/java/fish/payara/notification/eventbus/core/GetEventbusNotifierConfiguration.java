@@ -68,12 +68,13 @@ public class GetEventbusNotifierConfiguration extends BaseGetNotifierConfigurati
 
     @Override
     protected String listConfiguration(EventbusNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "Topic Name"};
+        String headers[] = {"Enabled", "Noisy", "Topic Name"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[2];
+        Object values[] = new Object[3];
 
         values[0] = configuration.getEnabled();
-        values[1] = configuration.getTopicName();
+        values[1] = configuration.getNoisy();
+        values[2] = configuration.getTopicName();
 
         columnFormatter.addRow(values);
         return columnFormatter.toString();
@@ -81,11 +82,14 @@ public class GetEventbusNotifierConfiguration extends BaseGetNotifierConfigurati
 
     @Override
     protected Map<String, Object> getNotifierConfiguration(EventbusNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(2);
+        Map<String, Object> map = new HashMap<>(3);
 
         if (configuration != null) {
             map.put("enabled", configuration.getEnabled());
+            map.put("noisy", configuration.getNoisy());
             map.put("topicName", configuration.getTopicName());
+        } else {
+            map.put("noisy", Boolean.TRUE.toString());
         }
 
         return map;

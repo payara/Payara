@@ -36,15 +36,17 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundatin and/or affiliates
  */
 package org.glassfish.admin.rest.provider;
 
 import java.util.Collection;
+import javax.json.Json;
+import javax.json.JsonException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
 import org.glassfish.admin.rest.Constants;
 
 /**
@@ -59,10 +61,9 @@ public class CollectionWriter extends BaseProvider<Collection> {
 
     @Override
     public String getContent(Collection proxy) {
-        JSONArray array = new JSONArray(proxy);
         try {
-            return array.toString(getFormattingIndentLevel());
-        } catch (JSONException ex) {
+            return Json.createArrayBuilder(proxy).toString();
+        } catch (JsonException ex) {
             throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
         }
     }

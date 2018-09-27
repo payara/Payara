@@ -42,8 +42,6 @@ package fish.payara.micro.cmd.options;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *

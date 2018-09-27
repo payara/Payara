@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.ejb.deployment.descriptor;
@@ -61,11 +63,9 @@ import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
-    /**
-    * Objects of this kind represent the deployment information describing a 
-    * single message driven Ejb.
-    */
-
+/**
+ * Objects of this kind represent the deployment information describing a single message driven Ejb.
+ */
 public final class EjbMessageBeanDescriptor extends EjbDescriptor 
     implements MessageDestinationReferencer, com.sun.enterprise.deployment.EjbMessageBeanDescriptor {
 
@@ -131,8 +131,8 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
     
     /** 
     * The copy constructor.
+     * @param other Another EjbMessageBeanDescriptor to copy the values of
     */
-    
     public EjbMessageBeanDescriptor(EjbMessageBeanDescriptor other) {
         super(other);
         this.messageListenerType = other.messageListenerType;
@@ -154,11 +154,14 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
 
     /**
      * Returns the type of this bean - always "Message-driven".
+     * @return 
      */
+    @Override
     public String getType() {
         return TYPE;
     }
 
+    @Override
     public void setContainerTransactionFor(MethodDescriptor methodDescriptor, ContainerTransaction containerTransaction) {
         Vector allowedTxAttributes = getPossibleTransactionAttributes();
         if( allowedTxAttributes.contains(containerTransaction) ) {
@@ -174,7 +177,9 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
 
     /**
      * Sets my type
+     * @param type
      */
+    @Override
     public void setType(String type) {
 	throw new IllegalArgumentException(localStrings.getLocalString(
 		   "enterprise.deployment.exceptioncannotsettypeofmsgdrivenbean",
@@ -189,10 +194,12 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
         beanClassTxMethods = null;
     }
 
+    @Override
     public String getMessageListenerType() {
         return messageListenerType;
     }
 
+    @Override
     public Set getTxBusinessMethodDescriptors() {
          
         ClassLoader classLoader = getEjbBundleDescriptor().getClassLoader();
@@ -225,6 +232,14 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
         return methods;
     }
 
+    /**
+     * {@inheritDoc }
+     * <p>
+     * For a Message-Driven Bean this will always throw an {@link IllegalArgumentException}
+     * as it cannot have security business methods
+     * @return 
+     */
+    @Override
     public Set getSecurityBusinessMethodDescriptors() {
 	throw new IllegalArgumentException(localStrings.getLocalString(
 		   "enterprise.deployment.exceptioncannotgetsecbusmethodsinmsgbean",
@@ -235,6 +250,9 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
      * This returns the message listener onMessage method from the
      * *message listener interface* itself, as opposed to the method
      * from the ejb class that implements it.
+     * @param classLoader
+     * @return 
+     * @throws NoSuchMethodException 
      */
     public Method[] getMessageListenerInterfaceMethods(ClassLoader classLoader)
         throws NoSuchMethodException {
@@ -259,6 +277,7 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
         return methods.toArray(new Method[methods.size()]);
     }
 
+    @Override
     public Vector getPossibleTransactionAttributes() {
         Vector txAttributes = new Vector();
         txAttributes.add(new ContainerTransaction
@@ -272,6 +291,11 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
         return txAttributes;
     }
 
+    /**
+     * Returns true if a link name has been set
+     * @return 
+     * @see com.sun.enterprise.deployment.MessageDestinationReferencerImpl#getMessageDestinationLinkName()
+     */
     public boolean hasMessageDestinationLinkName() {
         return (msgDestReferencer.getMessageDestinationLinkName() != null);
     }
@@ -280,6 +304,7 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
     // Implementations of MessageDestinationReferencer methods.
     //
 
+    @Override
     public boolean isLinkedToMessageDestination() {
         return msgDestReferencer.isLinkedToMessageDestination();
     }
@@ -287,31 +312,38 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
     /** 
      * @return the name of the message destination to which I refer 
      */
+    @Override
     public String getMessageDestinationLinkName() {
         return msgDestReferencer.getMessageDestinationLinkName();
     }
 
     /** 
      * Sets the name of the message destination to which I refer.
+     * @param linkName
      */
+    @Override
     public void setMessageDestinationLinkName(String linkName) {
         msgDestReferencer.setMessageDestinationLinkName(linkName);
     }    
 
+    @Override
     public MessageDestinationDescriptor setMessageDestinationLinkName
         (String linkName, boolean resolveLink) {
         return msgDestReferencer.setMessageDestinationLinkName
             (linkName, resolveLink);
     }
 
+    @Override
     public MessageDestinationDescriptor resolveLinkName() {
         return msgDestReferencer.resolveLinkName();
     }
         
+    @Override
     public boolean ownedByMessageDestinationRef() {
         return false;
     }
 
+    @Override
     public MessageDestinationReferenceDescriptor getMessageDestinationRefOwner
         () {
         return null;
@@ -319,14 +351,18 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
 
     /**
      * True if the owner is a message-driven bean.
+     * @return true
      */ 
+    @Override
     public boolean ownedByMessageBean() {
         return true;
     }
 
     /**
      * Get the descriptor for the message-driven bean owner.
+     * @return 
      */ 
+    @Override
     public EjbMessageBeanDescriptor getMessageBeanOwner() {
         return this;
     }
@@ -334,6 +370,7 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
     /** 
      * @return the message destination to which I refer. Can be NULL.
     */
+    @Override
     public MessageDestinationDescriptor getMessageDestination() {
         return msgDestReferencer.getMessageDestination();
     }  
@@ -341,6 +378,7 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
     /**
      * @param newMsgDest the message destination to which I refer.
      */
+    @Override
     public void setMessageDestination(MessageDestinationDescriptor newMsgDest) {
         msgDestReferencer.setMessageDestination(newMsgDest);
     }
@@ -352,10 +390,12 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
     /**
      * @return Set of EnvironmentProperty elements.  
      */
+    @Override
     public Set<EnvironmentProperty> getActivationConfigProperties() {
         return activationConfig.getActivationConfig();
     }
     
+    @Override
     public String getActivationConfigValue(String name) {
         for (EnvironmentProperty next : activationConfig.getActivationConfig()) {
             if (next.getName().equals(name)) {
@@ -397,6 +437,7 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
     /**
      * @return Set of EnvironmentProperty elements.
      */
+    @Override
     public Set<EnvironmentProperty> getRuntimeActivationConfigProperties() {
         return runtimeActivationConfig.getActivationConfig();
     }
@@ -410,6 +451,7 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
         return null;
     }
 
+    @Override
     public void putRuntimeActivationConfigProperty(EnvironmentProperty prop) {
         runtimeActivationConfig.getActivationConfig().add(prop);
     }
@@ -437,24 +479,39 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
         }
     }
 
+    @Override
     public boolean hasQueueDest() {
         return ( (destinationType != null) && 
                  (destinationType.equals("javax.jms.Queue")) );
     }
 
+    /**
+     * Returns true if the destination type is of {@linkplain javax.jms.topic}
+     * @return 
+     */
     public boolean hasTopicDest() {
         return ( (destinationType != null) && 
                  (destinationType.equals("javax.jms.Topic")) );
     }
 
+    /**
+     * Returns true if the destination type has been set
+     * @return 
+     */
     public boolean hasDestinationType() {
         return (destinationType != null);
     }
 
+    @Override
     public String getDestinationType() {
         return destinationType;
     }
     
+    /**
+     * Sets the destination type. This should be either
+     * "{@linkplain java.jms.Queue}" or "{@linkplain javax.jms.Topic}"
+     * @param destType 
+     */
     public void setDestinationType(String destType) {
         destinationType = destType;
     }
@@ -477,11 +534,17 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
     }
 
 
+    /**
+     * Sets the destination type to be {@linkplain javax.jms.Queue}
+     */
     public void setHasQueueDest() {
         destinationType = "javax.jms.Queue";
         setHasDurableSubscription(false);
     }
 
+    /**
+     * Sets the destination type to be {@linkplain javax.jms.Topic}
+     */
     public void setHasTopicDest() {
         destinationType = "javax.jms.Topic";
 
@@ -523,16 +586,35 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
     static final int DUPS_OK_ACKNOWLEDGE = 3;
 
 
+    /**
+     * Gets how JMS messages should be acknowledged.
+     * <p>
+     * 1 is for auto-acknowledge mode <br/>
+     * 3 is for dups-OK-acknowledge mode
+     * @return 1 or 3
+     * @see <a href="https://docs.oracle.com/cd/E19587-01/821-0029/aeqbk/index.html">Acknowledgment Modes</a>
+     */
     public int getJmsAcknowledgeMode() {
         String ackModeStr = getActivationConfigValue(ACK_MODE_PROPERTY);
         return ( (ackModeStr != null) && ackModeStr.equals(DUPS_OK_ACK) ) ? 
             DUPS_OK_ACKNOWLEDGE : AUTO_ACKNOWLEDGE;
     }
     
+    /**
+     * Returns how JMS messages should be acknowledged.
+     * @return "Dups-ok-acknowledge" or "Auto-acknowledge"
+     */
     public String getJmsAcknowledgeModeAsString() {
         return getActivationConfigValue(ACK_MODE_PROPERTY);
     }
     
+    /**
+     * Sets how JMS messages should be acknowledged.
+     * <p>
+     * If the parameter is not 1 then it will be set to use dups-ok-acknowledge mode
+     * as there is no checking for this.
+     * @param acknowledgeMode 1 for auto-acknowledgement, 3 for dups-ok-acknowledge
+     */
     public void setJmsAcknowledgeMode(int acknowledgeMode) {
         String ackModeValue = (acknowledgeMode == AUTO_ACKNOWLEDGE) ?
             AUTO_ACK : DUPS_OK_ACK;
@@ -543,6 +625,11 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
 
     }
     
+    /**
+     * Sets how JMS messages should be acknowledged.
+     * @param acknowledgeMode Must be either "Auto-acknowledge" or "Dups-ok-acknowledge"
+     * otherwise a {@link IllegalArgumentException} will be thrown
+     */
     public void setJmsAcknowledgeMode(String acknowledgeMode) {
         if (AUTO_ACK.equals(acknowledgeMode)) {
             setJmsAcknowledgeMode(AUTO_ACKNOWLEDGE);
@@ -556,6 +643,7 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
         }
     }    
 
+    @Override
     public String getDurableSubscriptionName() {
         return durableSubscriptionName;
     }
@@ -572,19 +660,26 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
     /**
      * Connection factory is optional.  If set to null, 
      * hasConnectionFactory will return false.
+     * @param connectionFactory
      */
     public void setConnectionFactoryName(String connectionFactory) {
         connectionFactoryName = connectionFactory;
     }
 
+    /**
+     * Returns true if a connection factory has been set
+     * @return 
+     */
     public boolean hasConnectionFactory() {
         return (connectionFactoryName != null);
     }
 
+    @Override
     public String getResourceAdapterMid() {
         return resourceAdapterMid;
     }
 
+    @Override
     public String getMdbConnectionFactoryJndiName() {
         return getIASEjbExtraDescriptors().getMdbConnectionFactory().getJndiName();
     }
@@ -594,26 +689,40 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
      * a resource adapter is responsible for delivering
      * messages to the message-driven bean.  If not set,
      * hasResourceAdapterMid will return false.
+     * @param resourceAdapterMid
      */
+    @Override
     public void setResourceAdapterMid(String resourceAdapterMid) {
         this.resourceAdapterMid = resourceAdapterMid;
     }
 
+    /**
+     * Returns true if a resource adapter has been set for
+     * usage with this MDB
+     * @return 
+     */
     public boolean hasResourceAdapterMid() {
         return (resourceAdapterMid != null);
     }
 
-    /** 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * For a Message-Driven Bean this will always return an empty vector
      */
+    @Override
     public Vector getMethods(ClassLoader classLoader) {
         // @@@
         return new Vector();
     }
 
-    /** 
+    /**
+     * {@inheritDoc}
+     * @param classLoader
      * @return a collection of MethodDescriptor for methods which 
      * may have a assigned security attribute.
      */
+    @Override
     protected Collection getTransactionMethods(ClassLoader classLoader) {
         Vector txMethods = new Vector();
 
@@ -653,18 +762,20 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
             return "MessageBeanContainerFactory";
         }
 
-        /**
+    /**
      *  Sets the transaction type for this bean. 
      * Must be either BEAN_TRANSACTION_TYPE or CONTAINER_TRANSACTION_TYPE.
+     * @param transactionType
      */
+    @Override
     public void setTransactionType(String transactionType) {
 	boolean isValidType = (BEAN_TRANSACTION_TYPE.equals(transactionType) ||
 				CONTAINER_TRANSACTION_TYPE.equals(transactionType));
 				
 	if (!isValidType && this.isBoundsChecking()) {
 	    throw new IllegalArgumentException(localStrings.getLocalString(
-									   "enterprise.deployment.exceptionmsgbeantxtypenotlegaltype",
-									   "{0} is not a legal transaction type for a message-driven bean", new Object[] {transactionType}));
+		"enterprise.deployment.exceptionmsgbeantxtypenotlegaltype",
+		"{0} is not a legal transaction type for a message-driven bean", new Object[] {transactionType}));
 	} else {
 	    super.transactionType = transactionType;
 	    super.setMethodContainerTransactions(new Hashtable());
@@ -698,7 +809,9 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
 
     /**
     * Returns a formatted String of the attributes of this object.
+     * @param toStringBuffer
     */
+    @Override
     public void print(StringBuffer toStringBuffer) {
 	super.print(toStringBuffer);
 	toStringBuffer.append("Message-driven descriptor : ").append( 

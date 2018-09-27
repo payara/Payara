@@ -42,39 +42,44 @@ package com.sun.enterprise.security.acl;
 
 /**
  * Abstract resource ..
+ *
  * @author Harish Prabandham
  */
 abstract public class Resource {
-	private String app;
-	private String name;
-	private String method;
+    private String application;
+    private String name;
+    private String method;
 
-	protected Resource(String app, String name, String method) {
-		this.app = app;
-		this.name = name;
-		this.method = method;
-	}
+    protected Resource(String application, String name, String method) {
+        this.application = application;
+        this.name = name;
+        this.method = method;
+    }
 
-	public String getName() {
-		return this.name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public String getApplication() {
-		return this.app;
-	}
+    public String getApplication() {
+        return application;
+    }
 
-	public String getMethod() {
-		return this.method;
-	}
+    public String getMethod() {
+        return method;
+    }
 
-	public int hashCode() {
-		return getClass().hashCode();
-	}
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 
-	public abstract boolean implies(Resource res);
-	public abstract boolean equals(Object obj);
+    public abstract boolean implies(Resource resource);
 
-	public String toString() {
-		return getApplication() + ":" + getName() + "." + getMethod();
-	}
+    @Override
+    public abstract boolean equals(Object obj);
+
+    @Override
+    public String toString() {
+        return getApplication() + ":" + getName() + "." + getMethod();
+    }
 }

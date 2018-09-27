@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.connectors.admin.cli;
 
@@ -60,10 +61,17 @@ import org.glassfish.resourcebase.resources.api.PoolInfo;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
 
 @Service(name = "flush-connection-pool")
 @PerLookup
 @I18n("flush.connection.pool")
+@TargetType(value = {CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP,
+    CommandTarget.CLUSTERED_INSTANCE})
+@ExecuteOn(value = {RuntimeType.ALL})
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
         opType=RestEndpoint.OpType.POST, 
@@ -95,6 +103,7 @@ public class FlushConnectionPool implements AdminCommand {
     @Inject
     private ConnectorRuntime _runtime;
 
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
@@ -122,12 +131,11 @@ public class FlushConnectionPool implements AdminCommand {
         }
 
         boolean poolingEnabled = false;
-        ResourcePool pool =
-                (ResourcePool) ConnectorsUtil.getResourceByName(resources, ResourcePool.class, poolName);
-        if(pool instanceof ConnectorConnectionPool){
+        ResourcePool pool = (ResourcePool) ConnectorsUtil.getResourceByName(resources, ResourcePool.class, poolName);
+        if (pool instanceof ConnectorConnectionPool) {
             ConnectorConnectionPool ccp = (ConnectorConnectionPool)pool;
             poolingEnabled = Boolean.valueOf(ccp.getPooling());
-        }else{
+        } else {
             JdbcConnectionPool ccp = (JdbcConnectionPool)pool;
             poolingEnabled = Boolean.valueOf(ccp.getPooling());
         }
@@ -145,8 +153,7 @@ public class FlushConnectionPool implements AdminCommand {
             _runtime.flushConnectionPool(poolInfo);
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         } catch (ConnectorRuntimeException e) {
-            report.setMessage(localStrings.getLocalString("flush.connection.pool.fail",
-                    "Flush connection pool for {0} failed", poolName));
+            report.setMessage(localStrings.getLocalString("flush.connection.pool.fail", "Flush connection pool for {0} failed", poolName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
         }

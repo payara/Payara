@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.config.serverbeans.*;
@@ -65,7 +66,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 
@@ -110,6 +110,8 @@ public class CreateInstanceCommand implements AdminCommand {
     String configRef;
     @Param(name = "cluster", optional = true)
     String clusterName;
+    @Param(name = "deploymentgroup", optional = true)
+    String deploymentGroup;
     @Param(name = "lbenabled", optional = true)
     private Boolean lbEnabled;
     @Param(name = "checkports", optional = true, defaultValue = "true")
@@ -181,6 +183,7 @@ public class CreateInstanceCommand implements AdminCommand {
         map.add("node", node);
         map.add("config", configRef);
         map.add("cluster", clusterName);
+        map.add("deploymentgroup", deploymentGroup);
         if (lbEnabled != null) {
             map.add("lbenabled", lbEnabled.toString());
         }

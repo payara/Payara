@@ -94,6 +94,9 @@ public abstract class BaseNotificationConfigurer<C extends NotifierConfiguration
     @Param(name = "enabled")
     protected Boolean enabled;
 
+    @Param(name = "noisy", optional = true, defaultValue = "true")
+    protected Boolean noisy;
+
     private Class<C> notifierConfigurationClass;
 
     protected abstract void applyValues(C c) throws PropertyVetoException;
@@ -129,6 +132,7 @@ public abstract class BaseNotificationConfigurer<C extends NotifierConfiguration
 
                         ParameterMap params = new ParameterMap();
                         params.add("enabled", Boolean.TRUE.toString());
+                        params.add("noisy", noisy.toString());
                         params.add("dynamic", Boolean.TRUE.toString());
                         params.add("target", target);
 
@@ -143,6 +147,7 @@ public abstract class BaseNotificationConfigurer<C extends NotifierConfiguration
 
                         ActionReport requestTracingSubReport = actionReport.addSubActionsReport();
                         CommandRunner.CommandInvocation requestTracingCommandInvocation = commandRunner.getCommandInvocation(getRequestTracingNotifierCommandName(), requestTracingSubReport, context.getSubject());
+                        params.remove("noisy");
                         requestTracingCommandInvocation.parameters(params);
                         requestTracingCommandInvocation.execute();
                         if (requestTracingSubReport.hasFailures()) {
@@ -158,6 +163,20 @@ public abstract class BaseNotificationConfigurer<C extends NotifierConfiguration
                     public Object run(C cProxy) throws PropertyVetoException, TransactionFailure {
                         applyValues(cProxy);
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                        // If noisy attribute has changed must refresh HealthCheck notificatonList
+                        ParameterMap params = new ParameterMap();
+                        params.add("enabled", enabled.toString());
+                        params.add("dynamic", Boolean.TRUE.toString());
+                        params.add("noisy", noisy.toString());
+                        params.add("target", target);
+
+                        ActionReport healthCheckSubReport = actionReport.addSubActionsReport();
+                        CommandRunner.CommandInvocation healthCheckCommandInvocation = commandRunner.getCommandInvocation(getHealthCheckNotifierCommandName(), healthCheckSubReport, context.getSubject());
+                        healthCheckCommandInvocation.parameters(params);
+                        healthCheckCommandInvocation.execute();
+                        if (healthCheckSubReport.hasFailures()) {
+                            logger.log(Level.SEVERE, "Error occurred while configuring notifier with command: " + getHealthCheckNotifierCommandName());
+                        }
                         return cProxy;
                     }
                 }, c);

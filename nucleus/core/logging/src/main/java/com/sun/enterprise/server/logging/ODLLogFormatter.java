@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2017-2018] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -71,14 +71,14 @@ import java.util.logging.Formatter;
 @Service()
 @ContractsProvided({ODLLogFormatter.class, Formatter.class})
 @PerLookup
-public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
+public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroadcaster {
 
     // loggerResourceBundleTable caches references to all the ResourceBundle
     // and can be searched using the LoggerName as the key 
     private Map<String, ResourceBundle> loggerResourceBundleTable;
 
     private LogManager logManager;
-
+    
     private static boolean LOG_SOURCE_IN_KEY_VALUE = false;
 
     private static boolean RECORD_NUMBER_IN_KEY_VALUE = false;
@@ -96,15 +96,12 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
     static {
         String logSource = System.getProperty(
                 "com.sun.aas.logging.keyvalue.logsource");
-        if ((logSource != null)
-                && (logSource.equals("true"))) {
+        if ((logSource != null) && (logSource.equals("true"))) {
             LOG_SOURCE_IN_KEY_VALUE = true;
         }
 
-        String recordCount = System.getProperty(
-                "com.sun.aas.logging.keyvalue.recordnumber");
-        if ((recordCount != null)
-                && (recordCount.equals("true"))) {
+        String recordCount = System.getProperty("com.sun.aas.logging.keyvalue.recordnumber");
+        if ((recordCount != null) && (recordCount.equals("true"))) {
             RECORD_NUMBER_IN_KEY_VALUE = true;
         }
 
@@ -186,7 +183,6 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
     private String odlLogFormat(LogRecord record) {
 
         try {
-
             LogEventImpl logEvent = new LogEventImpl();
             
             // creating message from log record using resource bundle and appending parameters
@@ -223,9 +219,14 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
             // Adding messageType
             Level logLevel = record.getLevel();
             recordBuffer.append(FIELD_BEGIN_MARKER);
-            String odlLevel = logLevel.getName();
+            if (color()) {
+                recordBuffer.append(getColor(logLevel));
+            }            String odlLevel = logLevel.getLocalizedName();
             logEvent.setLevel(odlLevel);
             recordBuffer.append(odlLevel);
+            if (color()) {
+                recordBuffer.append(getReset());
+            }
             recordBuffer.append(FIELD_END_MARKER);
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
@@ -241,7 +242,13 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
             recordBuffer.append(FIELD_BEGIN_MARKER);
             String loggerName = record.getLoggerName();
             loggerName = (loggerName == null) ? "" : loggerName;
+            if (color()) {
+                recordBuffer.append(getLoggerColor());
+            }
             recordBuffer.append(loggerName);
+            if (color()) {
+                recordBuffer.append(getReset());
+            }
             logEvent.setLogger(loggerName);
             recordBuffer.append(FIELD_END_MARKER);
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);

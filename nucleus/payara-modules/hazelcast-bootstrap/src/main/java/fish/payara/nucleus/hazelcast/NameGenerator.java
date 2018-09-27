@@ -44,12 +44,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+
 /**
- *
+ * Class to generate random names for Payara Micro instances.
+ * <p>
+ * There are over 14,000 different possible names.
  * @author Andrew Pielage
  */
 public class NameGenerator
 {
+    /** 161 different possible adjectives to describe a fish */
     private final String[] adjectives = new String[]{"Adorable", "Adventurous", "Aggressive", "Alert", "Beautiful", 
             "Blue-eyed", "Bloody", "Blushing", "Bright", "Clear", "Cloudy", "Colourful", "Crowded", "Cute", "Dark", 
             "Drab", "Distinct", "Dull", "Elegant", "Excited", "Fancy", "Filthy", "Glamorous", "Gleaming", "Gorgeous", 
@@ -68,6 +72,7 @@ public class NameGenerator
             "Smiling", "Splendid", "Successful", "Thankful", "Thoughtful", "Victorious", "Vivacious", "Witty", "Wonderful",
             "Zealous", "Zany", "Bamboozled", "Magnanimous", "Humongous", "Confused", "Maleficent", "Sarcastic", 
             "Sardonic", "Bemused", "Incandescent", "Furious", "Eccentric", "Laconic"};
+    /** 87 different sorts of amazing fish */
     private final String[] fishes = new String[]{"Payara", "Catfish", "Tetra", "Goldfish", "Anchovy", "Shark", "Anglerfish",
             "Angelfish", "Pike", "Pufferfish", "Archerfish", "Char", "Cod", "Tuna", "Haddock", "Plaice", "Danio", 
             "Barracuda", "Swordfish", "Carp", "Batfish", "Barracudina", "Barramundi", "Blackfish", "Bass", "Boxfish", 
@@ -79,6 +84,12 @@ public class NameGenerator
             "Mackeral", "Dogfish", "Squeaker", "Spookfish", "Stonefish", "Turbot", "Unicornfish", "Velvetfish", "Wahoo",
             "Whitebait", "Whalefish", "Ziege", "Pirahna"};
     
+    /**
+     * Generates a new random name of the form adjective + fish.
+     * <p>
+     * This is not guranteeed to be unique.
+     * @return 
+     */
     public String generateName() {
         int adjectivesIndex = ThreadLocalRandom.current().nextInt(0, adjectives.length);
         int fishIndex = ThreadLocalRandom.current().nextInt(0, fishes.length);
@@ -88,6 +99,14 @@ public class NameGenerator
         return name;
     }
     
+    /**
+     * Generates a unique name. If all names are already is use,
+     * returns the UUID.
+     * This method is more computationally expensive then {@link #generateName()}
+     * @param takenNames a list of all names of instances that already exist
+     * @param UUID The UUID of the instance
+     * @return a unique name
+     */
     public String generateUniqueName(List<String> takenNames, String UUID) {
         String name = "";
         

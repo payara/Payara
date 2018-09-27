@@ -36,8 +36,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates] 
  */
-
 package org.glassfish.web.admin.cli;
 
 import org.glassfish.internal.api.Target;
@@ -115,6 +116,31 @@ public class CreateHttp implements AdminCommand {
     Boolean xPoweredBy = false;
     @Param(name = "serverHeader", optional = true, defaultValue = "true", alias="serverHeader")
     Boolean serverHeader = false;
+    @Param(name = "xframe", optional = true, defaultValue = "true", alias="xframeOptions")
+    Boolean xFrameOptions = false;
+    
+    @Param(name = "http2Enabled", alias = "http2enabled", optional = true, defaultValue = "true")
+    Boolean http2Enabled;
+    @Param(name = "http2MaxConcurrentStreams", alias = "http2maxconcurrentstreams", optional = true)
+    Integer http2MaxConcurrentStreams;
+    @Param(name = "http2InitialWindowSizeInBytes", alias = "http2initialwindowsizeinbytes", optional = true)
+    Integer http2InitialWindowSizeInBytes;
+    @Param(name = "http2MaxFramePayloadSizeInBytes", alias = "http2maxframepayloadsizeinbytes", optional = true)
+    Integer http2MaxFramePayloadSizeInBytes;
+    @Param(name = "http2MaxHeaderListSizeInBytes", alias = "http2maxheaderlistsizeinbytes", optional = true)
+    Integer http2MaxHeaderListSizeInBytes;
+    @Param(name = "http2StreamsHighWaterMark", alias = "http2streamshighwatermark", optional = true)
+    Float http2StreamsHighWaterMark;
+    @Param(name = "http2CleanPercentage", alias = "http2cleanpercentage", optional = true)
+    Float http2CleanPercentage;
+    @Param(name = "http2CleanFrequencyCheck", alias = "http2cleanfrequencycheck", optional = true)
+    Integer http2CleanFrequencyCheck;
+    @Param(name = "http2DisableCipherCheck", alias = "http2disableciphercheck", optional = true)
+    Boolean http2DisableCipherCheck;
+    @Param(name = "http2PushEnabled", alias = "http2pushenabled", optional = true)
+    Boolean http2PushEnabled;
+    
+    
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -157,9 +183,7 @@ public class CreateHttp implements AdminCommand {
             return;
 
         }
-//        if (!serverHeader) {
-//           System.setProperty("product.name", "");
-//        }
+
         // Add to the <network-config>
         try {
             ConfigSupport.apply(new SingleConfigCode<Protocol>() {
@@ -174,8 +198,39 @@ public class CreateHttp implements AdminCommand {
                     http.setRequestTimeoutSeconds(requestTimeoutSeconds);
                     http.setTimeoutSeconds(timeoutSeconds);
                     http.setXpoweredBy(xPoweredBy == null ? null : xPoweredBy.toString());
-                    http.setServerHeader(serverHeader == null ? null : xPoweredBy.toString());
+                    http.setServerHeader(serverHeader == null ? null : serverHeader.toString());
+                    http.setXframeOptions(xFrameOptions == null ? null : xFrameOptions.toString());
                     http.setServerName(serverName);
+                    
+                    // HTTP2 options
+                    http.setHttp2Enabled(http2Enabled.toString());
+                    if (http2MaxConcurrentStreams != null) {
+                        http.setHttp2MaxConcurrentStreams(http2MaxConcurrentStreams.toString());
+                    }
+                    if (http2InitialWindowSizeInBytes != null) {
+                        http.setHttp2InitialWindowSizeInBytes(http2InitialWindowSizeInBytes.toString());
+                    }
+                    if (http2MaxFramePayloadSizeInBytes != null) {
+                        http.setHttp2MaxFramePayloadSizeInBytes(http2MaxFramePayloadSizeInBytes.toString());
+                    }
+                    if (http2MaxHeaderListSizeInBytes != null) {
+                        http.setHttp2MaxHeaderListSizeInBytes(http2MaxHeaderListSizeInBytes.toString());
+                    }
+                    if (http2StreamsHighWaterMark != null) {
+                        http.setHttp2StreamsHighWaterMark(http2StreamsHighWaterMark.toString());
+                    }
+                    if (http2CleanPercentage != null) {
+                        http.setHttp2CleanPercentage(http2CleanPercentage.toString());
+                    }
+                    if (http2CleanFrequencyCheck != null) {
+                        http.setHttp2CleanFrequencyCheck(http2CleanFrequencyCheck.toString());
+                    }
+                    if (http2DisableCipherCheck != null) {
+                        http.setHttp2DisableCipherCheck(http2DisableCipherCheck.toString());
+                    }
+                    if (http2PushEnabled != null) {
+                        http.setHttp2PushEnabled(http2PushEnabled.toString());
+                    }
                     param.setHttp(http);
                     return http;
                 }

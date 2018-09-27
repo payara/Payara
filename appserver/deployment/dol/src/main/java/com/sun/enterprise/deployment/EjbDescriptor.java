@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment;
@@ -52,6 +54,9 @@ import com.sun.enterprise.deployment.types.ResourceReferenceContainer;
 import com.sun.enterprise.deployment.types.ServiceReferenceContainer;
 import org.glassfish.security.common.Role;
 
+/**
+ * Interface for information about an EJB
+ */
 public interface EjbDescriptor extends NamedDescriptor,
         WritableJndiNameEnvironment,
         EjbReferenceContainer,
@@ -76,6 +81,10 @@ public interface EjbDescriptor extends NamedDescriptor,
 
     boolean isLocalInterfacesSupported();
 
+    /**
+     * Returns true if the EJB can be accessed remotely
+     * @return 
+     */
     boolean isRemoteBusinessInterfacesSupported();
 
     boolean isLocalBusinessInterfacesSupported();
@@ -110,6 +119,10 @@ public interface EjbDescriptor extends NamedDescriptor,
 
     String getType();
 
+    /**
+     * Gets the application which the EJB is in
+     * @return 
+     */
     Application getApplication();
 
     long getUniqueId();

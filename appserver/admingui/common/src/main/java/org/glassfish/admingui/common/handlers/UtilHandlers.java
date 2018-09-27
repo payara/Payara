@@ -37,21 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 /*
  * UtilHandlers.java
  *
  * Created on August 31, 2006, 2:36 PM
  *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
  */
 
 package org.glassfish.admingui.common.handlers;
 
 import org.glassfish.admingui.common.util.GuiUtil;
-import org.glassfish.admingui.common.util.JSONUtil;
 import org.glassfish.admingui.common.util.RestUtil;
+import org.glassfish.admin.rest.utils.JsonUtil;
 
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
@@ -116,8 +115,8 @@ public class UtilHandlers {
         output={
             @HandlerOutput(name="Date", type=java.util.Date.class)})
     public static void calendarAdd(HandlerContext handlerCtx) {
-        int field = ((Integer) handlerCtx.getInputValue("Field")).intValue();
-        int amount = ((Integer) handlerCtx.getInputValue("Amount")).intValue();
+        int field = ((Integer) handlerCtx.getInputValue("Field"));
+        int amount = ((Integer) handlerCtx.getInputValue("Amount"));
         GregorianCalendar cal = new GregorianCalendar();
         cal.add(field, amount);
         handlerCtx.setOutputValue("Date", cal.getTime());        
@@ -144,6 +143,8 @@ public class UtilHandlers {
 
     /**
      *	<p> This handler serves a resource via JSFTemplating's FileStreamer.</p>
+     * @param ctx
+     * @throws java.io.IOException
      */
     @Handler(id="gf.serveResource",
     	input={
@@ -403,6 +404,30 @@ public class UtilHandlers {
         handlerCtx.setOutputValue("result", list);
     }
 
+      /**
+     * <p> Get an element form a <code>List</code></p> using the index number provided
+     * <p> Input list: "list" -- Type: <code>java.util.List</code>
+     * <p> Input index: "index" -- Type: <code>java.lang.Integer</code>
+     *
+     * @param handlerCtx The HandlerContext
+     */
+    @Handler(id="listGet",
+    	input={
+            @HandlerInput(name="list", type=List.class),
+            @HandlerInput(name="index", type=Integer.class, required=true)
+        },
+        output={
+            @HandlerOutput(name="result", type=Object.class)}
+    )
+    public static void listGet(HandlerContext handlerCtx) {
+        List list = (List) handlerCtx.getInputValue("list");
+        int index = (Integer) handlerCtx.getInputValue("index");
+
+        if (list != null && index >= 0 && index < list.size()) {       
+            handlerCtx.setOutputValue("result", list.get(index));
+        }
+        
+    }
 
     /**
      * <p> sort a <code>List</code></p>
@@ -454,6 +479,7 @@ public class UtilHandlers {
      * <p> Input value: "list" -- Type: <code>java.util.List</code>
      * <p> Input value: "testStr" -- Type: <code>String</code>
      * <p> Output value: "contain" -- Type: <code>Boolean</code>
+     * @param handlerCtx
      */
     @Handler(id="gf.containedIn",
     	input={
@@ -529,6 +555,7 @@ public class UtilHandlers {
 
     /**
      *	<p> This handler will test if a String starts with another String.</p>
+     * @param handlerCtx
      */
     @Handler(id="startsWith",
     	input={
@@ -545,6 +572,7 @@ public class UtilHandlers {
     /**
      * <p> This method decodes a String using "UTF-8" as default
      * if scheme is not specified.
+     * @param handlerCtx
      */
      @Handler(id="decodeString",
      input={
@@ -716,6 +744,7 @@ public class UtilHandlers {
 
    /**
      *	<p> This handler takes in a string with delimiter and returns list
+     * @param handlerCtx
      */
     @Handler(id="convertStringtoList",
          input={
@@ -824,6 +853,7 @@ public class UtilHandlers {
 
     /**
      *
+     * @param handlerCtx
      */
     @Handler(id="addHandler",
     input={
@@ -855,6 +885,7 @@ public class UtilHandlers {
      *  <p> Input value: "end" -- Type: <code>Integer</code> End index.
      *  <p> Input value: "varName" -- Type: <code>String</code>  Variable to be replaced in the for loop by the index.
      *	@param	handlerCtx	The HandlerContext.
+     * @return 
      */
     @Handler(id="forLoop",
     	input={
@@ -866,7 +897,7 @@ public class UtilHandlers {
 
         String startInt = (String) handlerCtx.getInputValue("start");
         int start = (startInt == null) ? 0 : Integer.parseInt(startInt);
-        int end = ((Integer) handlerCtx.getInputValue("end")).intValue();
+        int end = ((Integer) handlerCtx.getInputValue("end"));
         String varName = ((String) handlerCtx.getInputValue("varName"));
 
         List<com.sun.jsftemplating.layout.descriptors.handler.Handler> handlers = handlerCtx.getHandler().getChildHandlers();
@@ -885,10 +916,12 @@ public class UtilHandlers {
     /**
      *	<p> This handler provides the foreach loop functionality.  You should
      *	    specify a request attribute 'var' that will be used as the key for
-     *	    storing each token in the list.  You can then retreive each value
+     *	    storing each token in the list.  You can then retrieve each value
      *	    as the loop iterates by requesting the request scoped attribute
-     *	    keyed by the value you suplied for 'var'.  You must also specify
+     *	    keyed by the value you supplied for 'var'.  You must also specify
      *	    the <code>List&lt;Object&gt;</code> to iterate over.</p>
+     * @param handlerCtx
+     * @return 
      */
     @Handler(id="foreach",
 	input={
@@ -924,6 +957,7 @@ public class UtilHandlers {
     /**
      *	<p> This handler returns the <code>Set</code> of entries for the given
      *	    <code>Map</code>.</p>
+     * @param handlerCtx
      */
     @Handler(id="mapEntrySet",
 	input = {
@@ -938,6 +972,7 @@ public class UtilHandlers {
     /**
      *	<p> This handler returns the <code>Set</code> of keys for the given
      *	    <code>Map</code>.</p>
+     * @param handlerCtx
      */
     @Handler(id="mapValues",
 	input = {
@@ -983,6 +1018,7 @@ public class UtilHandlers {
      *	    you should do so during the initPage event (take care to only do
      *	    this during the first request, or you might lose all child
      *	    components).</p>
+     * @param handlerCtx
      */
     @Handler(id = "createDefaultViewRoot",
 	output = {
@@ -1000,6 +1036,7 @@ public class UtilHandlers {
     /**
      *	<p> This handler invokes the {@link GuiUtil#genId(String)} method and
      *	    returns the result.</p>
+     * @param handlerCtx
      */
     @Handler(id="gf.encodeId",
     	input={
@@ -1012,7 +1049,8 @@ public class UtilHandlers {
     }
 
     /**
-     *	This method converts a Map into a list of Map with keyName and ValueName.  This is suitable for table dislay.
+     *	This method converts a Map into a list of Map with keyName and ValueName.  This is suitable for table display.
+     * @param handlerCtx
      */
     @Handler(id="gf.convertMapToListOfMap",
             input={
@@ -1039,8 +1077,9 @@ public class UtilHandlers {
     }
 
     /**
-     *	<p> This handler will convert a Java object to JSON by using
-     *	    {@link JSONUtil#javaToJSON}.</p>
+     *	This handler will convert a Java object to JSON by using
+     *	{@link JsonUtil#getJsonValue}.
+     * @param handlerCtx
      */
     @Handler(id="javaToJSON",
     	input={
@@ -1050,8 +1089,7 @@ public class UtilHandlers {
             @HandlerOutput(name="json", type=String.class)})
     public static void javaToJSON(HandlerContext handlerCtx) {
         Object obj = ((Object) handlerCtx.getInputValue("obj"));
-        int depth = ((Integer) handlerCtx.getInputValue("depth"));
-        handlerCtx.setOutputValue("json", JSONUtil.javaToJSON(obj, depth));
+        handlerCtx.setOutputValue("json", JsonUtil.getJsonValue(obj).toString());
     }
     
     @Handler(id="gf.createPropertyString",

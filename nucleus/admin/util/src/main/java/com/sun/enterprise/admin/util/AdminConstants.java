@@ -42,7 +42,10 @@ package com.sun.enterprise.admin.util;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
 
-
+/**
+ * @deprecated These appear to be unused
+ */
+@Deprecated
 public interface AdminConstants {
     
     public static final String HOST_PROPERTY_NAME = "client-hostname";
@@ -89,7 +92,7 @@ public interface AdminConstants {
     public static final String CLIENT_JAR           = "Client.jar";
     
     public static final String kLoggerName = AdminLoggerInfo.ADMIN_LOGGER;
-    
+
 
     /* Some additional values for 8.0 PE */
 

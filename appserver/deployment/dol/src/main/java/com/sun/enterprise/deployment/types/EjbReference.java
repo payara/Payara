@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Potions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment.types;
@@ -49,7 +51,6 @@ import com.sun.enterprise.deployment.InjectionCapable;
  *
  * @author Jerome Dochez
  */
-
 public interface EjbReference  extends NamedInformation, InjectionCapable {
     
     /** 
@@ -61,7 +62,7 @@ public interface EjbReference  extends NamedInformation, InjectionCapable {
     /**
      * Set the type of the EJB. Allowed values are Session, Entity or
      * Message-driven.
-     * @param the type of the EJB.
+     * @param type the type of the EJB.
      */
     public void setType(String type);
 
@@ -73,7 +74,7 @@ public interface EjbReference  extends NamedInformation, InjectionCapable {
 
     /** 
      * Sets the local or remote home classname of the referee EJB. 
-     * @param the class name of the EJB home.
+     * @param ejbHomeInterface the class name of the EJB home.
      */
     public void setEjbHomeInterface(String ejbHomeInterface);
 
@@ -85,7 +86,7 @@ public interface EjbReference  extends NamedInformation, InjectionCapable {
 
     /** 
      * Sets the local or remote bean interface classname of the referee EJB. 
-     * @param the classname of the EJB remote object.
+     * @param ejbInterface the classname of the EJB remote object.
      */
     public void setEjbInterface(String ejbInterface);
     
@@ -99,7 +100,7 @@ public interface EjbReference  extends NamedInformation, InjectionCapable {
     /** 
      * Sets the link name of the reference. For use when linking to an EJB 
      * within a J2EE application. 
-     * @param the link name.
+     * @param linkName the link name.
      */
     public void setLinkName(String linkName);
     
@@ -113,24 +114,27 @@ public interface EjbReference  extends NamedInformation, InjectionCapable {
     /**
      * Sets whether the reference uses the local or remote interfaces of 
      * the referring EJB
-     * @param true if using the local interface
+     * @param isLocal true if using the local interface
      */
     public void setLocal(boolean isLocal);
  
     /**
      * Set the referring bundle, i.e. the bundle within which this
      * EJB reference is declared. 
+     * @param referringBundle
      */
     public void setReferringBundleDescriptor(BundleDescriptor referringBundle);
 
     /**
      * Get the referring bundle, i.e. the bundle within which this
      * EJB reference is declared.  
+     * @return 
      */
     public BundleDescriptor getReferringBundleDescriptor();
     
     /**
      * Set the jndi name for this ejb reference
+     * @param jndiName
      */
     public void setJndiName(String jndiName);
     
@@ -139,9 +143,22 @@ public interface EjbReference  extends NamedInformation, InjectionCapable {
      */
     public String getJndiName();
 
+    /**
+     * Returns true if the reference has a non-null non-zero length jndiname
+     * @return 
+     */
     public boolean hasJndiName();
 
+    /**
+     * Returns true if the lookup name is non-null and has a non-zero length
+     * @return 
+     */
     public boolean hasLookupName();
+    
+    /**
+     * 
+     * @return 
+     */
     public String getLookupName();
     
     public EjbDescriptor getEjbDescriptor();

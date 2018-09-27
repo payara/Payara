@@ -85,7 +85,7 @@ public interface PersistenceManagerFactory extends java.io.Serializable
    * Sets database user password
    * @param password      database user password
    */
-  void setConnectionPassword (String password);
+  void setConnectionPassword (char[] password);
   
   /**
    * Sets maximum number of connections in the connection pool
@@ -278,7 +278,7 @@ public interface PersistenceManagerFactory extends java.io.Serializable
    * @param       password	datasource user password
    * @return      the persistence manager
    */
-  PersistenceManager getPersistenceManager (String username, String password);
+  PersistenceManager getPersistenceManager (String username, char[] password);
   
   /**
    * Sets the optimistic flag for all PersistenceManagers

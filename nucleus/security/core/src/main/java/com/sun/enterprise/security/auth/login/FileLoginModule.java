@@ -37,30 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.login;
 
-import java.util.*;
-import java.util.logging.Level;
-import javax.security.auth.*;
-import javax.security.auth.callback.*;
-import javax.security.auth.login.*;
-import javax.security.auth.spi.*;
-import com.sun.enterprise.security.auth.realm.file.FileRealm;
+import static java.util.logging.Level.FINE;
+
 import javax.security.auth.login.LoginException;
+
+import com.sun.enterprise.security.BasePasswordLoginModule;
+import com.sun.enterprise.security.auth.realm.file.FileRealm;
 
 /**
  * File realm login module.
  *
- * <P>Provides a file-based implementation of a password login module.
- * Processing is delegated to the FileRealm class.
+ * <P>
+ * Provides a file-based implementation of a password login module. Processing is delegated to the FileRealm class.
  *
- * @see com.sun.enterprise.security.auth.login.PasswordLoginModule
  * @see com.sun.enterprise.security.auth.realm.file.FileRealm
  *
  */
-public class FileLoginModule extends PasswordLoginModule
-{
+public class FileLoginModule extends BasePasswordLoginModule {
 
     /**
      * Perform file authentication. Delegates to FileRealm.
@@ -68,27 +64,19 @@ public class FileLoginModule extends PasswordLoginModule
      * @throws LoginException If login fails (JAAS login() behavior).
      *
      */
-    protected void authenticate()
-        throws LoginException
-    {
-        if (!(_currentRealm instanceof FileRealm)) {
-            String msg = sm.getString("filelm.badrealm");
-            throw new LoginException(msg);
-        }
-        FileRealm fileRealm = (FileRealm)_currentRealm;
+    @Override
+    protected void authenticateUser() throws LoginException {
+        String[] groups = getRealm(FileRealm.class, "filelm.badrealm").authenticate(_username, getPasswordChar());
 
-        String[] grpList = fileRealm.authenticate(_username, getPasswordChar());
-
-        if (grpList == null) {  // JAAS behavior
-            String msg = sm.getString("filelm.faillogin", _username);
-            throw new LoginException(msg);
+        if (groups == null) { // JAAS behavior
+            throw new LoginException(sm.getString("filelm.faillogin", _username));
         }
 
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "File login succeeded for: " + _username);
+        if (_logger.isLoggable(FINE)) {
+            _logger.log(FINE, "File login succeeded for: " + _username);
         }
 
-        commitAuthentication(_username, getPasswordChar(),
-                             _currentRealm, grpList);
+        commitUserAuthentication(groups);
     }
+
 }

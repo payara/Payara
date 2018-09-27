@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] [Payara Foundation and/or its affiliates]
  */
 
 package org.glassfish.admingui.common.handlers;
@@ -280,11 +282,11 @@ public class LogViewHandlers {
                  record.put("productName", row.getProductName());
                  record.put("logger", moduleName);
                  */
-                String message = ((String) record.get("Message")).trim();
+                String message = ((String) record.get("message")).trim();
                 if (truncate && (message.length() > truncLen)) {
                     message = message.substring(0, truncLen).concat("...\n");
                 }
-                record.put("Message", Util.htmlEscape(message));
+                record.put("message", Util.htmlEscape(message));
             }
         }
 

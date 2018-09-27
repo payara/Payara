@@ -36,89 +36,87 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2018] [Payara Foundation and/or its affiliates]
  */
-
 package com.sun.enterprise.admin.servermgmt.domain;
+
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.KEYSTORE_FILE;
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.TRUSTSTORE_FILE;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.glassfish.security.common.FileRealmHelper;
+import org.glassfish.security.common.FileRealmStorageManager;
 
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
 import com.sun.enterprise.admin.servermgmt.MasterPasswordFileManager;
 import com.sun.enterprise.admin.servermgmt.RepositoryException;
-import com.sun.enterprise.admin.util.AdminConstants;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.util.i18n.StringManager;
 
 public class DomainSecurity extends MasterPasswordFileManager {
 
-    private static final StringManager _strMgr =
-            StringManager.getManager(DomainSecurity.class);
+    private static final StringManager STRING_MANAGER = StringManager.getManager(DomainSecurity.class);
+
     /**
-     * Modifies the contents of given keyfile with administrator's user-name and
-     * password. Uses the FileRealm classes that application server's Runtime
-     * uses.
+     * Modifies the contents of given keyfile with administrator's user-name and password. Uses the FileRealm classes that
+     * application server's Runtime uses.
      *
      * @param keyFile File to store encrypted admin credentials.
      * @param user Username.
      * @param password Password.
      */
-    void processAdminKeyFile(File keyFile, String user, String password, final String[] adminUserGroups)
-            throws IOException {
-        final String keyFilePath = keyFile.getAbsolutePath();
-        final FileRealmHelper fileRealm = new FileRealmHelper(keyFilePath);
-        final String[] group = 	adminUserGroups;
-        fileRealm.addUser(user, password.toCharArray(), group);
-        fileRealm.persist();
+    void processAdminKeyFile(File keyFile, String user, String password, String[] adminUserGroups) throws IOException {
+        FileRealmStorageManager fileStorageManager = new FileRealmStorageManager(keyFile.getAbsolutePath());
+        fileStorageManager.addUser(user, password.toCharArray(), adminUserGroups);
+        fileStorageManager.persist();
     }
 
     /**
      * Create the password alias keystore (initially empty)
      *
-     * @param pwFile File to store encrypted password.
+     * @param passwordFile File to store encrypted password.
      * @param password password protecting the keystore
      * @throws RepositoryException if any error occurs in creation.
      */
-    void createPasswordAliasKeystore(File pwFile, String password)
-            throws RepositoryException {
+    void createPasswordAliasKeystore(File passwordFile, String password) throws RepositoryException {
         try {
-            PasswordAdapter p = new PasswordAdapter(pwFile.getAbsolutePath(),
-                    password.toCharArray());
-            p.writeStore();
-        }
-        catch (Exception ex) {
-            throw new RepositoryException(_strMgr.getString("passwordAliasKeystoreNotCreated", pwFile), ex);
+            new PasswordAdapter(passwordFile.getAbsolutePath(), password.toCharArray()).writeStore();
+        } catch (Exception ex) {
+            throw new RepositoryException(STRING_MANAGER.getString("passwordAliasKeystoreNotCreated", passwordFile), ex);
         }
     }
 
     /**
-     * Create the default SSL key store using keytool to generate a self signed
-     * certificate.
+     * Create the default SSL key store using keytool to generate a self signed certificate.
      *
      * @param configRoot Config directory.
      * @param config A {@link DomainConfig} object
      * @param masterPassword Master password.
      * @throws RepositoryException if any error occurs during keystore creation.
      */
-    void createSSLCertificateDatabase(File configDir, DomainConfig config, String masterPassword)
-            throws RepositoryException {
-        createKeyStore(new File(configDir, DomainConstants.KEYSTORE_FILE), config, masterPassword);
-        changeKeystorePassword(DEFAULT_MASTER_PASSWORD, masterPassword, new File(configDir, DomainConstants.TRUSTSTORE_FILE));
-        copyCertificates(configDir, config, masterPassword);
+    void createSSLCertificateDatabase(File configDir, DomainConfig config, String masterPassword) throws RepositoryException {
+        File trustStore = new File(configDir, TRUSTSTORE_FILE);
+        File keyStore = new File(configDir, KEYSTORE_FILE);
+        
+        createKeyStore(keyStore, config, masterPassword);
+        changeKeyStorePassword(DEFAULT_MASTER_PASSWORD, masterPassword, trustStore);
+        copyCertificates(keyStore, trustStore, config, masterPassword);
+        copyCertificatesFromJdk(trustStore, masterPassword);
     }
 
     /**
      * Change the permission for a given file/directory.
-     * <p><b>NOTE:</b> Applicable only for Unix env.</p>
+     * <p>
+     * <b>NOTE:</b> Applicable only for Unix env.
+     * </p>
      *
      * @param args New sets of permission arguments.
      * @param file File on which permission has to be applied.
      * @throws IOException If any IO error occurs during operation.
      */
-    void changeMode(String args, File file)
-            throws IOException  {
+    void changeMode(String args, File file) throws IOException {
         super.chmod(args, file);
     }
 }

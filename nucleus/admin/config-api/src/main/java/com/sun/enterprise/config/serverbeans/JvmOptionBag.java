@@ -37,23 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
+import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.types.PropertyBag; //used only for Javadoc purpose {@link}
 import java.util.List;
 import java.beans.PropertyVetoException;
+import java.util.stream.Collectors;
 
 /** Factored out the list of jvm-options from at least two other interfaces that have them: java-config and profiler.
  *  Similar to {@link PropertyBag}
  */
 public interface JvmOptionBag extends ConfigBeanProxy {
-    @Element
+    @DuckTyped
     public List<String> getJvmOptions();
-
+    @Element("jvm-options")
     void setJvmOptions(List<String> options) throws PropertyVetoException;
 
     /** It's observed that many a time we need the value of max heap size. This is useful when deciding if a
@@ -78,6 +81,9 @@ public interface JvmOptionBag extends ConfigBeanProxy {
     String getStartingWith(String start);
 
     class Duck {
+        public static List<String> getJvmOptions(JvmOptionBag me) {
+            return me.getJvmRawOptions().stream().map(JvmOption::new).map(option -> option.option).collect(Collectors.toList());
+        }
      /* Note: It does not take defaults into account. Also,
      * I have tested that server does not start with a heap that is less than 1m, so I think I don't have to worry about
      * -Xmx that is specified to be less than 1 MB. Again, there is lots and lots of platform dependent code here,
@@ -95,7 +101,7 @@ public interface JvmOptionBag extends ConfigBeanProxy {
         private static int getMemory(JvmOptionBag me, String which) {
             List<String> options = me.getJvmOptions();
             for (String opt : options) {
-                if(opt.indexOf(which) >= 0) {
+                if(opt.contains(which)) {
                     return toMeg(opt, which);
                 }
             }
@@ -109,14 +115,19 @@ public interface JvmOptionBag extends ConfigBeanProxy {
                 return -1;
             char unit = second.charAt(second.length()-1);
             try {
-                if (unit =='g' || unit == 'G')
-                    return Integer.parseInt(second.substring(0, second.length()-1)) * 1024; //I don't think we'll have an overflow
-                else if (unit == 'm' || unit == 'M')
-                    return Integer.parseInt(second.substring(0, second.length()-1));
-                else if (unit == 'k' || unit == 'K')
-                    return Integer.parseInt(second.substring(0, second.length()-1)) / 1024; //beware, integer division
-                else
-                    return Integer.parseInt(second) / (1024*1024); //bytes, this is a rare case, hopefully -- who does -Xmx1073741824 to specify a meg?
+                switch (unit) {
+                    case 'g':
+                    case 'G':
+                        return Integer.parseInt(second.substring(0, second.length()-1)) * 1024; //I don't think we'll have an overflow
+                    case 'm':
+                    case 'M':
+                        return Integer.parseInt(second.substring(0, second.length()-1));
+                    case 'k':
+                    case 'K':
+                        return Integer.parseInt(second.substring(0, second.length()-1)) / 1024; //beware, integer division
+                    default:
+                        return Integer.parseInt(second) / (1024*1024); //bytes, this is a rare case, hopefully -- who does -Xmx1073741824 to specify a meg?
+                }
             } catch(NumberFormatException e) {
                 //squelch all exceptions
                 return -1;
@@ -139,4 +150,7 @@ public interface JvmOptionBag extends ConfigBeanProxy {
             return null;
         }
     }
+
+    @Element("jvm-options")
+    List<String> getJvmRawOptions();
 }

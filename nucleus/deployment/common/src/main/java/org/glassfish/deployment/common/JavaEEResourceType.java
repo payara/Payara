@@ -41,23 +41,48 @@
 package org.glassfish.deployment.common;
 
 /**
- * Created with IntelliJ IDEA.
- * User: naman
+ * Enum for all inbuilt resource definition types
+ * @since 4.0
+ * @author naman
  * Date: 5/9/12
  * Time: 2:33 PM
- * To change this template use File | Settings | File Templates.
+ * 
  */
 public enum JavaEEResourceType {
     /**
      * MSD: MailSessionDescriptor
+     */
+    MSD,
+    /**
      * DSD: DataSourceDefinitionDescriptor
+     */
+    DSD,
+    /**
      * DSDPOOL: DataSourceDefinitionDescriptor Pool
+     */
+    DSDPOOL,
+    /**
      * CFD: ConnectionFactoryDefinitionDescriptor
+     */
+    CFD,
+    /**
      * CFDPOOL: ConnectionFactoryDefinitionDescriptor Pool
+     */
+    CFDPOOL,
+    /**
      * JMSCFDD: JMSConnectionFactoryDefinitionDescriptor
+     */
+    JMSCFDD,
+    /**
      * JMSCFDDPOOL: JMSConnectionFactoryDefinitionDescriptor Pool
+     */
+    JMSCFDDPOOL,
+    /**
      * JMSDD: JMSDestinationDefinitionDescriptor
+     */
+    JMSDD,
+    /**
      * AODD: AdministeredObjectDefinitionDescriptor
      */
-    MSD, DSD, DSDPOOL, CFD, CFDPOOL, JMSCFDD, JMSCFDDPOOL, JMSDD, AODD;
+    AODD;
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation]
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -196,7 +196,25 @@ public interface AccessLog extends ConfigBeanProxy, PropertyBag {
      * @throws PropertyVetoException if a listener vetoes the change
      */
     void setMaxHistoryFiles(String value) throws PropertyVetoException;
-
+    
+    /**
+     * Gets the file size limit at which log will rotate. 
+     * 
+     * <p>A value of 0 will disable log rotation based on file size
+     * @return log file size rotation limit
+     */
+    @NotNull
+    @Attribute(defaultValue = "0", dataType=Integer.class)
+    String getMaximumFileSize();
+    
+    /**
+     * Set size limit for log file at which it will rotate.
+     * 
+     * @param value the limit for log file size
+     * @throws PropertyVetoException if a listener vetoes the change
+     */
+    void setMaximumFileSize(String value) throws PropertyVetoException;
+    
     /**
      * Specifies whether to display access logs on the console
      * 

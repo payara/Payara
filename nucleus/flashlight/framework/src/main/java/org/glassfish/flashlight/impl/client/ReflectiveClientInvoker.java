@@ -47,6 +47,8 @@ import org.glassfish.flashlight.provider.FlashlightProbe;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.flashlight.FlashlightUtils;
 
 public class ReflectiveClientInvoker
@@ -60,6 +62,7 @@ public class ReflectiveClientInvoker
     boolean useProbeArgs;
     Class[] methodParamTypes;
     boolean emittedOneMessage = false;
+    private static Logger logger = Logger.getLogger(ReflectiveClientInvoker.class.getName());
 
     public ReflectiveClientInvoker(int id, Object target, Method method,
             String[] clientParamNames, FlashlightProbe probe) {
@@ -104,13 +107,13 @@ public class ReflectiveClientInvoker
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("id=").append(id).append('\n');
-        sb.append("target=").append(target).append('\n');
-        sb.append("method=").append(method).append('\n');
-        sb.append("paramNames=").append(Arrays.toString(paramNames)).append('\n');
-        sb.append("probeIndices=").append(Arrays.toString(probeIndices)).append('\n');
-        sb.append("useProbeArgs=").append(useProbeArgs).append('\n');
-        sb.append("hasComputedParams=").append(hasComputedParams).append('\n');
+        sb.append("id=").append(id).append(", ");
+        sb.append("target=").append(target).append(", ");
+        sb.append("method=").append(method).append(", ");
+        sb.append("paramNames=").append(Arrays.toString(paramNames)).append(", ");
+        sb.append("probeIndices=").append(Arrays.toString(probeIndices)).append(", ");
+        sb.append("useProbeArgs=").append(useProbeArgs).append(", ");
+        sb.append("hasComputedParams=").append(hasComputedParams);
         return sb.toString();
     }
 
@@ -159,10 +162,9 @@ public class ReflectiveClientInvoker
                 // Only do this one time!
                 emittedOneMessage = true;
                 StringBuilder sb = new StringBuilder();
-                sb.append(getClass().getName()).append('\n').append(ex).append('\n');
-                sb.append("CAUSE:  ").append(ex.getCause()).append('\n');
+                sb.append("An exception happened when invoking this probe: ");
                 sb.append(this);
-                System.out.println(sb.toString());
+                logger.log(Level.WARNING, sb.toString(), ex);
             }
         }
     }
@@ -211,14 +213,14 @@ public class ReflectiveClientInvoker
             if (methodParamTypes[i].isAssignableFrom(String.class)) {
                 args[i] = args[i].toString();
                 if (!emittedOneMessage) {
-                    System.out.println("FIXED MISMATCH!!!!\n" + toString());
+                    logger.log(Level.SEVERE, "FIXED MISMATCH!!!! for probe: {0}", this);
                     emittedOneMessage = true;
                 }
             }
             else {
                 if (!emittedOneMessage) {
-                    System.out.printf("ERROR!  Mismatched params  Expected " + methodParamTypes[i].toString()
-                            + " but got " + args[i].getClass().toString() + "\n" + toString());
+                    logger.log(Level.SEVERE, "ERROR! Mismatched params. Expected {0} but got {1} for probe {2}", 
+                            new Object[] {methodParamTypes[i], args[i].getClass(), this});
                     emittedOneMessage = true;
                 }
             }

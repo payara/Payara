@@ -81,8 +81,9 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
     
     public final static String SCHEMA_ID_15 = "application-client_5.xsd";
     public final static String SCHEMA_ID_16 = "application-client_6.xsd";
-    public final static String SCHEMA_ID = "application-client_7.xsd";
-    public final static String SPEC_VERSION = "7";
+    public final static String SCHEMA_ID_17 = "application-client_7.xsd";
+    public final static String SCHEMA_ID = "application-client_8.xsd";
+    public final static String SPEC_VERSION = "8";
     private final static List<String> systemIDs = initSystemIDs();
  
     public final static XMLElement tag = new XMLElement(ApplicationClientTagNames.APPLICATION_CLIENT_TAG);
@@ -92,6 +93,8 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
         systemIDs.add(SCHEMA_ID);
         systemIDs.add(SCHEMA_ID_14);
         systemIDs.add(SCHEMA_ID_15);
+        systemIDs.add(SCHEMA_ID_16);
+        systemIDs.add(SCHEMA_ID_17);
         return Collections.unmodifiableList(systemIDs);
     }
 

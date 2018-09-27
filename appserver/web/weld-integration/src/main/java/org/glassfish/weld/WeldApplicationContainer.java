@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld;
@@ -43,35 +45,35 @@ package org.glassfish.weld;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.ApplicationContext;
 
-public class WeldApplicationContainer implements ApplicationContainer {
+public class WeldApplicationContainer implements ApplicationContainer<Object> {
 
-    public WeldApplicationContainer() {
-    }
-
+    @Override
     public Object getDescriptor() {
         return null;
     }
-   
+
+    @Override
     public boolean start(ApplicationContext startupContxt) {
-
         return true;
     }
 
+    @Override
     public boolean stop(ApplicationContext stopContext) {
-
         return true;
     }
 
+    @Override
     public boolean suspend() {
         return false;
     }
 
+    @Override
     public boolean resume() {
         return false;
     }
 
+    @Override
     public ClassLoader getClassLoader() {
         return null;
     }
 }
-

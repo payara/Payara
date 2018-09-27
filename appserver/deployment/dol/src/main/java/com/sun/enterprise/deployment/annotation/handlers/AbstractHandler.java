@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] PAyara Foundation and/or affilliates
  */
 
 package com.sun.enterprise.deployment.annotation.handlers;
@@ -82,6 +84,7 @@ public abstract class AbstractHandler implements AnnotationHandler {
      * require to be processed (if present) before it processes it's own
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return null;
     }
@@ -108,6 +111,7 @@ public abstract class AbstractHandler implements AnnotationHandler {
      * @param aeHandler
      * @param ainfo
      * @return a result for invalid AnnotatedElementHandler
+     * @throws AnnotationProcessorException
      */
     protected HandlerProcessingResult getInvalidAnnotatedElementHandlerResult(
             AnnotatedElementHandler aeHandler, AnnotationInfo ainfo)
@@ -126,6 +130,13 @@ public abstract class AbstractHandler implements AnnotationHandler {
         return getDefaultProcessedResult();
     }
 
+    /**
+     * Logs an error with the annotation processing logger
+     * @param level
+     * @param ainfo
+     * @param localizedMessage
+     * @throws AnnotationProcessorException 
+     */
     protected void log(Level level, AnnotationInfo ainfo,
             String localizedMessage) throws AnnotationProcessorException {
         if (Level.SEVERE.equals(level)) {
@@ -192,6 +203,12 @@ public abstract class AbstractHandler implements AnnotationHandler {
         }
     }
 
+    /**
+     * Returns the result with the highest result type where
+     *  FAILED > PROCESSED > UNPROCESSED
+     * @param resultList
+     * @return 
+     */
     protected HandlerProcessingResult getOverallProcessingResult(
             List<HandlerProcessingResult> resultList) {
         HandlerProcessingResult overallProcessingResult = null;

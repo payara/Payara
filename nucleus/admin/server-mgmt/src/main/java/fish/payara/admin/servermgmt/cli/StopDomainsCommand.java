@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -42,9 +42,11 @@ package fish.payara.admin.servermgmt.cli;
 import com.sun.enterprise.admin.cli.remote.DASUtils;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.servermgmt.cli.StopDomainCommand;
+import java.util.logging.Level;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
@@ -68,25 +70,34 @@ public class StopDomainsCommand extends StopDomainCommand {
     @Override
     protected void validate()
             throws CommandException, CommandValidationException {
+        // no-op to prevent initDomain being called
     }
     
     @Override
+    @SuppressWarnings("ThrowFromFinallyBlock")
     protected int executeCommand() throws CommandException {
-        try{
-        String[] domains = userArgDomainName.split(",");
-        for (String domainName : domains){
-            setConfig(domainName);
-            RemoteCLICommand cmd = new RemoteCLICommand("stop-domain", programOpts, env);
-            logger.fine("Stopping domain " + domainName);
+        MultiException allExceptions = new MultiException();
+        try {
+            String[] domains = userArgDomainName.split(",");
+            for (String domainName : domains) {
+                setConfig(domainName);
+                RemoteCLICommand cmd = new RemoteCLICommand("stop-domain", programOpts, env);
+                logger.log(Level.FINE, "Stopping domain {0}", domainName);
                 try {
                     cmd.executeAndReturnOutput("stop-domain");
-                } catch (Exception e){
+                } catch (Exception e) {
+                    allExceptions.addError(e);
                 }
                 logger.fine("Stopped domain");
-        }
-        return 0;
-        } catch (Exception ex){
-            throw new CommandException(ex.getLocalizedMessage());
+            }
+            return 0;
+        } catch (Exception ex) {
+            allExceptions.addError(ex);
+            return 1; // required to compile, but exception should be thrown in finally block
+        } finally {
+            if (!allExceptions.getErrors().isEmpty()){
+                throw new CommandException(allExceptions.getMessage());
+            }
         }
     }
     
@@ -100,8 +111,7 @@ public class StopDomainsCommand extends StopDomainCommand {
                 return dasNotRunning();
             }
             programOpts.setHostAndPort(getAdminAddress());
-            logger.finer("Stopping local domain on port "
-                    + programOpts.getPort());
+            logger.log(Level.FINER, "Stopping local domain on port {0}", programOpts.getPort());
 
             /*
              * If we're using the local password, we don't want to prompt
@@ -115,8 +125,7 @@ public class StopDomainsCommand extends StopDomainCommand {
                 return dasNotRunning();
 
             logger.finer("It's the correct DAS");
-        }
-        else { // remote
+        } else { // remote
             // Verify that the DAS is running and reachable
             if (!DASUtils.pingDASQuietly(programOpts, env)){
                 return dasNotRunning();

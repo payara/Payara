@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2018 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -17,21 +17,35 @@
  */
 package fish.payara.appserver.micro.services.data;
 
-import fish.payara.micro.data.ModuleDescriptor;
-import fish.payara.micro.data.ApplicationDescriptor;
-import fish.payara.micro.data.InstanceDescriptor;
+import static java.lang.Boolean.TRUE;
+import static javax.json.stream.JsonGenerator.PRETTY_PRINTING;
+
+import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonWriter;
+
 import org.glassfish.internal.data.ApplicationInfo;
+
+import fish.payara.micro.data.ApplicationDescriptor;
+import fish.payara.micro.data.InstanceDescriptor;
+import fish.payara.micro.data.ModuleDescriptor;
 
 /**
  *
@@ -286,6 +300,90 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
     }
 
     @Override
+    public String toJsonString(boolean verbose) {
+        StringWriter writer = new StringWriter();
+        Map<String, Object> writerConfig = new HashMap<>();
+        writerConfig.put(PRETTY_PRINTING, TRUE);
+        try (JsonWriter jsonWriter = Json.createWriterFactory(writerConfig).createWriter(writer)) {
+            jsonWriter.writeObject(toJsonObject(verbose));
+            return writer.toString();
+        }
+    }
+
+    private JsonObject toJsonObject(boolean verbose) {
+        // Create a builder to store the object
+        JsonObjectBuilder configBuilder = Json.createObjectBuilder();
+
+        // Add all the instance information
+        configBuilder.add("Host", hostName.getCanonicalHostName());
+        configBuilder.add("Http Port(s)", Arrays.toString(getHttpPorts().toArray()).replaceAll("[\\[\\]]", ""));
+        configBuilder.add("Https Port(s)", Arrays.toString(getHttpsPorts().toArray()).replaceAll("[\\[\\]]", ""));
+        configBuilder.add("Instance Name", this.instanceName);
+        configBuilder.add("Instance Group", this.instanceGroup);
+        if (memberUUID != null) {
+            configBuilder.add("Hazelcast Member UUID", this.memberUUID);
+        }
+
+        // Create array of applications
+        JsonArrayBuilder deploymentBuilder = Json.createArrayBuilder();
+        getDeployedApplications().forEach(app -> {
+            // Construct object for each application
+            JsonObjectBuilder appBuilder = Json.createObjectBuilder();
+
+            // Add the name of the application
+            appBuilder.add("Name", app.getName());
+
+            // If there's only one module in the application, print the module info with the application name
+            if (app.getModuleDescriptors().size() == 1) {
+                ModuleDescriptor module = app.getModuleDescriptors().get(0);
+                appBuilder.add("Type", module.getType());
+                appBuilder.add("Context Root", (module.getContextRoot() == null)? "N/A": module.getContextRoot());
+
+                // List the module mappings if verbose is specified
+                if (verbose) {
+                    JsonObjectBuilder servletMappings = Json.createObjectBuilder();
+                    module.getServletMappings().forEach((key, value) -> {
+                        servletMappings.add(key, value);
+                    });
+                    appBuilder.add("Mappings", servletMappings.build());
+                }
+            
+            // If there's more modules, print info for each module
+            } else {
+                JsonArrayBuilder modules = Json.createArrayBuilder();
+                // Construct object for each module
+                app.getModuleDescriptors().forEach(module -> {
+                    JsonObjectBuilder moduleBuilder = Json.createObjectBuilder();
+
+                    // Add basic information for the module
+                    moduleBuilder.add("Name", module.getName());
+                    moduleBuilder.add("Type", module.getType());
+                    moduleBuilder.add("Context Root",
+                            (module.getContextRoot() == null) ? "***" : module.getContextRoot());
+
+                    // Create an object of mappings if verbose is specified
+                    if (verbose) {
+                        JsonObjectBuilder servletMappings = Json.createObjectBuilder();
+                        module.getServletMappings().forEach((key, value) -> {
+                            servletMappings.add(key, value);
+                        });
+                        moduleBuilder.add("Mappings", servletMappings.build());
+                    }
+
+                    modules.add(moduleBuilder.build());
+                });
+                appBuilder.add("Modules", modules.build());
+            }
+            deploymentBuilder.add(appBuilder.build());
+        });
+        configBuilder.add("Deployed", deploymentBuilder.build());
+
+        return Json.createObjectBuilder()
+            .add("Instance Configuration", configBuilder.build())
+            .build();
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("\nInstance Configuration\n");
@@ -305,19 +403,31 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
         if (memberUUID != null) {
             sb.append("Hazelcast Member UUID ").append(this.memberUUID).append('\n');
         }
-        for (ApplicationDescriptor ad : getDeployedApplications()) {
+        
+        for (ApplicationDescriptor applicationDescriptor : getDeployedApplications()) {
             sb.append("Deployed: ");
-            sb.append(ad.getName()).append(" ( ");
-            for (ModuleDescriptor md : ad.getModuleDescriptors()) {
-                sb.append(md.getName()).append(' ').append(md.getType()).append(' ');
-                if (md.getContextRoot() != null) {
-                    sb.append(md.getContextRoot()).append(' ');
+            sb.append(applicationDescriptor.getName()).append(" ( ");
+            for (ModuleDescriptor moduleDescriptor : applicationDescriptor.getModuleDescriptors()) {
+                sb.append(moduleDescriptor.getName()).append(' ').append(moduleDescriptor.getType()).append(' ');
+                if (moduleDescriptor.getContextRoot() != null) {
+                    sb.append(moduleDescriptor.getContextRoot());
+                } else {
+                    sb.append("***");
                 }
+                
+                sb.append(" [ ");
+                for (Entry<String, String> servletMapping : moduleDescriptor.getServletMappings().entrySet()) {
+                    sb.append("< ")
+                      .append(servletMapping.getValue()).append(' ').append(servletMapping.getKey())
+                      .append(" >");
+                }
+                sb.append(" ] ");
             }
             sb.append(")\n");
-            String libraries = ad.getLibraries();
+            
+            String libraries = applicationDescriptor.getLibraries();
             if (libraries != null) {
-                sb.append(' ').append(ad.getLibraries());
+                sb.append(' ').append(applicationDescriptor.getLibraries());
             }
         }
         sb.append('\n');

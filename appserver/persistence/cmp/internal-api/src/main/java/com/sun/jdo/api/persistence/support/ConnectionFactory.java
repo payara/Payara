@@ -103,7 +103,7 @@ public interface ConnectionFactory {
    * Sets database user password
    * @param password      database user password
    */
-  void setPassword (String password);
+  void setPassword (char[] password);
   
   /**
    * Sets minimum number of connections in the connection pool

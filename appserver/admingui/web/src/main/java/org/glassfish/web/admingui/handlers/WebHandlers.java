@@ -36,21 +36,28 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2018] [Payara Foundation and/or its affiliates]
  */
 
 package org.glassfish.web.admingui.handlers;
 
 
-import java.util.Map;
-
-import com.sun.jsftemplating.annotation.Handler;  
-import com.sun.jsftemplating.annotation.HandlerInput; 
-import com.sun.jsftemplating.annotation.HandlerOutput;
-import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;  
-
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.v3.services.impl.GrizzlyService;
+import com.sun.jsftemplating.annotation.Handler;
+import com.sun.jsftemplating.annotation.HandlerInput;
+import com.sun.jsftemplating.annotation.HandlerOutput;
+import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+
 import org.glassfish.admingui.common.util.GuiUtil;
+import org.glassfish.grizzly.config.GrizzlyListener;
+import org.glassfish.grizzly.config.dom.NetworkListener;
 
 /**
  *
@@ -85,4 +92,29 @@ public class WebHandlers {
         vsAttrs.put("networkListeners", ll);
         handlerCtx.setOutputValue("result", vsAttrs);
     }
+
+    @Handler(id="py.resolveDynamicPort",
+        input={
+            @HandlerInput(name = "listenerName", type = String.class, required = true),
+            @HandlerInput(name = "configName", type = String.class, required = false, defaultValue = "server-config")
+        }, output={
+            @HandlerOutput(name="result", type=String.class)
+        })
+    public static void resolveDynamicPort(HandlerContext handlerCtx) {
+        String listenerName = (String) handlerCtx.getInputValue("listenerName");
+        String configName = (String) handlerCtx.getInputValue("configName");
+
+        GrizzlyService grizzlyService = GuiUtil.getHabitat().getService(GrizzlyService.class);
+        Domain domain = GuiUtil.getHabitat().getService(Domain.class);
+        Config config = domain.getConfigNamed(configName);
+        NetworkListener listener = config.getNetworkConfig().getNetworkListener(listenerName);
+
+        // if DAS
+        if (listener != null && configName.equals("server-config")) {
+            handlerCtx.setOutputValue("result", grizzlyService.getRealPort(listener));
+        } else if (listener != null) {
+            handlerCtx.setOutputValue("result", listener.getPort());
+        }
+    }
+
 }

@@ -99,7 +99,7 @@ public interface EjbContainerAvailability extends ConfigBeanProxy,
      * @return possible object is
      *         {@link String }
      */
-    @Attribute (defaultValue="replicated")
+    @Attribute (defaultValue="hazelcast")
     String getSfsbHaPersistenceType();
 
     /**

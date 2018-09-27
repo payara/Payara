@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.stringsubs.impl.algorithm;
 
@@ -50,12 +51,12 @@ import com.sun.enterprise.admin.servermgmt.stringsubs.Substitutable;
 import com.sun.enterprise.admin.servermgmt.stringsubs.SubstitutionAlgorithm;
 
 /**
- * Perform's String substitution by replacing the matching target
+ * Performs String substitution by replacing the matching target
  * sequence with the specified literal replacement sequence.
  */
 public class StringReplacementAlgo implements SubstitutionAlgorithm {
 
-    private Map<String, String> _substitutionMap;
+    private Map<String, String> substitutionMap;
 
     /**
      * Construct {@link StringReplacementAlgo} for the given substitutable key/value
@@ -67,12 +68,11 @@ public class StringReplacementAlgo implements SubstitutionAlgorithm {
         if (substitutionMap == null || substitutionMap.isEmpty()) {
             throw new IllegalArgumentException("Can not construct algorithm for null or empty map.");
         }
-        _substitutionMap = substitutionMap;
+        this.substitutionMap = substitutionMap;
     }
 
     @Override
-    public void substitute(Substitutable resolver)
-            throws StringSubstitutionException {
+    public void substitute(Substitutable resolver) throws StringSubstitutionException {
         Reader reader = resolver.getReader();
         Writer writer = resolver.getWriter();
         try {
@@ -81,8 +81,8 @@ public class StringReplacementAlgo implements SubstitutionAlgorithm {
             int count = 0;
             while ((count = reader.read(cbuffer)) > 0) {
                 inputLine = new String(cbuffer, 0, count);
-                for(String key : _substitutionMap.keySet()) {
-                    inputLine = inputLine.replace(key, _substitutionMap.get(key));
+                for(Map.Entry<String, String> entry : substitutionMap.entrySet()) {
+                    inputLine = inputLine.replace(entry.getKey(), entry.getValue());
                 }
                 writer.write(inputLine);
             }

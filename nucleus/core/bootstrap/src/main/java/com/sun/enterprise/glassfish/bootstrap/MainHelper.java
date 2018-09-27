@@ -144,20 +144,20 @@ public class MainHelper {
             String line = lnReader.readLine();
             // most of the asenv.conf values have surrounding "", remove them
             // and on Windows, they start with SET XXX=YYY
-            Pattern p = Pattern.compile("[Ss]?[Ee]?[Tt]? *([^=]*)=\"?([^\"]*)\"?");
+            Pattern p = Pattern.compile("(?i)(set +)?([^=]*)=\"?([^\"]*)\"?");
             while (line != null) {
                 Matcher m = p.matcher(line);
                 if (m.matches()) {
-                    File f = new File(m.group(2));
+                    File f = new File(m.group(3));
                     if (!f.isAbsolute()) {
-                        f = new File(configDir, m.group(2));
+                        f = new File(configDir, m.group(3));
                         if (f.exists()) {
-                            asenvProps.put(m.group(1), f.getAbsolutePath());
+                            asenvProps.put(m.group(2), f.getAbsolutePath());
                         } else {
-                            asenvProps.put(m.group(1), m.group(2));
+                            asenvProps.put(m.group(2), m.group(3));
                         }
                     } else {
-                        asenvProps.put(m.group(1), m.group(2));
+                        asenvProps.put(m.group(2), m.group(3));
                     }
                 }
                 line = lnReader.readLine();

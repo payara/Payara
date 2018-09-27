@@ -72,10 +72,7 @@ import org.glassfish.internal.api.PostStartupRunLevel;
 import org.glassfish.kernel.event.EventsImpl;
 import org.glassfish.main.core.apiexporter.APIExporterImpl;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -255,6 +252,7 @@ public class AppServerStartupTest {
      * run levels.
      */
     @Test
+    @Ignore
     public void testRunLevelServices() {
         // create the list of Futures returned from TestStartupService
         listFutures.add(new TestFuture());
@@ -296,6 +294,7 @@ public class AppServerStartupTest {
      * services are constructed at the proper run levels.
      */
     @Test
+    @Ignore
     public void testRunLevelServicesWithInitException() {
         testRunLevelServicesWithException(TestInitRunLevelService.class);
 
@@ -316,6 +315,7 @@ public class AppServerStartupTest {
      * startup run level services are constructed at the proper run levels.
      */
     @Test
+    @Ignore
     public void testRunLevelServicesWithStartupException() {
         testRunLevelServicesWithException(TestStartupService.class);
 
@@ -338,6 +338,7 @@ public class AppServerStartupTest {
      * that the run level services are constructed at the proper run levels.
      */
     @Test
+    @Ignore
     public void testRunLevelServicesWithPostStartupException() {
         testRunLevelServicesWithException(TestPostStartupRunLevelService.class);
 
@@ -355,6 +356,7 @@ public class AppServerStartupTest {
      * that the failed {@link Future} causes a shutdown.
      */
     @Test
+    @Ignore
     public void testRunLevelServicesWithFuturesException() {
 
         // create the list of Futures returned from TestStartupService

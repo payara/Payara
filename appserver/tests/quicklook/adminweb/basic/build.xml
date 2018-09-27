@@ -112,7 +112,7 @@
        <mkdir dir="classes/test"/>
        <javac   debug="true"
               fork="true"
-              source="1.5"
+              source="1.8"
               classpathref="test.classpath"
               srcdir="src/test"
               destdir="classes/test"

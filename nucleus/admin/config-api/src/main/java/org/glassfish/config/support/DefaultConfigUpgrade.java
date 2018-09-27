@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
@@ -53,7 +54,6 @@ import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 
@@ -67,25 +67,19 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
- import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.*;
+import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 /**
- * Upgrade service to add the default-config if it doesn't exist.
- * 3.0.1 and v2.x developer profile do not have default-config.
- * The data to populate the default-config is taken from
- * glassfish4\glassfish\lib\templates\domain.xml.  This class uses the StAX
- * parser and depends on the exact order of the elements in the template, and
- * the original contents of the template when glassfish was installed.
- * The DefaultConfigUpgrade may not work if the template has been changed from
- * its original.
+ * Upgrade service to add the default-config if it doesn't exist. 3.0.1 and v2.x developer profile do not have default-config. The data to populate the
+ * default-config is taken from glassfish4\glassfish\lib\templates\domain.xml. This class uses the StAX parser and depends on the exact order of the elements in
+ * the template, and the original contents of the template when glassfish was installed. The DefaultConfigUpgrade may not work if the template has been changed
+ * from its original.
  *
- * TODO: Replace using a simpler, more maintainable approach such as HK2 DOM objects, or having
- * a default for the Config object that creates default-config
+ * TODO: Replace using a simpler, more maintainable approach such as HK2 DOM objects, or having a default for the Config object that creates default-config
  *
  * @author Jennifer Chou
  */
@@ -97,49 +91,45 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
 
     @Inject
     ServiceLocator habitat;
-    
+
     private static final String DEFAULT_CONFIG = "default-config";
     private static final String INSTALL_ROOT = "com.sun.aas.installRoot";
-    private static final LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(DefaultConfigUpgrade.class);
-    private final static Logger logger =ConfigApiLoggerInfo.getLogger();
+    private static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(DefaultConfigUpgrade.class);
+    private static final Logger LOGGER = ConfigApiLoggerInfo.getLogger();
 
     @Override
     public void postConstruct() {
 
         Config defaultConfig = configs.getConfigByName(DEFAULT_CONFIG);
         if (defaultConfig != null) {
-            logger.log(
-                    Level.INFO,existingDefaultConfig);
+            LOGGER.log(Level.INFO, existingDefaultConfig);
             return;
         }
 
         String installRoot = System.getProperty(INSTALL_ROOT);
         if (installRoot == null) {
-            logger.log(
-                    Level.INFO, installRootIsNull);
+            LOGGER.log(Level.INFO, installRootIsNull);
             return;
         }
 
-        logger.log(
-                Level.INFO, runningDefaultConfigUpgrade);
+        LOGGER.log(Level.INFO, runningDefaultConfigUpgrade);
 
         InputStream template = null;
         ZipFile templatezip = null;
         String templatefilename = Version.getDefaultDomainTemplate();
         File templatefile = new File(new File(new File(
-                new File(installRoot, "common"), "templates"), "gf"), templatefilename);    
+                new File(installRoot, "common"), "templates"), "gf"), templatefilename);
         try {
             templatezip = new ZipFile(templatefile);
             ZipEntry domEnt = templatezip.getEntry("config/domain.xml");
             if (domEnt == null) {
-                throw new RuntimeException(localStrings.getLocalString(
-                    "DefaultConfigUpgrade.cannotGetDomainXmlTemplate", 
-                    "DefaultConfigUpgrade failed. Cannot get default domain.xml from {0)",
-                    templatefile.getAbsolutePath()));
+                throw new RuntimeException(LOCAL_STRINGS.getLocalString(
+                        "DefaultConfigUpgrade.cannotGetDomainXmlTemplate",
+                        "DefaultConfigUpgrade failed. Cannot get default domain.xml from {0)",
+                        templatefile.getAbsolutePath()));
             }
             template = templatezip.getInputStream(domEnt);
-            
+
             ConfigSupport.apply(new MinDefaultConfigCode(), configs);
             defaultConfig = configs.getConfigByName(DEFAULT_CONFIG);
 
@@ -165,18 +155,11 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
 
             createSystemProperties(defaultConfig);
 
-        } catch (TransactionFailure ex) {
-            logger.log(
-                    Level.SEVERE, defaultConfigUpgradeFailure, ex);
-        } catch (FileNotFoundException ex) {
-            logger.log(
-                    Level.SEVERE, defaultConfigUpgradeFailure, ex);
-        } catch (XMLStreamException ex) {
-            logger.log(
-                    Level.SEVERE, defaultConfigUpgradeFailure, ex);
+        } catch (TransactionFailure | FileNotFoundException | XMLStreamException ex) {
+            LOGGER.log(Level.SEVERE, defaultConfigUpgradeFailure, ex);
         } catch (IOException ex) {
-            throw new RuntimeException(localStrings.getLocalString(
-                    "DefaultConfigUpgrade.cannotGetDomainXmlTemplate", 
+            throw new RuntimeException(LOCAL_STRINGS.getLocalString(
+                    "DefaultConfigUpgrade.cannotGetDomainXmlTemplate",
                     "DefaultConfigUpgrade failed. Cannot get default domain.xml from {0)",
                     templatefile.getAbsolutePath()), ex);
         } finally {
@@ -213,45 +196,36 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
 
     private void createDefaultConfigAttr(Config defaultConfig) throws TransactionFailure, XMLStreamException {
         while (true) {
-            if (parser.next() == START_ELEMENT) {
-                if (parser.getLocalName().equals("config")
-                        && parser.getAttributeValue(null, "name").equals(DEFAULT_CONFIG)) {
-                    ConfigSupport.apply(new DefaultConfigCode(), defaultConfig);
-                    break;
-                }
+            if (parser.next() == START_ELEMENT && parser.getLocalName().equals("config") && parser.getAttributeValue(null, "name").equals(DEFAULT_CONFIG)) {
+                ConfigSupport.apply(new DefaultConfigCode(), defaultConfig);
+                break;
             }
         }
     }
 
     private void createHttpServiceConfig(Config defaultConfig) throws TransactionFailure, XMLStreamException {
         while (true) {
-            if (parser.next() == START_ELEMENT) {
-                if (parser.getLocalName().equals("http-service")) {
-                    ConfigSupport.apply(new HttpServiceConfigCode(), defaultConfig);
-                    break;
-                }
+            if (parser.next() == START_ELEMENT && parser.getLocalName().equals("http-service")) {
+                ConfigSupport.apply(new HttpServiceConfigCode(), defaultConfig);
+                break;
             }
         }
     }
 
     private void createAdminServiceConfig(Config defaultConfig) throws TransactionFailure, XMLStreamException {
         while (true) {
-            if (parser.next() == START_ELEMENT) {
-                if (parser.getLocalName().equals("admin-service")) {
-                    ConfigSupport.apply(new AdminServiceConfigCode(), defaultConfig);
-                    break;
-                }
+            if (parser.next() == START_ELEMENT && parser.getLocalName().equals("admin-service")) {
+                ConfigSupport.apply(new AdminServiceConfigCode(), defaultConfig);
+                break;
             }
         }
     }
 
     private void createLogServiceConfig(Config defaultConfig) throws TransactionFailure, XMLStreamException {
         while (true) {
-            if (parser.next() == START_ELEMENT) {
-                if (parser.getLocalName().equals("log-service")) {
-                    ConfigSupport.apply(new LogServiceConfigCode(), defaultConfig);
-                    break;
-                }
+            if (parser.next() == START_ELEMENT && parser.getLocalName().equals("log-service")) {
+                ConfigSupport.apply(new LogServiceConfigCode(), defaultConfig);
+                break;
             }
         }
     }
@@ -259,62 +233,50 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     private void createSecurityServiceConfig(Config defaultConfig) {
         while (true) {
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("security-service")) {
-                        ConfigSupport.apply(new SecurityServiceConfigCode(), defaultConfig);
-                        break;
-                    }
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("security-service")) {
+                    ConfigSupport.apply(new SecurityServiceConfigCode(), defaultConfig);
+                    break;
                 }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingSecurityServiceConfig, ex);
+                LOGGER.log(Level.SEVERE, failureCreatingSecurityServiceConfig, ex);
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE, problemParsingSecurityServiceConfig, ex);
+                LOGGER.log(Level.SEVERE, problemParsingSecurityServiceConfig, ex);
             }
         }
     }
 
     private void createJavaConfig(Config defaultConfig) throws TransactionFailure, XMLStreamException {
         while (true) {
-            if (parser.next() == START_ELEMENT) {
-                if (parser.getLocalName().equals("java-config")) {
+            if (parser.next() == START_ELEMENT && parser.getLocalName().equals("java-config")) {
                     ConfigSupport.apply(new JavaConfigCode(), defaultConfig);
                     break;
-                }
             }
         }
     }
 
     private void createAvailabilityService(Config defaultConfig) throws TransactionFailure, XMLStreamException {
         while (true) {
-            if (parser.next() == START_ELEMENT) {
-                if (parser.getLocalName().equals("availability-service")) {
-                    ConfigSupport.apply(new AvailabilityServiceConfigCode(), defaultConfig);
-                    break;
-                }
+            if (parser.next() == START_ELEMENT && parser.getLocalName().equals("availability-service")) {
+                ConfigSupport.apply(new AvailabilityServiceConfigCode(), defaultConfig);
+                break;
             }
         }
     }
 
     private void createNetworkConfig(Config defaultConfig) throws TransactionFailure, XMLStreamException {
         while (true) {
-            if (parser.next() == START_ELEMENT) {
-                if (parser.getLocalName().equals("network-config")) {
-                    ConfigSupport.apply(new NetworkConfigCode(), defaultConfig);
-                    break;
-                }
+            if (parser.next() == START_ELEMENT && parser.getLocalName().equals("network-config")) {
+                ConfigSupport.apply(new NetworkConfigCode(), defaultConfig);
+                break;
             }
         }
     }
 
     private void createThreadPools(Config defaultConfig) throws TransactionFailure, XMLStreamException {
         while (true) {
-            if (parser.next() == START_ELEMENT) {
-                if (parser.getLocalName().equals("thread-pools")) {
-                    ConfigSupport.apply(new ThreadPoolsConfigCode(), defaultConfig);
-                    break;
-                }
+            if (parser.next() == START_ELEMENT && parser.getLocalName().equals("thread-pools")) {
+                ConfigSupport.apply(new ThreadPoolsConfigCode(), defaultConfig);
+                break;
             }
         }
     }
@@ -328,6 +290,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private static class MinDefaultConfigCode implements SingleConfigCode<Configs> {
 
+        @Override
         public Object run(Configs configs) throws PropertyVetoException, TransactionFailure {
             Config defaultConfig = configs.createChild(Config.class);
             defaultConfig.setName(DEFAULT_CONFIG);
@@ -341,10 +304,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
 
     private class DefaultConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException, TransactionFailure {
 
-            config.setDynamicReconfigurationEnabled(
-                    parser.getAttributeValue(null, "dynamic-reconfiguration-enabled"));
+            config.setDynamicReconfigurationEnabled(parser.getAttributeValue(null, "dynamic-reconfiguration-enabled"));
 
             return null;
         }
@@ -362,6 +325,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private class HttpServiceConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException, TransactionFailure {
 
             HttpService httpService = config.createChild(HttpService.class);
@@ -378,8 +342,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     private void createVirtualServer(HttpService hs) throws PropertyVetoException {
         try {
             while (!(parser.getEventType() == END_ELEMENT && parser.getLocalName().equals("http-service"))) {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("virtual-server")) {
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("virtual-server")) {
                         VirtualServer vs = hs.createChild(VirtualServer.class);
                         hs.getVirtualServer().add(vs);
                         for (int i = 0; i < parser.getAttributeCount(); i++) {
@@ -392,15 +355,12 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                             }
                         }
                         createVirtualServerProperty(vs);
-                    }
                 }
             }
         } catch (TransactionFailure ex) {
-            logger.log(
-                    Level.SEVERE, failureCreatingHttpServiceVS, ex);
+            LOGGER.log(Level.SEVERE, failureCreatingHttpServiceVS, ex);
         } catch (XMLStreamException ex) {
-            logger.log(
-                    Level.SEVERE, problemParsingHttpServiceVs, ex);
+            LOGGER.log(Level.SEVERE, problemParsingHttpServiceVs, ex);
         }
     }
 
@@ -415,11 +375,9 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                     }
                 }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingHttpServiceVS, ex);
+                LOGGER.log(Level.SEVERE, failureCreatingHttpServiceVS, ex);
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE, problemParsingHttpServiceVs, ex);
+                LOGGER.log(Level.SEVERE, problemParsingHttpServiceVs, ex);
             }
         }
     }
@@ -435,6 +393,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private class AdminServiceConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException, TransactionFailure {
 
             AdminService adminService = config.createChild(AdminService.class);
@@ -454,7 +413,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                     adminService.setType(val);
                 }
             }
-            
+
             createAdminServiceProperty(adminService);
 
             return null;
@@ -467,20 +426,16 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     private void createAdminServiceProperty(AdminService as) throws PropertyVetoException {
         while (true) {
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("property")) {
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("property")) {
                         Property p = as.createChild(Property.class);
                         as.getProperty().add(p);
                         createProperty(p);
                         break;
-                    }
                 }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failedToCreateAdminService, ex);
+                LOGGER.log(Level.SEVERE, failedToCreateAdminService, ex);
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE, problemParsingAdminService, ex);
+                LOGGER.log(Level.SEVERE, problemParsingAdminService, ex);
             }
         }
     }
@@ -493,13 +448,14 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private class LogServiceConfigCode implements SingleConfigCode<Config> {
 
+        @Override
+        @SuppressWarnings("null")
         public Object run(Config config) throws PropertyVetoException {
             LogService ls = null;
             try {
                 ls = config.createChild(LogService.class);
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingLogService, ex);
+                LOGGER.log(Level.SEVERE, failureCreatingLogService, ex);
             }
             config.setLogService(ls);
 
@@ -533,11 +489,9 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             }
         } catch (TransactionFailure ex) {
-            logger.log(
-                    Level.SEVERE, failureCreateModuleLogLevel, ex);
+            LOGGER.log(Level.SEVERE, failureCreateModuleLogLevel, ex);
         } catch (XMLStreamException ex) {
-            logger.log(
-                    Level.SEVERE, problemParsingModuleLogLevel, ex);
+            LOGGER.log(Level.SEVERE, problemParsingModuleLogLevel, ex);
         }
     }
 
@@ -598,6 +552,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private class SecurityServiceConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException {
             try {
                 SecurityService ss = config.createChild(SecurityService.class);
@@ -606,9 +561,9 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 createJaccProvider(ss);
                 createAuditModule(ss);
                 createMessageSecurityConfig(ss);
-                
+
             } catch (TransactionFailure ex) {
-                logger.log(
+                LOGGER.log(
                         Level.SEVERE, failureCreatingSecurityService, ex);
             }
             return null;
@@ -625,30 +580,26 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     private void createAuthRealm(SecurityService ss) throws PropertyVetoException {
         while (!(parser.getEventType() == START_ELEMENT && parser.getLocalName().equals("jacc-provider"))) {
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("auth-realm") && ss != null) {
-                        AuthRealm ar = ss.createChild(AuthRealm.class);
-                        ss.getAuthRealm().add(ar);
-                        for (int i = 0; i < parser.getAttributeCount(); i++) {
-                            String attr = parser.getAttributeLocalName(i);
-                            String val = parser.getAttributeValue(i);
-                            if (attr.equals("classname")) {
-                                ar.setClassname(val);
-                            }
-                            if (attr.equals("name")) {
-                                ar.setName(val);
-                            }
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("auth-realm") && ss != null) {
+                    AuthRealm ar = ss.createChild(AuthRealm.class);
+                    ss.getAuthRealm().add(ar);
+                    for (int i = 0; i < parser.getAttributeCount(); i++) {
+                        String attr = parser.getAttributeLocalName(i);
+                        String val = parser.getAttributeValue(i);
+                        if (attr.equals("classname")) {
+                            ar.setClassname(val);
                         }
-
-                        createAuthRealmProperty(ar);
+                        if (attr.equals("name")) {
+                            ar.setName(val);
+                        }
                     }
+
+                    createAuthRealmProperty(ar);
                 }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingAuthRealm, ex);
+                LOGGER.log(Level.SEVERE, failureCreatingAuthRealm, ex);
             } catch (XMLStreamException ex) {
-                logger.log(Level.SEVERE,
-                        failureParsingAuthRealm, ex);
+                LOGGER.log(Level.SEVERE, failureParsingAuthRealm, ex);
             }
         }
     }
@@ -658,19 +609,15 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
             String attr = null;
             String val = null;
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("property") && ar != null) {
-                        Property p = ar.createChild(Property.class);
-                        ar.getProperty().add(p);
-                        createProperty(p);
-                    }
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("property") && ar != null) {
+                    Property p = ar.createChild(Property.class);
+                    ar.getProperty().add(p);
+                    createProperty(p);
                 }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingAuthRealmProperty , new Object[]{attr, val, ex});
+                LOGGER.log(Level.SEVERE, failureCreatingAuthRealmProperty, new Object[]{attr, val, ex});
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE, failureParsingAuthRealmProperty, ex);
+                LOGGER.log(Level.SEVERE, failureParsingAuthRealmProperty, ex);
             }
         }
     }
@@ -708,11 +655,9 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                     }
                 }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingJaccProvider, ex);
+                LOGGER.log(Level.SEVERE, failureCreatingJaccProvider, ex);
             } catch (XMLStreamException ex) {
-                logger.log(Level.SEVERE,
-                        problemParsingJaacProvider, ex);
+                LOGGER.log(Level.SEVERE, problemParsingJaacProvider, ex);
             }
         }
     }
@@ -722,8 +667,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
             String attr = null;
             String val = null;
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("property") && jp != null) {
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("property") && jp != null) {
                         Property p = jp.createChild(Property.class);
                         jp.getProperty().add(p);
                         for (int i = 0; i < parser.getAttributeCount(); i++) {
@@ -736,14 +680,11 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                                 p.setValue(val);
                             }
                         }
-                    }
                 }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingJaccProviderAttr , new Object[]{attr, val, ex});
+                LOGGER.log(Level.SEVERE, failureCreatingJaccProviderAttr, new Object[]{attr, val, ex});
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE, problemParsingJaacProviderAttr, ex);
+                LOGGER.log(Level.SEVERE, problemParsingJaacProviderAttr, ex);
             }
         }
     }
@@ -776,12 +717,8 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                         createAuditModuleProperty(am);
                     }
                 }
-            } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingAuditModule, ex);
-            } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingAuditModule, ex);
+            } catch (TransactionFailure | XMLStreamException ex) {
+                LOGGER.log(Level.SEVERE, failureCreatingAuditModule, ex);
             }
         }
 
@@ -790,19 +727,15 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     private void createAuditModuleProperty(AuditModule am) throws PropertyVetoException {
         while (!(parser.getEventType() == END_ELEMENT && parser.getLocalName().equals("audit-module"))) {
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("property") && am != null) {
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("property") && am != null) {
                         Property p = am.createChild(Property.class);
                         am.getProperty().add(p);
                         createProperty(p);
                     }
-                }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingAuditModuleAttr, ex);
+                LOGGER.log(Level.SEVERE, failureCreatingAuditModuleAttr, ex);
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE, failureParsingAuditModuleProp, ex);
+                LOGGER.log(Level.SEVERE, failureParsingAuditModuleProp, ex);
             }
         }
     }
@@ -842,8 +775,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                     break;
                 }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingJaccProvider, ex);
+                LOGGER.log(Level.SEVERE, failureCreatingJaccProvider, ex);
             }
         }
     }
@@ -863,8 +795,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     private void createProviderConfig(MessageSecurityConfig msc) throws PropertyVetoException {
         while (!(parser.getEventType() == END_ELEMENT && parser.getLocalName().equals("message-security-config"))) {
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("provider-config") && msc != null) {
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("provider-config") && msc != null) {
                         ProviderConfig pc = msc.createChild(ProviderConfig.class);
                         msc.getProviderConfig().add(pc);
                         for (int i = 0; i < parser.getAttributeCount(); i++) {
@@ -884,14 +815,11 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                         createRequestPolicy(pc);
                         createResponsePolicy(pc);
                         createProviderConfigProperty(pc);
-                    }
                 }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingProviderConfig, ex);
+                LOGGER.log(Level.SEVERE, failureCreatingProviderConfig, ex);
             } catch (XMLStreamException ex) {
-                logger.log(Level.SEVERE,
-                        ProblemParsingProviderConfig, ex);
+                LOGGER.log(Level.SEVERE, ProblemParsingProviderConfig, ex);
             }
         }
     }
@@ -900,8 +828,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     private void createRequestPolicy(ProviderConfig pc) throws PropertyVetoException {
         while (true) {
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("request-policy") && pc != null) {
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("request-policy") && pc != null) {
                         RequestPolicy rp = pc.createChild(RequestPolicy.class);
                         pc.setRequestPolicy(rp);
                         for (int i = 0; i < parser.getAttributeCount(); i++) {
@@ -912,14 +839,11 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                             }
                         }
                         break;
-                    }
                 }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, createProviderConfigRequestPolicyFailed, ex);
+                LOGGER.log(Level.SEVERE, createProviderConfigRequestPolicyFailed, ex);
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE, problemParsingRequestPolicyProp, ex);
+                LOGGER.log(Level.SEVERE, problemParsingRequestPolicyProp, ex);
             }
         }
     }
@@ -928,8 +852,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     private void createResponsePolicy(ProviderConfig pc) throws PropertyVetoException {
         while (true) {
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("response-policy") && pc != null) {
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("response-policy") && pc != null) {
                         ResponsePolicy rp = pc.createChild(ResponsePolicy.class);
                         pc.setResponsePolicy(rp);
                         for (int i = 0; i < parser.getAttributeCount(); i++) {
@@ -940,14 +863,11 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                             }
                         }
                         break;
-                    }
                 }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, createProviderConfigRequestPolicyFailed, ex);
+                LOGGER.log(Level.SEVERE, createProviderConfigRequestPolicyFailed, ex);
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE, problemParsingRequestPolicyProp, ex);
+                LOGGER.log(Level.SEVERE, problemParsingRequestPolicyProp, ex);
             }
         }
     }
@@ -955,19 +875,15 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     private void createProviderConfigProperty(ProviderConfig pc) throws PropertyVetoException {
         while (!(parser.getEventType() == END_ELEMENT && parser.getLocalName().equals("provider-config"))) {
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("property") && pc != null) {
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("property") && pc != null) {
                         Property p = pc.createChild(Property.class);
                         pc.getProperty().add(p);
                         createProperty(p);
-                    }
                 }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, createProviderConfigPropertyFailed, ex);
+                LOGGER.log(Level.SEVERE, createProviderConfigPropertyFailed, ex);
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE, problemParsingProviderConfigProp, ex);
+                LOGGER.log(Level.SEVERE, problemParsingProviderConfigProp, ex);
             }
         }
     }
@@ -978,6 +894,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private static class DiagnosticServiceConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException, TransactionFailure {
             DiagnosticService ds = config.createChild(DiagnosticService.class);
             config.setDiagnosticService(ds);
@@ -992,6 +909,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private class JavaConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException {
             try {
                 JavaConfig jc = config.createChild(JavaConfig.class);
@@ -1013,8 +931,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 // All <jvm-options>some jvm option</jvm-options>
                 createJvmOptions(jc);
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE,failureCreatingJavaConfigObject , ex);
+                LOGGER.log(Level.SEVERE, failureCreatingJavaConfigObject, ex);
             }
             return null;
         }
@@ -1024,14 +941,11 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
         while (!(parser.getEventType() == END_ELEMENT && parser.getLocalName().equals("java-config"))) {
             try {
                 int eventType = parser.next();
-                if (eventType == START_ELEMENT) {
-                    if (parser.getLocalName().equals("jvm-options") && jc != null) {
+                if (eventType == START_ELEMENT && parser.getLocalName().equals("jvm-options") && jc != null) {
                         jc.getJvmOptions().add(parser.getElementText());
                     }
-                }
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE, problemParsingJvmOptions, ex);
+                LOGGER.log(Level.SEVERE, problemParsingJvmOptions, ex);
             }
         }
     }
@@ -1046,13 +960,13 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     static private class AvailabilityServiceConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException {
             try {
                 AvailabilityService as = config.createChild(AvailabilityService.class);
                 config.setAvailabilityService(as);
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingAvailabilityServiceConfig, ex);
+                LOGGER.log(Level.SEVERE, failureCreatingAvailabilityServiceConfig, ex);
             }
 
             return null;
@@ -1065,6 +979,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private class NetworkConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException {
             try {
                 NetworkConfig nc = config.createChild(NetworkConfig.class);
@@ -1074,8 +989,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 createNetworkListeners(nc);
                 createTransports(nc);
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE,failureCreatingNetworkConfig , ex);
+                LOGGER.log(Level.SEVERE, failureCreatingNetworkConfig, ex);
             }
 
             return null;
@@ -1103,20 +1017,16 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     private void createProtocols(NetworkConfig nc) throws PropertyVetoException {
         while (true) {
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("protocols") && nc != null) {
-                        Protocols ps = nc.createChild(Protocols.class);
-                        nc.setProtocols(ps);
-                        createProtocol(ps);
-                        break;
-                    }
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("protocols") && nc != null) {
+                    Protocols ps = nc.createChild(Protocols.class);
+                    nc.setProtocols(ps);
+                    createProtocol(ps);
+                    break;
                 }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE,failureCreatingProtocolsConfig, ex);
+                LOGGER.log(Level.SEVERE, failureCreatingProtocolsConfig, ex);
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE, problemParsingProtocolsConfig, ex);
+                LOGGER.log(Level.SEVERE, problemParsingProtocolsConfig, ex);
             }
         }
     }
@@ -1142,66 +1052,62 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                         while (true) {
                             if (parser.next() == START_ELEMENT) {
                                 if (parser.getLocalName().equals("http") && p != null) {
-                        createHttp(p);
-                        createSsl(p);
+                                    createHttp(p);
+                                    createSsl(p);
                                     break;
                                 } else if (parser.getLocalName().equals("http-redirect") && p != null) {
-                        createHttpRedirect(p);
+                                    createHttpRedirect(p);
                                     break;
                                 } else if (parser.getLocalName().equals("port-unification") && p != null) {
-                        createPortUnification(p);
+                                    createPortUnification(p);
                                     break;
                                 } else {
                                     break;
-                    }
-                }
+                                }
+                            }
                         }
 
                     }
                 }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingProtocolConfig, ex);
+                LOGGER.log(Level.SEVERE, failureCreatingProtocolConfig, ex);
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE,problemParsingProtocolElement , ex);
+                LOGGER.log(Level.SEVERE, problemParsingProtocolElement, ex);
             }
         }
     }
 
     /* <http default-virtual-server="__asadmin" max-connections="250"> (1 example with most attributes)*/
     private void createHttp(Protocol p) throws PropertyVetoException {
-            try {
-                    if (parser.getLocalName().equals("http") && p != null) {
-                        Http h = p.createChild(Http.class);
-                        p.setHttp(h);
-                        for (int i = 0; i < parser.getAttributeCount(); i++) {
-                            String attr = parser.getAttributeLocalName(i);
-                            String val = parser.getAttributeValue(i);
-                            if (attr.equals("default-virtual-server")) {
-                                h.setDefaultVirtualServer(val);
-                            }
+        try {
+            if (parser.getLocalName().equals("http") && p != null) {
+                Http h = p.createChild(Http.class);
+                p.setHttp(h);
+                for (int i = 0; i < parser.getAttributeCount(); i++) {
+                    String attr = parser.getAttributeLocalName(i);
+                    String val = parser.getAttributeValue(i);
+                    if (attr.equals("default-virtual-server")) {
+                        h.setDefaultVirtualServer(val);
+                    }
                     if (attr.equals("encoded-slash-enabled")) {
                         h.setEncodedSlashEnabled(val);
                     }
-                            if (attr.equals("max-connections")) {
-                                h.setMaxConnections(val);
-                            }
-                        }
-                        createFileCache(h);
+                    if (attr.equals("max-connections")) {
+                        h.setMaxConnections(val);
                     }
-            } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingHttpConfig, ex);
+                }
+                createFileCache(h);
             }
+        } catch (TransactionFailure ex) {
+            LOGGER.log(Level.SEVERE, failureCreatingHttpConfig, ex);
         }
+    }
 
     /* <file-cache enabled="false"/> (1 example with most attributes)*/
     private void createFileCache(Http h) throws PropertyVetoException {
         while (true) {
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("file-cache") && h != null) {
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("file-cache") && h != null) {
                         FileCache fc = h.createChild(FileCache.class);
                         h.setFileCache(fc);
                         for (int i = 0; i < parser.getAttributeCount(); i++) {
@@ -1213,13 +1119,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                         }
                         break;
                     }
-                }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingFileCacheConfig, ex);
+                LOGGER.log(Level.SEVERE, failureCreatingFileCacheConfig, ex);
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE, problemParsingFileCacheElement, ex);
+                LOGGER.log(Level.SEVERE, problemParsingFileCacheElement, ex);
             }
         }
     }
@@ -1228,8 +1131,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     private void createSsl(Protocol p) throws PropertyVetoException {
         while (!(parser.getEventType() == END_ELEMENT && parser.getLocalName().equals("protocol"))) {
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("ssl") && p != null) {
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("ssl") && p != null) {
                         Ssl ssl = p.createChild(Ssl.class);
                         p.setSsl(ssl);
                         for (int i = 0; i < parser.getAttributeCount(); i++) {
@@ -1246,60 +1148,54 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                             }
                             if (attr.equals("client-auth")) {
                                 ssl.setClientAuth(val);
-                        }
+                            }
                         }
                         break;
-                    }
                 }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingSSLConfig, ex);
+                LOGGER.log(Level.SEVERE, failureCreatingSSLConfig, ex);
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE,problemParsingSSlElement, ex);
+                LOGGER.log(Level.SEVERE, problemParsingSSlElement, ex);
             }
         }
     }
-    
+
     /* <http-redirect secure="true"></http-redirect> */
     private void createHttpRedirect(Protocol p) throws PropertyVetoException {
-            try {
-                        HttpRedirect hr = p.createChild(HttpRedirect.class);
-                        p.setHttpRedirect(hr);
-                        for (int i = 0; i < parser.getAttributeCount(); i++) {
-                            String attr = parser.getAttributeLocalName(i);
-                            String val = parser.getAttributeValue(i);
-                            if (attr.equals("secure")) {
-                                hr.setSecure(val);
-                            }
-                        }
-            } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingHttpRedirect, ex);
+        try {
+            HttpRedirect hr = p.createChild(HttpRedirect.class);
+            p.setHttpRedirect(hr);
+            for (int i = 0; i < parser.getAttributeCount(); i++) {
+                String attr = parser.getAttributeLocalName(i);
+                String val = parser.getAttributeValue(i);
+                if (attr.equals("secure")) {
+                    hr.setSecure(val);
+                }
             }
+        } catch (TransactionFailure ex) {
+            LOGGER.log(Level.SEVERE, failureCreatingHttpRedirect, ex);
         }
-    
+    }
+
     /* <port-unification>
      *       <protocol-finder protocol="sec-admin-listener" name="http-finder" classname="org.glassfish.grizzly.config.portunif.HttpProtocolFinder"></protocol-finder>
      *       <protocol-finder protocol="admin-http-redirect" name="admin-http-redirect" classname="org.glassfish.grizzly.config.portunif.HttpProtocolFinder"></protocol-finder>
      * </port-unification> */
     private void createPortUnification(Protocol p) throws PropertyVetoException {
-            try {
-                        PortUnification pu = p.createChild(PortUnification.class);
-                        p.setPortUnification(pu);
-                        
-                        createProtocolFinder(pu);
-            } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingPortUnification, ex);
-            }
+        try {
+            PortUnification pu = p.createChild(PortUnification.class);
+            p.setPortUnification(pu);
+
+            createProtocolFinder(pu);
+        } catch (TransactionFailure ex) {
+            LOGGER.log(Level.SEVERE, failureCreatingPortUnification, ex);
         }
-    
+    }
+
     private void createProtocolFinder(PortUnification pu) throws PropertyVetoException {
         while (!(parser.getEventType() == END_ELEMENT && parser.getLocalName().equals("port-unification"))) {
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("protocol-finder") && pu != null) {
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("protocol-finder") && pu != null) {
                         ProtocolFinder pf = pu.createChild(ProtocolFinder.class);
                         List<ProtocolFinder> pfList = pu.getProtocolFinder();
                         pfList.add(pf);
@@ -1316,14 +1212,11 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                                 pf.setClassname(val);
                             }
                         }
-                    }
                 }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingProtocolFinder, ex);
+                LOGGER.log(Level.SEVERE, failureCreatingProtocolFinder, ex);
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE, problemParsingProtocolFinder, ex);
+                LOGGER.log(Level.SEVERE, problemParsingProtocolFinder, ex);
             }
         }
     }
@@ -1346,11 +1239,9 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                     }
                 }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE,failureCreatingNetworkListeners , ex);
+                LOGGER.log(Level.SEVERE, failureCreatingNetworkListeners, ex);
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE,problemParsingNetworkListeners , ex);
+                LOGGER.log(Level.SEVERE, problemParsingNetworkListeners, ex);
             }
         }
     }
@@ -1363,8 +1254,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     private void createNetworkListener(NetworkListeners nls) throws PropertyVetoException {
         while (!(parser.getEventType() == END_ELEMENT && parser.getLocalName().equals("network-listeners"))) {
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("network-listener") && nls != null) {
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("network-listener") && nls != null) {
                         NetworkListener nl = nls.createChild(NetworkListener.class);
                         nls.getNetworkListener().add(nl);
                         for (int i = 0; i < parser.getAttributeCount(); i++) {
@@ -1389,14 +1279,11 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                                 nl.setThreadPool(val);
                             }
                         }
-                    }
                 }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE,failureCreatingNetworkListener, ex);
+                LOGGER.log(Level.SEVERE, failureCreatingNetworkListener, ex);
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE, ProblemParsingNetworkListener, ex);
+                LOGGER.log(Level.SEVERE, ProblemParsingNetworkListener, ex);
             }
         }
     }
@@ -1408,20 +1295,16 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     private void createTransports(NetworkConfig nc) throws PropertyVetoException {
         while (true) {
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("transports") && nc != null) {
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("transports") && nc != null) {
                         Transports ts = nc.createChild(Transports.class);
                         nc.setTransports(ts);
                         createTransport(ts);
                         break;
                     }
-                }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureCreatingTransportsConfig, ex);
+                LOGGER.log(Level.SEVERE, failureCreatingTransportsConfig, ex);
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE,failureParsingTransportsConfig , ex);
+                LOGGER.log(Level.SEVERE, failureParsingTransportsConfig, ex);
             }
         }
     }
@@ -1430,8 +1313,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     private void createTransport(Transports ts) throws PropertyVetoException {
         while (true) {
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("transport") && ts != null) {
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("transport") && ts != null) {
                         Transport t = ts.createChild(Transport.class);
                         ts.getTransport().add(t);
                         for (int i = 0; i < parser.getAttributeCount(); i++) {
@@ -1443,13 +1325,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                         }
                         break;
                     }
-                }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE,failureCreatingTransportConfig , ex);
+                LOGGER.log(Level.SEVERE, failureCreatingTransportConfig, ex);
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE, problemParsingTransportConfig, ex);
+                LOGGER.log(Level.SEVERE, problemParsingTransportConfig, ex);
             }
         }
     }
@@ -1463,14 +1342,14 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private class ThreadPoolsConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException {
             try {
                 ThreadPools tps = config.createChild(ThreadPools.class);
                 config.setThreadPools(tps);
                 createThreadPool(tps);
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE,failureToCreateThreadPoolsObject , ex);
+                LOGGER.log(Level.SEVERE, failureToCreateThreadPoolsObject, ex);
             }
             return null;
         }
@@ -1485,8 +1364,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     private void createThreadPool(ThreadPools ts) throws PropertyVetoException {
         while (!(parser.getEventType() == END_ELEMENT && parser.getLocalName().equals("thread-pools"))) {
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("thread-pool") && ts != null) {
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("thread-pool") && ts != null) {
                         ThreadPool t = ts.createChild(ThreadPool.class);
                         ts.getThreadPool().add(t);
                         for (int i = 0; i < parser.getAttributeCount(); i++) {
@@ -1503,13 +1381,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                             }
                         }
                     }
-                }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE, failureToCreateThreadpoolObject, ex);
+                LOGGER.log(Level.SEVERE, failureToCreateThreadpoolObject, ex);
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE,problemParsingThreadPoolElement , ex);
+                LOGGER.log(Level.SEVERE, problemParsingThreadPoolElement, ex);
             }
         }
     }
@@ -1519,6 +1394,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      */
     private class SystemPropertyConfigCode implements SingleConfigCode<Config> {
 
+        @Override
         public Object run(Config config) throws PropertyVetoException {
 
             createSystemProperty(config);
@@ -1527,9 +1403,9 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
         }
     }
 
-    /* Loop through all the system-property elements inside default-config of the template
-     * and create the SystemProperty config objects with attribute values from the template.
-     * <system-property name="ASADMIN_LISTENER_PORT" value="24848"/>
+    /**
+     * Loop through all the system-property elements inside default-config of the template and create the SystemProperty config objects with attribute values
+     * from the template.      {@code <system-property name="ASADMIN_LISTENER_PORT" value="24848"/>
      * <system-property name="HTTP_LISTENER_PORT" value="28080"/>
      * <system-property name="HTTP_SSL_LISTENER_PORT" value="28181"/>
      * <system-property name="JMS_PROVIDER_PORT" value="27676"/>
@@ -1538,13 +1414,12 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      * <system-property name="IIOP_SSL_MUTUALAUTH_PORT" value="23920"/>
      * <system-property name="JMX_SYSTEM_CONNECTOR_PORT" value="28686"/>
      * <system-property name="OSGI_SHELL_TELNET_PORT" value="26666"/>
-     * <system-property name="JAVA_DEBUGGER_PORT" value="29009"/>
+     * <system-property name="JAVA_DEBUGGER_PORT" value="29009"/>}
      */
     private void createSystemProperty(Config defaultConfig) throws PropertyVetoException {
         while (!(parser.getEventType() == END_ELEMENT && parser.getLocalName().equals("config"))) {
             try {
-                if (parser.next() == START_ELEMENT) {
-                    if (parser.getLocalName().equals("system-property") && defaultConfig != null) {
+                if (parser.next() == START_ELEMENT && parser.getLocalName().equals("system-property") && defaultConfig != null) {
                         SystemProperty sp = defaultConfig.createChild(SystemProperty.class);
                         defaultConfig.getSystemProperty().add(sp);
                         for (int i = 0; i < parser.getAttributeCount(); i++) {
@@ -1557,14 +1432,11 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                                 sp.setValue(val);
                             }
                         }
-                    }
                 }
             } catch (TransactionFailure ex) {
-                logger.log(
-                        Level.SEVERE,failureCreatingSystemProperty , ex);
+                LOGGER.log(Level.SEVERE, failureCreatingSystemProperty, ex);
             } catch (XMLStreamException ex) {
-                logger.log(
-                        Level.SEVERE,problemParsingSystemProperty, ex);
+                LOGGER.log(Level.SEVERE, problemParsingSystemProperty, ex);
             }
         }
     }
@@ -1585,8 +1457,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     private void createParser(InputStream template) throws FileNotFoundException, XMLStreamException {
         if (template != null) {
             reader = new InputStreamReader(template);
-            parser = XMLInputFactory.newInstance().createXMLStreamReader(
-                    "domain.xml", reader);
+            parser = XMLInputFactory.newInstance().createXMLStreamReader("domain.xml", reader);
         }
     }
     private XMLStreamReader parser;

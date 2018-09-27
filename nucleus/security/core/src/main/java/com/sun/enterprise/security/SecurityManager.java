@@ -37,20 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
+import java.lang.reflect.Method;
 import java.security.Principal;
 import java.security.PrivilegedExceptionAction;
-import java.lang.reflect.Method;
 
 import javax.security.auth.Subject;
+
 import org.glassfish.api.invocation.ComponentInvocation;
 
 /**
- * This interface is used by the Container to manage access to EJBs.
- * The container has a reference to an implementation of this 
- * interface.
+ * This interface is used by the Container to manage access to EJBs. The container has a reference to an implementation
+ * of this interface.
+ * 
  * @author Harish Prabandham
  */
 public interface SecurityManager {
@@ -59,68 +60,59 @@ public interface SecurityManager {
      * @param The Invocation object containing the details of the invocation.
      * @return true if the client is allowed to invoke the EJB, false otherwise.
      */
-    public boolean authorize(ComponentInvocation inv);
+    boolean authorize(ComponentInvocation inv);
 
     /**
-     * @return The Principal of the client who made the current 
-     * invocation.
+     * @return The Principal of the client who made the current invocation.
      */
-    public Principal getCallerPrincipal();
+    Principal getCallerPrincipal();
 
     /**
-     * @return A boolean true/false depending on whether or not the caller 
-     * has the specified role.
+     * @return A boolean true/false depending on whether or not the caller has the specified role.
      * @param The EJB developer specified "logical role".
      */
-    public boolean isCallerInRole(String  role);
-
-
-    /** This sets up the security context - if not set
-     * and does run-as related login if required
-     * @param ComponentInvocation
-     */
-    public void preInvoke (ComponentInvocation inv);
+    boolean isCallerInRole(String role);
 
     /**
-     * This method is used by the  Invocation Manager to remove
-     * the run-as identity information that was set up using the 
+     * This sets up the security context - if not set and does run-as related login if required
+     * 
+     * @param ComponentInvocation
+     */
+    void preInvoke(ComponentInvocation inv);
+
+    /**
+     * This method is used by the Invocation Manager to remove the run-as identity information that was set up using the
      * preInvoke
+     * 
      * @param ComponentInvocation
      */
-    public void postInvoke (ComponentInvocation inv);
+    void postInvoke(ComponentInvocation inv);
 
     /**
-     * Call this method to clean up all the bookeeping
-     * data-structures in the SM.
+     * Call this method to clean up all the bookeeping data-structures in the SM.
      */
-    public void destroy();
+    void destroy();
 
     /**
-     * This will return the subject associated with the current
-     * call. If the run as subject is in effect. It will return that
-     * subject. This is done to support the JACC specification which says
-     * if the runas principal is in effect, that principal should be used
-     * for making a component call.
-     * @return Subject the current subject. Null if this is not the
-     * runas case
+     * This will return the subject associated with the current call. If the run as subject is in effect. It will return
+     * that subject. This is done to support the JACC specification which says if the runas principal is in effect, that
+     * principal should be used for making a component call.
+     * 
+     * @return Subject the current subject. Null if this is not the runas case
      */
-    public Subject getCurrentSubject();
+    Subject getCurrentSubject();
 
     /**
      * Purge ThreadLocals held by javax.security.jacc.PolicyContext
      */
-    public void resetPolicyContext();
-    
-    
-    /* This method is used by SecurityUtil runMethod to run the
-     * action as the subject encapsulated in the cuurent
+    void resetPolicyContext();
+
+    /**
+     * This method is used by SecurityUtil runMethod to run the action as the subject encapsulated in the cuurent
      * SecurityContext.
      */
-      
-    public Object doAsPrivileged(PrivilegedExceptionAction pea) 
- 	throws Throwable;
+    public Object doAsPrivileged(PrivilegedExceptionAction pea) throws Throwable;
 
-    public Object invoke(Method beanClassMethod, boolean isLocal, Object o, Object[] oa)
-            throws Throwable;
-     
+    public Object invoke(Method beanClassMethod, boolean isLocal, Object o, Object[] oa) throws Throwable;
+
 }

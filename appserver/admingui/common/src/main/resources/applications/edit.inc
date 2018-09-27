@@ -61,7 +61,7 @@
                 <sun:checkbox id="osgi"  label=" "  disabled="#{true}"  selected="#{requestScope.osgiType}"  />
                 <!beforeCreate
                     setAttribute(key="osgiType" value="#{false}");
-                    if ("#{pageSession.valueMap['type']"){
+                    if ("#{pageSession.valueMap['type']}"){
                            setAttribute(key="osgiType" value="#{true}");
                     }
                 />
@@ -117,7 +117,14 @@
         </sun:property>
             
         <sun:property id="deploymentTimeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.deploymentTime}" helpText="$resource{i18n.deploy.deploymentTimeHelp}">
-            <sun:staticText id="deploymentOrder" text="#{pageSession.valueMap['deploymentTime']}" />
+            <sun:staticText id="deploymentTime" text="#{pageSession.valueMap['deploymentTime']}" />
+        </sun:property>
+
+        <sun:property id="deploymentOccuranceTime" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.deploymentOccuranceTime}" helpText="$resource{i18n.deploy.deploymentOccuranceTimeHelp}">
+            <sun:staticText id="deploymentOccured" text="#{pageSession.deploymentOccured}" />
+            <!beforeCreate
+                py.prettyDateTimeFormat(milliseconds="#{pageSession.valueMap['timeDeployed']}" prettyString="#{pageSession.deploymentOccured}");
+            />
         </sun:property>
 
         <sun:property id="librariesProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.Libraries}">
@@ -131,7 +138,7 @@
         <!beforeCreate
             setPageSessionAttribute(key="javaWebStartEnabled" value="true");
             setPageSessionAttribute(key="implicitCdiEnabled" value="true");
-            setPageSessionAttribute(key="cdiDevModeEnabled" value="true");
+            setPageSessionAttribute(key="cdiDevModeEnabled" value="false");
             foreach (var="oneProp" list="#{pageSession.tableList}") {
                 if (#{requestScope.oneProp.name}=$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}){
                     setPageSessionAttribute(key="javaWebStartEnabled" value="#{requestScope.oneProp.value}");

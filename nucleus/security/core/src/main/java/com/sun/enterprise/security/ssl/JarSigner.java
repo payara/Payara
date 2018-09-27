@@ -37,27 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ssl;
 
-import com.sun.enterprise.server.pluggable.SecuritySupport;
-import com.sun.enterprise.universal.GFBase64Encoder;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.emptyMap;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
-import java.security.SignatureException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Signature;
+import java.security.SignatureException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.Collections;
+import java.util.Base64;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Locale;
@@ -68,6 +70,9 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import com.sun.enterprise.server.pluggable.SecuritySupport;
+
 import sun.security.pkcs.ContentInfo;
 import sun.security.pkcs.PKCS7;
 import sun.security.pkcs.SignerInfo;
@@ -81,14 +86,14 @@ import sun.security.x509.X500Name;
  */
 public class JarSigner {
 
-    private static final GFBase64Encoder b64encoder = new GFBase64Encoder();
+    private static final Base64.Encoder b64encoder = Base64.getMimeEncoder();
+    private static final SecuritySupport securitySupport = SecuritySupport.getDefaultInstance();
+
     private final MessageDigest md;
     private final String digestAlgorithm;
     private final String keyAlgorithm;
-    private static final SecuritySupport secSupp = SecuritySupport.getDefaultInstance();
 
-    public JarSigner(String digestAlgorithm, String keyAlgorithm)
-            throws NoSuchAlgorithmException {
+    public JarSigner(String digestAlgorithm, String keyAlgorithm) throws NoSuchAlgorithmException {
         this.digestAlgorithm = digestAlgorithm;
         this.keyAlgorithm = keyAlgorithm;
         this.md = MessageDigest.getInstance(digestAlgorithm);
@@ -114,10 +119,10 @@ public class JarSigner {
      * Hash the data.
      * 
      * @param data
-     * @return 
+     * @return
      */
     private String hash(final byte[] data) {
-        return b64encoder.encodeBuffer(md.digest(data)).trim();
+        return new String(b64encoder.encode(md.digest(data)), UTF_8).trim();
     }
 
     /**
@@ -127,13 +132,11 @@ public class JarSigner {
      * @param output output jar file
      * @param alias signing alias in the keystore
      */
-    public void signJar(File input, File output, String alias)
-            throws IOException, KeyStoreException, NoSuchAlgorithmException,
+    public void signJar(File input, File output, String alias) throws IOException, KeyStoreException, NoSuchAlgorithmException,
             InvalidKeyException, UnrecoverableKeyException, SignatureException {
-        
         signJar(input, output, alias, null);
     }
-    
+
     /**
      * Signs a JAR, adding caller-specified attributes to the manifest's main attrs.
      * 
@@ -142,22 +145,17 @@ public class JarSigner {
      * @param alias signing alias in the keystore
      * @param additionalAttrs additional attributes to add to the manifest's main attrs (null if none)
      */
-    public void signJar(File input, File output, String alias, final Attributes additionalAttrs) 
-            throws IOException, KeyStoreException, NoSuchAlgorithmException,
-            InvalidKeyException, UnrecoverableKeyException, SignatureException {
-        final ZipOutputStream zout = new ZipOutputStream(
-            new FileOutputStream(output));
-        try {
-            signJar(input, zout, alias, additionalAttrs, Collections.EMPTY_MAP);
-        } finally {
-            zout.close();
+    public void signJar(File input, File output, String alias, Attributes additionalAttrs) throws IOException, KeyStoreException,
+            NoSuchAlgorithmException, InvalidKeyException, UnrecoverableKeyException, SignatureException {
+        try (ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(output))) {
+            signJar(input, zout, alias, additionalAttrs, emptyMap());
         }
     }
-    
+
     /**
-     * Signs a JAR, adding caller-specified attributes to the manifest's main attrs and also
-     * inserting (and signing) additional caller-supplied content as new entries in the
-     * zip output stream.
+     * Signs a JAR, adding caller-specified attributes to the manifest's main attrs and also inserting (and signing)
+     * additional caller-supplied content as new entries in the zip output stream.
+     * 
      * @param input input JAR file
      * @param zout Zip output stream created
      * @param alias signing alias in the keystore
@@ -168,12 +166,11 @@ public class JarSigner {
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeyException
      * @throws UnrecoverableKeyException
-     * @throws SignatureException 
+     * @throws SignatureException
      */
     public void signJar(File input, ZipOutputStream zout, String alias, final Attributes additionalAttrs,
-            Map<String,byte[]> additionalEntries)
-            throws IOException, KeyStoreException, NoSuchAlgorithmException,
-            InvalidKeyException, UnrecoverableKeyException, SignatureException {
+            Map<String, byte[]> additionalEntries) throws IOException, KeyStoreException, NoSuchAlgorithmException, InvalidKeyException,
+            UnrecoverableKeyException, SignatureException {
 
         JarFile jf = new JarFile(input);
         try {
@@ -185,7 +182,7 @@ public class JarSigner {
             byte[] sigFileContent = getExistingSignatureFile(jf);
             boolean signed = (sigFileContent != null);
 
-            if (!signed || ! additionalEntries.isEmpty()) {
+            if (!signed || !additionalEntries.isEmpty()) {
                 jes = jf.entries();// manifestHeader is header of META-INF/MANIFEST.MF, initialized to default
                 Manifest manifest = retrieveManifest(jf);
                 StringBuilder manifestHeader = new StringBuilder();
@@ -194,27 +191,29 @@ public class JarSigner {
                     mfAttrs.putAll(additionalAttrs);
                 }
                 appendAttributes(manifestHeader, mfAttrs);
-                
+
                 // sigFileEntries is content of META-INF/ME.SF
                 StringBuilder sigFileEntries = new StringBuilder();
                 while (jes.hasMoreElements()) {
                     JarEntry je = jes.nextElement();
                     String name = je.getName();
-                    if ((je.isDirectory() && manifest.getAttributes(name) == null)
-                            || name.equals(JarFile.MANIFEST_NAME)) {
+                    if ((je.isDirectory() && manifest.getAttributes(name) == null) || name.equals(JarFile.MANIFEST_NAME)) {
                         continue;
                     }
                     processMetadataForEntry(manifest, manifestEntries, sigFileEntries, name, readJarEntry(jf, je));
                 }
 
                 if (additionalEntries != null) {
-                    for (Map.Entry<String,byte[]> entry : additionalEntries.entrySet()) {
+                    for (Map.Entry<String, byte[]> entry : additionalEntries.entrySet()) {
                         processMetadataForEntry(manifest, manifestEntries, sigFileEntries, entry.getKey(), entry.getValue());
                     }
                 }
-                
+
                 // META-INF/ME.SF
-                StringBuilder sigFile = new StringBuilder("Signature-Version: 1.0\r\n").append(digestAlgorithm).append("-Digest-Manifest-Main-Attributes: ").append(hash(manifestHeader.toString())).append("\r\n").append("Created-By: ").append(System.getProperty("java.version")).append(" (").append(System.getProperty("java.vendor")).append(")\r\n");
+                StringBuilder sigFile = new StringBuilder("Signature-Version: 1.0\r\n").append(digestAlgorithm)
+                        .append("-Digest-Manifest-Main-Attributes: ").append(hash(manifestHeader.toString())).append("\r\n")
+                        .append("Created-By: ").append(System.getProperty("java.version")).append(" (")
+                        .append(System.getProperty("java.vendor")).append(")\r\n");
                 // Combine header and content of MANIFEST.MF, and rehash
                 manifestHeader.append(manifestEntries);
                 sigFile.append(digestAlgorithm).append("-Digest-Manifest: ").append(hash(manifestHeader.toString())).append("\r\n\r\n");
@@ -224,14 +223,13 @@ public class JarSigner {
                 manifestContent = manifestHeader.toString().getBytes();
                 sigFileContent = sigFile.toString().getBytes();
             } else {
-                manifestContent = readJarEntry(jf,
-                        jf.getJarEntry(JarFile.MANIFEST_NAME));
+                manifestContent = readJarEntry(jf, jf.getJarEntry(JarFile.MANIFEST_NAME));
             }
             X509Certificate[] certChain = null;
             PrivateKey privKey = null;
-            KeyStore[] ks = secSupp.getKeyStores();
+            KeyStore[] ks = securitySupport.getKeyStores();
             for (int i = 0; i < ks.length; i++) {
-                privKey = secSupp.getPrivateKeyForAlias(alias, i);
+                privKey = securitySupport.getPrivateKeyForAlias(alias, i);
                 if (privKey != null) {
                     Certificate[] cs = ks[i].getCertificateChain(alias);
                     certChain = new X509Certificate[cs.length];
@@ -247,33 +245,21 @@ public class JarSigner {
             sig.update(sigFileContent);
 
             // Create PKCS7 block
-            PKCS7 pkcs7 = new PKCS7(
-                    new AlgorithmId[]{AlgorithmId.get(digestAlgorithm)},
-                    new ContentInfo(sigFileContent),
-                    certChain,
-                    new SignerInfo[]{new SignerInfo(
-                        (X500Name) certChain[0].getIssuerDN(),
-                        certChain[0].getSerialNumber(),
-                        AlgorithmId.get(digestAlgorithm),
-                        AlgorithmId.get(keyAlgorithm),
-                        sig.sign())
-                    });
+            PKCS7 pkcs7 = new PKCS7(new AlgorithmId[] { AlgorithmId.get(digestAlgorithm) }, new ContentInfo(sigFileContent), certChain,
+                    new SignerInfo[] { new SignerInfo((X500Name) certChain[0].getIssuerDN(), certChain[0].getSerialNumber(),
+                            AlgorithmId.get(digestAlgorithm), AlgorithmId.get(keyAlgorithm), sig.sign()) });
             ByteArrayOutputStream bout = new ByteArrayOutputStream();
             pkcs7.encodeSignedData(bout);
 
             // Write output
-            
-            zout.putNextEntry((signed)
-                    ? getZipEntry(jf.getJarEntry(JarFile.MANIFEST_NAME))
-                    : new ZipEntry(JarFile.MANIFEST_NAME));
+
+            zout.putNextEntry((signed) ? getZipEntry(jf.getJarEntry(JarFile.MANIFEST_NAME)) : new ZipEntry(JarFile.MANIFEST_NAME));
             zout.write(manifestContent);
 
-            zout.putNextEntry(new ZipEntry("META-INF/"
-                    + alias.toUpperCase(Locale.US) + ".SF"));
+            zout.putNextEntry(new ZipEntry("META-INF/" + alias.toUpperCase(Locale.US) + ".SF"));
             zout.write(sigFileContent);
 
-            zout.putNextEntry(new ZipEntry("META-INF/"
-                    + alias.toUpperCase(Locale.US) + "." + keyAlgorithm));
+            zout.putNextEntry(new ZipEntry("META-INF/" + alias.toUpperCase(Locale.US) + "." + keyAlgorithm));
             zout.write(bout.toByteArray());
 
             jes = jf.entries();
@@ -299,11 +285,8 @@ public class JarSigner {
         }
     }
 
-    private void processMetadataForEntry(final Manifest manifest, 
-            final StringBuilder manifestEntries,
-            final StringBuilder sigFileEntries,
-            final String name, 
-            final byte[] content) {
+    private void processMetadataForEntry(final Manifest manifest, final StringBuilder manifestEntries, final StringBuilder sigFileEntries,
+            final String name, final byte[] content) {
         StringBuilder me = new StringBuilder();
         StringBuilder currentLine = new StringBuilder();
         // Create digest lines in MANIFEST.MF
@@ -319,7 +302,7 @@ public class JarSigner {
         sigFileEntries.append(digestAlgorithm).append("-Digest: ").append(hash(me.toString())).append("\r\n\r\n");
         manifestEntries.append(me);
     }
-    
+
     /**
      * Retrieve manifest from jar, create a default template if none exists.
      *
@@ -333,8 +316,7 @@ public class JarSigner {
             manifest = new Manifest();
             Attributes mainAttributes = manifest.getMainAttributes();
             mainAttributes.putValue(Attributes.Name.MANIFEST_VERSION.toString(), "1.0");
-            mainAttributes.putValue("Created-By", System.getProperty("java.version")
-                    + " (" + System.getProperty("java.vendor") + ")");
+            mainAttributes.putValue("Created-By", System.getProperty("java.version") + " (" + System.getProperty("java.vendor") + ")");
         }
         Map<String, Attributes> entriesMap = manifest.getEntries();
         for (Iterator<String> entries = entriesMap.keySet().iterator(); entries.hasNext();) {
@@ -353,14 +335,11 @@ public class JarSigner {
      * @param entry - The named entry in the manifest. null means the Main Attribute section.
      * @return manifestEntry with attributes added.
      */
-    private static StringBuilder appendAttributes(StringBuilder manifestEntry,
-            Manifest manifest, String entry) {
-        return appendAttributes(manifestEntry, (entry == null)
-                ? manifest.getMainAttributes() : manifest.getAttributes(entry));
+    private static StringBuilder appendAttributes(StringBuilder manifestEntry, Manifest manifest, String entry) {
+        return appendAttributes(manifestEntry, (entry == null) ? manifest.getMainAttributes() : manifest.getAttributes(entry));
     }
-    
-    private static StringBuilder appendAttributes(StringBuilder manifestEntry,
-            Attributes attributes) {
+
+    private static StringBuilder appendAttributes(StringBuilder manifestEntry, Attributes attributes) {
         StringBuilder line = new StringBuilder();
         if (attributes != null) {
             for (Map.Entry attr : attributes.entrySet()) {
@@ -431,8 +410,7 @@ public class JarSigner {
     }
 
     /**
-     * Get the ZipEntry for the given JarEntry. Added in order to suppress the
-     * compressedSize field as it was causing errors
+     * Get the ZipEntry for the given JarEntry. Added in order to suppress the compressedSize field as it was causing errors
      *
      * @param je The jar entry.
      * @return ZipEntry with fields populated from the JarEntry.

@@ -65,14 +65,14 @@ public class PayaraClusteredCDIEventImpl implements PayaraClusteredCDIEvent {
     private static final long serialVersionUID = 1L;
     private InstanceDescriptor id;
     private boolean loopBack = false;
-    private PayaraValueHolder payload;
+    private PayaraValueHolder<?> payload;
     private Properties props;
     private PayaraValueHolder<Set<InvocationHandler>> qualifiersPayload;
     private transient Set<InvocationHandler> qualifiers;
 
     public PayaraClusteredCDIEventImpl(InstanceDescriptor id, Serializable payload) throws IOException {
         this.id = id;
-        this.payload = new PayaraValueHolder(payload);
+        this.payload = new PayaraValueHolder<>(payload);
     }
 
     public PayaraClusteredCDIEventImpl(InstanceDescriptor id) {
@@ -179,13 +179,13 @@ public class PayaraClusteredCDIEventImpl implements PayaraClusteredCDIEvent {
                 
             }
             return result;
-        }else {
+        } else {
             return Collections.EMPTY_SET;
         }
     } 
 
     @Override
-    public void addQualifiers(Set<Annotation> add) {
+    public void addQualifiers(Set<Annotation> add) throws IOException {
         if (qualifiers == null) {
             qualifiers = new HashSet<>(add.size());
         }
@@ -198,13 +198,7 @@ public class PayaraClusteredCDIEventImpl implements PayaraClusteredCDIEvent {
                 qualifiers.add(handler);
             }
         }
-        try {
-            // We need to use a Payara Value Holder to prevent Hazelcast Serialization Errors
-            qualifiersPayload = new PayaraValueHolder(qualifiers);
-        } catch (IOException ex) {
-        }
+        // We need to use a Payara Value Holder to prevent Hazelcast Serialization Errors
+        qualifiersPayload = new PayaraValueHolder<>(qualifiers);
     }    
-    
-    
-    
 }

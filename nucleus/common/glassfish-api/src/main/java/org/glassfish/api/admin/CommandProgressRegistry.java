@@ -40,7 +40,6 @@
 package org.glassfish.api.admin;
 
 import java.util.Collection;
-import org.glassfish.api.admin.CommandProgress;
 import org.jvnet.hk2.annotations.Contract;
 
 /**

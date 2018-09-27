@@ -105,6 +105,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
         MailResource mailRes =
                 (MailResource) resource;
@@ -128,6 +129,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void deployResource(Object resource) throws Exception {
         MailResource mailResource =
                 (MailResource) resource;
@@ -155,6 +157,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
         MailResource mailRes =
                 (MailResource) resource;
@@ -167,6 +170,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void undeployResource(Object resource) throws Exception {
         MailResource mailRes =
                 (MailResource) resource;
@@ -192,6 +196,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void redeployResource(Object resource)
             throws Exception {
 
@@ -202,6 +207,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean handles(Object resource) {
         return resource instanceof MailResource;
     }
@@ -209,6 +215,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * @inheritDoc
      */
+    @Override
     public boolean supportsDynamicReconfiguration() {
         return false;
     }
@@ -216,6 +223,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * @inheritDoc
      */
+    @Override
     public Class[] getProxyClassesForDynamicReconfiguration() {
         return new Class[0];
     }
@@ -223,6 +231,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void enableResource(Object resource) throws Exception {
         deployResource(resource);
     }
@@ -230,6 +239,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void disableResource(Object resource) throws Exception {
         undeployResource(resource);
     }
@@ -239,6 +249,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
      * initialization and from mail resource deployer to handle resource events.
      *
      * @param mailResource mail resource
+     * @param resourceInfo
      */
     public void installMailResource(MailBean mailResource, ResourceInfo resourceInfo) {
 
@@ -266,6 +277,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
      * config bean into mail j2ee resource.
      *
      * @param mailResourceConfig mail-resource config bean
+     * @param resourceInfo
      * @return a new instance of j2ee mail resource
      */
     public static MailBean toMailBean(
@@ -302,6 +314,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource) {
         if (handles(resource)) {
             if (!postApplicationDeployment) {
@@ -314,6 +327,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void validatePreservedResource(Application oldApp, Application newApp, Resource resource,
                                           Resources allResources)
             throws ResourceConflictException {

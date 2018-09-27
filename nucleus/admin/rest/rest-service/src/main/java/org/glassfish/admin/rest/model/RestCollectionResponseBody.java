@@ -36,16 +36,20 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.model;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonException;
+import javax.json.JsonObject;
 import javax.ws.rs.core.UriInfo;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.composite.RestModel;
 import org.glassfish.admin.rest.utils.JsonUtil;
 
@@ -118,12 +122,12 @@ public class RestCollectionResponseBody<T extends RestModel> extends ResponseBod
     }
 
     @Override
-    protected void populateJson(JSONObject object) throws JSONException {
+    protected void populateJson(JsonObject object) throws JsonException {
         super.populateJson(object);
-        JSONArray array = new JSONArray();
+        JsonArrayBuilder array = Json.createArrayBuilder();
         for (RestModel item : getItems()) {
-            array.put(JsonUtil.getJsonObject(item));
+            array.add(JsonUtil.getJsonValue(item));
         }
-        object.put("items", array);
+        object.put("items", array.build());
     }
 }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor.jvm;
 
@@ -52,61 +53,74 @@ import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
 
-/* server.jvm.thread-system */
-// v2 mbean: com.sun.appserv:name=thread-system,type=thread-system,category=monitor,server=server
-// v3 mbean:
+/**
+ * Base class providing the MBean to monitor JVM thread system statistics
+ * <p>
+ * The MBean will of the format 
+ * {@code amx:pp=/mon/server-mon[server],type=thread-system-mon,name=jvm/thread-system}
+ * and can be enabled by turning the Jvm monitoring level in the admin console to LOW
+ * @since v2
+ */
 @AMXMetadata(type="thread-system-mon", group="monitoring")
 @ManagedObject
 @Description( "JVM Thread System Statistics" )
 public class JVMThreadSystemStatsProvider {
     
-    private ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
+    private final ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
     
-    private StringStatisticImpl allThreadIds = new StringStatisticImpl(
+    private final StringStatisticImpl allThreadIds = new StringStatisticImpl(
             "LiveThreads", "String", "Returns all live thread IDs" );
-    private CountStatisticImpl currentThreadCpuTime = new CountStatisticImpl(
+    private final CountStatisticImpl currentThreadCpuTime = new CountStatisticImpl(
             "CurrentThreadCpuTime", StatisticImpl.UNIT_NANOSECOND,
                 "Returns the total CPU time for the current thread in nanoseconds" );
-    private CountStatisticImpl currentThreadUserTime = new CountStatisticImpl(
+    private final CountStatisticImpl currentThreadUserTime = new CountStatisticImpl(
             "CurrentThreadUserTime", StatisticImpl.UNIT_NANOSECOND,
                 "Returns the CPU time that the current thread has executed in user mode in nanoseconds" );
-    private CountStatisticImpl daemonThreadCount = new CountStatisticImpl(
+    private final CountStatisticImpl daemonThreadCount = new CountStatisticImpl(
             "DaemonThreadCount", StatisticImpl.UNIT_COUNT,
                 "Returns the current number of live daemon threads" );
-    private StringStatisticImpl deadlockedThreads = new StringStatisticImpl(
+    private final StringStatisticImpl deadlockedThreads = new StringStatisticImpl(
             "DeadlockedThreads", "String",
                 "Finds cycles of threads that are in deadlock waiting to acquire object monitors or ownable synchronizers" );
-    private StringStatisticImpl monitorDeadlockedThreads = new StringStatisticImpl(
+    private final StringStatisticImpl monitorDeadlockedThreads = new StringStatisticImpl(
             "MonitorDeadlockedThreads", "String",
                 "Finds cycles of threads that are in deadlock waiting to acquire object monitors" );
-    private CountStatisticImpl peakThreadCount = new CountStatisticImpl(
+    private final CountStatisticImpl peakThreadCount = new CountStatisticImpl(
             "PeakThreadCount", StatisticImpl.UNIT_COUNT,
                 "Returns the peak live thread count since the Java virtual machine started or peak was reset" );
-    private CountStatisticImpl threadCount = new CountStatisticImpl(
+    private final CountStatisticImpl threadCount = new CountStatisticImpl(
             "ThreadCount", StatisticImpl.UNIT_COUNT,
                 "Returns the current number of live threads including both daemon and non-daemon threads" );
-    private CountStatisticImpl totalStartedThreadCount = new CountStatisticImpl(
+    private final CountStatisticImpl totalStartedThreadCount = new CountStatisticImpl(
             "TotalStartedThreadCount", StatisticImpl.UNIT_COUNT,
                 "Returns the total number of threads created and also started since the Java virtual machine started" );
 
+    /**
+     * Returns all live thread IDs
+     * @return a {@link StringStatistic} with a comma separated list of all live thread IDs
+     */
     @ManagedAttribute(id="allthreadids")
     @Description( "Returns all live thread IDs" )
     public StringStatistic getAllThreadIds() {
         long[] ids = this.threadBean.getAllThreadIds();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         boolean first = true;
         for (long id : ids) {
-            if(first)
+            if(first) {
                 first = false;
-            else
+            } else {
                 sb.append(',');
-
+            }
             sb.append(id);
         }
         this.allThreadIds.setCurrent(sb.toString());
         return allThreadIds;
     }
 
+    /**
+     * Returns the total CPU time for the current thread in nanoseconds
+     * @return a {@link CountStatistic} with the time in nanoseconds
+     */
     @ManagedAttribute(id="currentthreadcputime")
     @Description( "Returns the total CPU time for the current thread in nanoseconds" )
     public CountStatistic getCurrentThreadCpuTime() {
@@ -114,6 +128,10 @@ public class JVMThreadSystemStatsProvider {
         return this.currentThreadCpuTime;
     }
 
+    /**
+     * Returns the CPU time that the current thread has executed in user mode in nanoseconds
+     * @return a {@link CountStatistic} with the time in nanoseconds
+     */
     @ManagedAttribute(id="currentthreadusertime")
     @Description( "Returns the CPU time that the current thread has executed in user mode in nanoseconds" )
     public CountStatistic getCurrentThreadUserTime() {
@@ -121,6 +139,10 @@ public class JVMThreadSystemStatsProvider {
         return this.currentThreadUserTime;
     }
 
+    /**
+     * Returns the current number of live daemon threads
+     * @return a {@link CountStatistic} with thenumber of threads
+     */
     @ManagedAttribute(id="daemonthreadcount")
     @Description( "Returns the current number of live daemon threads" )
     public CountStatistic getDaemonThreadCount() {
@@ -128,6 +150,11 @@ public class JVMThreadSystemStatsProvider {
         return this.daemonThreadCount;
     }
 
+    /**
+     * Finds cycles of threads that are in deadlock waiting to acquire object monitors or ownable synchronizers
+     * @return A {@link StringStatistic} with a comma separated list of deadlocked threads or the string "{@code None of the threads are deadlocked.}"
+     * if there are no deadlocked threads
+     */
     @ManagedAttribute(id="deadlockedthreads")
     @Description( "Finds cycles of threads that are in deadlock waiting to acquire object monitors or ownable synchronizers" )
     public StringStatistic getDeadlockedThreads() {
@@ -135,7 +162,7 @@ public class JVMThreadSystemStatsProvider {
         if (threads == null) {
             this.deadlockedThreads.setCurrent("None of the threads are deadlocked.");
         } else {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (long thread : threads) {
                 sb.append(thread);
                 sb.append(',');
@@ -145,6 +172,12 @@ public class JVMThreadSystemStatsProvider {
         return deadlockedThreads;
     }
 
+    /**
+     * Finds cycles of threads that are in deadlock waiting to acquire object monitors
+     * @return A {@link StringStatistic} with a comma separated list of deadlocked threads or the string
+     * "{@code None of the threads are monitor deadlocked.}"
+     * if there are no deadlocked threads
+     */
     @ManagedAttribute(id="monitordeadlockedthreads")
     @Description( "Finds cycles of threads that are in deadlock waiting to acquire object monitors" )
     public StringStatistic getMonitorDeadlockedThreads() {
@@ -152,7 +185,7 @@ public class JVMThreadSystemStatsProvider {
         if (threads == null) {
             this.monitorDeadlockedThreads.setCurrent("None of the threads are monitor deadlocked.");
         } else {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (long thread : threads) {
                 sb.append(thread);
                 sb.append(',');
@@ -162,6 +195,10 @@ public class JVMThreadSystemStatsProvider {
         return this.monitorDeadlockedThreads;
     }
 
+    /**
+     * Returns the peak live thread count since the Java virtual machine started or peak was reset
+     * @return a {@link CountStatistic} with the highest number of threads
+     */
     @ManagedAttribute(id="peakthreadcount")
     @Description( "Returns the peak live thread count since the Java virtual machine started or peak was reset" )
     public CountStatistic getPeakThreadCount() {
@@ -169,6 +206,10 @@ public class JVMThreadSystemStatsProvider {
         return this.peakThreadCount;
     }
 
+    /**
+     * Returns the current number of live threads including both daemon and non-daemon threads
+     * @return A {@link CountStatistic} with the current number of threads
+     */
     @ManagedAttribute(id="threadcount")
     @Description( "Returns the current number of live threads including both daemon and non-daemon threads" )
     public CountStatistic getThreadCount() {
@@ -176,6 +217,10 @@ public class JVMThreadSystemStatsProvider {
         return threadCount;
     }
 
+    /**
+     * Returns the total number of threads created and also started since the Java virtual machine started
+     * @return a {@link CountStatistic} with the total number of threads
+     */
     @ManagedAttribute(id="totalstartedthreadcount")
     @Description( "Returns the total number of threads created and also started since the Java virtual machine started" )
     public CountStatistic getTotalStartedThreadCount() {

@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.osgi-platforms</groupId>
         <artifactId>osgi-platforms</artifactId>
-        <version>5.0.0.173-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
     </parent>
 
     <artifactId>osgi-cli-interactive</artifactId>
@@ -78,8 +78,6 @@
         <dependency>
             <groupId>jline</groupId>
             <artifactId>jline</artifactId>
-            <scope>provided</scope>
-            <optional>true</optional>
         </dependency>
         <dependency> <!-- for FindBugs -->
             <groupId>org.fusesource.hawtjni</groupId>
@@ -104,11 +102,6 @@
                         <configuration>
                             <outputDirectory>${project.build.outputDirectory}</outputDirectory>
                             <artifactItems>
-                                <artifactItem>
-                                    <groupId>jline</groupId>
-                                    <artifactId>jline</artifactId>
-                                    <overWrite>true</overWrite>
-                                </artifactItem>
                                 <artifactItem>
                                     <groupId>org.glassfish.docs.man</groupId>
                                     <artifactId>osgi-cli-interactive-manpage</artifactId>

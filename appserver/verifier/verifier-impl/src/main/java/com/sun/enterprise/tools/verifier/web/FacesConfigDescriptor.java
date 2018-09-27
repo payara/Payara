@@ -54,6 +54,8 @@ import java.net.URI;
 
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
+
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.NodeList;
@@ -84,7 +86,9 @@ public class FacesConfigDescriptor {
     
     private void readFacesConfigDocument(WebBundleDescriptor webd) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        // TODO: Why are we turning off validation here?
         factory.setValidating(false);
+        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         DocumentBuilder builder = factory.newDocumentBuilder();
         ModuleDescriptor moduleDesc = webd.getModuleDescriptor();
         String archBase = context.getAbstractArchive().getURI().toString();

@@ -54,9 +54,14 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
+/**
+ * Service to hold all resources
+ * <p>
+ * This can be started or stopped
+ */
 @Service
 @PerLookup
-public class ResourcesApplication implements ApplicationContainer{
+public class ResourcesApplication implements ApplicationContainer {
 
     private static final Logger _logger = LogDomains.getLogger(ResourcesApplication.class, LogDomains.RSR_LOGGER);
     private String applicationName;
@@ -86,11 +91,13 @@ public class ResourcesApplication implements ApplicationContainer{
         return applicationName;
     }
 
+    @Override
     public Object getDescriptor() {
         //TODO return all resources-xml ?
         return null;  
     }
 
+    @Override
     public boolean start(ApplicationContext startupContext) throws Exception {
         DeploymentContext dc = (DeploymentContext)startupContext;
         final DeployCommandParameters deployParams = dc.getCommandParameters(DeployCommandParameters.class);
@@ -108,24 +115,28 @@ public class ResourcesApplication implements ApplicationContainer{
         return true;
     }
 
+    @Override
     public boolean stop(ApplicationContext stopContext) {
         asrManager.undeployResources(applicationName);
         return true;
     }
 
+    @Override
     public boolean suspend() {
         return true;
     }
 
+    @Override
     public boolean resume() throws Exception {
         return true;
     }
 
+    @Override
     public ClassLoader getClassLoader() {
         //TODO return loader
         return null;
     }
-    private void  debug(String message){
+    private void debug(String message){
         if(_logger.isLoggable(Level.FINEST)) {
             _logger.finest("[ResourcesApplication] " + message);
         }

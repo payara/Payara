@@ -36,19 +36,24 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foudation and/or affiliates
  */
 package org.glassfish.admin.rest.provider;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonException;
+import javax.json.JsonObjectBuilder;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.ext.Provider;
 
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.composite.RestCollection;
 import org.glassfish.admin.rest.composite.RestModel;
@@ -56,6 +61,7 @@ import org.glassfish.admin.rest.composite.metadata.RestModelMetadata;
 import org.glassfish.admin.rest.utils.JsonUtil;
 
 /**
+ * @since 4.0
  * @author: jdlee
  */
 @Provider
@@ -65,6 +71,11 @@ public class RestCollectionProvider extends BaseProvider<RestCollection> {
         super(RestCollection.class, Constants.MEDIA_TYPE_JSON_TYPE);
     }
 
+    /**
+     * Converts a {@link RestCollection} into a Json object and then returns it as as String representation.
+     * @param proxy
+     * @return 
+     */
     @Override
     public String getContent(RestCollection proxy) {
         StringBuilder sb = new StringBuilder();
@@ -73,29 +84,29 @@ public class RestCollectionProvider extends BaseProvider<RestCollection> {
         boolean wrapObject = ((wrapObjectHeader != null) && (wrapObjectHeader.size() > 0));
         boolean skipMetadata = ((skipMetadataHeader != null) && (skipMetadataHeader.get(0).equalsIgnoreCase("true")));
 
-        JSONArray models = new JSONArray();
-        JSONArray metadata = new JSONArray();
+        JsonArrayBuilder models = Json.createArrayBuilder();
+        JsonArrayBuilder metadata = Json.createArrayBuilder();
         for (Map.Entry<RestModelMetadata, RestModel> entry : (Set<Map.Entry<RestModelMetadata, RestModel>>)proxy.entrySet()) {
             try {
-                models.put(JsonUtil.getJsonObject(entry.getValue()));
+                models.add(JsonUtil.getJsonValue(entry.getValue()));
 
                 RestModelMetadata md = entry.getKey();
-                JSONObject mdo = new JSONObject();
-                mdo.put("id", md.getId());
-                metadata.put(mdo);
-            } catch (JSONException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                JsonObjectBuilder mdo = Json.createObjectBuilder();
+                mdo.add("id", md.getId());
+                metadata.add(mdo.build());
+            } catch (JsonException e) {
+                Logger.getLogger(RestCollectionProvider.class.getName()).log(Level.SEVERE,"Unable to parse create Json",e);
             }
         }
-        JSONObject response = new JSONObject();
+        JsonObjectBuilder response = Json.createObjectBuilder();
         try {
-            response.put("items", models);
+            response.add("items", models.build());
             if (!skipMetadata) {
-                response.put("metadata", metadata);
+                response.add("metadata", metadata.build());
             }
-            sb.append(response.toString(getFormattingIndentLevel()));
-        } catch (JSONException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            sb.append(response.toString());
+        } catch (JsonException e) {
+            Logger.getLogger(RestCollectionProvider.class.getName()).log(Level.SEVERE,"Unable to parse create Json",e);
         }
 
         return (wrapObject ? " { items : " : "") + sb.toString() + (wrapObject ? "}" : "");

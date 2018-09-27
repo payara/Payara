@@ -58,12 +58,12 @@ public class ExtensionBean implements Extension {
 
     public static List<ProcessInjectionTarget> l = new ArrayList<ProcessInjectionTarget>();
 
-    public static boolean bbd = false;
-    public static boolean abd = false;
-    public static boolean adv = false;
-    public static boolean pat = false;
-    public static boolean pit = false;
-    public static boolean pmb = false;
+    public static boolean bbd;
+    public static boolean abd;
+    public static boolean adv;
+    public static boolean pat;
+    public static boolean pit;
+    public static boolean pmb;
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery event) {
         bbd = true;
@@ -77,13 +77,13 @@ public class ExtensionBean implements Extension {
         adv = true;
     }
 
-    void processAnnotatedType(@Observes ProcessAnnotatedType<?> _) {
+    void processAnnotatedType(@Observes ProcessAnnotatedType<?> event) {
         pat = true;
     }
 
-    void processInjectionTarget(@Observes ProcessInjectionTarget<?> _pit) {
+    void processInjectionTarget(@Observes ProcessInjectionTarget<?> event) {
         pit = true;
-        l.add(_pit);
+        l.add(event);
     }
 
     void processBean(@Observes ProcessManagedBean<?> pb) {

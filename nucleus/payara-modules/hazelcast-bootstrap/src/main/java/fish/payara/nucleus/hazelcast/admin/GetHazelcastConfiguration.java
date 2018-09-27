@@ -1,19 +1,41 @@
 /*
-
- DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
- Copyright (c) 2014-2017 Payara Foundation. All rights reserved.
-
- The contents of this file are subject to the terms of the Common Development
- and Distribution License("CDDL") (collectively, the "License").  You
- may not use this file except in compliance with the License.  You can
- obtain a copy of the License at
- https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- or packager/legal/LICENSE.txt.  See the License for the specific
- language governing permissions and limitations under the License.
-
- When distributing the software, include this License Header Notice in each
- file and include the License file at packager/legal/LICENSE.txt.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2014-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
  */
 package fish.payara.nucleus.hazelcast.admin;
 
@@ -21,6 +43,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.nucleus.hazelcast.HazelcastConfigSpecificConfiguration;
 import fish.payara.nucleus.hazelcast.HazelcastRuntimeConfiguration;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,18 +59,19 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
+/**
+ * Asadmin command to get the current configuration of Hazelcast
+ * @since 4.1.151
+ */
 @Service(name = "get-hazelcast-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("get.hazelcast.configuration")
 @ExecuteOn(value = {RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.GET,
@@ -56,10 +80,14 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetHazelcastConfiguration implements AdminCommand {
     @Inject
+    private Domain domain;
+    
+    @Inject
     private Target targetUtil;
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
+
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -71,37 +99,70 @@ public class GetHazelcastConfiguration implements AdminCommand {
             return;
         }
         
-        HazelcastRuntimeConfiguration runtimeConfiguration = config.getExtensionByType(HazelcastRuntimeConfiguration.class);
+        HazelcastConfigSpecificConfiguration nodeConfiguration = config.getExtensionByType(HazelcastConfigSpecificConfiguration.class);
+       
+        HazelcastRuntimeConfiguration runtimeConfiguration = domain.getExtensionByType(HazelcastRuntimeConfiguration.class);
         final ActionReport actionReport = context.getActionReport();
-        String headers[] = {"Configuration File","Enabled","Start Port","MulticastGroup","MulticastPort","JNDIName","Lite Member","Cluster Name","Cluster Password", "License Key", "Host Aware Paritioning"};
-        ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[11];
-        values[0] = runtimeConfiguration.getHazelcastConfigurationFile();
-        values[1] = runtimeConfiguration.getEnabled();
-        values[2] = runtimeConfiguration.getStartPort();
-        values[3] = runtimeConfiguration.getMulticastGroup();
-        values[4] = runtimeConfiguration.getMulticastPort();
-        values[5] = runtimeConfiguration.getJNDIName();
-        values[6] = runtimeConfiguration.getLite();
-        values[7] = runtimeConfiguration.getClusterGroupName();
-        values[8] = runtimeConfiguration.getClusterGroupPassword();
-        values[9] = runtimeConfiguration.getLicenseKey();
-        values[10] = runtimeConfiguration.getHostAwarePartitioning();
-        columnFormatter.addRow(values);
+        StringBuilder builder = new StringBuilder();
+        String headers[] = {"Property Name","PropertyValue","Scope"};
         
-        Map<String, Object> map = new HashMap<>(10);
+        ColumnFormatter columnFormatter = new ColumnFormatter(headers);        
+        columnFormatter.addRow(new Object[]{"Configuration File",runtimeConfiguration.getHazelcastConfigurationFile(),"Domain"});
+        columnFormatter.addRow(new Object[]{"Interfaces",runtimeConfiguration.getInterface(),"Domain"});
+        columnFormatter.addRow(new Object[]{"Start Port",runtimeConfiguration.getStartPort(),"Domain"});
+        columnFormatter.addRow(new Object[]{"Cluster Name",runtimeConfiguration.getClusterGroupName(),"Domain"});
+        columnFormatter.addRow(new Object[]{"Cluster Password",runtimeConfiguration.getClusterGroupPassword(),"Domain"});
+        columnFormatter.addRow(new Object[]{"License Key",runtimeConfiguration.getLicenseKey(),"Domain"});
+        columnFormatter.addRow(new Object[]{"Host Aware Partitioning",runtimeConfiguration.getHostAwarePartitioning(),"Domain"});
+        columnFormatter.addRow(new Object[]{"DAS Public Address",runtimeConfiguration.getDASPublicAddress(),"Domain"});
+        columnFormatter.addRow(new Object[]{"DAS Bind Address",runtimeConfiguration.getDASBindAddress(),"Domain"});
+        columnFormatter.addRow(new Object[]{"DAS Port",runtimeConfiguration.getDasPort(),"Domain"});
+        columnFormatter.addRow(new Object[]{"Cluster Mode",runtimeConfiguration.getDiscoveryMode(),"Domain"});
+        columnFormatter.addRow(new Object[]{"Tcpip Members",runtimeConfiguration.getTcpipMembers(),"Domain"});
+        columnFormatter.addRow(new Object[]{"MulticastGroup",runtimeConfiguration.getMulticastGroup(),"Domain"});
+        columnFormatter.addRow(new Object[]{"MulticastPort",runtimeConfiguration.getMulticastPort(),"Domain"});
+        columnFormatter.addRow(new Object[]{"Enabled",nodeConfiguration.getEnabled(),"Config"});
+        columnFormatter.addRow(new Object[]{"JNDIName",nodeConfiguration.getJNDIName(),"Config"});
+        columnFormatter.addRow(new Object[]{"Cache Manager JNDI Name",nodeConfiguration.getCacheManagerJNDIName(),"Config"});
+        columnFormatter.addRow(new Object[]{"Caching Provider JNDI Name",nodeConfiguration.getCachingProviderJNDIName(),"Config"});
+        columnFormatter.addRow(new Object[]{"Lite Member",nodeConfiguration.getLite(),"Config"});
+        columnFormatter.addRow(new Object[]{"Member Name",nodeConfiguration.getMemberName(),"Config"});
+        columnFormatter.addRow(new Object[]{"Member Group",nodeConfiguration.getMemberGroup(),"Config"});
+        columnFormatter.addRow(new Object[]{"Executor Pool Size",nodeConfiguration.getExecutorPoolSize(),"Config"});
+        columnFormatter.addRow(new Object[]{"Executor Queue Capacity",nodeConfiguration.getExecutorQueueCapacity(),"Config"});
+        columnFormatter.addRow(new Object[]{"Scheduled Executor Pool Size",nodeConfiguration.getScheduledExecutorPoolSize(),"Config"});
+        columnFormatter.addRow(new Object[]{"Scheduled Executor Queue Capacity",nodeConfiguration.getScheduledExecutorQueueCapacity(),"Config"});
+        columnFormatter.addRow(new Object[]{"Public Address",nodeConfiguration.getPublicAddress(),"Config"});
+        
+        Map<String, Object> map = new HashMap<>(26);
         Properties extraProps = new Properties();
-        map.put("hazelcastConfigurationFile", values[0]);
-        map.put("enabled", values[1]);
-        map.put("startPort", values[2]);
-        map.put("multicastGroup", values[3]);
-        map.put("multicastPort", values[4]);
-        map.put("jndiName", values[5]);
-        map.put("lite", values[6]);
-        map.put("clusterName", values[7]);
-        map.put("clusterPassword", values[8]);
-        map.put("licenseKey", values[9]);
-        map.put("hostAwareParitioning", values[10]);
+        map.put("hazelcastConfigurationFile", runtimeConfiguration.getHazelcastConfigurationFile());
+        map.put("enabled", nodeConfiguration.getEnabled());
+        map.put("startPort", runtimeConfiguration.getStartPort());
+        map.put("multicastGroup", runtimeConfiguration.getMulticastGroup());
+        map.put("multicastPort", runtimeConfiguration.getMulticastPort());
+        map.put("jndiName", nodeConfiguration.getJNDIName());
+        map.put("lite", nodeConfiguration.getLite());
+        map.put("clusterName", runtimeConfiguration.getClusterGroupName());
+        map.put("clusterPassword", runtimeConfiguration.getClusterGroupPassword());
+        map.put("licenseKey", runtimeConfiguration.getLicenseKey());
+        map.put("hostAwarePartitioning", runtimeConfiguration.getHostAwarePartitioning());
+        map.put("dasPublicAddress", runtimeConfiguration.getDASPublicAddress());
+        map.put("dasBindAddress", runtimeConfiguration.getDASBindAddress());
+        map.put("dasPort", runtimeConfiguration.getDasPort());
+        map.put("tcpipMembers", runtimeConfiguration.getTcpipMembers());
+        map.put("clusterMode", runtimeConfiguration.getDiscoveryMode());
+        map.put("memberName", nodeConfiguration.getMemberName());
+        map.put("memberGroup", nodeConfiguration.getMemberGroup());
+        map.put("interfaces", runtimeConfiguration.getInterface());
+        map.put("cacheManagerJndiName", nodeConfiguration.getCacheManagerJNDIName());
+        map.put("cachingProviderJndiName", nodeConfiguration.getCachingProviderJNDIName());
+        map.put("executorPoolSize", nodeConfiguration.getExecutorPoolSize());
+        map.put("executorQueueCapacity", nodeConfiguration.getExecutorQueueCapacity());
+        map.put("scheduledExecutorPoolSize", nodeConfiguration.getScheduledExecutorPoolSize());
+        map.put("scheduledExecutorQueueCapacity", nodeConfiguration.getScheduledExecutorQueueCapacity());
+        map.put("publicAddress", nodeConfiguration.getPublicAddress());
+
         extraProps.put("getHazelcastConfiguration",map);
                 
         actionReport.setExtraProperties(extraProps);

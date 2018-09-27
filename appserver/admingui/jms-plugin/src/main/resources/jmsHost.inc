@@ -99,14 +99,14 @@
             <sun:textField id="AdminUser" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.edJmsHost.adminUser']}"  text="#{pageSession.valueMap['adminUserName']}" styleClass="required"  required="#{true}" />
         </sun:property>
         <sun:property id="newPasswordProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.edJmsHost.adminPwdLabel}" helpText="$resource{i18njms.edJmsHost.adminPwdHelp}">
-        <sun:passwordField id="NewPassword" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.edJmsHost.adminPwd']}"  text="#{pageSession.valueMap['adminPassword']}" styleClass="required"  required="#{true}">
+        <sun:passwordField id="NewPassword" name="password" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.edJmsHost.adminPwd']}"  text="#{pageSession.valueMap['adminPassword']}" styleClass="required"  required="#{true}">
              <!afterCreate
                 getClientId(component="$this{component}" clientId=>$page{ps1});
             />
         </sun:passwordField>
         </sun:property>
         <sun:property id="confirmPasswordProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.edJmsHost.ConfirmNewPassword}">
-            <sun:passwordField id="ConfirmPassword"  columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.server.ConfirmNewPassword']}"  text="#{pageSession.valueMap['adminPassword']}" styleClass="required" required="#{true}"  >
+            <sun:passwordField id="ConfirmPassword" name="password" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.server.ConfirmNewPassword']}"  text="#{pageSession.valueMap['adminPassword']}" styleClass="required" required="#{true}"  >
                 <!afterCreate
                     getClientId(component="$this{component}" clientId=>$page{ps2});
                 />

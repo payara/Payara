@@ -22,6 +22,9 @@
     <sun:tableColumn headerText="Instance Name" sort="instanceName" rowHeader="$boolean{true}" id="col1">
         <staticText id="instanceName" value="#{td.value.instanceName}" />
     </sun:tableColumn>
+    <sun:tableColumn headerText="Group" sort="instanceGroup" rowHeader="$boolean{false}" id="col2">
+        <staticText id="instanceGroup" value="#{td.value.instanceGroup}" />
+    </sun:tableColumn>
     <sun:tableColumn headerText="Host Name" sort="hostName" rowHeader="$boolean{true}" id="col3">
         <staticText id="hostName" value="#{td.value.hostName}" />
     </sun:tableColumn>

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -46,12 +46,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.inject.Provider;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.DELETE;
@@ -70,7 +66,6 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.Dom;
 
 import static org.glassfish.admin.rest.utils.Util.decode;
@@ -103,10 +98,10 @@ public abstract class LeafResource extends AbstractResource {
         this.parent = parent;
         this.tagName = tagName;
         entity = new LeafContent();
-        entity.name = tagName;//parent.leafElements(tagName);
-        entity.value = parent.leafElement(tagName);
-
-
+        entity.name = tagName;
+        synchronized (parent) {
+            entity.value = parent.leafElement(tagName);
+        }
     }
 
     @GET

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jacc.provider;
 
 import java.security.Principal;
@@ -56,24 +56,17 @@ public interface JACCRoleMapper {
 
     Set<String> getDeclaredRoles(String pcid);
 
-    boolean isSubjectInRole(String pcid, Subject s, String roleName)
-            throws SecurityException;
+    boolean isSubjectInRole(String pcid, Subject s, String roleName) throws SecurityException;
 
-    boolean arePrincipalsInRole(String pcid, Principal[] principals,
-            String roleName) throws SecurityException;
+    boolean arePrincipalsInRole(String pcid, Principal[] principals, String roleName) throws SecurityException;
 
-    Set<String> getRolesOfSubject(String pcid, Subject s)
-            throws SecurityException, UnsupportedOperationException;
+    Set<String> getRolesOfSubject(String pcid, Subject s) throws SecurityException, UnsupportedOperationException;
 
-    Set<String> getRolesOfPrincipals(String pcid, Principal[] principals)
-            throws SecurityException, UnsupportedOperationException;
+    Set<String> getRolesOfPrincipals(String pcid, Principal[] principals) throws SecurityException, UnsupportedOperationException;
 
-    BitSet getRolesOfSubject(String pcid, String roles[], Subject s)
-            throws SecurityException, UnsupportedOperationException;
+    BitSet getRolesOfSubject(String pcid, String roles[], Subject s) throws SecurityException, UnsupportedOperationException;
 
-    BitSet getRolesOfPrincipals(String pcid, String roles[], Principal[] principals)
-            throws SecurityException, UnsupportedOperationException;
+    BitSet getRolesOfPrincipals(String pcid, String roles[], Principal[] principals) throws SecurityException, UnsupportedOperationException;
 
-    Set<Principal> getPrincipalsInRole(String pcid, String roleName)
-            throws SecurityException, UnsupportedOperationException;
+    Set<Principal> getPrincipalsInRole(String pcid, String roleName) throws SecurityException, UnsupportedOperationException;
 }

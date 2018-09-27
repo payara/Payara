@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.v3.common;
@@ -73,10 +75,17 @@ public abstract class ActionReporter extends ActionReport {
     public ActionReporter() {
     }
 
+    /**
+     * Sets the exit code of the report to failure
+     */
     public void setFailure() {
         setActionExitCode(ExitCode.FAILURE);
     }
     
+    /**
+     * 
+     * @return 
+     */
     public boolean isFailure() {
         return getActionExitCode() == ExitCode.FAILURE;
     }

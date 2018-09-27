@@ -39,22 +39,22 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-Portions Copyright [2016, 2017] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.0.0.173-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>glassfish-web</artifactId>
     <name>Glassfish Web Container Package</name>
     <packaging>distribution-fragment</packaging>
-    
+
     <description>This pom describes how to assemble the GlassFish Web Container  package</description>
 
     <build>
@@ -86,7 +86,7 @@ Portions Copyright [2016, 2017] [Payara Foundation and/or its affiliates]
         <profile>
             <id>ips</id>
             <activation>
-                <activeByDefault>false</activeByDefault>  
+                <activeByDefault>false</activeByDefault>
             </activation>
             <build>
                 <plugins>
@@ -107,7 +107,7 @@ Portions Copyright [2016, 2017] [Payara Foundation and/or its affiliates]
                                 <id>process-step5</id>
                                 <goals>
                                     <goal>exec</goal>
-                                </goals>                            
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
@@ -122,83 +122,113 @@ Portions Copyright [2016, 2017] [Payara Foundation and/or its affiliates]
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>jdk8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <dependencies>
+                <!-- Soteria / Java EE Security
+                     Required in Payara 5, but optional for JDK 8+ builds in Payara 4
+                -->
+                <dependency>
+                    <groupId>javax.security.enterprise</groupId>
+                    <artifactId>javax.security.enterprise-api</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.glassfish.soteria</groupId>
+                    <artifactId>javax.security.enterprise</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>fish.payara.security</groupId>
+                    <artifactId>oauth2-client-integration</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>fish.payara.security</groupId>
+                    <artifactId>openid-client-integration</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
     </profiles>
-    
+
     <dependencies>
-	<dependency>
+        <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>gf-web-connector</artifactId>
-	    <version>${project.version}</version>
+            <version>${project.version}</version>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>jsf-connector</artifactId>
-	    <version>${project.version}</version>
+            <version>${project.version}</version>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>jspcaching-connector</artifactId>
-	    <version>${project.version}</version>
+            <version>${project.version}</version>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>jstl-connector</artifactId>
-	    <version>${project.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>jersey-mvc-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>stats77</artifactId>
-	    <version>${project.version}</version>
+            <version>${project.version}</version>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>web-cli</artifactId>
-	    <version>${project.version}</version>
+            <version>${project.version}</version>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>web-core</artifactId>
-	    <version>${project.version}</version>
+            <version>${project.version}</version>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>web-embed-api</artifactId>
-	    <version>${project.version}</version>
+            <version>${project.version}</version>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>web-glue</artifactId>
-	    <version>${project.version}</version>
+            <version>${project.version}</version>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>web-gui-plugin-common</artifactId>
-	    <version>${project.version}</version>
+            <version>${project.version}</version>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>web-ha</artifactId>
-	    <version>${project.version}</version>
+            <version>${project.version}</version>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>web-naming</artifactId>
-	    <version>${project.version}</version>
+            <version>${project.version}</version>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>web-sse</artifactId>
-	    <version>${project.version}</version>
+            <version>${project.version}</version>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>war-util</artifactId>
-	    <version>${project.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet.jsp</groupId>
@@ -207,7 +237,7 @@ Portions Copyright [2016, 2017] [Payara Foundation and/or its affiliates]
         <dependency>
             <groupId>org.glassfish.web</groupId>
             <artifactId>javax.servlet.jsp</artifactId>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>javax.servlet.jsp.jstl</groupId>
             <artifactId>javax.servlet.jsp.jstl-api</artifactId>
@@ -216,7 +246,7 @@ Portions Copyright [2016, 2017] [Payara Foundation and/or its affiliates]
             <groupId>org.glassfish.web</groupId>
             <artifactId>javax.servlet.jsp.jstl</artifactId>
         </dependency>
-        
+
         <!-- Java EE Security -->
         <dependency>
             <groupId>javax.security.enterprise</groupId>
@@ -226,7 +256,7 @@ Portions Copyright [2016, 2017] [Payara Foundation and/or its affiliates]
             <groupId>org.glassfish.soteria</groupId>
             <artifactId>javax.security.enterprise</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.el</artifactId>
@@ -234,11 +264,11 @@ Portions Copyright [2016, 2017] [Payara Foundation and/or its affiliates]
         <dependency>
             <groupId>javax.websocket</groupId>
             <artifactId>javax.websocket-api</artifactId>
-        </dependency>       
+        </dependency>
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
             <artifactId>tyrus-core</artifactId>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
             <artifactId>tyrus-server</artifactId>
@@ -279,4 +309,3 @@ Portions Copyright [2016, 2017] [Payara Foundation and/or its affiliates]
         </dependency>
     </dependencies>
 </project>
-

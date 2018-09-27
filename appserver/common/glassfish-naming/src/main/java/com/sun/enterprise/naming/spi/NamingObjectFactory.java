@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.naming.spi;
@@ -44,9 +46,17 @@ import org.jvnet.hk2.annotations.Contract;
 
 import org.glassfish.api.naming.NamingObjectProxy;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-
+/**
+ *  Interface for building proxy objects that can be bound to GlassfishNamingManager. Concrete
+ *  implementation of this contract will take appropriate action when
+ *  the proxy is looked up. Typically, this can be used to lazily
+ *  instantiate an Object at lookup time than at bind time.
+ *
+ * Again, it is up to the implementation to cache the result (inside
+ *  the proxy implementation so that subsequent lookup can obtain the
+ *  same cached object. Or the implementation can choose to return
+ *  different object every time.
+ */
 @Contract
 public interface NamingObjectFactory
     extends NamingObjectProxy {

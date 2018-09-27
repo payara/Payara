@@ -36,11 +36,15 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.testing;
 
+import javax.json.JsonValue;
+
 public abstract class Value {
-  abstract Object getJsonValue() throws Exception;
+  abstract JsonValue getJsonValue() throws Exception;
   abstract void print(IndentingStringBuffer sb);
 }

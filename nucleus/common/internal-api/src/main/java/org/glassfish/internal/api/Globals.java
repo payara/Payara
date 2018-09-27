@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.internal.api;
@@ -52,6 +54,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
+ * Global class for storing the service locator for all hk2 services
+ * <p>
  * Very sensitive class, anything stored here cannot be garbage collected
  *
  * @author Jerome Dochez
@@ -74,26 +78,60 @@ public class Globals {
         defaultHabitat = habitat;
     }
 
+    /**
+     * Gets the default service locator
+     * <p>
+     * This method is identical to {@link #getDefaultBaseServiceLocator}
+     * @return 
+     */
     public static ServiceLocator getDefaultBaseServiceLocator() {
     	return getDefaultHabitat();
     }
     
+    /**
+     * Gets the default service locator
+     * <p>
+     * This method is identical to {@link #getDefaultBaseServiceLocator}
+     * @return 
+     */
     public static ServiceLocator getDefaultHabitat() {
         return defaultHabitat;
     }
 
+    /**
+     * Gets the service from the default service locator with the specified type
+     * <p>
+     * See {@link ServiceLocator#getService(java.lang.Class, java.lang.annotation.Annotation...) }
+     * @param <T>
+     * @param type
+     * @return 
+     */
     public static <T> T get(Class<T> type) {
         return defaultHabitat.getService(type);
     }
 
+    /**
+     * Sets the default service locator to a different one
+     * @param habitat 
+     */
     public static void setDefaultHabitat(final ServiceLocator habitat) {
         defaultHabitat = habitat;
     }
 
+    /**
+     * Returns the default service locator. If it does not exist, one will be created.
+     * <p>
+     * See {@link #getStaticHabitat()}
+     * @return 
+     */
     public static ServiceLocator getStaticBaseServiceLocator() {
     	return getStaticHabitat();
     }
     
+    /**
+     * Returns the default service locator. If it does not exist, one will be created.
+     * @return 
+     */
     public static ServiceLocator getStaticHabitat() {
         if (defaultHabitat == null) {
             synchronized (staticLock) {

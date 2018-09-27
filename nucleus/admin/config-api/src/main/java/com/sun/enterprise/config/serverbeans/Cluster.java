@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -48,7 +49,6 @@ import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstrain
 import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.logging.LogDomains;
 import java.io.*;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -65,12 +65,11 @@ import org.jvnet.hk2.config.*;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.api.admin.config.PropertyDesc;
 import org.glassfish.api.admin.config.ReferenceContainer;
-// import org.glassfish.virtualization.util.RuntimeContext;
 
 import java.beans.PropertyVetoException;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -351,6 +350,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
      * <p/>
      * Objects of the following type(s) are allowed in the list
      * {@link SystemProperty }
+     * @return 
      */
     @Element
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal system props" )
@@ -388,7 +388,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
     @DuckTyped
     public ServerRef getServerRefByRef(String ref);
 
-    // four trivial methods that ReferenceContainer's need to implement
+    // five trivial methods that ReferenceContainer's need to implement
     @DuckTyped
     @Override
     boolean isCluster();
@@ -400,6 +400,10 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
     @DuckTyped
     @Override
     boolean isDas();
+    
+    @DuckTyped
+    @Override
+    boolean isDeploymentGroup();
 
     @DuckTyped
     @Override
@@ -434,6 +438,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
         public static boolean isServer(Cluster me)  { return false; }
         public static boolean isInstance(Cluster me) { return false; }
         public static boolean isDas(Cluster me) { return false; }
+        public static boolean isDeploymentGroup(Cluster me) { return false; }
 
         public static String getReference(Cluster cluster) {
             return cluster.getConfigRef();
@@ -510,6 +515,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
 
             ConfigSupport.apply(new SingleConfigCode<Cluster>() {
 
+                @Override
                 public Object run(Cluster param) throws PropertyVetoException, TransactionFailure {
 
                     ResourceRef newResourceRef = param.createChild(ResourceRef.class);
@@ -721,7 +727,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
 
                         // generate a random port since user did not provide one.
                         // better fix in future would be to walk existing clusters and pick an unused port.
-                        TCPPORT = Integer.toString(new Random(System.currentTimeMillis()).nextInt(9200 - 9090) + 9090);
+                        TCPPORT = Integer.toString(new SecureRandom().nextInt(9200 - 9090) + 9090);
 
                         // hardcode all instances to use same default port.
                         // generate mode does not support multiple instances on one machine.
@@ -742,7 +748,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
                             gmsListenerPortSysProp.setName(propName);
                             if (TCPPORT == null || TCPPORT.trim().charAt(0) == '$') {
                                 String generateGmsListenerPort = Integer.toString(
-                                        new Random(System.currentTimeMillis()).nextInt(9200 - 9090) + 9090);
+                                        new SecureRandom().nextInt(9200 - 9090) + 9090);
                                 gmsListenerPortSysProp.setValue(generateGmsListenerPort);
                             } else {
                                 gmsListenerPortSysProp.setValue(TCPPORT);
@@ -864,7 +870,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
             //cannot be deleted
             //issue 12172
             List<ServerRef> serverRefs = child.getServerRef();
-            StringBuffer namesOfServers = new StringBuffer();
+            StringBuilder namesOfServers = new StringBuilder();
             if (serverRefs.size() > 0) {
                 for (ServerRef serverRef: serverRefs){
                     namesOfServers.append(new StringBuffer( serverRef.getRef()).append( ','));

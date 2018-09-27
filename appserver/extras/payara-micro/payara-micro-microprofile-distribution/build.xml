@@ -121,7 +121,6 @@
 	  <fileset dir="${runtimedir}" includes="**/nucleus-domain*.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/weld-se-shaded.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/weld-environment-common.jar"/>
-	  <fileset dir="${runtimedir}" includes="**/derbyLocale*.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/jxmpp*.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/smack*.jar"/>
         </delete>

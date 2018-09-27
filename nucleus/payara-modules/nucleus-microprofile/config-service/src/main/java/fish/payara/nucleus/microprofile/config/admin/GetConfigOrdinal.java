@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,8 +40,10 @@
 package fish.payara.nucleus.microprofile.config.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigConfiguration;
-import fish.payara.nucleus.microprofile.config.service.MicroprofileConfigService;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.Param;
@@ -49,39 +51,38 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
 
 /**
  * asAdmin command to the get the ordinal for one of the built in Config Sources
+ *
  * @since 4.1.2.173
  * @author Steve Millidge (Payara Foundation)
  */
 @Service(name = "get-config-ordinal") // the name of the service is the asadmin command name
 @PerLookup // this means one instance is created every time the command is run
 @ExecuteOn(RuntimeType.DAS)
-@TargetType()
-@RestEndpoints({ // creates a REST endpoint needed for integration with the admin interface
-    
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER,
+    CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({ // creates a REST endpoint needed for integration with the admin interface   
     @RestEndpoint(configBean = MicroprofileConfigConfiguration.class,
-            opType = RestEndpoint.OpType.POST, // must be POST as it is doing an update
+            opType = RestEndpoint.OpType.GET,
             path = "get-config-ordinal",
             description = "Gets the Ordinal of a builtin Config Source")
 })
 public class GetConfigOrdinal implements AdminCommand {
 
-    @Param(acceptableValues = "domain,config,server,application,module,cluster", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets,password", defaultValue = "domain")
     String source;
 
     @Param(optional = true, defaultValue = "server") // if no target is specified it will be the DAS
     String target;
-
-    @Inject
-    MicroprofileConfigService service;
 
     @Inject
     Target targetUtil;
@@ -94,31 +95,52 @@ public class GetConfigOrdinal implements AdminCommand {
             Integer result = -1;
             switch (source) {
                 case "domain": {
-                    result = serviceConfig.getDomainOrdinality();
+                    result = Integer.parseInt(serviceConfig.getDomainOrdinality());
                     break;
                 }
                 case "config": {
-                    result = serviceConfig.getConfigOrdinality();
+                    result = Integer.parseInt(serviceConfig.getConfigOrdinality());
                     break;
                 }
                 case "server": {
-                    result = serviceConfig.getServerOrdinality();
+                    result = Integer.parseInt(serviceConfig.getServerOrdinality());
                     break;
                 }
                 case "application": {
-                    result = serviceConfig.getApplicationOrdinality();
+                    result = Integer.parseInt(serviceConfig.getApplicationOrdinality());
                     break;
                 }
                 case "module": {
-                    result = serviceConfig.getModuleOrdinality();
+                    result = Integer.parseInt(serviceConfig.getModuleOrdinality());
                     break;
                 }
                 case "cluster": {
-                    result = serviceConfig.getClusterOrdinality();
+                    result = Integer.parseInt(serviceConfig.getClusterOrdinality());
                     break;
                 }
+                case "jndi": {
+                    result = Integer.parseInt(serviceConfig.getJNDIOrdinality());
+                    break;
+                }
+                case "secrets": {
+                    result = Integer.parseInt(serviceConfig.getSecretDirOrdinality());
+                    break;
+                }
+                case "password": {
+                    result = Integer.parseInt(serviceConfig.getPasswordOrdinality());
+                    break;
+                }
+
             }
-            context.getActionReport().setMessage(result.toString());
+            context.getActionReport().setMessage(source + " : " + result.toString());
+
+            Map<String, Object> extraPropertiesMap = new HashMap<>();
+            extraPropertiesMap.put("source", source);
+            extraPropertiesMap.put("ordinal", result);
+
+            Properties extraProperties = new Properties();
+            extraProperties.put("configConfiguration", extraPropertiesMap);
+            context.getActionReport().setExtraProperties(extraProperties);
         } else {
             context.getActionReport().failure(Logger.getLogger(SetConfigOrdinal.class.getName()), "No configuration with name " + target);
         }

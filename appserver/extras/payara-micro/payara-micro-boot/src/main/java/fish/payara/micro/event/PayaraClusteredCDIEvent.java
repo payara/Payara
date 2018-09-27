@@ -129,6 +129,7 @@ public interface PayaraClusteredCDIEvent extends Serializable {
     /**
      * Adds the set of qualifiers to the event
      * @param qualifiers 
+     * @throws java.io.IOException in case of serialization of qualifiers fails
      */
-    public void addQualifiers(Set<Annotation> qualifiers);
+    public void addQualifiers(Set<Annotation> qualifiers) throws IOException;
 }

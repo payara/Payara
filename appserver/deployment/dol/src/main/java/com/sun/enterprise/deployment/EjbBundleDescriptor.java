@@ -68,5 +68,6 @@ public abstract class EjbBundleDescriptor extends CommonResourceBundleDescriptor
     public abstract EjbDescriptor[] getEjbByClassName(String className);
     public abstract Set<ServiceReferenceDescriptor> getEjbServiceReferenceDescriptors();
     public abstract EjbDescriptor[] getEjbBySEIName(String className);
+    public abstract Boolean getDisableNonportableJndiNames();
 
 }

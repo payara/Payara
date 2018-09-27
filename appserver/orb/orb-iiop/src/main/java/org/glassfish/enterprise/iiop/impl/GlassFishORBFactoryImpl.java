@@ -38,9 +38,10 @@
  * holder.
  */
 
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.enterprise.iiop.impl;
 
-import com.sun.enterprise.ee.cms.core.GroupManagementService;
 import org.glassfish.enterprise.iiop.api.GlassFishORBFactory;
 import org.glassfish.enterprise.iiop.util.IIOPUtils;
 import javax.inject.Inject;
@@ -51,7 +52,6 @@ import org.omg.CORBA.ORB;
 import org.omg.PortableInterceptor.ServerRequestInfo;
 
 import java.util.Properties;
-import org.glassfish.gms.bootstrap.GMSAdapterService;
 
 /**
  * @author Mahesh Kannan

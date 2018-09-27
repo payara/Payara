@@ -37,15 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.annotation.handlers;
 
+import fish.payara.cluster.Clustered;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import javax.ejb.DependsOn;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -151,18 +152,26 @@ public class SingletonHandler extends AbstractEjbHandler {
         return setBusinessAndHomeInterfaces(ejbDesc, ainfo);
     }
 
-    private void doSingletonSpecificProcessing(EjbSessionDescriptor desc, Class ejbClass) {
-        Class clz = ejbClass;
+    private void doSingletonSpecificProcessing(EjbSessionDescriptor desc, Class<?> ejbClass) throws AnnotationProcessorException {
+        Class<?> clz = ejbClass;
 
-        Startup st = (Startup) clz.getAnnotation(Startup.class);
+        Startup st = clz.getAnnotation(Startup.class);
         if (st != null) {
             // Only set if not explicitly set in .xml
             desc.setInitOnStartupIfNotAlreadySet(true);
         }
 
-        DependsOn dep = (DependsOn) clz.getAnnotation(DependsOn.class);
+        DependsOn dep = clz.getAnnotation(DependsOn.class);
         if (dep != null) {
             desc.setDependsOnIfNotSet(dep.value());
+        }
+
+        Clustered clusteredAnnotation = clz.getAnnotation(Clustered.class);
+        if(clusteredAnnotation != null) {
+            desc.setClustered(true);
+            desc.setClusteredKeyValue(clusteredAnnotation.keyName());
+            desc.setDontCallPostConstructOnAttach(!clusteredAnnotation.callPostConstructOnAttach());
+            desc.setDontCallPreDestroyOnDetach(!clusteredAnnotation.callPreDestoyOnDetach());
         }
     }
 }

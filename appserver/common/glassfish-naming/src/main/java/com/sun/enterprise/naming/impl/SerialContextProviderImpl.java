@@ -46,6 +46,9 @@ import javax.naming.NamingException;
 import java.rmi.RemoteException;
 import java.util.Hashtable;
 
+/**
+ * Class to lookup JNDI objects
+ */
 public class SerialContextProviderImpl implements SerialContextProvider {
     private TransientContext rootContext;
 
@@ -57,11 +60,11 @@ public class SerialContextProviderImpl implements SerialContextProvider {
     /**
      * Lookup the specified name.
      *
-     * @return the object orK context bound to the name.
+     * @return name the object or context bound to the name.
      * @throws NamingException if there is a naming exception.
-     * @throws if              there is an RMI exception.
+     * @throws RemoteException if there is an RMI exception.
      */
-
+    @Override
     public Object lookup(String name) throws NamingException, RemoteException {
         try {
             return rootContext.lookup(name);
@@ -76,10 +79,12 @@ public class SerialContextProviderImpl implements SerialContextProvider {
     /**
      * Bind the object to the specified name.
      *
+     * @param name the object or context bound to the name.
+     * @param obj
      * @throws NamingException if there is a naming exception.
-     * @throws if              there is an RMI exception.
+     * @throws RemoteException if there is an RMI exception.
      */
-
+    @Override
     public void bind(String name, Object obj)
             throws NamingException, RemoteException {
 
@@ -89,10 +94,12 @@ public class SerialContextProviderImpl implements SerialContextProvider {
     /**
      * Rebind the object to the specified name.
      *
+     * @param name the object or context bound to the name
+     * @param obj
      * @throws NamingException if there is a naming exception.
-     * @throws if              there is an RMI exception.
+     * @throws RemoteException if there is an RMI exception.
      */
-
+    @Override
     public void rebind(String name, Object obj)
             throws NamingException, RemoteException {
 
@@ -103,9 +110,9 @@ public class SerialContextProviderImpl implements SerialContextProvider {
      * Unbind the specified object.
      *
      * @throws NamingException if there is a naming exception.
-     * @throws if              there is an RMI exception.
+     * @throws RemoteException if there is an RMI exception.
      */
-
+    @Override
     public void unbind(String name)
             throws NamingException, RemoteException {
 
@@ -116,15 +123,16 @@ public class SerialContextProviderImpl implements SerialContextProvider {
      * Rename the bound object.
      *
      * @throws NamingException if there is a naming exception.
-     * @throws if              there is an RMI exception.
+     * @throws RemoteException if there is an RMI exception.
      */
-
+    @Override
     public void rename(String oldname, String newname)
             throws NamingException, RemoteException {
 
         rootContext.rename(oldname, newname);
     }
 
+    @Override
     public Hashtable list() throws RemoteException {
 
         return rootContext.list();
@@ -134,9 +142,10 @@ public class SerialContextProviderImpl implements SerialContextProvider {
      * List the contents of the specified context.
      *
      * @throws NamingException if there is a naming exception.
-     * @throws if              there is an RMI exception.
+     * @throws RemoteException if there is an RMI exception.
      */
 
+    @Override
     public Hashtable list(String name) throws NamingException, RemoteException {
         Hashtable ne = rootContext.listContext(name);
         return ne;
@@ -147,9 +156,9 @@ public class SerialContextProviderImpl implements SerialContextProvider {
      *
      * @return the created subcontext.
      * @throws NamingException if there is a naming exception.
-     * @throws if              there is an RMI exception.
+     * @throws RemoteException if there is an RMI exception.
      */
-
+    @Override
     public Context createSubcontext(String name)
             throws NamingException, RemoteException {
 
@@ -161,9 +170,9 @@ public class SerialContextProviderImpl implements SerialContextProvider {
      * Destroy the subcontext with the specified name.
      *
      * @throws NamingException if there is a naming exception.
-     * @throws if              there is an RMI exception.
+     * @throws RemoteException if there is an RMI exception.
      */
-
+    @Override
     public void destroySubcontext(String name)
             throws NamingException, RemoteException {
 

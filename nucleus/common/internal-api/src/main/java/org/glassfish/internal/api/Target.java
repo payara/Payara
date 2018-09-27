@@ -37,10 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.api;
 
 import com.sun.enterprise.config.serverbeans.*;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -104,6 +106,16 @@ public class Target {
             return null;
         return(domain.getConfigNamed(cl.getConfigRef()));
     }
+    
+    /**
+     * Checks if the target is a Deployment Group
+     * @param targetName
+     * @return true; if the targer is a deployment group
+     */   
+    public boolean isDeploymentGroup(String targetName) {
+        return (domain.getDeploymentGroupNamed(targetName) != null);
+    }
+
 
     /**
      * Returns config element that represents a given server
@@ -131,7 +143,17 @@ public class Target {
             return getServerConfig(targetName);
         if(CommandTarget.CLUSTER.isValid(habitat, targetName))
                 return getClusterConfig(targetName);
+        if (isDeploymentGroup(targetName)) {
+            List<Server> servers = getInstances(targetName);
+            if (servers.size() >= 1) {
+                return servers.get(0).getConfig();
+            }
+        }
         return null;
+    }
+    
+    public List<DeploymentGroup> getDGForInstance(String targetName) {
+        return domain.getDeploymentGroupsForInstance(targetName);
     }
 
     /**
@@ -197,6 +219,11 @@ public class Target {
                     instances.add(s);
             }
         }
+        
+        if (CommandTarget.DEPLOYMENT_GROUP.isValid(habitat, targetName)) {
+            DeploymentGroup dg = domain.getDeploymentGroupNamed(targetName);
+            instances.addAll(dg.getInstances());
+        }
         return instances;
     }
 
@@ -225,6 +252,8 @@ public class Target {
         if(getInstances(targetName).size() != 0)
             return true;
         if(domain.getConfigNamed(targetName) != null)
+            return true;
+        if (isDeploymentGroup(targetName))
             return true;
         return false;
     }

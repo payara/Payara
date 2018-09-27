@@ -36,7 +36,7 @@ REM  its licensees as provided above.  However, if you add GPL Version 2 code
 REM  and therefore, elected the GPL Version 2 license, then the option applies
 REM  only if the new code is made subject to such option by the copyright
 REM  holder.
-REM
+REM  Portions Copyright [2017] [Payara Foundation and/or its affiliates.]
 
 set AS_IMQ_LIB=..\..\mq\lib
 set AS_IMQ_BIN=..\..\mq\bin
@@ -45,3 +45,4 @@ set AS_INSTALL=..
 set AS_DEF_DOMAINS_PATH=..\domains
 set AS_DEF_NODES_PATH=..\nodes
 set AS_DERBY_INSTALL=..\..\javadb
+set AS_H2_INSTALL=..\..\h2db

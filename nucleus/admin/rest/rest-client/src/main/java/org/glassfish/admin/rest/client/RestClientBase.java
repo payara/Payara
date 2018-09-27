@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.client;
 
@@ -44,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import javax.json.JsonObject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -52,7 +55,6 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.client.utils.Util;
 
 /**
@@ -215,7 +217,7 @@ public abstract class RestClientBase {
         initialize();
         T retValue = null;
         Object value = entityValues.get(key);
-        if ((value != null) && !(value.equals(JSONObject.NULL))) {
+        if ((value != null) && !(value.equals(JsonObject.NULL))) {
             retValue = (T) value;
         }
         return retValue;
@@ -347,7 +349,7 @@ public abstract class RestClientBase {
         MultivaluedMap formData = new MultivaluedHashMap();
         for (final Map.Entry<String, Object> entry : payload.entrySet()) {
             Object value = entry.getValue();
-            if (JSONObject.NULL.equals(value)) {
+            if (JsonObject.NULL.equals(value)) {
                 value = null;
             } else if (value != null) {
                 value = value.toString();

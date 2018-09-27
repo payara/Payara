@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,16 +39,10 @@
  */
 package fish.payara.micro.cmd.options;
 
+import com.google.common.base.Joiner;
+
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Class to specify the runtime options for Payara Micro
@@ -93,6 +87,7 @@ public class RuntimeOptions {
     public RuntimeOptions(String args[]) throws ValidationException {
         // parse the arguments into a match 
         options = new HashMap<>();
+        Set<String> invalidArgs = new HashSet<>();
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
             if (arg.startsWith("--")) {
@@ -100,9 +95,10 @@ public class RuntimeOptions {
                 try {
                     RUNTIME_OPTION option = RUNTIME_OPTION.valueOf(arg.substring(2).toLowerCase());
                     String value = null;
-                    if (option.getValue()) {
+                    if (option.hasFollowingValue()) {
                         // there is a second value
                         value = args[i+1];
+                        i++;
                         if (value.startsWith("--")) {
                             throw new IndexOutOfBoundsException();
                         }
@@ -110,7 +106,7 @@ public class RuntimeOptions {
                     }
                     List<String> values = options.get(option);
                     if (values == null) {
-                        values = new LinkedList<String>();
+                        values = new LinkedList<>();
                         options.put(option, values);
                     }
                     values.add(value);
@@ -121,7 +117,22 @@ public class RuntimeOptions {
                 } catch (ValidationException ve) {
                     throw new ValidationException(arg + " " + ve.getMessage(),ve);
                 }
+            } else if (arg.endsWith(".war") || arg.endsWith(".ear") || arg.endsWith(".rar") || arg.endsWith(".jar")) {
+                // we have a "raw" deployment
+                List<String> values = options.get(RUNTIME_OPTION.deploy);
+                if (values == null) {
+                    values = new LinkedList<>();
+                    options.put(RUNTIME_OPTION.deploy, values);
+                }
+                values.add(arg);
             }
+            else {
+                invalidArgs.add(arg);
+            }
+        }
+        if (invalidArgs.size() > 0) {
+            String argsStr = Joiner.on(",").skipNulls().join(invalidArgs);
+            throw new ValidationException(MessageFormat.format(commandlogstrings.getString("notValidArguments"), argsStr));
         }
     }
     

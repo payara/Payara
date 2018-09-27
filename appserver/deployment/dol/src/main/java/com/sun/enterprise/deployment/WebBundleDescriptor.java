@@ -37,25 +37,45 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment;
 
-import com.sun.enterprise.deployment.runtime.web.SunWebApp;
-import com.sun.enterprise.deployment.types.EjbReference;
-import com.sun.enterprise.deployment.types.*;
-import com.sun.enterprise.deployment.util.*;
-import com.sun.enterprise.deployment.web.*;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.deployment.common.DescriptorVisitor;
 import org.glassfish.deployment.common.JavaEEResourceType;
 
-import java.util.*;
+import com.sun.enterprise.deployment.runtime.web.SunWebApp;
+import com.sun.enterprise.deployment.types.EjbReference;
+import com.sun.enterprise.deployment.types.EjbReferenceContainer;
+import com.sun.enterprise.deployment.types.MessageDestinationReferenceContainer;
+import com.sun.enterprise.deployment.types.ResourceEnvReferenceContainer;
+import com.sun.enterprise.deployment.types.ResourceReferenceContainer;
+import com.sun.enterprise.deployment.types.ServiceReferenceContainer;
+import com.sun.enterprise.deployment.util.ComponentVisitor;
+import com.sun.enterprise.deployment.web.AppListenerDescriptor;
+import com.sun.enterprise.deployment.web.ContextParameter;
+import com.sun.enterprise.deployment.web.EnvironmentEntry;
+import com.sun.enterprise.deployment.web.LoginConfiguration;
+import com.sun.enterprise.deployment.web.MimeMapping;
+import com.sun.enterprise.deployment.web.SecurityConstraint;
+import com.sun.enterprise.deployment.web.SecurityRole;
+import com.sun.enterprise.deployment.web.SecurityRoleReference;
+import com.sun.enterprise.deployment.web.ServletFilter;
+import com.sun.enterprise.deployment.web.ServletFilterMapping;
+import com.sun.enterprise.deployment.web.SessionConfig;
 
 /**
  * I am an object that represents all the deployment information about
- * a web app [{0}]lication.
+ * a web application.
  *
  * @author Danny Coward
  */
@@ -94,8 +114,10 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract void addJndiNameEnvironment(JndiNameEnvironment env);
 
+    @Override
     public abstract boolean isEmpty();
 
+    @Override
     public abstract String getDefaultSpecVersion();
 
     public abstract Collection getNamedDescriptors();
@@ -105,7 +127,7 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
     public abstract String getContextRoot();
 
     public abstract void setContextRoot(String contextRoot);
-    
+
 	public abstract String getRequestCharacterEncoding();
 
 	public abstract void setRequestCharacterEncoding(String requestCharacterEncoding);
@@ -129,26 +151,34 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract boolean hasServiceReferenceDescriptors();
 
+    @Override
     public abstract Set<ServiceReferenceDescriptor> getServiceReferenceDescriptors();
 
+    @Override
     public abstract void addServiceReferenceDescriptor(ServiceReferenceDescriptor
                                                            serviceRef);
 
+    @Override
     public abstract void removeServiceReferenceDescriptor(ServiceReferenceDescriptor
                                                               serviceRef);
 
+    @Override
     public abstract ServiceReferenceDescriptor getServiceReferenceByName(String name);
 
     protected abstract ServiceReferenceDescriptor _getServiceReferenceByName(String name);
 
     protected abstract void combineServiceReferenceDescriptors(JndiNameEnvironment env);
 
+    @Override
     public abstract Set<ResourceEnvReferenceDescriptor> getResourceEnvReferenceDescriptors();
 
+    @Override
     public abstract void addResourceEnvReferenceDescriptor(ResourceEnvReferenceDescriptor resourceEnvRefReference);
 
+    @Override
     public abstract void removeResourceEnvReferenceDescriptor(ResourceEnvReferenceDescriptor resourceEnvRefReference);
 
+    @Override
     public abstract ResourceEnvReferenceDescriptor getResourceEnvReferenceByName(String name);
 
     protected abstract ResourceEnvReferenceDescriptor _getResourceEnvReferenceByName(String name);
@@ -197,94 +227,123 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract Enumeration<EjbReference> getEjbReferences();
 
+    @Override
     public abstract Set<EjbReference> getEjbReferenceDescriptors();
 
     public abstract EjbReferenceDescriptor getEjbReferenceByName(String name);
 
+    @Override
     public abstract EjbReference getEjbReference(String name);
 
     protected abstract EjbReference _getEjbReference(String name);
 
+    @Override
     public abstract ResourceReferenceDescriptor getResourceReferenceByName(String name);
 
     protected abstract ResourceReferenceDescriptor _getResourceReferenceByName(String name);
 
+    @Override
     public abstract Set<ResourceReferenceDescriptor> getResourceReferenceDescriptors();
 
+    @Override
     public abstract Set<EntityManagerFactoryReferenceDescriptor> getEntityManagerFactoryReferenceDescriptors();
 
+    @Override
     public abstract EntityManagerFactoryReferenceDescriptor getEntityManagerFactoryReferenceByName(String name);
 
     protected abstract EntityManagerFactoryReferenceDescriptor _getEntityManagerFactoryReferenceByName(String name);
 
+    @Override
     public abstract void addEntityManagerFactoryReferenceDescriptor(EntityManagerFactoryReferenceDescriptor reference);
 
     protected abstract void combineEntityManagerFactoryReferenceDescriptors(JndiNameEnvironment env);
 
+    @Override
     public abstract Set<EntityManagerReferenceDescriptor> getEntityManagerReferenceDescriptors();
 
+    @Override
     public abstract EntityManagerReferenceDescriptor getEntityManagerReferenceByName(String name);
 
     protected abstract EntityManagerReferenceDescriptor _getEntityManagerReferenceByName(String name);
 
-    public abstract void addEntityManagerReferenceDescriptor(EntityManagerReferenceDescriptor reference) ;
+    @Override
+    public abstract void addEntityManagerReferenceDescriptor(EntityManagerReferenceDescriptor reference);
 
     protected abstract void combineEntityManagerReferenceDescriptors(JndiNameEnvironment env);
 
+    @Override
     public abstract Collection<? extends PersistenceUnitDescriptor> findReferencedPUs();
 
+    @Override
     public abstract Set<EnvironmentEntry> getEnvironmentProperties();
 
+    @Override
     public abstract void addEjbReferenceDescriptor(EjbReference ejbReference);
 
     public abstract void addEjbReferenceDescriptor(EjbReferenceDescriptor ejbReferenceDescriptor);
 
     public abstract void removeEjbReferenceDescriptor(EjbReferenceDescriptor ejbReferenceDescriptor);
 
+    @Override
     public abstract void removeEjbReferenceDescriptor(EjbReference ejbReferenceDescriptor);
 
     protected abstract void combineEjbReferenceDescriptors(JndiNameEnvironment env);
 
     public abstract Enumeration<ResourceReferenceDescriptor> getResourceReferences();
 
+    @Override
     public abstract void addResourceReferenceDescriptor(ResourceReferenceDescriptor resourceReference);
 
+    @Override
     public abstract void removeResourceReferenceDescriptor(ResourceReferenceDescriptor resourceReference);
 
     protected abstract void combineResourceReferenceDescriptors(JndiNameEnvironment env);
 
+    @Override
     public abstract Set<MessageDestinationReferenceDescriptor> getMessageDestinationReferenceDescriptors();
 
-    public abstract void addMessageDestinationReferenceDescriptor(MessageDestinationReferenceDescriptor messageDestRef) ;
+    @Override
+    public abstract void addMessageDestinationReferenceDescriptor(MessageDestinationReferenceDescriptor messageDestRef);
 
+    @Override
     public abstract void removeMessageDestinationReferenceDescriptor(MessageDestinationReferenceDescriptor msgDestRef);
 
+    @Override
     public abstract MessageDestinationReferenceDescriptor getMessageDestinationReferenceByName(String name);
 
     protected abstract MessageDestinationReferenceDescriptor _getMessageDestinationReferenceByName(String name);
 
     protected abstract void combineMessageDestinationReferenceDescriptors(JndiNameEnvironment env);
 
+    @Override
     public abstract Set<LifecycleCallbackDescriptor> getPostConstructDescriptors();
 
+    @Override
     public abstract void addPostConstructDescriptor(LifecycleCallbackDescriptor postConstructDesc);
 
+    @Override
     public abstract LifecycleCallbackDescriptor getPostConstructDescriptorByClass(String className);
 
     protected abstract void combinePostConstructDescriptors(WebBundleDescriptor webBundleDescriptor);
 
+    @Override
     public abstract Set<LifecycleCallbackDescriptor> getPreDestroyDescriptors();
 
+    @Override
     public abstract void addPreDestroyDescriptor(LifecycleCallbackDescriptor preDestroyDesc);
 
+    @Override
     public abstract LifecycleCallbackDescriptor getPreDestroyDescriptorByClass(String className);
 
     protected abstract void combinePreDestroyDescriptors(WebBundleDescriptor webBundleDescriptor);
 
+    @Override
     protected abstract List<InjectionCapable> getInjectableResourcesByClass(String className, JndiNameEnvironment jndiNameEnv);
 
+    @Override
     public abstract List<InjectionCapable> getInjectableResourcesByClass(String className);
 
+    @Override
     public abstract InjectionInfo getInjectionInfoByClass(Class clazz);
 
     public abstract Enumeration<SecurityRoleDescriptor> getSecurityRoles();
@@ -321,10 +380,13 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     protected abstract EnvironmentProperty _getEnvironmentPropertyByName(String name);
 
+    @Override
     public abstract EnvironmentProperty getEnvironmentPropertyByName(String name);
 
+    @Override
     public abstract void removeEnvironmentProperty(EnvironmentProperty environmentProperty);
 
+    @Override
     public abstract void addEnvironmentProperty(EnvironmentProperty environmentProperty);
 
     public abstract void removeEnvironmentEntry(EnvironmentEntry environmentEntry);
@@ -387,6 +449,7 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract void setServletReloadCheckSecs(int secs);
 
+    @Override
     public abstract boolean hasWebServiceClients();
 
     protected abstract boolean removeVectorItem(Vector<? extends Object> list, Object ref);
@@ -409,13 +472,17 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract void printCommon(StringBuffer toStringBuffer);
 
+    @Override
     public abstract ArchiveType getModuleType();
 
+    @Override
     public abstract ComponentVisitor getBundleVisitor();
 
+    @Override
     public abstract DescriptorVisitor getTracerVisitor();
 
-    public abstract String getDeploymentDescriptorDir() ;
+    @Override
+    public abstract String getDeploymentDescriptorDir();
 
     public abstract SunWebApp getSunDescriptor();
 
@@ -427,6 +494,12 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract boolean getServletInitializersEnabled();
     public abstract void setServletInitializersEnabled(boolean tf);
+
+    public abstract boolean isJaxrsRolesAllowedEnabled();
+    public abstract void setJaxrsRolesAllowedEnabled(boolean jaxrsRolesAllowedEnabled);
+    
+    public abstract String getAppContextId();
+    public abstract void setAppContextId(String appContextId);
 
     public boolean isConflictLoginConfig() {
         return conflictLoginConfig;
@@ -490,4 +563,4 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract Set<String> getConflictedMimeMappingExtensions();
 }
-    
+

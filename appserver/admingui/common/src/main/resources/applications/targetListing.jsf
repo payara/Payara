@@ -40,13 +40,14 @@
 
 -->
 
-<!-- Portions Copyright [2016] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
 
 <!-- applications/targetListing.jsf -->
 
 
 <!initPage
     setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings")
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
     setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks")
 />
 <!composition template="/templates/default.layout"
@@ -62,7 +63,7 @@
             getRequestValue(key="listPageLink" value="#{pageSession.listPageLink}"  default="/common/applications/applications.jsf");
             gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/module" result="#{pageSession.moduleList}");
             gf.appScopedResourcesExist(appName="#{pageSession.appName}" moduleList="#{pageSession.moduleList}" appScopedResExists="#{pageSession.appScopedResExists}");
-            gf.getTargetListInfo(appName="#{pageSession.appName}" result=>$attribute{listOfRows} );
+            py.getApplicationTargetList(appName="#{pageSession.appName}" result=>$attribute{listOfRows} );
             setPageSessionAttribute(key="targetPageLink" value="#{request.contextPath}/common/applications/targetListing.jsf");
         />
     </event>
@@ -112,9 +113,13 @@
                     setAttribute(key="actionValue" value="#{click.selected}")
                     if( ${actionValue}=enable){
                         gf.changeTargetStatus(selectedRows="${selectedRows}"  Enabled="#{true}" forLB="$boolean{false}")
+                        prepareAlertMsg(summary="$resource{i18n.msg.enableOnTargetsSuccessful}", type="success");
+                        gf.redirect(page="#{request.contextPath}/common/applications/targetListing.jsf?appName=#{pageSession.encodedAppName}&listPageLink=#{pageSession.listPageLink}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
                     }
                     if( ${actionValue}=disable){
                         gf.changeTargetStatus(selectedRows="${selectedRows}"  Enabled="#{false}" forLB="$boolean{false}")
+                        prepareAlertMsg(summary="$resource{i18n.msg.disableOnTargetsSuccessful}", type="success");
+                        gf.redirect(page="#{request.contextPath}/common/applications/targetListing.jsf?appName=#{pageSession.encodedAppName}&listPageLink=#{pageSession.listPageLink}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
                     }
                     if( ${actionValue}=lb-enable){
                         gf.changeTargetStatus(selectedRows="${selectedRows}" Enabled="#{true}" forLB="$boolean{true}")

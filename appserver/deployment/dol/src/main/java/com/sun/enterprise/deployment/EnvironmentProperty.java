@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
  package com.sun.enterprise.deployment;
@@ -53,11 +55,12 @@ import org.glassfish.internal.api.RelativePathResolver;
 import java.util.HashSet;
 import java.util.Set;
 
-    /** 
-    ** The EnvironmentProperty class hold the data about a single environment entry for J2EE components.
-    ** @author Danny Coward 
-    */
- 
+/**
+ * The EnvironmentProperty class hold the data about a single environment entry for J2EE components.
+ * <p>
+ * The property must of a primitive type or its boxed variant
+ * @author Danny Coward
+ */
 public class EnvironmentProperty extends Descriptor implements InitializationParameter, ContextParameter, ApplicationParam, WebDescriptor, EnvironmentEntry, InjectionCapable {
     private String value; 
     private String type;
@@ -96,8 +99,8 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
 
     /** 
     ** copy constructor.
+     * @param other
     */
-
     public EnvironmentProperty(EnvironmentProperty other) {
 	super(other);
 	value = other.value;
@@ -114,8 +117,10 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
     
      /** 
     ** Construct an environment property of given name value and description. 
+     * @param name
+     * @param value
+     * @param description
     */
-    
     public EnvironmentProperty(String name, String value, String description) {
 	this(name, value, description, null);
     }  
@@ -124,8 +129,11 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
     ** Construct an environment property of given name value and description and type.
     ** Throws an IllegalArgumentException if bounds checking is true and the value cannot be
     ** reconciled with the given type. 
+     * @param name
+     * @param value
+     * @param description
+     * @param type
     */ 
-    
     public EnvironmentProperty(String name, String value, String description, String type) {
 	super(name, description);
 	this.value = value;
@@ -135,7 +143,9 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
     
     /** 
     ** Returns the String value of this environment property 
+     * @return 
     */
+    @Override
     public String getValue() {
 	if (this.value == null) {
 	    this.value = "";
@@ -145,6 +155,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
     
     /**
      * Returns a resolved value of this environment property
+     * @return 
      */
     public String getResolvedValue() {
     	return RelativePathResolver.resolvePath(getValue());
@@ -154,6 +165,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
      ** Returns the typed value object of this environment property. Throws an IllegalArgumentException if bounds checking is 
      ** true and the value cannot be
      ** reconciled with the given type. 
+     * @return 
      */
      public Object getResolvedValueObject() {
  	if (this.valueObject == null) {
@@ -166,7 +178,6 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
     ** checks the given class type. throws an IllegalArgumentException if bounds checking
     ** if the type is not allowed.
     */
-    
     private void checkType(String type) {
 	if (type != null) {
 	    Class typeClass = null;
@@ -184,12 +195,12 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
 		}
 	    }
 	    boolean allowedType = false;
-	    for (int i = 0; i < allowedTypes.length; i++) {
-		if (allowedTypes[i].equals(typeClass)) {
-		    allowedType = true;
-		    break;
-		}
-	    }
+            for (Class allowedType1 : allowedTypes) {
+                if (allowedType1.equals(typeClass)) {
+                    allowedType = true;
+                    break;
+                }
+            }
             if (typeClass != null && typeClass.isEnum()) {
                 allowedType = true;
             }
@@ -206,6 +217,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
     ** Returns the typed value object of this environment property. Throws an IllegalArgumentException if bounds checking is 
     ** true and the value cannot be
     ** reconciled with the given type. 
+     * @return 
     */
     public Object getValueObject() {
 	if (this.valueObject == null) {
@@ -216,8 +228,8 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
     
     /** 
     ** Returns value type of this environment property. 
+     * @return 
     */
-    
     public Class getValueType() {
 	if (this.type == null) {
 	    return String.class;
@@ -234,8 +246,9 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
      /** 
     ** Returns value type of this environment property. Throws Illegal argument exception if this is not an
     ** allowed type and bounds checking.
+     * @param type
     */
-    
+    @Override
     public void setType(String type) {
         checkType(type);
         this.type = type;
@@ -269,8 +282,9 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
     
      /** 
     ** Returns value type of this environment property as a classname. 
+     * @return 
     */
-    
+    @Override
     public String getType() {
         if (type == null && this.isBoundsChecking()) {
             return String.class.getName();
@@ -284,32 +298,53 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
         mappedName = mName;
     }
 
+    /**
+     * 
+     * @return the mapped name or an empty string if not set
+     */
     public String getMappedName() {
         return (mappedName != null)? mappedName : "";
     }
 
+    /**
+     * Sets the lookup name
+     * @param lName 
+     */
    public void setLookupName(String lName) {
         lookupName = lName;
     }
 
+   /**
+    * Gets the lookup value
+    * @return the lookupname or an empty string if not set
+    */
     public String getLookupName() {
         return (lookupName != null)? lookupName : "";
     }
 
+    /**
+     * 
+     * @return true if lookup is not null and non-zero length
+     */
     public boolean hasLookupName() {
         return (lookupName != null && lookupName.length() > 0);
     }
     
-     /** 
+    /** 
     ** Sets the value of the environment property to the given string.
-    */
-    
+     * @param value
+    */    
+    @Override
     public void setValue(String value) {
 	this.value = value;
         this.setValueCalled = true;
 
     }
 
+    /**
+     * Returns true if the value of the environment property has been set
+     * @return 
+     */
     public boolean isSetValueCalled() {
         return setValueCalled;
     }
@@ -320,8 +355,9 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
 
      /** 
     ** Returns true if the argument is an environment property of the same name, false else.
+     * @param other
     */
-    
+    @Override
     public boolean equals(Object other) {
 	if (other instanceof EnvironmentProperty &&
 	    this.getName().equals( ((EnvironmentProperty) other).getName() )) {
@@ -333,13 +369,16 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
     /** 
     ** The hashCode of an environment property is the same as that of the name String.
     */
+    @Override
     public int hashCode() {
 	return this.getName().hashCode();
     }
     
     /** 
     ** Returns a String representation of this environment property.
+     * @param toStringBuffer
     */
+    @Override
     public void print(StringBuffer toStringBuffer) {
 	toStringBuffer.append("Env-Prop: ").append(super.getName()).append("@");
         printInjectableResourceInfo(toStringBuffer);
@@ -375,7 +414,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
                 if (string.length() != 1) {
                     throw new IllegalArgumentException();
                 } else {
-                    return Character.valueOf(string.charAt(0));
+                    return string.charAt(0);
                 }
             } else if (Class.class.equals(type)) {
                 return Class.forName(string, true,
@@ -414,7 +453,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
             if (string.length() != 1) {
                 throw new IllegalArgumentException();
             } else {
-                return Character.valueOf(string.charAt(0));
+                return string.charAt(0);
             }
         } 
         return null;
@@ -437,6 +476,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
     //
     // InjectableResource implementation
     //
+    @Override
     public void addInjectionTarget(InjectionTarget target) {
         if (injectionTargets==null) {
             injectionTargets = new HashSet<InjectionTarget>();
@@ -453,10 +493,12 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
         }
     }
     
+    @Override
     public Set<InjectionTarget> getInjectionTargets() {
         return (injectionTargets != null) ? injectionTargets : new HashSet<InjectionTarget>();
     }
 
+    @Override
     public boolean isInjectable() {
         return (injectionTargets!=null && injectionTargets.size()>0);
         //return (getInjectTargetName() != null);
@@ -475,14 +517,17 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
         return fromXml;
     }
 
+    @Override
     public String getComponentEnvName() {
         return getName();
     }
 
+    @Override
     public String getInjectResourceType() {
         return type;
     }
 
+    @Override
     public void setInjectResourceType(String resourceType) {
         type = convertPrimitiveTypes(resourceType);
     }

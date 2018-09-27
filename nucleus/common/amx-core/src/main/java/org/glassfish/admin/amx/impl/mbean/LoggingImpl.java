@@ -37,6 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.admin.amx.impl.mbean;
 
 import com.sun.common.util.logging.LoggingConfigImpl;
@@ -255,6 +258,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
             attributes.put(gfHandler + ".file", props.get(gfHandler + ".file"));
             attributes.put(gfHandler + ".rotationTimelimitInMinutes", props.get(gfHandler + ".rotationTimelimitInMinutes"));
             attributes.put(gfHandler + ".rotationLimitInBytes", props.get(gfHandler + ".rotationLimitInBytes"));
+            attributes.put(gfHandler + ".logtoFile", props.get(gfHandler + ".logtoFile"));
             attributes.put(gfHandler + ".logtoConsole", props.get(gfHandler + ".logtoConsole"));
             attributes.put(gfHandler + ".flushFrequency", props.get(gfHandler + ".flushFrequency"));
             attributes.put("handlers", props.get("handlers"));

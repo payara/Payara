@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -106,18 +106,12 @@ public class SlowSqlTraceCache extends SQLTraceCache {
      * Returns the slowest SQL traces.
      * @return A String representation of the slowest SQL Traces
      */
-    public String getSlowestSqlQueries() {
+    public List<SlowSqlTrace> getSlowestSqlQueries() {
         purgeEntries();
         
         List<SlowSqlTrace> slowSqlTraceList = new ArrayList(cache.values());
         Collections.sort(slowSqlTraceList, SlowSqlTrace.SlowSqlTraceSlowestExecutionComparator);
-
-        String slowestSqlQueries = "";
-        for (SlowSqlTrace slowSqlTrace : slowSqlTraceList) {
-            slowestSqlQueries += LINE_BREAK + slowSqlTrace.getQueryName() + " - Slowest Execution Time: " 
-                    + slowSqlTrace.getSlowestExecutionTime() + "ms";
-        }
         
-        return slowestSqlQueries;
+        return slowSqlTraceList;
     }
 }

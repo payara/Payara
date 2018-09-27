@@ -59,68 +59,73 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Check that TestExtensionBean is deployed and accessible,
- * and that all event are being observed.
+ * Check that TestExtensionBean is deployed and accessible, and that all event are being observed.
  * 
  * @author paulsandoz
  * @author Santiago.PericasGeertsen@sun.com
  */
 public class ExtensionBeanServlet extends HttpServlet {
 
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         ExtensionBean te = get(ExtensionBean.class, getBM());
 
         response.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = response.getWriter();
-        try {
+        
+        try (PrintWriter out = response.getWriter()) {
             out.println("<html>");
-            out.println("<body>");
-            out.println("<h1>Extension bean " + te + "</h1>");
-            out.println("<h1>" + te.bbd + " " + te.abd + " " + te.adv + " "
-                    + te.pat + " " + te.pit + " " + te.pmb + "</h1>");
-            out.println("</body>");
+                out.println("<body>");
+                    out.println("<h1>Extension bean " + te + "</h1>");
+                    out.println("<h1>" + 
+                                    te.bbd + " " + te.abd + " " + te.adv + " " + te.pat + " " + te.pit + " " + te.pmb + 
+                                "</h1>");
+                out.println("</body>");
             out.println("</html>");
-        } finally {
-            out.close();
         }
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /** 
+    /**
      * Handles the HTTP <code>GET</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     * 
+     * @param request
+     *            servlet request
+     * @param response
+     *            servlet response
+     * @throws ServletException
+     *             if a servlet-specific error occurs
+     * @throws IOException
+     *             if an I/O error occurs
      */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         processRequest(request, response);
     }
 
-    /** 
+    /**
      * Handles the HTTP <code>POST</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     * 
+     * @param request
+     *            servlet request
+     * @param response
+     *            servlet response
+     * @throws ServletException
+     *             if a servlet-specific error occurs
+     * @throws IOException
+     *             if an I/O error occurs
      */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         processRequest(request, response);
     }
 
-    /** 
+    /**
      * Returns a short description of the servlet.
+     * 
      * @return a String containing servlet description
      */
     @Override
     public String getServletInfo() {
         return "Short description";
-    }// </editor-fold>
+    }
 
     public <T> T get(Class<T> c, BeanManager bm) {
         Set<Bean<?>> bs = bm.getBeans(c);

@@ -155,7 +155,7 @@
        </sun:tableColumn>
       </sun:tableRowGroup>
     </sun:table>
- "<br/>"
+ "<br/>
     <sun:hidden id="helpKey" value="$resource{help_full.jobStepListing}" />
 </sun:form>
 </define>

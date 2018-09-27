@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 -->
 
 <!-- logViewer/logEntryDetail.jsf -->
@@ -120,7 +121,7 @@
 		<foreach key="item" list="#{results}"><sun:staticText id="MessageId" text="#{item.messageID}"/> </foreach>
 	    </sun:property>
 	    <sun:property id="completeMessageProp"  labelAlign="left" noWrap="true" overlapLabel="false" label="$resource{i18nc.logDetail.messageLabel}">
-		<foreach key="item" list="#{results}"><sun:staticText id="CompleteMessage" text="#{item.Message}" style="white-space:pre;"/></foreach>
+		<foreach key="item" list="#{results}"><sun:staticText id="CompleteMessage" text="#{item.message}" style="white-space:pre;"/></foreach>
 	    </sun:property>
 	    "<br /><br />
 	</sun:propertySheetSection>

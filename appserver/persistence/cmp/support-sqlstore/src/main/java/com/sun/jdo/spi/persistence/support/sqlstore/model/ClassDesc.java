@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portion Copyright [2018] Payara Foundation and/or affiliates
 
 /*
  * ClassDesc.java
@@ -65,7 +66,7 @@ import com.sun.jdo.spi.persistence.support.sqlstore.sql.RetrieveDescImpl;
 import com.sun.jdo.spi.persistence.support.sqlstore.sql.UpdateObjectDescImpl;
 import com.sun.jdo.spi.persistence.support.sqlstore.sql.concurrency.*;
 import com.sun.jdo.spi.persistence.support.sqlstore.sql.generator.UpdateQueryPlan;
-import com.sun.jdo.spi.persistence.utility.StringHelper;
+import org.glassfish.common.util.StringHelper;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
 import org.glassfish.persistence.common.I18NHelper;
 

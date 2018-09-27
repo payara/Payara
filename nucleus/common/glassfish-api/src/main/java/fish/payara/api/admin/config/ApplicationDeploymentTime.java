@@ -48,9 +48,11 @@ import javax.validation.Payload;
 
 /**
  * An configured element which shows the time taken to deploy the application in
- * seconds
+ * seconds, and the time at which it occurred.
  *
  * @author Matt Gill
+ * @author Jonathan Coustick
+ * @since 4.1.2.173
  */
 @Configured
 public interface ApplicationDeploymentTime extends ConfigBeanProxy, Payload {
@@ -64,5 +66,16 @@ public interface ApplicationDeploymentTime extends ConfigBeanProxy, Payload {
     String getDeploymentTime();
 
     void setDeploymentTime(String value) throws PropertyVetoException;
+    
+    /**
+     * The time when the application was deployed
+     * 
+     * @return milliseconds since the epoch
+     * @since 4.1.2.174
+     */
+    @Attribute(dataType = Long.class, defaultValue = "0")
+    String getTimeDeployed();
+    
+    void setTimeDeployed(String value) throws PropertyVetoException;
 
 }

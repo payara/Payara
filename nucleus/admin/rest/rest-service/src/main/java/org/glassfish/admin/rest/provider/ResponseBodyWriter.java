@@ -36,13 +36,15 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.provider;
 
 import java.util.logging.Level;
+import javax.json.JsonException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.ext.Provider;
-import org.codehaus.jettison.json.JSONException;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.model.ResponseBody;
@@ -62,8 +64,8 @@ public class ResponseBodyWriter extends BaseProvider<ResponseBody> {
     public String getContent(ResponseBody body) {
         StringBuilder sb = new StringBuilder();
         try {
-            sb.append(body.toJson().toString(getFormattingIndentLevel()));
-        } catch (JSONException ex) {
+            sb.append(body.toJson().toString());
+        } catch (JsonException ex) {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
 

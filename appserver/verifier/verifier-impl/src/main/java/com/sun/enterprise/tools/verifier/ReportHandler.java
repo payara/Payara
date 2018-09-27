@@ -59,6 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -211,6 +212,8 @@ public class ReportHandler {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = null;
         try {
+            factory.setValidating(true);
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             builder = factory.newDocumentBuilder();
         } catch (Exception e) {
             IOException ioe = new IOException(e.getMessage());
@@ -376,6 +379,8 @@ public class ReportHandler {
                     outputFileStr + ".xml"); // NOI18N
             DOMSource domSource = new DOMSource(document);
             TransformerFactory tfactory = TransformerFactory.newInstance();
+            tfactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            tfactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
             Transformer transformer = tfactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes"); // NOI18N
             transformer.setOutputProperty(OutputKeys.METHOD, "xml"); // NOI18N
@@ -401,19 +406,20 @@ public class ReportHandler {
      * @throws IOException
      */
     private void writeToTxtFile() throws IOException {
-        InputStream xslFile = getLocalizedXSLFile();
-        
-        Document dynamicDocument = document;
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        generateText(dynamicDocument, xslFile, output);
-        textResult = output.toString("UTF-8");
-        
-        // dump to text file.
-        File outputFile = extractResultsFileToTmpDir(outputFileStr + ".txt"); // NOI18N
-        OutputStreamWriter fw = new OutputStreamWriter(
-                                    new FileOutputStream(outputFile));
-        fw.write(textResult);
-        fw.close();
+        try (InputStream xslFile = getLocalizedXSLFile();
+             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            Document dynamicDocument = document;
+
+            generateText(dynamicDocument, xslFile, output);
+            textResult = output.toString("UTF-8");
+
+            // dump to text file.
+            File outputFile = extractResultsFileToTmpDir(outputFileStr + ".txt"); // NOI18N
+            try (OutputStreamWriter fw = new OutputStreamWriter(
+              new FileOutputStream(outputFile))) {
+                fw.write(textResult);
+            }
+        }
     }
 
     private File extractResultsFileToTmpDir(String jarFile) {

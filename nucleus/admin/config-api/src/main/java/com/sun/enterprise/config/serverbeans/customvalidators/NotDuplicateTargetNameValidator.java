@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans.customvalidators;
 
@@ -58,8 +59,7 @@ import org.glassfish.hk2.api.ServiceLocatorFactory;
  *
  * @author Joe Di Pol
  */
-public class NotDuplicateTargetNameValidator implements
-                        ConstraintValidator<NotDuplicateTargetName, Named> {
+public class NotDuplicateTargetNameValidator implements ConstraintValidator<NotDuplicateTargetName, Named> {
 
     Domain domain = null;
 
@@ -105,13 +105,9 @@ public class NotDuplicateTargetNameValidator implements
             return true;
         }
 
-        if ((checkCluster && domain.getClusterNamed(name) != null) ||
-            (checkConfig  && domain.getConfigNamed(name) != null) ||
-            (checkNode    && domain.getNodeNamed(name) != null) ||
-            (checkServer  && domain.getServerNamed(name) != null)) {
-            return false;
-        } else {
-           return true;
-        }
+        return !((checkCluster && domain.getClusterNamed(name) != null) ||
+                (checkConfig  && domain.getConfigNamed(name) != null) ||
+                (checkNode    && domain.getNodeNamed(name) != null) ||
+                (checkServer  && domain.getServerNamed(name) != null));
     }
 }

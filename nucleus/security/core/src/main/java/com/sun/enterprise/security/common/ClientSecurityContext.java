@@ -40,22 +40,18 @@
 
 package com.sun.enterprise.security.common;
 
-import com.sun.enterprise.security.SecurityLoggerInfo;
-import com.sun.enterprise.security.integration.AppServSecurityContext;
 import java.security.Principal;
+
 import javax.security.auth.Subject;
 
 import org.glassfish.security.common.PrincipalImpl;
-//V3:Comment import com.sun.enterprise.ServerConfiguration;
 
-import java.util.logging.*;
-import com.sun.logging.*;
-
+import com.sun.enterprise.security.UsernamePasswordStore;
+import com.sun.enterprise.security.integration.AppServSecurityContext;
 
 /**
- * This class represents the security context on the client side.
- * For usage of the IIOP_CLIENT_PER_THREAD_FLAG flag, see
- * UsernamePasswordStore. When set to false, the volatile
+ * This class represents the security context on the client side. For usage of the
+ * IIOP_CLIENT_PER_THREAD_FLAG flag, see UsernamePasswordStore. When set to false, the volatile
  * field sharedCsc is used to store the context.
  *
  * @see UsernamePasswordStore
@@ -63,106 +59,48 @@ import com.sun.logging.*;
  *
  */
 public final class ClientSecurityContext extends AbstractSecurityContext {
-    
-    private static final Logger _logger = SecurityLoggerInfo.getLogger();
 
-    public static final String IIOP_CLIENT_PER_THREAD_FLAG =
-        "com.sun.appserv.iiopclient.perthreadauth";
+    private static final long serialVersionUID = -8079501498521266505L;
+
+    public static final String IIOP_CLIENT_PER_THREAD_FLAG = "com.sun.appserv.iiopclient.perthreadauth";
 
     // Bug Id: 4787940
-    private static final boolean isPerThreadAuth = 
-            Boolean.getBoolean(IIOP_CLIENT_PER_THREAD_FLAG);
+    private static final boolean isPerThreadAuth = Boolean.getBoolean(IIOP_CLIENT_PER_THREAD_FLAG);
 
-    // either the thread local or shared version will be used
-    private static ThreadLocal localCsc =
-        isPerThreadAuth ? new ThreadLocal() : null;
+    // Either the thread local or shared version will be used
+    private static ThreadLocal<ClientSecurityContext> localCsc = isPerThreadAuth ? new ThreadLocal<>() : null;
     private static volatile ClientSecurityContext sharedCsc;
 
     /**
      * This creates a new ClientSecurityContext object.
+     *
      * @param The name of the user.
      * @param The Credentials of the user.
      */
-    public ClientSecurityContext(String userName, 
-				 Subject s) {
-
-	this.initiator = new PrincipalImpl(userName);
-	this.subject = s ;
+    public ClientSecurityContext(String userName, Subject subject) {
+        this.initiator = new PrincipalImpl(userName);
+        this.subject = subject;
     }
 
     /**
-     * Initialize the SecurityContext & handle the unauthenticated
-     * principal case
-     
-    public static ClientSecurityContext init() {
-	ClientSecurityContext sc = getCurrent();
-	if (sc == null) { // there is no current security context
-            // create a default one if
-	    sc = generateDefaultSecurityContext();
-        }
-	return sc;
-    }*/
-    
-   /*
-    private static ClientSecurityContext generateDefaultSecurityContext() {
-	final String PRINCIPAL_NAME = "auth.default.principal.name";
-	final String PRINCIPAL_PASS = "auth.default.principal.password";
-	
-        
-	//ServerConfiguration config = ServerConfiguration.getConfiguration();
-	//String username = config.getProperty(PRINCIPAL_NAME, "guest");
-	//String password = config.getProperty(PRINCIPAL_PASS, "guest123");
-	
-        //Temporary hardcoding to make V3 code for WebProfile compile
-        String username ="guest";
-        char[] password = new char[]{'g','e','t','s','t','1','2','3'};
-        synchronized (ClientSecurityContext.class) {
-            // login & all that stuff..
-            try {
-                final Subject subject = new Subject();
-                final PasswordCredential pc = new PasswordCredential(username,
-                        password, "default");
-                AppservAccessController.doPrivileged(new PrivilegedAction() {
-                    public java.lang.Object run() {
-                        subject.getPrivateCredentials().add(pc);
-                        return null;
-                    }
-                });
-                // we do not need to generate any credential as authorization
-                // decisions are not being done on the appclient side.
-                ClientSecurityContext defaultCSC =
-                    new ClientSecurityContext(username, subject);
-                setCurrent(defaultCSC);
-                return defaultCSC;
-            } catch(Exception e) {
-                _logger.log(Level.SEVERE,
-                            "java_security.gen_security_context", e);
-                return null;
-            }
-        }
-    }
-    */
-
-    /**
-     * This method gets the SecurityContext stored here.  If using a
-     * per-thread authentication model, it gets the context from
-     * Thread Local Store (TLS) of the current thread. If not using a
-     * per-thread authentication model, it gets the singleton context.
+     * This method gets the SecurityContext stored here. If using a per-thread authentication model, it
+     * gets the context from Thread Local Store (TLS) of the current thread. If not using a per-thread
+     * authentication model, it gets the singleton context.
      *
-     * @return The current Security Context stored here. It returns
-     *      null if SecurityContext could not be found.
+     * @return The current Security Context stored here. It returns null if SecurityContext could not be
+     * found.
      */
     public static ClientSecurityContext getCurrent() {
         if (isPerThreadAuth) {
-            return (ClientSecurityContext) localCsc.get();
-        } else {
-            return sharedCsc;
+            return localCsc.get();
         }
+
+        return sharedCsc;
     }
 
     /**
      * This method sets the SecurityContext to be stored here.
-     * 
+     *
      * @param The Security Context that should be stored.
      */
     public static void setCurrent(ClientSecurityContext sc) {
@@ -171,79 +109,81 @@ public final class ClientSecurityContext extends AbstractSecurityContext {
         } else {
             sharedCsc = sc;
         }
-    } 
+    }
 
     /**
-     * This method returns the caller principal. 
-     * This information may be redundant since the same information 
-     * can be inferred by inspecting the Credentials of the caller.
-     * 
-     * @return The caller Principal. 
+     * This method returns the caller principal. This information may be redundant since the same
+     * information can be inferred by inspecting the Credentials of the caller.
+     *
+     * @return The caller Principal.
      */
+    @Override
     public Principal getCallerPrincipal() {
-	return initiator;
+        return initiator;
     }
 
-    
+    @Override
     public Subject getSubject() {
-	return subject;
+        return subject;
     }
 
+    @Override
     public String toString() {
-	return "ClientSecurityContext[ " + "Initiator: " + initiator +
-	    "Subject " + subject + " ]";
+        return "ClientSecurityContext[ " + "Initiator: " + initiator + "Subject " + subject + " ]";
     }
-    
-    //added for CR:6620388
-    public static boolean hasEmtpyCredentials(ClientSecurityContext sc) {
-        if (sc == null) {
+
+    // added for CR:6620388
+    public static boolean hasEmtpyCredentials(ClientSecurityContext clientSecurityContext) {
+        if (clientSecurityContext == null) {
             return true;
         }
-        Subject s = sc.getSubject();
-        if (s == null) {
+
+        Subject subject = clientSecurityContext.getSubject();
+        if (subject == null) {
             return true;
         }
-        if (s.getPrincipals().isEmpty()) {
+
+        if (subject.getPrincipals().isEmpty()) {
             return true;
         }
+
         return false;
     }
 
+    @Override
     public AppServSecurityContext newInstance(String userName, Subject subject, String realm) {
-        //TODO:V3 ignoring realm in this case
+        // TODO:V3 ignoring realm in this case
         return new ClientSecurityContext(userName, subject);
     }
 
+    @Override
     public AppServSecurityContext newInstance(String userName, Subject subject) {
         return new ClientSecurityContext(userName, subject);
     }
 
+    @Override
     public void setCurrentSecurityContext(AppServSecurityContext context) {
         if (context instanceof ClientSecurityContext) {
-            setCurrent((ClientSecurityContext)context);
+            setCurrent((ClientSecurityContext) context);
             return;
         }
+
         throw new IllegalArgumentException("Expected ClientSecurityContext, found " + context);
     }
 
+    @Override
     public AppServSecurityContext getCurrentSecurityContext() {
-         return getCurrent();
+        return getCurrent();
     }
 
+    @Override
     public void setUnauthenticatedSecurityContext() {
         throw new UnsupportedOperationException("Not supported yet in V3.");
     }
 
+    @Override
     public void setSecurityContextWithPrincipal(Principal principal) {
         throw new UnsupportedOperationException("Not supported yet in V3.");
     }
-    
 
 }
-
-
-
-
-
-
-

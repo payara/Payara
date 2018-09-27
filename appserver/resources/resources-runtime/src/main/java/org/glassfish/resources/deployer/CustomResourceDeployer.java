@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.deployer;
@@ -111,6 +113,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void deployResource(Object resource, String applicationName, String moduleName)
             throws Exception {
         CustomResource customResource =
@@ -122,6 +125,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void deployResource(Object resource) throws Exception {
         CustomResource customResource =
                 (CustomResource) resource;
@@ -146,6 +150,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
         CustomResource customResource =
                 (CustomResource) resource;
@@ -156,6 +161,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void undeployResource(Object resource)
             throws Exception {
 
@@ -177,6 +183,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean handles(Object resource) {
         return resource instanceof CustomResource;
     }
@@ -184,6 +191,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
     /**
      * @inheritDoc
      */
+    @Override
     public boolean supportsDynamicReconfiguration() {
         return false;
     }
@@ -191,6 +199,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
     /**
      * @inheritDoc
      */
+    @Override
     public Class[] getProxyClassesForDynamicReconfiguration() {
         return new Class[0];
     }
@@ -198,6 +207,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void redeployResource(Object resource)
             throws Exception {
 
@@ -208,6 +218,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void enableResource(Object resource) throws Exception {
         deployResource(resource);
     }
@@ -215,6 +226,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public synchronized void disableResource(Object resource) throws Exception {
         undeployResource(resource);
     }
@@ -226,6 +238,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
      * handle custom resource events.
      *
      * @param customRes custom resource
+     * @param resourceInfo
      */
     public void installCustomResource(org.glassfish.resources.beans.CustomResource customRes, ResourceInfo resourceInfo) {
 
@@ -263,6 +276,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
      * to convert custom-resource config bean into custom j2ee resource.
      *
      * @param rbean custom-resource config bean
+     * @param resourceInfo the definition of the resources to create
      * @return new instance of j2ee custom resource
      */
     public static JavaEEResource toCustomJavaEEResource(
@@ -298,6 +312,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource) {
         if (handles(resource)) {
             if (!postApplicationDeployment) {
@@ -310,6 +325,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void validatePreservedResource(Application oldApp, Application newApp, Resource resource,
                                           Resources allResources)
             throws ResourceConflictException {

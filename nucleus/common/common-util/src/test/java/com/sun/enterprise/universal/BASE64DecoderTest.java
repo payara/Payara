@@ -37,75 +37,47 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.universal;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 import java.io.IOException;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import java.util.Base64;
+
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
  * @author bnevins
  */
 public class BASE64DecoderTest {
+    
+    private static final String[] testStrings = new String[] { "foo", "QQ234bbVVc", "\n\n\r\f\n" };
+    
     /* 
-     * make sure the Universal base64 works
+     * Make sure the JDK base64 encoding/decoding works
      */
     @Test
     public void testEncodeDecode() throws IOException{
-        GFBase64Encoder encoder = new GFBase64Encoder();
-        GFBase64Decoder decoder = new GFBase64Decoder();
+        Base64.Encoder encoder = Base64.getMimeEncoder();
+        Base64.Decoder decoder = Base64.getMimeDecoder();
         
-        for(String s : ss) {
-            byte[] stringAsByteBuf = s.getBytes();
-            String enc = encoder.encode(stringAsByteBuf);
-            assertFalse(enc.equals(s));
-            byte[] decodedByteBuf = decoder.decodeBuffer(enc);
-            String dec = new String(decodedByteBuf);
-            assertEquals(dec, s);
+        for (String testString : testStrings) {
+            String enc = new String(encoder.encode(testString.getBytes()), UTF_8);
+            assertFalse(enc.equals(testString));
+            
+            String dec = new String(decoder.decode(enc), UTF_8);
+            assertEquals(dec, testString);
         }
     }
-    
-    /* make sure the Universal base64 results match sun.misc
-     */
+   
     @Test
     public void testEncodeDecodeAgainstSun() throws IOException{
-        com.sun.enterprise.universal.GFBase64Encoder gfEncoder = 
-                new com.sun.enterprise.universal.GFBase64Encoder();
-        com.sun.enterprise.universal.GFBase64Decoder gfDecoder = 
-                new com.sun.enterprise.universal.GFBase64Decoder();
-        sun.misc.BASE64Decoder sunDecoder = new sun.misc.BASE64Decoder();
-        sun.misc.BASE64Encoder sunEncoder = new sun.misc.BASE64Encoder();
-        
-        for(String s : ss) {
-            byte[] stringAsByteBuf = s.getBytes();
-            String gfEnc = gfEncoder.encode(stringAsByteBuf);
-            String sunEnc = sunEncoder.encode(stringAsByteBuf);
-            
-            assertEquals(gfEnc, sunEnc);
-            
-            byte[] gfDecodedByteBuf = gfDecoder.decodeBuffer(gfEnc);
-            byte[] sunDecodedByteBuf = sunDecoder.decodeBuffer(sunEnc);
-            
-            assertTrue(gfDecodedByteBuf.length == sunDecodedByteBuf.length);
-            
-            for(int i = 0; i < gfDecodedByteBuf.length; i++)
-                assertEquals(gfDecodedByteBuf[i], sunDecodedByteBuf[i]);
-
-            String gfDec = new String(gfDecodedByteBuf);
-            String sunDec = new String(sunDecodedByteBuf);
-            assertEquals(gfDec, s);
-            assertEquals(gfDec, sunDec);
-        }
+       
     }
     
-    private static final String[] ss = new String[]
-    {
-        "foo", "QQ234bbVVc", "\n\n\r\f\n"
-    };
+    
 }

@@ -46,7 +46,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
  */
 public class BoundedTreeSet<N extends Comparable> extends ConcurrentSkipListSet<N> implements Serializable {
 
-    private final int maxSize;
+    protected final int maxSize;
 
     public BoundedTreeSet(int maxSize) {
         super();

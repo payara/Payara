@@ -38,11 +38,10 @@
  * holder.
  */
 
-
 package com.sun.jaspic.config.jaas;
 
-import com.sun.jaspic.config.helper.AuthContextHelper;
-import com.sun.jaspic.config.helper.AuthConfigProviderHelper;
+import com.sun.jaspic.config.helper.BaseAuthContextImpl;
+import com.sun.jaspic.config.helper.BaseAuthConfigProvider;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
@@ -55,7 +54,7 @@ import javax.security.auth.message.config.AuthConfigFactory.RegistrationContext;
  *
  * @author Ron Monzillo
  */
-public abstract class JAASAuthConfigProvider extends AuthConfigProviderHelper {
+public abstract class JAASAuthConfigProvider extends BaseAuthConfigProvider {
 
     private static final String CONFIG_FILE_NAME_KEY = "config.file.name";
     private static final String DEFAULT_JAAS_APP_NAME = "other";
@@ -67,11 +66,11 @@ public abstract class JAASAuthConfigProvider extends AuthConfigProviderHelper {
     private Map<String, ?> properties;
     private AuthConfigFactory factory;
 
-    public JAASAuthConfigProvider(Map properties, AuthConfigFactory factory) {
+    public JAASAuthConfigProvider(Map<String, ?> properties, AuthConfigFactory factory) {
         this.properties = properties;
         this.factory = factory;
 
-        configFileName = getProperty(CONFIG_FILE_NAME_KEY,null);
+        configFileName = getProperty(CONFIG_FILE_NAME_KEY, null);
 
         if (configFileName == null) {
             jaasConfig = new ExtendedConfigFile();
@@ -84,14 +83,15 @@ public abstract class JAASAuthConfigProvider extends AuthConfigProviderHelper {
                 throw iae;
             }
         }
-       selfRegister();
+        selfRegister();
     }
 
+    @Override
     public Map<String, ?> getProperties() {
         return properties;
     }
 
-
+    @Override
     public AuthConfigFactory getFactory() {
         return factory;
     }
@@ -110,24 +110,29 @@ public abstract class JAASAuthConfigProvider extends AuthConfigProviderHelper {
 
             final String description = "JAAS AuthConfig: " + appContext;
 
+            @Override
             public String getMessageLayer() {
                 return layer;
             }
 
+            @Override
             public String getAppContext() {
                 return appContext;
             }
 
+            @Override
             public String getDescription() {
                 return description;
             }
 
+            @Override
             public boolean isPersistent() {
                 return false;
             }
         };
     }
 
+    @Override
     public AuthConfigFactory.RegistrationContext[] getSelfRegistrationContexts() {
         final String[] appContexts = jaasConfig.getAppNames(getModuleTypes());
         RegistrationContext[] rvalue = new RegistrationContext[appContexts.length];
@@ -137,10 +142,9 @@ public abstract class JAASAuthConfigProvider extends AuthConfigProviderHelper {
         return rvalue;
     }
 
-    public AuthContextHelper getAuthContextHelper(String appContext, boolean returnNullContexts)
-            throws AuthException {
-        return new JAASAuthContextHelper(getLoggerName(), returnNullContexts,
-                jaasConfig, properties, appContext);
+    @Override
+    public BaseAuthContextImpl getAuthContextHelper(String appContext, boolean returnNullContexts) throws AuthException {
+        return new JAASAuthContextHelper(getLoggerName(), returnNullContexts, jaasConfig, properties, appContext);
     }
 
     @Override

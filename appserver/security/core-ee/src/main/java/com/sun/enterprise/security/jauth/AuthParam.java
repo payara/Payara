@@ -37,16 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jauth;
 
 /**
- * An authentication parameter used to encapsulate a
- * request and response objects.
+ * An authentication parameter used to encapsulate a request and response objects.
  *
- * <p> This is a marker interface for container-specific
- * authentication parameters.
+ * <p>
+ * This is a marker interface for container-specific authentication parameters.
  *
  * @version %I%, %G%
  */
-public interface AuthParam { }
+public interface AuthParam {
+}

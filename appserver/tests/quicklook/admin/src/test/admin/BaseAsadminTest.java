@@ -69,6 +69,7 @@ public class BaseAsadminTest {
     
     protected Manifest invokeURLAndGetManifest(String urls) {
         try {
+            System.out.println("*************" + urls);
             URL url = new URL(urls);
             HttpURLConnection uc = (HttpURLConnection)url.openConnection();
             uc.setRequestMethod("GET");
@@ -77,6 +78,7 @@ public class BaseAsadminTest {
             Manifest man = new Manifest(uc.getInputStream());
             return ( man );
         } catch(Exception e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }

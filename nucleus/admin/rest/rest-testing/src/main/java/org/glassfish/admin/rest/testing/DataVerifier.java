@@ -36,26 +36,27 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.testing;
-
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 import java.util.Map;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.json.JsonArray;
+import javax.json.JsonException;
+import javax.json.JsonObject;
 
 public class DataVerifier {
     private Environment env;
     private ObjectValue objectWant;
-    private JSONObject objectHave;
+    private JsonObject objectHave;
     private IndentingStringBuffer sb = new IndentingStringBuffer();
 
-    public DataVerifier(Environment env, ObjectValue objectWant, JSONObject objectHave) {
+    public DataVerifier(Environment env, ObjectValue objectWant, JsonObject objectHave) {
         this.env = env;
         this.objectWant = objectWant;
         this.objectHave = objectHave;
@@ -77,11 +78,11 @@ public class DataVerifier {
         return this.env;
     }
 
-    public static void verify(Environment env, ObjectValue objectWant, JSONObject objectHave) throws Exception {
+    public static void verify(Environment env, ObjectValue objectWant, JsonObject objectHave) throws Exception {
         IndentingStringBuffer sb = new IndentingStringBuffer();
         objectWant.print(sb);
         env.debug("Body want : " + sb.toString());
-        env.debug("Body have : " + objectHave.toString(2));
+        env.debug("Body have : " + objectHave.toString());
         (new DataVerifier(env, objectWant, objectHave)).verify();
     }
 
@@ -93,7 +94,7 @@ public class DataVerifier {
                 trace("Response object have=");
                 indent();
                 try {
-                    trace(this.objectHave.toString(2));
+                    trace(this.objectHave.toString());
                 } finally {
                     undent();
                 }
@@ -107,17 +108,17 @@ public class DataVerifier {
         }
     }
 
-    private boolean sameProperties(Map<String, Value> want, JSONObject have, boolean ignoreExtra) throws Exception {
+    private boolean sameProperties(Map<String, Value> want, JsonObject have, boolean ignoreExtra) throws Exception {
         trace("comparing properties, ignoreExtra=" + ignoreExtra);
         indent();
 
         try {
-            if (want.size() > have.length()) {
+            if (want.size() > have.size()) {
                 trace("different since object has too few properties");
                 return false;
             }
-            if (!(ignoreExtra) && want.size() < have.length()) {
-                trace("different since object has too many properties want=" + want.size() + " have=" + have.length());
+            if (!(ignoreExtra) && want.size() < have.size()) {
+                trace("different since object has too many properties want=" + want.size() + " have=" + have.size());
                 return false;
             }
             for (Map.Entry<String, Value> p : want.entrySet()) {
@@ -133,7 +134,7 @@ public class DataVerifier {
         }
     }
 
-    private boolean sameArray(ArrayValue want, JSONArray have) throws Exception {
+    private boolean sameArray(ArrayValue want, JsonArray have) throws Exception {
         trace("comparing arrays, ignoreExtra=" + want.isIgnoreExtra() + ", ordered=" + want.isOrdered());
         indent();
         try {
@@ -145,11 +146,11 @@ public class DataVerifier {
                 throw new AssertionError("ignore-extra must be false if ordered is true");
             }
 
-            if (wantVals.size() > have.length()) {
+            if (wantVals.size() > have.size()) {
                 trace("different since array has too few elements");
                 return false;
             }
-            if (!ignoreExtra && wantVals.size() < have.length()) {
+            if (!ignoreExtra && wantVals.size() < have.size()) {
                 trace("diffent since array has too many elements");
                 return false;
             }
@@ -176,11 +177,11 @@ public class DataVerifier {
         }
     }
 
-    private boolean sameProperty(String nameWant, Value valueWant, JSONObject have) throws Exception {
+    private boolean sameProperty(String nameWant, Value valueWant, JsonObject have) throws Exception {
         trace("comparing property " + nameWant);
         indent();
         try {
-            if (!have.has(nameWant)) {
+            if (!have.containsKey(nameWant)) {
                 trace("missing property " + nameWant);
                 return false;
             }
@@ -195,7 +196,7 @@ public class DataVerifier {
         }
     }
 
-    private boolean sameValue(Value want, JSONObject parent, String name) throws Exception {
+    private boolean sameValue(Value want, JsonObject parent, String name) throws Exception {
         if (want instanceof ObjectValue) {
             return sameObject((ObjectValue) want, parent, name);
         }
@@ -211,7 +212,7 @@ public class DataVerifier {
         throw new AssertionError("Unknown value " + want);
     }
 
-    private boolean sameValue(Value want, JSONArray parent, int index) throws Exception {
+    private boolean sameValue(Value want, JsonArray parent, int index) throws Exception {
         if (want instanceof ObjectValue) {
             return sameObject((ObjectValue) want, parent, index);
         }
@@ -227,12 +228,12 @@ public class DataVerifier {
         throw new AssertionError("Unknown value " + want);
     }
 
-    private boolean sameObject(ObjectValue want, JSONObject parent, String name) throws Exception {
+    private boolean sameObject(ObjectValue want, JsonObject parent, String name) throws Exception {
         trace("comparing object object property " + name);
         indent();
         try {
             try {
-                JSONObject have = parent.getJSONObject(name);
+                JsonObject have = parent.getJsonObject(name);
                 if (sameProperties(want.getProperties(), have, want.isIgnoreExtra())) {
                     trace("same object");
                     return true;
@@ -240,7 +241,7 @@ public class DataVerifier {
                     trace("different object");
                     return false;
                 }
-            } catch (JSONException e) {
+            } catch (JsonException e) {
                 trace("different since property was not an object");
                 return false;
             }
@@ -249,12 +250,12 @@ public class DataVerifier {
         }
     }
 
-    private boolean sameObject(ObjectValue want, JSONArray parent, int index) throws Exception {
+    private boolean sameObject(ObjectValue want, JsonArray parent, int index) throws Exception {
         trace("comparing array object element " + index);
         indent();
         try {
             try {
-                JSONObject have = parent.getJSONObject(index);
+                JsonObject have = parent.getJsonObject(index);
                 if (sameProperties(want.getProperties(), have, want.isIgnoreExtra())) {
                     trace("same object");
                     return true;
@@ -262,7 +263,7 @@ public class DataVerifier {
                     trace("different object");
                     return false;
                 }
-            } catch (JSONException e) {
+            } catch (JsonException e) {
                 trace("different since property was not an object");
                 return false;
             }
@@ -271,19 +272,19 @@ public class DataVerifier {
         }
     }
 
-    private boolean sameArray(ArrayValue want, JSONObject parent, String name) throws Exception {
+    private boolean sameArray(ArrayValue want, JsonObject parent, String name) throws Exception {
         trace("comparing object array property " + name);
         indent();
         try {
             try {
-                if (sameArray(want, parent.getJSONArray(name))) {
+                if (sameArray(want, parent.getJsonArray(name))) {
                     trace("same array");
                     return true;
                 } else {
                     trace("different array");
                     return false;
                 }
-            } catch (JSONException e) {
+            } catch (JsonException e) {
                 trace("different since property was not an array");
                 return false;
             }
@@ -292,19 +293,19 @@ public class DataVerifier {
         }
     }
 
-    private boolean sameArray(ArrayValue want, JSONArray parent, int index) throws Exception {
+    private boolean sameArray(ArrayValue want, JsonArray parent, int index) throws Exception {
         trace("comparing array array element " + index);
         indent();
         try {
             try {
-                if (sameArray(want, parent.getJSONArray(index))) {
+                if (sameArray(want, parent.getJsonArray(index))) {
                     trace("same array");
                     return true;
                 } else {
                     trace("different array");
                     return false;
                 }
-            } catch (JSONException e) {
+            } catch (JsonException e) {
                 trace("different since property was not an array");
                 return false;
             }
@@ -313,20 +314,20 @@ public class DataVerifier {
         }
     }
 
-    private boolean sameScalar(ScalarValue want, JSONObject parent, String name) throws Exception {
+    private boolean sameScalar(ScalarValue want, JsonObject parent, String name) throws Exception {
         trace("comparing object scalar property " + name);
         String regexp = want.getRegexp();
         if (want instanceof StringValue) {
             return sameString(((StringValue) want).getValue(), regexp, parent.getString(name));
         }
         if (want instanceof LongValue) {
-            return sameString(longToString(((LongValue) want).getValue()), regexp, longToString(parent.getLong(name)));
+            return sameString(longToString(((LongValue) want).getValue()), regexp, longToString(parent.getJsonNumber(name).longValue()));
         }
         if (want instanceof IntValue) {
             return sameString(intToString(((IntValue) want).getValue()), regexp, intToString(parent.getInt(name)));
         }
         if (want instanceof DoubleValue) {
-            return sameString(doubleToString(((DoubleValue) want).getValue()), regexp, doubleToString(parent.getDouble(name)));
+            return sameString(doubleToString(((DoubleValue) want).getValue()), regexp, doubleToString(parent.getJsonNumber(name).doubleValue()));
         }
         if (want instanceof BooleanValue) {
             return sameString(booleanToString(((BooleanValue) want).getValue()), regexp, booleanToString(parent.getBoolean(name)));
@@ -334,20 +335,20 @@ public class DataVerifier {
         throw new AssertionError(want + " is not a valid scalar type.  Valid types are string, long, int, double, boolean");
     }
 
-    private boolean sameScalar(ScalarValue want, JSONArray parent, int index) throws Exception {
+    private boolean sameScalar(ScalarValue want, JsonArray parent, int index) throws Exception {
         trace("comparing array scalar element " + index);
         String regexp = want.getRegexp();
         if (want instanceof StringValue) {
             return sameString(((StringValue) want).getValue(), regexp, parent.getString(index));
         }
         if (want instanceof LongValue) {
-            return sameString(longToString(((LongValue) want).getValue()), regexp, longToString(parent.getLong(index)));
+            return sameString(longToString(((LongValue) want).getValue()), regexp, longToString(parent.getJsonNumber(index).longValue()));
         }
         if (want instanceof IntValue) {
             return sameString(intToString(((IntValue) want).getValue()), regexp, intToString(parent.getInt(index)));
         }
         if (want instanceof DoubleValue) {
-            return sameString(doubleToString(((DoubleValue) want).getValue()), regexp, doubleToString(parent.getDouble(index)));
+            return sameString(doubleToString(((DoubleValue) want).getValue()), regexp, doubleToString(parent.getJsonNumber(index).doubleValue()));
         }
         if (want instanceof BooleanValue) {
             return sameString(booleanToString(((BooleanValue) want).getValue()), regexp, booleanToString(parent.getBoolean(index)));
@@ -421,7 +422,7 @@ public class DataVerifier {
         }
     }
 
-    private boolean sameNil(JSONObject parent, String name) {
+    private boolean sameNil(JsonObject parent, String name) {
         trace("comparing object nil property " + name);
         indent();
         try {
@@ -437,7 +438,7 @@ public class DataVerifier {
         }
     }
 
-    private boolean sameNil(JSONArray parent, int index) {
+    private boolean sameNil(JsonArray parent, int index) {
         trace("comparing array nil element " + index);
         indent();
         try {
@@ -459,17 +460,17 @@ public class DataVerifier {
         private int matchCount = 0;
         private ArrayValue want;
         private List<Value> wantValues;
-        private JSONArray have;
+        private JsonArray have;
         private int[] wantMatches; // an entry for each want element. -1 means it hasn't been matched yet. otherwise, the index of the have element we're matched with
         private int[] haveMatches; // an entry for each have element. -1 means it hasn't been matched yet. otherwise, the index of the want element we're matched with
         private boolean[][] potentialMatches; // wantPotentialMatches[wantIndex][haveIndex] indicates if want matches have
 
-        private UnorderedArrayMatcher(ArrayValue want, JSONArray have) {
+        private UnorderedArrayMatcher(ArrayValue want, JsonArray have) {
             this.want = want;
             this.wantValues = this.want.getValues();
             this.have = have;
             this.wantMatches = new int[this.wantValues.size()];
-            this.haveMatches = new int[this.have.length()];
+            this.haveMatches = new int[this.have.size()];
             for (int i = 0; i < wantCount(); i++) {
                 setWantMatch(i, -1);
             }

@@ -37,12 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * Class.java
- *
- * Created on November 11, 2003, 1:45 PM
- */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
@@ -72,20 +67,20 @@ import java.util.List;
  */
 public class PropertyResolver {
 
-    private Domain _domain = null;
-    private Cluster _cluster = null;
-    private Server _server = null;
-    private Config _config = null;
+    private Domain domain = null;
+    private Cluster cluster = null;
+    private Server server = null;
+    private Config config = null;
     
     public PropertyResolver(Domain domain, String instanceName) {
-        _domain = domain;
-        _server = _domain.getServerNamed(instanceName);
-        if (_server != null) {
-            _config = _domain.getConfigNamed(_server.getConfigRef());
+        this.domain = domain;
+        server = domain.getServerNamed(instanceName);
+        if (server != null) {
+            config = domain.getConfigNamed(server.getConfigRef());
         } else {
-            _config = _domain.getConfigNamed(instanceName);
+            config = domain.getConfigNamed(instanceName);
         }
-        _cluster = _domain.getClusterForInstance(instanceName);
+        cluster = domain.getClusterForInstance(instanceName);
     }
     
     /**
@@ -111,38 +106,36 @@ public class PropertyResolver {
      * This restriction is to prevent incorrect values being returned when trying
      * to retrieve properties for instances other than the currently running server (such as DAS).
      * In this case, we don't want to incorrectly return the DAS java.lang.System property.
+     * @param propName
+     * @return 
      */
     public String getPropertyValue(String propName) {
         if (propName.startsWith("${") && propName.endsWith("}")) {
-            propName = propName.substring(2, propName.lastIndexOf("}"));
+            propName = propName.substring(2, propName.lastIndexOf('}'));
         }
         String propVal = null;
         //First look for a server instance property matching the propName
-        if (_server != null) {
-            propVal = getPropertyValue(propName, _server.getSystemProperty());
+        if (server != null) {
+            propVal = getPropertyValue(propName, server.getSystemProperty());
         }
         if (propVal == null) {
-            if (_cluster != null) {
+            if (cluster != null) {
                 //If not found in the server instance, look for the propName in the 
                 //cluster
-                propVal = getPropertyValue(propName, _cluster.getSystemProperty());
-            }            
-            if (propVal == null) {
-                if (_config != null) {             
-                    //If not found in the server instance or cluster, look for the 
-                    //propName in the config
-                    propVal = getPropertyValue(propName, _config.getSystemProperty());
-                    if (propVal == null) {
-                        if (_domain != null) {
-                            //Finally if the property is not found in the server, cluster,
-                            //or configuration, look for the propName in the domain
-                            propVal = getPropertyValue(propName, _domain.getSystemProperty());
-                        }
-                    }
+                propVal = getPropertyValue(propName, cluster.getSystemProperty());
+            }
+            if (propVal == null && config != null) {
+                //If not found in the server instance or cluster, look for the 
+                //propName in the config
+                propVal = getPropertyValue(propName, config.getSystemProperty());
+                if (propVal == null && domain != null) {
+                    //Finally if the property is not found in the server, cluster,
+                    //or configuration, look for the propName in the domain
+                    propVal = getPropertyValue(propName, domain.getSystemProperty());
                 }
             }
         }
-        
+
         return propVal;
     }
 }

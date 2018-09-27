@@ -37,14 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.startup;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,7 +65,9 @@ import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.util.IASSecurityException;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
-import org.glassfish.api.admin.config.ReferenceContainer;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
+import java.security.SecureRandom;
+import java.util.Collections;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.MetaData;
@@ -92,6 +93,8 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.javaee.core.deployment.JavaEEDeployer;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.internal.data.EngineRef;
+import org.glassfish.internal.data.ProgressTracker;
 
 /**
  * Ejb module deployer.
@@ -126,7 +129,7 @@ public class EjbDeployer
     private Object lock = new Object();
     private volatile CMPDeployer cmpDeployer = null;
 
-    private static Random random = new Random();
+    private static SecureRandom random = new SecureRandom();
 
     // Property used to persist unique id across server restart.
     static final String APP_UNIQUE_ID_PROP = "org.glassfish.ejb.container.application_unique_id";
@@ -351,22 +354,30 @@ public class EjbDeployer
                             target = targets.get(0);
                         }
                     }
-                    EJBTimerService timerService = EJBTimerService.getEJBTimerService(target, false);
+                    EJBTimerService timerService = null;
+                    boolean tsInitialized = false;
+                    ProgressTracker tracker = dc.getTransientAppMetaData(ExtendedDeploymentContext.TRACKER, ProgressTracker.class);
+                    if(tracker == null || !tracker.get("initialized", EngineRef.class).isEmpty()) {
+                        timerService = EJBTimerService.getEJBTimerService(target, false);
+                        tsInitialized = true;
+                    }
                     if (_logger.isLoggable(Level.FINE)) {
                         _logger.log( Level.FINE, "EjbDeployer APP ID of a Timeout App? " + uniqueAppId);
                         _logger.log( Level.FINE, "EjbDeployer TimerService: " + timerService);
                     }
 
-                    if(timerService == null) {
-                        _logger.log( Level.WARNING, "EJB Timer Service is not available. Timers for application with id " +
-                                uniqueAppId + " will not be deleted");
-                    } else {
-                        if (getKeepStateFromApplicationInfo(params.name())) {
-                            _logger.log(Level.INFO,
-                                     "Timers will not be destroyed since keepstate is true for application {0}",
-                                     params.name());
+                    if (tsInitialized) {
+                        if (timerService == null) {
+                            _logger.log(Level.WARNING, "EJB Timer Service is not available. Timers for application with id "
+                                    + uniqueAppId + " will not be deleted");
                         } else {
-                            timerService.destroyAllTimers(Long.parseLong(uniqueAppId));
+                            if (getKeepStateFromApplicationInfo(params.name())) {
+                                _logger.log(Level.INFO,
+                                        "Timers will not be destroyed since keepstate is true for application {0}",
+                                        params.name());
+                            } else {
+                                timerService.destroyAllTimers(Long.parseLong(uniqueAppId));
+                            }
                         }
                     }
                 }
@@ -492,7 +503,7 @@ public class EjbDeployer
                 List<String> targets = (List<String>)context.getTransientAppMetaData(DeploymentProperties.PREVIOUS_TARGETS, List.class);
                 for (String ref: targets) {
                     target = ref;
-                    if (domain.getClusterNamed(target) != null) {
+                    if (domain.getClusterNamed(target) != null || domain.getDeploymentGroupNamed(target) != null) {
                         break; // prefer cluster target
                     }
                  }
@@ -571,33 +582,37 @@ public class EjbDeployer
     }
 
     private String getOwnerId(String target) {
-        // If target is a cluster, replace it with the instance
-        ReferenceContainer ref = domain.getReferenceContainerNamed(target);
-
-        if(ref != null && ref.isCluster()) {
-            Cluster cluster = (Cluster) ref; // guaranteed safe cast!!
-            List<Server>  instances = cluster.getInstances();
-
-            // Try a random instance in a cluster
-            int useInstance = random.nextInt(instances.size());
-            Server s0 = instances.get(useInstance);
-            if (s0.isRunning()) {
-                return s0.getName();
+        // If target is a cluster or deployment group replace it with the instance
+        List<Server> instances = Collections.EMPTY_LIST;
+        Cluster cluster = domain.getClusterNamed(target);
+        if (cluster != null) {
+            instances = cluster.getInstances();
+        } else {
+            DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
+            if (dg != null) {
+                instances = dg.getInstances();
             } else {
-                // Pick the first running instead
-                for (Server s : instances) {
-                    if (s.isRunning()) {
-                        return s.getName();
-                    }
-                }
+                return target;
             }
-            // If none of the instances is running, return a random instance in a
-            // cluster
-            return s0.getName();
         }
 
-
-        return target;
+        // Try a random instance in a cluster
+        int useInstance = random.nextInt(instances.size());
+        Server s0 = instances.get(useInstance);
+        if (s0.isRunning()) {
+            return s0.getName();
+        } else {
+            // Pick the first running instead
+            for (Server s : instances) {
+                if (s.isRunning()) {
+                    return s.getName();
+                }
+            }
+        }
+        // If none of the instances is running, return a random instance in a
+        // cluster
+        return s0.getName();
+            
     }
 
     private long getNextEjbAppUniqueId() {

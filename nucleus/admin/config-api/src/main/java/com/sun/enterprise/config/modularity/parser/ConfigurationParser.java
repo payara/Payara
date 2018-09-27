@@ -44,8 +44,6 @@ import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
 import com.sun.enterprise.config.serverbeans.ConfigLoader;
 import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
-import com.sun.enterprise.util.LocalStringManager;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.glassfish.hk2.api.ServiceLocator;

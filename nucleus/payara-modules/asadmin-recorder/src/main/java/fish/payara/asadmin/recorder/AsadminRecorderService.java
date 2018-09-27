@@ -57,14 +57,18 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
+import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- *
+ * Service to record asadmin commands.
+ * This can be for both commands entered at the command line and
+ * for actions in the admin console.
  * @author Andrew Pielage
+ * @since 4.1.1.162
  */
 @Service(name = "asadmin-recorder")
 @RunLevel(StartupRunLevel.VAL)
@@ -136,6 +140,10 @@ public class AsadminRecorderService implements EventListener {
         return asadminCommand;
     }
 
+    /**
+     * Returns true is the asadmin recorder is enabled
+     * @return 
+     */
     public boolean isEnabled() {
         boolean enabled = false;
         if (asadminRecorderConfiguration == null) {
@@ -148,6 +156,11 @@ public class AsadminRecorderService implements EventListener {
         return enabled;
     }
 
+    /**
+     * Records a given asadmin command
+     * @param commandName The name of the command
+     * @param parameters A map of all of the parameters passed as oart of the command
+     */
     public void recordAsadminCommand(String commandName, ParameterMap parameters) {
         String asadminCommand = "";
 
@@ -180,9 +193,15 @@ public class AsadminRecorderService implements EventListener {
             asadminCommand = constructAsadminCommand(commandName, parameters);
         }
 
+        // Substitution is needed for fetching the output location, so enable it temporarily
+        boolean substitutionEnabled = TranslatedConfigView.doSubstitution.get();
+        TranslatedConfigView.doSubstitution.set(true);
+        String asadminRecorderFileLocation = asadminRecorderConfiguration.getOutputLocation();
+        TranslatedConfigView.doSubstitution.set(substitutionEnabled);
+
         // Append to file
         try (Writer writer = new BufferedWriter(new FileWriter(new File(
-                asadminRecorderConfiguration.getOutputLocation()), true))) {
+                asadminRecorderFileLocation), true))) {
             writer.write(asadminCommand);
         } catch (IOException ex) {
             Logger.getLogger(AsadminRecorderService.class.getName()).log(Level.SEVERE, null, ex);

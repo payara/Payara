@@ -316,7 +316,7 @@ public class PersistenceManagerImpl implements PersistenceManager {
      * Constructor
      */
     PersistenceManagerImpl(PersistenceManagerFactory pmf, javax.transaction.Transaction t,
-                           String username, String password) {
+                           String username, char[] password) {
         persistenceManagerFactory = pmf;
 
         // Initialize caches as per property values.
@@ -393,7 +393,7 @@ public class PersistenceManagerImpl implements PersistenceManager {
     /**
      *
      */
-    protected boolean verify(String username, String password) {
+    protected boolean verify(String username, char[] password) {
         return _transaction.verify(username, password);
     }
 

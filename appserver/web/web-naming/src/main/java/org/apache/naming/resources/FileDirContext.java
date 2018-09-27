@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package org.apache.naming.resources;
 
@@ -279,7 +280,7 @@ public class FileDirContext extends BaseDirContext {
     public Object lookup(String name)
         throws NamingException {
         Object result = null;
-        File file = file(name);
+        File file = file(name, true);
 
         if (file == null)
             throw new NamingException
@@ -316,7 +317,7 @@ public class FileDirContext extends BaseDirContext {
     public void unbind(String name)
         throws NamingException {
 
-        File file = file(name);
+        File file = file(name, true);
 
         if (file == null)
             throw new NameNotFoundException
@@ -346,7 +347,7 @@ public class FileDirContext extends BaseDirContext {
     public void rename(String oldName, String newName)
         throws NamingException {
         
-        File file = file(oldName);
+        File file = file(oldName, true);
 
         if (file == null)
             throw new NamingException
@@ -382,7 +383,7 @@ public class FileDirContext extends BaseDirContext {
     public NamingEnumeration<NameClassPair> list(String name)
         throws NamingException {
         
-        File file = file(name);
+        File file = file(name, true);
 
         if (file == null)
             throw new NamingException
@@ -409,7 +410,7 @@ public class FileDirContext extends BaseDirContext {
     public NamingEnumeration<Binding> listBindings(String name)
         throws NamingException {
 
-        File file = file(name);
+        File file = file(name, true);
 
         if (file == null)
             throw new NamingException
@@ -511,7 +512,7 @@ public class FileDirContext extends BaseDirContext {
         throws NamingException {
 
         // Building attribute list
-        File file = file(name);
+        File file = file(name, true);
 
         if (file == null)
             throw new NamingException
@@ -866,16 +867,17 @@ public class FileDirContext extends BaseDirContext {
      * return <code>null</code>.
      *
      * @param name Normalized context-relative path (with leading '/')
+     * @param fileMustExist Must the required file exist (i.e. preexisting files vs. injected) CVE-2017-12615
+     * @return the validated java.io.File
      */
-    protected File file(String name) {
-        return file(base, name, name, fileCache);
+    protected File file(String name, boolean fileMustExist) {
+        return validate(base, name, name, fileCache, fileMustExist);
     }
 
     /*
      * Check that the file is valid for this context
      */
-    private File file(File baseFile, String name, String keyName,
-            Map<String, File> fCache) {
+    private File validate(File baseFile, String name, String keyName, Map<String, File> fCache, boolean fileMustExist) {
 
         // START S1AS8PE 4965170
         File file = fCache.get(keyName);
@@ -884,7 +886,7 @@ public class FileDirContext extends BaseDirContext {
         }
         // END S1AS8PE 4965170
         
-        if (file.exists() && file.canRead()) {
+        if (!fileMustExist || file.exists() && file.canRead()) {
 
             // START S1AS 6200277
             if (!caseSensitive && allowLinking) {
@@ -896,7 +898,7 @@ public class FileDirContext extends BaseDirContext {
             // Check that this file belongs to our root path
             String canPath = null;
             try {
-                canPath = file.getCanonicalPath();
+                canPath = file.toPath().toRealPath().toString();
             } catch (IOException e) {
             }
             if (canPath == null) {
@@ -1002,7 +1004,7 @@ public class FileDirContext extends BaseDirContext {
 
             // START S1AS8PE 4965170
             String keyName = file.getPath() + '/' + names[i];
-            File currentFile = file(file, names[i], keyName, listFileCache);
+            File currentFile = validate(file, names[i], keyName, listFileCache, true);
             // END S1AS8PE 4965170
 
             Object object = null;

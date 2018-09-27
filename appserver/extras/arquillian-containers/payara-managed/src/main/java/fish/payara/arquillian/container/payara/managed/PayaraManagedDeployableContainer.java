@@ -80,10 +80,12 @@ public class PayaraManagedDeployableContainer implements DeployableContainer<Pay
     private CommonPayaraManager<PayaraManagedContainerConfiguration> payaraManager;
     private boolean connectedToRunningServer;
 
+    @Override
     public Class<PayaraManagedContainerConfiguration> getConfigurationClass() {
         return PayaraManagedContainerConfiguration.class;
     }
 
+    @Override
     public void setup(PayaraManagedContainerConfiguration configuration) {
         if (configuration == null) {
             throw new IllegalArgumentException("configuration must not be null");
@@ -95,6 +97,7 @@ public class PayaraManagedDeployableContainer implements DeployableContainer<Pay
         payaraManager = new CommonPayaraManager<PayaraManagedContainerConfiguration>(configuration);
     }
 
+    @Override
     public void start() throws LifecycleException {
         if (payaraManager.isDASRunning()) {
             if (configuration.isAllowConnectingToRunningServer()) {
@@ -115,20 +118,24 @@ public class PayaraManagedDeployableContainer implements DeployableContainer<Pay
         }
     }
 
+    @Override
     public void stop() throws LifecycleException {
         if (!connectedToRunningServer) {
             payaraServerControl.stop();
         }
     }
 
+    @Override
     public ProtocolDescription getDefaultProtocol() {
         return new ProtocolDescription("Servlet 3.0");
     }
 
+    @Override
     public ProtocolMetaData deploy(Archive<?> archive) throws DeploymentException {
         return payaraManager.deploy(archive);
     }
 
+    @Override
     public void undeploy(Archive<?> archive) throws DeploymentException {
         payaraManager.undeploy(archive);
     }

@@ -37,8 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affilates
  */
+// Portions Copyright [2017-2018] Payara Foundation and/or affilates
 
 package com.sun.enterprise.glassfish.bootstrap;
 
@@ -57,6 +57,8 @@ import java.util.Properties;
 import static com.sun.enterprise.module.bootstrap.ArgumentManager.argsToMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Sanjeeb.Sahoo@Sun.COM
@@ -72,7 +74,7 @@ public class GlassFishMain {
         
         String platform = MainHelper.whichPlatform();
 
-        System.out.println("Launching GlassFish on " + platform + " platform");
+        System.out.println("Launching Payara Server on " + platform + " platform");
 
         // Set the system property if downstream code wants to know about it
         System.setProperty(Constants.PLATFORM_PROPERTY_KEY, platform); // TODO(Sahoo): Why is this a system property?
@@ -108,6 +110,8 @@ public class GlassFishMain {
          */
         private volatile GlassFish gf;
         private volatile GlassFishRuntime gfr;
+        private final static Pattern p = Pattern.compile("([^\\$]*)\\$\\{([^\\}]*)\\}([^\\$]*)");
+        private final static int MAX_SUBSTITUTION_DEPTH = 100;
 
         public Launcher() {
         }
@@ -245,6 +249,7 @@ public class GlassFishMain {
             }
             line = line.replaceAll("^\\s*#.*", ""); // Removes comments at the start of lines
             line = line.replaceAll("\\s#.*", ""); // Removes comments with whitespace before them. This allows for hashtags used in commands to be ignored.
+            line = line.replaceAll("\"", "");
             if (line.isEmpty() || line.replaceAll("\\s", "").isEmpty()) {
                 return null;
             }
@@ -266,6 +271,7 @@ public class GlassFishMain {
                 CommandRunner cmdRunner = gf.getCommandRunner();
                 
                 while (line != null) {
+                    line = getEnvironmentSubstitution(line);
                     runCommand(cmdRunner, line);
                     line = reader.readLine();
                 }
@@ -274,6 +280,28 @@ public class GlassFishMain {
             } catch (Throwable ex) {
                 Logger.getLogger(GlassFishMain.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
+        
+        
+        private String getEnvironmentSubstitution(String value){
+             String origValue = value;
+            int i = 0;            // Perform Environment variable substitution
+            Matcher m2 = p.matcher(value);
+
+            while (m2.find() && i < MAX_SUBSTITUTION_DEPTH) {
+                String matchValue = m2.group(2).trim();
+                String newValue = System.getenv(matchValue);
+                if (newValue != null) {
+                    value = m2.replaceFirst(
+                            Matcher.quoteReplacement(m2.group(1) + newValue + m2.group(3)));
+                    m2.reset(value);
+                } 
+                i++;     
+            }
+            if (i >= MAX_SUBSTITUTION_DEPTH) {
+                Logger.getLogger(GlassFishMain.class.getName()).log(Level.SEVERE, "System property substitution exceeded maximum of " + MAX_SUBSTITUTION_DEPTH);
+            }
+            return value;
         }
         
 

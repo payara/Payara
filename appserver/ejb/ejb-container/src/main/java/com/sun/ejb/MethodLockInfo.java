@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016,2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb;
 
@@ -58,11 +59,13 @@ public class MethodLockInfo {
     private long timeout = NO_TIMEOUT;
 
     private TimeUnit timeUnit;
+    private boolean distributed = false;
 
     public MethodLockInfo() {}
 
-    public void setLockType(LockType type) {
+    public void setLockType(LockType type, boolean distributed) {
         lockType = type;
+        this.distributed = distributed;
     }
 
     public void setTimeout(long value, TimeUnit unit) {
@@ -90,8 +93,12 @@ public class MethodLockInfo {
         return timeUnit;
     }
 
+    public boolean isDistributed() {
+        return this.distributed;
+    }
+
     public String toString() {
-        return lockType + ":" + timeout + ":" + timeUnit;
+        return lockType + "(Distributed=" + (distributed? "yes" : "no") + "):" + timeout + ":" + timeUnit;
     }
 
 }

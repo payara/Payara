@@ -54,6 +54,9 @@ public class PayaraMicroInhabitantsParser implements PopulatorPostProcessor {
         if ("org.glassfish.ejb.persistent.timer.DistributedEJBTimerService".equals(di.getImplementation())) {
             return null;
         }
+        if ("org.glassfish.kernel.javaee.MEJBService".equals(di.getImplementation())) {
+            return null;
+        }
         return di;
     }
     

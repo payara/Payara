@@ -37,53 +37,53 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
-import java.util.Collections;
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.security.jmac.config.ConfigHelper.AuthConfigRegistrationWrapper;
+import static java.util.Collections.synchronizedMap;
+
 import java.util.Map;
 import java.util.WeakHashMap;
-import javax.security.auth.message.config.RegistrationListener;
+
+import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
+import com.sun.jaspic.services.AuthConfigRegistrationWrapper;
 
 public class ClientPipeCloser {
     
-    private Map<ServiceReferenceDescriptor, AuthConfigRegistrationWrapper> svcRefListenerMap = 
-        Collections.synchronizedMap(new WeakHashMap<ServiceReferenceDescriptor, AuthConfigRegistrationWrapper>());
-
-    private ClientPipeCloser() {}
-    
     private static final ClientPipeCloser INSTANCE = new ClientPipeCloser();
-    
-    public static  ClientPipeCloser getInstance() {
+
+    private Map<ServiceReferenceDescriptor, AuthConfigRegistrationWrapper> svcRefListenerMap = synchronizedMap(new WeakHashMap<>());
+
+    private ClientPipeCloser() {
+    }
+
+    public static ClientPipeCloser getInstance() {
         return INSTANCE;
     }
-    
+
     public void registerListenerWrapper(ServiceReferenceDescriptor desc, AuthConfigRegistrationWrapper wrapper) {
-        svcRefListenerMap.put(desc,wrapper);
+        svcRefListenerMap.put(desc, wrapper);
     }
-    
+
     public AuthConfigRegistrationWrapper lookupListenerWrapper(ServiceReferenceDescriptor desc) {
-        AuthConfigRegistrationWrapper listenerWrapper = (AuthConfigRegistrationWrapper) svcRefListenerMap.get(desc);
-        return listenerWrapper;
+        return (AuthConfigRegistrationWrapper) svcRefListenerMap.get(desc);
     }
-    
+
     public void removeListenerWrapper(AuthConfigRegistrationWrapper wrapper) {
-       ServiceReferenceDescriptor entryToRemove = null;
-       
-       for (ServiceReferenceDescriptor svc : svcRefListenerMap.keySet()) {
-           AuthConfigRegistrationWrapper wrp = svcRefListenerMap.get(svc);
-           if (wrp == wrapper) {
-              entryToRemove = svc;  
-              break;
-           }
-       }
-       if (entryToRemove != null) {
-          svcRefListenerMap.remove(entryToRemove);
-       }
+        ServiceReferenceDescriptor entryToRemove = null;
+
+        for (ServiceReferenceDescriptor svc : svcRefListenerMap.keySet()) {
+            AuthConfigRegistrationWrapper wrp = svcRefListenerMap.get(svc);
+            if (wrp == wrapper) {
+                entryToRemove = svc;
+                break;
+            }
+        }
+        if (entryToRemove != null) {
+            svcRefListenerMap.remove(entryToRemove);
+        }
     }
-    
+
     public void cleanupClientPipe(ServiceReferenceDescriptor desc) {
         AuthConfigRegistrationWrapper listenerWrapper = (AuthConfigRegistrationWrapper) svcRefListenerMap.get(desc);
         if (listenerWrapper != null) {

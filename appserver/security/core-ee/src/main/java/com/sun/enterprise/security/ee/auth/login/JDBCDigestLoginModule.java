@@ -37,15 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ee.auth.login;
 
+import static java.util.logging.Level.SEVERE;
+
+import java.util.Enumeration;
+import java.util.logging.Logger;
 
 import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
-import java.util.Enumeration;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -53,17 +54,13 @@ import java.util.logging.Logger;
  */
 public class JDBCDigestLoginModule extends DigestLoginModule {
 
-    public JDBCDigestLoginModule() {
-    }
-
-    protected Enumeration getGroups(String username) {
+    protected Enumeration<String> getGroups(String username) {
         try {
-            return this.getRealm().getGroupNames(username);
-        } catch (InvalidOperationException ex) {
-            Logger.getLogger("global").log(Level.SEVERE, null, ex);
-        } catch (NoSuchUserException ex) {
-            Logger.getLogger("global").log(Level.SEVERE, null, ex);
-        } 
+            return getRealm().getGroupNames(username);
+        } catch (InvalidOperationException | NoSuchUserException ex) {
+            Logger.getLogger("global").log(SEVERE, null, ex);
+        }
+        
         return null;
     }
 }

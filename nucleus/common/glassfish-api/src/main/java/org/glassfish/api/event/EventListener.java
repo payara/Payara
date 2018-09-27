@@ -36,19 +36,26 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.api.event;
 
 /**
- * Code that wish to listen to glassfish events should implement this interface
- * and register it to the Events contract implementation.
- * 
+ * Code that wish to listen to glassfish events should implement this interface and register it to
+ * the Events contract implementation.
+ *
  * User: Jerome Dochez
  */
 public interface EventListener {
 
-    public void event(Event event);
+    /**
+     * Process a Glassfish/Payara event
+     *
+     * @param event
+     */
+    void event(Event<?> event);
 
     public class Event<T> {
         final long inception;
@@ -56,7 +63,7 @@ public interface EventListener {
         final T hook;
 
         public Event(EventTypes<T> type) {
-            if (type.getHookType()!=null) {
+            if (type.getHookType() != null) {
                 throw new IllegalArgumentException("Null event hook [" + type.getHookType() + "]");
             }
             inception = System.currentTimeMillis();
@@ -78,8 +85,8 @@ public interface EventListener {
             return type.type();
         }
 
-        public boolean is(EventTypes type) {
-            return type==this.type;
+        public boolean is(EventTypes<?> type) {
+            return type == this.type;
         }
 
         public T hook() {

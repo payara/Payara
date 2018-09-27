@@ -43,8 +43,8 @@
 <!-- Portions Copyright [2016] [Payara Foundation and/or its affiliates]] -->
 
 <!initPage
-    setResourceBundle(key="i18nc" bundle="org.glassfish.web.admingui.Strings");
-    setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
+    setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks")
 />
 <!-- applications/webDDEdit.jsf -->
 <!composition template="/templates/default.layout"  guiTitle="$resource{i18n.enterpriseApplications.descriptorPageTitle}"

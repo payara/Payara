@@ -122,8 +122,7 @@ public class EjbClosureCompiler extends ClosureCompilerImpl {
         }
 
         for (int i = 4; i < args.length; ++i) {
-            try {
-                JarFile jar = new JarFile(args[i]);
+            try (JarFile jar = new JarFile(args[i])) {
                 String cp = pcp + File.pathSeparator +
                         ClassPathBuilder.buildClassPathForJar(jar);
                 System.out.println("Using CLASSPATH " + cp); // NOI18N

@@ -37,8 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.configapi.tests;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.beans.PropertyChangeEvent;
 import java.util.List;
@@ -47,14 +52,10 @@ import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ObservableBean;
-import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.TransactionListener;
 import org.jvnet.hk2.config.Transactions;
@@ -95,17 +96,18 @@ public class UnprocessedEventsTest  extends ConfigApiTest
 
         try {
             transactions.addTransactionsListener(this);
+            
+            String originalPort = listener.getPort();
 
-            ConfigSupport.apply(new SingleConfigCode<NetworkListener>() {
-                public Object run(NetworkListener param) {
-                    param.setPort("8908");
-                    return null;
-                }
-            }, listener);
-
-            // check the result.
-            String port = listener.getPort();
-            assertEquals(port, "8908");
+            try {
+                ConfigSupport.apply(param -> {param.setPort("8908"); return null;}, listener);
+    
+                // Check the result.
+                assertEquals(listener.getPort(), "8908");
+            } finally {
+                // Restore the original port
+                ConfigSupport.apply(param -> {param.setPort(originalPort); return null;}, listener);
+            }
 
             // ensure events are delivered.
             transactions.waitForDrain();

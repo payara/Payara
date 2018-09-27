@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package org.glassfish.security.services.impl.authorization;
 
 import java.net.URI;
@@ -135,6 +137,7 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
     /**
      * Initialize the security service instance with the specific security service configuration.
      *
+     * @param securityServiceConfiguration
      * @see org.glassfish.security.services.api.SecurityService#initialize
      */
     @Override
@@ -178,7 +181,7 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
             initialized = InitializationState.SUCCESS_INIT;
             reasonInitFailed = null;
 
-            logger.log(Level.INFO, ATZSVC_INITIALIZED);
+            logger.log(Level.FINE, ATZSVC_INITIALIZED);
 
         } catch ( Exception e ) {
             String eMsg = e.getMessage();
@@ -226,7 +229,7 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
         }
 
         Set<Principal> principalset = subject.getPrincipals();
-        Principal[] principalAr = (principalset.size() == 0) ? null : principalset.toArray(new Principal[principalset.size()]);
+        Principal[] principalAr = (principalset.isEmpty()) ? null : principalset.toArray(new Principal[principalset.size()]);
         ProtectionDomain pd = new ProtectionDomain(NULL_CODESOURCE, null, null, principalAr); 
         Policy policy = Policy.getPolicy();
         boolean result = policy.implies(pd, permission);
@@ -572,13 +575,11 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
 	// Log Messages
 	//
 
-	@LogMessageInfo(
-			message = "Authorization Service has successfully initialized.",
-			level = "INFO")
+	@LogMessageInfo(message = "Authorization Service has successfully initialized.",
+			level = "FINE")
 	private static final String ATZSVC_INITIALIZED = "SEC-SVCS-00100";
 
-	@LogMessageInfo(
-			message = "Authorization Service initialization failed, exception {0}, message {1}",
+	@LogMessageInfo(message = "Authorization Service initialization failed, exception {0}, message {1}",
 			level = "WARNING")
 	private static final String ATZSVC_INIT_FAILED = "SEC-SVCS-00101";
 }

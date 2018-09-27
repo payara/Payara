@@ -108,7 +108,7 @@ public interface WritableJndiNameEnvironment extends JndiNameEnvironment {
     /**  
      * Adds the specified resource environment reference to the receiver.
      *   
-     * @param the ResourceEnvReferenceDescriptor to add.  
+     * @param resourceEnvReference the ResourceEnvReferenceDescriptor to add.  
      *
      */
     public void addResourceEnvReferenceDescriptor(
@@ -118,7 +118,7 @@ public interface WritableJndiNameEnvironment extends JndiNameEnvironment {
     /**  
      * Removes the specified resource environment reference from the receiver.
      *   
-     * @param the ResourceEnvReferenceDescriptor to remove.
+     * @param resourceEnvReference the ResourceEnvReferenceDescriptor to remove.
      *
      */
     public void removeResourceEnvReferenceDescriptor(
@@ -127,7 +127,7 @@ public interface WritableJndiNameEnvironment extends JndiNameEnvironment {
     /**  
      * Adds the specified message destination reference to the receiver.
      *   
-     * @param the MessageDestinationReferenceDescriptor to add.  
+     * @param msgDestRef the MessageDestinationReferenceDescriptor to add.  
      *
      */
     public void addMessageDestinationReferenceDescriptor
@@ -136,7 +136,7 @@ public interface WritableJndiNameEnvironment extends JndiNameEnvironment {
     /**  
      * Removes the specified message destination reference from the receiver.
      *   
-     * @param ref MessageDestinationReferenceDescriptor to remove.
+     * @param msgDestRef MessageDestinationReferenceDescriptor to remove.
      *
      */
     public void removeMessageDestinationReferenceDescriptor
@@ -145,7 +145,7 @@ public interface WritableJndiNameEnvironment extends JndiNameEnvironment {
     /** 
      * Adds the specified post-construct descriptor to the receiver.
      *  
-     * @param the post-construct LifecycleCallbackDescriptor to add.
+     * @param postConstructDesc the post-construct LifecycleCallbackDescriptor to add.
      *
      */
     public void addPostConstructDescriptor
@@ -154,7 +154,7 @@ public interface WritableJndiNameEnvironment extends JndiNameEnvironment {
     /** 
      * Adds the specified pre-destroy descriptor to the receiver.
      *  
-     * @param the pre-destroy LifecycleCallbackDescriptor to add.
+     * @param preDestroyDesc the pre-destroy LifecycleCallbackDescriptor to add.
      *
      */
     public void addPreDestroyDescriptor
@@ -163,7 +163,7 @@ public interface WritableJndiNameEnvironment extends JndiNameEnvironment {
     /**  
      * Adds the specified service reference to the receiver.
      *   
-     * @param the ServiceReferenceDescriptor to add.  
+     * @param serviceReference the ServiceReferenceDescriptor to add.  
      *
      */
     public void addServiceReferenceDescriptor(
@@ -173,7 +173,7 @@ public interface WritableJndiNameEnvironment extends JndiNameEnvironment {
     /**  
      * Removes the specified service reference from the receiver.
      *   
-     * @param the ServiceReferenceDescriptor to remove.
+     * @param serviceReference the ServiceReferenceDescriptor to remove.
      *
      */
     public void removeServiceReferenceDescriptor(

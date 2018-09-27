@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 import org.glassfish.security.common.CNonceCache;
@@ -48,8 +49,8 @@ import org.jvnet.hk2.annotations.Contract;
  */
 @Contract
 public interface CNonceCacheFactory {
-    public static final String CLUSTER_NAME_PROP="cluster_name";
-    public static final String INSTANCE_NAME_PROP="instance_name";
-    public CNonceCache createCNonceCache(String appName, String clusterName,
-            String instanceName, String storeName);
+    String CLUSTER_NAME_PROP = "cluster_name";
+    String INSTANCE_NAME_PROP = "instance_name";
+
+    CNonceCache createCNonceCache(String appName, String clusterName, String instanceName, String storeName);
 }

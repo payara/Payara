@@ -37,9 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.iiop.security;
-
 
 import com.sun.corba.ee.org.omg.CSI.MTCompleteEstablishContext;
 import com.sun.corba.ee.org.omg.CSI.MTContextError;
@@ -49,8 +48,7 @@ import java.util.logging.*;
 import com.sun.logging.*;
 
 /**
- * This class contains the utility methods for dealing with
- * service contexts.
+ * This class contains the utility methods for dealing with service contexts.
  *
  * @author: Sekhar Vajjhala
  *
@@ -58,45 +56,40 @@ import com.sun.logging.*;
 
 public class SvcContextUtils {
 
-    private static java.util.logging.Logger _logger=null;
-    static{
-       _logger=LogDomains.getLogger(SvcContextUtils.class,LogDomains.SECURITY_LOGGER);
-        }
-    /** 
-     * Define minor codes for errors specified in section 4.5,
-     * "ContextError Values and Exceptions"
+    private static java.util.logging.Logger _logger = null;
+    static {
+        _logger = LogDomains.getLogger(SvcContextUtils.class, LogDomains.SECURITY_LOGGER);
+    }
+    /**
+     * Define minor codes for errors specified in section 4.5, "ContextError Values and Exceptions"
      * 
-     * Currently only MessageInContextMinor code is defined since this
-     * is the only used by the security interceptors.
+     * Currently only MessageInContextMinor code is defined since this is the only used by the security
+     * interceptors.
      */
 
-    public static final int MessageInContextMinor = 4 ;
+    public static final int MessageInContextMinor = 4;
 
-
-    /** 
-     *  Hard code the value of 15 for SecurityAttributeService until
-     *  it is defined in IOP.idl.
-     *     sc.context_id = SecurityAttributeService.value;
+    /**
+     * Hard code the value of 15 for SecurityAttributeService until it is defined in IOP.idl.
+     * sc.context_id = SecurityAttributeService.value;
      */
     private static final int SECURITY_ATTRIBUTE_SERVICE_ID = 15;
 
     /**
-     * Define mnemonic strings for SAS message types for debugging
-     * purposes.
+     * Define mnemonic strings for SAS message types for debugging purposes.
      */
 
-    private static final String  EstablishContextName  = "EstablishContext";
-    private static final String  CompleteEstablishName = "CompleteEstablishContext";
-    private static final String  MessageInContextName  = "MessageInContext";
-    private static final String  ContextErrorName      = "ContextError";
+    private static final String EstablishContextName = "EstablishContext";
+    private static final String CompleteEstablishName = "CompleteEstablishContext";
+    private static final String MessageInContextName = "MessageInContext";
+    private static final String ContextErrorName = "ContextError";
 
     /**
-     * returns a mnemonic name for the message type based on the 
-     * SASContextBody union discriminant 
+     * returns a mnemonic name for the message type based on the SASContextBody union discriminant
      */
 
     public static String getMsgname(short discr) {
-  
+
         String name = null;
 
         switch (discr) {
@@ -108,7 +101,7 @@ public class SvcContextUtils {
         case MTContextError.value:
             name = ContextErrorName;
             break;
- 
+
         case MTCompleteEstablishContext.value:
             name = CompleteEstablishName;
             break;
@@ -118,12 +111,9 @@ public class SvcContextUtils {
             break;
 
         default:
-		_logger.log(Level.SEVERE,"iiop.unknown_msgtype");
-            break;  
-	}
+            _logger.log(Level.SEVERE, "iiop.unknown_msgtype");
+            break;
+        }
         return name;
     }
 }
-        
-
-

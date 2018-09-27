@@ -44,6 +44,8 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 
 /**
  * I am an object representing a dependency on a resource environment
+ * <p>
+ * Unlike {@link EnvironmentProperty} this class is not limited to primitive types or their boxed variants
  * @author Kenneth Saks
  */
 
@@ -79,14 +81,20 @@ public class ResourceEnvReferenceDescriptor extends EnvironmentProperty implemen
 
     }
 
+    /**
+     * Gets the type of environment reference i.e. javax.ejb.SessionContext
+     * @return 
+     */
     public String getRefType() {
         return this.refType;
     }
 
+    @Override
     public String getInjectResourceType() {
         return getRefType();
     }
 
+    @Override
     public void setInjectResourceType(String refType) {
         setRefType(refType);
     }
@@ -110,6 +118,7 @@ public class ResourceEnvReferenceDescriptor extends EnvironmentProperty implemen
    /**
     * Return the jndi name of the destination to which I refer.
     */
+    @Override
     public String getJndiName() {
         String jndiName = this.getValue();
         if (jndiName != null  && ! jndiName.equals("")) {
@@ -124,6 +133,7 @@ public class ResourceEnvReferenceDescriptor extends EnvironmentProperty implemen
    /**
     * Sets the jndi name of the destination to which I refer
     */
+    @Override
     public void setJndiName(String jndiName) {
         this.setValue(jndiName);
     }
@@ -153,7 +163,8 @@ public class ResourceEnvReferenceDescriptor extends EnvironmentProperty implemen
             || isConflictResourceGroup(other));
     }
 
-    /* Equality on name. */
+    /** Equality on name. */
+    @Override
     public boolean equals(Object object) {
         if (object instanceof ResourceEnvReference) {
             ResourceEnvReference destReference = (ResourceEnvReference) object;
@@ -162,6 +173,7 @@ public class ResourceEnvReferenceDescriptor extends EnvironmentProperty implemen
         return false;
     }
 
+    @Override
     public int hashCode() {
         int result = NULL_HASH_CODE;
         String name = getName();

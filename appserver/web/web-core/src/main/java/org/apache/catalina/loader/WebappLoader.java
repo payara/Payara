@@ -1113,9 +1113,10 @@ public class WebappLoader
 
                     Resource jarResource = (Resource) obj;
 
-                    if (!copy(jarResource.streamContent(),
-                              new FileOutputStream(destFile))) {
-                        continue;
+                    try (FileOutputStream fos = new FileOutputStream(destFile)) {
+                        if (!copy(jarResource.streamContent(), fos)) {
+                            continue;
+                        }
                     }
                 }
             } catch (NamingException e) {

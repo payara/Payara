@@ -36,11 +36,13 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.testing;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.json.JsonValue;
 
 public class NilValue extends Value {
 
@@ -48,8 +50,8 @@ public class NilValue extends Value {
     }
 
     @Override
-    Object getJsonValue() throws Exception {
-        return JSONObject.NULL;
+    JsonValue getJsonValue() throws Exception {
+        return JsonValue.NULL;
     }
 
     @Override

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor.jvm;
 
@@ -49,43 +50,52 @@ import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
 
-/* jvm.memory */
-// v2 mbean: com.sun.appserv:name=memory,type=memory,category=monitor,server=server
-// v3 mbean:
+/**
+ * Class providing the MBean for JVM memory statistics
+ * <p>
+ * The MBean will be of the format
+ * {@code amx:pp=/mon/server-mon[server],type=memory-mon,name=jvm/memory}
+ * and can be enabled by turning the Jvm monitoring level in the admin console to LOW
+ * @since v2
+ */
 @AMXMetadata(type="memory-mon", group="monitoring")
 @ManagedObject
 @Description( "JVM Memory Statistics" )
 public class JVMMemoryStatsProvider {
-    private MemoryMXBean memBean = ManagementFactory.getMemoryMXBean();
+    private final MemoryMXBean memBean = ManagementFactory.getMemoryMXBean();
 
-    private CountStatisticImpl committedHeap = new CountStatisticImpl(
+    private final CountStatisticImpl committedHeap = new CountStatisticImpl(
             "CommittedHeapSize", "bytes",
                 "Amount of memory in bytes that is committed for the Java virtual machine to use" );
-    private CountStatisticImpl initHeap = new CountStatisticImpl(
+    private final CountStatisticImpl initHeap = new CountStatisticImpl(
             "InitialHeapSize", "bytes",
                 "Amount of memory in bytes that the Java virtual machine initially requests from the operating system for memory management" );
-    private CountStatisticImpl maxHeap = new CountStatisticImpl(
+    private final CountStatisticImpl maxHeap = new CountStatisticImpl(
             "MaxHeapSize", "bytes",
                 "Maximum amount of memory in bytes that can be used for memory management" );
-    private CountStatisticImpl usedHeap = new CountStatisticImpl(
+    private final CountStatisticImpl usedHeap = new CountStatisticImpl(
             "UsedHeapSize", "bytes",
                 "Amount of used memory in bytes" );
-    private CountStatisticImpl committedNonHeap = new CountStatisticImpl(
+    private final CountStatisticImpl committedNonHeap = new CountStatisticImpl(
             "CommittedNonHeapSize", "bytes",
                 "Amount of memory in bytes that is committed for the Java virtual machine to use" );
-    private CountStatisticImpl initNonHeap = new CountStatisticImpl(
+    private final CountStatisticImpl initNonHeap = new CountStatisticImpl(
             "InitialNonHeapSize", "bytes",
                 "Amount of memory in bytes that the Java virtual machine initially requests from the operating system for memory management" );
-    private CountStatisticImpl maxNonHeap = new CountStatisticImpl(
+    private final CountStatisticImpl maxNonHeap = new CountStatisticImpl(
             "MaxNonHeapSize", "bytes",
                 "Maximum amount of memory in bytes that can be used for memory management" );
-    private CountStatisticImpl usedNonHeap = new CountStatisticImpl(
+    private final CountStatisticImpl usedNonHeap = new CountStatisticImpl(
             "UsedNonHeapSize", "bytes",
                 "Amount of used memory in bytes" );
-    private CountStatisticImpl objectPendingFinalizationCount = new CountStatisticImpl(
+    private final CountStatisticImpl objectPendingFinalizationCount = new CountStatisticImpl(
             "ObjectsPendingFinalization", CountStatisticImpl.UNIT_COUNT,
                 "Approximate number of objects for which finalization is pending" );
 
+    /**
+     * Gets the amount of memory that is committed for the Java virtual machine to use
+     * @return a {@link CountStatistic} with the amount of memory in bytes
+     */
     @ManagedAttribute(id="committedheapsize-count")
     @Description( "amount of memory in bytes that is committed for the Java virtual machine to use" )
     public CountStatistic getCommittedHeap() {
@@ -93,6 +103,10 @@ public class JVMMemoryStatsProvider {
         return committedHeap;
     }
 
+    /**
+     * Gets the amount of memory that the Java virtual machine initially requests from the operating system for memory management
+     * @return a {@link CountStatistic} with the amount of memory in bytes
+     */
     @ManagedAttribute(id="initheapsize-count")
     @Description( "amount of memory in bytes that the Java virtual machine initially requests from the operating system for memory management" )
     public CountStatistic getInitHeap() {
@@ -100,6 +114,10 @@ public class JVMMemoryStatsProvider {
         return initHeap;
     }
 
+    /**
+     * Gets the maximum amount of memory that can be used for memory management
+     * @return a {@link CountStatistic} with the amount of memory in bytes
+     */
     @ManagedAttribute(id="maxheapsize-count")
     @Description( "maximum amount of memory in bytes that can be used for memory management" )
     public CountStatistic getMaxHeap() {
@@ -107,6 +125,10 @@ public class JVMMemoryStatsProvider {
         return maxHeap;
     }
 
+    /**
+     * Gets the amount of used memory
+     * @return a {@link CountStatistic} with the amount of memory in bytes
+     */
     @ManagedAttribute(id="usedheapsize-count")
     @Description( "amount of used memory in bytes" )
     public CountStatistic getUsedHeap() {
@@ -114,6 +136,10 @@ public class JVMMemoryStatsProvider {
         return usedHeap;
     }
 
+    /**
+     * Gets the amount of memory in bytes that is committed for the Java virtual machine to use
+     * @return a {@link CountStatistic} with the amount of memory in bytes
+     */
     @ManagedAttribute(id="committednonheapsize-count")
     @Description( "amount of memory in bytes that is committed for the Java virtual machine to use" )
     public CountStatistic getCommittedNonHeap() {
@@ -121,6 +147,10 @@ public class JVMMemoryStatsProvider {
         return committedNonHeap;
     }
 
+    /**
+     * Gets the amount of memory that the Java virtual machine initially requests from the operating system for memory management
+     * @return a {@link CountStatistic} with the amount of memory in bytes
+     */
     @ManagedAttribute(id="initnonheapsize-count")
     @Description( "amount of memory in bytes that the Java virtual machine initially requests from the operating system for memory management" )
     public CountStatistic getInitNonHeap() {
@@ -128,6 +158,10 @@ public class JVMMemoryStatsProvider {
         return initNonHeap;
     }
 
+    /**
+     * Gets the maximum amount of memory that can be used for memory management
+     * @return a {@link CountStatistic} with the amount of memory in bytes
+     */
     @ManagedAttribute(id="maxnonheapsize-count")
     @Description( "maximum amount of memory in bytes that can be used for memory management" )
     public CountStatistic getMaxNonHeap() {
@@ -135,6 +169,10 @@ public class JVMMemoryStatsProvider {
         return maxNonHeap;
     }
 
+    /**
+     * Gets the amount of used memory
+     * @return a {@link CountStatistic} with the amount of memory in bytes
+     */
     @ManagedAttribute(id="usednonheapsize-count")
     @Description( "amount of used memory in bytes" )
     public CountStatistic getUsedNonHeap() {
@@ -142,6 +180,10 @@ public class JVMMemoryStatsProvider {
         return usedNonHeap;
     }
 
+    /**
+     * Gets the approximate number of objects for which finalization is pending
+     * @return a {@link CountStatistic} with the number of objects
+     */
     @ManagedAttribute(id="objectpendingfinalizationcount-count")
     @Description( "approximate number of objects for which finalization is pending" )
     public CountStatistic getObjectPendingFinalizationCount() {

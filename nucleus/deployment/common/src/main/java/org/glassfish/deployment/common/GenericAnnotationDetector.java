@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016] [Payara Foundation]
+//Portions Copyright [2016-2017] [Payara Foundation]
 package org.glassfish.deployment.common;
 
 
@@ -49,8 +49,6 @@ import java.io.InputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
@@ -124,6 +122,7 @@ public class GenericAnnotationDetector extends AnnotationScanner {
         return found;
     }
 
+    @Override
     public AnnotationVisitor visitAnnotation(String s, boolean b) {
         if (annotations.contains(s)) {
             found = true;
@@ -151,8 +150,7 @@ public class GenericAnnotationDetector extends AnnotationScanner {
                     } finally {
                         is.close();
                     }
-                } else if (entryName.endsWith(".jar") && 
-                    entryName.indexOf('/') == -1) {
+                } else if ((entryName.endsWith(".jar") || entryName.endsWith(".rar") || entryName.endsWith(".war") || entryName.endsWith(".ear")) && !entryName.contains("/")) {
                     // scan class files inside top level jar
                     try {
                         ReadableArchive jarSubArchive = null;
@@ -163,23 +161,19 @@ public class GenericAnnotationDetector extends AnnotationScanner {
                             while (jarEntries.hasMoreElements()) {
                                 String jarEntryName = jarEntries.nextElement();
                                 if (jarEntryName.endsWith(".class")) {
-                                    InputStream is =
-                                        jarSubArchive.getEntry(jarEntryName);
-                                    try {
+                                    try (InputStream is = jarSubArchive.getEntry(jarEntryName)) {
                                         ClassReader cr = new ClassReader(is);
                                         cr.accept(this, crFlags);
                                         if (found) {
                                             return;
                                         } 
-                                    } finally {
-                                        is.close();
                                     }
                                 }
                             }
                         } finally {
                             jarSubArchive.close();
                         }
-                    } catch (IOException ioe) {
+                    } catch (Exception ioe) {
                         Object args[] = { entryName, ioe.getMessage() };
                         deplLogger.log(Level.WARNING, JAR_ENTRY_ERROR, args);
                     }

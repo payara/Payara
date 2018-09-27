@@ -38,26 +38,12 @@
  * holder.
  */
 
-
 package com.sun.jaspic.config.helper;
 
-import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
-
-/**
- *
- * 
- */
 public class JASPICLogManager {
 
     /**
-     * PACKAGE_ROOT the prefix for the packages where logger resource
-     * bundles reside.
+     * PACKAGE_ROOT the prefix for the packages where logger resource bundles reside.
      */
     public static final String PACKAGE_ROOT = "com.sun.logging.";
 
@@ -66,9 +52,6 @@ public class JASPICLogManager {
      */
     public static final String RESOURCE_BUNDLE = "LogStrings";
 
-    /**
-     * Field
-     */
     public static final String JASPIC_LOGGER = "enterprise.system.jaspic.security";
 
     public static final String RES_BUNDLE = PACKAGE_ROOT + JASPIC_LOGGER + "." + RESOURCE_BUNDLE;

@@ -59,6 +59,7 @@ import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import com.sun.enterprise.deployment.annotation.handlers.PostProcessor;
 import com.sun.enterprise.deployment.util.TypeUtil;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -66,6 +67,7 @@ import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.ejb.deployment.descriptor.ContainerTransaction;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -78,6 +80,9 @@ import org.jvnet.hk2.annotations.Service;
 public class TransactionAttributeHandler extends AbstractAttributeHandler
         implements PostProcessor<EjbContext> {
 
+    private final static LocalStringManagerImpl localStrings =
+             new LocalStringManagerImpl(TransactionAttributeHandler.class);
+    
     public TransactionAttributeHandler() {
     }
 
@@ -120,13 +125,27 @@ public class TransactionAttributeHandler extends AbstractAttributeHandler
                                 try {
                                     Method m = lcd.getLifecycleCallbackMethodObject(loader);
                                     MethodDescriptor md = new MethodDescriptor(m, MethodDescriptor.LIFECYCLE_CALLBACK);
-                                    if( TypeUtil.sameMethodSignature(m, annMethod) &&
-                                            ejbDesc.getContainerTransactionFor(md) == null ) {
+                                    if (TypeUtil.sameMethodSignature(m, annMethod)
+                                            && ejbDesc.getContainerTransactionFor(md) == null) {
+                                        //stateful lifecycle callback txn attr type EJB spec
+                                        if (sd.isStateful() && containerTransaction != null) {
+                                            String txAttr = containerTransaction.getTransactionAttribute();
+                                            if (txAttr != null
+                                                    && !txAttr.equals(ContainerTransaction.REQUIRES_NEW)
+                                                    && !txAttr.equals(ContainerTransaction.NOT_SUPPORTED)) {
+                                                logger.log(Level.WARNING, localStrings.getLocalString(
+                                                        "enterprise.deployment.annotation.handlers.sfsblifecycletxnattrtypewarn",
+                                                        "Stateful session bean {0} lifecycle callback method {1} has transaction "
+                                                        + "attribute {2} with container-managed transaction demarcation. "
+                                                        + "The transaction attribute should be either REQUIRES_NEW or NOT_SUPPORTED",
+                                                        new Object[]{(sd.getName() == null ? "" : sd.getName()), m.getName(), txAttr}));
+                                            }
+                                        }
                                         // override by xml
                                         ejbDesc.setContainerTransactionFor(md, containerTransaction);
                                         if (logger.isLoggable(Level.FINE)) {
-                                             logger.log(Level.FINE, "Found matching callback method " + ejbDesc.getEjbClassName() 
-                                                     + "<>" + md + " : " + containerTransaction);
+                                            logger.log(Level.FINE, "Found matching callback method {0}<>{1} : {2}",
+                                                    new Object[]{ejbDesc.getEjbClassName(), md, containerTransaction});
                                         }
                                     }
                                 } catch(Exception e) {

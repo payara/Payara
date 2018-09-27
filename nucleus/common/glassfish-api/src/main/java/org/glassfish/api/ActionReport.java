@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.api;
@@ -66,6 +68,11 @@ public abstract class ActionReport implements Serializable {
 
     public enum ExitCode { SUCCESS, WARNING, FAILURE ;
 
+        /**
+         * SUCCESS > WARNING > FAILURE
+         * @param other
+         * @return 
+         */
         public boolean isWorse(final ExitCode other) {
             return (compareTo(other) > 0);
         }
@@ -81,6 +88,11 @@ public abstract class ActionReport implements Serializable {
 
     public abstract void appendMessage(String message);
     
+    /**
+     * Outputs the formatted information
+     * @param os The OutputStream to which the information is sent to
+     * @throws IOException 
+     */
     public abstract void writeReport(OutputStream os) throws IOException;
 
     public abstract void setMessage(InputStream in);
@@ -91,6 +103,10 @@ public abstract class ActionReport implements Serializable {
     
     public abstract ActionReport addSubActionsReport();
     
+    /**
+     * Sets the exit code for the report. Note that subreports may have a different exitcode.
+     * @param exitCode 
+     */
     public abstract void setActionExitCode(ExitCode exitCode);
 
     public abstract ExitCode getActionExitCode();
@@ -106,6 +122,9 @@ public abstract class ActionReport implements Serializable {
      * Report a failure to the logger and {@link ActionReport}.
      *
      * This is more of a convenience to the caller.
+     * @param logger
+     * @param message
+     * @param e
      */
     public final void failure(Logger logger, String message, Throwable e) {
         if (logger.isLoggable(Level.FINE)) {
@@ -123,6 +142,9 @@ public abstract class ActionReport implements Serializable {
 
     /**
      * Short for {@code failure(logger,message,null)}
+     * @see #failure(Logger, String, Throwable) 
+     * @param logger
+     * @param message
      */
     public final void failure(Logger logger, String message) {
         failure(logger,message,null);
@@ -130,16 +152,19 @@ public abstract class ActionReport implements Serializable {
 
     /**
      * return true if the action report or a subaction report has ExitCode.SUCCESS.
+     * @return 
      */
     public abstract boolean hasSuccesses();
 
     /**
      * return true if the action report or a subaction report has ExitCode.WARNING.
+     * @return 
      */
     public abstract boolean hasWarnings();
 
     /**
      * return true if the action report or a subaction report has ExitCode.FAILURE.
+     * @return 
      */
     public abstract boolean hasFailures();
 
@@ -215,6 +240,8 @@ public abstract class ActionReport implements Serializable {
         
         /** Search in message parts properties then in extra properties and then
          * in sub reports. Returns first occurrence of the key.
+         * @param key
+         * @return 
          */
         public String findProperty(String key) {
             if (key == null) {
@@ -289,6 +316,8 @@ public abstract class ActionReport implements Serializable {
     
     /** Search in message parts properties then in extra properties and then
      * in sub reports. Returns first occurrence of the key.
+     * @param key
+     * @return 
      */
     public String findProperty(String key) {
         MessagePart topMessagePart = getTopMessagePart();

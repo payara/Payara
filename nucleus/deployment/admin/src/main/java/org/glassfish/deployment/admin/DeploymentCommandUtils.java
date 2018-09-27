@@ -221,6 +221,9 @@ public class DeploymentCommandUtils {
         ConfigBeanProxy p = d.getServerNamed(target);
         if (p == null) {
             p = d.getClusterNamed(target);
+            if (p == null) {
+                p = d.getDeploymentGroupNamed(target);
+            }
         }
         if (p == null) {
             sb.append("domain/???/").append(target);

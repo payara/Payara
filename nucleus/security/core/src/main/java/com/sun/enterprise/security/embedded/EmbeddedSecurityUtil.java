@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017-2108] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.embedded;
 
 import com.sun.enterprise.config.serverbeans.AuthRealm;
@@ -67,23 +67,19 @@ import javax.inject.Singleton;
 import org.jvnet.hk2.config.types.Property;
 
 /**
- * Utility file to copy the security related config files
- * from the passed non-embedded instanceDir to the embedded
- * server instance's config.
- * This is a service that is protected. This implements
- * the Contract EmbeddedSecurity
+ * Utility file to copy the security related config files from the passed non-embedded instanceDir to the embedded
+ * server instance's config. This is a service that is protected. This implements the Contract EmbeddedSecurity
  * 
  * @author Nithya Subramanian
  */
-
 @Service
 @Singleton
 public class EmbeddedSecurityUtil implements EmbeddedSecurity {
 
     private static final Logger _logger = SecurityLoggerInfo.getLogger();
-    
+
     public void copyConfigFiles(ServiceLocator habitat, File fromInstanceDir, File domainXml) {
-        //For security reasons, permit only an embedded server instance to carry out the copy operations
+        // For security reasons, permit only an embedded server instance to carry out the copy operations
         ServerEnvironment se = habitat.getService(ServerEnvironment.class);
         if (!isEmbedded(se)) {
             return;
@@ -97,17 +93,18 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
 
         List<String> fileNames = new ArrayList<String>();
 
-        //Handling the exception here, since it is causing CTS failure - CR 6981191
+        // Handling the exception here, since it is causing CTS failure - CR 6981191
 
         try {
 
-            //Add FileRealm keyfiles to the list
-            fileNames.addAll(new EmbeddedSecurityUtil().new DomainXmlSecurityParser(domainXml).getAbsolutePathKeyFileNames(fromInstanceDir));
+            // Add FileRealm keyfiles to the list
+            fileNames
+                    .addAll(new EmbeddedSecurityUtil().new DomainXmlSecurityParser(domainXml).getAbsolutePathKeyFileNames(fromInstanceDir));
 
-            //Add keystore and truststore files
+            // Add keystore and truststore files
 
             // For the embedded server case, will the system properties be set in case of multiple embedded instances?
-            //Not sure - so obtain the other files from the usual locations instead of from the System properties
+            // Not sure - so obtain the other files from the usual locations instead of from the System properties
 
             String keyStoreFileName = fromInstanceDir + File.separator + "config" + File.separator + "keystore.jks";
             String trustStoreFileName = fromInstanceDir + File.separator + "config" + File.separator + "cacerts.jks";
@@ -115,7 +112,7 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
             fileNames.add(keyStoreFileName);
             fileNames.add(trustStoreFileName);
 
-            //Add login.conf and security policy
+            // Add login.conf and security policy
 
             String loginConf = fromInstanceDir + File.separator + "config" + File.separator + "login.conf";
             String secPolicy = fromInstanceDir + File.separator + "config" + File.separator + "server.policy";
@@ -125,22 +122,20 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
 
             File toConfigDir = new File(toInstanceDir, "config");
             if (!toConfigDir.exists()) {
-                if(!toConfigDir.mkdir()) {
+                if (!toConfigDir.mkdir()) {
                     throw new IOException();
                 }
             }
 
-            //Copy files into new directory
+            // Copy files into new directory
             for (String fileName : fileNames) {
                 FileUtils.copyFile(new File(fileName), new File(toConfigDir, parseFileName(fileName)));
             }
-        }catch(IOException e) {
+        } catch (IOException e) {
             _logger.log(Level.WARNING, SecurityLoggerInfo.ioError, e);
-        }catch(XMLStreamException e) {
+        } catch (XMLStreamException e) {
             _logger.log(Level.WARNING, SecurityLoggerInfo.xmlStreamingError, e);
         }
-
-
 
     }
 
@@ -150,7 +145,7 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
         }
         File file = new File(fullFilePath);
         return file.getName();
-       
+
     }
 
     public boolean isEmbedded(ServerEnvironment se) {
@@ -179,16 +174,12 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
         return keyFileNames;
     }
 
-    //Inner class to parse the domainXml to obtain the keyfile names
+    // Inner class to parse the domainXml to obtain the keyfile names
     class DomainXmlSecurityParser {
 
         XMLStreamReader xmlReader;
-        XMLInputFactory xif =
-                (XMLInputFactory.class.getClassLoader() == null)
-                ? XMLInputFactory.newInstance()
-                : XMLInputFactory.newInstance(XMLInputFactory.class.getName(),
-                XMLInputFactory.class.getClassLoader());
-
+        XMLInputFactory xif = (XMLInputFactory.class.getClassLoader() == null) ? XMLInputFactory.newInstance()
+                : XMLInputFactory.newInstance(XMLInputFactory.class.getName(), XMLInputFactory.class.getClassLoader());
 
         private static final String AUTH_REALM = "auth-realm";
         private static final String CONFIG = "config";
@@ -201,15 +192,17 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
         private static final String INSTANCE_DIR_PLACEHOLDER = "${com.sun.aas.instanceRoot}";
 
         DomainXmlSecurityParser(File domainXml) throws XMLStreamException, FileNotFoundException {
+            xif.setProperty("javax.xml.stream.isSupportingExternalEntities", false);
+            xif.setProperty("javax.xml.stream.isValidating", true);
             xmlReader = xif.createXMLStreamReader(new FileReader(domainXml));
-
         }
 
         private String replaceInstanceDir(String fromInstanceDir, String keyFileName) {
             return StringUtils.replace(keyFileName, INSTANCE_DIR_PLACEHOLDER, fromInstanceDir);
 
         }
-        //Obtain the keyfile names for the server-config (the first appearing config in domain.xml
+
+        // Obtain the keyfile names for the server-config (the first appearing config in domain.xml
         List<String> getAbsolutePathKeyFileNames(File fromInstanceDir) throws XMLStreamException {
             List<String> keyFileNames = new ArrayList<String>();
             while (skipToStartButNotPast(AUTH_REALM, CONFIG)) {
@@ -218,8 +211,8 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
                     while (skipToStartButNotPast(PROPERTY, AUTH_REALM)) {
                         if (FILE.equals(xmlReader.getAttributeValue(null, NAME))) {
                             String keyFileName = xmlReader.getAttributeValue(null, VALUE);
-                            //Replace the Placeholder in the keyfile names
-                            keyFileNames.add(replaceInstanceDir(fromInstanceDir.getAbsolutePath(),keyFileName ));
+                            // Replace the Placeholder in the keyfile names
+                            keyFileNames.add(replaceInstanceDir(fromInstanceDir.getAbsolutePath(), keyFileName));
 
                         }
                     }
@@ -235,7 +228,7 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
 
             while (xmlReader.hasNext()) {
                 xmlReader.next();
-                // getLocalName() will throw an exception in many states.  Be careful!!
+                // getLocalName() will throw an exception in many states. Be careful!!
                 if (xmlReader.isStartElement() && startName.equals(xmlReader.getLocalName())) {
                     return true;
                 }

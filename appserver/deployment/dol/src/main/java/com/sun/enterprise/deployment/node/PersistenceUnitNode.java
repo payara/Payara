@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.node;
 
 import com.sun.enterprise.deployment.PersistenceUnitDescriptor;
@@ -46,6 +46,7 @@ import org.xml.sax.Attributes;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.glassfish.config.support.TranslatedConfigView;
 
 /**
  * This node is responsible for reading details about one <persistence-unit/>
@@ -85,8 +86,8 @@ public class PersistenceUnitNode extends DeploymentDescriptorNode {
             PersistenceUnitDescriptor persistenceUnitDescriptor = (PersistenceUnitDescriptor) getDescriptor();
             String propName = attributes.getValue(
                     PersistenceTagNames.PROPERTY_NAME);
-            String propValue = attributes.getValue(
-                    PersistenceTagNames.PROPERTY_VALUE);
+            String propValue = (String) TranslatedConfigView.getTranslatedValue(attributes.getValue(
+                    PersistenceTagNames.PROPERTY_VALUE));
             persistenceUnitDescriptor.addProperty(propName, propValue);
             return;
         }

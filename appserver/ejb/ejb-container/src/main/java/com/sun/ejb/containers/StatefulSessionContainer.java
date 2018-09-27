@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -70,7 +70,6 @@ import java.util.Set;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.ejb.ConcurrentAccessException;
 import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.CreateException;
@@ -283,6 +282,11 @@ public final class StatefulSessionContainer
         level = "INFO")
     private static final String SFSB_NOT_RESTORED_AFTER_RESTART = "AS-EJB-00050";
     
+    @LogMessageInfo(
+        message = "Exception in backingStore.size()",
+        level   = "WARNING")
+    private static final String ERROR_WHILE_BACKSTORE_SIZE_ACCESS = "AS-EJB-00063";
+    
     // We do not want too many ORB task for passivation
     public static final int MIN_PASSIVATION_BATCH_COUNT = 8;
 
@@ -390,13 +394,14 @@ public final class StatefulSessionContainer
     protected void initializeHome()
             throws Exception {
         super.initializeHome();
-
-	    initSessionSyncMethods();
-
+        initSessionSyncMethods();
         loadCheckpointInfo();
+    }
 
+    @Override
+    public void startApplication(boolean deploy) {
+        super.startApplication(deploy);
         registerMonitorableComponents();
-
     }
 
     private void initSessionSyncMethods() throws Exception {
@@ -557,9 +562,17 @@ public final class StatefulSessionContainer
         return sbuf.toString();
     }
 
+    @Override
     protected EjbMonitoringStatsProvider getMonitoringStatsProvider(
             String appName, String modName, String ejbName) {
-        return new StatefulSessionBeanStatsProvider(this, getContainerId(), appName, modName, ejbName);
+        StatefulSessionBeanStatsProvider statsProvider = new StatefulSessionBeanStatsProvider(
+                this, getContainerId(), appName, modName, ejbName);
+        try {
+            statsProvider.setPassiveCount(backingStore.size());
+        } catch (BackingStoreException e) {
+            _logger.log(Level.WARNING, ERROR_WHILE_BACKSTORE_SIZE_ACCESS, e);
+        }
+        return statsProvider;
     }
 
 
@@ -2694,23 +2707,7 @@ public final class StatefulSessionContainer
     public Object deserializeData(byte[] data) throws Exception {
         Object o = ejbContainerUtilImpl.getJavaEEIOUtils().deserializeObject(data, true, getClassLoader(), getApplicationId());
         if (o instanceof SessionContextImpl) {
-            SessionContextImpl ctx = (SessionContextImpl)o;
-            Object ejb = ctx.getEJB();
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "StatefulSessionContainer.deserializeData: " + ((ejb == null)? null : ejb.getClass()));
-            }
-
-            if (ejb instanceof SerializableEJB) {
-                SerializableEJB sejb = (SerializableEJB)ejb;
-                try (ByteArrayInputStream bis = new ByteArrayInputStream(sejb.serializedFields);
-                    ObjectInputStream ois = ejbContainerUtilImpl.getJavaEEIOUtils().createObjectInputStream(bis, true, getClassLoader(), getApplicationId());) {
-
-                    ejb = ejbClass.newInstance();
-                    EJBUtils.deserializeObjectFields(ejb, ois, o, false);
-                    ctx.setEJB(ejb);
-                }
-
-            }
+            deserializeContext((SessionContextImpl)o);
         }
 
         return o;
@@ -2721,6 +2718,25 @@ public final class StatefulSessionContainer
     /**
      * *****************************************************************
      */
+
+    private void deserializeContext(SessionContextImpl ctx) throws Exception {
+        Object ejb = ctx.getEJB();
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, "StatefulSessionContainer.deserializeData: " + ((ejb == null) ? null : ejb.getClass()));
+        }
+
+        if (ejb instanceof SerializableEJB) {
+            SerializableEJB sejb = (SerializableEJB) ejb;
+
+            try (ByteArrayInputStream bis = new ByteArrayInputStream(sejb.serializedFields);
+                    ObjectInputStream ois = ejbContainerUtilImpl.getJavaEEIOUtils().createObjectInputStream(bis, true, getClassLoader(), getApplicationId());) {
+
+                ejb = ejbClass.newInstance();
+                EJBUtils.deserializeObjectFields(ejb, ois, ctx, false);
+                ctx.setEJB(ejb);
+            }
+        }
+    }
 
     private byte[] serializeContext(SessionContextImpl ctx) throws IOException {
         Object ejb = ctx.getEJB();
@@ -2921,6 +2937,18 @@ public final class StatefulSessionContainer
             passivateBeansOnShutdown();
 
         }
+    }
+
+    @Override
+    protected Object intercept(EjbInvocation inv) throws Throwable {
+        deserializeContext((SessionContextImpl) inv.context);
+        return super.intercept(inv);
+    }
+
+    @Override
+    public boolean intercept(CallbackType eventType, EJBContextImpl ctx) throws Throwable {
+        deserializeContext((SessionContextImpl) ctx);
+        return super.intercept(eventType, ctx);
     }
 
     private void passivateBeansOnShutdown() {

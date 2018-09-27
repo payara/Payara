@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.naming.util;
@@ -48,6 +50,10 @@ import org.jvnet.hk2.annotations.Service;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+/**
+ * Factory that will create copies of the given object.
+ * This class is not cacheable
+ */
 @Service
 public class CloningNamingObjectFactory
         implements NamingObjectFactory {
@@ -60,24 +66,36 @@ public class CloningNamingObjectFactory
 
     private NamingObjectFactory delegate;
 
+    /**
+     * Creates a factory that will create copies of the given value
+     * @param name name of object. Ignored
+     * @param value object that will be cloned when create is called
+     */
     public CloningNamingObjectFactory(String name, Object value) {
         this.name = name;
         this.value = value;
     }
 
+    /**
+     * Creates a factory that will create copies of whatever the delegate us to hold
+     * @param name name of object. Ignored
+     * @param delegate Factory to hold the object which will be copied.
+     */
     public CloningNamingObjectFactory(String name, NamingObjectFactory delegate) {
         this.name = name;
         this.delegate = delegate;
     }
 
+    @Override
     public boolean isCreateResultCacheable() {
         return false;
     }
 
+    @Override
     public Object create(Context ic)
             throws NamingException {
         return (delegate != null)
-                ? namingUtils.makeCopyOfObject(delegate.create(ic))
-                : namingUtils.makeCopyOfObject(value);
+                ? namingUtils.makeCopyOfObject(delegate.create(ic)) //ternary is true
+                : namingUtils.makeCopyOfObject(value); //ternary is false
     }
 }

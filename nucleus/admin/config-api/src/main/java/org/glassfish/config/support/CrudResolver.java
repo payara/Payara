@@ -48,7 +48,6 @@ import org.glassfish.api.admin.AdminCommandContext;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.lang.annotation.Annotation;
 
 /**
  * A config resolver is responsible for finding the target object of a specified

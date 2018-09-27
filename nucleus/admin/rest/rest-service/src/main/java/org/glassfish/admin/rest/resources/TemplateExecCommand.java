@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package org.glassfish.admin.rest.resources;
 
@@ -63,6 +63,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import javax.json.JsonException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -73,7 +74,6 @@ import javax.ws.rs.core.UriInfo;
 
 import org.glassfish.jersey.media.sse.EventOutput;
 
-import org.codehaus.jettison.json.JSONException;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.OptionsCapable;
 import org.glassfish.admin.rest.RestLogging;
@@ -142,10 +142,10 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
 
     @OPTIONS
     @Produces(Constants.MEDIA_TYPE_JSON)
-    public String options() throws JSONException {
+    public String options() throws JsonException {
         try {
-            return new RestResourceMetadata(this).toJson().toString(Util.getFormattingIndentLevel());
-        } catch (JSONException ex) {
+            return new RestResourceMetadata(this).toJson().toString();
+        } catch (JsonException ex) {
             throw new RuntimeException(ex);
         }
     }

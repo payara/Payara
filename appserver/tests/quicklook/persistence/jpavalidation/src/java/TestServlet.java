@@ -48,23 +48,21 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-
 public class TestServlet extends HttpServlet {
 
     @EJB
     private TestEJB testEJB;
 
-    protected void processRequest(HttpServletRequest request,
-                                  HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/plain");
         PrintWriter out = response.getWriter();
         boolean status = false;
+        
         String testcase = null;
         try {
             out.println("TestServlet at " + request.getContextPath());
             testcase = request.getParameter("tc");
-	    System.out.println("testcase = " + testcase);
+            System.out.println("testcase = " + testcase);
 
             if ("initialize".equals(testcase)) {
 
@@ -95,27 +93,22 @@ public class TestServlet extends HttpServlet {
         } catch (Exception ex) {
 
             System.out.println("Failure in TestServlet");
-	    out.println("Failure in TestServlet");
+            out.println("Failure in TestServlet");
 
         } finally {
-            if (status) 
-              out.println(testcase+":pass");
+            if (status)
+                out.println(testcase + ":pass");
             else
-              out.println(testcase+":fail");
+                out.println(testcase + ":fail");
             out.close();
         }
     }
 
-    protected void doGet(HttpServletRequest request,
-                         HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         processRequest(request, response);
     }
 
-
-    protected void doPost(HttpServletRequest request,
-                          HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         processRequest(request, response);
     }
 

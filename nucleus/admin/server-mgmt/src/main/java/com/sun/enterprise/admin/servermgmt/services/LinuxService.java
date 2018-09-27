@@ -37,9 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.servermgmt.services;
 
-import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.universal.process.ProcessManager;
 import com.sun.enterprise.universal.process.ProcessManagerException;
 import com.sun.enterprise.util.OS;
@@ -48,22 +49,28 @@ import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.io.ServerDirs;
 import java.io.File;
-import java.lang.String;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import static com.sun.enterprise.admin.servermgmt.services.Constants.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.io.UncheckedIOException;
 
 /**
  *
  * @author Byron Nevins
  */
 public class LinuxService extends NonSMFServiceAdapter {
+    
+    private String targetName;
+    File target;
+    private static final String TEMPLATE_FILE_NAME = "linux-service.template";
+    private final List<File> killDirs = new ArrayList<File>();
+    private final List<File> startDirs = new ArrayList<File>();
+    private String sFile;
+    private String kFile;
+    private boolean hasStartStopTokens = false;
+    
     static boolean apropos() {
-        if (LINUX_HACK)
-            return true;
 
         return OS.isLinux();
     }
@@ -91,7 +98,7 @@ public class LinuxService extends NonSMFServiceAdapter {
             throw e;
         }
         catch (Exception ex) {
-            throw new RuntimeException(ex);
+            throw new OSServiceAdapterException(ex);
         }
     }
 
@@ -114,7 +121,7 @@ public class LinuxService extends NonSMFServiceAdapter {
             throw ex;
         }
         catch (Exception ex) {
-            throw new RuntimeException(ex);
+            throw new OSServiceAdapterException(ex);
         }
     }
 
@@ -127,7 +134,7 @@ public class LinuxService extends NonSMFServiceAdapter {
             throw ex;
         }
         catch (Exception ex) {
-            throw new RuntimeException(ex);
+            throw new OSServiceAdapterException(ex);
         }
     }
 
@@ -186,20 +193,15 @@ public class LinuxService extends NonSMFServiceAdapter {
 
         // try to make this as forgiving as possible.
         File[] rcDirs = new File[8];    // 0, 1, 2...6, S
-        if (!setRcDirs(new File(Constants.ETC), rcDirs))
-            if (!setRcDirs(new File(Constants.INITD), rcDirs))
+        if (!setRcDirs(new File(Constants.ETC), rcDirs) && (!setRcDirs(new File(Constants.INITD), rcDirs))) {
                 throw new RuntimeException(Strings.get("no_rc2"));
-
+        }
         // now we have an array of at least some rc directories.
         addKills(rcDirs);
         addStarts(rcDirs);
     }
 
     private boolean setRcDirs(File dir, File[] rcDirs) {
-
-        if(LINUX_HACK) {
-            return true;
-        }
         // some have 4 missing, some have S missing etc.  All seem to have 5
         if (!new File(dir, "rc5.d").isDirectory())
             return false;
@@ -271,13 +273,11 @@ public class LinuxService extends NonSMFServiceAdapter {
     }
 
     private void handlePreExisting(boolean force) {
-        if (isPreExisting()) {
-            if (force) {
+        if (isPreExisting() && force) {
                 boolean result = target.delete();
                 if (!result || isPreExisting()) {
                     throw new RuntimeException(Strings.get("services.alreadyCreated", target, "rm"));
                 }
-            }
         }
     }
 
@@ -301,8 +301,9 @@ public class LinuxService extends NonSMFServiceAdapter {
         trace("Deleting link files...");
         List<File> deathRow = new LinkedList<File>();
 
-        if (!StringUtils.ok(targetName)) // invariant
-            throw new RuntimeException("Programmer Internal Error");
+        if (!StringUtils.ok(targetName)) { // invariant
+            throw new OSServiceAdapterException("Programmer Internal Error");
+        }
 
         String regexp = REGEXP_PATTERN_BEGIN + targetName;
 
@@ -327,7 +328,7 @@ public class LinuxService extends NonSMFServiceAdapter {
             }
             else {
                 if (!f.delete())
-                    throw new RuntimeException(Strings.get("cant_delete", f));
+                    throw new OSServiceAdapterException(Strings.get("cant_delete", f));
                 else
                     trace("Deleted " + f);
             }
@@ -352,12 +353,11 @@ public class LinuxService extends NonSMFServiceAdapter {
             cmds[3] = link.getAbsolutePath();
             String cmd = toString(cmds);
 
-            if (LINUX_HACK)
-                trace(cmd);
-            else if (info.dryRun)
+            if (info.dryRun) {
                 dryRun(cmd);
-            else
+            } else {
                 createLink(link, cmds);
+            }
         }
     }
 
@@ -371,7 +371,7 @@ public class LinuxService extends NonSMFServiceAdapter {
             trace("Created link file: " + link);
         }
         catch (ProcessManagerException e) {
-            throw new RuntimeException(Strings.get("ln_error", toString(cmds), e));
+            throw new OSServiceAdapterException(Strings.get("ln_error", toString(cmds), e));
         }
     }
 
@@ -387,11 +387,11 @@ public class LinuxService extends NonSMFServiceAdapter {
 
             theMatches.append(f.getAbsolutePath());
         }
-        throw new RuntimeException(Strings.get("too_many_links", theMatches));
+        throw new OSServiceAdapterException(Strings.get("too_many_links", theMatches));
     }
 
     private void setTarget() {
-        targetName = "GlassFish_" + info.serverDirs.getServerName();
+        targetName = "payara_" + info.serverDirs.getServerName();
         target = new File(INITD + "/" + targetName);
         kFile = "K" + info.kPriority + targetName;
         sFile = "S" + info.sPriority + targetName;
@@ -441,12 +441,5 @@ public class LinuxService extends NonSMFServiceAdapter {
 
         return sb.toString();
     }
-    private String targetName;
-    File target;
-    private static final String TEMPLATE_FILE_NAME = "linux-service.template";
-    private List<File> killDirs = new ArrayList<File>();
-    private List<File> startDirs = new ArrayList<File>();
-    private String sFile;
-    private String kFile;
-    private boolean hasStartStopTokens = false;
+    
 }

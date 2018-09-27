@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.EjbInvocation;
 import com.sun.enterprise.security.SecurityManager;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 
 /**
@@ -53,15 +53,16 @@ import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 public class BMCSingletonContainer
         extends AbstractSingletonContainer {
 
-    private AtomicInteger invCount = new AtomicInteger(0);
+    private final AtomicInteger invCount = new AtomicInteger(0);
 
     public BMCSingletonContainer(EjbDescriptor desc, ClassLoader cl, SecurityManager sm)
             throws Exception {
         super(desc, cl, sm);
     }
 
+    @Override
     protected ComponentContext _getContext(EjbInvocation inv) {
-        checkInit();
+        super._getContext(inv);
 
         synchronized (invCount) {
             invCount.incrementAndGet();
@@ -72,7 +73,10 @@ public class BMCSingletonContainer
         return singletonCtx;
     }
 
+    @Override
     public void releaseContext(EjbInvocation inv) {
+        super.releaseContext(inv);
+
         synchronized (invCount) {
             int val = invCount.decrementAndGet();
             if (val == 0) {

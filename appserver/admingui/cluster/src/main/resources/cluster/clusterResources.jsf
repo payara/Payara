@@ -43,6 +43,7 @@
 <!-- cluster/clusterResources.jsf -->
 
 <!initPage
+    setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings")
     setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
     setResourceBundle(key="help_cluster" bundle="org.glassfish.cluster.admingui.Helplinks");

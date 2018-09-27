@@ -37,10 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.api.admin.config;
 
-import org.glassfish.api.Param;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.ConfigBeanProxy;

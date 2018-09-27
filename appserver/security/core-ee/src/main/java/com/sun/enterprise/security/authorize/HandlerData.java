@@ -37,9 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.authorize;
 
+import static com.sun.enterprise.security.authorize.PolicyContextHandlerImpl.EJB_ARGUMENTS;
+import static com.sun.enterprise.security.authorize.PolicyContextHandlerImpl.ENTERPRISE_BEAN;
+import static com.sun.enterprise.security.authorize.PolicyContextHandlerImpl.HTTP_SERVLET_REQUEST;
+import static com.sun.enterprise.security.authorize.PolicyContextHandlerImpl.REUSE;
+import static com.sun.enterprise.security.authorize.PolicyContextHandlerImpl.SOAP_MESSAGE;
+import static com.sun.enterprise.security.authorize.PolicyContextHandlerImpl.SUBJECT;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -48,63 +54,72 @@ import com.sun.enterprise.security.SecurityContext;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.internal.api.Globals;
 
-
 /**
  * This class implements a thread scoped data used for PolicyContext.
+ * 
  * @author Harry Singh
  * @author Jyri Virkki
  * @author Shing Wai Chan
  *
  */
 public class HandlerData {
-    
-    private HttpServletRequest httpReq = null;
-    private ComponentInvocation inv = null;
-    private PolicyContextDelegate ejbDelegate = null;
-    
-    private HandlerData(){
+
+    private HttpServletRequest httpServletRequest;
+    private ComponentInvocation invocation;
+    private PolicyContextDelegate ejbDelegate;
+
+    private HandlerData() {
         ejbDelegate = Globals.getDefaultHabitat().getService(PolicyContextDelegate.class, "EJB");
     }
 
-
-    public static HandlerData getInstance(){
-	return new HandlerData();
+    public static HandlerData getInstance() {
+        return new HandlerData();
     }
 
     public void setHttpServletRequest(HttpServletRequest httpReq) {
-	this.httpReq = httpReq;
+        this.httpServletRequest = httpReq;
     }
 
     public void setInvocation(ComponentInvocation inv) {
-        this.inv = inv;
+        this.invocation = inv;
     }
-    public Object get(String key){
-	if (PolicyContextHandlerImpl.HTTP_SERVLET_REQUEST.equalsIgnoreCase(key)){
-	    return httpReq;
-	} else if (PolicyContextHandlerImpl.SUBJECT.equalsIgnoreCase(key)){
-	    return SecurityContext.getCurrent().getSubject();
-	} else if (PolicyContextHandlerImpl.REUSE.equalsIgnoreCase(key)) {
+
+    public Object get(String key) {
+        if (HTTP_SERVLET_REQUEST.equalsIgnoreCase(key)) {
+            return httpServletRequest;
+        }
+
+        if (SUBJECT.equalsIgnoreCase(key)) {
+            return SecurityContext.getCurrent().getSubject();
+        }
+
+        if (REUSE.equalsIgnoreCase(key)) {
             PermissionCacheFactory.resetCaches();
             return Integer.valueOf(0);
         }
 
-        if (inv == null) {
+        if (invocation == null) {
             return null;
         }
 
-        if (PolicyContextHandlerImpl.SOAP_MESSAGE.equalsIgnoreCase(key)) {
-            return (ejbDelegate != null) ? ejbDelegate.getSOAPMessage(inv) : null;
-        } else if (PolicyContextHandlerImpl.ENTERPRISE_BEAN.equalsIgnoreCase(key)) {
-            return (ejbDelegate != null) ? ejbDelegate.getEnterpriseBean(inv) : null;
-        } else if (PolicyContextHandlerImpl.EJB_ARGUMENTS.equalsIgnoreCase(key)) {
-            return (ejbDelegate != null) ? ejbDelegate.getEJbArguments(inv) : null;
+        if (SOAP_MESSAGE.equalsIgnoreCase(key)) {
+            return ejbDelegate != null ? ejbDelegate.getSOAPMessage(invocation) : null;
         }
-	return null;
+
+        if (ENTERPRISE_BEAN.equalsIgnoreCase(key)) {
+            return ejbDelegate != null ? ejbDelegate.getEnterpriseBean(invocation) : null;
+        }
+
+        if (EJB_ARGUMENTS.equalsIgnoreCase(key)) {
+            return ejbDelegate != null ? ejbDelegate.getEJbArguments(invocation) : null;
+        }
+
+        return null;
     }
 
     void reset() {
-       httpReq = null;
-       inv = null;
-       ejbDelegate = null;
+        httpServletRequest = null;
+        invocation = null;
+        ejbDelegate = null;
     }
 }

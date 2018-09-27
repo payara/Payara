@@ -37,12 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.cli.resources;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -66,7 +68,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  *
  * @author Jennifer Chou, Jagadish Ramu 
  */
-@TargetType(value={CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
+@TargetType(value={CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
 @RestEndpoints({
         @RestEndpoint(configBean = Resources.class,
                 opType = RestEndpoint.OpType.DELETE,
@@ -79,7 +81,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @I18n("delete.resource.ref")
 public class DeleteResourceRef implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteResourceRef.class);
+    private static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(DeleteResourceRef.class);
 
     @Param(optional=true)
     private String target = SystemPropertyConstants.DAS_SERVER_NAME;
@@ -148,12 +150,22 @@ public class DeleteResourceRef implements AdminCommand, AdminCommandSecurity.Pre
                     svr.deleteResourceRef(refName);
                 }
             }
+            
+            if (refContainer instanceof DeploymentGroup) {
+
+                // delete ResourceRef for all instances of Cluster
+                Target tgt = habitat.getService(Target.class);
+                List<Server> instances = tgt.getInstances(target);
+                for (Server svr : instances) {
+                    svr.deleteResourceRef(refName);
+                }                
+            }
         } catch(Exception e) {
             setFailureMessage(report, e);
             return;
         }
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        report.setMessage(localStrings.getLocalString("delete.resource.ref.success",
+        report.setMessage(LOCAL_STRINGS.getLocalString("delete.resource.ref.success",
                 "resource-ref {0} deleted successfully from target {1}.", refName, target));
     }
     
@@ -170,13 +182,13 @@ public class DeleteResourceRef implements AdminCommand, AdminCommandSecurity.Pre
     }
 
     private void setResourceRefDoNotExistMessage(ActionReport report) {
-        report.setMessage(localStrings.getLocalString("delete.resource.ref.doesNotExist",
+        report.setMessage(LOCAL_STRINGS.getLocalString("delete.resource.ref.doesNotExist",
                 "A resource ref named {0} does not exist for target {1}.", refName, target));
         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
     }
 
     private void setFailureMessage(ActionReport report, Exception e) {
-        report.setMessage(localStrings.getLocalString("delete.resource.ref.failed",
+        report.setMessage(LOCAL_STRINGS.getLocalString("delete.resource.ref.failed",
                 "Resource ref {0} deletion failed", refName));
         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         report.setFailureCause(e);

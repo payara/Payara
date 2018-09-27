@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation]
 
 package com.sun.enterprise.connectors.jms.system;
 
@@ -354,6 +354,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         super();
     }
 
+    @Override
     public void postConstruct()
     {
             /*
@@ -387,6 +388,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      *
      * @throws ConnectorRuntimeException in case of an exception.
      */
+    @Override
     protected void loadRAConfiguration() throws ConnectorRuntimeException{
 
         JmsService jmsService = getJmsService();
@@ -471,6 +473,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     /**
      * Start Grizzly based JMS lazy listener, which is going to initialize
      * JMS container on first request.
+     * @param jmsService
+     * @throws com.sun.enterprise.connectors.jms.system.JmsInitialisationException
      */
     public void initializeLazyListener(JmsService jmsService) throws JmsInitialisationException {
 
@@ -519,6 +523,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         }
     }
 
+    @Override
     protected void startResourceAdapter(BootstrapContext bootstrapContext) throws ResourceAdapterInternalException {
 
         JmsService jmsService = getJmsService();
@@ -571,7 +576,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      * URL, apart from the default URL derived from brokerhost:brokerport
      * and reported a PE connection url limitation.
      *
+     * @return 
      */
+    @Override
      protected Set mergeRAConfiguration(ResourceAdapterConfig raConfig, List<Property> raConfigProps) {
    //private void hackMergedProps(Set mergedProps) {
         if (!(connectorRuntime.isServer())) {
@@ -611,6 +618,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     //Overriding ActiveResourceAdapterImpl.setup() as a work around for
     //this condition - connectionDefs_.length != 1
     //Need to remove this once the original problem is fixed
+    @Override
      public void setup() throws ConnectorRuntimeException {
         //TODO NEED TO REMOVE ONCE THE ActiveResourceAdapterImpl.setup() is fixed
         JmsService jmsService = getJmsService();
@@ -1218,10 +1226,12 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         return converted;
     }
 
+    @Override
     public boolean handles(ConnectorDescriptor cd, String moduleName) {
         return ConnectorsUtil.isJMSRA(moduleName);
     }
 
+    @Override
     public void validateActivationSpec(ActivationSpec spec) {
         boolean validate =  "true".equals(System.getProperty("validate.jms.ra"));
         if (validate) {
@@ -1621,6 +1631,10 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         setAddressList();
     }
 
+    /**
+     * Whether JMS should bind to a port
+     * @return false in embedded mode, true otherwise
+     */
     public boolean getDoBind() {
         return doBind;
     }
@@ -1631,29 +1645,30 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         ConnectorDescriptor cd = super.getDescriptor();
         raUtil.setMdbContainerProperties();
 
-        String val = ""+MdbContainerProps.getReconnectEnabled();
-        ConnectorConfigProperty  envProp2 = new ConnectorConfigProperty  (
-            RECONNECTENABLED, val, val, "java.lang.Boolean");
+        String val = "" + MdbContainerProps.getReconnectEnabled();
+        ConnectorConfigProperty envProp2 = new ConnectorConfigProperty(
+                RECONNECTENABLED, val, val, "java.lang.Boolean");
         setProperty(cd, envProp2);
 
-        val = ""+MdbContainerProps.getReconnectDelay();
-        ConnectorConfigProperty  envProp3 = new ConnectorConfigProperty  (
-            RECONNECTINTERVAL, val, val, "java.lang.Integer");
+        val = "" + MdbContainerProps.getReconnectDelay();
+        ConnectorConfigProperty envProp3 = new ConnectorConfigProperty(
+                RECONNECTINTERVAL, val, val, "java.lang.Integer");
         setProperty(cd, envProp3);
 
-        val = ""+MdbContainerProps.getReconnectMaxRetries();
-        ConnectorConfigProperty  envProp4 = new ConnectorConfigProperty  (
-            RECONNECTATTEMPTS, val, val, "java.lang.Integer");
+        val = "" + MdbContainerProps.getReconnectMaxRetries();
+        ConnectorConfigProperty envProp4 = new ConnectorConfigProperty(
+                RECONNECTATTEMPTS, val, val, "java.lang.Integer");
         setProperty(cd, envProp4);
 
         String integrationMode = getJmsService().getType();
         boolean lazyInit = Boolean.valueOf(getJmsHost().getLazyInit());
-        val= "true";
-        if (EMBEDDED.equals(integrationMode) && lazyInit)
-        val = "false";
+        val = "true";
+        if (EMBEDDED.equals(integrationMode) && lazyInit) {
+            val = "false";
+        }
         doBind = Boolean.valueOf(val);
-        ConnectorConfigProperty  envProp5 = new ConnectorConfigProperty  (
-            MQ_PORTMAPPER_BIND, val, val, "java.lang.Boolean");
+        ConnectorConfigProperty envProp5 = new ConnectorConfigProperty(
+                MQ_PORTMAPPER_BIND, val, val, "java.lang.Boolean");
         setProperty(cd, envProp5);
 
 
@@ -1957,7 +1972,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      * solutuion is available from the broker.
      * @param cpr <code>ConnectorConnectionPool</code> object
      * @param loader Class Loader.
+     * @return 
      */
+    @Override
    public ManagedConnectionFactory [] createManagedConnectionFactories
         (com.sun.enterprise.connectors.ConnectorConnectionPool cpr,
          ClassLoader loader) {
@@ -2040,12 +2057,14 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         return (ManagedConnectionFactory [])mcfs.toArray(new ManagedConnectionFactory[mcfs.size()]);
     }
 
+    @Override
      protected ManagedConnectionFactory instantiateMCF(final String mcfClass, final ClassLoader loader)
             throws Exception {
             ManagedConnectionFactory mcf = null;
             if (moduleName_.equals(ConnectorRuntime.DEFAULT_JMS_ADAPTER)) {
                 Object tmp = AccessController.doPrivileged(
                         new PrivilegedExceptionAction() {
+                            @Override
                             public Object run() throws Exception{
                                 return instantiateManagedConnectionFactory(mcfClass, loader);
                             }
@@ -2066,7 +2085,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      *
      * @param cpr <code>ConnectorConnectionPool</code> object
      * @param loader Class Loader.
+     * @return 
      */
+    @Override
     public ManagedConnectionFactory createManagedConnectionFactory
                   (com.sun.enterprise.connectors.ConnectorConnectionPool cpr,
                    ClassLoader loader) {
@@ -2155,7 +2176,11 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      *    defined in the CF that corresponds to the mdb-connection-factory
      *    JNDI name.
      *
+     * @param descriptor_
+     * @param poolDescriptor
+     * @throws com.sun.appserv.connectors.internal.api.ConnectorRuntimeException
      */
+    @Override
     public void updateMDBRuntimeInfo(EjbMessageBeanDescriptor descriptor_,
                                      BeanPoolDescriptor poolDescriptor) throws ConnectorRuntimeException{
 
@@ -2633,6 +2658,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     //methods from LazyServiceIntializer
+    @Override
     public boolean initializeService(){
          try {
              String module = ConnectorConstants.DEFAULT_JMS_ADAPTER;
@@ -2648,6 +2674,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
              }
     }
 
+    @Override
     public void handleRequest(SelectableChannel selectableChannel){
         SocketChannel socketChannel = null;
         if (selectableChannel instanceof SocketChannel) {

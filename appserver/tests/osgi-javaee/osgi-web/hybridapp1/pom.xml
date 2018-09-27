@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!--"Portions Copyright [2018] [Payara Foundation and/or its affiliates]" -->
 
 <project>
     <modelVersion>4.0.0</modelVersion>
@@ -54,14 +55,13 @@
             <plugin> <!-- Need to set source level 1.5 to use annotations like @EJB -->
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
+                    <source>${javase.version}</source>
+                    <target>${javase.version}</target>
                 </configuration>
             </plugin>
-            <plugin> <!-- Need to use this plugin to build war files -->
-                <artifactId>maven-war-plugin</artifactId>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <version>2.0</version>
+                <artifactId>maven-war-plugin</artifactId>
                 <configuration>
                     <archive>
                         <!-- add bundle plugin generated manifest to the war -->
@@ -79,7 +79,6 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>2.0.0</version>
                 <configuration>
                     <supportedProjectTypes>
                         <supportedProjectType>jar</supportedProjectType>

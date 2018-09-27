@@ -147,6 +147,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
         setConflict(other.isConflict());
     }
 
+    @Override
     public Set<InitializationParameter> getInitializationParameterSet() {
         if (this.initializationParameters == null) {
             this.initializationParameters = new OrderedSet<InitializationParameter>();
@@ -157,13 +158,16 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     /**
      * @return the Set of servlet initialization parameters.
      */
+    @Override
     public Enumeration<InitializationParameter> getInitializationParameters() {
         return (new Vector<InitializationParameter>(getInitializationParameterSet())).elements();
     }
 
     /**
+     * @param name
      * @return a matching initialization parameter by its name if there is one.
      */
+    @Override
     public InitializationParameter getInitializationParameterByName(String name) {
         for (InitializationParameter next : getInitializationParameterSet()) {
             if (next.getName().equals(name)) {
@@ -175,14 +179,18 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * Adds a servlet initialization parameter to this component.
+     * @param initializationParameter
      */
+    @Override
     public void addInitializationParameter(InitializationParameter initializationParameter) {
         getInitializationParameterSet().add(initializationParameter);
     }
 
     /**
      * Removes the given servlet initialization parameter from this component.
+     * @param initializationParameter
      */
+    @Override
     public void removeInitializationParameter(InitializationParameter initializationParameter) {
         getInitializationParameterSet().remove(initializationParameter);
     }
@@ -198,6 +206,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     /**
      * @return the set of URL pattern aliases for this component.
      */
+    @Override
     public Set<String> getUrlPatternsSet() {
         if (urlPatterns == null) {
             urlPatterns = new OrderedSet<String>() {
@@ -239,24 +248,30 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     /**
      * @return an enumeration of (String) URL pattern aliases for this component.
      */
+    @Override
     public Enumeration<String> getUrlPatterns() {
         return (new Vector<String>(getUrlPatternsSet())).elements();
     }
 
     /**
      * Adds an alias to this web component.
+     * @param urlPattern
      */
+    @Override
     public void addUrlPattern(String urlPattern) {
         getUrlPatternsSet().add(urlPattern);
     }
 
     /**
      * Removes a URL pattern from this web component.
+     * @param urlPattern
      */
+    @Override
     public void removeUrlPattern(String urlPattern) {
         getUrlPatternsSet().remove(urlPattern);
     }
 
+    @Override
     public void setWebBundleDescriptor(WebBundleDescriptor webBundleDescriptor) {
         this.webBundleDescriptor = webBundleDescriptor;
     }
@@ -264,13 +279,16 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     /**
      * @return the web app object to which I belong or null
      */
+    @Override
     public WebBundleDescriptor getWebBundleDescriptor() {
         return webBundleDescriptor;
     }
 
     /**
      * The canonical name for the web component.
+     * @return 
      */
+    @Override
     public String getCanonicalName() {
         if (canonicalName == null) {
             canonicalName = getName();
@@ -280,7 +298,9 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * Sets the canonical name of this web component.
+     * @param canonicalName
      */
+    @Override
     public void setCanonicalName(String canonicalName) {
         this.canonicalName = canonicalName;
     }
@@ -288,25 +308,31 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     /**
      * @return the order on which this component will be loaded by the web server.
      */
+    @Override
     public Integer getLoadOnStartUp() {
         return loadOnStartUp;
     }
 
     /**
      * Sets the order on which this component will be loaded by the web server.
+     * @param loadOnStartUp
      */
+    @Override
     public void setLoadOnStartUp(Integer loadOnStartUp) {
         this.loadOnStartUp = loadOnStartUp;
     }
 
     /**
      * Sets the order on which this component will be loaded by the web server.
+     * @param loadOnStartUp
      */
+    @Override
     public void setLoadOnStartUp(String loadOnStartUp) throws NumberFormatException {
         this.loadOnStartUp = Integer.decode(loadOnStartUp);
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public Set<SecurityRoleReference> getSecurityRoleReferenceSet() {
         if (this.securityRoleReferences == null) {
             this.securityRoleReferences = new OrderedSet();
@@ -317,13 +343,16 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     /**
      * @return the Set of security role references that I have.
      */
+    @Override
     public Enumeration<SecurityRoleReference> getSecurityRoleReferences() {
         return (new Vector<SecurityRoleReference>(this.getSecurityRoleReferenceSet())).elements();
     }
 
     /**
+     * @param roleReferenceName
      * @return a matching role reference by name or null if there is none matching.
      */
+    @Override
     public SecurityRoleReference getSecurityRoleReferenceByName(String roleReferenceName) {
         for (SecurityRoleReference nextRR : getSecurityRoleReferenceSet()) {
             if (nextRR.getRoleName().equals(roleReferenceName)) {
@@ -335,14 +364,18 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * Adds a security role reference to this web component.
+     * @param securityRoleReference
      */
+    @Override
     public void addSecurityRoleReference(SecurityRoleReference securityRoleReference) {
         getSecurityRoleReferenceSet().add(securityRoleReference);
     }
 
     /**
      * Removes the given security role reference from this web component.
+     * @param securityRoleReference
      */
+    @Override
     public void removeSecurityRoleReference(SecurityRoleReference securityRoleReference) {
         getSecurityRoleReferenceSet().remove(securityRoleReference);
     }
@@ -351,7 +384,9 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
      * Sets the run-as of the referee EJB.
      *
      * @param runAs the value of run-as
-     */    public void setRunAsIdentity(RunAsIdentityDescriptor runAs) {
+     */
+    @Override
+    public void setRunAsIdentity(RunAsIdentityDescriptor runAs) {
         if (this.runAs == null) {
             this.runAs = runAs;
         }
@@ -362,14 +397,17 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
      *
      * @return the value of run-as.
      */
+    @Override
     public RunAsIdentityDescriptor getRunAsIdentity() {
         return runAs;
     }
 
+    @Override
     public boolean getUsesCallerIdentity() {
         return (runAs == null);
     }
 
+    @Override
     public void setUsesCallerIdentity(boolean isCallerID) {
         if (isCallerID) {
             runAs = null;
@@ -378,21 +416,25 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
         }
     }
 
+    @Override
     public MultipartConfig getMultipartConfig() {
         return multipartConfig;
     }
 
+    @Override
     public void setMultipartConfig(MultipartConfig multipartConfig) {
         this.multipartConfig = multipartConfig;
     }
 
     /**
      * DeploymentDescriptorNode.addNodeDescriptor(node) need this.
+     * @param multipartConfigDesc
      */
     public void setMultipartConfig(MultipartConfigDescriptor multipartConfigDesc) {
         this.multipartConfig = multipartConfigDesc;
     }
 
+    @Override
     public Application getApplication() {
         if (getWebBundleDescriptor() != null) {
             return getWebBundleDescriptor().getApplication();
@@ -407,6 +449,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
      *
      * @param implFile the servlet class name or the jsp file
      */
+    @Override
     public void setWebComponentImplementation(String implFile) {
         if (!isServlet && !implFile.startsWith("/")) {
             implFile = "/" + implFile;
@@ -417,38 +460,47 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     private String implFile = "";
     private boolean isServlet = false;
 
+    @Override
     public String getWebComponentImplementation() {
         return implFile;
     }
 
+    @Override
     public boolean isServlet() {
         return isServlet;
     }
 
+    @Override
     public void setServlet(boolean isServlet) {
         this.isServlet = isServlet;
     }
 
+    @Override
     public boolean isEnabled() {
         return enabled;
     }
 
+    @Override
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
+    @Override
     public void setAsyncSupported(Boolean asyncSupported) {
         this.asyncSupported = asyncSupported;
     }
 
+    @Override
     public Boolean isAsyncSupported() {
         return asyncSupported;
     }
 
+    @Override
     public void setConflict(boolean conflict) {
         this.conflict = conflict;
     }
 
+    @Override
     public boolean isConflict() {
         return conflict;
     }
@@ -459,6 +511,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
      * It is used for processing web security annotations.
      * @return an array of methods.
      */
+    @Override
     public Method[] getUserDefinedHttpMethods() {
         if (httpMethods == null) {
             httpMethods = new ArrayList<Method>();
@@ -530,7 +583,9 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * A formatted string representing my state.
+     * @param toStringBuffer
      */
+    @Override
     public void print(StringBuffer toStringBuffer) {
         super.print(toStringBuffer);
         toStringBuffer.append("WebComponentDescriptor\n");
@@ -550,6 +605,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     }
 
 
+    @Override
     public boolean equals(Object other) {
         if (other instanceof WebComponentDescriptor &&
                 this.getCanonicalName().equals(((
@@ -559,6 +615,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
         return false;
     }
 
+    @Override
     public int hashCode() {
         int result = 17;
         result = 37 * result + getCanonicalName().hashCode();
@@ -566,11 +623,12 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     }
 
 
+    @Override
     public void add(WebComponentDescriptor other) {
         add(other, true, false);
     }
 
-    // this method will combine the information from this "other" 
+    /** this method will combine the information from this "other" 
     // WebComponentDescriptor with current WebComponentDescriptor
     //
     // when there are conflicts between the contents of the two,
@@ -587,6 +645,11 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     // conflict information in #getConflictedInitParameterSet.
     //
     // And the conflict boolean will not be set.
+     * @param other
+     * @param combineUrlPatterns
+     * @param combineConflict 
+     */
+    @Override
     public void add(WebComponentDescriptor other, boolean combineUrlPatterns,
             boolean combineConflict) {
         // do not do anything if the canonical name of the two web 
@@ -614,11 +677,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
             conflictedInitParameterNames.addAll(other.getConflictedInitParameterNames());
         }
         if (!combineConflict) {
-            for (Iterator<InitializationParameter> initParamIter =
-                         getInitializationParameterSet().iterator();
-                 initParamIter.hasNext();) {
-                InitializationParameter initParam =
-                        initParamIter.next();
+            for (InitializationParameter initParam : getInitializationParameterSet()) {
                 conflictedInitParameterNames.remove(initParam.getName());
             }
         }
@@ -637,11 +696,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
                 getConflictedInitParameterNames().add(initParam.getName());
             }
         }
-        for (Iterator<SecurityRoleReference> secRoleRefIter =
-                other.getSecurityRoleReferenceSet().iterator();
-             secRoleRefIter.hasNext();) {
-            SecurityRoleReference secRoleRef =
-                    secRoleRefIter.next();
+        for (SecurityRoleReference secRoleRef : other.getSecurityRoleReferenceSet()) {
             if (getSecurityRoleReferenceByName(secRoleRef.getRoleName())
                     == null) {
                 getSecurityRoleReferenceSet().add(secRoleRef);
@@ -669,6 +724,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
         }
     }
 
+    @Override
     public boolean isConflict(WebComponentDescriptor other, boolean allowNullImplNameOverride) {
         if (conflict || other.isConflict()) {
             return true;

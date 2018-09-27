@@ -43,9 +43,9 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-nucleus-parent</artifactId>
-        <version>5.0.0.173-SNAPSHOT</version>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-nucleus-parent</artifactId>
+        <version>5.184-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     
@@ -67,6 +67,8 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         <module>notification-eventbus-core</module>
         <module>notification-cdi-eventbus-core</module>
         <module>jsr107-repackaged</module>
+        <module>payara-executor-service</module>
+        <module>opentracing-adapter</module>
     </modules>
     
     <profiles>

@@ -156,14 +156,14 @@ public class ApplicationArchivist extends Archivist<Application> {
 
             // we need to copy the old archive to a temp file so
             // the save method can copy its original contents from
-            InputStream is = in.getEntry(aModule.getArchiveUri());
-            File tmpFile = null;
-            try {
+            File tmpFile=null;
+            BufferedOutputStream bos = null;
+            try (InputStream is = in.getEntry(aModule.getArchiveUri())){
                 if (in instanceof WritableArchive) {
                     subArchivist.setArchiveUri(internalJar.getURI().getSchemeSpecificPart());
                 } else {
                     tmpFile = getTempFile(path);
-                    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tmpFile));
+                    bos = new BufferedOutputStream(new FileOutputStream(tmpFile));
                     ArchivistUtils.copy(is, bos);
 
                     // configure archivist
@@ -177,6 +177,13 @@ public class ApplicationArchivist extends Archivist<Application> {
                     if (!ok) {
                         logger.log(Level.WARNING, localStrings.getLocalString("enterprise.deployment.cantDelete", "Error deleting file {0}",
                                 new Object[] { tmpFile.getAbsolutePath() }));
+                    }
+                }
+                if ( bos != null) {
+                    try {
+                        bos.close();
+                    } catch (IOException ioe) {
+                        //ignore
                     }
                 }
             }
@@ -631,15 +638,11 @@ public class ApplicationArchivist extends Archivist<Application> {
                 
                 // For optional application.xml case, set the context root as module name for web modules
                 if (!appArchive.exists("META-INF/application.xml")) {
-                    if (aModule.getModuleType().equals(warType())) {
-                        
-                        // Need to honour the default-context-path element specified in web.xml in case application.xml is not 
-                        // present in an EAR.
-                        WebBundleDescriptor webBundleDescriptor = (WebBundleDescriptor) descriptor;
-                        if (webBundleDescriptor.getContextRoot() != null && !webBundleDescriptor.getContextRoot().equals("")) {
-                            aModule.setContextRoot(webBundleDescriptor.getContextRoot());
-                        }
-                        else {
+                    if (aModule.getModuleType().equals(DOLUtils.warType())) {
+                        WebBundleDescriptor wbd = (WebBundleDescriptor) descriptor;
+                        if (wbd.getContextRoot() != null && !wbd.getContextRoot().equals("")) {
+                            aModule.setContextRoot(wbd.getContextRoot());
+                        } else {
                             aModule.setContextRoot(aModule.getModuleName());
                         }
                     }

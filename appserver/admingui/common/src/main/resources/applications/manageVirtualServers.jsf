@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 -->
 
 <!-- applications/manageVirtualServers.jsf -->
@@ -84,7 +85,9 @@
                     convertArrayToCommaString(array="#{pageSession.selectedTargets}", commaString="#{requestScope.vsString}");
                     createMap(result="#{requestScope.attrsMap}")
                     mapPut(map="#{requestScope.attrsMap}" key="virtualServers" value="#{requestScope.vsString}");
-                    gf.restRequest(endpoint="#{pageSession.targetEndpoint}/application-ref/#{pageSession.encodedAppName}"
+                    mapPut(map="#{requestScope.attrsMap}" key="id" value="#{pageSession.encodedAppName}");
+                    mapPut(map="#{requestScope.attrsMap}" key="target" value="#{pageSession.targetName}");
+                    gf.restRequest(endpoint="#{pageSession.targetEndpoint}/update-application-ref"
                             attrs="#{requestScope.attrsMap}"  method="POST" result="#{requestScope.ref}");
                     prepareSuccessfulMsg();
                     gf.redirect(page="#{pageSession.targetPageLink}?appName=#{pageSession.encodedAppName}&listPageLink=#{pageSession.listPageLink}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or affiliates]
 package com.sun.enterprise.server.logging;
 
 import java.util.logging.Logger;
@@ -104,7 +104,7 @@ public class LogFacade {
     @LogMessageInfo(message = "Running Payara Version: {0}", level="INFO")
     public static final String GF_VERSION_INFO = "NCLS-LOGGING-00009";
     
-    @LogMessageInfo(message = "Server log file is using Formatter class: {0}", level="INFO")
+    @LogMessageInfo(message = "Server log file is using Formatter class: {0}", level="FINE")
     public static final String LOG_FORMATTER_INFO = "NCLS-LOGGING-00010";
 
     @LogMessageInfo(message = "Failed to parse the date: {0}", level="WARNING")

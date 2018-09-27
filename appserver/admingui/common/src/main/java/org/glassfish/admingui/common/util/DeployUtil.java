@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * DeploymentHandler.java
@@ -48,6 +49,7 @@ package org.glassfish.admingui.common.util;
 import java.util.ArrayList;
 import java.util.List;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+import static fish.payara.admingui.common.handlers.PayaraApplicationHandlers.getInstancesInDeploymentGroup;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -68,12 +70,16 @@ public class DeployUtil {
         try{
             String decodedName = URLDecoder.decode(appName, "UTF-8");
             List clusters =  TargetUtil.getClusters();
+            List dgs =  TargetUtil.getDeploymentGroups();
             String clusterEndpoint = GuiUtil.getSessionValue("REST_URL")+"/clusters/cluster/";
             String serverEndpoint = GuiUtil.getSessionValue("REST_URL")+"/servers/server/";
             for(String targetName : targets){
                 String endpoint ;
                 if (clusters.contains(targetName)){
                     endpoint = clusterEndpoint + targetName + "/application-ref/" + decodedName ;
+                }else if (dgs.contains(targetName)) {
+                    // do nothing as it will also be picked up for the server
+                    continue;
                 }else{
                     endpoint = serverEndpoint + targetName + "/application-ref/"  + decodedName ;
                 }
@@ -114,6 +120,14 @@ public class DeployUtil {
                 if (appRefs.contains(appName)){
                     targets.add(oneServer);
                 }
+            }
+            
+            List<String> dgs = TargetUtil.getDeploymentGroups();
+            for (String dg : dgs) {
+                List appRefs = new ArrayList(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/deployment-groups/deployment-group/" + dg + "/" + ref).keySet());
+                if (appRefs.contains(appName)){
+                    targets.add(dg);
+                }                
             }
 
         }catch(Exception ex){
@@ -165,9 +179,11 @@ public class DeployUtil {
         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
         List clusters = TargetUtil.getClusters();
         List standalone = TargetUtil.getStandaloneInstances();
+        List deploymentGroup = TargetUtil.getDeploymentGroups();
         String enabled = "true";
         int numEnabled = 0;
         int numDisabled = 0;
+        int numTargets = 0;
         String ref = "application-ref";
         if (!isApp) {
             ref = "resource-ref";
@@ -194,20 +210,33 @@ public class DeployUtil {
         } catch (Exception ex) {
             //ignore
         }
+        List<String> instancesInDeploymentGroup = getInstancesInDeploymentGroup(targetList);   
+       
         for (String oneTarget : targetList) {
+            Boolean isValidTarget = false;
             if (clusters.contains(oneTarget)) {
                 enabled = (String) RestUtil.getAttributesMap(prefix + "/clusters/cluster/" + oneTarget + "/" + ref + "/" + appName).get("enabled");
-            } else {
+                numTargets++;
+                isValidTarget = true;
+            } else if (standalone.contains(oneTarget) && !instancesInDeploymentGroup.contains(oneTarget)) {
                 enabled = (String) RestUtil.getAttributesMap(prefix + "/servers/server/" + oneTarget + "/" + ref + "/" + appName).get("enabled");
+                numTargets++;
+                isValidTarget = true;
+            } else if (deploymentGroup.contains(oneTarget)) {
+                enabled = (String) RestUtil.getAttributesMap(prefix + "/deployment-groups/deployment-group/" + oneTarget + "/" + ref + "/" + appName).get("enabled");
+                numTargets++;
+                isValidTarget = true;
             }
-            if (Boolean.parseBoolean(enabled)) {
-                numEnabled++;
-            } else {
-                numDisabled++;
+
+            if (isValidTarget) {
+                if (Boolean.parseBoolean(enabled)) {
+                    numEnabled++;
+                } else {
+                    numDisabled++;
+                }
             }
         }
                 
-        int numTargets = targetList.size();
         /*
         if (numEnabled == numTargets){
             return GuiUtil.getMessage("deploy.allEnabled");

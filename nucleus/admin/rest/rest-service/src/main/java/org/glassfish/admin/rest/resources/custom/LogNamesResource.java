@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.resources.custom;
 
@@ -49,8 +51,9 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.util.Vector;
+import java.util.List;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 
 /**
  * REST resource to get Log Names
@@ -63,18 +66,19 @@ public class LogNamesResource {
     protected ServiceLocator habitat = Globals.getDefaultBaseServiceLocator();
 
     @GET
-    @Produces({MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON})
-    public String getLogNamesJSON(@QueryParam("instanceName") String instanceName) throws IOException {
-        return getLogNames(instanceName, "json");
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response getLogNames(@QueryParam("instanceName") String instanceName) throws IOException {
+        
+        if (instanceName == null || instanceName.equals(""))  {
+            return Response.serverError().entity("instanceName is a required attribute").build();
+        }
+        
+        LogNameList returnedNames = getInstanceLogFileNames(instanceName);
+        
+        return Response.ok(returnedNames).build();
     }
 
-    @GET
-    @Produces({ MediaType.APPLICATION_XML})
-    public String getLogNamesJXML(@QueryParam("instanceName") String instanceName) throws IOException {
-        return getLogNames(instanceName, "xml");
-    }
-
-    private String getLogNames(String instanceName, String type) throws IOException {
+    private LogNameList getInstanceLogFileNames(String instanceName) throws IOException {
 
         if (habitat.getService(LogManager.class) == null) {
             //the logger service is not install, so we cannot rely on it.
@@ -83,45 +87,10 @@ public class LogNamesResource {
         }
 
         LogFilter logFilter = habitat.getService(LogFilter.class);
+        
+        List<String> logNameList = logFilter.getInstanceLogFileNames(instanceName);
 
-        return convertQueryResult(logFilter.getInstanceLogFileNames(instanceName),type);
+        return new LogNameList(logNameList);
 
-    }
-
-    private String quoted(String s) {
-        return "\"" + s + "\"";
-    }
-
-    private String convertQueryResult(Vector v, String type) {
-        StringBuilder sb = new StringBuilder();
-        String sep = "";
-        if (type.equals("json")) {
-            sb.append("{\"InstanceLogFileNames\": [");
-        } else {
-            sb.append("<InstanceLogFileNames>\n");
-        }
-
-        // extract every record
-        for (int i = 0; i < v.size(); ++i) {
-            String name = (String) v.get(i);
-
-            if (type.equals("json")) {
-                sb.append(sep);
-                sb.append(quoted(name));
-                sep = ",";
-            } else {
-                sb.append("<" + name + "/>");
-
-            }
-
-        }
-        if (type.equals("json")) {
-            sb.append("]}\n");
-        } else {
-            sb.append("\n</InstanceLogFileNames>\n");
-
-        }
-
-        return sb.toString();
     }
 }

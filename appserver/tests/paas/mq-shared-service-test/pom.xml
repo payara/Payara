@@ -38,6 +38,7 @@
   ~ only if the new code is made subject to such option by the copyright
   ~ holder.
   -->
+<!--"Portions Copyright [2018] [Payara Foundation and/or its affiliates]" -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -59,9 +60,9 @@
                     <execution>
                         <phase>post-integration-test</phase>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <delete file="${S1AS_HOME}/modules/paas.mqplugin.jar"/>
-                            </tasks>
+                            </target>
                         </configuration>
                         <goals>
                             <goal>run</goal>

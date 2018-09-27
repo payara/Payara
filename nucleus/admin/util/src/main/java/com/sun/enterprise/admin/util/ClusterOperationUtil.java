@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.admin.util;
 
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
@@ -56,17 +58,19 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
- *
+ * Utility Class to replicate commands to the cluster.
+ * 
  */
 public class ClusterOperationUtil {
-    private static final Logger logger = AdminLoggerInfo.getLogger();
+    private static final Logger LOGGER = AdminLoggerInfo.getLogger();
     
     
-    private static final LocalStringManagerImpl strings =
-                        new LocalStringManagerImpl(ClusterOperationUtil.class);
+    private static final LocalStringManagerImpl strings = new LocalStringManagerImpl(ClusterOperationUtil.class);
+    
+    // PAYARA-2162 Commands which poll remote instances without setting values can trigger restart-required
+    private static final List<String> ALLOWED_COMMANDS = Arrays.asList("_get-runtime-info");
 
     //TODO : Begin temp fix for undoable commands
     private static List<Server> completedInstances = new ArrayList<Server>();
@@ -132,7 +136,7 @@ public class ClusterOperationUtil {
         InstanceStateService instanceState = habitat.getService(InstanceStateService.class);
         validateIntermediateDownloadDir(intermediateDownloadDir);
         RemoteInstanceCommandHelper rich = new RemoteInstanceCommandHelper(habitat);
-        Map<String, Future<InstanceCommandResult>> futures = new HashMap<String, Future<InstanceCommandResult>>();
+        Map<String, Future<InstanceCommandResult>> futures = new HashMap<>();
         try {
             for(Server svr : instancesForReplication) {
                 if (instanceState.getState(svr.getName()) == InstanceState.StateType.NEVER_STARTED) {
@@ -159,7 +163,9 @@ public class ClusterOperationUtil {
                     continue;
                 }               
                 Config scfg = svr.getConfig();
-                if (!Boolean.valueOf(scfg.getDynamicReconfigurationEnabled())) {
+                // PAYARA-2162 Restart Required is set erroneously when _get-runtime-info is called
+                if (!Boolean.valueOf(scfg.getDynamicReconfigurationEnabled()) 
+                        && !ALLOWED_COMMANDS.contains(commandName)) {
                     // Do not replicate to servers for which dynamic configuration is disabled
                     ActionReport aReport = context.getActionReport().addSubActionsReport();
                     aReport.setActionExitCode(ActionReport.ExitCode.WARNING);
@@ -178,7 +184,7 @@ public class ClusterOperationUtil {
                 InstanceCommandResult aResult = new InstanceCommandResult();
 //                InstanceCommandExecutor ice =
 //                        new InstanceCommandExecutor(habitat, commandName, failPolicy, offlinePolicy,
-//                                svr, host, port, logger, parameters, aReport, aResult);
+//                                svr, host, port, LOGGER, parameters, aReport, aResult);
 //                if (CommandTarget.DAS.isValid(habitat, ice.getServer().getName()))
 //                    continue;
 //                if (intermediateDownloadDir != null) {
@@ -191,7 +197,7 @@ public class ClusterOperationUtil {
                 if (useRest()) {
                     InstanceRestCommandExecutor ice =
                             new InstanceRestCommandExecutor(habitat, commandName, failPolicy, offlinePolicy,
-                                    svr, host, port, logger, parameters, aReport, aResult);
+                                    svr, host, port, LOGGER, parameters, aReport, aResult);
                     if (CommandTarget.DAS.isValid(habitat, ice.getServer().getName())) {
                         continue;
                     }
@@ -201,10 +207,10 @@ public class ClusterOperationUtil {
                     }
                     f = instanceState.submitJob(svr, ice, aResult);
                 } else {
-                    logger.log(Level.FINEST, "replicateCommand(): Use traditional way for replication - {0}", commandName);
+                    LOGGER.log(Level.FINEST, "replicateCommand(): Use traditional way for replication - {0}", commandName);
                     InstanceCommandExecutor ice =
                             new InstanceCommandExecutor(habitat, commandName, failPolicy, offlinePolicy,
-                                    svr, host, port, logger, parameters, aReport, aResult);
+                                    svr, host, port, LOGGER, parameters, aReport, aResult);
                     if (CommandTarget.DAS.isValid(habitat, ice.getServer().getName())) {
                         continue;
                     }
@@ -215,11 +221,11 @@ public class ClusterOperationUtil {
                     f = instanceState.submitJob(svr, ice, aResult);
                 }
                 if (f == null) {
-                    logger.severe(AdminLoggerInfo.stateNotFound);
+                    LOGGER.severe(AdminLoggerInfo.stateNotFound);
                     continue;
                 }
                 futures.put(svr.getName(), f);
-                logger.fine(strings.getLocalString("dynamicreconfiguration.diagnostics.jobsubmitted",
+                LOGGER.fine(strings.getLocalString("dynamicreconfiguration.diagnostics.jobsubmitted",
                         "Successfully submitted command {0} for execution at instance {1}",
                           commandName, svr.getName()));
             }
@@ -230,7 +236,7 @@ public class ClusterOperationUtil {
             aReport.setActionExitCode(finalResult);
             aReport.setMessage(strings.getLocalString("clusterutil.replicationfailed",
                     "Error during command replication: {0}", ex.getLocalizedMessage()));
-            logger.log(Level.SEVERE, AdminLoggerInfo.replicationError, ex.getLocalizedMessage());
+            LOGGER.log(Level.SEVERE, AdminLoggerInfo.replicationError, ex.getLocalizedMessage());
             if(returnValue ==ActionReport.ExitCode.SUCCESS) {
                 returnValue = finalResult;
             }
@@ -244,7 +250,7 @@ public class ClusterOperationUtil {
             String s = fe.getKey();
             ActionReport.ExitCode finalResult;
             try {
-                logger.fine(strings.getLocalString("dynamicreconfiguration.diagnostics.waitingonjob",
+                LOGGER.fine(strings.getLocalString("dynamicreconfiguration.diagnostics.waitingonjob",
                         "Waiting for command {0} to be completed at instance {1}", commandName, s));
                 Future<InstanceCommandResult> aFuture = fe.getValue();
                 InstanceCommandResult aResult = aFuture.get(maxWaitTime, TimeUnit.MILLISECONDS);
@@ -349,8 +355,9 @@ public class ClusterOperationUtil {
                     CommandTarget.DOMAIN.isValid(habitat, t))
                 continue;
             parameters.set("target", t);
+            List<Server> instances = targetService.getInstances(t);
             ActionReport.ExitCode returnValue = replicateCommand(commandName,
-                    failPolicy, offlinePolicy, neverStartedPolicy, targetService.getInstances(t), context, parameters, habitat,
+                    failPolicy, offlinePolicy, neverStartedPolicy, instances, context, parameters, habitat,
                     intermediateDownloadDir);
             if(!returnValue.equals(ActionReport.ExitCode.SUCCESS)) {
                 result = returnValue;

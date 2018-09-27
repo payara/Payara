@@ -448,6 +448,28 @@ abstract public class VerifierTest extends Object {
     }
 
     /*
+     *getXPathValue(String xpath)
+     *   return char[] - is the value of the element specified in the xpath.
+     */
+    public char[] getXPathValueasCharArray(String xpath){
+        try{
+            String value = null;
+            Document d = getVerifierContext().getRuntimeDocument();
+            if (d==null) return null;
+            NodeList nl = XPathAPI.selectNodeList(d, xpath);
+            for(int i=0; i<nl.getLength();i++){
+                Node n = ((Node)nl.item(i)).getFirstChild();
+                if (n==null) return null;
+                value = n.getNodeValue();
+            }
+            return value.toCharArray();
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    /*
      * getCountNodeSet( String xpath)
      *   return the number of nodes for the specified xpath
      */

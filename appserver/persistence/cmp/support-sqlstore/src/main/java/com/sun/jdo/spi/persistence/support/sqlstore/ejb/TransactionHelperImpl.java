@@ -208,14 +208,14 @@ abstract public class TransactionHelperImpl
      * @throws java.sql.SQLException.
      */  
     public java.sql.Connection getConnection(Object resource, String username, 
-                String password) throws java.sql.SQLException {
+                char[] password) throws java.sql.SQLException {
         java.sql.Connection rc = null;
         if (resource instanceof javax.sql.DataSource) {
             javax.sql.DataSource ds = (javax.sql.DataSource)resource;
             if (username == null) {
                 rc = ds.getConnection();
             } else {
-                rc = ds.getConnection(username, password);
+                rc = ds.getConnection(username, new String(password));
             }
         }
         return rc;
@@ -232,7 +232,7 @@ abstract public class TransactionHelperImpl
      * @throws java.sql.SQLException.
      */
     abstract public java.sql.Connection getNonTransactionalConnection(
-        Object resource, String username, String password)
+        Object resource, String username, char[] password)
         throws java.sql.SQLException;
 
     /** Called in a managed environment to access a TransactionManager

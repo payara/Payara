@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld.services;
@@ -66,6 +68,7 @@ public class NonModuleInjectionServices implements InjectionServices {
         injectionManager = injectionMgr;
     }
 
+    @Override
     public <T> void aroundInject(InjectionContext<T> injectionContext) {
         try {
             ServiceLocator serviceLocator = Globals.getDefaultHabitat();
@@ -91,9 +94,11 @@ public class NonModuleInjectionServices implements InjectionServices {
         }
     }
 
+    @Override
     public <T> void registerInjectionTarget(javax.enterprise.inject.spi.InjectionTarget<T> injectionTarget, AnnotatedType<T> annotatedType) {
     }
 
+    @Override
     public void cleanup() {
     }
 

@@ -36,12 +36,17 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.testing;
 
-import org.codehaus.jettison.json.JSONObject;
-
+import java.io.StringReader;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import javax.json.stream.JsonParser;
 import static org.glassfish.admin.rest.testing.Common.*;
 
 public class Response {
@@ -81,12 +86,18 @@ public class Response {
         return this.bodyAsString;
     }
 
-    public JSONObject getJsonBody() throws Exception {
-        return new JSONObject(getStringBody());
+    public JsonObject getJsonBody() throws Exception {
+        JsonParser parser = Json.createParser(new StringReader(getStringBody()));
+        if (parser.hasNext()){
+            parser.next();
+            return parser.getObject();
+        } else {
+            return JsonValue.EMPTY_JSON_OBJECT;
+        }
     }
 
-    public JSONObject getItem() throws Exception {
-        return getJsonBody().getJSONObject(PROP_ITEM);
+    public JsonObject getItem() throws Exception {
+        return getJsonBody().getJsonObject(PROP_ITEM);
     }
 
     public String getLocationHeader() throws Exception {

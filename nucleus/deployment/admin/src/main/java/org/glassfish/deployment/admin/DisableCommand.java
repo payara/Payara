@@ -104,7 +104,7 @@ import org.glassfish.deployment.versioning.VersioningUtils;
 @I18n("disable.command")
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
 @PerLookup
-@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE})
+@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean=Application.class,opType=RestEndpoint.OpType.POST, path="disable", description="Disable",
         params={@RestParam(name="id", value="$parent")})

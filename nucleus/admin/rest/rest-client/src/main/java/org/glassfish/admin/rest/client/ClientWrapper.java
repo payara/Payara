@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation ad/or affiliates
  */
 package org.glassfish.admin.rest.client;
 
@@ -59,7 +61,7 @@ import javax.net.ssl.SSLContext;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.glassfish.jersey.client.filter.CsrfProtectionFilter;
-import org.glassfish.jersey.jettison.JettisonFeature;
+import org.glassfish.jersey.jsonp.JsonProcessingFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 /**
@@ -86,7 +88,7 @@ public class ClientWrapper implements Client {
     public ClientWrapper(final Map<String, String> headers, String userName, String password) {
         realClient = JerseyClientBuilder.newClient();
         realClient.register(new MultiPartFeature());
-        realClient.register(new JettisonFeature());
+        realClient.register(new JsonProcessingFeature());
         realClient.register(new CsrfProtectionFilter());
         if ((userName != null) && (password != null)) {
             realClient.register(HttpAuthenticationFeature.basic(userName, password));

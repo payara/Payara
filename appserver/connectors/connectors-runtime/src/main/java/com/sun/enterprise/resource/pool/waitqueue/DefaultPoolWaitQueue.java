@@ -66,17 +66,17 @@ public class DefaultPoolWaitQueue implements PoolWaitQueue {
         initializeDefaultQueue();
     }
 
+    @Override
     public synchronized int getQueueLength() {
         return list.size();
     }
 
-    public synchronized Object addToQueue() {
-
-        Object waitMonitor = new Object();
+    @Override
+    public synchronized void addToQueue(Object waitMonitor) {
         list.addLast(waitMonitor);
-        return waitMonitor;
     }
 
+    @Override
     public synchronized boolean removeFromQueue(Object o) {
         return list.remove(o);
     }
@@ -87,10 +87,12 @@ public class DefaultPoolWaitQueue implements PoolWaitQueue {
     }
 */
 
+    @Override
     public synchronized Object remove() {
         return list.removeFirst();
     }
 
+    @Override
     public Object peek() {
         Object result = null;
         if (list.size() > 0) {
@@ -99,6 +101,7 @@ public class DefaultPoolWaitQueue implements PoolWaitQueue {
         return result;
     }
 
+    @Override
     public Collection getQueueContents() {
         return list;
     }

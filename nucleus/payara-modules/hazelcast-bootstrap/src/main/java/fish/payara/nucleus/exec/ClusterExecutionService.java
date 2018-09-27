@@ -282,7 +282,7 @@ public class ClusterExecutionService implements EventListener {
     public void event(Event event) {
         if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)) {
             if (hzCore.isEnabled()) {
-                logger.info("Payara Clustered Executor Service Enabled");
+                logger.config("Payara Clustered Executor Service Enabled");
             }
         }
     }

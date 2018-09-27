@@ -40,6 +40,8 @@
 
 package org.glassfish.admin.rest.testing;
 
+import javax.json.JsonValue;
+
 public class BooleanValue extends ScalarValue {
     private boolean value;
 
@@ -57,9 +59,9 @@ public class BooleanValue extends ScalarValue {
     }
 
     @Override
-    Object getJsonValue() throws Exception {
+    JsonValue getJsonValue() throws Exception {
         assertJsonable();
-        return (getValue()) ? Boolean.TRUE : Boolean.FALSE;
+        return (getValue()) ? JsonValue.TRUE : JsonValue.FALSE;
     }
 
     @Override

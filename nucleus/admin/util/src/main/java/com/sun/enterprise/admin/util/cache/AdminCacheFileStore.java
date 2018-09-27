@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.util.cache;
 
 import com.sun.enterprise.admin.util.AdminLoggerInfo;
@@ -76,10 +78,8 @@ public class AdminCacheFileStore implements AdminCache {
         if (provider == null) {
             return null;
         }
-        // @todo Java SE 7 - use try with resources
-        InputStream is = null;
-        try {
-            is = getInputStream(key);
+        
+        try (InputStream is = getInputStream(key)) {
             return (A) provider.toInstance(is, clazz);
         } catch (FileNotFoundException ex) {
             return null;
@@ -89,13 +89,7 @@ public class AdminCacheFileStore implements AdminCache {
                         new Object[] { key });
             }
             return null;
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (Exception ex) {}
-            }
-        }
+        } 
 
     }
 
@@ -148,13 +142,13 @@ public class AdminCacheFileStore implements AdminCache {
         catch (IOException ex) {
             return;
         }
-        // @todo Java SE 7 - use try with resources
-        OutputStream os = null;
+
         try {
             File tempFile = File.createTempFile("temp", "cache", cacheFile.getParentFile());
-            os = new BufferedOutputStream(new FileOutputStream(tempFile));
-            provider.writeToStream(data, os);
-            os.close();
+            
+            try (OutputStream os = new BufferedOutputStream(new FileOutputStream(tempFile))) {
+                provider.writeToStream(data, os);
+            }
 
             if (!FileUtils.deleteFileMaybe(cacheFile) || !tempFile.renameTo(cacheFile)) {
                 if (logger.isLoggable(Level.WARNING)) {
@@ -162,7 +156,7 @@ public class AdminCacheFileStore implements AdminCache {
                             new Object[] { cacheFile.getPath() });
                 }
                 if(!FileUtils.deleteFileMaybe(tempFile)) {
-                    logger.log(Level.FINE, "can't delete file: {0}", tempFile);
+                    logger.log(Level.FINE, "can\'t delete file: {0}", tempFile);
                 }
 
 
@@ -172,8 +166,6 @@ public class AdminCacheFileStore implements AdminCache {
                 logger.log(Level.WARNING, AdminLoggerInfo.mCannotWriteCache,
                             new Object[] { cacheFile.getPath() });
             }
-        } finally {
-            try { os.close(); } catch (Exception ex) {}
         }
     }
 

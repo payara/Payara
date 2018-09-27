@@ -422,11 +422,12 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
 
                 if (!blocked) {
                     //add to wait-queue
-                    Object waitMonitor = waitQueue.addToQueue();
+                    Object waitMonitor = new Object();
                     if (poolLifeCycleListener != null) {
                         poolLifeCycleListener.connectionRequestQueued();
                     }
                     synchronized (waitMonitor) {
+                        waitQueue.addToQueue(waitMonitor);
                         try {
                             logFine("Resource Pool: getting on wait queue");
                             waitMonitor.wait(remainingWaitTime);
@@ -450,8 +451,9 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
                     }
                 } else {
                     //add to reconfig-wait-queue
-                    Object reconfigWaitMonitor = reconfigWaitQueue.addToQueue();
+                    Object reconfigWaitMonitor = new Object();
                     synchronized (reconfigWaitMonitor) {
+                        reconfigWaitQueue.addToQueue(reconfigWaitMonitor);
                         try {
                             if(reconfigWaitTime > 0){
                                 if(_logger.isLoggable(Level.FINEST)) {
@@ -725,7 +727,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
                     boolean isValid = isConnectionValid(h, alloc);
                     if (h.hasConnectionErrorOccurred() || !isValid) {
                         if (failAllConnections) {
-                            createSingleResourceAndAdjustPool(alloc, spec);
+                             result = createSingleResourceAndAdjustPool(alloc, spec);
                             //no need to match since the resource is created with the allocator of caller.
                             break;
                         } else {
@@ -879,10 +881,6 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
         }
 
         ResourceHandle result = getNewResource(alloc);
-        if (result != null) {
-            alloc.fillInResourceObjects(result);
-            result.getResourceState().setBusy(true);
-        }
 
         return result;
     }
@@ -1246,7 +1244,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
     }
 
     private ResourceHandle getNewResource(ResourceAllocator alloc) throws PoolingException {
-        ds.addResource(alloc, 1);
+        addResource(alloc);
         return ds.getResource();
     }
 

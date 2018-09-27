@@ -37,25 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.factory;
 
 import javax.security.auth.message.config.AuthConfigFactory.RegistrationContext;
 
-/*
- * Class used by GFAuthConfigFactory and EntryInfo.
+/**
+ * Class used by {@link BaseAuthConfigFactory}, {@link EntryInfo} and {@link RegStoreFileParser}
  *
- * This class will not be used outside of its package.
+ * This class will *not* be used outside of its package.
  */
 final class RegistrationContextImpl implements RegistrationContext {
+
     private final String messageLayer;
     private final String appContext;
     private final String description;
     private final boolean isPersistent;
 
-    RegistrationContextImpl(String messageLayer, String appContext,
-        String description, boolean persistent) {
-
+    RegistrationContextImpl(String messageLayer, String appContext, String description, boolean persistent) {
         this.messageLayer = messageLayer;
         this.appContext = appContext;
         this.description = description;
@@ -63,25 +62,29 @@ final class RegistrationContextImpl implements RegistrationContext {
     }
 
     // helper method to create impl class
-    RegistrationContextImpl(RegistrationContext ctx) {
-        this.messageLayer = ctx.getMessageLayer();
-        this.appContext = ctx.getAppContext();
-        this.description = ctx.getDescription();
-        this.isPersistent = ctx.isPersistent();
+    RegistrationContextImpl(RegistrationContext registrationContext) {
+        this.messageLayer = registrationContext.getMessageLayer();
+        this.appContext = registrationContext.getAppContext();
+        this.description = registrationContext.getDescription();
+        this.isPersistent = registrationContext.isPersistent();
     }
 
+    @Override
     public String getMessageLayer() {
         return messageLayer;
     }
 
+    @Override
     public String getAppContext() {
         return appContext;
     }
 
+    @Override
     public String getDescription() {
         return description;
     }
 
+    @Override
     public boolean isPersistent() {
         return isPersistent;
     }
@@ -91,11 +94,12 @@ final class RegistrationContextImpl implements RegistrationContext {
         if (o == null || !(o instanceof RegistrationContext)) {
             return false;
         }
+
         RegistrationContext target = (RegistrationContext) o;
-        return ( EntryInfo.matchStrings(
-            messageLayer, target.getMessageLayer()) &&
-            EntryInfo.matchStrings(appContext, target.getAppContext()) &&
-            isPersistent() == target.isPersistent() );
+
+        return (EntryInfo.matchStrings(messageLayer, target.getMessageLayer()) &&
+                EntryInfo.matchStrings(appContext, target.getAppContext()) &&
+                isPersistent() == target.isPersistent());
     }
 
     @Override
@@ -104,6 +108,7 @@ final class RegistrationContextImpl implements RegistrationContext {
         hash = 17 * hash + (this.messageLayer != null ? this.messageLayer.hashCode() : 0);
         hash = 17 * hash + (this.appContext != null ? this.appContext.hashCode() : 0);
         hash = 17 * hash + (this.isPersistent ? 1 : 0);
+
         return hash;
     }
 }

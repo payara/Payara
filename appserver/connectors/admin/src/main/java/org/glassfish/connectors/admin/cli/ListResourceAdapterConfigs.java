@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.connectors.admin.cli;
 
@@ -69,7 +70,7 @@ import javax.inject.Inject;
  * List Resource Adapter Configs command
  *
  */
-@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE })
+@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
 @Service(name="list-resource-adapter-configs")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)

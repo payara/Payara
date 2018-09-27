@@ -152,7 +152,7 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
                 MessageListener ml = (MessageListener) it.next();
                 String activationSpecClass = ml.getActivationSpecClass();
                 if (activationSpecClass != null && !activationSpecClass.equals("")) {
-                    Class clazz = getClass(activationSpecClass);
+                    Class clazz = getClass(descriptor, activationSpecClass);
                     boolean validClass =  false;
                     if(clazz != null){
                         if(ActivationSpec.class.isAssignableFrom(clazz)){
@@ -184,7 +184,7 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
         String raClass = desc.getResourceAdapterClass();
         if (raClass != null && !raClass.equals("")) {
             if (!desc.getConfigPropertyProcessedClasses().contains(raClass)) {
-                Class claz = getClass(raClass);
+                Class claz = getClass(desc, raClass);
                 ConfigPropertyHandler.processParent(claz, desc.getConfigProperties());
             }
         }
@@ -198,7 +198,7 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
                 String connectionFactoryClass = connectionDef.getConnectionFactoryIntf();
                 if (connectionFactoryClass != null && !connectionFactoryClass.equals("")) {
                     if (!desc.getConfigPropertyProcessedClasses().contains(connectionFactoryClass)) {
-                        Class claz = getClass(connectionDef.getManagedConnectionFactoryImpl());
+                        Class claz = getClass(desc, connectionDef.getManagedConnectionFactoryImpl());
                         ConfigPropertyHandler.processParent(claz, connectionDef.getConfigProperties());
                     }
                 }
@@ -214,7 +214,7 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
                 String activationSpecClass = ml.getActivationSpecClass();
                 if (activationSpecClass != null && !activationSpecClass.equals("")) {
                     if (!desc.getConfigPropertyProcessedClasses().contains(activationSpecClass)) {
-                        Class claz = getClass(activationSpecClass);
+                        Class claz = getClass(desc, activationSpecClass);
                         ConfigPropertyHandler.processParent(claz, ml.getConfigProperties());
                     }
                 }
@@ -227,20 +227,26 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
             AdminObject ao = (AdminObject) it.next();
             String uniqueName = ao.getAdminObjectInterface() + "_" + ao.getAdminObjectClass();
             if (!desc.getConfigPropertyProcessedClasses().contains(uniqueName)) {
-                Class claz = getClass(ao.getAdminObjectClass());
+                Class claz = getClass(desc, ao.getAdminObjectClass());
                 ConfigPropertyHandler.processParent(claz, ao.getConfigProperties());
             }
         }
     }
 
-    private Class getClass(String className){
+    private Class getClass(ConnectorDescriptor desc, String className) {
         Class claz = null;
-            try {
+        try {
+            if (desc.getClassLoader() != null) {
+                //Use the descriptor's ClassLoader as the TCL in DAS will not have a
+                // resource adapter that is not targetted to DAS
+                claz = desc.getClassLoader().loadClass(className);
+            } else {
                 claz = Thread.currentThread().getContextClassLoader().loadClass(className);
-            } catch (ClassNotFoundException e) {
-                _logger.log(Level.WARNING, "Unable to load class [ "+className+" ]", e);
-                throw new RuntimeException("Unable to load class [ "+className+" ]");
             }
+        } catch (ClassNotFoundException e) {
+            _logger.log(Level.WARNING, "Unable to load class [ " + className + " ]", e.getMessage());
+            throw new RuntimeException("Unable to load class [ " + className + " ]");
+        }
         return claz;
     }
 }

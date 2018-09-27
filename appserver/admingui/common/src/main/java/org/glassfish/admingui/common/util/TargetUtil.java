@@ -37,15 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admingui.common.util;
 
+import java.io.IOException;
 import org.glassfish.admingui.common.handlers.RestUtilHandlers;
 
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -65,6 +69,13 @@ public class TargetUtil {
             return false;
         }
         return getInstances().contains(name);
+    }
+    
+    public static boolean isDeploymentGroup(String name) {
+        if (GuiUtil.isEmpty(name)){
+            return false;
+        }
+        return getDeploymentGroups().contains(name);        
     }
 
     public static List getStandaloneInstances(){
@@ -90,13 +101,27 @@ public class TargetUtil {
 
         return result;
     }
+    
+    public static List getDeploymentGroups() {
+        
+        List dgs = new ArrayList();
+        try{
+            dgs.addAll(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/deployment-groups/deployment-group").keySet());
+        }catch (Exception ex){
+            GuiUtil.getLogger().log(Level.INFO, "{0}{1}", new Object[]{GuiUtil.getCommonMessage("log.error.getDeploymentGroups"), ex.getLocalizedMessage()});
+            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
+                ex.printStackTrace();
+            }
+        }
+        return dgs;
+    }
 
     public static List getClusters(){
         List clusters = new ArrayList();
         try{
             clusters.addAll(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/clusters/cluster").keySet());
         }catch (Exception ex){
-            GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.getClusters") + ex.getLocalizedMessage());
+            GuiUtil.getLogger().log(Level.INFO, "{0}{1}", new Object[]{GuiUtil.getCommonMessage("log.error.getClusters"), ex.getLocalizedMessage()});
             if (GuiUtil.getLogger().isLoggable(Level.FINE)){
                 ex.printStackTrace();
             }
@@ -109,7 +134,7 @@ public class TargetUtil {
         try{
             instances.addAll(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/servers/server").keySet());
         }catch (Exception ex){
-            GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.getInstances") + ex.getLocalizedMessage());
+            GuiUtil.getLogger().log(Level.INFO, "{0}{1}", new Object[]{GuiUtil.getCommonMessage("log.error.getInstances"), ex.getLocalizedMessage()});
             if (GuiUtil.getLogger().isLoggable(Level.FINE)){
                 ex.printStackTrace();
             }
@@ -122,7 +147,7 @@ public class TargetUtil {
         try{
             config.addAll(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/configs/config").keySet());
         }catch (Exception ex){
-            GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.getClusters") + ex.getLocalizedMessage());
+            GuiUtil.getLogger().log(Level.INFO, "{0}{1}", new Object[]{GuiUtil.getCommonMessage("log.error.getClusters"), ex.getLocalizedMessage()});
             if (GuiUtil.getLogger().isLoggable(Level.FINE)){
                 ex.printStackTrace();
             }
@@ -133,6 +158,16 @@ public class TargetUtil {
             GuiUtil.setSessionValue("_SESSION_INITIALIZED", null);
         }
         return config;
+    }
+    
+    public static List getDGInstances(String dg) {
+        List instances = new ArrayList();
+        try {
+            instances.addAll(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/deployment-groups/deployment-group/" + dg + "/dg-server-ref").keySet());
+        } catch (Exception ex) {
+            GuiUtil.getLogger().severe(ex.getMessage());
+        }
+        return instances;
     }
 
     public static List getClusteredInstances(String cluster) {
@@ -153,15 +188,18 @@ public class TargetUtil {
                 endpoint = endpoint + "/servers/server/server";
             }else{
                 List clusters = TargetUtil.getClusters();
+                List dgs = TargetUtil.getDeploymentGroups();
                 if (clusters.contains(target)){
                     endpoint = endpoint + "/clusters/cluster/" + encodedName;
-                }else{
+                }else if (dgs.contains(target)) {
+                    endpoint = endpoint + "/deployment-groups/deployment-group/" + encodedName;
+                 }else{
                     endpoint = endpoint + "/servers/server/" + encodedName;
                 }
             }
             return endpoint;
         }catch(Exception ex){
-            GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.getTargetEndpoint") + ex.getLocalizedMessage());
+            GuiUtil.getLogger().log(Level.INFO, "{0}{1}", new Object[]{GuiUtil.getCommonMessage("log.error.getTargetEndpoint"), ex.getLocalizedMessage()});
             if (GuiUtil.getLogger().isLoggable(Level.FINE)){
                 ex.printStackTrace();
             }
@@ -170,6 +208,22 @@ public class TargetUtil {
     }
 
     public static String getConfigName(String target) {
+        List<String> dgs = TargetUtil.getDeploymentGroups();
+        if (dgs.contains(target)) {
+            // find the config of a server
+            String endpoint = (String)GuiUtil.getSessionValue("REST_URL");
+            try {
+                List<String> targets = RestUtil.getChildResourceList(endpoint + "/deployment-groups/deployment-group/"+target+"/dg-server-ref");
+                if (targets.size() >= 1) {
+                    target = targets.get(0);
+                } else {
+                    return "server-config";
+                }
+            } catch (SAXException | IOException | ParserConfigurationException ex) {
+                Logger.getLogger(TargetUtil.class.getName()).log(Level.SEVERE, null, ex);
+                return "server-config";
+            }
+        }
         String endpoint = getTargetEndpoint(target);
         return (String)RestUtil.getAttributesMap(endpoint).get("configRef");
     }

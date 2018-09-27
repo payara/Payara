@@ -53,4 +53,5 @@ public interface ReferenceContainer {
     public boolean isServer();
     public boolean isInstance();
     public boolean isDas();
+    public boolean isDeploymentGroup();
 }

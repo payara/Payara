@@ -36,19 +36,24 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.provider;
 
 import com.sun.enterprise.v3.common.ActionReporter;
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 /**
- *
+ * @since 4.0
  * @author mmares
  */
 @Provider
@@ -56,17 +61,24 @@ import org.codehaus.jettison.json.JSONObject;
 public class ActionReportJson2Provider extends ActionReportJsonProvider {
 
     @Override
-    protected JSONObject processReport(ActionReporter ar) throws JSONException {
-        JSONObject result = super.processReport(ar);
-        String combinedMessage = result.optString("message");
+    protected JsonObject processReport(ActionReporter ar) throws JsonException {
+        
+        JsonObject result = super.processReport(ar);
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder(result);
+        String combinedMessage = result.getString("message", null);
         String msg = decodeEol(ar.getTopMessagePart().getMessage());
+
         if (combinedMessage != null && !combinedMessage.equals(msg)) {
-            result.put("top_message", msg);
+            if (msg != null){
+                objectBuilder.add("top_message", msg);
+            } else {
+                objectBuilder.add("top_message", JsonValue.NULL);
+            }
         }
         if (ar.getFailureCause() != null) {
-            result.put("failure_cause", ar.getFailureCause().getLocalizedMessage());
+            objectBuilder.add("failure_cause", ar.getFailureCause().getLocalizedMessage());
         }
-        return result;
+        return objectBuilder.build();
     }
     
     

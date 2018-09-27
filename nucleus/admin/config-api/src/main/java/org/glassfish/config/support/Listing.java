@@ -56,7 +56,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * Follow the same pattern as {@link Create} or {@link Delete} annotations
  * to generate a command implementation to list elements.
  *
- * Types of elements are listed are infered from the annotated method and
+ * Types of elements are listed are inferred from the annotated method and
  * parent instance to get the list of elements from must be returned by
  * the resolver.
  *

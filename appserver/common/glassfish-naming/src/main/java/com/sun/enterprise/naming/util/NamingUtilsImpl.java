@@ -36,13 +36,14 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.naming.util;
 
 import com.sun.enterprise.naming.spi.NamingObjectFactory;
 import com.sun.enterprise.naming.spi.NamingUtils;
-import com.sun.enterprise.naming.util.JndiInitializationNamingObjectFactory;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 
@@ -62,7 +63,7 @@ import static org.glassfish.common.util.ObjectInputOutputStreamFactoryFactory.ge
 /**
  * This is a utils class for refactoring the following method.
  */
-
+// XXX: Could this be merged with its inferface, and turned ito a bunch of static methods?
 @Service
 @Singleton
 public class NamingUtilsImpl implements NamingUtils {
@@ -71,36 +72,43 @@ public class NamingUtilsImpl implements NamingUtils {
     action = "Check the class hierarchy to see if all the classes are Serializable.")
     public static final String EXCEPTION_COPY_MUTABLE = "AS-NAMING-00006";
 
+    @Override
     public NamingObjectFactory createSimpleNamingObjectFactory(String name,
         Object value) {
         return new SimpleNamingObjectFactory(name, value);
     }
 
+    @Override
     public NamingObjectFactory createLazyNamingObjectFactory(String name,
         String jndiName, boolean cacheResult) {
         return new JndiNamingObjectFactory(name, jndiName, cacheResult);
     }
 
+    @Override
     public NamingObjectFactory createLazyInitializationNamingObjectFactory(String name, String jndiName,
             boolean cacheResult){
         return new JndiInitializationNamingObjectFactory(name, jndiName, cacheResult);
     }
 
+    @Override
     public NamingObjectFactory createCloningNamingObjectFactory(String name,
         Object value) {
         return new CloningNamingObjectFactory(name, value);
     }
 
+    @Override
     public NamingObjectFactory createCloningNamingObjectFactory(String name,
         NamingObjectFactory delegate) {
         return new CloningNamingObjectFactory(name, delegate);
     }
 
+    @Override
     public NamingObjectFactory createDelegatingNamingObjectFactory(String name,
         NamingObjectFactory delegate, boolean cacheResult) {
         return new DelegatingNamingObjectFactory(name, delegate, cacheResult);
     }
     
+    @Override
     public Object makeCopyOfObject(Object obj) {
         if ( !(obj instanceof Context) && (obj instanceof Serializable) ) {
             if(logger.isLoggable(Level.FINE)) {
@@ -121,6 +129,7 @@ public class NamingUtilsImpl implements NamingUtils {
                 ByteArrayInputStream bis = new ByteArrayInputStream(data);
                 final ObjectInputStream ois = getFactory().createObjectInputStream(bis);
                 obj = AccessController.doPrivileged(new PrivilegedExceptionAction() {
+                    @Override
                     public Object run() throws IOException, ClassNotFoundException {
                         return ois.readObject();
                     }

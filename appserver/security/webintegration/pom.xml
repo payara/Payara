@@ -41,19 +41,18 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.glassfish.main.security</groupId>
         <artifactId>securitymodule</artifactId>
-        <version>5.0.0.173-SNAPSHOT</version>
-    </parent>    
-    
+        <version>5.184-SNAPSHOT</version>
+    </parent>
+
     <artifactId>websecurity</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>WebTier Security Integration</name>
-    
+
     <developers>
         <developer>
             <id>kumarjayanti</id>
@@ -72,7 +71,7 @@
             </roles>
         </developer>
     </developers>
-    
+
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <resources>
@@ -90,20 +89,20 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-				            <probe-provider-class-names>com.sun.web.security.LoginProbeProvider</probe-provider-class-names>
+                            <probe-provider-class-names>com.sun.web.security.LoginProbeProvider</probe-provider-class-names>
                         </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2-core</artifactId>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>org.glassfish.main.security</groupId>
             <artifactId>security-ee</artifactId>
             <version>${project.version}</version>
@@ -117,7 +116,7 @@
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
-        </dependency>   
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>glassfish-api</artifactId>
@@ -158,12 +157,12 @@
             <artifactId>javax.security.auth.message-api</artifactId>
         </dependency>
         <dependency>
-	    <groupId>org.glassfish.external</groupId>
-	    <artifactId>management-api</artifactId>
-	</dependency>
-	<dependency>
-	    <groupId>org.glassfish.gmbal</groupId>
-	    <artifactId>gmbal</artifactId>
+            <groupId>org.glassfish.external</groupId>
+            <artifactId>management-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.gmbal</groupId>
+            <artifactId>gmbal</artifactId>
         </dependency>
     </dependencies>
 </project>

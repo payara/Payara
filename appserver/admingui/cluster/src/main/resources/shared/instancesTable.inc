@@ -38,6 +38,8 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 -->
 
 <!-- appserver/instancesTable.inc -->
@@ -75,7 +77,7 @@
     <sun:tableColumn headerText="$resource{i18ncs.common.ConfigurationCol}" sort="configRef" rowHeader="$boolean{false}" id="col3">
         <sun:hyperlink id="configlink" text="#{td.value.configRef}" url="/configuration/configuration.jsf?configName=#{td.value.configRef}" />
     </sun:tableColumn>
-    <sun:tableColumn headerText="$resource{i18ncs.common.NodeCol}" sort="node" rowHeader="$boolean{false}" id="col5">
+    <sun:tableColumn headerText="$resource{i18ncs.common.NodeCol}" sort="nodeRef" rowHeader="$boolean{false}" id="col5">
         <sun:hyperlink id="nodeAgentlink" text="#{td.value.nodeRef}"  url="#{request.contextPath}/cluster/node/nodeEdit.jsf?nodeName=#{td.value.nodeRef}" />
     </sun:tableColumn>
     <sun:tableColumn headerText="$resource{i18n.common.Status}"  rowHeader="$boolean{false}" id="col6">

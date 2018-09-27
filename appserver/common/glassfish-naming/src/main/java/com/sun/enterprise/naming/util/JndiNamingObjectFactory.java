@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.naming.util;
@@ -48,6 +50,11 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Factory for creating Objects with a given jndi name
+ * <p>
+ * This factory creates objects by looking them up in the given {@link Context}
+ */
 @Service
 public class JndiNamingObjectFactory
     implements NamingObjectFactory {
@@ -60,6 +67,12 @@ public class JndiNamingObjectFactory
 
     private boolean cacheResult;
 
+    /**
+     * 
+     * @param name the name of the object; equivalent to the name value of a {@link javax.annotation.Resource} annotation
+     * @param jndiName the jndi name to lookup to get the object; equivalent to the lookup value of a {@link javax.annotation.Resource} annotation
+     * @param cacheResult whether the result may have been cached
+     */
     public JndiNamingObjectFactory(String name, String jndiName, boolean cacheResult) {
         this.name = name;
         this.jndiName = jndiName;
@@ -67,10 +80,12 @@ public class JndiNamingObjectFactory
         this.value = new AtomicReference();       
     }
 
+    @Override
     public boolean isCreateResultCacheable() {
         return cacheResult;
     }
 
+    @Override
     public Object create(Context ic)
             throws NamingException {
         Object result = null;

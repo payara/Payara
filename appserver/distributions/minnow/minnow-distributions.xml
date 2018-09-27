@@ -39,6 +39,8 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+
 -->
 
 <project name="Minnow IPS distribution" default="create-minnow-distributions" basedir=".">
@@ -51,7 +53,6 @@
         <install.package name="glassfish-grizzly"/>
         <install.package name="glassfish-nucleus"/>
         <install.package name="glassfish-common"/>
-        <install.package name="shoal"/>
         <install.package name="glassfish-cluster"/>
         <install.package name="jersey"/>
         <install.package name="glassfish-management"/>

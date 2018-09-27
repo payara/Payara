@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.admin.cluster;
 
 
@@ -47,6 +49,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -77,7 +80,7 @@ import org.glassfish.api.admin.ProgressStatus;
  *
  * @author Joe Di Pol
  */
-class ClusterCommandHelper {
+public class ClusterCommandHelper {
 
     private static final String NL = System.getProperty("line.separator");
 
@@ -93,10 +96,39 @@ class ClusterCommandHelper {
      * @param domain The Domain we are running in
      * @param runner A CommandRunner to use for running commands
      */
-    ClusterCommandHelper(Domain domain, CommandRunner runner) {
+    public ClusterCommandHelper(Domain domain, CommandRunner runner) {
         this.domain = domain;
         this.runner = runner;
     }
+        /**
+     * Loop through all instances in a cluster and execute a command for
+     * each one.
+     *
+     * @param command       The string of the command to run. The instance
+     *                      name will be used as the operand for the command.
+     * @param map           A map of parameters to use for the command. May be
+     *                      null if no parameters. When the command is
+     *                      executed for a server instance, the instance name
+     *                      is set as the DEFAULT parameter (operand)
+     * @param targetName   The name of the cluster or deployment group containing the instances
+     *                      to run the command against.
+     * @param context       The AdminCommandContext to use when executing the
+     *                      command.
+     * @param verbose       true for more verbose output
+     * @param useExecutor   Whether calls should be concurrent
+     * @return              An ActionReport containing the results
+     * @throws CommandException
+     */
+    public ActionReport runCommand(
+            String  command,
+            ParameterMap map,
+            String  targetName,
+            AdminCommandContext context,
+            boolean verbose) throws CommandException {
+        return this.runCommand(command,map,targetName,context,verbose,false);
+
+    }
+    
 
     /**
      * Loop through all instances in a cluster and execute a command for
@@ -108,20 +140,21 @@ class ClusterCommandHelper {
      *                      null if no parameters. When the command is
      *                      executed for a server instance, the instance name
      *                      is set as the DEFAULT parameter (operand)
-     * @param clusterName   The name of the cluster containing the instances
+     * @param targetName   The name of the cluster or deployment group containing the instances
      *                      to run the command against.
      * @param context       The AdminCommandContext to use when executing the
      *                      command.
      * @param verbose       true for more verbose output
+     * @param rolling       Whether calls should be serialized to help with rolling restarts
      * @return              An ActionReport containing the results
      * @throws CommandException
      */
-    ActionReport runCommand(
+    public ActionReport runCommand(
             String  command,
             ParameterMap map,
-            String  clusterName,
+            String  targetName,
             AdminCommandContext context,
-            boolean verbose) throws CommandException {
+            boolean verbose, boolean rolling) throws CommandException {
 
         // When we started
         final long startTime = System.currentTimeMillis();
@@ -130,21 +163,24 @@ class ClusterCommandHelper {
         ActionReport report = context.getActionReport();
 
         // Get the cluster specified by clusterName
-        Cluster cluster = domain.getClusterNamed(clusterName);
+        Cluster cluster = domain.getClusterNamed(targetName);
         if (cluster == null) {
-            String msg = Strings.get("cluster.command.unknownCluster",
-                    clusterName);
-            throw new CommandException(msg);
+            DeploymentGroup dg = domain.getDeploymentGroupNamed(targetName);
+            if (dg == null) {
+                String msg = Strings.get("cluster.command.unknownCluster",
+                        targetName);
+                throw new CommandException(msg);
+            }
         }
 
-        // Get the list of servers in the cluster.
-        List<Server> targetServers = domain.getServersInTarget(clusterName);
+        // Get the list of servers in the cluster or deployment group.
+        List<Server> targetServers = domain.getServersInTarget(targetName);
 
-        // If the cluster is empty, say so
+        // If the list of servers is empty, say so
         if (targetServers == null || targetServers.isEmpty()) {
             report.setActionExitCode(ExitCode.SUCCESS);
             report.setMessage(Strings.get("cluster.command.noInstances",
-                                            clusterName));
+                                            targetName));
             return report;
         }
         int nInstances = targetServers.size();
@@ -153,7 +189,7 @@ class ClusterCommandHelper {
         // not work so we can summarize our results.
         StringBuilder failedServerNames = new StringBuilder();
         StringBuilder succeededServerNames = new StringBuilder();
-        List<String> waitingForServerNames = new ArrayList<String>();
+        List<String> waitingForServerNames = new ArrayList<>();
         String msg;
         ReportResult reportResult = new ReportResult();
         boolean failureOccurred = false;
@@ -173,12 +209,17 @@ class ClusterCommandHelper {
         ArrayBlockingQueue<CommandRunnable> responseQueue = 
                     new ArrayBlockingQueue<CommandRunnable>(nInstances);
 
-        // Make the thread pool use the smaller of the number of instances
-        // or half the admin thread pool size.
-        int adminThreadPoolSize = getAdminThreadPoolSize(logger);
-        int threadPoolSize = Math.min(nInstances, adminThreadPoolSize / 2);
-        if (threadPoolSize < 1)
-            threadPoolSize = 1;
+        int threadPoolSize = 1;
+        if (!rolling) {
+            // Make the thread pool use the smaller of the number of instances
+            // or half the admin thread pool size
+            int adminThreadPoolSize = getAdminThreadPoolSize(logger);
+            threadPoolSize = Math.min(nInstances, adminThreadPoolSize / 2);
+
+            if (threadPoolSize < 1) {
+                threadPoolSize = 1;
+            }
+        }
 
         ExecutorService threadPool = Executors.newFixedThreadPool(threadPoolSize);
 
@@ -255,7 +296,7 @@ class ClusterCommandHelper {
             } catch (InterruptedException e) {
                 // This thread has been interrupted. Abort
                 threadPool.shutdownNow();
-                msg = Strings.get("cluster.command.interrupted", clusterName,
+                msg = Strings.get("cluster.command.interrupted", targetName,
                         Integer.toString(n), Integer.toString(nInstances),
                         command);
                 logger.warning(msg);
@@ -367,7 +408,7 @@ class ClusterCommandHelper {
      * @param original a list of servers
      * @return a list of servers with a more optimal order
      */
-    List<Server> optimizeServerListOrder(List<Server> original) {
+    public List<Server> optimizeServerListOrder(List<Server> original) {
 
         // Don't bother with all this if it's just two instances
         if (original.size() < 3) {

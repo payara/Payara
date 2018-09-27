@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.glassfish.bootstrap.osgi;
 
@@ -84,14 +84,14 @@ public class EmbeddedOSGiGlassFishImpl extends GlassFishDecorator {
 
     private void registerService() {
         reg = getBundleContext().registerService(GlassFish.class.getName(), this, null);
-        logger.log(Level.INFO, LogFacade.SERVICE_REGISTERED, new Object[]{this, reg});
+        logger.log(Level.FINE, LogFacade.SERVICE_REGISTERED, new Object[]{this, reg});
     }
 
     private void unregisterService() {
         if (getBundleContext() != null) { // bundle is still active
             try {
                 reg.unregister();
-                logger.log(Level.INFO, LogFacade.SERVICE_UNREGISTERED, this);
+                logger.log(Level.FINE, LogFacade.SERVICE_UNREGISTERED, this);
             } catch (IllegalStateException e) {
                 LogFacade.log(logger, Level.WARNING, LogFacade.SERVICE_UNREGISTRATION_EXCEPTION, e, e);
             }

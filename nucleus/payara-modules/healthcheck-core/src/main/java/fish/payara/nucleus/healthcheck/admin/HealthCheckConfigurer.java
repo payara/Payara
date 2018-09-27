@@ -44,6 +44,9 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.notification.TimeUtil;
+import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
+import fish.payara.nucleus.notification.log.LogNotifierConfiguration;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -163,7 +166,7 @@ public class HealthCheckConfigurer implements AdminCommand {
                 }, healthCheckServiceConfiguration);
             } catch (TransactionFailure ex) {
                 logger.log(Level.WARNING, "Exception during command ", ex);
-                actionReport.setMessage(ex.getCause().getMessage());
+                actionReport.setMessage(ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -198,6 +201,17 @@ public class HealthCheckConfigurer implements AdminCommand {
         if (notifierEnabled == null && enabled != null) {
             params.add("enabled", enabled.toString());
         }
+        Config config = targetUtil.getConfig(target);
+        if (config == null) {
+            subReport.setMessage("No such config named: " + target);
+            subReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
+        String noisy = "true";
+        NotificationServiceConfiguration configuration = config.getExtensionByType(NotificationServiceConfiguration.class);
+        NotifierConfiguration notifierConfiguration = configuration.getNotifierConfigurationByType(LogNotifierConfiguration.class);
+        noisy = notifierConfiguration.getNoisy();
+        params.add("noisy", noisy);
         inv.parameters(params);
         inv.execute();
         // swallow the offline warning as it is not a problem
@@ -205,7 +219,6 @@ public class HealthCheckConfigurer implements AdminCommand {
             subReport.setMessage("");
         }
     }
-
 
     private void configureDynamically() {
         service.setEnabled(enabled);

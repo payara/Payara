@@ -1,0 +1,41 @@
+
+<sun:table id="basicTable" style="padding: 10pt" deselectMultipleButton="$boolean{true}" selectMultipleButton="$boolean{true}"
+           title="$resource{i18ncs.dgNew.TableTitle}">
+    <!-- Actions (Top) -->
+    <!facet actionsTop>
+    <sun:panelGroup id="topActionsGroup1">
+        <sun:button id="addSharedTableButton" disabled="#{false}" text="$resource{i18n.button.New}" primary="#{true}">
+            <!command
+                getUIComponent(clientId="$pageSession{dgTableRowGroupId}", component="#{requestScope.tableRowGroup}" );
+                addRowToTable(TableRowGroup="$attribute{tableRowGroup}", NameList={"name", "weight", "node"});
+                />
+        </sun:button>
+        <sun:button id="deleteSharedTableButton" disabled="#{false}" text="$resource{i18n.button.Delete}" primary="#{false}">
+            <!command
+                getUIComponent(clientId="$pageSession{dgTableRowGroupId}", component=>$attribute{trg});
+                getSelectedTableRowKeys(tableRowGroup="${trg}" rowKeys=>$attribute{rowKeys});
+                deleteTableRows(tableRowGroup="${trg}" rowKeys="${rowKeys}");
+                commitTableRowGroup(tableRowGroup="${trg}");
+            />
+        </sun:button>
+    </sun:panelGroup>
+</facet>
+<sun:tableRowGroup id="rowGroup1" selected="#{td.value.selected}" data={"$attribute{tableList}"} sourceVar="td">
+    <!afterCreate
+        getClientId(component="$this{component}" clientId=>$page{dgTableRowGroupId});
+    />
+    <sun:tableColumn headerText="$resource{i18n.common.SelectHeader}" selectId="select" rowHeader="$boolean{false}" id="col1">
+        <sun:checkbox id="select" selected="#{td.value.selected}" selectedValue="$boolean{true}" />
+    </sun:tableColumn>
+    <sun:tableColumn headerText="$resource{i18ncs.dgNew.InstanceNameCol}" rowHeader="$boolean{false}" id="col2">
+        <sun:textField columns="$int{35}" maxLength="#{sessionScope.fieldLengths['maxLength.dg.instanceName']}" id="name" value="#{td.value.name}" />
+    </sun:tableColumn>
+    <sun:tableColumn headerText="$resource{i18ncs.dgNew.WeightCol}" rowHeader="$boolean{false}" id="col3">
+        <sun:textField columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.dg.Weight']}" id="weight" value="#{td.value.weight}"  toolTip="100" />
+    </sun:tableColumn>
+    <sun:tableColumn headerText="$resource{i18ncs.dgNew.NodeCol}" rowHeader="$boolean{false}" id="col4">
+        <sun:dropDown id="node" labels="#{pageSession.nodesList}" selected="#{td.value.node}">
+        </sun:dropDown>
+    </sun:tableColumn>
+</sun:tableRowGroup>
+</sun:table>

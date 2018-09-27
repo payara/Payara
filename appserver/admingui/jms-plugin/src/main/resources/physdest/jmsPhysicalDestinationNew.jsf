@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
+
 <!initPage
     setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings");
     setResourceBundle(key="i18njms" bundle="org.glassfish.jms.admingui.Strings");
@@ -61,6 +63,24 @@
         }
         if ("#{targetType} = cluster") {
             setPageSessionAttribute(key="baseUrl", value="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession.target}");
+        }
+        if ("#{pageSession.valueMap['UseDMQ']} = true") {
+            setPageSessionAttribute(key="UseDMQSelected", value="#{true}");
+        }
+        if ("#{pageSession.valueMap['UseDMQ']} = false") {
+            setPageSessionAttribute(key="UseDMQSelected", value="#{false}");
+        } 
+        if ("#{pageSession.valueMap['LocalDeliveryPreferred']} = true") {
+            setPageSessionAttribute(key="LocalDeliveryPreferredSelected", value="#{true}");
+        }
+        if ("#{pageSession.valueMap['LocalDeliveryPreferred']} = false") {
+            setPageSessionAttribute(key="LocalDeliveryPreferredSelected", value="#{false}");
+        }
+        if ("#{pageSession.valueMap['ValidateXMLSchemaEnabled']} = true") {
+            setPageSessionAttribute(key="ValidateXMLSchemaSelected", value="#{true}");
+        }
+        if ("#{pageSession.valueMap['ValidateXMLSchemaEnabled']} = false") {
+            setPageSessionAttribute(key="ValidateXMLSchemaSelected", value="#{false}");
         }
     />
     </event>

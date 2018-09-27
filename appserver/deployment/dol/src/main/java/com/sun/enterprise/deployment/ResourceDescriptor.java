@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment;
@@ -44,11 +46,17 @@ import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.JavaEEResourceType;
 
 /**
- * Created with IntelliJ IDEA.
- * User: naman
+ * Class to hold a description of a resource
+ * <p>
+ * This class does not include JNDI information
+ * @author: naman
+ * @since 4.0
+ * @see com.sun.enterprise.config.serverbeans.Resource
+ * @see org.glassfish.resources.api.Resource
+ */ 
+ /* Created with IntelliJ IDEA.
  * Date: 19/11/12
  * Time: 2:42 PM
- * To change this template use File | Settings | File Templates.
  */
 public class ResourceDescriptor extends Descriptor {
 
@@ -82,6 +90,10 @@ public class ResourceDescriptor extends Descriptor {
         this.resourceType = resourceType;
     }
 
+    /**
+     * Where the resource definition comes from. Can be XML, ANNOTATION or PROGRAMMATIC
+     * @return XML by default
+     */
     public MetadataSource getMetadataSource() {
         return metadataSource;
     }

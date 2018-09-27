@@ -75,6 +75,8 @@ public abstract class AbstractResourceHandler extends AbstractHandler {
      * Process Annotation with given ResourceContainerContexts.
      * @param ainfo
      * @param rcContexts
+     * @return 
+     * @throws AnnotationProcessorException 
      */
     protected abstract HandlerProcessingResult processAnnotation(
             AnnotationInfo ainfo,
@@ -88,7 +90,10 @@ public abstract class AbstractResourceHandler extends AbstractHandler {
      * in the passed AnnotationInfo instance.
      *
      * @param ainfo the annotation information
+     * @return 
+     * @throws AnnotationProcessorException 
      */
+    @Override
     public HandlerProcessingResult processAnnotation(AnnotationInfo ainfo)
             throws AnnotationProcessorException {
 
@@ -142,6 +147,7 @@ public abstract class AbstractResourceHandler extends AbstractHandler {
         return processAnnotation(ainfo, rcContexts);
     }
 
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAndWebAnnotationTypes();
     }

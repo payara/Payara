@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -68,12 +68,13 @@ public class GetLogNotifierConfiguration extends BaseGetNotifierConfiguration<Lo
 
     @Override
     protected String listConfiguration(LogNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "Use Separate Log File"};
+        String headers[] = { "Enabled", "Noisy", "Use Separate Log File" };
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[2];
+        Object values[] = new Object[3];
 
         values[0] = configuration.getEnabled();
-        values[1] = configuration.getUseSeparateLogFile();
+        values[1] = configuration.getNoisy();
+        values[2] = configuration.getUseSeparateLogFile();
 
         columnFormatter.addRow(values);
         return columnFormatter.toString();
@@ -81,11 +82,14 @@ public class GetLogNotifierConfiguration extends BaseGetNotifierConfiguration<Lo
 
     @Override
     protected Map<String, Object> getNotifierConfiguration(LogNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(2);
+        Map<String, Object> map = new HashMap<>(3);
 
         if (configuration != null) {
             map.put("enabled", configuration.getEnabled());
+            map.put("noisy", configuration.getNoisy());
             map.put("useSeparateLogFile", configuration.getUseSeparateLogFile());
+        } else {
+            map.put("noisy", Boolean.TRUE.toString());
         }
 
         return map;

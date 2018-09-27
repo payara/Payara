@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld;
@@ -77,6 +79,7 @@ public class ACLSingletonProvider extends SingletonProvider
      * and change it if application class loader hierarchy changes.
      */
 
+    @Override
     public <T> ACLSingleton<T> create(Class<? extends T> expectedType) {
         return new ACLSingleton<T>();
     }
@@ -95,6 +98,7 @@ public class ACLSingletonProvider extends SingletonProvider
         SecurityManager sm = System.getSecurityManager();
         bootstrapCL = (sm != null) ?
           AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+            @Override
             public ClassLoader run()
             {
               return Object.class.getClassLoader();
@@ -177,6 +181,7 @@ public class ACLSingletonProvider extends SingletonProvider
         SecurityManager sm = System.getSecurityManager();
         return sm != null ?
           AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+            @Override
             public ClassLoader run()
             {
               return cl.getParent();

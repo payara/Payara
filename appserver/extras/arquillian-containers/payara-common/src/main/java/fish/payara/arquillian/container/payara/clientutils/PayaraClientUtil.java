@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -159,16 +159,47 @@ public class PayaraClientUtil {
         return new ArrayList<>();
     }
     
+    public Map<String, String> getServerSystemProperties(String additionalResourceUrl) {
+        
+        Map<String, String> systemProperties = new HashMap<>();
+        
+        String message = getMessage(GETRequest(additionalResourceUrl));
+        int systemPropertiesHeader = message.indexOf("List of System Properties for the Java Virtual Machine:");
+        if (systemPropertiesHeader != -1) {
+            
+            String systemMessage = message.substring(systemPropertiesHeader + "List of System Properties for the Java Virtual Machine:".length());
+            
+            for (String line : systemMessage.split("(\\r\\n|\\r|\\n)")) {
+                if (line.contains("=")) {
+                    String[] keyValue = line.split("=");
+                    systemProperties.put(keyValue[0].trim(), keyValue[1].trim());
+                    
+                }
+                
+            }
+            
+        }
+        
+        return systemProperties;
+        
+    }
+    
     @SuppressWarnings("unchecked")
     public Map<String, Object> getExtraProperties(Map<String, Object> responseMap) {
         return (Map<String, Object>) responseMap.get("extraProperties");
     }
     
     @SuppressWarnings("unchecked")
+    public String getMessage(Map<String, Object> responseMap) {
+        return (String) responseMap.get("message");
+    }
+    
+    
+    
+    @SuppressWarnings("unchecked")
     private List<Map<String, Object>> getInstanceList(Map<String, Object> resultExtraProperties) {
         return (List<Map<String, Object>>) resultExtraProperties.get("instanceList");
     }
-    
 
     public Map<String, Object> POSTMultiPartRequest(String additionalResourceUrl, FormDataMultiPart form) {
         return getResponseMap(

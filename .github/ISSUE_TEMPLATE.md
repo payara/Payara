@@ -32,7 +32,6 @@ Describe the test to reproduce the bug in a series of steps. Make each step simp
 3 -**  Make changes to the domain.xml configuration:
 
 	<java-config classpath-suffix="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9009" system-classpath="">
-        <jvm-options>-XX:MaxPermSize=512m</jvm-options>
         <jvm-options>-server</jvm-options>
 		...
 	</java-config>

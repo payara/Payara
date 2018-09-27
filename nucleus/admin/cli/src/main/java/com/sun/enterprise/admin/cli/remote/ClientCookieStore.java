@@ -130,9 +130,9 @@ public class ClientCookieStore implements CookieStore {
      * 
      * COOKIE1=xxx; ...
      * COOKIE2=yyy; ...
+     * @throws java.io.IOException
      **/
     public void load() throws IOException {
-        BufferedReader in = null;
 
         this.removeAll();
 
@@ -140,8 +140,7 @@ public class ClientCookieStore implements CookieStore {
             throw new IOException("File does not exist: " + cookieStoreFile.toString());
         }
 
-        try {
-            in = new BufferedReader(new FileReader(cookieStoreFile));
+        try (BufferedReader in = new BufferedReader(new FileReader(cookieStoreFile))) {
             String str;
             while ((str = in.readLine()) != null) {
 
@@ -153,14 +152,6 @@ public class ClientCookieStore implements CookieStore {
                     this.add(getStaticURI(), cookie);
                 }
             }
-        } finally {
-            try {
-                if (in != null) {
-                    in.close();
-                } 
-            } catch (IOException e) {
-
-            }
         }
     }
 
@@ -169,24 +160,23 @@ public class ClientCookieStore implements CookieStore {
      * Store the cookies in the CookieStore to the provided location.
      * This method will overwrite the contents of the target file.
      * 
+     * @throws java.io.IOException
      **/
     public void store() throws IOException {
         PrintWriter out = null;
 
         // Create the directory if it doesn't exist.
-        if (!cookieStoreFile.getParentFile().exists() &&
-                !cookieStoreFile.getParentFile().mkdirs()) {
+        if (!cookieStoreFile.getParentFile().exists() && !cookieStoreFile.getParentFile().mkdirs()) {
             throw new IOException("Unable to create directory: " + cookieStoreFile.toString());
         }
 
-        out = new PrintWriter(new BufferedWriter(
-                              new FileWriter(cookieStoreFile)));
+        out = new PrintWriter(new BufferedWriter(new FileWriter(cookieStoreFile)));
 
         // Write comment at top of cache file.
         out.println(CACHE_COMMENT);
 
-        for (URI uri: this.getURIs()) {
-            for (HttpCookie cookie: this.get(uri)) {
+        for (URI uril: this.getURIs()) {
+            for (HttpCookie cookie: this.get(uril)) {
 
                 // Expire the cookie immediately if Max-Age = 0 or -1
                 // Expire the cookie immediately if Discard is true

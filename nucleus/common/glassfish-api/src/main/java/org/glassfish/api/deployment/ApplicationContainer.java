@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.api.deployment;
 
@@ -56,6 +57,12 @@ public interface ApplicationContainer<T> {
      */
     public T getDescriptor();
     
+    /**
+     * Initialize the container post-startup of Hazelcast
+     * Used for EJB timers right now
+     */
+    default public void initialize() {};
+
     /**
      * Starts an application container. 
      * ContractProvider starting should not throw an exception but rather should
@@ -98,5 +105,4 @@ public interface ApplicationContainer<T> {
      * @return ClassLoader for this app
      */
     public ClassLoader getClassLoader();
-    
 }

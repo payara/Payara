@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.deployment.common;
@@ -49,7 +51,7 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.versioning.VersioningUtils;
 
 /**
- * This class describes a module information for an applicaiton module
+ * This class describes a module information for an application module
  *
  * @author  Jerome Dochez
  * @version 
@@ -147,7 +149,7 @@ public class ModuleDescriptor<T extends RootDeploymentDescriptor> extends Descri
     }
     
     /**
-     * Sets the @see BundleDescriptor descriptor for this 
+     * Sets the {@link BundleDescriptor} descriptor for this 
      * module
      * @param descriptor the module descriptor
      */
@@ -157,7 +159,7 @@ public class ModuleDescriptor<T extends RootDeploymentDescriptor> extends Descri
     }
     
     /**
-     * @return the @see BundleDescriptor module descriptor
+     * @return the see {@link BundleDescriptor} module descriptor
      */
     public T getDescriptor() {
         return descriptor;
@@ -198,7 +200,7 @@ public class ModuleDescriptor<T extends RootDeploymentDescriptor> extends Descri
 
     /**
      * Sets the module name
-     * @return the module name of this application
+     * @param moduleName the module name of this application
      */
     public void setModuleName(String moduleName) {
         this.moduleName = moduleName;
@@ -213,7 +215,7 @@ public class ModuleDescriptor<T extends RootDeploymentDescriptor> extends Descri
     }
     
     /**
-     * Sets the @see Manifest manifest information for this
+     * Sets the {@link Manifest} information for this
      * module
      */
     public void setManifest(Manifest m) {
@@ -249,6 +251,7 @@ public class ModuleDescriptor<T extends RootDeploymentDescriptor> extends Descri
     /** 
      * @return a meaningful string about myself
      */
+    @Override
     public void print(StringBuffer toStringBuffer) {
         toStringBuffer.append(type + " ModuleDescriptor: [  " + path + " ] , altDD = " + altDD);
         if (contextRoot!=null) {

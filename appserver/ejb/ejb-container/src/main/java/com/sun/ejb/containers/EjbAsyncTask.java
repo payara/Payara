@@ -133,6 +133,7 @@ public class EjbAsyncTask<V>
                 ejbFutureTask.setResultException(ee);
                 throw ee;
             } finally {
+                SecurityContext.setCurrent(null);
                 Utility.setContextClassLoader(prevCL);
             }
         }

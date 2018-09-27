@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2017] Payara Foundation and/or affiliates
+//Portions Copyright [2017-2018] Payara Foundation and/or affiliates
 
 package org.glassfish.jms.admin.cli;
 
@@ -51,7 +51,6 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.internal.api.ServerContext;
 import java.util.*;
-import java.util.logging.Logger;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -77,7 +76,7 @@ import org.glassfish.api.admin.*;
 @PerLookup
 @I18n("create.jms.dest")
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean=Cluster.class,
         opType=RestEndpoint.OpType.POST, 

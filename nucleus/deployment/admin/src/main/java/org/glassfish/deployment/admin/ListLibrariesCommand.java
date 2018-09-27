@@ -38,6 +38,7 @@
  * holder.
  */
 
+// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package org.glassfish.deployment.admin;
 
 import org.glassfish.api.ActionReport;
@@ -50,8 +51,6 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.config.support.TargetType;
-import org.glassfish.config.support.CommandTarget;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
@@ -60,9 +59,6 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.config.serverbeans.Domain;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.List;
 import java.io.File;
 import org.glassfish.api.admin.AccessRequired;
 

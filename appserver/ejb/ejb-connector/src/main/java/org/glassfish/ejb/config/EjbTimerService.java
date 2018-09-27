@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation]
 
 package org.glassfish.ejb.config;
 
@@ -164,8 +164,8 @@ public interface EjbTimerService extends ConfigBeanProxy, PropertyBag {
      * @return possible object is
      *         {@link String }
      */
-    @Attribute (defaultValue="Distributed")
-    String getEJBTimerService();
+    @Attribute (defaultValue="Database")
+    String getEjbTimerService();
 
     /**
      * Sets the value of the EJB Timer type to be used.
@@ -173,7 +173,19 @@ public interface EjbTimerService extends ConfigBeanProxy, PropertyBag {
      * @param value allowed object is
      *              {@link String }
      */
-    void setEJBTimerService(String value) throws PropertyVetoException;
+    void setEjbTimerService(String value) throws PropertyVetoException;
+    
+    /**
+     * Sets the mode of firing for cluster deployed EJB Timers
+     * OnePerCluster timer is only active on 1 node in the cluster
+     * OnePerDeploymentGroup timer is only active on 1 node in a Deployment Group
+     * AllInstances timer is active on all instances where the application is deployed
+     * @return 
+     */
+    @Attribute (defaultValue="OnePerCluster")
+    String getClusterFiringMode();
+    
+    void setClusterFiringMode(String value) throws PropertyVetoException;
     
     /**
     	Properties as per {@link PropertyBag}

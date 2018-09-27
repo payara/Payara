@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.apache.catalina.session;
 
@@ -78,8 +79,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.ResourceBundle;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -140,7 +141,7 @@ public final class FileStore extends StoreBase {
     * Our write-through cache of session objects
     * HERCULES: addition
     */
-    private Hashtable<String, Session> sessions = new Hashtable<String, Session>();     
+    private final ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<String, Session>();     
 
 
     // ------------------------------------------------------------- Properties
@@ -346,13 +347,8 @@ public final class FileStore extends StoreBase {
         }
 
         try {
-            StandardSession session =
-                StandardSession.deserialize(ois, manager);
-            session.setManager(manager);
-            //HERCULES: addition
-            // Put it in the cache
-            sessions.put(session.getIdInternal(), session);     
-            //HERCULES: addition            
+            StandardSession session = StandardSession.deserialize(ois, manager);
+            session.setManager(manager);            
             return (session);
         } finally {
             // Close the input stream
@@ -418,34 +414,29 @@ public final class FileStore extends StoreBase {
                                               new Object[] {session.getIdInternal(), file.getAbsolutePath()});
             log(msg);
         }
-        FileOutputStream fos = null;
+
         ObjectOutputStream oos = null;
-        try {
-            fos = new FileOutputStream(file.getAbsolutePath());
+        try (FileOutputStream fos = new FileOutputStream(file.getAbsolutePath());
+             BufferedOutputStream bos = new BufferedOutputStream(fos);
+        ){
             Container container = manager.getContainer();
             if (container != null) {
-                oos = ((StandardContext) container).createObjectOutputStream(
-                        new BufferedOutputStream(fos));
+                oos = ((StandardContext) container).createObjectOutputStream(bos);
             } else {
-                oos = new ObjectOutputStream(new BufferedOutputStream(fos)); 
+                oos = new ObjectOutputStream(bos);
             }
+            oos.writeObject(session);
         } catch (IOException e) {
-            if (fos != null) {
+            throw e;
+        } finally {
+            if (oos != null ) {
                 try {
-                    fos.close();
-                } catch (IOException f) {
-                    // Ignore
+                    oos.close();
+                } catch (IOException ioe) {
+                    //ignore
                 }
             }
-            throw e;
         }
-
-        try {
-            oos.writeObject(session);
-        } finally {
-            oos.close();
-        }
-
     }
 
 

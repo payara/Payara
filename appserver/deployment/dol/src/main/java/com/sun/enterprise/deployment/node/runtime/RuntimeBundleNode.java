@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment.node.runtime;
@@ -91,8 +93,10 @@ public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
      * Adds  a new DOL descriptor instance to the descriptor instance associated with 
      * this XMLNode
      *
+     * 
      * @param descriptor the new descriptor
-     */
+     *///TODO: Should this be implemented?
+    @Override
     public void addDescriptor(Object descriptor) {    
         return;
     }
@@ -100,6 +104,7 @@ public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
    /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public T getDescriptor() {
         return descriptor;
     } 
@@ -107,14 +112,16 @@ public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
     /**
      * @return the default spec version level this node complies to
      */
+    @Override
     public String getSpecVersion() {
         return "1.5";
     }
     
     /**
      * set the DOCTYPE as read in the input XML File
-     * @param DOCTYPE
+     * @param docType
      */
+    @Override
     public void setDocType(String docType) {
         // I do not care about the version of the runtime descriptors
     }
@@ -128,6 +135,8 @@ public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
 
     /**
      * writes the message destination references runtime information
+     * @param parent
+     * @param descriptor
      */
     protected void writeMessageDestinationInfo(Node parent, 
                                                BundleDescriptor descriptor) {
@@ -146,9 +155,9 @@ public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
      */
     protected static final synchronized boolean restrictDTDDeclarations() {
         if (restrictDTDDeclarations==null) {
-            restrictDTDDeclarations = Boolean.valueOf(Boolean.getBoolean("com.sun.aas.deployment.restrictdtddeclarations"));
+            restrictDTDDeclarations = Boolean.getBoolean("com.sun.aas.deployment.restrictdtddeclarations");
         }
-        return restrictDTDDeclarations.booleanValue();
+        return restrictDTDDeclarations;
     }
     
     public static Element appendChildNS(Node parent, String elementName,
@@ -160,6 +169,9 @@ public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
 
     /**
      * record mapping of sub element to node class for the current element
+     * @param currentElementName
+     * @param subElementName
+     * @param subElementHandler
      */
     public void recordNodeMapping(String currentElementName, String subElementName, Class subElementHandler) {
         LinkedHashMap<String, Class> subElementMappings = elementToNodeMappings.get(currentElementName);
@@ -180,6 +192,7 @@ public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
       if (! DOLUtils.setElementValue(element, value, getDescriptor())) {
         super.setElementValue(element, value);
@@ -192,6 +205,7 @@ public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
      *  
      * @return the map with the element name as a key, the setter method as a value
      */
+    @Override
     protected Map<String, String> getDispatchTable() {
       Map<String,String> dispatchTable = super.getDispatchTable();
       dispatchTable.put("version", "setSpecVersion");

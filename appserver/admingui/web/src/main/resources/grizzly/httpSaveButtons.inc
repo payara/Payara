@@ -85,7 +85,7 @@
                                     setPageSessionAttribute(key="additionalSaveHandlerArgs" 
                                                             value="vsAttrs:%23{pageSession.vsAttrs.data.extraProperties.entity},
                                                                    listenerName:%23{pageSession.networkListAttrs.data.extraProperties.entity['name']},
-                                                                   addFlag:{%23false},
+                                                                   addFlag:false,
                                                                    result:%23{pageSession.vsAttrModified}");
                                     if (#{pageSession.additionalSaveHandler}){
                                         gf.invokeHandler(handler="#{pageSession.additionalSaveHandler}", args="#{pageSession.additionalSaveHandlerArgs}" );
@@ -100,7 +100,7 @@
                                     setPageSessionAttribute(key="additionalSaveHandlerArgs"
                                                             value="vsAttrs:%23{pageSession.vsAttrs.data.extraProperties.entity},
                                                             listenerName:%23{pageSession.networkListAttrs.data.extraProperties.entity['name']},
-                                                            addFlag:{%23false},
+                                                            addFlag:false,
                                                             result:%23{pageSession.vsAttrModified}");
                                     if (#{pageSession.additionalSaveHandler}){
                                         gf.invokeHandler(handler="#{pageSession.additionalSaveHandler}", args="#{pageSession.additionalSaveHandlerArgs}" );
@@ -114,10 +114,6 @@
                     }
                     prepareSuccessfulMsg();
                     gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
-                />
-
-                prepareSuccessfulMsg();
-                gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
                 />
             </sun:button>
 

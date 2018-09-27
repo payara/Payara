@@ -36,20 +36,25 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.composite;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
+import java.io.StringReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.Set;
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.stream.JsonParser;
 import javax.validation.ConstraintViolation;
 
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.composite.metadata.AttributeReference;
 import org.glassfish.admin.rest.model.BaseModel;
 import org.testng.Assert;
@@ -60,7 +65,7 @@ import org.testng.annotations.Test;
  * @author jdlee
  */
 public class CompositeUtilTest {
-    private static String json =
+    private static final String JSON =
             "{\"name\":\"testModel\",\"count\":123, \"related\":[{\"id\":\"rel1\", \"description\":\"description 1\"},{\"id\":\"rel2\", \"description\":\"description 2\"}]}";
 
     @Test
@@ -72,7 +77,9 @@ public class CompositeUtilTest {
     @Test
     public void readInJson() throws Exception {
         Locale locale = null;
-        JSONObject o = new JSONObject(json);
+        JsonParser parser = Json.createParser(new StringReader(JSON));
+        parser.next();
+        JsonObject o = parser.getObject();
         BaseModel model = CompositeUtil.instance().unmarshallClass(locale, BaseModel.class, o);
 
         Assert.assertEquals(model.getName(), "testModel");
@@ -110,9 +117,11 @@ public class CompositeUtilTest {
     }
 
     @Test
-    public void testDirtyFieldDetection() throws JSONException {
+    public void testDirtyFieldDetection() throws JsonException {
         Locale locale = null;
-        JSONObject o = new JSONObject(json);
+        JsonParser parser = Json.createParser(new StringReader(JSON));
+        parser.next();
+        JsonObject o = parser.getObject();
         BaseModel model = CompositeUtil.instance().unmarshallClass(locale, BaseModel.class, o);
         RestModel rmi = (RestModel)model;
 

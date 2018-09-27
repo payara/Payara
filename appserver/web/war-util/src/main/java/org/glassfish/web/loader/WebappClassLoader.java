@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.loader;
 
@@ -98,6 +98,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.*;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -391,6 +392,7 @@ public class WebappClassLoader
     private Class<?> jdbcLeakPreventionResourceClass = null;
 
     private final Application application;
+    private final Date creationTime = new Date();
     // ----------------------------------------------------------- Constructors
 
     /**
@@ -1012,7 +1014,9 @@ public class WebappClassLoader
                 }
             }
         }
-        sb.append(")");
+        sb.append(") ");
+        sb.append("Object: ").append(Integer.toHexString(System.identityHashCode(this)));
+        sb.append(" Created: ").append(SimpleDateFormat.getDateTimeInstance().format(creationTime));
         return (sb.toString());
     }
 

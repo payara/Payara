@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.config.serverbeans;
@@ -50,6 +52,9 @@ import javax.validation.Payload;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+/**
+ * ??Representation of a resource in the domain.xml file
+ */
 @ResourceNameConstraint(message="{resourcename.invalid.character}", payload=BindableResource.class)
 public interface BindableResource extends Resource, Payload {
     /**
@@ -68,6 +73,7 @@ public interface BindableResource extends Resource, Payload {
      *
      * @param value allowed object is
      *              {@link String }
+     * @throws java.beans.PropertyVetoException
      */
     public void setJndiName(String value) throws PropertyVetoException;
 
@@ -85,10 +91,12 @@ public interface BindableResource extends Resource, Payload {
      *
      * @param value allowed object is
      *              {@link String }
+     * @throws java.beans.PropertyVetoException
      */
     void setEnabled(String value) throws PropertyVetoException;
 
     @DuckTyped
+    @Override
     String getIdentity();
 
     class Duck {

@@ -56,7 +56,7 @@
         setPageSessionAttribute(key="instanceName", value="#{pageSession.target}");
         setPageSessionAttribute(key="encodedInstanceName", value="#{pageSession.encodedTarget}");
 
-        setSessionAttribute(key="#{pageSession.tabSetName}" value="asadminRecorderConfig");
+        setSessionAttribute(key="#{pageSession.tabSetName}" value="asadminRecorderDomainTab");
         createMap(result="#{pageSession.attrsMap}")
         mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.encodedTarget}");
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-asadmin-recorder-configuration"  method="GET" result="#{requestScope.resp}");

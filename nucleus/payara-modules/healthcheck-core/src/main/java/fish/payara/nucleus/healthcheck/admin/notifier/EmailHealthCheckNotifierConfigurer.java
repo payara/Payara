@@ -72,5 +72,10 @@ import java.beans.PropertyVetoException;
         if(this.enabled != null) {
             notifier.enabled(enabled);
         }
+        if (this.noisy != null) {
+            notifier.noisy(noisy);
+        } else {
+            notifier.noisy(getNotifierNoisy("get-email-notifier-configuration"));
+        }
     }
 }

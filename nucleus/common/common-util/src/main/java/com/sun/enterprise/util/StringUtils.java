@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package com.sun.enterprise.util;
 
@@ -45,7 +47,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
 import java.sql.SQLException;
-import java.text.StringCharacterIterator;
 
 public class StringUtils {
     public static final String NEWLINE = System.getProperty("line.separator");
@@ -57,6 +58,8 @@ public class StringUtils {
     ////////////////////////////////////////////////////////////////////////////
     /**
      * return the length of the String - or 0 if it's null
+     * @param s
+     * @return 
      */
     public static int safeLength(String s) {
         if (s == null) {
@@ -67,11 +70,21 @@ public class StringUtils {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    /**
+     * Returns true if a string is not null and has a non-zero length, false otherwise
+     * @param s
+     * @return 
+     */
     public static boolean ok(String s) {
         return s != null && s.length() > 0;
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    /**
+     * Returns a String containing SQLState, message and error code of exception and all sub-exceptions
+     * @param ex
+     * @return 
+     */
     public static String formatSQLException(SQLException ex) {
         assert ex != null;
 
@@ -89,8 +102,12 @@ public class StringUtils {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    /**
+     * Find longest String in a vector of Strings...
+     * @param v
+     * @return 
+     */
     public static int maxWidth(Vector v) {
-        // find longest String in a vector of Strings...
         int max = 0;
 
         if (v == null || v.size() <= 0 || !(v.elementAt(0) instanceof String)) {
@@ -109,10 +126,12 @@ public class StringUtils {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    /** Is this the String representation of a valid hex number?
+    "5", "d", "D", "F454ecbb" all return true..
+     * @param s.**/
+    // p.s. there MUST be a better and faster way of doing this...
     public static boolean isHex(String s) {
-        // is this the String representation of a valid hex number?
-        // "5", "d", "D", "F454ecbb" all return true...
-        // p.s. there MUST be a better and faster way of doing this...
+
 
         final int slen = s.length();
 
@@ -125,8 +144,14 @@ public class StringUtils {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    /**
+     * Is this the char a valid hex digit?
+     * <p>
+     * Can be upper or lower case
+     * @param c
+     * @return 
+     */
     public static boolean isHex(char c) {
-        // is this the char a valid hex digit?
 
         String hex = "0123456789abcdefABCDEF";
         int hexlen = hex.length();
@@ -141,8 +166,12 @@ public class StringUtils {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    /**
+     * e.g.  input: "a/b/c/d/foobar.txt"   output: "d"
+     * @param s
+     * @return 
+     */
     public static String getPenultimateDirName(String s) {
-        // e.g.  input: "a/b/c/d/foobar.txt"   output: "d"
 
         if (s == null || s.length() <= 0) {
             return s;
@@ -172,6 +201,13 @@ public class StringUtils {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    /**
+     * Returns the classname without package info
+     * <p>
+     * i.e. java.lang.String would return String
+     * @param className The classname to convert. Note that there is no checking that this is a valid classname.
+     * @return 
+     */
     public static String toShortClassName(String className) {
         int index = className.lastIndexOf('.');
 
@@ -183,6 +219,14 @@ public class StringUtils {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    /**
+     * Adds spaces to the end of a string to make it reach the specified length.
+     * <p>
+     * If the string is longer than the padded length then this function will return the original string.
+     * @param s String to pad
+     * @param len The length of the string with added padding
+     * @return The padded string
+     */
     public static String padRight(String s, int len) {
         if (s == null || s.length() >= len) {
             return s;
@@ -198,6 +242,14 @@ public class StringUtils {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    /**
+     * Adds spaces to the front of a string to make it reach the specified length.
+     * <p>
+     * If the string is longer than the padded length then this function will return the original string.
+     * @param s String to pad
+     * @param len The length of the string with added padding
+     * @return The padded string
+     */
     public static String padLeft(String s, int len) {
         if (s == null || s.length() >= len) {
             return s;
@@ -213,6 +265,11 @@ public class StringUtils {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    /**
+     * Converts a String into an array where every \n is a new used to signal a new element in the array
+     * @param s
+     * @return 
+     */
     public static String[] toLines(String s) {
         if (s == null) {
             return new String[0];
@@ -240,6 +297,13 @@ public class StringUtils {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    /**
+     * Puts a string before every element in an array
+     * <p>
+     * i.e. {@code prepend(new String["foo", "bar"],"not ")} would result in {@code String["not foo", "not bar"]}
+     * @param ss
+     * @param what
+     */
     public static void prepend(String[] ss, String what) {
         for (int i = 0; i < ss.length; i++) {
             ss[i] = what + ss[i];
@@ -247,6 +311,11 @@ public class StringUtils {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    /**
+     * Converts the first letter of a string to upper case
+     * @param s
+     * @return 
+     */
     public static String upperCaseFirstLetter(String s) {
         if (s == null || s.length() <= 0) {
             return s;
@@ -256,6 +325,16 @@ public class StringUtils {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    /**
+     * Replaces the first instance of a token within a string
+     * @param s The string to operate on
+     * @param token the token to be replaced
+     * @param replace the new value
+     * @return
+     * @deprecated Now part of {@link String} since JDK 1.5
+     * @see String#replace(CharSequence, CharSequence)
+     * @see String#replaceFirst(String, String) 
+     */
     public static String replace(String s, String token, String replace) {
         if (s == null || s.length() <= 0 || token == null || token.length() <= 0) {
             return s;
@@ -276,6 +355,14 @@ public class StringUtils {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    /**
+     * Converts a {@link Properties} object to string
+     * <p>
+     * If there it is empty then this will return "No entries".
+     * Otherwise it will be in the form of "key= value" with each property on a new line.
+     * @param props
+     * @return 
+     */
     public static String toString(Properties props) {
         if (props == null || props.size() <= 0) {
             return "No entries";
@@ -524,6 +611,11 @@ public class StringUtils {
         return strNew.toString();
     }
 
+    /**
+     * Gets a String version of the stack trace of an exception
+     * @param t
+     * @return 
+     */
     public static String getStackTrace(Throwable t) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
@@ -532,10 +624,20 @@ public class StringUtils {
         return sw.toString();
     }
 
+    /**
+     * Returns true is the given string is of the form "${text}"
+     * @param s
+     * @return 
+     */
     public static final boolean isToken(String s) {
         return s != null && s.startsWith("${") && s.endsWith("}") && s.length() > 3;
     }
 
+    /**
+     * Removes preceding <code>${</code> and trailing <code>}</code> from a String
+     * @param s
+     * @return 
+     */
     public static final String stripToken(String s) {
         if (isToken(s))
             // NO possible wrong assumptions here -- see isToken()
@@ -604,6 +706,7 @@ public class StringUtils {
      * Nightmares can result from using a path with a space in it!
      * This method will enclose in the specified quote characters if needed.
      * @param path
+     * @param quoteChar
      * @return
      */
     public static String quotePathIfNecessary(String path, char quoteChar) {
@@ -642,6 +745,8 @@ public class StringUtils {
      * <tr><td> " </td><td> &quot;</td></tr>
      * <tr><td> \t </td><td> &#009;</td></tr>
      * </table>
+     * @param str
+     * @return 
      */
     public static String escapeForHtml(String str) {
         if (str == null) {
@@ -675,6 +780,8 @@ public class StringUtils {
     
     /** If given {@code String} is {@code null} then returns empty {@code String}
      * otherwise returns given {@code String}
+     * @param str
+     * @return 
      */
     public static String nvl(String str) {
         return str == null ? "" : str;

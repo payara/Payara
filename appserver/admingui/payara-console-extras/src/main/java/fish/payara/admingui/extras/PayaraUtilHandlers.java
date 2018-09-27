@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,17 +39,24 @@
  */
 package fish.payara.admingui.extras;
 
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Map;
+import java.util.logging.Level;
+
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
+import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
-import java.util.Map;
+
+import org.glassfish.admingui.common.util.GuiUtil;
 
 /**
  *
  * @author jonathan coustick
  */
 public class PayaraUtilHandlers {
-    
+
     /**
      * 
      * @param context 
@@ -62,6 +69,33 @@ public class PayaraUtilHandlers {
         Map map = (Map) context.getInputValue("map");
         Object key = context.getInputValue("key");
         map.remove(key);
+    }
+    
+    /**
+     * A handler which converts a string of millseconds since the epoch into a human-friendly datetime format.
+     * The output format is whatever is the default for the locale where the user is.
+     * @param context
+     * @since 4.1.2.174
+     */
+    @Handler(id = "py.prettyDateTimeFormat",
+            input={@HandlerInput(name="milliseconds", type = String.class, required = true)},
+            output=@HandlerOutput(name="prettyString", type = String.class))
+    public static void prettyDateTimeFormat(HandlerContext context){
+        String value = (String) context.getInputValue("milliseconds");
+        String result = null;
+        try {
+            result = DateFormat.getDateTimeInstance().format(new Date(Long.valueOf(value)));
+        } catch (NullPointerException ex) {
+            result = "The input value was null.";
+            GuiUtil.getLogger().log(Level.WARNING, result, ex);
+            GuiUtil.prepareException(context, ex);
+        } catch (NumberFormatException ex) {
+            result = "The input value was not a long.";
+            GuiUtil.getLogger().log(Level.WARNING, result, ex);
+            GuiUtil.prepareException(context, ex);
+        } finally {
+            context.setOutputValue("prettyString", result);
+        }
     }
     
 }

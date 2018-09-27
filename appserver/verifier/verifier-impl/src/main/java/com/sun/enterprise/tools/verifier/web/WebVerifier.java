@@ -42,7 +42,7 @@ package com.sun.enterprise.tools.verifier.web;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Random;
+import java.security.SecureRandom;
 
 import org.glassfish.deployment.common.Descriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
@@ -222,7 +222,7 @@ public class WebVerifier extends BaseVerifier {
                 return jspOutDir;
             return new File(jspOutDir, FileUtils.makeFriendlyFilename(moduleDescriptor.getArchiveUri()));
         }
-        Random random=new Random();
+        SecureRandom random=new SecureRandom();
         String prefix=System.getProperty("java.io.tmpdir")+File.separator+".jspc";
         do{
             float f=random.nextFloat();

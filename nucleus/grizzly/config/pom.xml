@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -48,7 +48,7 @@
     <parent>
         <groupId>org.glassfish.main.grizzly</groupId>
         <artifactId>nucleus-grizzly</artifactId>
-        <version>5.0.0.173-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     
@@ -86,16 +86,35 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
+            <artifactId>grizzly-framework</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.grizzly</groupId>
+            <artifactId>tls-sni</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.glassfish.grizzly</groupId>
+            <artifactId>grizzly-http</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.grizzly</groupId>
+            <artifactId>grizzly-http2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-websockets</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2-config</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>config-types</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>stax</groupId>
@@ -115,11 +134,6 @@
             <artifactId>javax.servlet-api</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-http2</artifactId>
-            <scope>test</scope>
-         </dependency>
          <dependency>
              <groupId>org.glassfish.grizzly</groupId>
              <artifactId>grizzly-npn-api</artifactId>

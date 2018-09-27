@@ -36,10 +36,12 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.composite;
 
-import org.codehaus.jettison.json.JSONException;
+import javax.json.JsonException;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.admin.rest.composite.resource.DummiesResource;
 import org.glassfish.admin.rest.composite.resource.DummyResource;
@@ -52,7 +54,7 @@ import org.testng.annotations.Test;
  */
 public class ResourceMetadataTest  {
     @Test
-    public void testMetadata() throws JSONException {
+    public void testMetadata() throws JsonException {
         RestResourceMetadata rrmd = new RestResourceMetadata(new DummiesResource());
         Assert.assertNotNull(rrmd);
         Assert.assertEquals(rrmd.getResourceMethods().size(), 3);

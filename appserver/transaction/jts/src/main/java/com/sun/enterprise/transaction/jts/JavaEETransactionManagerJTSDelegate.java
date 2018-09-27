@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2017] [Payara Foundation]
 package com.sun.enterprise.transaction.jts;
 
 import java.util.Arrays;
@@ -76,7 +76,6 @@ import com.sun.enterprise.transaction.spi.TransactionInternal;
 
 import com.sun.enterprise.transaction.jts.recovery.OracleXAResource;
 import com.sun.enterprise.transaction.jts.recovery.SybaseXAResource;
-import com.sun.enterprise.transaction.jts.recovery.GMSCallBack;
 
 import com.sun.enterprise.transaction.JavaEETransactionManagerSimplified;
 import com.sun.enterprise.transaction.JavaEETransactionImpl;
@@ -86,7 +85,6 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
 import org.glassfish.hk2.api.PostConstruct;
@@ -535,20 +533,7 @@ public class JavaEETransactionManagerJTSDelegate
                     DefaultTransactionService.setServerName(props);
 
                     if (Boolean.parseBoolean(txnService.getPropertyValue("delegated-recovery"))) {
-                        // Register GMS notification callback
-                        if (_logger.isLoggable(Level.FINE))
-                            _logger.log(Level.FINE,"TM: Registering for GMS notification callback");
-
-                        int waitTime = 60;
-                        value = txnService.getPropertyValue("wait-time-before-recovery-insec");
-                        if (value != null) {
-                            try {
-                                waitTime = Integer.parseInt(value);
-                            } catch(Exception e) {
-                                _logger.log(Level.WARNING,"error_wait_time_before_recovery",e);
-                            }
-                        }
-                        new GMSCallBack(waitTime, serviceLocator);
+                        _logger.warning("delegated-recovery is no longer supported!!");
                     }
                 }
             }

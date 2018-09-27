@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.remote.reader;
 
 import java.io.IOException;
@@ -70,8 +72,7 @@ public class ProgressStatusEventJsonProprietaryReader implements ProprietaryRead
 
     @Override
     public ProgressStatusEvent readFrom(final InputStream is, final String contentType) throws IOException {
-        JsonParser jp = factory.createJsonParser(is);
-        try {
+        try (JsonParser jp = factory.createJsonParser(is)) {
             JsonToken token = jp.nextToken(); //sorounding object
             jp.nextToken(); //Name progress-status-event
             JsonToken token2 = jp.nextToken();
@@ -81,8 +82,6 @@ public class ProgressStatusEventJsonProprietaryReader implements ProprietaryRead
                 throw new IOException("Not expected type (progress-status-event) but (" + jp.getCurrentName() + ")");
             }
             return readProgressStatusEvent(jp);
-        } finally {
-            jp.close();
         }
     }
 
@@ -93,18 +92,25 @@ public class ProgressStatusEventJsonProprietaryReader implements ProprietaryRead
         while ((token = jp.nextToken()) != JsonToken.END_OBJECT) {
             if (token == JsonToken.START_OBJECT) {
                 String nm = jp.getCurrentName();
-                if ("set".equals(nm)) {
-                    result = new ProgressStatusEventSet(id);
-                    readToPSEventSet((ProgressStatusEventSet) result, jp);
-                } else if ("progres".equals(nm)) {
-                    result = new ProgressStatusEventProgress(id);
-                    readToPSEventProgress((ProgressStatusEventProgress) result, jp);
-                } else if ("complete".equals(nm)) {
-                    result = new ProgressStatusEventComplete(id);
-                    readToPSEventComplete((ProgressStatusEventComplete) result, jp);
-                } else if ("create-child".equals(nm)) {
-                    result = new ProgressStatusEventCreateChild(id);
-                    readToPSEventCreateChild((ProgressStatusEventCreateChild) result, jp);
+                if (null != nm) switch (nm) {
+                    case "set":
+                        result = new ProgressStatusEventSet(id);
+                        readToPSEventSet((ProgressStatusEventSet) result, jp);
+                        break;
+                    case "progres":
+                        result = new ProgressStatusEventProgress(id);
+                        readToPSEventProgress((ProgressStatusEventProgress) result, jp);
+                        break;
+                    case "complete":
+                        result = new ProgressStatusEventComplete(id);
+                        readToPSEventComplete((ProgressStatusEventComplete) result, jp);
+                        break;
+                    case "create-child":
+                        result = new ProgressStatusEventCreateChild(id);
+                        readToPSEventCreateChild((ProgressStatusEventCreateChild) result, jp);
+                        break;
+                    default:
+                        break;
                 }
             } else {
                 String fieldname = jp.getCurrentName();
@@ -133,12 +139,18 @@ public class ProgressStatusEventJsonProprietaryReader implements ProprietaryRead
         while (jp.nextToken() != JsonToken.END_OBJECT) {
             String fieldname = jp.getCurrentName();
             jp.nextToken(); // move to value
-            if ("steps".equals(fieldname)) {
-                event.setSteps(jp.getIntValue());
-            } else if ("message".equals(fieldname)) {
-                event.setMessage(jp.getText());
-            } else if ("spinner".equals(fieldname)) {
-                event.setSpinner(jp.getBooleanValue());
+            if (null != fieldname) switch (fieldname) {
+                case "steps":
+                    event.setSteps(jp.getIntValue());
+                    break;
+                case "message":
+                    event.setMessage(jp.getText());
+                    break;
+                case "spinner":
+                    event.setSpinner(jp.getBooleanValue());
+                    break;
+                default:
+                    break;
             }
         }
     }
@@ -157,14 +169,21 @@ public class ProgressStatusEventJsonProprietaryReader implements ProprietaryRead
         while (jp.nextToken() != JsonToken.END_OBJECT) {
             String fieldname = jp.getCurrentName();
             jp.nextToken(); // move to value
-            if ("id".equals(fieldname)) {
-                event.setChildId(jp.getText());
-            } else if ("allocated-steps".equals(fieldname)) {
-                event.setAllocatedSteps(jp.getIntValue());
-            } else if ("total-step-count".equals(fieldname)) {
-                event.setTotalSteps(jp.getIntValue());
-            } else if ("name".equals(fieldname)) {
-                event.setName(jp.getText());
+            if (null != fieldname) switch (fieldname) {
+                case "id":
+                    event.setChildId(jp.getText());
+                    break;
+                case "allocated-steps":
+                    event.setAllocatedSteps(jp.getIntValue());
+                    break;
+                case "total-step-count":
+                    event.setTotalSteps(jp.getIntValue());
+                    break;
+                case "name":
+                    event.setName(jp.getText());
+                    break;
+                default:
+                    break;
             }
         }
     }

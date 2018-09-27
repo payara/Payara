@@ -37,15 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.commands;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.config.serverbeans.JvmOptionBag;
+import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
-import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
@@ -68,7 +69,6 @@ import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  * Deletes given JVM options in server's configuration.
@@ -159,20 +159,18 @@ public final class DeleteJvmOptions implements AdminCommand, AdminCommandSecurit
     */
     //@ForTimeBeing :)
     private void deleteX(final JvmOptionBag bag, final List<String> toRemove, final ActionReport.MessagePart part) throws Exception {
-        SingleConfigCode<JvmOptionBag> scc = new SingleConfigCode<JvmOptionBag> () {
-            public Object run(JvmOptionBag bag) throws PropertyVetoException, TransactionFailure {
-                List<String> jvmopts = new ArrayList<String>(bag.getJvmOptions());
-                int orig = jvmopts.size();
-                boolean removed = jvmopts.removeAll(toRemove);
-                bag.setJvmOptions(jvmopts);
-                int now = jvmopts.size();
-                if (removed) {
-                    part.setMessage(lsm.getString("deleted.message", (orig-now)));
-                } else {
-                    part.setMessage(lsm.getString("no.option.deleted"));
-                }
-                return true;
+        SingleConfigCode<JvmOptionBag> scc = (JvmOptionBag bag1) -> {
+            List<String> jvmopts = new ArrayList<>(bag1.getJvmRawOptions());
+            int orig = jvmopts.size();
+            boolean removed = jvmopts.removeIf(option -> toRemove.contains(new JvmOption(option).option));
+            bag1.setJvmOptions(jvmopts);
+            int now = jvmopts.size();
+            if (removed) {
+                part.setMessage(lsm.getString("deleted.message", (orig - now)));
+            } else {
+                part.setMessage(lsm.getString("no.option.deleted"));
             }
+            return true;
         };
         ConfigSupport.apply(scc, bag);
     }

@@ -56,14 +56,6 @@ Portions Copyright [2016] [Payara Foundation]
   <!-- ============ Built In Context Init Parameter Definitions =========== -->
 
 
-  <!-- Init parameter to force the XML validation of JSF configuration  --> 
-  <!-- ressources.                                                      -->
-
-  <context-param>
-      <param-name>com.sun.faces.validateXml</param-name>
-      <param-value>true</param-value>
-  </context-param>
-
   <!-- Init parameter will cause the JSF implementation to bypass      -->
   <!-- processing the web.xml to determine if we should continue       --> 
   <!-- bootstrapping JSF for the web application.                      -->
@@ -303,6 +295,14 @@ Portions Copyright [2016] [Payara Foundation]
     <init-param>
       <param-name>development</param-name>
       <param-value>false</param-value>
+    </init-param>
+    <init-param>
+      <param-name>compilerSourceVM</param-name>
+      <param-value>1.8</param-value>
+    </init-param>
+    <init-param>
+      <param-name>compilerTargetVM</param-name>
+      <param-value>1.8</param-value>
     </init-param>
     <init-param>
       <param-name>httpMethods</param-name>

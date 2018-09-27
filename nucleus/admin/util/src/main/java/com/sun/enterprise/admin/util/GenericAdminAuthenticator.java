@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or it's affiliates]
+// Portions Copyright [2017-2018] [Payara Foundation and/or it's affiliates]
+
 package com.sun.enterprise.admin.util;
 
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.security.auth.realm.file.FileRealmUser;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.security.auth.realm.file.FileRealm;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.config.serverbeans.AuthRealm;
 import com.sun.enterprise.config.serverbeans.AdminService;
@@ -138,8 +138,6 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     @Inject
     private AuthenticationService authService;
     
-    private static LocalStringManagerImpl lsm = new LocalStringManagerImpl(GenericAdminAuthenticator.class);
-    
     @Override
     public synchronized void postConstruct() {
         secureAdmin = domain.getSecureAdmin();
@@ -180,8 +178,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     @Override
     public Subject loginAsAdmin(String user, String password,
             String realm, final String originHost) throws LoginException {
-        final Subject s = authenticate(user, password.toCharArray(), realm, originHost);
-        return s;
+        return authenticate(user, password.toCharArray(), realm, originHost);
     }
        
     
@@ -439,7 +436,8 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
      */
     @Override
     public Subject authenticate(Object credentials) {
-        String user = "", password = "";
+        String user = "";
+        char[] password = "".toCharArray();
         String host = null;
         if (credentials instanceof String[]) {
             // this is supposed to be 2-string array with user name and password
@@ -448,9 +446,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                 user = up[0];
             } else if (up.length >= 2) {
                 user = up[0];
-                password = up[1];
-                if (password == null)
-                    password = "";
+                password = up[1] != null ? up[1].toCharArray() : "".toCharArray();
             }
             if (up.length > 2) {
                 host = up[2];
@@ -472,7 +468,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
             realm = as.getAuthRealmName();
 
         try {
-            return loginAsAdmin(user, password, realm, host);
+            return loginAsAdmin(user, new String(password), realm, host);
         } catch (LoginException e) {
             if (ADMSEC_LOGGER.isLoggable(Level.FINE)) {
                 ADMSEC_LOGGER.log(Level.FINE, "*** LoginException during JMX auth\n  user={0}\n  host={1}\n  realm={2}",

@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.connector;
@@ -68,6 +70,11 @@ public class ResourcesSniffer extends GenericSniffer {
     public ResourcesSniffer() {
         super(ResourceConstants.GF_RESOURCES_MODULE, ResourceConstants.GF_RESOURCES_LOCATION, null);
     }
+    
+    //For Payara Resources sniffer
+    protected ResourcesSniffer(String containerName, String appStigma) {
+        super(containerName, appStigma, null);
+    }
 
     /**
      * Returns true if the passed file or directory is recognized by this
@@ -76,8 +83,9 @@ public class ResourcesSniffer extends GenericSniffer {
      * @param archive the file or directory to explore
      * @return true if this sniffer handles this application type
      */
+    @Override
     public boolean handles(ReadableArchive archive) {
-        return ResourceUtil.hasResourcesXML(archive, locator)
+        return ResourceUtil.hasGlassfishResourcesXML(archive, locator)
                 && archive.getParentArchive() == null;
     }
 
@@ -89,6 +97,7 @@ public class ResourcesSniffer extends GenericSniffer {
      *
      * @return list of container names known to the habitat for this sniffer
      */
+    @Override
     public String[] getContainersNames() {
         return containerNames;
     }
@@ -98,6 +107,7 @@ public class ResourcesSniffer extends GenericSniffer {
      *
      * @return the container name
      */
+    @Override
     public String getModuleType() {
         return ResourceConstants.GF_RESOURCES_MODULE;
     }
@@ -113,6 +123,7 @@ public class ResourcesSniffer extends GenericSniffer {
      * @return whether the sniffer supports the archive type
      *
      */
+    @Override
     public boolean supportsArchiveType(ArchiveType archiveType) {
         if (archiveType.toString().equals(ModuleType.WAR.toString()) ||
             archiveType.toString().equals(ModuleType.EJB.toString()) ||

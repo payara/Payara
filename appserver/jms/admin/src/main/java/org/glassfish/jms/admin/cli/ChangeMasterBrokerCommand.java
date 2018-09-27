@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.jms.admin.cli;
 
@@ -82,7 +83,7 @@ import javax.management.openmbean.CompositeData;
 @PerLookup
 @I18n("change.master.broker")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean=Cluster.class,
         opType=RestEndpoint.OpType.POST, 

@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.admingui.common.util;
 
 import java.io.IOException;
@@ -77,7 +79,6 @@ import javax.servlet.http.HttpSession;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.glassfish.jersey.client.filter.CsrfProtectionFilter;
-import org.glassfish.jersey.jackson.JacksonFeature;
 
 import org.glassfish.hk2.api.ServiceLocator;
 
@@ -94,9 +95,11 @@ import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+import org.glassfish.jersey.jsonp.JsonProcessingFeature;
 
 /**
- *
+ * Utilities for processing REST requests in the admin console
+ * 
  * @author anilam
  */
 public class RestUtil {
@@ -112,7 +115,7 @@ public class RestUtil {
         if (JERSEY_CLIENT == null) {
             JERSEY_CLIENT = initialize(ClientBuilder.newBuilder()).build();
             JERSEY_CLIENT.register(new RequiredHeadersFilter())
-                    .register(new JacksonFeature());
+                    .register(new JsonProcessingFeature());
         }
 
         return JERSEY_CLIENT;
@@ -204,7 +207,11 @@ public class RestUtil {
                 restResponse = post(endpoint, attrs);
             }
         } else if ("put".equals(method)) {
-            restResponse = put(endpoint, attrs);
+            if (useData) {
+                restResponse = put(endpoint, data, (String) handlerCtx.getInputValue("contentType"));
+            } else {
+                restResponse = put(endpoint, attrs);
+            }
         } else if ("get".equals(method)) {
             restResponse = get(endpoint, attrs);
         } else if ("delete".equals(method)) {
@@ -485,7 +492,7 @@ public class RestUtil {
 		    Logger logger = GuiUtil.getLogger();
                     logger.severe(GuiUtil.getCommonMessage("LOG_REQUEST_RESULT", new Object[]{exitCode, endpoint, maskedAttr}));
 		    if (logger.isLoggable(Level.FINEST)){
-                        logger.finest("response.getResponseBody(): " + response.getResponseBody());
+                        logger.log(Level.FINEST, "response.getResponseBody(): {0}", response.getResponseBody());
 		    }
                 }
                 if (handlerCtx != null) {
@@ -808,6 +815,7 @@ public class RestUtil {
 
     /**
      * <p> This method returns the value of the REST token if it is successfully set in session scope.</p>
+     * @return 
      */
     public static String getRestToken() {
         String token = null;
@@ -891,6 +899,22 @@ public class RestUtil {
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
                 .post(Entity.entity(formData, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
+        RestResponse rr = RestResponse.getRestResponse(cr);
+        return rr;
+    }
+
+    public static RestResponse put(String address, Object payload, String contentType) {
+        WebTarget target = getJerseyClient().target(address);
+        if (contentType == null) {
+            contentType = MediaType.APPLICATION_JSON;
+        }
+        if (payload instanceof Map) {
+            payload = buildMultivalueMap((Map<String, Object>) payload);
+        }
+        Response cr = target.request(RESPONSE_TYPE).header("Content-Type", contentType)
+                .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
+                //                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
+                .put(Entity.entity(payload, contentType), Response.class);
         RestResponse rr = RestResponse.getRestResponse(cr);
         return rr;
     }
@@ -987,6 +1011,7 @@ public class RestUtil {
         public BasicHostnameVerifier() {
         }
 
+        @Override
         public boolean verify(String host, SSLSession sslSession) {
             if (host.equals("localhost")) {
                 return true;

@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or afiliates
  */
 
 package org.glassfish.gms.bootstrap;
@@ -168,11 +170,16 @@ public class GMSAdapterService implements PostConstruct, ConfigListener {
         return "GMS Loader";
     }
 
-    /*
+    /**
+     * Gets the GMSAdapter.
+     * If there is more than one present then this throws an {@link IllegalStateException}.
+     * If there are none then null is returned.
+     * @return
+     * @see #getGMSAdapterByName(String)
      */
     public GMSAdapter getGMSAdapter() {
         synchronized(lock) {
-            if (gmsAdapters.size() > 1) {
+            if (gmsAdapters.size() > 1 && !env.isDas()) {
                 throw new IllegalStateException(
                     strings.getString("use.getByName"));
             } else if (gmsAdapters.size() == 1) {
@@ -183,10 +190,19 @@ public class GMSAdapterService implements PostConstruct, ConfigListener {
         }
     }
 
+    /**
+     * Returns true if there is at least one {@link GMSAdapter}
+     * @return 
+     */
     public boolean isGmsEnabled() {
         return gmsAdapters.size() > 0;
     }
 
+    /**
+     * Gets the GMSAdapter for a specified cluster
+     * @param clusterName
+     * @return 
+     */
     public GMSAdapter getGMSAdapterByName(String clusterName) {
         synchronized(lock) {
             return habitat.getService(GMSAdapter.class, clusterName);
@@ -218,7 +234,7 @@ public class GMSAdapterService implements PostConstruct, ConfigListener {
         return result;
     }
 
-    /*
+    /**
      * initial support for multiple clusters in DAS. a clustered instance can only belong to one cluster.
      */
     private GMSAdapter loadModule(Cluster cluster) {

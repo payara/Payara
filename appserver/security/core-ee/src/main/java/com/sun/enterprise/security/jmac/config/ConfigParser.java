@@ -92,7 +92,7 @@ public interface ConfigParser {
      * <li> 
      * </ul>
      */
-    public Map getConfigMap();
+    public Map<String, GFServerConfigProvider.InterceptEntry> getConfigMap();
 
     /**
      * Get the name of layers with default set in domain.xml.

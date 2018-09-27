@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portion Copyright [2018] Payara Foundation and/or affiliates
 
 /*
  * PersistenceClassElement.java
@@ -50,7 +51,7 @@ import java.util.ArrayList;
 
 import com.sun.jdo.api.persistence.model.Model;
 import com.sun.jdo.api.persistence.model.ModelException;
-import com.sun.jdo.spi.persistence.utility.StringHelper;
+import org.glassfish.common.util.StringHelper;
 import org.glassfish.persistence.common.I18NHelper;
 
 /* TODO:

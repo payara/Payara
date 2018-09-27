@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates.
  */
 
 package org.glassfish.admin.rest.provider;
@@ -68,7 +70,7 @@ public class ActionReportXmlProvider extends BaseProvider<ActionReporter> {
     @Override
     public String getContent(ActionReporter ar) {
         XmlObject result = processReport(ar);
-        return result.toString(getFormattingIndentLevel());
+        return result.toString();
     }
     
     @Override

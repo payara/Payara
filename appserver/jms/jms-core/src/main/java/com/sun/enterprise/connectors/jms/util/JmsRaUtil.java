@@ -421,8 +421,8 @@ public class JmsRaUtil {
        String manifestFile = deployed_dir + File.separator +
                              MQ_RAR_MANIFEST;
        _logger.log(Level.FINE,"Deployed MQ version Manifest file" + manifestFile);
-       try {
-           Manifest mf = new Manifest(new FileInputStream(manifestFile));
+       try (FileInputStream fis = new FileInputStream(manifestFile)) {
+           Manifest mf = new Manifest(fis);
            ver = mf.getMainAttributes().getValue(MANIFEST_TAG);
            return ver;
        } catch (Exception e) {

@@ -751,16 +751,16 @@ class PartItem
         }
         // END PAYARA-953
 
-        OutputStream output = getOutputStream();
-        if (cachedContent != null) {
-            output.write(cachedContent);
-        } else {
-            FileInputStream input = new FileInputStream(dfosFile);
-            Streams.copy(input, output, false);
-            deleteFile(dfosFile);
-            dfosFile = null;
+        try (OutputStream output = getOutputStream()) {
+            if (cachedContent != null) {
+                output.write(cachedContent);
+            } else {
+                FileInputStream input = new FileInputStream(dfosFile);
+                Streams.copy(input, output, false);
+                deleteFile(dfosFile);
+                dfosFile = null;
+            }
         }
-        output.close();
 
         cachedContent = null;
     }

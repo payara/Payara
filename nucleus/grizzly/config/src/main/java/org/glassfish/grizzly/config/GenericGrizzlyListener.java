@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,8 +36,10 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * 
+ * Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] 
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package org.glassfish.grizzly.config;
 
 import static java.util.logging.Level.WARNING;
@@ -59,12 +61,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.grizzly.Connection;
 
 import org.glassfish.grizzly.Grizzly;
 import org.glassfish.grizzly.IOStrategy;
+import org.glassfish.grizzly.PortRange;
 import org.glassfish.grizzly.SocketBinder;
 import org.glassfish.grizzly.config.dom.Http;
-import org.glassfish.grizzly.config.dom.Http2;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.PortUnification;
 import org.glassfish.grizzly.config.dom.Protocol;
@@ -72,7 +75,6 @@ import org.glassfish.grizzly.config.dom.ProtocolChain;
 import org.glassfish.grizzly.config.dom.ProtocolChainInstanceHandler;
 import org.glassfish.grizzly.config.dom.ProtocolFilter;
 import org.glassfish.grizzly.config.dom.SelectionKeyHandler;
-import org.glassfish.grizzly.config.dom.Spdy;
 import org.glassfish.grizzly.config.dom.Ssl;
 import org.glassfish.grizzly.config.dom.ThreadPool;
 import org.glassfish.grizzly.config.dom.Transport;
@@ -89,7 +91,7 @@ import org.glassfish.grizzly.http.LZMAContentEncoding;
 import org.glassfish.grizzly.http.server.AddOn;
 import org.glassfish.grizzly.http.server.BackendConfiguration;
 import org.glassfish.grizzly.http.server.CompressionEncodingFilter;
-import org.glassfish.grizzly.http.server.CompressionLevel;
+import org.glassfish.grizzly.http.CompressionConfig.CompressionMode;
 import org.glassfish.grizzly.http.server.FileCacheFilter;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServerFilter;
@@ -97,6 +99,8 @@ import org.glassfish.grizzly.http.server.ServerFilterConfiguration;
 import org.glassfish.grizzly.http.server.StaticHttpHandler;
 import org.glassfish.grizzly.http.server.filecache.FileCache;
 import org.glassfish.grizzly.http.util.MimeHeaders;
+import org.glassfish.grizzly.http2.Http2AddOn;
+import org.glassfish.grizzly.http2.Http2Configuration;
 import org.glassfish.grizzly.memory.AbstractMemoryManager;
 import org.glassfish.grizzly.memory.ByteBufferManager;
 import org.glassfish.grizzly.nio.NIOTransport;
@@ -109,6 +113,9 @@ import org.glassfish.grizzly.portunif.PUFilter;
 import org.glassfish.grizzly.portunif.PUProtocol;
 import org.glassfish.grizzly.portunif.ProtocolFinder;
 import org.glassfish.grizzly.portunif.finders.SSLProtocolFinder;
+import org.glassfish.grizzly.sni.SNIConfig;
+import org.glassfish.grizzly.sni.SNIFilter;
+import org.glassfish.grizzly.sni.SNIServerConfigResolver;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.grizzly.ssl.SSLBaseFilter;
 import org.glassfish.grizzly.strategies.WorkerThreadIOStrategy;
@@ -136,6 +143,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     protected volatile String name;
     protected volatile InetAddress address;
     protected volatile int port;
+    protected volatile PortRange portRange;
+
     protected NIOTransport transport;
     protected FilterChain rootFilterChain;
     private volatile ExecutorService workerExecutorService;
@@ -183,9 +192,29 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     }
 
     @Override
+    public PortRange getPortRange() {
+        return portRange;
+    }
+
+    protected void setPortRange(PortRange portRange) {
+        this.portRange = portRange;
+    }
+
+    private void bindTransport() throws IOException {
+        if (portRange != null && transport instanceof TCPNIOTransport) {
+            Connection<?> connection = ((SocketBinder) transport)
+                    .bind(address.getHostAddress(), portRange, false,
+                            TCPNIOTransport.class.cast(transport).getServerConnectionBackLog());
+            // Set the dynamic port value equal to the result of the autobind
+            this.port = InetSocketAddress.class.cast(connection.getLocalAddress()).getPort();
+        } else {
+            ((SocketBinder) transport).bind(new InetSocketAddress(address, port));
+        }
+    }
+
+    @Override
     public void start() throws IOException {
         startDelayedExecutor();
-        ((SocketBinder) transport).bind(new InetSocketAddress(address, port));
         transport.start();
     }
 
@@ -298,12 +327,16 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         setName(networkListener.getName());
         setAddress(InetAddress.getByName(networkListener.getAddress()));
         setPort(Integer.parseInt(networkListener.getPort()));
+        if (networkListener.getPortRange() != null) {
+            setPortRange(PortRange.valueOf(networkListener.getPortRange()));
+        }
 
         final FilterChainBuilder filterChainBuilder = FilterChainBuilder.stateless();
         
         configureTransport(networkListener,
                            networkListener.findTransport(),
                            filterChainBuilder);
+        bindTransport();
 
         configureProtocol(habitat, networkListener,
                 networkListener.findProtocol(), filterChainBuilder);
@@ -538,14 +571,32 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                                        final Ssl ssl,
                                        final FilterChainBuilder filterChainBuilder) {
         final SSLEngineConfigurator serverConfig = new SSLConfigurator(habitat, ssl);
-//        final SSLEngineConfigurator clientConfig = new SSLConfigurator(habitat, ssl);
-//        clientConfig.setClientMode(true);
-        final SSLBaseFilter sslFilter = new SSLBaseFilter(serverConfig,
-         //                                             clientConfig,
-                                                      isRenegotiateOnClientAuthWant(ssl));
-        sslFilter.setHandshakeTimeout(
-                Long.parseLong(ssl.getHandshakeTimeoutMillis()), TimeUnit.MILLISECONDS);
-
+        
+        Filter sslFilter = null; 
+        if (Boolean.valueOf(ssl.getSniEnabled())) {
+            SNIFilter sniFilter = new SNIFilter(serverConfig, null, isRenegotiateOnClientAuthWant(ssl));
+            sniFilter.setHandshakeTimeout(Long.parseLong(ssl.getHandshakeTimeoutMillis()), TimeUnit.MILLISECONDS);
+            sniFilter.setServerSSLConfigResolver(new SNIServerConfigResolver() {
+                @Override
+                public SNIConfig resolve(Connection cnctn, String hostname) {
+                   if (hostname == null) {
+                        return SNIConfig.newServerConfig(serverConfig);
+                   } else {
+                       SSLConfigurator newConfigurator = new SSLConfigurator(habitat, ssl);
+                       newConfigurator.setSNICertAlias(hostname);
+                       return SNIConfig.newServerConfig(newConfigurator);                       
+                   }
+                }
+            });
+            sslFilter = sniFilter;
+        } else {
+            sslFilter = new SSLBaseFilter(serverConfig,
+            //                                             clientConfig,
+                                          isRenegotiateOnClientAuthWant(ssl));
+            ((SSLBaseFilter)sslFilter).setHandshakeTimeout(
+                Long.parseLong(ssl.getHandshakeTimeoutMillis()), TimeUnit.MILLISECONDS);            
+        }
+        
         filterChainBuilder.add(sslFilter);
         return sslFilter;
     }
@@ -728,8 +779,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
 //                serverConfig.getMonitoringConfig().getWebServerConfig().getProbes());
         filterChainBuilder.add(webServerFilter);
 
-        configureSpdySupport(habitat, networkListener, http.getSpdy(), filterChainBuilder, secure);
-        configureHttp2Support(habitat, networkListener, http.getHttp2(), filterChainBuilder, secure);
+        configureHttp2Support(habitat, networkListener, http, filterChainBuilder, secure);
 
         // TODO: evaluate comet/websocket support over SPDY.
         configureCometSupport(habitat, networkListener, http, filterChainBuilder);
@@ -739,94 +789,42 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         configureAjpSupport(habitat, networkListener, http, filterChainBuilder);
     }
 
-   private int getTimeoutSeconds(final Http http) {
+    private int getTimeoutSeconds(final Http http) {
         // fix for Glassfish-21009
         int timeoutSeconds = Integer.parseInt(http.getTimeoutSeconds());
         return timeoutSeconds == 0 ? -1 : timeoutSeconds;
     }
 
-    protected void configureSpdySupport(final ServiceLocator locator,
-                                        final NetworkListener listener,
-                                        final Spdy spdyElement,
-                                        final FilterChainBuilder builder,
-                                        final boolean secure) {
-        if (spdyElement != null && GrizzlyConfig.toBoolean(spdyElement.getEnabled())) {
-
-            boolean isNpnMode = spdyElement.getMode() == null ||
-                    "npn".equalsIgnoreCase(spdyElement.getMode());
-            
-            // Spdy without NPN is supported, but warn that there may
-            // be consequences to this configuration.
-            if (!secure && isNpnMode) {
-                LOGGER.log(Level.WARNING,
-                        "SSL is not enabled for listener {0}.  SPDY support will be enabled, but will not be secured.  Some clients may not be able to use SPDY in this configuration.",
-                        listener.getName());
-            }
-
-            // first try to lookup a service appropriate for the mode
-            // that has been configured.
-            AddOn spdyAddon = locator.getService(AddOn.class, "spdy");
-
-            // if no service was found, attempt to load via reflection.
-            if (spdyAddon == null) {
-                Class<?> spdyMode;
-                try {
-                    spdyMode = Utils.loadClass("org.glassfish.grizzly.spdy.SpdyMode");
-                } catch (ClassNotFoundException cnfe) {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Unable to load class org.glassfish.grizzly.spdy.SpdyMode.  SPDY support cannot be enabled");
-                    }
-                    return;
-                }
-                Object[] enumConstants = spdyMode.getEnumConstants();
-                Object mode = ((isNpnMode) ? enumConstants[1] : enumConstants[0]);
-                spdyAddon = loadAddOn("org.glassfish.grizzly.spdy.SpdyAddOn", new Class[]{spdyMode}, mode);
-            }
-
-            if (spdyAddon != null) {
-                // Configure SpdyAddOn
-                configureElement(locator, listener, spdyElement, spdyAddon);
-                
-                // Spdy requires access to more information compared to the other addons
-                // that are currently leveraged.  As such, we'll need to mock out a
-                // Grizzly NetworkListener to pass to the addon.  This mock object will
-                // only provide the information necessary for the addon to operate.
-                // It will be important to keep this mock in sync with the details the
-                // addon requires.
-                spdyAddon.setup(createMockListener(secure), builder);
-                isSpdyEnabled = true;
-            }
-        }
-    }
-
     protected void configureHttp2Support(final ServiceLocator locator,
                                         final NetworkListener listener,
-                                        final Http2 http2Element,
+                                        final Http httpElement,
                                         final FilterChainBuilder builder,
                                         final boolean secure) {
-        if (!skipHttp2 && http2Element != null && GrizzlyConfig.toBoolean(http2Element.getEnabled())) {
-
-            // first try to lookup a service appropriate for the mode
-            // that has been configured.
-            AddOn http2Addon = locator.getService(AddOn.class, "http2");
-
-            // if no service was found, attempt to load via reflection.
-            if (http2Addon == null) {
-                http2Addon = loadAddOn("org.glassfish.grizzly.http2.Http2AddOn", new Class[]{});
-            }
-
-            if (http2Addon != null) {
-                // Configure SpdyAddOn
-                configureElement(locator, listener, http2Element, http2Addon);
-                
-                // Spdy requires access to more information compared to the other addons
+        isHttp2Enabled = false;
+        if (!skipHttp2 && httpElement != null && Boolean.parseBoolean(httpElement.getHttp2Enabled())) {
+            try {
+                Http2AddOn http2Addon = new Http2AddOn(Http2Configuration.builder()
+                        .maxConcurrentStreams(Integer.parseInt(httpElement.getHttp2MaxConcurrentStreams()))
+                        .initialWindowSize(Integer.parseInt(httpElement.getHttp2InitialWindowSizeInBytes()))
+                        .maxFramePayloadSize(Integer.parseInt(httpElement.getHttp2MaxFramePayloadSizeInBytes()))
+                        .maxHeaderListSize(Integer.parseInt(httpElement.getHttp2MaxHeaderListSizeInBytes()))
+                        .streamsHighWaterMark(Float.parseFloat(httpElement.getHttp2StreamsHighWaterMark()))
+                        .cleanPercentage(Float.parseFloat(httpElement.getHttp2CleanPercentage()))
+                        .cleanFrequencyCheck(Integer.parseInt(httpElement.getHttp2CleanFrequencyCheck()))
+                        .disableCipherCheck(Boolean.valueOf(httpElement.getHttp2DisableCipherCheck()))
+                        .enablePush(Boolean.parseBoolean(httpElement.getHttp2PushEnabled()))
+                        .executorService(transport.getWorkerThreadPool())
+                        .build());
+                // The Http2AddOn requires access to more information compared to the other addons
                 // that are currently leveraged.  As such, we'll need to mock out a
-                // Grizzly NetworkListener to pass to the addon.  This mock object will
-                // only provide the information necessary for the addon to operate.
+                // Grizzly NetworkListener to pass to the AddOn.  This mock object will
+                // only provide the information necessary for the AddOn to operate.
                 // It will be important to keep this mock in sync with the details the
-                // addon requires.
+                // AddOn requires.
                 http2Addon.setup(createMockListener(secure), builder);
                 isHttp2Enabled = true;
+            } catch (NoClassDefFoundError ex) {
+                LOGGER.log(Level.WARNING, "Unable to construct HTTP/2 Addon", ex);
             }
         }
     }
@@ -1087,17 +1085,17 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     protected Set<ContentEncoding> configureCompressionEncodings(Http http) {
         final String mode = http.getCompression();
         int compressionMinSize = Integer.parseInt(http.getCompressionMinSizeBytes());
-        CompressionLevel compressionLevel;
+        CompressionMode compressionMode;
         try {
-            compressionLevel = CompressionLevel.getCompressionLevel(mode);
+            compressionMode = CompressionMode.fromString(mode);
         } catch (IllegalArgumentException e) {
             try {
                 // Try to parse compression as an int, which would give the
                 // minimum compression size
-                compressionLevel = CompressionLevel.ON;
+                compressionMode = CompressionMode.ON;
                 compressionMinSize = Integer.parseInt(mode);
             } catch (Exception ignore) {
-                compressionLevel = CompressionLevel.OFF;
+                compressionMode = CompressionMode.OFF;
             }
         }
         final String compressableMimeTypesString = http.getCompressableMimeType();
@@ -1113,17 +1111,17 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         final ContentEncoding gzipContentEncoding = new GZipContentEncoding(
             GZipContentEncoding.DEFAULT_IN_BUFFER_SIZE,
             GZipContentEncoding.DEFAULT_OUT_BUFFER_SIZE,
-            new CompressionEncodingFilter(compressionLevel, compressionMinSize,
+            new CompressionEncodingFilter(compressionMode, compressionMinSize,
                 compressableMimeTypes,
                 noCompressionUserAgents,
                 GZipContentEncoding.getGzipAliases(),
-                compressionLevel != CompressionLevel.OFF
+                compressionMode != CompressionMode.OFF
             ));
-        final ContentEncoding lzmaEncoding = new LZMAContentEncoding(new CompressionEncodingFilter(compressionLevel, compressionMinSize,
+        final ContentEncoding lzmaEncoding = new LZMAContentEncoding(new CompressionEncodingFilter(compressionMode, compressionMinSize,
                 compressableMimeTypes,
                 noCompressionUserAgents,
                 LZMAContentEncoding.getLzmaAliases(),
-                compressionLevel != CompressionLevel.OFF
+                compressionMode != CompressionMode.OFF
         ));
         final Set<ContentEncoding> set = new HashSet<ContentEncoding>(2);
         set.add(gzipContentEncoding);

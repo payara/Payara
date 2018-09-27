@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb;
 
@@ -606,7 +606,7 @@ public class EJBUtils {
                                           props);
                     }});
             }
-        } catch (RuntimeException runEx) {
+        } catch (RuntimeException | LinkageError runEx) {
             //We would have got this exception if there were two (or more)
             //  concurrent threads that attempted to define the same class
             //  Lets try to load the class and if we are able to load it

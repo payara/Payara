@@ -40,33 +40,38 @@
 
 package com.sun.enterprise.security.acl;
 
-
 import java.lang.reflect.Method;
 
 /**
  * An EJB resource.
+ *
  * @author Harish Prabandham
  */
 public class EJBResource extends Resource {
 
     public EJBResource(String app, Method method) {
-        super(app,method.getDeclaringClass().getName(), method.toString());
+        super(app, method.getDeclaringClass().getName(), method.toString());
     }
 
+    @Override
     public boolean equals(Object obj) {
-        if(obj == this)
+        if (obj == this) {
             return true;
-        
-        if ((obj == null) || (obj.getClass() != getClass()))
+        }
+
+        if (obj == null || obj.getClass() != getClass()) {
             return false;
-        
-        Resource r = (Resource) obj;
-        
-        return getApplication().equals(r.getApplication()) &&
-            getMethod().equals(r.getMethod()) &&
-            getName().equals(r.getName());
+        }
+
+        Resource otherResource = (Resource) obj;
+
+        return
+            getApplication().equals(otherResource.getApplication()) &&
+            getMethod().equals(otherResource.getMethod()) &&
+            getName().equals(otherResource.getName());
     }
-    
+
+    @Override
     public boolean implies(Resource resource) {
         return equals(resource);
     }

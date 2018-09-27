@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016] [Payara Foundation]
+//Portions Copyright [2016-2017] [Payara Foundation]
 
 package org.glassfish.jdbc.pool.monitor;
 
@@ -209,7 +209,8 @@ public class JdbcConnPoolStatsProvider {
             }
             //Decrement counter
             synchronized(numConnFree) {
-                numConnFree.setCurrent(numConnFree.getCurrent() - 1);
+                long numConnFreeSafe = (numConnFree.getCurrent() - 1 >= 0) ? numConnFree.getCurrent() - 1 : 0;
+                numConnFree.setCurrent(numConnFreeSafe);
             }
         }
     }

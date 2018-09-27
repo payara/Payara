@@ -37,9 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.descriptor;
 
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
+import com.sun.enterprise.deployment.MethodDescriptor;
+import com.sun.enterprise.deployment.util.TypeUtil;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import fish.payara.cluster.DistributedLockType;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,12 +57,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
-
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
-import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.deployment.util.TypeUtil;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.deployment.AnnotationTypesProvider;
 
@@ -100,6 +101,12 @@ public class EjbSessionDescriptor extends EjbDescriptor
     // ejb3.2 spec 4.6.5 Disabling Passivation of Stateful Session Beans
     private boolean isPassivationCapable = true;
     private boolean passivationCapableIsSet = false;
+
+    private boolean clustered = false;
+    private boolean dontCallPostConstructOnAttach = false;
+    private boolean dontCallPreDestroyOnDetach = false;
+    private String clusteredKeyValue = "";
+    private DistributedLockType clusteredLockType = DistributedLockType.INHERIT;
 
     private List<MethodDescriptor> readLockMethods = new ArrayList<MethodDescriptor>();
     private List<MethodDescriptor> writeLockMethods = new ArrayList<MethodDescriptor>();
@@ -203,7 +210,50 @@ public class EjbSessionDescriptor extends EjbDescriptor
     public boolean isSessionTypeSet() {
         return sessionTypeIsSet;
     }
-    
+
+    @Override
+    public boolean isClustered() {
+        return clustered;
+    }
+
+    public void setClustered(boolean clustered) {
+        this.clustered = clustered;
+    }
+
+    @Override
+    public String getClusteredKeyValue() {
+        return clusteredKeyValue;
+    }
+
+    public void setClusteredKeyValue(String clusteredKeyValue) {
+        this.clusteredKeyValue = clusteredKeyValue;
+    }
+
+    @Override
+    public DistributedLockType getClusteredLockType() {
+        return clusteredLockType;
+    }
+
+    public void setClusteredLockType(DistributedLockType lockType) {
+        this.clusteredLockType = lockType;
+    }
+
+    public boolean dontCallPostConstructOnAttach() {
+        return dontCallPostConstructOnAttach;
+    }
+
+    public void setDontCallPostConstructOnAttach(boolean dontCallPostConstructOnAttach) {
+        this.dontCallPostConstructOnAttach = dontCallPostConstructOnAttach;
+    }
+
+    public void setDontCallPreDestroyOnDetach(boolean dontCallPreDestroyOnDetach) {
+        this.dontCallPreDestroyOnDetach = dontCallPreDestroyOnDetach;
+    }
+
+    public boolean dontCallPreDestroyOnDetach() {
+        return dontCallPreDestroyOnDetach;
+    }
+
 	/**
 	* Sets my type
 	*/

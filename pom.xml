@@ -39,14 +39,14 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2017] Payara Foundation and/or affiliates
+    Portions Copyright [2017-2018] Payara Foundation and/or affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.main</groupId>
     <artifactId>glassfish-main-aggregator</artifactId>
-    <version>5.0.0.173-SNAPSHOT</version>
+    <version>5.184-SNAPSHOT</version>
     <packaging>pom</packaging>
     
     <name>Payara Project</name>
@@ -55,7 +55,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.0.0.173-SNAPSHOT</tag>
+        <tag>payara-server-5.184-SNAPSHOT</tag>
     </scm>
     
     <distributionManagement>
@@ -65,6 +65,14 @@
         </snapshotRepository>
     </distributionManagement>
     
+    <properties>
+        <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
+        <maven.install.plugin.version>2.5.2</maven.install.plugin.version>
+        <maven.javadoc.plugin.version>2.10.4</maven.javadoc.plugin.version>
+        <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
+        <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
+    </properties>
+
     <profiles>
         <profile>
             <id>release-phase2</id>
@@ -122,7 +130,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.0.1</version>
+                        <version>${maven.source.plugin.version}</version>
                         <configuration>
                             <excludeResources>true</excludeResources>
                             <excludes>**/*.properties</excludes>
@@ -133,14 +141,14 @@
                         </configuration>
                         <executions>
                             <execution>
-                                <phase>site</phase>
+                                <phase>pre-site</phase>
                                 <id>attach-sources</id>
                                 <goals>
                                     <goal>jar-no-fork</goal>
                                     <goal>aggregate</goal>
                                 </goals>
                                 <configuration>
-                                    <finalName>payara-5.0.0.173-SNAPSHOT</finalName>    
+                                    <finalName>payara-5.184-SNAPSHOT</finalName>    
                                     <includePom>false</includePom>                            
                                 </configuration>
                             </execution>
@@ -172,13 +180,13 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.10.4</version>
+                        <version>${maven.javadoc.plugin.version}</version>
                         <configuration>
                             <!-- Default configuration for all reports -->
                             <docencoding>UTF-8</docencoding>
                             <includeDependencySources>false</includeDependencySources>
                             <!-- This parameter is to be added when using JDK8 -->
-                            <!-- <additionalparam>-Xdoclint:none</additionalparam> -->
+                            <additionalparam>-Xdoclint:none</additionalparam>
                         </configuration>
                         <executions>
                             <execution>
@@ -187,10 +195,10 @@
                                     <goal>aggregate</goal>
                                     <goal>aggregate-jar</goal>
                                 </goals>
-                                <phase>site</phase>
+                                <phase>pre-site</phase>
                                 <configuration>
                                     <!-- Specific configuration for the aggregate report -->
-                                    <finalName>payara-5.0.0.173-SNAPSHOT</finalName>
+                                    <finalName>payara-5.184-SNAPSHOT</finalName>
                                 </configuration>
                             </execution>
                         </executions>
@@ -213,7 +221,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
+                        <version>${maven.gpg.plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -240,7 +248,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-install-plugin</artifactId>
-                    <version>2.4</version>
+                    <version>${maven.install.plugin.version}</version>
                     <configuration>
                         <skip>true</skip>
                     </configuration>
@@ -248,7 +256,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.7</version>
+                    <version>${maven.deploy.plugin.version}</version>
                     <configuration>
                         <skip>true</skip>
                     </configuration>
@@ -256,7 +264,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>2.5.1</version>
+                    <version>${maven.release.plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>

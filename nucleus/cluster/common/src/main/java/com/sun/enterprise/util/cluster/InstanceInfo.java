@@ -36,6 +36,10 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
+
  */
 package com.sun.enterprise.util.cluster;
 
@@ -66,7 +70,7 @@ import org.glassfish.hk2.api.ServiceLocator;
  */
 public final class InstanceInfo {
 
-    public InstanceInfo(ServiceLocator habitat, Server svr, int port0, String host0, String cluster0,
+    public InstanceInfo(ServiceLocator habitat, Server svr, int port0, String host0, String cluster0, String deploymentGroups,
             Logger logger0, int timeout0, ActionReport report, InstanceStateService stateService) {
         if (svr == null )
 //            if (svr == null || host0 == null)
@@ -90,6 +94,10 @@ public final class InstanceInfo {
         else
             cluster = cluster0;
         future = pingInstance();
+        if (deploymentGroups == null) {
+            deploymentGroups = "";
+        }
+        this.deploymentGroups = deploymentGroups;
     }
 
     @Override
@@ -99,9 +107,11 @@ public final class InstanceInfo {
         if (cluster != null)
             cl = ", cluster: " + getCluster();
 
+
         return "name: " + getName()
                 + ", host: " + getHost()
                 + ", port: " + getPort()
+                + ", deployment group: " + deploymentGroups
                 + cl
                 + ", uptime: " + uptime
                 + ", pid: " + pid;
@@ -122,6 +132,10 @@ public final class InstanceInfo {
 
     public final int getPort() {
         return port;
+    }
+    
+    public String getDeploymentGroups() {
+        return deploymentGroups;
     }
 
     public final String getName() {
@@ -294,6 +308,7 @@ public final class InstanceInfo {
     private final String host;
     private final int port;
     private final String name;
+    private final String deploymentGroups;
     private long uptime = -1;
     private String state = null;
     private InstanceState.StateType ssState;

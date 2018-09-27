@@ -89,7 +89,7 @@ public class SerialContext implements Context {
     public static final String EXCEPTION_DURING_LOOKUP = "AS-NAMING-00002";
 
     // Maximum number of recursive calls to lookup on comm error
-    // Maximum number of recursive calls to lookup on comm error
+    /** Maximum number of recursive calls to lookup on common error */
     private static final int MAX_LEVEL = 5 ;
 
     private static final String JAVA_URL = "java:";
@@ -133,13 +133,15 @@ public class SerialContext implements Context {
 
     private ORB orb = null ;
     
-    // True if we're running in the server and no orb,host, or port
-    // properties have been explicitly set in the properties
-    // Allows special optimized intra-server naming service access
+    /** True if we're running in the server and no orb,host, or port
+    * properties have been explicitly set in the properties
+    * Allows special optimized intra-server naming service access
+     */
     private boolean intraServerLookups;
 
-    // Common Class Loader. It is used as a fallback classloader to locate
-    // GlassFish object factories.
+    /** Common Class Loader. It is used as a fallback classloader to locate
+    * GlassFish object factories.
+    */ 
     private ClassLoader commonCL;
 
     /** Methods for preserving stickiness. This is a

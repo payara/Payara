@@ -54,87 +54,77 @@ import org.glassfish.api.deployment.DeploymentContext;
 
 import com.sun.enterprise.security.perms.SMGlobalPolicyUtil.CommponentType;
 
-
-
 public class EarEEPermissionsProcessor extends PermissionsProcessor {
 
-    
-    //map recording the 'Java EE component type' to its EE adjusted granted permissions
-    private static final Map<CommponentType, PermissionCollection> compTypeToEEGarntsMap 
-            = new HashMap<CommponentType, PermissionCollection>();
+    // map recording the 'Java EE component type' to its EE adjusted granted permissions
+    private static final Map<CommponentType, PermissionCollection> compTypeToEEGarntsMap = new HashMap<CommponentType, PermissionCollection>();
 
-    
-    public EarEEPermissionsProcessor( 
-            DeploymentContext dc)  throws SecurityException {
-        
+    public EarEEPermissionsProcessor(DeploymentContext dc) throws SecurityException {
+
         super(SMGlobalPolicyUtil.CommponentType.ear, dc);
-        
+
         try {
             convertEEPermissionPaths(CommponentType.ejb);
             convertEEPermissionPaths(CommponentType.war);
             convertEEPermissionPaths(CommponentType.rar);
             convertEEPermissionPaths(CommponentType.car);
-            
-            //combine all ee permissions then assign to ear 
+
+            // combine all ee permissions then assign to ear
             combineAllEEPermisssonsForEar();
-            
-        } catch (MalformedURLException e) {            
+
+        } catch (MalformedURLException e) {
             throw new SecurityException(e);
         }
 
     }
-    
-    
+
     /**
      * get the EE permissions which have the file path adjusted for the right module
-     * @return  adjusted EE permissions
+     * 
+     * @return adjusted EE permissions
      */
     public PermissionCollection getAdjustedEEPermission(CommponentType type) {
         return compTypeToEEGarntsMap.get(type);
     }
-    
 
     public Map<CommponentType, PermissionCollection> getAllAdjustedEEPermission() {
         return compTypeToEEGarntsMap;
     }
 
-    
-    //conver the path for permissions
-    private void convertEEPermissionPaths(CommponentType cmpType) throws MalformedURLException {        
-        //get server suppled default policy
-        PermissionCollection defWarPc = 
-            SMGlobalPolicyUtil.getEECompGrantededPerms(cmpType);
+    // conver the path for permissions
+    private void convertEEPermissionPaths(CommponentType cmpType) throws MalformedURLException {
+        // get server suppled default policy
+        PermissionCollection defWarPc = SMGlobalPolicyUtil.getEECompGrantededPerms(cmpType);
 
-        //revise the filepermission's path
+        // revise the filepermission's path
         PermissionCollection eePc = processPermisssonsForPath(defWarPc, context);
-        
-        if (logger.isLoggable(Level.FINE)){
+
+        if (logger.isLoggable(Level.FINE)) {
             logger.fine("Revised permissions = " + eePc);
         }
 
-        compTypeToEEGarntsMap.put(cmpType, eePc);        
+        compTypeToEEGarntsMap.put(cmpType, eePc);
     }
-    
-    
+
     private PermissionCollection combineAllEEPermisssonsForEar() {
-        
-        if (compTypeToEEGarntsMap == null) 
+
+        if (compTypeToEEGarntsMap == null)
             return null;
-        
+
         Permissions allEEPerms = new Permissions();
-        
+
         addPermissions(allEEPerms, getAdjustedEEPermission(CommponentType.war));
         addPermissions(allEEPerms, getAdjustedEEPermission(CommponentType.ejb));
         addPermissions(allEEPerms, getAdjustedEEPermission(CommponentType.rar));
-        //addPermissions(allEEPerms, getAdjustedEEPermission(CommponentType.car));
+        // addPermissions(allEEPerms, getAdjustedEEPermission(CommponentType.car));
 
         compTypeToEEGarntsMap.put(CommponentType.ear, allEEPerms);
-        
+
         return allEEPerms;
     }
-    
+
     private void addPermissions(Permissions combined, PermissionCollection toAdd) {
-        
+
         if (toAdd == null)
             return;
 
@@ -143,7 +133,7 @@ public class EarEEPermissionsProcessor extends PermissionsProcessor {
             Permission p = enumAdd.nextElement();
             combined.add(p);
         }
-        
+
     }
 
 }

@@ -37,14 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates.]
+  
 package com.sun.enterprise.v3.server;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.beans.PropertyVetoException;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -154,7 +156,14 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     ConfigSupport configSupport;
 
     protected Logger logger = KernelLoggerInfo.getLogger();
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);      
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
+
+    private final ThreadLocal<Deque<ExtendedDeploymentContext>> currentDeploymentContext = new ThreadLocal<Deque<ExtendedDeploymentContext>>() {
+        @Override
+        protected Deque<ExtendedDeploymentContext> initialValue() {
+            return new ArrayDeque<>(5);
+        }
+    };
     
     protected <T extends Container, U extends ApplicationContainer> Deployer<T, U> getDeployer(EngineInfo<T, U> engineInfo) {
         return engineInfo.getDeployer();
@@ -167,6 +176,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     private Collection<ApplicationLifecycleInterceptor> alcInterceptors = Collections.EMPTY_LIST;
     
+    @Override
     public void postConstruct() {
         executorService = createExecutorService();
         deploymentLifecycleProbeProvider = 
@@ -183,6 +193,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
      * @return the archive handler or null if not found.
      * @throws IOException when an error occur
      */
+    @Override
     public ArchiveHandler getArchiveHandler(ReadableArchive archive) throws IOException {
         return getArchiveHandler(archive, null);
     }
@@ -196,6 +207,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
      * @return the archive handler or null if not found.
      * @throws IOException when an error occur
      */
+    @Override
     public ArchiveHandler getArchiveHandler(ReadableArchive archive, String type) throws IOException {
         if (type != null) {
             return habitat.<ArchiveDetector>getService(ArchiveDetector.class, type).getArchiveHandler();
@@ -219,6 +231,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     @Override
     public ApplicationDeployment prepare(Collection<? extends Sniffer> sniffers, final ExtendedDeploymentContext context) {
         events.send(new Event<>(Deployment.DEPLOYMENT_START, context), false);
+        currentDeploymentContext.get().push(context);
         final ActionReport report = context.getActionReport();
         final DeployCommandParameters commandParams = context.getCommandParameters(DeployCommandParameters.class);
         final String appName = commandParams.name();
@@ -432,7 +445,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 final ClientJarWriter cjw = new ClientJarWriter(context);
                 cjw.run();
             } catch (Throwable prepareException) {
-                prepareException.printStackTrace();
                 report.failure(logger, "Exception while preparing the app", null);
                 report.setFailureCause(prepareException);
                 logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, prepareException);
@@ -523,6 +535,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         if (loadOnCurrentInstance(context)) {
             try {
                 notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.START, context);
+                appInfo.initialize();
+                appInfo.getModuleInfos().forEach(moduleInfo -> moduleInfo.getEngineRefs()
+                        .forEach(engineRef -> tracker.add("initialized", EngineRef.class, engineRef)));
                 appInfo.start(context, tracker);
                 notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.START, context);
             } catch (Throwable loadException) {
@@ -532,12 +547,14 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 tracker.actOn(logger);
             } finally {
                 context.postDeployClean(false /* not final clean-up yet */);
-                if (report.getActionExitCode() == ActionReport.ExitCode.SUCCESS) {
-                    events.send(new Event<>(Deployment.DEPLOYMENT_SUCCESS, appInfo));
-                } else {
+                if (report.getActionExitCode() == ActionReport.ExitCode.FAILURE) {
+                    // warning status code is not a failure
                     events.send(new Event<>(Deployment.DEPLOYMENT_FAILURE, context));
+                } else {
+                    events.send(new Event<>(Deployment.DEPLOYMENT_SUCCESS, appInfo));
                 }
             }
+            currentDeploymentContext.get().pop();
         }
     }
 
@@ -667,11 +684,13 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         return isSuccess;
     }
 
+    @Override
     public List<EngineInfo> setupContainerInfos(DeploymentContext context)
         throws Exception {
         return setupContainerInfos(context.getArchiveHandler(), getSniffers(context.getArchiveHandler(), null, context), context);
     }
 
+    @Override
     public Collection<? extends Sniffer> getSniffers(final ArchiveHandler handler, Collection<? extends Sniffer> sniffers, DeploymentContext context) {
         if (handler == null) {
             return Collections.EMPTY_LIST;
@@ -690,7 +709,13 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         return sniffers;
     }
 
-    // set up containers and prepare the sorted ModuleInfos
+    /** set up containers and prepare the sorted ModuleInfos
+     * @param handler
+     * @param sniffers
+     * @param context
+     * @return
+     * @throws java.lang.Exception  */
+    @Override
     public List<EngineInfo> setupContainerInfos(final ArchiveHandler handler,
             Collection<? extends Sniffer> sniffers, DeploymentContext context)
              throws Exception {
@@ -924,6 +949,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     }
 
+    @Override
     public ModuleInfo prepareModule(
         List<EngineInfo> sortedEngineInfos, String moduleName,
         DeploymentContext context,
@@ -1022,7 +1048,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         ActionReport report = context.getActionReport();
         ContainerStarter starter = habitat.getService(ContainerStarter.class);
         Collection<EngineInfo> containersInfo = starter.startContainer(sniffer);
-        if (containersInfo == null || containersInfo.size()==0) {
+        if (containersInfo == null || containersInfo.isEmpty()) {
             report.failure(logger, "Cannot start container(s) associated to application of type : " + sniffer.getModuleType(), null);
             return null;
         }
@@ -1073,6 +1099,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         }
     }
 
+    @Override
     public ApplicationInfo unload(ApplicationInfo info, ExtendedDeploymentContext context) {
         ActionReport report = context.getActionReport();
         if (info==null) {
@@ -1105,6 +1132,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         return info;
     }
 
+    @Override
     public void undeploy(String appName, ExtendedDeploymentContext context) {
 
         ActionReport report = context.getActionReport();
@@ -1137,6 +1165,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     // prepare application config change for later registering
     // in the domain.xml
+    @Override
     public Transaction prepareAppConfigChanges(final DeploymentContext context)
         throws TransactionFailure {
         final Properties appProps = context.getAppProps();
@@ -1162,6 +1191,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     // register application information in domain.xml
+    @Override
     public void registerAppInDomainXML(final ApplicationInfo
         applicationInfo, final DeploymentContext context, Transaction t) 
         throws TransactionFailure {
@@ -1169,6 +1199,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     // register application information in domain.xml
+    @Override
     public void registerAppInDomainXML(final ApplicationInfo
         applicationInfo, final DeploymentContext context, Transaction t, 
         boolean appRefOnly)
@@ -1226,14 +1257,17 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     }
                     Server servr = domain.getServerNamed(target); 
                     if (servr != null) {
-                        // adding the application-ref element to the standalone
-                        // server instance
-                        ConfigBeanProxy servr_w = t.enroll(servr);
-                        // adding the application-ref element to the standalone
-                        // server instance
-                        ApplicationRef appRef = servr_w.createChild(ApplicationRef.class);
-                        setAppRefAttributes(appRef, deployParams);
-                        ((Server)servr_w).getApplicationRef().add(appRef);
+                        ApplicationRef instanceApplicationRef = domain.getApplicationRefInTarget(deployParams.name, servr.getName());
+                        if (instanceApplicationRef == null) {
+                            // adding the application-ref element to the standalone
+                            // server instance
+                            ConfigBeanProxy servr_w = t.enroll(servr);
+                            // adding the application-ref element to the standalone
+                            // server instance
+                            ApplicationRef appRef = servr_w.createChild(ApplicationRef.class);
+                            setAppRefAttributes(appRef, deployParams);
+                            ((Server) servr_w).getApplicationRef().add(appRef);
+                        }
                     }
 
                     Cluster cluster = domain.getClusterNamed(target); 
@@ -1251,6 +1285,23 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                             setAppRefAttributes(appRef2, deployParams);
                             ((Server)svr_w).getApplicationRef().add(appRef2);
                         }
+                    }
+                    
+                    DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
+                    if (dg != null) {
+                        ConfigBeanProxy dg_w = t.enroll(dg);
+                        ApplicationRef appRef = dg_w.createChild(ApplicationRef.class);
+                        setAppRefAttributes(appRef, deployParams);
+                        ((DeploymentGroup)dg_w).getApplicationRef().add(appRef);
+                        for (Server svr : dg.getInstances() ) {
+                            ApplicationRef instanceApplicationRef = domain.getApplicationRefInTarget(deployParams.name, svr.getName());
+                            if (instanceApplicationRef == null) {
+                                ConfigBeanProxy svr_w = t.enroll(svr);
+                                ApplicationRef appRef2 = svr_w.createChild(ApplicationRef.class);
+                                setAppRefAttributes(appRef2, deployParams);
+                                ((Server) svr_w).getApplicationRef().add(appRef2);
+                            }
+                        }                        
                     }
                 }
             } catch(TransactionFailure e) {
@@ -1274,6 +1325,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         }
     }
 
+    @Override
     public void registerTenantWithAppInDomainXML(
             final String appName,
             final ExtendedDeploymentContext context) throws TransactionFailure {
@@ -1296,6 +1348,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         }
     }
 
+    @Override
     public void unregisterTenantWithAppInDomainXML(
             final String appName,
             final String tenantName
@@ -1425,11 +1478,13 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         }
     }
 
+    @Override
     public void unregisterAppFromDomainXML(final String appName,
         final String target) throws TransactionFailure {
         unregisterAppFromDomainXML(appName, target, false);
     }
 
+    @Override
     public void unregisterAppFromDomainXML(final String appName, 
         final String tgt, final boolean appRefOnly) 
         throws TransactionFailure {
@@ -1444,7 +1499,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     } else {
                         targets = domain.getAllReferencedTargetsForApplication(appName);
                     }
-
+              
                     Domain dmn;
                     if (param instanceof Domain) {
                         dmn = (Domain)param;
@@ -1467,7 +1522,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                                 }
                             }
                         }
-              
+
                         Cluster cluster = dmn.getClusterNamed(target);
                         if (cluster != null) {
                             // remove the application-ref from cluster
@@ -1494,6 +1549,35 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                                 }
                             }
                         }
+                        
+                        DeploymentGroup dg = dmn.getDeploymentGroupNamed(target);
+                        if (dg != null) {
+                            // remove the application-ref from cluster
+                            ConfigBeanProxy dg_w = t.enroll(dg);
+                            for (ApplicationRef appRef : 
+                                dg.getApplicationRef()) {
+                                if (appRef.getRef().equals(appName)) {
+                                    ((DeploymentGroup)dg_w).getApplicationRef().remove(
+                                            appRef);
+                                        break;
+                                }
+                            }
+                            // remove the application-ref from deployment group instances
+                            // only if the server is not also a target (i.e. domain undeploy)
+                            for (Server svr : dg.getInstances() ) {
+                                if (!targets.contains(svr.getName())) {
+                                    ConfigBeanProxy svr_w = t.enroll(svr);
+                                    for (ApplicationRef appRef : 
+                                        svr.getApplicationRef()) {
+                                        if (appRef.getRef().equals(appName)) {
+                                            ((Server)svr_w).getApplicationRef(
+                                               ).remove(appRef);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }                            
+                        }
                     }
 
                     if (!appRefOnly) {
@@ -1514,6 +1598,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
 
+    @Override
     public void updateAppEnabledAttributeInDomainXML(final String appName,
         final String target, final boolean enabled) throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode() {
@@ -1589,10 +1674,12 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     // check if the application is registered in domain.xml
+    @Override
     public boolean isRegistered(String appName) {
         return applications.getApplication(appName)!=null;
     }
 
+    @Override
     public ApplicationInfo get(String appName) {
         return appRegistry.get(appName);
     }
@@ -1610,6 +1697,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     // gets the default target when no target is specified for non-paas case
+    @Override
     public String getDefaultTarget(Boolean isClassicStyle) {
         if (!isPaaSEnabled(isClassicStyle)) {
             return DeploymentUtils.DAS_TARGET_NAME;     
@@ -1618,6 +1706,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     // gets the default target when no target is specified
+    @Override
     public String getDefaultTarget(String appName, OpsParams.Origin origin, Boolean isClassicStyle) {
         if (!isPaaSEnabled(isClassicStyle)) {
             return DeploymentUtils.DAS_TARGET_NAME;     
@@ -1662,44 +1751,56 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             handler = b.archiveHandler();
         }
 
+        @Override
         public DeploymentContextBuilder source(File source) {
             this.sFile = source;
             return this;
         }
 
+        @Override
         public File sourceAsFile() {
             return sFile;
         }
+        @Override
         public ReadableArchive sourceAsArchive() {
             return sArchive;
         }
 
+        @Override
         public ArchiveHandler archiveHandler() {
             return handler;
         }
 
+        @Override
         public DeploymentContextBuilder source(ReadableArchive archive) {
             this.sArchive = archive;
             return this;
         }
 
+        @Override
         public DeploymentContextBuilder archiveHandler(ArchiveHandler handler) {
             this.handler = handler;
             return this;
         }
 
+        @Override
         public ExtendedDeploymentContext build() throws IOException {
             return build(null);
         }
+        @Override
         public Logger logger() { return logger; };
+        @Override
         public ActionReport report() { return report; };
+        @Override
         public OpsParams params() { return params; };
 
+        @Override
         public ExtendedDeploymentContext build(ExtendedDeploymentContext initialContext) throws IOException {
             return ApplicationLifecycle.this.getContext(initialContext, this);
         }
     }
 
+    @Override
     public DeploymentContextBuilder getBuilder(Logger logger, OpsParams params, ActionReport report) {
         return new DeploymentContextBuidlerImpl(logger, params, report);
     }
@@ -1880,6 +1981,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         appRef.setEnabled(deployParams.enabled.toString());
     }        
 
+    @Override
     public ParameterMap prepareInstanceDeployParamMap(DeploymentContext dc) 
         throws Exception {
         final DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
@@ -2043,6 +2145,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         }
     }
 
+    @Override
     public void validateDeploymentTarget(String target, String name, 
         boolean isRedeploy) {
         List<String> referencedTargets = domain.getAllReferencedTargetsForApplication(name);
@@ -2073,18 +2176,19 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 referencedTargets.contains(target)) {
                 return;
             } else {
-                if (!DeploymentUtils.isDomainTarget(target)) {
+                if (!DeploymentUtils.isDomainTarget(target) && domain.getDeploymentGroupNamed(target) == null) {
                     throw new IllegalArgumentException(localStrings.getLocalString("redeploy_on_multiple_targets", "Application {0} is referenced by more than one targets. Please remove other references or specify all targets (or domain target if using asadmin command line) before attempting redeploy operation.", name)); 
                 }
             } 
         }
     }
 
+    @Override
     public void validateUndeploymentTarget(String target, String name) {
         List<String> referencedTargets = domain.getAllReferencedTargetsForApplication(name);
         if (referencedTargets.size() > 1) {
             Application app = applications.getApplication(name);
-            if (!DeploymentUtils.isDomainTarget(target)) {
+            if (!DeploymentUtils.isDomainTarget(target) && domain.getDeploymentGroupNamed(target) == null) {
                 if (app.isLifecycleModule()) {  
                     throw new IllegalArgumentException(localStrings.getLocalString("delete_lifecycle_on_multiple_targets", "Lifecycle module {0} is referenced by more than one targets. Please remove other references before attempting delete operation.", name)); 
                 } else {
@@ -2094,6 +2198,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         }
     }
 
+    @Override
     public void validateSpecifiedTarget(String target) {
         if (env.isDas()) {
             if (target == null) {
@@ -2109,6 +2214,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         }
     }
 
+    @Override
     public boolean isAppEnabled(Application app) {
         if (Boolean.valueOf(app.getEnabled())) {
             ApplicationRef appRef = server.getApplicationRef(app.getName());
@@ -2119,6 +2225,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         return false;
     }
 
+    @Override
     public ExtendedDeploymentContext disable(UndeployCommandParameters commandParams, 
         Application app, ApplicationInfo appInfo, ActionReport report, 
         Logger logger) throws Exception {
@@ -2155,6 +2262,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         return deploymentContext;
     }
 
+    @Override
     public ExtendedDeploymentContext enable(String target, Application app, ApplicationRef appRef, 
         ActionReport report, Logger logger) throws Exception {
         ReadableArchive archive = null; 
@@ -2243,6 +2351,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         return sb.toString();
     }
 
+    @Override
     public List<Sniffer> getSniffersFromApp(Application app) {
         List<String> snifferTypes = new ArrayList<String>();
         for (com.sun.enterprise.config.serverbeans.Module module : app.getModule()) {
@@ -2283,16 +2392,24 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     private ExecutorService createExecutorService() {
         Runtime runtime = Runtime.getRuntime();
         int nrOfProcessors = runtime.availableProcessors();
-        return Executors.newFixedThreadPool(nrOfProcessors, new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r);
-                t.setName("deployment-jar-scanner");
-                t.setContextClassLoader(getClass().getClassLoader());
-                t.setDaemon(true);
-                return t;
-            }
-        });
+
+        return new ThreadPoolExecutor(0, nrOfProcessors,
+                30L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>(),
+                new ThreadFactory() {
+                    @Override
+                    public Thread newThread(Runnable r) {
+                        Thread t = new Thread(r);
+                        t.setName("deployment-jar-scanner");
+                        t.setContextClassLoader(getClass().getClassLoader());
+                        t.setDaemon(true);
+                        return t;
+                    }
+                });
     }
 
+    @Override
+    public ExtendedDeploymentContext getCurrentDeploymentContext() {
+        return currentDeploymentContext.get().peek();
+    }
 }

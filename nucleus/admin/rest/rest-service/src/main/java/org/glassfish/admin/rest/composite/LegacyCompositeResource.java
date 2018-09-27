@@ -36,22 +36,23 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.composite;
 
 import java.net.URI;
+import javax.json.JsonException;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-import org.codehaus.jettison.json.JSONException;
 import org.glassfish.admin.rest.OptionsCapable;
 import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.admin.rest.model.ResponseBody;
 import org.glassfish.admin.rest.model.RestModelResponseBody;
-import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.api.admin.ParameterMap;
 
 /**
@@ -78,9 +79,9 @@ public abstract class LegacyCompositeResource extends CompositeResource implemen
      * @throws JSONException
      */
     @OPTIONS
-    public String options() throws JSONException {
+    public String options() throws JsonException {
         RestResourceMetadata rrmd = new RestResourceMetadata(this);
-        return rrmd.toJson().toString(Util.getFormattingIndentLevel());
+        return rrmd.toJson().toString();
     }
 
     @Override

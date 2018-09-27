@@ -64,7 +64,7 @@ import com.sun.enterprise.util.uuid.UuidGeneratorImpl;
 import org.apache.catalina.*;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
-
+import java.security.SecureRandom;
 import javax.management.ObjectName;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -83,8 +83,15 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.SecureRandom;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -171,7 +178,7 @@ public abstract class ManagerBase implements Manager {
     /**
      * A random number generator to use when generating session identifiers.
      */
-    private Random random = null;
+    private SecureRandom random = null;
     
     
     /**
@@ -543,7 +550,7 @@ public abstract class ManagerBase implements Manager {
      * generating session identifiers.  If there is no such generator
      * currently defined, construct and seed a new one.
      */
-    public synchronized Random getRandom() {
+    public synchronized SecureRandom getRandom() {
         if (this.random == null) {
             // Calculate the new random number generator seed
             long seed = System.currentTimeMillis();
@@ -556,14 +563,14 @@ public abstract class ManagerBase implements Manager {
             try {
                  // Construct and seed a new random number generator
                  Class<?> clazz = Class.forName(randomClass);
-                 this.random = (Random) clazz.newInstance();
+                 this.random = (SecureRandom) clazz.newInstance();
                  this.random.setSeed(seed);
             } catch (Exception e) {
                  // Fall back to the simple case
                 String msg = MessageFormat.format(rb.getString(LogFacade.INIT_RANDOM_NUMBER_GENERATOR_EXCEPTION),
                                                   randomClass);
                  log.log(Level.SEVERE, msg, e);
-                 this.random = new java.util.Random();
+                 this.random = new SecureRandom();
                  this.random.setSeed(seed);
             }
             long t2=System.currentTimeMillis();

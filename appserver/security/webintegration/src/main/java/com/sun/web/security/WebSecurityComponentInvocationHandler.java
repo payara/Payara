@@ -41,7 +41,6 @@
 
 package com.sun.web.security;
 
-
 import org.apache.catalina.Realm;
 import org.apache.catalina.core.ContainerBase;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -54,21 +53,23 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 
+import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION;
+
 import javax.inject.Inject;
 
-@Service(name="webSecurityCIH")
+@Service(name = "webSecurityCIH")
 @Singleton
 public class WebSecurityComponentInvocationHandler implements RegisteredComponentInvocationHandler {
 
     @Inject
     private InvocationManager invManager;
 
-
     private ComponentInvocationHandler webSecurityCompInvHandler = new ComponentInvocationHandler() {
 
-        public void beforePreInvoke(ComponentInvocationType invType,
-                ComponentInvocation prevInv, ComponentInvocation newInv) throws InvocationException {
-            if (invType == ComponentInvocationType.SERVLET_INVOCATION) {
+        @Override
+        public void beforePreInvoke(ComponentInvocationType invType, ComponentInvocation prevInv, ComponentInvocation newInv)
+                throws InvocationException {
+            if (invType == SERVLET_INVOCATION) {
                 Object cont = newInv.getContainer();
                 if (cont instanceof ContainerBase) {
                     Realm realm = ((ContainerBase) cont).getRealm();
@@ -79,17 +80,20 @@ public class WebSecurityComponentInvocationHandler implements RegisteredComponen
             }
         }
 
-        public void afterPreInvoke(ComponentInvocationType invType,
-                ComponentInvocation prevInv, ComponentInvocation curInv) throws InvocationException {
+        @Override
+        public void afterPreInvoke(ComponentInvocationType invType, ComponentInvocation prevInv, ComponentInvocation curInv)
+                throws InvocationException {
         }
 
-        public void beforePostInvoke(ComponentInvocationType invType,
-                ComponentInvocation prevInv, ComponentInvocation curInv) throws InvocationException {
+        @Override
+        public void beforePostInvoke(ComponentInvocationType invType, ComponentInvocation prevInv, ComponentInvocation curInv)
+                throws InvocationException {
         }
 
-        public void afterPostInvoke(ComponentInvocationType invType,
-                ComponentInvocation prevInv, ComponentInvocation curInv) throws InvocationException {
-            if (invType == ComponentInvocationType.SERVLET_INVOCATION) {
+        @Override
+        public void afterPostInvoke(ComponentInvocationType invType, ComponentInvocation prevInv, ComponentInvocation curInv)
+                throws InvocationException {
+            if (invType == SERVLET_INVOCATION) {
                 Object cont = curInv.getContainer();
                 if (cont instanceof ContainerBase) {
                     Realm realm = ((ContainerBase) cont).getRealm();
@@ -101,15 +105,14 @@ public class WebSecurityComponentInvocationHandler implements RegisteredComponen
         }
     };
 
-
+    @Override
     public ComponentInvocationHandler getComponentInvocationHandler() {
         return webSecurityCompInvHandler;
     }
 
+    @Override
     public void register() {
-        invManager.registerComponentInvocationHandler(ComponentInvocationType.SERVLET_INVOCATION, this);
+        invManager.registerComponentInvocationHandler(SERVLET_INVOCATION, this);
     }
-
-
 
 }

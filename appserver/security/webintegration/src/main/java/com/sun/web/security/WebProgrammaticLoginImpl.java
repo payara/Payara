@@ -37,33 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.web.security;
 
-import java.security.*;
-import java.io.*;
+import static com.sun.logging.LogDomains.SECURITY_LOGGER;
+import static java.util.logging.Level.FINE;
+
+import java.io.IOException;
+import java.security.AccessControlException;
 import java.util.logging.Logger;
-import java.util.logging.Level;
+
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestWrapper;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.sun.enterprise.security.web.integration.WebPrincipal;
-import org.apache.catalina.Session;
 import org.apache.catalina.Context;
 import org.apache.catalina.Manager;
-
-import com.sun.logging.LogDomains;
-
-import com.sun.enterprise.security.auth.login.LoginContextDriver;
-import com.sun.enterprise.security.SecurityContext;
-
+import org.apache.catalina.Session;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.RequestFacade;
 import org.jvnet.hk2.annotations.Service;
+
+import com.sun.enterprise.security.SecurityContext;
+import com.sun.enterprise.security.auth.WebAndEjbToJaasBridge;
+import com.sun.enterprise.security.web.integration.WebPrincipal;
 import com.sun.enterprise.security.web.integration.WebProgrammaticLogin;
+import com.sun.logging.LogDomains;
 
 /**
  * Internal implementation for servlet programmatic login.
@@ -75,174 +76,153 @@ import com.sun.enterprise.security.web.integration.WebProgrammaticLogin;
 public class WebProgrammaticLoginImpl implements WebProgrammaticLogin {
 
     // Used for the auth-type string.
-    public static final String WEBAUTH_PROGRAMMATIC="PROGRAMMATIC";
+    public static final String WEBAUTH_PROGRAMMATIC = "PROGRAMMATIC";
 
-    private static Logger logger =
-        LogDomains.getLogger(WebProgrammaticLoginImpl.class, LogDomains.SECURITY_LOGGER);
+    private static Logger logger = LogDomains.getLogger(WebProgrammaticLoginImpl.class, SECURITY_LOGGER);
 
-    /** 
-     * Login and set up principal in request and session. This implements
-     * programmatic login for servlets. 
+    /**
+     * Login and set up principal in request and session. This implements programmatic login for servlets.
      *
-     * <P>Due to a number of bugs in RI the security context is not
-     * shared between web container and ejb container. In order for an
-     * identity established by programmatic login to be known to both
-     * containers, it needs to be set not only in the security context but
-     * also in the current request and, if applicable, the session object.
-     * If a session does not exist this method does not create one.
+     * <P>
+     * Due to a number of bugs in RI the security context is not shared between web container and ejb container. In order
+     * for an identity established by programmatic login to be known to both containers, it needs to be set not only in the
+     * security context but also in the current request and, if applicable, the session object. If a session does not exist
+     * this method does not create one.
      *
-     * <P>See bugs 4646134, 4688449 and other referenced bugs for more
-     * background.
-     * 
-     * <P>Note also that this login does not hook up into SSO.
+     * <P>
+     * See bugs 4646134, 4688449 and other referenced bugs for more background.
+     *
+     * <P>
+     * Note also that this login does not hook up into SSO.
      *
      * @param user User name to login.
      * @param password User password.
-     * @param request HTTP request object provided by caller application. It
-     *     should be an instance of HttpRequestFacade.
-     * @param response HTTP response object provided by called application. It
-     *     should be an instance of HttpServletResponse. This is not used
-     *     currently.
-     * @param realm the realm name to be authenticated to. If the realm is null, 
-     * authentication takes place in default realm
+     * @param request HTTP request object provided by caller application. It should be an instance of HttpRequestFacade.
+     * @param response HTTP response object provided by called application. It should be an instance of HttpServletResponse.
+     * This is not used currently.
+     * @param realm the realm name to be authenticated to. If the realm is null, authentication takes place in default realm
      * @returns A Boolean object; true if login succeeded, false otherwise.
      * @see com.sun.enterprise.security.ee.auth.login.ProgrammaticLogin
      * @throws Exception on login failure.
      *
      */
-    public  Boolean login(String user, char[] password, String realm,
-                                HttpServletRequest request,
-                                HttpServletResponse response)
-    {
+    @Override
+    public Boolean login(String user, char[] password, String realm, HttpServletRequest request, HttpServletResponse response) {
         // Need real request object not facade
-        
-        Request req = getUnwrappedCoyoteRequest(request);
-        if (req == null) {
-            return Boolean.valueOf(false);
+        Request unwrappedCoyoteRequest = getUnwrappedCoyoteRequest(request);
+        if (unwrappedCoyoteRequest == null) {
+            return false;
         }
-        
+
         // Try to login - this will set up security context on success
-        LoginContextDriver.login(user, password, realm);
+        WebAndEjbToJaasBridge.login(user, password, realm);
 
         // Create a WebPrincipal for tomcat and store in current request
         // This will allow programmatic authorization later in this request
         // to work as expected.
 
-        SecurityContext secCtx = SecurityContext.getCurrent();
-        assert (secCtx != null); // since login succeeded above
+        SecurityContext securityContext = SecurityContext.getCurrent();
 
-        WebPrincipal principal = new WebPrincipal(user, password, secCtx);
-        req.setUserPrincipal(principal);
-        req.setAuthType(WEBAUTH_PROGRAMMATIC);
+        WebPrincipal principal = new WebPrincipal(user, password, securityContext);
+        unwrappedCoyoteRequest.setUserPrincipal(principal);
+        unwrappedCoyoteRequest.setAuthType(WEBAUTH_PROGRAMMATIC);
 
-        if(logger.isLoggable(Level.FINE)){
-            logger.log(Level.FINE, "Programmatic login set principal in http request to: "+
-                      user);
+        if (logger.isLoggable(FINE)) {
+            logger.log(FINE, "Programmatic login set principal in http request to: " + user);
         }
 
         // Try to retrieve a Session object (not the facade); if it exists
         // store the principal there as well. This will allow web container
         // authorization to work in subsequent requests in this session.
 
-        Session realSession = getSession(req);
+        Session realSession = getSession(unwrappedCoyoteRequest);
         if (realSession != null) {
-            realSession.setPrincipal((Principal)principal);
+            realSession.setPrincipal(principal);
             realSession.setAuthType(WEBAUTH_PROGRAMMATIC);
-            if(logger.isLoggable(Level.FINE)){
-                logger.log(Level.FINE, "Programmatic login set principal in session.");
-            }
+            logger.fine("Programmatic login set principal in session.");
         } else {
-            if(logger.isLoggable(Level.FINE)){
-                logger.log(Level.FINE,"Programmatic login: No session available.");
-            }
+            logger.fine("Programmatic login: No session available.");
         }
 
-        return Boolean.valueOf(true);
+        return true;
     }
-
-
+    
     /**
-     * Return the unwrapped <code>CoyoteRequest</code> object.
-     */
-    private static Request getUnwrappedCoyoteRequest(HttpServletRequest request){        
-        Request req = null;
-        ServletRequest servletRequest = request;
-        try{ 
-
-            ServletRequest prevRequest = null;
-            while (servletRequest != prevRequest
-                    && servletRequest instanceof ServletRequestWrapper) {
-                prevRequest = servletRequest;
-                servletRequest =
-                    ((ServletRequestWrapper)servletRequest).getRequest();
-	    }
-
-	    if (servletRequest instanceof RequestFacade) {
-		req = ((RequestFacade)servletRequest).getUnwrappedCoyoteRequest();
-	    }
-
-        } catch (AccessControlException ex){
-            logger.log(Level.FINE, "Programmatic login faiied to get request");
-        }
-        return req;
-    }
-
-    /** 
      * Logout and remove principal in request and session.
      *
-     * @param request HTTP request object provided by caller application. It
-     *     should be an instance of HttpRequestFacade.
-     * @param response HTTP response object provided by called application. It
-     *     should be an instance of HttpServletResponse. This is not used
-     *     currently.
+     * @param request HTTP request object provided by caller application. It should be an instance of HttpRequestFacade.
+     * @param response HTTP response object provided by called application. It should be an instance of HttpServletResponse.
+     * This is not used currently.
      * @returns A Boolean object; true if login succeeded, false otherwise.
      * @see com.sun.enterprise.security.ee.auth.login.ProgrammaticLogin
      * @throws Exception any exception encountered during logout operation
      */
-    public  Boolean logout(HttpServletRequest request,
-                                 HttpServletResponse response) throws Exception 
-    {
+    @Override
+    public Boolean logout(HttpServletRequest request, HttpServletResponse response) throws Exception {
         // Need real request object not facade
-        
-        Request req = getUnwrappedCoyoteRequest(request);
-        if (req == null) {
-            return Boolean.valueOf(false);
+        Request unwrappedCoyoteRequest = getUnwrappedCoyoteRequest(request);
+        if (unwrappedCoyoteRequest == null) {
+            return false;
         }
-        
-        // Logout - clears out security context
 
-        LoginContextDriver.logout();
+        // Logout - clears out security context
+        WebAndEjbToJaasBridge.logout();
+        
         // Remove principal and auth type from request
 
-        req.setUserPrincipal(null);
-        req.setAuthType(null);
-        if(logger.isLoggable(Level.FINE)){
-            logger.log(Level.FINE, "Programmatic logout removed principal from request.");
-        }
+        unwrappedCoyoteRequest.setUserPrincipal(null);
+        unwrappedCoyoteRequest.setAuthType(null);
+        logger.fine("Programmatic logout removed principal from request.");
 
         // Remove from session if possible.
 
-        Session realSession = getSession(req);
+        Session realSession = getSession(unwrappedCoyoteRequest);
         if (realSession != null) {
             realSession.setPrincipal(null);
             realSession.setAuthType(null);
-            if(logger.isLoggable(Level.FINE)){
-                logger.log(Level.FINE, "Programmatic logout removed principal from "+
-                          "session.");
+            if (logger.isLoggable(FINE)) {
+                logger.log(FINE, "Programmatic logout removed principal from " + "session.");
             }
         }
 
-        return Boolean.valueOf(true);
+        return true;
+    }
+    
+    
+    // ################### Private Methods
+    
+    
+    /**
+     * Return the unwrapped <code>CoyoteRequest</code> object.
+     */
+    private static Request getUnwrappedCoyoteRequest(HttpServletRequest request) {
+        Request unwrappedCoyoteRequest = null;
+        
+        ServletRequest servletRequest = request;
+        try {
+            ServletRequest prevServletRequest = null;
+            while (servletRequest != prevServletRequest && servletRequest instanceof ServletRequestWrapper) {
+                prevServletRequest = servletRequest;
+                servletRequest = ((ServletRequestWrapper) servletRequest).getRequest();
+            }
+
+            if (servletRequest instanceof RequestFacade) {
+                unwrappedCoyoteRequest = ((RequestFacade) servletRequest).getUnwrappedCoyoteRequest();
+            }
+
+        } catch (AccessControlException ex) {
+            logger.fine("Programmatic login faiied to get request");
+        }
+        
+        return unwrappedCoyoteRequest;
     }
 
 
     /**
-     * Returns the underlying Session object from the request, if one is
-     * available, or null.
+     * Returns the underlying Session object from the request, if one is available, or null.
      *
      */
-    private static Session getSession(Request request)
-    {
+    private static Session getSession(Request request) {
         HttpSession session = request.getSession(false);
 
         if (session != null) {
@@ -250,11 +230,10 @@ public class WebProgrammaticLoginImpl implements WebProgrammaticLogin {
             if (context != null) {
                 Manager manager = context.getManager();
                 if (manager != null) {
-                                // need to locate the real Session obj
+                    // Need to locate the real Session obj
                     String sessionId = session.getId();
                     try {
-                        Session realSession = manager.findSession(sessionId);
-                        return realSession;
+                        return manager.findSession(sessionId);
                     } catch (IOException e) {
                         // ignored
                         return null;
@@ -262,7 +241,7 @@ public class WebProgrammaticLoginImpl implements WebProgrammaticLogin {
                 }
             }
         }
-        
+
         return null;
     }
 }

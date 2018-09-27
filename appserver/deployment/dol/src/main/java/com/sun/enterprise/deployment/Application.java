@@ -37,29 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment;
 
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableSet;
-import com.sun.enterprise.deployment.node.ApplicationNode;
-import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParam;
-import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
-import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
-import com.sun.enterprise.deployment.types.EjbReference;
-import com.sun.enterprise.deployment.types.EjbReferenceContainer;
-import com.sun.enterprise.deployment.types.MessageDestinationReferenceContainer;
-import com.sun.enterprise.deployment.types.ResourceEnvReferenceContainer;
-import com.sun.enterprise.deployment.types.ResourceReferenceContainer;
-import com.sun.enterprise.deployment.types.RoleMappingContainer;
-import com.sun.enterprise.deployment.types.ServiceReferenceContainer;
-import com.sun.enterprise.deployment.util.ApplicationVisitor;
-import com.sun.enterprise.deployment.util.ComponentVisitor;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.StringUtils;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -81,8 +62,10 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+
 import javax.inject.Inject;
 import javax.persistence.EntityManagerFactory;
+
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.Descriptor;
@@ -96,6 +79,26 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.security.common.Role;
 
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
+import com.sun.enterprise.deployment.node.ApplicationNode;
+import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParam;
+import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
+import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
+import com.sun.enterprise.deployment.types.EjbReference;
+import com.sun.enterprise.deployment.types.EjbReferenceContainer;
+import com.sun.enterprise.deployment.types.MessageDestinationReferenceContainer;
+import com.sun.enterprise.deployment.types.ResourceEnvReferenceContainer;
+import com.sun.enterprise.deployment.types.ResourceReferenceContainer;
+import com.sun.enterprise.deployment.types.RoleMappingContainer;
+import com.sun.enterprise.deployment.types.ServiceReferenceContainer;
+import com.sun.enterprise.deployment.util.ApplicationVisitor;
+import com.sun.enterprise.deployment.util.ComponentVisitor;
+import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.StringUtils;
+
 /**
  * Objects of this type encapsulate the data and behaviour of a J2EE
  * application.
@@ -104,7 +107,7 @@ import org.glassfish.security.common.Role;
  */
 
 public class Application extends CommonResourceBundleDescriptor
-        implements RoleMappingContainer, WritableJndiNameEnvironment, 
+        implements RoleMappingContainer, WritableJndiNameEnvironment,
             EjbReferenceContainer, ResourceEnvReferenceContainer,
             ResourceReferenceContainer, ServiceReferenceContainer,
             MessageDestinationReferenceContainer {
@@ -152,7 +155,7 @@ public class Application extends CommonResourceBundleDescriptor
     // of the Application object
     private String cmpDescriptorsLock = "cmp descriptors lock";
 
-    // flag to indicate that the memory representation of this application 
+    // flag to indicate that the memory representation of this application
     // is not in sync with the disk representation
     private boolean isDirty;
 
@@ -166,22 +169,21 @@ public class Application extends CommonResourceBundleDescriptor
     private String registrationName;
 
     private String appName;
-   
+
     private String archiveName;
 
     private String compatValue;
-    
+
     private String classLoadingDelegate;
     private final List<Pattern> scanningInclusions = new ArrayList<>();
     private final List<Pattern> scanningExclusions = new ArrayList<>();
     private final Set<String> whitelistPackages = new HashSet<>();
 
-
     private boolean initializeInOrder = false;
 
     // realm associated with this application
     private String realm;
-    
+
     @Inject
     private transient SecurityRoleMapperFactory securityRoleMapperFactory;
 
@@ -192,7 +194,7 @@ public class Application extends CommonResourceBundleDescriptor
      */
     private boolean keepStateResolved;
 
-    // Physical entity manager factory corresponding to the unit name of 
+    // Physical entity manager factory corresponding to the unit name of
     // each application-level persistence unit.  Only available at runtime.
     private transient Map<String, EntityManagerFactory> entityManagerFactories =
             new HashMap<String, EntityManagerFactory>();
@@ -235,11 +237,11 @@ public class Application extends CommonResourceBundleDescriptor
 
     private Set<String> resourceAdapters = new HashSet<String>();
 
-    private Set<ApplicationParam> applicationParams = 
+    private Set<ApplicationParam> applicationParams =
             new HashSet<ApplicationParam>();
 
     private static final ServiceLocator habitat = Globals.getDefaultHabitat();
-    
+
     private Application() {
         super("", localStrings.getLocalString(
                 "enterprise.deployment.application.description",
@@ -256,10 +258,12 @@ public class Application extends CommonResourceBundleDescriptor
      * @return the default version of the deployment descriptor
      *         loaded by this descriptor
      */
+    @Override
     public String getDefaultSpecVersion() {
         return ApplicationNode.SPEC_VERSION;
     }
 
+    @Override
     public boolean isEmpty() {
         return modules.isEmpty();
     }
@@ -272,10 +276,10 @@ public class Application extends CommonResourceBundleDescriptor
      * @return the application
      */
     public static Application createVirtualApplication(String name, ModuleDescriptor<BundleDescriptor> newModule) {
-    	
+
         // create a new empty application
         Application application = createApplication();
-        
+
         application.setVirtual(true);
         if (name == null && newModule != null && newModule.getDescriptor() != null) {
             name = newModule.getDescriptor().getDisplayName();
@@ -297,22 +301,23 @@ public class Application extends CommonResourceBundleDescriptor
 			}
 			application.addModule(newModule);
 		}
-        
+
         return application;
     }
-    
+
     public static Application createApplication() {
         // create a new empty application
         Application retVal = habitat.create(Application.class);
         habitat.inject(retVal);
         habitat.postConstruct(retVal);
-        
+
         return retVal; // new Application();
     }
 
     /**
      * Returns the generated XML directory feturn the set of ejb references this ejb declares.
      */
+    @Override
     public Set<EjbReference> getEjbReferenceDescriptors() {
         return ejbReferences;
     }
@@ -320,23 +325,27 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * Adds a reference to another ejb to me.
      */
-
+    @Override
     public void addEjbReferenceDescriptor(EjbReference ejbReference) {
         ejbReferences.add(ejbReference);
         ejbReference.setReferringBundleDescriptor(this);
     }
 
+    @Override
     public void removeEjbReferenceDescriptor(EjbReference ejbReference) {
         ejbReferences.remove(ejbReference);
     }
 
     /**
      * Return a reference to another ejb by the same name or throw an IllegalArgumentException.
+     * @param name
+     * @return
      */
     public EjbReference getEjbReferenceByName(String name) {
-        return (EjbReferenceDescriptor) getEjbReference(name);
+        return getEjbReference(name);
     }
 
+    @Override
     public EjbReference getEjbReference(String name) {
         for (EjbReference er : getEjbReferenceDescriptors()) {
             if (er.getName().equals(name)) {
@@ -348,16 +357,19 @@ public class Application extends CommonResourceBundleDescriptor
                 "This app [{0}] has no ejb reference by the name of [{1}] ", new Object[]{getName(), name}));
     }
 
+    @Override
     public Set<ServiceReferenceDescriptor> getServiceReferenceDescriptors() {
         return serviceReferences;
     }
 
+    @Override
     public void addServiceReferenceDescriptor(ServiceReferenceDescriptor
             serviceRef) {
         serviceRef.setBundleDescriptor(this);
         serviceReferences.add(serviceRef);
     }
 
+    @Override
     public void removeServiceReferenceDescriptor(ServiceReferenceDescriptor
             serviceRef) {
         serviceReferences.remove(serviceRef);
@@ -366,12 +378,11 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * Looks up an service reference with the given name.
      * Throws an IllegalArgumentException if it is not found.
+     * @param name
      */
+    @Override
     public ServiceReferenceDescriptor getServiceReferenceByName(String name) {
-        for (Iterator itr = this.getServiceReferenceDescriptors().iterator();
-             itr.hasNext();) {
-            ServiceReferenceDescriptor srd = (ServiceReferenceDescriptor)
-                    itr.next();
+        for (ServiceReferenceDescriptor srd : this.getServiceReferenceDescriptors()) {
             if (srd.getName().equals(name)) {
                 return srd;
             }
@@ -382,16 +393,19 @@ public class Application extends CommonResourceBundleDescriptor
                 new Object[]{getRegistrationName(), name}));
     }
 
+    @Override
     public Set<MessageDestinationReferenceDescriptor> getMessageDestinationReferenceDescriptors() {
         return messageDestReferences;
     }
 
+    @Override
     public void addMessageDestinationReferenceDescriptor
             (MessageDestinationReferenceDescriptor messageDestRef) {
         messageDestRef.setReferringBundleDescriptor(this);
         messageDestReferences.add(messageDestRef);
     }
 
+    @Override
     public void removeMessageDestinationReferenceDescriptor
             (MessageDestinationReferenceDescriptor msgDestRef) {
         messageDestReferences.remove(msgDestRef);
@@ -400,7 +414,9 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * Looks up an message destination reference with the given name.
      * Throws an IllegalArgumentException if it is not found.
+     * @param name
      */
+    @Override
     public MessageDestinationReferenceDescriptor
         getMessageDestinationReferenceByName(String name) {
 
@@ -419,24 +435,28 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * Return the set of resource environment references this application declares.
      */
+    @Override
     public Set<ResourceEnvReferenceDescriptor> getResourceEnvReferenceDescriptors() {
         return resourceEnvReferences;
     }
 
+    @Override
     public void addResourceEnvReferenceDescriptor(ResourceEnvReferenceDescriptor resourceEnvReference) {
         resourceEnvReferences.add(resourceEnvReference);
     }
 
+    @Override
     public void removeResourceEnvReferenceDescriptor(ResourceEnvReferenceDescriptor resourceEnvReference) {
         resourceEnvReferences.remove(resourceEnvReference);
     }
 
     /**
      * Return a reference to another ejb by the same name or throw an IllegalArgumentException.
+     * @param name
      */
+    @Override
     public ResourceEnvReferenceDescriptor getResourceEnvReferenceByName(String name) {
-        for (Iterator itr = this.getResourceEnvReferenceDescriptors().iterator(); itr.hasNext();) {
-            ResourceEnvReferenceDescriptor jdr = (ResourceEnvReferenceDescriptor) itr.next();
+        for (ResourceEnvReferenceDescriptor jdr : this.getResourceEnvReferenceDescriptors()) {
             if (jdr.getName().equals(name)) {
                 return jdr;
 
@@ -452,12 +472,14 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * Return the set of resource references this ejb declares.
      */
+    @Override
     public Set<ResourceReferenceDescriptor> getResourceReferenceDescriptors() {
         return resourceReferences;
     }
     /**
      * Adds a resource reference to me.
      */
+    @Override
     public void addResourceReferenceDescriptor(ResourceReferenceDescriptor resourceReference) {
         resourceReferences.add(resourceReference);
     }
@@ -465,16 +487,19 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * Removes the given resource reference from me.
      */
+    @Override
     public void removeResourceReferenceDescriptor(ResourceReferenceDescriptor resourceReference) {
         resourceReferences.remove(resourceReference);
     }
 
     /**
      * Return the resource object corresponding to the supplied name or throw an illegal argument exception.
+     * @param name
+     * @return
      */
+    @Override
     public ResourceReferenceDescriptor getResourceReferenceByName(String name) {
-        for (Iterator itr = this.getResourceReferenceDescriptors().iterator(); itr.hasNext();) {
-            ResourceReferenceDescriptor next = (ResourceReferenceDescriptor) itr.next();
+        for (ResourceReferenceDescriptor next : this.getResourceReferenceDescriptors()) {
             if (next.getName().equals(name)) {
                 return next;
             }
@@ -488,10 +513,11 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * Returns the environment property object searching on the supplied key.
      * throws an illegal argument exception if no such environment property exists.
+     * @param name
      */
+    @Override
     public EnvironmentProperty getEnvironmentPropertyByName(String name) {
-        for (Iterator itr = this.getEnvironmentProperties().iterator(); itr.hasNext();) {
-            EnvironmentProperty ev = (EnvironmentProperty) itr.next();
+        for (EnvironmentProperty ev : this.getEnvironmentProperties()) {
             if (ev.getName().equals(name)) {
                 return ev;
             }
@@ -505,10 +531,12 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * Return a copy of the structure holding the environment properties.
      */
+    @Override
     public Set<EnvironmentProperty> getEnvironmentProperties() {
         return environmentProperties;
     }
 
+    @Override
     public void addEnvironmentProperty(EnvironmentProperty environmentProperty) {
         this.environmentProperties.add(environmentProperty);
     }
@@ -516,12 +544,13 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * Removes the given environment property from me.
      */
-
+    @Override
     public void removeEnvironmentProperty(EnvironmentProperty environmentProperty) {
         this.getEnvironmentProperties().remove(environmentProperty);
 
     }
 
+    @Override
     public Set<EntityManagerFactoryReferenceDescriptor>
         getEntityManagerFactoryReferenceDescriptors() {
 
@@ -531,7 +560,10 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * Return the entity manager factory reference descriptor corresponding to
      * the given name.
+     * @param name
+     * @return
      */
+    @Override
     public EntityManagerFactoryReferenceDescriptor
         getEntityManagerFactoryReferenceByName(String name) {
         for (EntityManagerFactoryReferenceDescriptor next :
@@ -546,12 +578,14 @@ public class Application extends CommonResourceBundleDescriptor
                 new Object[]{getRegistrationName(), name}));
     }
 
+    @Override
     public void addEntityManagerFactoryReferenceDescriptor
             (EntityManagerFactoryReferenceDescriptor reference) {
         reference.setReferringBundleDescriptor(this);
         this.entityManagerFactoryReferences.add(reference);
     }
 
+    @Override
     public Set<EntityManagerReferenceDescriptor>
         getEntityManagerReferenceDescriptors() {
 
@@ -561,7 +595,10 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * Return the entity manager factory reference descriptor corresponding to
      * the given name.
+     * @param name
+     * @return
      */
+    @Override
     public EntityManagerReferenceDescriptor
         getEntityManagerReferenceByName(String name) {
         for (EntityManagerReferenceDescriptor next :
@@ -578,43 +615,52 @@ public class Application extends CommonResourceBundleDescriptor
                 new Object[]{getRegistrationName(), name}));
     }
 
+    @Override
     public void addEntityManagerReferenceDescriptor
             (EntityManagerReferenceDescriptor reference) {
         reference.setReferringBundleDescriptor(this);
         this.getEntityManagerReferenceDescriptors().add(reference);
     }
 
+    @Override
     public Set<LifecycleCallbackDescriptor>
         getPostConstructDescriptors() {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void addPostConstructDescriptor(LifecycleCallbackDescriptor
         postConstructDesc) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public LifecycleCallbackDescriptor
         getPostConstructDescriptorByClass(String className) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public Set<LifecycleCallbackDescriptor> getPreDestroyDescriptors() {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void addPreDestroyDescriptor(LifecycleCallbackDescriptor preDestroyDesc) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public LifecycleCallbackDescriptor getPreDestroyDescriptorByClass(String className) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public List<InjectionCapable> getInjectableResourcesByClass(String className) {
         return (getInjectableResourcesByClass(className, this));
     }
 
+    @Override
     public InjectionInfo getInjectionInfoByClass(Class clazz) {
         return (getInjectionInfoByClass(clazz, this));
     }
@@ -624,6 +670,7 @@ public class Application extends CommonResourceBundleDescriptor
     }
 
    /**
+     * @return
      */
     public String getGeneratedXMLDirectory() {
         return generatedXMLDir;
@@ -639,7 +686,7 @@ public class Application extends CommonResourceBundleDescriptor
      */
     public void setRegistrationName(String appId) {
 
-        // at his point we need to swap our RoleMapper, if we have one... 
+        // at his point we need to swap our RoleMapper, if we have one...
         SecurityRoleMapper roleMapper = null;
         try {
             roleMapper = getRoleMapper();
@@ -676,9 +723,9 @@ public class Application extends CommonResourceBundleDescriptor
 
 
     /**
-     * Returns the value of the app-name element in the application.xml if 
-     * it's defined. The default EE app name is the unqualified name of 
-     * the .ear or stand-alone module, minus the file extension. 
+     * Returns the value of the app-name element in the application.xml if
+     * it's defined. The default EE app name is the unqualified name of
+     * the .ear or stand-alone module, minus the file extension.
      *
      * @return the EE app name of this application
      */
@@ -697,7 +744,7 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * Returns the value of the archive-name element in the sun-application.xml
      * When the app-name is not present in application.xml and archive-name is
-     * present in sun-application.xml, the value of archive-name minus file 
+     * present in sun-application.xml, the value of archive-name minus file
      * extension will be used as the default name of the app-name.
      *
      * @return the EE app name of this application
@@ -707,7 +754,7 @@ public class Application extends CommonResourceBundleDescriptor
     }
 
     /**
-     * Sets the archive name using the archive-name element defined 
+     * Sets the archive name using the archive-name element defined
      * in sun-application.xml
      * @param archiveName archiveName to calculate default EE6 app-name
      */
@@ -718,10 +765,12 @@ public class Application extends CommonResourceBundleDescriptor
         }
     }
 
+    @Override
     public String getCompatibility() {
         return compatValue;
     }
 
+    @Override
     public void setCompatibility(String compatValue) {
         this.compatValue = compatValue;
     }
@@ -786,8 +835,8 @@ public class Application extends CommonResourceBundleDescriptor
      * @param initializeInOrder
      */
     public void setInitializeInOrder(boolean initializeInOrder) {
-        this.initializeInOrder = initializeInOrder;   
-    } 
+        this.initializeInOrder = initializeInOrder;
+    }
 
     /**
      * Set the physical entity manager factory for a persistence unit
@@ -832,6 +881,9 @@ public class Application extends CommonResourceBundleDescriptor
      * Retrieve the physical entity manager factory associated with the
      * unitName of an application-level persistence unit.   Returns null if
      * no matching entry is found.
+     * @param unitName
+     * @param declaringModule
+     * @return
      */
     public EntityManagerFactory getEntityManagerFactory
             (String unitName, BundleDescriptor declaringModule) {
@@ -858,7 +910,9 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * Returns the set of physical entity manager factories associated with
      * persistence units in this application.
+     * @return
      */
+    @Override
     public Set<EntityManagerFactory> getEntityManagerFactories() {
 
         return new HashSet<EntityManagerFactory>
@@ -872,6 +926,7 @@ public class Application extends CommonResourceBundleDescriptor
      *
      * @return the Set of roles in the application.
      */
+    @Override
     public Set<Role> getRoles() {
         Set<Role> roles = new HashSet<Role>();
         for (BundleDescriptor bd : getBundleDescriptors()) {
@@ -883,8 +938,9 @@ public class Application extends CommonResourceBundleDescriptor
     }
 
     /**
-     * Return the set of org.glassfish.security.common.Role objects
+     * Return the set of {@link org.glassfish.security.common.Role} objects
      * I have (the ones defined in application xml).
+     * @return
      */
     public Set<Role> getAppRoles() {
         if (this.appRoles == null) {
@@ -893,6 +949,10 @@ public class Application extends CommonResourceBundleDescriptor
         return this.appRoles;
     }
 
+    /**
+     * Adds a new {@link org.glassfish.security.common.Role} to the application based on the descriptor
+     * @param descriptor
+     */
     public void addAppRole(SecurityRoleDescriptor descriptor) {
         Role role = new Role(descriptor.getName());
         role.setDescription(descriptor.getDescription());
@@ -902,7 +962,9 @@ public class Application extends CommonResourceBundleDescriptor
 
     /**
      * Adds a new abstract role
+     * @param role
      */
+    @Override
     public void addRole(Role role) {
         for (BundleDescriptor bd : getBundleDescriptors()) {
             bd.addRole(role);
@@ -911,7 +973,9 @@ public class Application extends CommonResourceBundleDescriptor
 
     /**
      * Removes the given role.
+     * @param role
      */
+    @Override
     public void removeRole(Role role) {
         getAppRoles().remove(role);
         for (BundleDescriptor bd : getBundleDescriptors()) {
@@ -924,6 +988,7 @@ public class Application extends CommonResourceBundleDescriptor
      *
      * @param name the display name of the application.
      */
+    @Override
     public void setName(String name) {
         name = name.replace('/', '-');
         name = name.replace('\\', '-'); // for deploying from NT to solaris & vice versa. This will
@@ -1034,6 +1099,8 @@ public class Application extends CommonResourceBundleDescriptor
      * Return the relative uri between two modules, from the perspective
      * of the first bundle.
      *
+     * @param origin
+     * @param target
      * @return relative uri or empty string if the two bundles are the same
      */
     public String getRelativeUri(BundleDescriptor origin,
@@ -1233,7 +1300,7 @@ public class Application extends CommonResourceBundleDescriptor
             for (RootDeploymentDescriptor rd : aModule.getDescriptor().getExtensionsDescriptors()) {
                 if (rd instanceof BundleDescriptor) {
                      if (((BundleDescriptor)rd).getModuleType()== bundleType){
-                         bundleSet.add((BundleDescriptor)rd); 
+                         bundleSet.add((BundleDescriptor)rd);
                      }
                 }
             }
@@ -1252,7 +1319,7 @@ public class Application extends CommonResourceBundleDescriptor
             BundleDescriptor bundleDesc = aModule.getDescriptor();
             if (bundleDesc != null) {
                 bundleSet.add(bundleDesc);
-                for (RootDeploymentDescriptor rd : 
+                for (RootDeploymentDescriptor rd :
                     bundleDesc.getExtensionsDescriptors()) {
                     if (rd instanceof BundleDescriptor) {
                         bundleSet.add((BundleDescriptor)rd);
@@ -1270,6 +1337,7 @@ public class Application extends CommonResourceBundleDescriptor
      *
      * @param bundleDescriptor the bundle descriptor to add
      */
+    @Override
     public void addBundleDescriptor(BundleDescriptor bundleDescriptor) {
         ModuleDescriptor newModule = bundleDescriptor.getModuleDescriptor();
         addModule(newModule);
@@ -1312,13 +1380,14 @@ public class Application extends CommonResourceBundleDescriptor
                 new EjbDescriptor[ejbDesc.size()]);
 
         // The sorting algorithm used by this api is a modified mergesort.
-        // This algorithm offers guaranteed n*log(n) performance, and 
-        // can approach linear performance on nearly sorted lists. 
+        // This algorithm offers guaranteed n*log(n) performance, and
+        // can approach linear performance on nearly sorted lists.
 
         // since ejb name is only unique within a module, add the module uri
         // as the additional piece of information for comparison
         Arrays.sort(descs,
                 new Comparator() {
+                    @Override
                     public int compare(Object o1, Object o2) {
                         EjbDescriptor desc1 = (EjbDescriptor) o1;
                         EjbDescriptor desc2 = (EjbDescriptor) o2;
@@ -1466,6 +1535,7 @@ public class Application extends CommonResourceBundleDescriptor
 
     /**
      * Add all the deployment information about the given application to me.
+     * @param application
      */
     public void addApplication(Application application) {
         for (ModuleDescriptor md : application.getModules()) {
@@ -1476,6 +1546,7 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * Return all my subcomponents that have a file format (EJB, WAR and
      * AppCLient JAR).
+     * @return
      */
     public Set getArchivableDescriptors() {
         Set archivableDescriptors = new OrderedSet();
@@ -1485,6 +1556,7 @@ public class Application extends CommonResourceBundleDescriptor
 
     /**
      * Sets the mapping of rolename to users and groups on a particular server.
+     * @param roleMapper
      */
     public void setRoleMapper(SecurityRoleMapper roleMapper) {
         // should verify against the roles
@@ -1494,6 +1566,7 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * Return true if I have information to do with deployment on a
      * particular operational environment.
+     * @return
      */
     public boolean hasRuntimeInformation() {
         return true;
@@ -1502,7 +1575,9 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * Return my mapping of rolename to users and groups on a particular
      * server.
+     * @return
      */
+    @Override
     public SecurityRoleMapper getRoleMapper() {
         if (this.roleMapper == null) {
             if (securityRoleMapperFactory == null) {
@@ -1516,6 +1591,7 @@ public class Application extends CommonResourceBundleDescriptor
 
     /**
      * Sets the realm for this application
+     * @param realm
      */
     public void setRealm(String realm) {
         this.realm = realm;
@@ -1530,6 +1606,7 @@ public class Application extends CommonResourceBundleDescriptor
 
     /**
      * A flag to indicate that my data has changed since the last save.
+     * @return
      */
     public boolean isDirty() {
         return this.isDirty;
@@ -1538,6 +1615,7 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * @return the class loader associated with this application
      */
+    @Override
     public ClassLoader getClassLoader() {
         return classLoader;
     }
@@ -1545,6 +1623,7 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * A formatted String representing my state.
      */
+    @Override
     public void print(StringBuffer toStringBuffer) {
         toStringBuffer.append("Application");
         toStringBuffer.append("\n");
@@ -1578,6 +1657,7 @@ public class Application extends CommonResourceBundleDescriptor
      *
      * @param aVisitor visitor to traverse the descriptors
      */
+    @Override
     public void visit(DescriptorVisitor aVisitor) {
         if (aVisitor instanceof ApplicationVisitor) {
             visit((ComponentVisitor) aVisitor);
@@ -1589,6 +1669,7 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * @return the module ID for this module descriptor
      */
+    @Override
     public String getModuleID() {
         if (appName != null) {
             return appName;
@@ -1599,6 +1680,7 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * @return true if this module is an application object
      */
+    @Override
     public boolean isApplication() {
         return true;
     }
@@ -1606,6 +1688,7 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * @return the module type for this bundle descriptor
      */
+    @Override
     public ArchiveType getModuleType() {
         return DOLUtils.earType();
     }
@@ -1631,6 +1714,7 @@ public class Application extends CommonResourceBundleDescriptor
      * keep this information to avoid additional disk access in
      * DescriptorArchivist.write() when deciding if the application.xml
      * should be copied or written to the generated/xml directory.
+     * @param bool
      */
     public void setLoadedFromApplicationXml(boolean bool) {
         loadedFromApplicationXml = bool;
@@ -1678,11 +1762,12 @@ public class Application extends CommonResourceBundleDescriptor
      * @return the Set of application paramaters.
      */
     public Set<ApplicationParam> getApplicationParams() {
-        return applicationParams; 
+        return applicationParams;
     }
 
    /**
      * Adds a new context parameter to my list.
+     * @param appParam
      */
     public void addApplicationParam(ApplicationParam appParam) {
         applicationParams.add(appParam);
@@ -1702,7 +1787,7 @@ public class Application extends CommonResourceBundleDescriptor
     }
 
     /**
-     * Returns the resolved keepstate value. 
+     * Returns the resolved keepstate value.
      * @return keepStateResolved
      */
     public boolean getKeepStateResolved() {
@@ -1710,7 +1795,7 @@ public class Application extends CommonResourceBundleDescriptor
     }
 
     /**
-     * Sets the resolved keepstate value.  
+     * Sets the resolved keepstate value.
      * @param keepStateResolved
      */
     public void setKeepStateResolved(String keepStateResolved) {

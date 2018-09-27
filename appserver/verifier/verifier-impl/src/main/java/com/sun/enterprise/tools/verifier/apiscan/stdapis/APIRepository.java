@@ -47,6 +47,7 @@
 package com.sun.enterprise.tools.verifier.apiscan.stdapis;
 
 import java.io.InputStream;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -215,6 +216,8 @@ public class APIRepository {
 
     private DocumentBuilder getDocumentBuilder() throws Exception {
         DocumentBuilderFactory bf = DocumentBuilderFactory.newInstance();
+        bf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        // TODO: Why are we turning off validation here?
         bf.setValidating(false);
         bf.setIgnoringComments(false);
         bf.setIgnoringElementContentWhitespace(true);

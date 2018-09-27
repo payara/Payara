@@ -39,9 +39,6 @@
  */
 package fish.payara.micro.cmd.options;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 /**
  *
  * @author steve

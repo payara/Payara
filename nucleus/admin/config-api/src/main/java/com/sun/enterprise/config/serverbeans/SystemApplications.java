@@ -42,7 +42,6 @@ package com.sun.enterprise.config.serverbeans;
 
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.glassfish.api.admin.config.ApplicationName;
 
 import java.util.List;
@@ -70,6 +69,7 @@ public interface SystemApplications extends Applications  {
      * {@link Application }
      */
     @Element("*")
+    @Override
     public List<ApplicationName> getModules();
 
 }

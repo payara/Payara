@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.io;
 
@@ -63,6 +64,8 @@ public interface DescriptorConstants {
 
     /** Prefix used for GF xmls */
     String GF_PREFIX = "glassfish-";
+    
+    String PAYARA_PREFIX = "payara-";
 
     /** The name of the deployment descriptor entry in the application ear. */
     String APPLICATION_DD_ENTRY = "META-INF"+File.separator+"application.xml";
@@ -153,6 +156,18 @@ public interface DescriptorConstants {
 
     /** The name of the glassfish deployment descriptor entry in the client jar. */
     String GF_APP_CLIENT_JAR_ENTRY = "META-INF/"+ GF_PREFIX + "application-client.xml";
+    
+    /** The name of the Payara deployment descriptor entry in web jar. */
+    String PAYARA_WEB_JAR_ENTRY = "WEB-INF/" + PAYARA_PREFIX + "web.xml";
+
+    /** The name of the Payara deployment descriptor entry in the ejb jar. */
+    String PAYARA_EJB_JAR_ENTRY = "META-INF/" + PAYARA_PREFIX + "ejb-jar.xml";
+
+    /** The name of the Payara deployment descriptor entry in the war. */
+    String PAYARA_EJB_IN_WAR_ENTRY = "WEB-INF/" + PAYARA_PREFIX + "ejb-jar.xml";
+
+    /** The name of the Payara deployment descriptor entry in the client jar. */
+    String PAYARA_APP_CLIENT_JAR_ENTRY = "META-INF/"+ PAYARA_PREFIX + "application-client.xml";
 
     /** The name of the weblogic deployment descriptor entry in the war. */
     String WLS_EJB_IN_WAR_ENTRY = "WEB-INF/" + WLS_PREFIX + "ejb-jar.xml";

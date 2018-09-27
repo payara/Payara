@@ -76,6 +76,7 @@ public class WeldApplication extends ApplicationWrapper {
         }
     }
 
+    @Override
     public Application getWrapped() {
         return this.application;
     }

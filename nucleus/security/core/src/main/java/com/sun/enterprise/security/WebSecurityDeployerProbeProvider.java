@@ -37,95 +37,61 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 import org.glassfish.external.probe.provider.annotations.Probe;
 import org.glassfish.external.probe.provider.annotations.ProbeParam;
 import org.glassfish.external.probe.provider.annotations.ProbeProvider;
 
-
 @ProbeProvider(moduleProviderName = "glassfish", moduleName = "security", probeProviderName = "web")
 public class WebSecurityDeployerProbeProvider {
 
-
-    /*@Probe(name = "webDeploymentStartedEvent")
-    public void webDeploymentStartedEvent(
-            @ProbeParam("appName") String appName) {
-    }
-
-    @Probe(name = "webDeploymentEndedEvent")
-    public void webDeploymentEndedEvent(
-            @ProbeParam("appName") String appName) {
-    }*/
-
     @Probe(name = "policyCreationStartedEvent")
-    public void policyCreationStartedEvent(
-            @ProbeParam("appName") String appName) {
+    public void policyCreationStartedEvent(@ProbeParam("appName") String appName) {
     }
 
     @Probe(name = "policyCreationEndedEvent")
-    public void policyCreationEndedEvent(
-            @ProbeParam("appName") String appName) {
+    public void policyCreationEndedEvent(@ProbeParam("appName") String appName) {
     }
-
-/*    @Probe(name = "webUndeploymentStartedEvent")
-    public void webUndeploymentStartedEvent(
-            @ProbeParam("appName") String appName) {
-    }
-
-    @Probe(name = "webUndeploymentEndedEvent")
-    public void webUndeploymentEndedEvent(
-            @ProbeParam("appName") String appName) {
-    }*/
 
     @Probe(name = "policyDestructionStartedEvent")
-    public void policyDestructionStartedEvent(
-            @ProbeParam("appName") String appName) {
+    public void policyDestructionStartedEvent(@ProbeParam("appName") String appName) {
     }
 
     @Probe(name = "policyDestructionEndedEvent")
-    public void policyDestructionEndedEvent(
-            @ProbeParam("appName") String appName) {
+    public void policyDestructionEndedEvent(@ProbeParam("appName") String appName) {
     }
 
     @Probe(name = "securityManagerCreationEvent")
-    public void securityManagerCreationEvent(
-            @ProbeParam("appName") String appName) {
+    public void securityManagerCreationEvent(@ProbeParam("appName") String appName) {
     }
 
     @Probe(name = "securityManagerCreationStartedEvent")
-    public void securityManagerCreationStartedEvent(
-            @ProbeParam("appName") String appName) {
+    public void securityManagerCreationStartedEvent(@ProbeParam("appName") String appName) {
     }
 
     @Probe(name = "securityManagerCreationEndedEvent")
-    public void securityManagerCreationEndedEvent(
-            @ProbeParam("appName") String appName) {
+    public void securityManagerCreationEndedEvent(@ProbeParam("appName") String appName) {
     }
 
     @Probe(name = "securityManagerDestructionEvent")
-    public void securityManagerDestructionEvent(
-            @ProbeParam("appName") String appName) {
+    public void securityManagerDestructionEvent(@ProbeParam("appName") String appName) {
     }
 
     @Probe(name = "securityManagerDestructionStartedEvent")
-    public void securityManagerDestructionStartedEvent(
-            @ProbeParam("appName") String appName) {
+    public void securityManagerDestructionStartedEvent(@ProbeParam("appName") String appName) {
     }
 
     @Probe(name = "securityManagerDestructionEndedEvent")
-    public void securityManagerDestructionEndedEvent(
-            @ProbeParam("appName") String appName) {
+    public void securityManagerDestructionEndedEvent(@ProbeParam("appName") String appName) {
     }
 
     @Probe(name = "policyCreationEvent")
-    public void policyCreationEvent(
-            @ProbeParam("contextId") String appName) {
+    public void policyCreationEvent(@ProbeParam("contextId") String appName) {
     }
 
     @Probe(name = "policyDestructionEvent")
-    public void policyDestructionEvent(
-            @ProbeParam("contextId") String appName) {
+    public void policyDestructionEvent(@ProbeParam("contextId") String appName) {
     }
 }

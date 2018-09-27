@@ -356,16 +356,16 @@ public class FactoryTest {
          * test class would need to import EntryInfo (which it can't).
          */
         public _ExtendsBaseAuthConfigFactory() {
-            rLock.lock();
+            readLock.lock();
             try {
                 if (regStore != null) {
                     return;
                 }
             } finally {
-                rLock.unlock();
+                readLock.unlock();
             }
             String userDir = System.getProperty("user.dir");
-            wLock.lock();
+            writeLock.lock();
             try {
                 if (regStore == null) {
                     EntryInfo e = new EntryInfo(_AuthConfigProvider.class.getName(),null);
@@ -376,7 +376,7 @@ public class FactoryTest {
                     _loadFactory();
                 }
             } finally {
-                wLock.unlock();
+                writeLock.unlock();
             }
             RegStoreFileParser rS = getRegStore();
             assertTrue(rS == _ExtendsBaseAuthConfigFactory.regStore);
@@ -384,11 +384,11 @@ public class FactoryTest {
 
         @Override
         protected RegStoreFileParser getRegStore() {
-            rLock.lock();
+            readLock.lock();
             try {
                 return regStore;
             } finally {
-                rLock.unlock();
+                readLock.unlock();
             }
         }
     }
@@ -407,16 +407,16 @@ public class FactoryTest {
          * test class would need to import EntryInfo (which it can't).
          */
         public _Extends_ExtendsAuthConfigFactory() {
-            rLock.lock();
+            readLock.lock();
             try {
                 if (regStore != null) {
                     return;
                 }
             } finally {
-                rLock.unlock();
+                readLock.unlock();
             }
             String userDir = System.getProperty("user.dir");
-            wLock.lock();
+            writeLock.lock();
             try {
                 if (regStore == null) {
                     EntryInfo e = new EntryInfo(_AuthConfigProvider.class.getName(),null);
@@ -427,7 +427,7 @@ public class FactoryTest {
                     _loadFactory();
                 }
             } finally {
-                wLock.unlock();
+                writeLock.unlock();
             }
             RegStoreFileParser rS = getRegStore();
             assertTrue(rS == _Extends_ExtendsAuthConfigFactory.regStore);
@@ -435,11 +435,11 @@ public class FactoryTest {
 
         @Override
         protected RegStoreFileParser getRegStore() {
-            rLock.lock();
+            readLock.lock();
             try {
                 return regStore;
             } finally {
-                rLock.unlock();
+                readLock.unlock();
             }
         }
     }

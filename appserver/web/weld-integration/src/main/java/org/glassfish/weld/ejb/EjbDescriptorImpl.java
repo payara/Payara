@@ -79,6 +79,7 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
     }
 
 
+    @Override
     public String getEjbName() {
         return ejbDesc.getName();
     }
@@ -88,6 +89,7 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public Class<T> getBeanClass() {
         @SuppressWarnings("rawtypes")
         Class beanClassType = null;
@@ -108,6 +110,7 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
     * 
     * @return An iterator over the local business interfaces
     */
+    @Override
     public Collection<BusinessInterfaceDescriptor<?>> getLocalBusinessInterfaces() {
        
         Set<BusinessInterfaceDescriptor<?>> localBusIntfs = new HashSet<BusinessInterfaceDescriptor<?>>();
@@ -161,6 +164,7 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
     * 
     * @return An iterator over the remove methods
     */
+    @Override
     public Collection<Method> getRemoveMethods() {
         Set<Method> removeMethods = new HashSet<Method>();
 
@@ -190,6 +194,7 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
     * 
     * @return True if stateless, false otherwise
     */
+    @Override
     public boolean isStateless() {
 	    return (ejbDesc.getType().equals(EjbSessionDescriptor.TYPE) &&
                ((EjbSessionDescriptor) ejbDesc).isStateless());
@@ -200,6 +205,7 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
     * 
     * @return True if the bean is a singleton, false otherwise
     */
+    @Override
     public boolean isSingleton() {
        return (ejbDesc.getType().equals(EjbSessionDescriptor.TYPE) &&
                ((EjbSessionDescriptor) ejbDesc).isSingleton());
@@ -210,6 +216,7 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
     * 
     * @return True if the bean is stateful, false otherwise
     */
+    @Override
     public boolean isStateful() {
         return (ejbDesc.getType().equals(EjbSessionDescriptor.TYPE) &&
                ((EjbSessionDescriptor) ejbDesc).isStateful());
@@ -220,10 +227,12 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
     * 
     * @return True if the bean is an MDB, false otherwise
     */
+    @Override
     public boolean isMessageDriven() {
 	    return (ejbDesc.getType().equals(EjbMessageBeanDescriptor.TYPE));
     }
 
+    @Override
     public boolean isPassivationCapable() {
         if ( ejbDesc instanceof EjbSessionDescriptor ) {
             EjbSessionDescriptor ejbSessionDescriptor = ( EjbSessionDescriptor ) ejbDesc;

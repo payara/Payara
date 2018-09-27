@@ -175,33 +175,33 @@
                 <sun:hyperlink id="configlink" text="#{pageSession.valueMap['configRef']}"
                     url="#{request.contextPath}/common/configuration/configuration.jsf?configName=#{pageSession.valueMap['configRef']}" />
             </sun:property>
-
-            <sun:property id="gmsEnabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.cluster.GMS}" helpText="$resource{i18ncs.cluster.GMSHelp}">
-                <sun:checkbox id="gmscb" label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['gmsEnabled']}" selectedValue="true" />
-            </sun:property>
-
-           <sun:property id="gmsMulticastPort"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.cluster.gmsMulticastPort}" helpText="$resource{i18ncs.cluster.gmsMulticastPortHelp}">
-                <sun:textField id="gmsMulticastPort"  styleClass="port" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.cluster.gmsMulticastPort']}" text="#{pageSession.valueMap['gmsMulticastPort']}"/>
-            </sun:property>
-            <sun:property id="gmsMulticastAddress"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.cluster.gmsMulticastAddress}" helpText="$resource{i18ncs.cluster.gmsMulticastAddressHelp}">
-                <sun:textField id="gmsMulticastAddress"  columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.cluster.gmsMulticastAddress']}" text="#{pageSession.valueMap['gmsMulticastAddress']}"/>
-            </sun:property>
-
-            <sun:property id="GmsBindInterfaceAddress"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.cluster.gmsBindInterfaceAddress}" helpText="$resource{i18ncs.cluster.gmsBindInterfaceAddressHelp}">
-                <sun:textField id="GmsBindInterfaceAddress"  columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.cluster.gmsBindInterfaceAddress']}" text="#{pageSession.valueMap['gmsBindInterfaceAddress']}"/>
-            </sun:property>
-
-            <sun:property id="instanceStatusProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.status}" >
-                <if condition="#{pageSession.numNotRunning}">
-                    <sun:staticText id="instanceStatusStopped" text=" #{pageSession.numNotRunning}" />
-                    "<br />
-                </if>
-                <if condition="#{pageSession.numRequireRestart}">
-                    <sun:staticText id="instanceStatusRequireRestart" text="#{pageSession.numRequireRestart}" />
-                    "<br />
-                </if>
-                <sun:staticText id="instanceStatusRunning" text="#{pageSession.numRunning}" />
-                "<br />
+            
+            <sun:property id="configInstancesProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.clusters.instanceCol}" >
+                    <event>
+            <!beforeEncode
+                gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession.clusterName}/server-ref",
+                    id="Ref" result="#{requestScope.listOfInstances}");
+            />
+        </event>
+        "<table border="0" cellpadding="5">
+        <foreach key="instance" list="#{requestScope.listOfInstances}">
+            <event>
+            <!beforeEncode
+                setAttribute(key="tmp" value="#{instance}");
+                gf.listInstances(optionKeys={"id"} optionValues={"$attribute{tmp}"}, statusMap="#{requestScope.statusMap}");
+                setAttribute(key="status" value="#{requestScope.statusMap['$attribute{tmp}']}");
+                setAttribute(key="statusString" value="$resource{i18nc.status.image.$attribute{status}}  &nbsp;  $resource{i18nc.status.$attribute{status}}");
+            />
+            </event>
+            "<tr>
+            "<td>
+            <sun:hyperlink id="iLink" url="#{request.contextPath}/cluster/cluster/clusterInstanceEdit.jsf?clusterName=#{pageSession.clusterName}&instanceName=#{instance}" text="#{instance}" />
+            "&nbsp;</td> <td>
+             <staticText id="colStopped" value="#{requestScope.statusString}" />
+            "</td>
+            "</tr>
+        </foreach>
+        "</table>
             </sun:property>
         </sun:propertySheetSection>
 

@@ -81,5 +81,5 @@ public interface HealthCheckConstants {
     final String DEFAULT_HEAP_MEMORY_USAGE_NAME = "HEAP";
     final String DEFAULT_MACHINE_MEMORY_USAGE_NAME = "MEMM";
     final String DEFAULT_HOGGING_THREADS_NAME = "HOGT";
-    final String DEFUALT_STUCK_THEAD_NAME = "STUCK";
+    final String DEFAULT_STUCK_THREAD_NAME = "STUCK";
 }

@@ -40,13 +40,14 @@
     holder.
 
 -->
-<!--"Portions Copyright [2016] [Payara Foundation]" -->
+<!--"Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]" -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
-        <version>4.1</version>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-parent</artifactId>
+        <version>5.184-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -61,7 +62,6 @@
         <!-- See parent POM -->
     </developers>
 
-    <packaging>jar</packaging>
     <build>
         <plugins>
             <plugin>
@@ -71,7 +71,7 @@
                         <id>work-around</id>
                         <phase>process-resources</phase>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <!-- For whetever reason (I have to investigate further),
                                      running mvn install subsequently adds a version attr
                                      to all import headers. Since packages don't have matching
@@ -83,7 +83,7 @@
                                      configures manifest task, it fails when classes dir does not
                                      exist. So, we create one -->
                                 <mkdir dir="${project.build.outputDirectory}"/>
-                            </tasks>
+                            </target>
                         </configuration>
                         <goals>
                             <goal>run</goal>

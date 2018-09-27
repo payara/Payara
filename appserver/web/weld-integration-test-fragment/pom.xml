@@ -40,17 +40,17 @@
     holder.
 
 -->
+<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
 	<groupId>org.glassfish.main.web</groupId>
     	<artifactId>web</artifactId>
-        <version>5.0.0.173-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>weld-integration-test-fragment</artifactId>
-    <packaging>jar</packaging>
     <name>Fragment bundle for Weld related testing</name>
     <description>This fragment bundle extends the weld osgi bundle to export additional packages from the weld-osgi-bundle as they are used in the Weld Arquillian tests</description>
     
@@ -69,8 +69,6 @@
         <plugins>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
-                <!-- tmp workaround for http://jira.codehaus.org/browse/MJAR-153 -->
-                <version>2.3</version>
                 <configuration>
                     <archive>
                         <manifestEntries>
