@@ -294,6 +294,7 @@ public abstract class LocalServerCommand extends CLICommand {
         try {
             RemoteCLICommand cmd = new RemoteCLICommand("__locations", programOpts, env);
             ActionReport report = cmd.executeAndReturnActionReport("__locations");
+            programOpts.setHostAndPort(getAdminAddress());
             String theirDirPath = report.findProperty(directoryKey);
             logger.log(Level.FINER, "Remote server has root directory {0}", theirDirPath);
 
