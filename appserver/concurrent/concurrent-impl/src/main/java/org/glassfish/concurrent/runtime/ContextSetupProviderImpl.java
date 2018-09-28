@@ -69,12 +69,14 @@ import java.util.logging.Logger;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.data.ApplicationRegistry;
 
 public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     private transient InvocationManager invocationManager;
     private transient Deployment deployment;
     private transient ComponentEnvManager compEnvMgr;
+    private transient ApplicationRegistry applicationRegistry;
     private transient Applications applications;
     // transactionManager should be null for ContextService since it uses TransactionSetupProviderImpl
     private transient JavaEETransactionManager transactionManager;
@@ -95,12 +97,14 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     public ContextSetupProviderImpl(InvocationManager invocationManager,
             Deployment deployment,
             ComponentEnvManager compEnvMgr,
+            ApplicationRegistry applicationRegistry,
             Applications applications,
             JavaEETransactionManager transactionManager,
             CONTEXT_TYPE... contextTypes) {
         this.invocationManager = invocationManager;
         this.deployment = deployment;
         this.compEnvMgr = compEnvMgr;
+        this.applicationRegistry = applicationRegistry;
         this.applications = applications;
         this.transactionManager = transactionManager;
 
@@ -301,9 +305,11 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                 // if app is null then it is likely that appId is still deploying
                 // and its enabled status has not been written to the domain.xml yet
                 // this can happen for example with a Startup EJB submitting something
-                // it its startup method. Reference Payara GitHub issue 204              
-                logger.info("Job submitted for " + appId + " likely during deployment. Continuing...");
-                result = true;
+                // it its startup method. Reference Payara GitHub issue 204
+                if(applicationRegistry.get(appId) != null){
+                    logger.log(Level.INFO, "Job submitted for {0} likely during deployment. Continuing...", appId);
+                    result = true;
+                }
             }
         }
         return result;

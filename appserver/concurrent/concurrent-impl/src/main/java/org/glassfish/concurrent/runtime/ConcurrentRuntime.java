@@ -298,16 +298,34 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         }
     }
 
-    private ContextServiceImpl createContextService(String jndiName, String contextInfo,
-                                                    String contextInfoEnabled, boolean cleanupTransaction) {
+    private ContextServiceImpl createContextService(
+            String jndiName,
+            String contextInfo,
+            String contextInfoEnabled,
+            boolean cleanupTransaction) {
+
         boolean isContextInfoEnabled = Boolean.valueOf(contextInfoEnabled);
-        ContextSetupProviderImpl.CONTEXT_TYPE[] contextTypes = parseContextInfo(contextInfo, isContextInfoEnabled);
-        ContextSetupProviderImpl contextSetupProvider =
-                new ContextSetupProviderImpl(invocationManager, deployment, compEnvMgr, applications,
-                                             cleanupTransaction? transactionManager: null, contextTypes);
-        ContextServiceImpl obj = new ContextServiceImpl(jndiName, contextSetupProvider,
-                new TransactionSetupProviderImpl(transactionManager));
-        return obj;
+
+        ContextSetupProviderImpl.CONTEXT_TYPE[] contextTypes
+                = parseContextInfo(contextInfo, isContextInfoEnabled);
+
+        ContextSetupProviderImpl contextSetupProvider
+                = new ContextSetupProviderImpl(
+                        invocationManager,
+                        deployment,
+                        compEnvMgr,
+                        applicationRegistry,
+                        applications,
+                        cleanupTransaction ? transactionManager : null, contextTypes
+                );
+
+        ContextServiceImpl contextService
+                = new ContextServiceImpl(
+                        jndiName,
+                        contextSetupProvider,
+                        new TransactionSetupProviderImpl(transactionManager)
+                );
+        return contextService;
     }
 
     private ContextSetupProviderImpl.CONTEXT_TYPE[] parseContextInfo(String contextInfo, boolean isContextInfoEnabled) {
