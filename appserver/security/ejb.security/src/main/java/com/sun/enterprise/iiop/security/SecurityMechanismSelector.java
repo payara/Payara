@@ -1311,9 +1311,9 @@ public final class SecurityMechanismSelector implements PostConstruct {
                 // Set the transport principal in subject and
                 // return the X500Principal class
                 securityContext = new SecurityContext();
-                X500Principal x500Name = (X500Principal) certChain[0].getSubjectX500Principal();
+                X500Principal x500principal = certChain[0].getSubjectX500Principal();
                 securityContext.subject = new Subject();
-                securityContext.subject.getPublicCredentials().add(x500Name);
+                securityContext.subject.getPublicCredentials().add(x500principal);
                 securityContext.identcls = X500Principal.class;
                 securityContext.authcls = null;
                 return securityContext;

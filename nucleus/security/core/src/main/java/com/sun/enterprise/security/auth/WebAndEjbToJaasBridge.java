@@ -88,8 +88,6 @@ import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import com.sun.enterprise.security.auth.realm.file.FileRealm;
 import javax.security.auth.x500.X500Principal;
 
-import sun.security.x509.X500Name;
-
 /**
  * This class contains a collection of methods that are used by the Web and EJB containers
  * to interact with the JAAS based LoginModules and set the current (per thread) security context.
@@ -208,8 +206,8 @@ public class WebAndEjbToJaasBridge {
         String user = null;
         String realmName = null;
         try {
-            X500Principal x500name = (X500Principal)getPublicCredentials(subject, X500Principal.class);
-            user = x500name.getName();
+            X500Principal x500principal = getPublicCredentials(subject, X500Principal.class);
+            user = x500principal.getName();
 
             // In the RI-inherited implementation this directly creates
             // some credentials and sets the security context. This means
@@ -231,7 +229,7 @@ public class WebAndEjbToJaasBridge {
                     LoginContext lg = new LoginContext(jaasCtx, subject, new ServerLoginCallbackHandler(user, null, appModuleID));
                     lg.login();
                 }
-                certRealm.authenticate(subject, x500name);
+                certRealm.authenticate(subject, x500principal);
                 realmName = CertificateRealm.AUTH_TYPE;
 
                 auditAuthenticate(user, realmName, true);

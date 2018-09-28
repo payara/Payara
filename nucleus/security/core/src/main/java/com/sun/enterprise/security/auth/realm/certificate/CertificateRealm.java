@@ -132,8 +132,7 @@ public final class CertificateRealm extends BaseRealm {
      * @return Description of the kind of authentication that is directly supported by this realm.
      */
     @Override
-    public String getAuthType()
-    {
+    public String getAuthType() {
         return AUTH_TYPE;
     }
     
@@ -166,15 +165,14 @@ public final class CertificateRealm extends BaseRealm {
      * Returns the name of all the groups that this user belongs to.
      *
      * @param subject The Subject object for the authentication request.
-     * @param x500name The X500Name object from the user certificate.
+     * @param x500principal The X500Name object from the user certificate.
      *
      */
-    public void authenticate(Subject subject, X500Principal x500name)
-    {
+    public void authenticate(Subject subject, X500Principal x500principal) {
         // It is important to use x500name.getName() in order to be
         // consistent with web containers view of the name - see bug
         // 4646134 for reasons why this matters.
-        String name = x500name.getName();
+        String name = x500principal.getName();
 
         if (_logger.isLoggable(Level.FINEST)) {
             _logger.log(Level.FINEST, "Certificate realm setting up security context for: {0}", name);
@@ -188,8 +186,7 @@ public final class CertificateRealm extends BaseRealm {
 	}
 
         if (!subject.getPrincipals().isEmpty()) {
-            DistinguishedPrincipalCredential dpc = new DistinguishedPrincipalCredential(x500name);
-            subject.getPublicCredentials().add(dpc);
+            subject.getPublicCredentials().add(new DistinguishedPrincipalCredential(x500principal));
         }
         
         SecurityContext.setCurrent(new SecurityContext(name, subject));

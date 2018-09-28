@@ -450,9 +450,9 @@ public final class LDAPRealm extends BaseRealm {
      */
     private void setGroupNames(String username, String[] groups)
     {
-        LinkedList v = new LinkedList();
-        v.addAll(Arrays.asList(groups));
-        groupCache.put(username, v);
+        LinkedList groupsList = new LinkedList();
+        groupsList.addAll(Arrays.asList(groups));
+        groupCache.put(username, groupsList);
     }
 
     /**
@@ -542,7 +542,7 @@ public final class LDAPRealm extends BaseRealm {
         grpList = this.addMappedGroupNames(grpList);
         setGroupNames(_username, grpList);
 
-        if(_logger.isLoggable(Level.FINE)){
+        if (_logger.isLoggable(Level.FINE)) {
              _logger.log(Level.FINE, "LDAP: login succeeded for: {0}", _username);
         }
 
