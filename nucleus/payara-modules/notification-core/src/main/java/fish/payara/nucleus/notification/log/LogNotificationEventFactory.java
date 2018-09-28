@@ -90,4 +90,12 @@ public class LogNotificationEventFactory extends NotificationEventFactory<LogNot
 
         return notificationEvent;
     }
+
+    @Override
+    public LogNotificationEvent buildNotificationEvent(String subject, String message) {
+        LogNotificationEvent event = super.buildNotificationEvent(subject, message);
+        event.setLevel(Level.INFO); // Logger needs level, otherwise NullPointerException
+        return event;
+    }
+
 }
