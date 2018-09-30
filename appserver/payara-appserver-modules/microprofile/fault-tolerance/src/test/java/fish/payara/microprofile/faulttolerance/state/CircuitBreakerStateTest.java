@@ -39,74 +39,39 @@
  */
 package fish.payara.microprofile.faulttolerance.state;
 
-import java.io.Serializable;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.concurrent.atomic.AtomicLong;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
- * Represents the state its time amount and since when this is in charge.
  * @author Sven Diedrichsen
  */
-class StateTime implements Serializable {
+public class CircuitBreakerStateTest {
 
-    private static final long serialVersionUID = 1;
-
-    private final CircuitBreakerState.CircuitState state;
-    private ZonedDateTime since;
-    private final AtomicLong nanos;
-
-    StateTime(CircuitBreakerState.CircuitState state) {
-        this.state = state;
-        this.since = ZonedDateTime.now();
-        this.nanos = new AtomicLong(0);
+    @Test
+    public void testInitialState() {
+        CircuitBreakerState state = new CircuitBreakerState(1);
+        assertEquals("Wrong initial state.", CircuitBreakerState.CircuitState.CLOSED, state.getCircuitState());
     }
 
-    /**
-     * State that this represents.
-     *
-     * @return The state.
-     */
-    CircuitBreakerState.CircuitState state() {
-        return this.state;
+    @Test
+    public void testNanosCumulatedForInitialState() throws Exception {
+        CircuitBreakerState state = new CircuitBreakerState(1);
+        Thread.sleep(1);
+        assertTrue("Missing nanos after initialisation.", state.updateAndGet(CircuitBreakerState.CircuitState.CLOSED) > 0);
+        assertEquals("Unexpected nanos after initialisation.", 0, state.updateAndGet(CircuitBreakerState.CircuitState.HALF_OPEN));
+        assertEquals("Unexpected nanos after initialisation.", 0, state.updateAndGet(CircuitBreakerState.CircuitState.OPEN));
     }
 
-    /**
-     * True if this StateTime represents the provided {@link CircuitBreakerState.CircuitState}
-     *
-     * @param state The state to compare to.
-     * @return State equals.
-     */
-    boolean is(CircuitBreakerState.CircuitState state) {
-        return this.state.equals(state);
-    }
-
-    /**
-     * The current sum of nanos.
-     *
-     * @return Sum of nanos.
-     */
-    long nanos() {
-        return nanos.get();
-    }
-
-    /**
-     * Updates the sum of nanos.
-     *
-     * @return The updates sum of nanos
-     */
-    long update() {
-        ZonedDateTime now = ZonedDateTime.now();
-        long result = this.nanos.addAndGet(ChronoUnit.NANOS.between(this.since, now));
-        this.since = now;
-        return result;
-    }
-
-    /**
-     * Sets the time for the state to now.
-     */
-    void reset() {
-        this.since = ZonedDateTime.now();
+    @Test
+    public void testStateChangeCumulatesForNewState() throws Exception {
+        CircuitBreakerState state = new CircuitBreakerState(1);
+        Thread.sleep(1);
+        state.setCircuitState(CircuitBreakerState.CircuitState.OPEN);
+        Thread.sleep(1);
+        assertTrue("Missing nanos for initial state.", state.updateAndGet(CircuitBreakerState.CircuitState.CLOSED) > 0);
+        assertTrue("Missing nanos for new state.", state.updateAndGet(CircuitBreakerState.CircuitState.OPEN) > 0);
+        assertEquals("Unexpected nanos for unused state.", 0, state.updateAndGet(CircuitBreakerState.CircuitState.HALF_OPEN));
     }
 
 }
