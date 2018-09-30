@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.web;
 
@@ -66,7 +67,9 @@ public class FileStrategyBuilder extends BasePersistenceStrategyBuilder {
 
         PersistentManager mgr = new PersistentManager();
         mgr.setMaxActiveSessions(maxSessions);
-        mgr.setMaxIdleBackup(0);     // FIXME: Make configurable
+        mgr.setMaxIdleBackup(maxIdleBackup);
+        mgr.setMinIdleSwap(minIdleSwap);
+        mgr.setMaxIdleSwap(maxIdleSwap);
 
         FileStore store = new FileStore();
         store.setDirectory(directory);

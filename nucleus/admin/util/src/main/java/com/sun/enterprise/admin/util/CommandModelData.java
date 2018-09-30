@@ -58,8 +58,7 @@ import org.glassfish.api.admin.ExecuteOn;
 public class CommandModelData extends CommandModel {
 
     // use a LinkedHashMap so params appears in the order they are added
-    private final Map<String, CommandModel.ParamModel> params =
-                                new LinkedHashMap<String, ParamModel>();
+    private final Map<String, CommandModel.ParamModel> params = new LinkedHashMap<String, ParamModel>();
     private final String commandName;
     public boolean managedJob = false;
     public boolean dashOk = false;

@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 -->
 
 <!initPage
@@ -62,6 +62,7 @@
             setPageSessionAttribute(key="selfUrl", value="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}");
             gf.restRequest(endpoint="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/property", method="GET", result="#{requestScope.propTable}");
             setPageSessionAttribute(key="tableList", value="#{requestScope.propTable.data.extraProperties.properties}");
+            setPageSessionAttribute(key="showCancelButton", value="#{false}");
         />
     </event>
     <sun:form id="propertyForm">

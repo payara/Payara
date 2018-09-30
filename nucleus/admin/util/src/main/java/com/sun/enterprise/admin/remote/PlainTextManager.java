@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions COpyright [2018] Payara Founation and/or affiliates
 
 package com.sun.enterprise.admin.remote;
 
@@ -48,14 +49,21 @@ import com.sun.enterprise.universal.collections.ManifestUtils;
  * @author bnevins
  */
 class PlainTextManager implements ResponseManager{
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(PlainTextManager.class);
+    
+    private static final String SUCCESS = "SUCCESS";
+    private static final String FAILURE = "FAILURE";
+    private static final String MAGIC = "PlainTextActionReporter";
+    private String response;
+    
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(PlainTextManager.class);
 
     PlainTextManager(String response) throws RemoteException{
         this.response = response;
     }
 
+    @Override
     public void process() throws RemoteException {
+        
         // format:
         // "PlainTextActionReporterSUCCESS..."
         // or
@@ -70,13 +78,7 @@ class PlainTextManager implements ResponseManager{
         } else if (response.startsWith(bad)) {
             throw new RemoteSuccessException(response.substring(bad.length()));
         } else {
-            throw new RemoteFailureException(
-		    strings.get("unknownFormat", response));
+            throw new RemoteFailureException(STRINGS.get("unknownFormat", response));
         }
     }
-
-    private static final String SUCCESS = "SUCCESS";
-    private static final String FAILURE = "FAILURE";
-    private static final String MAGIC = "PlainTextActionReporter";
-    private String response;
 }
