@@ -99,7 +99,6 @@ import org.eclipse.microprofile.openapi.models.Reference;
 import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
-import org.eclipse.microprofile.openapi.models.parameters.Parameter.Style;
 
 import fish.payara.microprofile.openapi.api.processor.OASProcessor;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
@@ -123,6 +122,7 @@ import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+import fish.payara.microprofile.openapi.impl.visitor.OpenApiContext;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
 
 /**
@@ -360,32 +360,16 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter = new ParameterImpl();
         newParameter.setName(param.value());
         newParameter.setIn(In.QUERY);
-        newParameter.setStyle(Style.SIMPLE);
-        if (element instanceof java.lang.reflect.Parameter) {
-            newParameter.setSchema(new SchemaImpl().type(ModelUtils
-                    .getSchemaType(java.lang.reflect.Parameter.class.cast(element).getType())));
-        } else {
-            newParameter.setSchema(new SchemaImpl().type(ModelUtils
-                    .getSchemaType(Field.class.cast(element).getType())));
-        }
-        context.getWorkingOperation().addParameter(newParameter);
+        addParameter(element, context, newParameter);
     }
-
+        
     @Override
     public void visitPathParam(PathParam param, AnnotatedElement element, ApiContext context) {
         org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter = new ParameterImpl();
         newParameter.setName(param.value());
         newParameter.setRequired(true);
         newParameter.setIn(In.PATH);
-        newParameter.setStyle(Style.SIMPLE);
-        if (element instanceof java.lang.reflect.Parameter) {
-            newParameter.setSchema(new SchemaImpl().type(ModelUtils
-                    .getSchemaType(java.lang.reflect.Parameter.class.cast(element).getType())));
-        } else {
-            newParameter.setSchema(new SchemaImpl().type(ModelUtils
-                    .getSchemaType(Field.class.cast(element).getType())));
-        }
-        context.getWorkingOperation().addParameter(newParameter);
+        addParameter(element, context, newParameter);
     }
     
     @Override
@@ -402,20 +386,19 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                             ModelUtils.getSchemaType(methodParam.getType()));
                 }
             }
-        } else {
-            formSchemaType = ModelUtils.getParentSchemaType(formSchemaType,
-                    ModelUtils.getSchemaType(Field.class.cast(element).getType()));
-        }
+        } 
 
-        // If there's no request body, fill out a new one right down to the schema
-        if (context.getWorkingOperation().getRequestBody() == null) {
-            context.getWorkingOperation().setRequestBody(new RequestBodyImpl().content(new ContentImpl()
-                    .addMediaType(javax.ws.rs.core.MediaType.WILDCARD, new MediaTypeImpl().schema(new SchemaImpl()))));
-        }
+        if (context.getWorkingOperation() != null) {
+            // If there's no request body, fill out a new one right down to the schema
+            if (context.getWorkingOperation().getRequestBody() == null) {
+                context.getWorkingOperation().setRequestBody(new RequestBodyImpl().content(new ContentImpl()
+                        .addMediaType(javax.ws.rs.core.MediaType.WILDCARD, new MediaTypeImpl().schema(new SchemaImpl()))));
+            }
 
-        // Set the request body type accordingly.
-        context.getWorkingOperation().getRequestBody().getContent().get(javax.ws.rs.core.MediaType.WILDCARD).getSchema()
-                .setType(formSchemaType);
+            // Set the request body type accordingly.
+            context.getWorkingOperation().getRequestBody().getContent().get(javax.ws.rs.core.MediaType.WILDCARD).getSchema()
+                    .setType(formSchemaType);
+        }
     }
 
     @Override
@@ -423,15 +406,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter = new ParameterImpl();
         newParameter.setName(param.value());
         newParameter.setIn(In.HEADER);
-        newParameter.setStyle(Style.SIMPLE);
-          if (element instanceof java.lang.reflect.Parameter) {
-            newParameter.setSchema(new SchemaImpl().type(ModelUtils
-                    .getSchemaType(java.lang.reflect.Parameter.class.cast(element).getType())));
-        } else {
-            newParameter.setSchema(new SchemaImpl().type(ModelUtils
-                    .getSchemaType(Field.class.cast(element).getType())));
-          }
-        context.getWorkingOperation().addParameter(newParameter);
+        addParameter(element, context, newParameter);
     }
 
     @Override
@@ -439,15 +414,28 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter = new ParameterImpl();
         newParameter.setName(param.value());
         newParameter.setIn(In.COOKIE);
-        newParameter.setStyle(Style.SIMPLE);
-           if (element instanceof java.lang.reflect.Parameter) {
+        addParameter(element, context, newParameter);
+    }
+    
+      private void addParameter(AnnotatedElement element, ApiContext context, org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter) {
+        if (element instanceof java.lang.reflect.Parameter) {
             newParameter.setSchema(new SchemaImpl().type(ModelUtils
                     .getSchemaType(java.lang.reflect.Parameter.class.cast(element).getType())));
         } else {
             newParameter.setSchema(new SchemaImpl().type(ModelUtils
                     .getSchemaType(Field.class.cast(element).getType())));
-           }
-        context.getWorkingOperation().addParameter(newParameter);
+        }
+        
+        if (context.getWorkingOperation() != null) {
+            context.getWorkingOperation().addParameter(newParameter);
+        } else {
+            Field field = Field.class.cast(element);
+            for (Method method : field.getDeclaringClass().getDeclaredMethods()) {
+                OpenAPI api = context.getApi();
+                ApiContext apiContext = new OpenApiContext(api, null, ModelUtils.getOperation(method, api, generateResourceMapping(classes)));
+                apiContext.getWorkingOperation().addParameter(newParameter);
+            }
+        }
     }
 
     @Override
