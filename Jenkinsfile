@@ -44,24 +44,6 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
-        stage('Checkout cargoTracker Tests') {
-            steps{
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/master"]],
-                    doGenerateSubmoduleConfigurations: false,
-                    extensions: [
-                        [$class: 'SubmoduleOption',
-                        disableSubmodules: false,
-                        parentCredentials: true,
-                        recursiveSubmodules: true,
-                        reference: '',
-                        trackingSubmodules: false]],
-                    submoduleCfg: [],
-                    userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            }
-        }
         stage('Setup for Quicklook Tests') {
             tools {
                 jdk "zulu-${jdkVer}"
@@ -74,27 +56,6 @@ pipeline {
                 sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
                 sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
                 sh "${ASADMIN} start-database --dbtype derby || true"
-            }
-        }
-        stage('Run cargoTracker Tests') {
-            tools {
-                jdk "zulu-${jdkVer}"
-            }
-            environment {
-                MAVEN_OPTS=getMavenOpts()
-            }
-            steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -V -ff -e clean install -Dsurefire.useFile=false \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                -Dpayara.version.major=${getMajorVersion(pom.version)} -Ppayara-server-remote"""
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            }
-            post {
-                always {
-                    junit '**/target/surefire-reports/*.xml'
-                }
             }
         }
         stage('Run Quicklook Tests') {
@@ -164,6 +125,45 @@ pipeline {
                 }
             }
         }
+        stage('Checkout cargoTracker Tests') {
+            steps{
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                    branches: [[name: "*/master"]],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [
+                        [$class: 'SubmoduleOption',
+                        disableSubmodules: false,
+                        parentCredentials: true,
+                        recursiveSubmodules: true,
+                        reference: '',
+                        trackingSubmodules: false]],
+                    submoduleCfg: [],
+                    userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+        stage('Run cargoTracker Tests') {
+            tools {
+                jdk "zulu-${jdkVer}"
+            }
+            environment {
+                MAVEN_OPTS=getMavenOpts()
+            }
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -V -ff -e clean install -Dsurefire.useFile=false \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                -Dpayara.version.major=${getMajorVersion(pom.version)} -Ppayara-server-remote"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
         stage('Checkout EE7 Tests') {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -191,10 +191,10 @@ pipeline {
             }
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -V -ff -e clean install -Dsurefire.useFile=false /
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts /
-                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} /
-                -Dpayara.directory.name=${getPayaraDirectoryName(pom.version)} /
+                sh """mvn -V -ff -e clean install -Dsurefire.useFile=false \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                -Dpayara.directory.name=${getPayaraDirectoryName(pom.version)} \
                 -Dpayara.version.major=${getMajorVersion(pom.version)} -Ppayara-ci-managed"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
