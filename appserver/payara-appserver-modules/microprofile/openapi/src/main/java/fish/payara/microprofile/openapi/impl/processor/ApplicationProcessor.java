@@ -419,8 +419,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         addParameter(element, context, newParameter);
     }
     
-    private void addParameter(AnnotatedElement element, ApiContext context, 
-              org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter) {
+    private void addParameter(AnnotatedElement element, ApiContext context,
+            org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter) {
         if (element instanceof java.lang.reflect.Parameter) {
             newParameter.setSchema(new SchemaImpl().type(ModelUtils
                     .getSchemaType(java.lang.reflect.Parameter.class.cast(element).getType())));
@@ -428,14 +428,15 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             newParameter.setSchema(new SchemaImpl().type(ModelUtils
                     .getSchemaType(Field.class.cast(element).getType())));
         }
-        
+
         if (context.getWorkingOperation() != null) {
             context.getWorkingOperation().addParameter(newParameter);
         } else {
             Field field = Field.class.cast(element);
-            for (Method method : field.getDeclaringClass().getDeclaredMethods()) {
-                OpenAPI api = context.getApi();
-                ApiContext apiContext = new OpenApiContext(api, null, ModelUtils.getOperation(method, 
+            ApiContext apiContext;
+            OpenAPI api = context.getApi();
+            for (Method method : field.getDeclaringClass().getDeclaredMethods()) {             
+                apiContext = new OpenApiContext(api, null, ModelUtils.getOperation(method, 
                         api, generateResourceMapping(classes)));
                 apiContext.getWorkingOperation().addParameter(newParameter);
             }
