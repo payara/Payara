@@ -53,7 +53,6 @@ pipeline {
                 script{
                     ASADMIN = "./appserver/distributions/payara/target/stage/${getPayaraDirectoryName(pom.version)}/bin/asadmin"
                 }
-
                 sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
                 sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
                 sh "${ASADMIN} start-database --dbtype derby || true"
@@ -67,7 +66,6 @@ pipeline {
                 MAVEN_OPTS=getMavenOpts()
             }
             steps {
-
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh """mvn -V -ff -e clean test \
                 -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/${getPayaraDirectoryName(pom.version)}/glassfish\" \
@@ -75,7 +73,6 @@ pipeline {
                 -Djavax.xml.accessExternalSchema=all \
                 -f appserver/tests/quicklook/pom.xml"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-
             }
             post {
                 always {
@@ -88,7 +85,7 @@ pipeline {
         }
         stage('Checkout EE8 Tests') {
             when{
-                expression{ getMajorVersion(pom.version) == '5' }
+                expression{ getMajorVersion(pom.version) != '4' }
             }
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -109,7 +106,7 @@ pipeline {
         }
         stage('Run EE8 Tests') {
             when{
-                expression{ getMajorVersion(pom.version) == '5' }
+                expression{ getMajorVersion(pom.version) != '4' }
             }
             tools {
                 jdk "zulu-${jdkVer}"
@@ -155,7 +152,11 @@ pipeline {
             }
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -V -ff -e clean install -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} -Dpayara.directory.name=${getPayaraDirectoryName(pom.version)} -Dpayara.version.major=${getMajorVersion(pom.version)} -Ppayara-ci-managed,stable"
+                sh """mvn -V -ff -e clean install -Dsurefire.useFile=false \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                -Dpayara.directory.name=${getPayaraDirectoryName(pom.version)} \
+                -Dpayara.version.major=${getMajorVersion(pom.version)} -Ppayara-ci-managed,stable"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -191,7 +192,11 @@ pipeline {
             }
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -V -ff -e clean install -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} -Dpayara.directory.name=${getPayaraDirectoryName(pom.version)} -Dpayara.version.major=${getMajorVersion(pom.version)} -Ppayara-ci-managed,stable"
+                sh """mvn -V -ff -e clean install -Dsurefire.useFile=false \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                -Dpayara.directory.name=${getPayaraDirectoryName(pom.version)} \
+                -Dpayara.version.major=${getMajorVersion(pom.version)} -Ppayara-ci-managed"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
