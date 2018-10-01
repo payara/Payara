@@ -427,25 +427,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     private void addParameter(AnnotatedElement element, ApiContext context,
             org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter) {
         if (element instanceof java.lang.reflect.Parameter) {
-            SchemaImpl schema = new SchemaImpl();
-            java.lang.reflect.Parameter parameter = java.lang.reflect.Parameter.class.cast(element);
-            schema.setType(ModelUtils.getSchemaType(parameter.getType()));
-//            newParameter.setSchema(new SchemaImpl().type(ModelUtils
-//                    .getSchemaType(parameter.getType())));
-            if (schema.getType() == SchemaType.ARRAY) {
-                SchemaType formSchemaType = null;
-                for (java.lang.reflect.Parameter methodParam : parameter.getDeclaringExecutable().getParameters()) {
-                    formSchemaType = ModelUtils.getParentSchemaType(formSchemaType,
-                            ModelUtils.getSchemaType(methodParam.getType()));
-                }
-
-                if (formSchemaType != null) {
-                    SchemaImpl childSchema = new SchemaImpl();
-                    childSchema.setType(formSchemaType);
-                    schema.setItems(childSchema);
-                }
-            }
-             newParameter.setSchema(schema);
+            newParameter.setSchema(new SchemaImpl().type(ModelUtils
+                    .getSchemaType(java.lang.reflect.Parameter.class.cast(element).getType())));
         } else {
             newParameter.setSchema(new SchemaImpl().type(ModelUtils
                     .getSchemaType(Field.class.cast(element).getType())));
