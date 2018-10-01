@@ -543,7 +543,8 @@ public final class ModelUtils {
         }
     }
     
-    public static org.eclipse.microprofile.openapi.models.Operation getOperation(Method method, OpenAPI api, Map<String, Set<Class<?>>> resourceMapping) {
+    public static org.eclipse.microprofile.openapi.models.Operation getOperation(Method method, 
+            OpenAPI api, Map<String, Set<Class<?>>> resourceMapping) {
         String path = getResourcePath(method, resourceMapping);
         if (path != null) {
             PathItem pathItem = api.getPaths().get(path);

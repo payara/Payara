@@ -392,11 +392,13 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             // If there's no request body, fill out a new one right down to the schema
             if (context.getWorkingOperation().getRequestBody() == null) {
                 context.getWorkingOperation().setRequestBody(new RequestBodyImpl().content(new ContentImpl()
-                        .addMediaType(javax.ws.rs.core.MediaType.WILDCARD, new MediaTypeImpl().schema(new SchemaImpl()))));
+                        .addMediaType(javax.ws.rs.core.MediaType.WILDCARD, new MediaTypeImpl()
+                                .schema(new SchemaImpl()))));
             }
 
             // Set the request body type accordingly.
-            context.getWorkingOperation().getRequestBody().getContent().get(javax.ws.rs.core.MediaType.WILDCARD).getSchema()
+            context.getWorkingOperation().getRequestBody().getContent()
+                    .get(javax.ws.rs.core.MediaType.WILDCARD).getSchema()
                     .setType(formSchemaType);
         }
     }
@@ -417,7 +419,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         addParameter(element, context, newParameter);
     }
     
-      private void addParameter(AnnotatedElement element, ApiContext context, org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter) {
+    private void addParameter(AnnotatedElement element, ApiContext context, 
+              org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter) {
         if (element instanceof java.lang.reflect.Parameter) {
             newParameter.setSchema(new SchemaImpl().type(ModelUtils
                     .getSchemaType(java.lang.reflect.Parameter.class.cast(element).getType())));
@@ -432,7 +435,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             Field field = Field.class.cast(element);
             for (Method method : field.getDeclaringClass().getDeclaredMethods()) {
                 OpenAPI api = context.getApi();
-                ApiContext apiContext = new OpenApiContext(api, null, ModelUtils.getOperation(method, api, generateResourceMapping(classes)));
+                ApiContext apiContext = new OpenApiContext(api, null, ModelUtils.getOperation(method, 
+                        api, generateResourceMapping(classes)));
                 apiContext.getWorkingOperation().addParameter(newParameter);
             }
         }
