@@ -1,0 +1,155 @@
+<!--
+
+Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+
+ The contents of this file are subject to the terms of either the GNU
+ General Public License Version 2 only ("GPL") or the Common Development
+ and Distribution License("CDDL") (collectively, the "License").  You
+ may not use this file except in compliance with the License.  You can
+ obtain a copy of the License at
+ https://github.com/payara/Payara/blob/master/LICENSE.txt
+ See the License for the specific
+ language governing permissions and limitations under the License.
+
+ When distributing the software, include this License Header Notice in each
+ file and include the License file at glassfish/legal/LICENSE.txt.
+
+ GPL Classpath Exception:
+ The Payara Foundation designates this particular file as subject to the "Classpath"
+ exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ file that accompanied this code.
+
+ Modifications:
+ If applicable, add the following below the License Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyright [year] [name of copyright owner]"
+
+ Contributor(s):
+ If you wish your version of this file to be governed by only the CDDL or
+ only the GPL Version 2, indicate your decision by adding "[Contributor]
+ elects to include this software in this distribution under the [CDDL or GPL
+ Version 2] license."  If you don't indicate a single choice of license, a
+ recipient has the option to distribute your version of this file under
+ either the CDDL, the GPL Version 2 or to extend the choice of license to
+ its licensees as provided above.  However, if you add GPL Version 2 code
+ and therefore, elected the GPL Version 2 license, then the option applies
+ only if the new code is made subject to such option by the copyright
+ holder.
+
+-->
+
+<!-- common/configuration/payaraNotificationLogger.jsf -->
+
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
+    setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.log.NotificationLoggingPageTitle}" >
+<!define name="content">
+
+<event>
+    <!beforeCreate
+        setSessionAttribute(key="loggingTabs" value="notificationLogging");
+        setSessionAttribute(key="loggingTabs" value="notificationLogging");
+        getRequestValue(key="configName" value="#{pageSession.configName}" );
+        gf.isConfigName(configName="#{pageSession.configName}" exists="#{requestScope.exists}" );
+        if (! #{requestScope.exists}){
+            gf.redirect("#{request.contextPath}/common/configuration/configurations.jsf");
+        }
+        createMap(result="#{requestScope.attrsMap}");
+        mapPut(map="#{requestScope.attrsMap}" key="target" value="#{pageSession.configName}");
+        gf.restRequest(
+                endpoint="#{sessionScope.REST_URL}/list-log-attributes"
+                attrs="#{requestScope.attrsMap}"
+                method="GET"
+                result="#{pageSession.valueMap}");
+        setPageSessionAttribute(key="logAttributes", value="#{pageSession.valueMap.data.extraProperties.logAttributes}");
+        setPageSessionAttribute(key="defaultLoggingProperties", value="#{pageSession.valueMap.data.extraProperties.defaultLoggingProperties}");
+
+    />
+</event>
+
+<sun:form id="form1">
+#include "/common/configuration/loggingTabs.inc"
+#include "/common/shared/alertMsg.inc"
+<sun:title id="propertyContentPage" title="$resource{i18nc.log.NotificationLoggingPageTitle}" helpText="$resource{i18nc.log.NotificationLoggingPageTitleHelp}" >
+    <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
+                onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
+                <!command
+                    gf.isConfigName(configName="#{pageSession.configName}" );
+                    prepareSuccessfulMsg();
+                    saveLoggingAttributes(attrs="#{pageSession.logAttributes}" config="#{pageSession.configName}");
+                    gf.redirect(page="#{request.contextPath}/common/configuration/payaraNotificationLogger.jsf?configName=#{pageSession.configName}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                />
+            </sun:button>
+        </sun:panelGroup>
+    </facet>
+        <sun:button id="loadDefaultsButton" style="margin-left: 8pt"  primary="#{false}" text="$resource{i18n.button.LoadDefaults}"
+            onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command
+                    gf.isConfigName(configName="#{pageSession.configName}" );
+                    gf.getMapKeys(Map="#{pageSession.logAttributes}" Keys="#{requestScope.attrKeys}");
+                    foreach(var="attrName" list="#{requestScope.attrKeys}") {
+                        mapGet(Map="#{pageSession.defaultLoggingProperties}" Key="#{attrName}"  Value="#{requestScope.temp}");
+                        if("!(#{requestScope.temp}=#{null})"){
+                            mapPut(map="#{pageSession.logAttributes}", key="#{attrName}", value="#{requestScope.temp}"); 
+                        }
+                    }
+                  />
+        </sun:button>
+      
+</sun:title>
+
+<sun:propertySheet id="payaraNotificationLogger">
+#include "/common/shared/configNameSection.inc"
+
+    <sun:propertySheetSection id="sheetSection">
+
+        <sun:property id="PayaraNotificationLogtoFile"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogtoFile}" helpText="$resource{i18nc.log.LogtoFileHelp}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.logtoFile']}"  selectedValue="true" />
+        </sun:property>
+        
+        <sun:property id="PayaraNotificationRotationOnDateChange"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.rotationOnDateChange}" helpText="$resource{i18nc.log.rotationOnDateChangeHelp}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange']}"  selectedValue="true" />
+        </sun:property>
+
+        <sun:property id="PayaraNotificationLogfileFormat"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileLogFormat}" helpText="$resource{i18nc.log.FilePayaraNotificationLogFormatHelp}">
+            <sun:dropDown id="logfileFormat" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.formatter']}"
+                          labels={ "ULF","ODL","JSON"}
+                          values={"com.sun.enterprise.server.logging.UniformLogFormatter", "com.sun.enterprise.server.logging.ODLLogFormatter", "fish.payara.enterprise.server.logging.JSONLogFormatter"} />
+        </sun:property>
+        
+        <sun:property id="PayaraNotificationFileRotationLimitProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileRotationLimit}" helpText="$resource{i18nc.log.FileRotationLimitHelp}">
+            <sun:textField id="FileRotationLimit" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.FileRotationLimit']}" text="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationLimitInBytes']}" />
+            <sun:staticText id="byte" style="padding: 8pt" text="$resource{i18n.common.Bytes}"/>
+        </sun:property>
+
+        <sun:property id="PayaraNotificationFileRotationTimeLimitProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileRotationTimeLimit}" helpText="$resource{i18nc.log.FileRotationTimeLimitHelp}">
+            <sun:textField id="PayaraNotificationFileRotationTimeLimit" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.FileRotationTimeLimit']}" text="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationTimelimitInMinutes']}"/>
+            <sun:staticText id="min" style="padding: 8pt" text="$resource{i18n.common.Minutes}"/>
+        </sun:property>
+
+        <sun:property id="PayaraNotificationMaxHistoryFiles"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.MaxHistoryFiles}" helpText="$resource{i18nc.log.MaxHistoryFilesHelp}">
+            <sun:textField id="PayaraNotificationMaxHistoryFiles" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.MaxHistoryFiles']}" text="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.maxHistoryFiles']}"/>
+        </sun:property>
+
+        <sun:property id="PayaraNotificationlogFileProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogFile}" helpText="$resource{i18nc.log.LogFileHelp}">
+            <sun:textField id="PayaraNotificationLogFile" columns="$int{70}" maxLength="#{sessionScope.fieldLengths['maxLength.log.LogFile']}" text="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.file']}"/>
+        </sun:property>
+        
+        <sun:property id="PayaraNotificationCompressOnRotationProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.CompressOnRotation}" helpText="$resource{i18nc.log.CompressOnRotationHelp}">
+            <sun:checkbox id="PayaraNotificationCompressOnRotationEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation']}"  selectedValue="true" />
+        </sun:property>
+
+     </sun:propertySheetSection>
+
+</sun:propertySheet>
+
+<sun:hidden id="helpKey" value="$resource{help_common.serverInstLogging}" />
+
+</sun:form>
+"<br/>
+</define>
+</composition>
