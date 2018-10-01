@@ -1360,10 +1360,6 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
     }
 
     private boolean isSlowQueryLoggingEnabled() {
-        if (connectionPool == null) {
-            return false;
-        } else {
             return !IS_SLOW_SQL_LOGGING_DISABLED.equals(connectionPool.getSlowQueryThresholdInSeconds());
-        }
     }
 }
