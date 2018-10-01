@@ -124,6 +124,7 @@ import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiContext;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter.Style;
 
 /**
  * A processor to parse the application for annotations, to add to the OpenAPI
@@ -360,6 +361,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter = new ParameterImpl();
         newParameter.setName(param.value());
         newParameter.setIn(In.QUERY);
+        newParameter.setStyle(Style.SIMPLE);
         addParameter(element, context, newParameter);
     }
         
@@ -369,6 +371,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         newParameter.setName(param.value());
         newParameter.setRequired(true);
         newParameter.setIn(In.PATH);
+        newParameter.setStyle(Style.SIMPLE);
         addParameter(element, context, newParameter);
     }
     
@@ -408,6 +411,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter = new ParameterImpl();
         newParameter.setName(param.value());
         newParameter.setIn(In.HEADER);
+        newParameter.setStyle(Style.SIMPLE);
         addParameter(element, context, newParameter);
     }
 
@@ -416,14 +420,32 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter = new ParameterImpl();
         newParameter.setName(param.value());
         newParameter.setIn(In.COOKIE);
+        newParameter.setStyle(Style.SIMPLE);
         addParameter(element, context, newParameter);
     }
     
     private void addParameter(AnnotatedElement element, ApiContext context,
             org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter) {
         if (element instanceof java.lang.reflect.Parameter) {
-            newParameter.setSchema(new SchemaImpl().type(ModelUtils
-                    .getSchemaType(java.lang.reflect.Parameter.class.cast(element).getType())));
+            SchemaImpl schema = new SchemaImpl();
+            java.lang.reflect.Parameter parameter = java.lang.reflect.Parameter.class.cast(element);
+            schema.setType(ModelUtils.getSchemaType(parameter.getType()));
+//            newParameter.setSchema(new SchemaImpl().type(ModelUtils
+//                    .getSchemaType(parameter.getType())));
+            if (schema.getType() == SchemaType.ARRAY) {
+                SchemaType formSchemaType = null;
+                for (java.lang.reflect.Parameter methodParam : parameter.getDeclaringExecutable().getParameters()) {
+                    formSchemaType = ModelUtils.getParentSchemaType(formSchemaType,
+                            ModelUtils.getSchemaType(methodParam.getType()));
+                }
+
+                if (formSchemaType != null) {
+                    SchemaImpl childSchema = new SchemaImpl();
+                    childSchema.setType(formSchemaType);
+                    schema.setItems(childSchema);
+                }
+            }
+             newParameter.setSchema(schema);
         } else {
             newParameter.setSchema(new SchemaImpl().type(ModelUtils
                     .getSchemaType(Field.class.cast(element).getType())));
