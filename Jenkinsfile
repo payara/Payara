@@ -17,6 +17,23 @@ pipeline {
     }
     agent any
     stages {
+        stage('quick dev stage - delete me.') {
+            steps{
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                    branches: [[name: "46509072b2695967a921d1af579a686c7b35b52d"]],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [
+                        [$class: 'SubmoduleOption',
+                        disableSubmodules: false,
+                        parentCredentials: true,
+                        recursiveSubmodules: true,
+                        reference: '',
+                        trackingSubmodules: false]],
+                    submoduleCfg: [],
+                    userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
+            }
+        }
         stage('report') {
             steps {
                 script{
@@ -129,7 +146,7 @@ pipeline {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/master"]],
+                    branches: [[name: "46509072b2695967a921d1af579a686c7b35b52d"]],
                     doGenerateSubmoduleConfigurations: false,
                     extensions: [
                         [$class: 'SubmoduleOption',
