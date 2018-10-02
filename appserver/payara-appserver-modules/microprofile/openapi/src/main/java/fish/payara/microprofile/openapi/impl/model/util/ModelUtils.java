@@ -80,6 +80,8 @@ import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
 
 import fish.payara.microprofile.openapi.impl.model.OperationImpl;
+import java.lang.reflect.GenericDeclaration;
+import javax.ws.rs.Path;
 
 public final class ModelUtils {
 
@@ -540,4 +542,52 @@ public final class ModelUtils {
             }
         }
     }
+    
+    public static org.eclipse.microprofile.openapi.models.Operation getOperation(Method method,
+            OpenAPI api, Map<String, Set<Class<?>>> resourceMapping) {
+        String path = getResourcePath(method, resourceMapping);
+        if (path != null) {
+            PathItem pathItem = api.getPaths().get(path);
+            if (pathItem != null) {
+                PathItem.HttpMethod httpMethod = getHttpMethod(method);
+                return pathItem.readOperationsMap().get(httpMethod);
+            }
+        }
+        return null;
+    }
+
+    public static String getResourcePath(GenericDeclaration declaration, Map<String, Set<Class<?>>> resourceMapping) {
+        String path = null;
+        if (declaration instanceof Method) {
+            Method method = (Method) declaration;
+
+            // If the method is a valid resource
+            if (method.isAnnotationPresent(GET.class) || method.isAnnotationPresent(POST.class)
+                    || method.isAnnotationPresent(PUT.class) || method.isAnnotationPresent(DELETE.class)
+                    || method.isAnnotationPresent(HEAD.class) || method.isAnnotationPresent(OPTIONS.class)
+                    || method.isAnnotationPresent(PATCH.class)) {
+                if (method.isAnnotationPresent(Path.class)) {
+                    path = getResourcePath(method.getDeclaringClass(), resourceMapping) + "/"
+                            + method.getDeclaredAnnotation(Path.class).value();
+                } else {
+                    path = getResourcePath(method.getDeclaringClass(), resourceMapping);
+                }
+            }
+        }
+         if (declaration instanceof Class) {
+            Class<?> clazz = (Class<?>) declaration;
+            clazz.toString();
+          
+
+            // If the class is a resource and contains a mapping
+            if (clazz.isAnnotationPresent(Path.class)) {
+                for (Map.Entry<String, Set<Class<?>>> entry : resourceMapping.entrySet()) {
+                    if (entry.getValue() != null && entry.getValue().contains(clazz)) {
+                        path = entry.getKey() + "/" + clazz.getDeclaredAnnotation(Path.class).value();
+                    }
+                }
+            }
+        }
+        return normaliseUrl(path);
+    }   
 }

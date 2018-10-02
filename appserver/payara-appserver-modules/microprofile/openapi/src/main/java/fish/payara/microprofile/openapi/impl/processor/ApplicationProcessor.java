@@ -99,7 +99,6 @@ import org.eclipse.microprofile.openapi.models.Reference;
 import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
-import org.eclipse.microprofile.openapi.models.parameters.Parameter.Style;
 
 import fish.payara.microprofile.openapi.api.processor.OASProcessor;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
@@ -123,7 +122,9 @@ import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+import fish.payara.microprofile.openapi.impl.visitor.OpenApiContext;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter.Style;
 
 /**
  * A processor to parse the application for annotations, to add to the OpenAPI
@@ -356,66 +357,95 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
-    public void visitQueryParam(QueryParam param, java.lang.reflect.Parameter element, ApiContext context) {
+    public void visitQueryParam(QueryParam param, AnnotatedElement element, ApiContext context) {
         org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter = new ParameterImpl();
         newParameter.setName(param.value());
         newParameter.setIn(In.QUERY);
         newParameter.setStyle(Style.SIMPLE);
-        newParameter.setSchema(new SchemaImpl().type(ModelUtils.getSchemaType(element.getType())));
-        context.getWorkingOperation().addParameter(newParameter);
+        addParameter(element, context, newParameter);
     }
-
+        
     @Override
-    public void visitPathParam(PathParam param, java.lang.reflect.Parameter element, ApiContext context) {
+    public void visitPathParam(PathParam param, AnnotatedElement element, ApiContext context) {
         org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter = new ParameterImpl();
         newParameter.setName(param.value());
         newParameter.setRequired(true);
         newParameter.setIn(In.PATH);
         newParameter.setStyle(Style.SIMPLE);
-        newParameter.setSchema(new SchemaImpl().type(ModelUtils.getSchemaType(element.getType())));
-        context.getWorkingOperation().addParameter(newParameter);
+        addParameter(element, context, newParameter);
     }
-
+    
     @Override
-    public void visitFormParam(FormParam param, java.lang.reflect.Parameter element, ApiContext context) {
+    public void visitFormParam(FormParam param, AnnotatedElement element, ApiContext context) {
         // Find the aggregate schema type of all the parameters
         SchemaType formSchemaType = null;
-        for (java.lang.reflect.Parameter methodParam : element.getDeclaringExecutable().getParameters()) {
-            if (methodParam.isAnnotationPresent(FormParam.class)) {
-                formSchemaType = ModelUtils.getParentSchemaType(formSchemaType,
-                        ModelUtils.getSchemaType(methodParam.getType()));
+
+        if (element instanceof java.lang.reflect.Parameter) {
+            java.lang.reflect.Parameter[] parameters = java.lang.reflect.Parameter.class.cast(element)
+                    .getDeclaringExecutable().getParameters();
+            for (java.lang.reflect.Parameter methodParam : parameters) {
+                if (methodParam.isAnnotationPresent(FormParam.class)) {
+                    formSchemaType = ModelUtils.getParentSchemaType(formSchemaType,
+                            ModelUtils.getSchemaType(methodParam.getType()));
+                }
             }
-        }
+        } 
 
-        // If there's no request body, fill out a new one right down to the schema
-        if (context.getWorkingOperation().getRequestBody() == null) {
-            context.getWorkingOperation().setRequestBody(new RequestBodyImpl().content(new ContentImpl()
-                    .addMediaType(javax.ws.rs.core.MediaType.WILDCARD, new MediaTypeImpl().schema(new SchemaImpl()))));
-        }
+        if (context.getWorkingOperation() != null) {
+            // If there's no request body, fill out a new one right down to the schema
+            if (context.getWorkingOperation().getRequestBody() == null) {
+                context.getWorkingOperation().setRequestBody(new RequestBodyImpl().content(new ContentImpl()
+                        .addMediaType(javax.ws.rs.core.MediaType.WILDCARD, new MediaTypeImpl()
+                                .schema(new SchemaImpl()))));
+            }
 
-        // Set the request body type accordingly.
-        context.getWorkingOperation().getRequestBody().getContent().get(javax.ws.rs.core.MediaType.WILDCARD).getSchema()
-                .setType(formSchemaType);
+            // Set the request body type accordingly.
+            context.getWorkingOperation().getRequestBody().getContent()
+                    .get(javax.ws.rs.core.MediaType.WILDCARD).getSchema()
+                    .setType(formSchemaType);
+        }
     }
 
     @Override
-    public void visitHeaderParam(HeaderParam param, java.lang.reflect.Parameter element, ApiContext context) {
+    public void visitHeaderParam(HeaderParam param, AnnotatedElement element, ApiContext context) {
         org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter = new ParameterImpl();
         newParameter.setName(param.value());
         newParameter.setIn(In.HEADER);
         newParameter.setStyle(Style.SIMPLE);
-        newParameter.setSchema(new SchemaImpl().type(ModelUtils.getSchemaType(element.getType())));
-        context.getWorkingOperation().addParameter(newParameter);
+        addParameter(element, context, newParameter);
     }
 
     @Override
-    public void visitCookieParam(CookieParam param, java.lang.reflect.Parameter element, ApiContext context) {
+    public void visitCookieParam(CookieParam param, AnnotatedElement element, ApiContext context) {
         org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter = new ParameterImpl();
         newParameter.setName(param.value());
         newParameter.setIn(In.COOKIE);
         newParameter.setStyle(Style.SIMPLE);
-        newParameter.setSchema(new SchemaImpl().type(ModelUtils.getSchemaType(element.getType())));
-        context.getWorkingOperation().addParameter(newParameter);
+        addParameter(element, context, newParameter);
+    }
+    
+    private void addParameter(AnnotatedElement element, ApiContext context,
+            org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter) {
+        if (element instanceof java.lang.reflect.Parameter) {
+            newParameter.setSchema(new SchemaImpl().type(ModelUtils
+                    .getSchemaType(java.lang.reflect.Parameter.class.cast(element).getType())));
+        } else {
+            newParameter.setSchema(new SchemaImpl().type(ModelUtils
+                    .getSchemaType(Field.class.cast(element).getType())));
+        }
+
+        if (context.getWorkingOperation() != null) {
+            context.getWorkingOperation().addParameter(newParameter);
+        } else {
+            Field field = Field.class.cast(element);
+            ApiContext apiContext;
+            OpenAPI api = context.getApi();
+            for (Method method : field.getDeclaringClass().getDeclaredMethods()) {             
+                apiContext = new OpenApiContext(api, null, ModelUtils.getOperation(method, 
+                        api, generateResourceMapping(classes)));
+                apiContext.getWorkingOperation().addParameter(newParameter);
+            }
+        }
     }
 
     @Override
