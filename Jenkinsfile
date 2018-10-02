@@ -5,6 +5,9 @@ def DOMAIN_NAME='test-domain'
 def ASADMIN
 def payaraBuildNumber
 pipeline {
+    options {
+        disableConcurrentBuilds()
+    }
     parameters{
         choice(
             choices: '8\n7',
@@ -42,6 +45,11 @@ pipeline {
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber}"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post{
+                success{
+                    archiveArtifacts artifacts: './appserver/distributions/payara/target/stage/payara.zip', fingerprint: true
+                }
             }
         }
         stage('Setup for Quicklook Tests') {
@@ -202,9 +210,6 @@ pipeline {
             post {
                 always {
                     junit '**/target/surefire-reports/*.xml'
-                }
-                success{
-                    archiveArtifacts artifacts: './appserver/distributions/payara/target/stage/payara.zip', fingerprint: true
                 }
             }
         }
