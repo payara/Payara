@@ -186,7 +186,7 @@ public class WebAndEjbToJaasBridge {
         } else if (cls.equals(GSSUPName.class)) {
             doGSSUPLogin(subject);
 
-        } else if (cls.equals(X500Name.class)) {
+        } else if (cls.equals(X500Principal.class)) {
             doX500Login(subject, null);
 
         } else {
